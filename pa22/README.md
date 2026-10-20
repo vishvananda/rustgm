@@ -1,6 +1,7 @@
 # RustGM Programming Assignment 22: Unsized types
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
+Status: **implemented-draft**. The maintainer reference and 328-case text suite
+implement the contract below; this is the current grading boundary.
 Prerequisite: PA21. The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. Later edition support is explicit at PA36.
 
@@ -61,12 +62,18 @@ Do not introduce rendered text as transport between compiler phases.
 ## Tool surface
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
-available. Freeze the exact text vocabulary, deterministic ordering, error
-contract and example outputs before declaring this assignment active.
+available. The existing LowIR vocabulary and course ABI remain unchanged. Emit deterministic
+text on success (exit 0, empty stderr); diagnosed rejection is exit 1 with empty
+stdout. Signals, timeouts, panics and exit 86 are implementation failures.
+The committed `.ref`, `.ref.stderr` and `.ref.exit_status` files freeze these
+outputs. `reference.json` records their source and fixture provenance.
 
-## Tests to develop with the reference
+## Published tests
 
-array-to-slice; metadata; size/alignment; sizedness rejection.
+The manifest contains 328 cases: 236 accept and 92 reject. Pinned rustc independently
+qualifies every source. There are 102 execution comparisons (97 pass, five expected
+panics) and 134 compile-only controls, explicitly distinguished in the manifest.
+See [tests/README.md](tests/README.md) for the eight families.
 
 Build the matrix from independently declared acceptance and runtime outcomes:
 
@@ -106,12 +113,44 @@ implicitly. An empty suite or a not-implemented result cannot pass.
    body construction and lowering. Reuse prefix layouts and tail metadata;
    do not reparse source or reconstruct semantic choices from LowIR text.
 4. Qualify source and native controls, publish manifest-listed byte oracles,
-   and complete the release checks below. Until then this stage stays planned.
+   and complete the release checks below.
 
 ## Completion and review
 
 Publish the semantic and lowering boundary, tests/manifest.json and reference
 sidecars together. Run all active earlier suites, lint, file/architecture audits,
-and affected scaling measurements. Record independent checks before setting
-status active in `assignments.json` and adding the stage to the root report.
+and affected scaling measurements. Retain independent checks and the complete qualification in
+[the release evidence](../docs/pa22-release.md).
 Student export is a later operation: this repository owns the full solution.
+
+## Raw pointer boundary
+
+Support safe reference-to-pointer coercions, pointer mutability weakening,
+array/struct-tail unsizing and the explicit casts covered by the manifest.
+Raw casts may reinterpret pointees when their metadata kinds agree; wide-to-thin
+casts discard metadata. Integer addresses require a thin pointer. Comparisons
+include slice/string lengths; ordering compares the address before metadata.
+These tests never dereference a fabricated or dangling pointer.
+
+`&raw const` and `&raw mut` require an initialized permitted place. They check
+conflicts at address creation and create no lasting reference loan or alignment
+promise. Direct `&raw const *p` / `&raw mut *p` forms a pointer without reading
+through `p`; other raw dereferences/projections need PA27's unsafe semantics.
+Implicit conversions preserve embedded lifetime obligations even though a raw
+pointer does not keep its outer reference loan alive.
+
+Constant pointer values preserve allocation identity or absolute address bits
+and the selected length. Constant pointer comparisons and pointer-to-integer
+casts reject, including in dead branches. Immutable static addresses are covered.
+Mutable statics and raw-pointer constant patterns are outside this release's
+contract; this does not enlarge PA13's structural constant-pattern subset.
+
+Packed declaration containment is distinct from physical alignment. The pinned
+compiler permits aligned elements behind array/slice fields while rejecting a
+direct aligned struct field. Completed declaration checks authorize the same
+rule for sized and unsized layouts; a reference to an unaligned field still
+rejects, while its raw address can be formed.
+
+Run `make test-pa22`, `make test-native-pa22`, `make test-rustc`, and the release,
+lint/audit/harness checks in `TESTING_AND_REFERENCES.md` before changing this
+contract. PA23 remains planned and is not included in acceptance totals.

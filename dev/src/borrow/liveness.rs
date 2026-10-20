@@ -206,6 +206,7 @@ impl<'a> Flow<'a> {
         mark(self.values[id.0 as usize], live, false);
         match value.kind {
             Rvalue::Read(place)
+            | Rvalue::Address(place)
             | Rvalue::Borrow { place, .. }
             | Rvalue::Length(place)
             | Rvalue::TextEquals { place, .. }

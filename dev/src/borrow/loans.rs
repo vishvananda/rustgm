@@ -65,6 +65,7 @@ struct State {
     active: u64,
 }
 struct Flow<'a> {
+    types: &'a Store,
     body: &'a Body,
     destruction: Option<super::destruction::schedule::Schedule<'a>>,
     owned: &'a BodyFacts,
@@ -282,6 +283,19 @@ impl Flow<'_> {
                         .filter(|_| a < b)
                         .map_or(Mode::Shared, |l| l.mode);
                     self.access(state, place, mode, Depth::Deep, None)?;
+                }
+                Rvalue::Address(place) => {
+                    let mutable = matches!(
+                        self.types.kind(self.body.values[id.0 as usize].ty),
+                        Some(crate::types::Kind::Pointer { mutable: true, .. })
+                    );
+                    self.access(
+                        state,
+                        place,
+                        if mutable { Mode::Mutable } else { Mode::Shared },
+                        Depth::Deep,
+                        None,
+                    )?;
                 }
                 Rvalue::Validate(place) | Rvalue::TextEquals { place, .. } => {
                     self.access(state, place, Mode::Shared, Depth::Deep, None)?;
@@ -668,6 +682,7 @@ fn finish<const RECORD: bool>(
     let regions = points::infer(&contract.solution, uses.points, seeds, external, 32_000_000)
         .map_err(error)?;
     let mut flow = Flow {
+        types,
         body,
         destruction,
         owned,

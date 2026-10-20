@@ -40,12 +40,45 @@ impl Builder<'_> {
             BorrowKind::Immediate
         };
         let value = self.evaluate(node, reference.borrow, Rvalue::Borrow { place, kind })?;
-        let value = if self.facts.unsizing_adjustments.contains_key(&key) {
+        let value = if self.facts.pointer_adjustments.contains_key(&key) {
+            self.selected_pointer(node, value, adjustment.target)?
+        } else if self.facts.unsizing_adjustments.contains_key(&key) {
             self.selected_unsizing(node, value, adjustment.target)?
         } else {
             self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?
         };
         self.save(node, value)
+    }
+    pub(super) fn selected_pointer(
+        &mut self,
+        node: NodeId,
+        value: ValueId,
+        target: TypeId,
+    ) -> Result<ValueId, Error> {
+        let key = super::NodeKey {
+            node,
+            ..self.body.source
+        };
+        let intermediate = *self
+            .facts
+            .pointer_adjustments
+            .get(&key)
+            .ok_or_else(|| self.error(node, "missing selected pointer conversion"))?;
+        let value = self.evaluate(
+            node,
+            intermediate,
+            Rvalue::Cast {
+                kind: crate::sema::model::Cast::Pointer,
+                operand: value,
+            },
+        )?;
+        if self.facts.unsizing_adjustments.contains_key(&key) {
+            self.selected_unsizing(node, value, target)
+        } else if intermediate != target {
+            self.evaluate(node, target, Rvalue::Constrain(value))
+        } else {
+            Ok(value)
+        }
     }
     pub(super) fn selected_unsizing(
         &mut self,

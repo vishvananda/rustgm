@@ -37,6 +37,12 @@ pub enum View {
     Scalar(Scalar),
     Function(crate::types::instance::Instance),
     Reference(LocationId),
+    Address {
+        bits: u64,
+    },
+    BytePointer {
+        text: crate::sema::text::Id,
+    },
     Text(crate::sema::text::Id),
     Bytes(crate::sema::text::Id),
     Repeat {
@@ -84,6 +90,8 @@ impl<'a> Reader<'a> {
                 })
             }
             Value::Reference(pointer) => View::Reference(LocationId(pointer.place)),
+            Value::Address { bits, .. } => View::Address { bits },
+            Value::BytePointer { text, .. } => View::BytePointer { text },
             Value::Text(id) => View::Text(id),
             Value::Bytes(id) => View::Bytes(id),
             Value::Variant(id) => View::Product {
@@ -157,23 +165,18 @@ impl Constant {
     /// Selected wide-pointer metadata does not alter the backing location.
     #[must_use]
     pub const fn length(self) -> Option<u64> {
-        if let Value::Reference(pointer) = self.0 {
-            pointer.length
-        } else {
-            None
+        match self.0 {
+            Value::Reference(pointer) => pointer.length,
+            Value::Address { length, .. } => length,
+            Value::BytePointer { length, .. } => Some(length),
+            _ => None,
         }
     }
     /// Attach the already-proved terminal array length without allocating storage.
     /// # Errors
-    /// Rejects values without a backing reference.
+    /// Rejects values without an address representation.
     pub fn unsize(self, length: u64) -> Result<Self, Failure> {
-        let Value::Reference(mut pointer) = self.0 else {
-            return Err(Failure::Invalid(
-                "unsizing constant lacks reference backing",
-            ));
-        };
-        pointer.length = Some(length);
-        Ok(Self(Value::Reference(pointer)))
+        super::address_values::unsize(self.0, length).map(Self)
     }
     /// Read an evaluated generic scalar without confusing a rigid parameter with a definition.
     /// # Errors
@@ -498,6 +501,13 @@ impl<'a> Evaluator<'a> {
     ) -> Result<Constant, Failure> {
         if kind == Cast::FunctionPointer && value.as_function().is_some() {
             return Ok(value);
+        }
+        let primitive = match self.facts().types.kind(source) {
+            Some(Type::Primitive(p)) => Some(p),
+            _ => None,
+        };
+        if let Some(result) = super::address_values::cast(kind, primitive, value.0) {
+            return result.map(Constant);
         }
         let (source, value, kind) = if kind == Cast::EnumToInteger {
             let Value::Variant(id) = value.0 else {

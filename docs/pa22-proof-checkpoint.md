@@ -1,5 +1,8 @@
 # PA22 projected storage proofs
 
+The [PA22 release](pa22-release.md) supersedes the implementation-status notes
+below. This document preserves its checkpoint evidence.
+
 PA21 is released. PA22 remains planned: this checkpoint completes additional
 projected-tail coherence and proof-sharing work, not the raw-pointer contract
 or the PA22 release.

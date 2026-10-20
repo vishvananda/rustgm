@@ -12,6 +12,7 @@ pub(super) use generics::{
     Input as ArgumentInput, Progress as ArgumentProgress, advance as advance_argument,
     argument as generic_argument,
 };
+mod address_values;
 mod instances;
 mod layouts;
 mod member_readiness;
@@ -46,6 +47,8 @@ pub(super) enum Value {
     Scalar(Scalar),
     Function(crate::types::instance::Instance),
     Reference(references::Pointer),
+    Address { bits: u64, length: Option<u64> },
+    BytePointer { text: super::text::Id, length: u64 },
     Text(super::text::Id),
     Bytes(super::text::Id),
     Variant(VariantId),
@@ -56,6 +59,8 @@ impl Value {
         match self {
             Self::Scalar(value) => Ok(value),
             Self::Reference(_)
+            | Self::Address { .. }
+            | Self::BytePointer { .. }
             | Self::Function(_)
             | Self::Variant(_)
             | Self::Product(_)
@@ -117,6 +122,11 @@ enum Expression {
         operand: NodeKey,
         source: TypeId,
         target: Primitive,
+    },
+    PointerCast {
+        kind: Cast,
+        operand: NodeKey,
+        source: TypeId,
     },
     If {
         condition: NodeKey,
@@ -546,7 +556,9 @@ impl Queries<'_> {
                 Expression::Forward(child) => self.forward(query, Query::Node(child)),
                 Expression::Constant(index) => self.forward(query, Query::Constant(index)),
                 Expression::Instance(instance) => self.forward(query, Query::Instance(instance)),
-                Expression::Unary { operand, .. } | Expression::Cast { operand, .. } => {
+                Expression::Unary { operand, .. }
+                | Expression::Cast { operand, .. }
+                | Expression::PointerCast { operand, .. } => {
                     self.work.push(Work::Finish(key));
                     self.work.push(Work::Enter(Query::Node(operand)));
                 }
@@ -615,6 +627,21 @@ impl Queries<'_> {
     }
     fn finish(&mut self, key: NodeKey) -> Result<(), Error> {
         let query = Query::Node(key);
+        if let Expression::PointerCast {
+            kind,
+            operand,
+            source,
+        } = self.expression(key)?
+        {
+            let source = match self.typing.facts.types.kind(source) {
+                Some(Type::Primitive(p)) => Some(p),
+                _ => None,
+            };
+            let value = address_values::cast(kind, source, self.value(Query::Node(operand))?)
+                .ok_or_else(|| self.error(query, "invalid selected constant pointer cast"))?
+                .map_err(|e| self.error(query, e.message()))?;
+            return self.complete_query(query, value);
+        }
         if let Expression::Product(expression) = self.expression(key)? {
             let value = self.product_value(key, expression)?;
             return self.complete_query(query, value);
@@ -711,7 +738,8 @@ impl Queries<'_> {
             match expression {
                 Expression::Forward(value)
                 | Expression::Unary { operand: value, .. }
-                | Expression::Cast { operand: value, .. } => self.scan.push(value),
+                | Expression::Cast { operand: value, .. }
+                | Expression::PointerCast { operand: value, .. } => self.scan.push(value),
                 Expression::Binary { left, right, .. } => {
                     self.scan.push(right);
                     self.scan.push(left);
@@ -914,6 +942,25 @@ impl Queries<'_> {
                         ..
                     }),
                 ) => Expression::Forward(child(value)),
+                (Kind::Unary { .. }, Some(Operation::PointerAddress { operand })) => {
+                    Expression::Forward(child(operand))
+                }
+                (
+                    Kind::Cast { value, .. },
+                    Some(Operation::Cast {
+                        kind:
+                            kind @ (Cast::Pointer
+                            | Cast::PointerThin
+                            | Cast::PointerToInteger
+                            | Cast::IntegerToPointer),
+                        source,
+                        ..
+                    }),
+                ) => Expression::PointerCast {
+                    kind,
+                    operand: child(value),
+                    source,
+                },
                 (
                     Kind::Cast { value, .. },
                     Some(Operation::Cast {

@@ -2937,6 +2937,27 @@ and pointers stop storage-tail traversal; recursive pointer prefixes must not
 become by-value layout cycles. Physical classification may use completed
 normalized storage but cannot grant a caller a semantic proof.
 
+Raw pointer conversions erase only the outer reference loan; pointee region
+obligations still use a pointer-shaped proof view. A mutable reference first
+creates an immediate reborrow of its original pointee, preserving ancestry and
+place permissions. Keep these adjustments sparse and clear them per body.
+Prepare the exact pointee storage roots before finalizing cast metadata, including
+early constant bodies. Explicit raw casts may reinterpret pointees; implicit
+coercion variance is not an extra restriction on those casts.
+
+`Rvalue::Address` checks initialization, mutability and access conflicts but
+creates no loan or alignment promise. Direct raw-dereference address syntax
+selects the original pointer without a memory read. Lower address casts through
+existing equal-width pointer/integer copies and integer extension/truncation;
+wide-to-thin casts select the data component. Pointer comparison includes length
+metadata, with address-first lexicographic ordering. No backend vocabulary change
+is needed.
+
+Tail layout consumes the same completed packing declaration proof as sized
+layout. Numeric alignment propagation through arrays/slices is not proof of
+forbidden direct nominal containment. Raw address formation does not pay the
+separate alignment obligation of a reference.
+
 Literal backing is immutable and shared by canonical bytes. Empty strings and
 byte strings receive nonnull backing with zero logical length. Persistent wide
 values serialize both the address and length at their canonical offsets;
@@ -2949,6 +2970,13 @@ physical field types. Subobject projections reuse that backing and forward tail
 metadata; unsizing itself does not allocate a replacement object. Constant
 evaluation and promotion consume the same typed array selection. Generic
 promotion retains a deferred value until the selected length is concrete.
+
+Absolute constant pointers retain address bits separately from optional length;
+byte-backed raw pointers retain an explicit selected length rather than recovering
+it from the literal. Unsizing can attach metadata without allocating storage.
+Discarding and rebuilding metadata must not recover a stale array/string length.
+Neither absolute address bits nor a constant backing identity authorizes constant
+pointer comparison or pointer-to-integer casts, even in an unevaluated branch.
 
 Dynamic slice patterns test exact or minimum length before selecting any element.
 Suffix projections retain the tested minimum length as a typed fact; rest

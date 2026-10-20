@@ -1,0 +1,1 @@
+ERROR: file 0: 31: dereferencing requires a known reference; raw pointers require unsafe semantics

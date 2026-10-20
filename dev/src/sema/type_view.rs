@@ -150,6 +150,8 @@ pub fn coercions(coercions: &[super::model::Coercion], out: &mut impl Write) -> 
             AdjustmentKind::Unsize => "unsize",
             AdjustmentKind::Reborrow => "reborrow",
             AdjustmentKind::Equality => "same-shape",
+            AdjustmentKind::Pointer => "pointer",
+            AdjustmentKind::PointerReborrow => "pointer-reborrow",
         };
         writeln!(
             out,
@@ -257,6 +259,8 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                     AdjustmentKind::ArrayToSlice => "array-to-slice",
                     AdjustmentKind::Unsize => "unsize",
                     AdjustmentKind::Reborrow => "reborrow",
+                    AdjustmentKind::Pointer => "pointer",
+                    AdjustmentKind::PointerReborrow => "pointer-reborrow",
                 };
                 writeln!(
                     out,
@@ -528,6 +532,11 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
         Operation::Construct { variant } => write!(out, "construct variant={}", variant.0),
         Operation::FieldInit { field } => write!(out, "field-init field={}", field.0),
         Operation::Borrow => write!(out, "borrow"),
+        Operation::Address => write!(out, "address"),
+        Operation::AddressDereference => write!(out, "address-dereference"),
+        Operation::PointerAddress { operand } => {
+            write!(out, "pointer-address operand={}", operand.0)
+        }
         Operation::Dereference => write!(out, "deref"),
         Operation::IndexSlice => write!(out, "index length=dynamic"),
         Operation::Field { field } => write!(out, "field {field:?}"),

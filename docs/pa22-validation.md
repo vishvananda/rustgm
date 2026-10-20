@@ -1,5 +1,8 @@
 # PA22 implementation evidence
 
+The [PA22 release](pa22-release.md) supersedes the implementation-status notes
+below. This document preserves its checkpoint evidence.
+
 PA22 remains **planned**. PA21 is the latest released assignment. This record
 tracks the first PA22 metadata checkpoint, not completion of unsized source
 semantics or publication of a new grading suite.

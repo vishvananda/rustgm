@@ -152,6 +152,11 @@ impl Checker<'_> {
                     right,
                 }),
         );
+        self.clear_body_inference();
+        self.complete_body();
+        Ok(None)
+    }
+    fn clear_body_inference(&mut self) {
         for node in self.state.touched.drain(..) {
             self.state.terms.remove(NodeKey {
                 file: self.state.file,
@@ -165,7 +170,10 @@ impl Checker<'_> {
         self.state.adjustments.clear();
         self.state.reference_adjustments.clear();
         self.state.unsizing_adjustments.clear();
+        self.state.pointer_adjustments.clear();
+        self.state.pointer_casts.clear();
         self.state.reference_expected.clear();
+        self.state.address_dereferences.clear();
         self.state.unsizing_contexts.clear();
         self.state.reference_work.clear();
         self.state.reference_steps = 0;
@@ -174,7 +182,5 @@ impl Checker<'_> {
         self.state.calls.clear();
         self.state.assignments.clear();
         self.state.breaks.clear();
-        self.complete_body();
-        Ok(None)
     }
 }

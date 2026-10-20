@@ -44,7 +44,7 @@ impl<'a> Proof<'a> {
                 || body
                     .values
                     .iter()
-                    .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+                    .any(|v| matches!(v.kind, Rvalue::Borrow { .. } | Rvalue::Address(_)))
             {
                 Some(Index::new(body)?)
             } else {
@@ -168,6 +168,7 @@ impl<'a> Proof<'a> {
             }
             Action::Evaluate(id) => {
                 if let Rvalue::Read(place)
+                | Rvalue::Address(place)
                 | Rvalue::Borrow { place, .. }
                 | Rvalue::Validate(place)
                 | Rvalue::Length(place)
@@ -293,10 +294,14 @@ impl<'a> Proof<'a> {
                 }
             }
             Action::Evaluate(id) => {
-                if let Rvalue::Borrow { place, .. } = self.body.values[id.0 as usize].kind
+                if let Rvalue::Borrow { place, .. } | Rvalue::Address(place) =
+                    self.body.values[id.0 as usize].kind
                     && matches!(
                         types.kind(self.body.values[id.0 as usize].ty),
-                        Some(Kind::Reference { mutable: true, .. })
+                        Some(
+                            Kind::Reference { mutable: true, .. }
+                                | Kind::Pointer { mutable: true, .. }
+                        )
                     )
                 {
                     self.write(place, live, Depth::Deep)?;

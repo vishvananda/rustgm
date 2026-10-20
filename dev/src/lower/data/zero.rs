@@ -21,7 +21,14 @@ impl Context<'_> {
             }
             let zero = match self.constants.view(value)? {
                 View::Scalar(scalar) => bits(scalar) == 0,
-                View::Reference(_) | View::Function(_) | View::Text(_) | View::Bytes(_) => false,
+                View::Reference(_)
+                | View::Function(_)
+                | View::Text(_)
+                | View::Bytes(_)
+                | View::BytePointer { .. } => false,
+                View::Address { bits } => {
+                    bits == 0 && value.length().is_none_or(|length| length == 0)
+                }
                 View::Repeat {
                     value: repeated,
                     length,

@@ -19,7 +19,7 @@ impl Storage {
     pub fn collect(body: &ir::Body) -> Result<Self, &'static str> {
         let mut result = Self::default();
         for value in &body.values {
-            if let Rvalue::Borrow { place, .. } = value.kind {
+            if let Rvalue::Borrow { place, .. } | Rvalue::Address(place) = value.kind {
                 result.mark(body, place)?;
             }
         }

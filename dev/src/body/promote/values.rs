@@ -206,7 +206,8 @@ impl Engine<'_, '_> {
             Rvalue::Call {
                 callee, arguments, ..
             } => self.call(callee, arguments)?,
-            Rvalue::IsVariant { .. }
+            Rvalue::Address(_)
+            | Rvalue::IsVariant { .. }
             | Rvalue::Length(_)
             | Rvalue::TextEquals { .. }
             | Rvalue::Validate(_) => None,
@@ -288,6 +289,13 @@ impl Engine<'_, '_> {
             return Ok(None);
         };
         let ty = self.value(left)?.ty;
+        if matches!(
+            self.evaluator.facts().types.kind(ty),
+            Some(Type::Pointer { .. })
+        ) {
+            // Addresses have no compile-time ordering or equality guarantee.
+            return Ok(None);
+        }
         if matches!(op, Op::Slash | Op::Percent)
             && let Some(Type::Primitive(primitive)) = self.evaluator.facts().types.kind(ty)
             && let Some((signed, width)) = primitive.integer()

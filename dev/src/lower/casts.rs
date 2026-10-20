@@ -69,6 +69,9 @@ pub(super) fn cast(
         }
         Cast::FloatToInteger => saturate(builder, value, ty, target),
         Cast::FunctionPointer => Err("function reification is not a numeric cast"),
+        Cast::Pointer | Cast::PointerThin | Cast::PointerToInteger | Cast::IntegerToPointer => {
+            Err("pointer conversion is not a numeric cast")
+        }
         Cast::EnumToInteger => Err("enum casts require the selected discriminant layout"),
     }
 }

@@ -329,13 +329,17 @@
       "path": "pa22",
       "title": "Unsized types",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "Slices str metadata, fat pointers, unsizing and coercion sites",
       "test_families": [
-        "array-to-slice",
-        "metadata",
-        "size/alignment",
-        "sizedness rejection"
+        "sizedness",
+        "coercions",
+        "projections",
+        "pointers",
+        "addresses",
+        "casts",
+        "constants",
+        "integration"
       ]
     },
     {

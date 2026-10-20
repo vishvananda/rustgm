@@ -112,6 +112,7 @@ pub fn references(
     let values = body.values.iter().filter_map(|value| match value.kind {
         Rvalue::Constant(id) => Some((id, false)),
         Rvalue::Read(Place::Static(id))
+        | Rvalue::Address(Place::Static(id))
         | Rvalue::Borrow {
             place: Place::Static(id),
             ..

@@ -1,7 +1,7 @@
 //! Serialize completed constants in canonical byte order, with bounded flat work.
 use super::{Context, Fixup, Key, Target, Type};
 use crate::{
-    abi::layout::Shape,
+    abi::layout::{Layout, Shape},
     literal::value::FloatBits,
     lowir::data::Item,
     sema::{
@@ -75,6 +75,29 @@ impl Context<'_> {
         }
         match self.constants.view(value)? {
             View::Scalar(scalar) => init.bits(offset, layout.size, bits(scalar)),
+            View::Address { bits } => {
+                init.bits(offset, 8, u128::from(bits))?;
+                if matches!(layout.shape, Shape::WidePointer) {
+                    init.bits(
+                        offset + 8,
+                        8,
+                        u128::from(
+                            value
+                                .length()
+                                .ok_or("wide absolute pointer lacks metadata")?,
+                        ),
+                    )?;
+                }
+                Ok(())
+            }
+            View::BytePointer { text } => {
+                self.initialize_text(init, offset, text, false)?;
+                init.bits(
+                    offset + 8,
+                    8,
+                    u128::from(value.length().ok_or("wide byte pointer lacks metadata")?),
+                )
+            }
             View::Function(id) => {
                 let symbol = self.demand(id)?;
                 self.initialize_pointer(init, offset, Target::Function(symbol), 0)
@@ -87,7 +110,7 @@ impl Context<'_> {
                 value.length(),
             ),
             View::Bytes(id) => {
-                if let Some(Kind::Reference { .. }) = self.types.kind(ty) {
+                if let Some(Kind::Reference { .. } | Kind::Pointer { .. }) = self.types.kind(ty) {
                     return self.initialize_text(
                         init,
                         offset,
@@ -106,39 +129,13 @@ impl Context<'_> {
                 }
                 Ok(())
             }
-            View::Text(id) => self.initialize_text(init, offset, id, true),
+            View::Text(id) => {
+                self.initialize_text(init, offset, id, matches!(layout.shape, Shape::WidePointer))
+            }
             View::Repeat {
                 value: repeated,
                 length,
-            } => {
-                let Shape::Array {
-                    element,
-                    stride,
-                    length: actual,
-                } = layout.shape
-                else {
-                    return Err("constant repetition requires an array layout");
-                };
-                if actual != length {
-                    return Err("constant repeat length differs from its type");
-                }
-                if self.zero_data(element, repeated)? {
-                    init.pad(offset)?;
-                    init.zero(layout.size)?;
-                    return Ok(());
-                }
-                self.data.charge(
-                    usize::try_from(length).map_err(|_| "constant repeat exceeds host size")?,
-                )?;
-                for index in (0..length).rev() {
-                    init.work.push(Work::Value {
-                        offset: offset + index * stride,
-                        ty: element,
-                        value: repeated,
-                    });
-                }
-                Ok(())
-            }
+            } => self.initialize_repeat(init, offset, layout, repeated, length),
             View::Product { length, .. } => {
                 self.data.charge(
                     usize::try_from(length).map_err(|_| "constant product exceeds host size")?,
@@ -168,6 +165,41 @@ impl Context<'_> {
                 Ok(())
             }
         }
+    }
+    fn initialize_repeat(
+        &mut self,
+        init: &mut Initializer,
+        offset: u64,
+        layout: Layout,
+        repeated: Constant,
+        length: u64,
+    ) -> Result<(), &'static str> {
+        let Shape::Array {
+            element,
+            stride,
+            length: actual,
+        } = layout.shape
+        else {
+            return Err("constant repetition requires an array layout");
+        };
+        if actual != length {
+            return Err("constant repeat length differs from its type");
+        }
+        if self.zero_data(element, repeated)? {
+            init.pad(offset)?;
+            init.zero(layout.size)?;
+            return Ok(());
+        }
+        self.data
+            .charge(usize::try_from(length).map_err(|_| "constant repeat exceeds host size")?)?;
+        for index in (0..length).rev() {
+            init.work.push(Work::Value {
+                offset: offset + index * stride,
+                ty: element,
+                value: repeated,
+            });
+        }
+        Ok(())
     }
     fn initialize_reference(
         &mut self,

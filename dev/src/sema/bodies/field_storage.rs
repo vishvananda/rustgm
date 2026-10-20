@@ -17,10 +17,12 @@ impl Checker<'_> {
         &mut self,
         solved: &crate::types::infer::Solved,
     ) -> Result<Option<Batch>, Error> {
-        if !self.facts.aggregates.has_projected_templates() {
+        if !self.facts.aggregates.has_projected_templates() && self.state.pointer_casts.is_empty() {
             return Ok(None);
         }
         let mut roots = vec![self.state.result];
+        roots.extend(self.pointer_storage(solved));
+        roots.extend(self.pointer_cast_storage(solved)?);
         for &node in &self.state.touched {
             if !self.state.type_annotations.contains(&node) {
                 roots.push(solved.types[self.term(node)?.0 as usize]);

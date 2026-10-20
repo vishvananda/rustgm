@@ -26,6 +26,7 @@ impl Checker<'_> {
             .transpose()
             .map_err(|e| self.error(body_key.node, e))?;
         self.publish_unsizing_relations(solved, body_key, defining.as_mut())?;
+        self.publish_pointer_adjustments(solved, body_key);
         for (index, adjustment) in self.state.adjustments.iter().enumerate() {
             let key = self.key(adjustment.node);
             let target = solved.types[adjustment.expected.0 as usize];
@@ -47,9 +48,19 @@ impl Checker<'_> {
                     (solved.types[a.0 as usize], solved.types[b.0 as usize])
                 });
             if !self.state.discarded_adjustments.contains_key(&index)
-                && let Some(pending) = self.state.unsizing_adjustments.get(&index)
+                && let Some(view) = self
+                    .state
+                    .pointer_adjustments
+                    .get(&index)
+                    .map(|pending| pending.view)
+                    .or_else(|| {
+                        self.state
+                            .unsizing_adjustments
+                            .get(&index)
+                            .map(|pending| pending.view)
+                    })
             {
-                proof_actual = solved.types[pending.view.0 as usize];
+                proof_actual = solved.types[view.0 as usize];
             }
             if let Some(fold) = &mut defining {
                 proof_actual = fold
@@ -69,9 +80,12 @@ impl Checker<'_> {
                     .state
                     .reference_adjustments
                     .get(&index)
+                    .filter(|_| !self.state.pointer_adjustments.contains_key(&index))
                     .map(|(conversion, _)| *conversion),
             });
-            if let Some((_, borrow)) = self.state.reference_adjustments.get(&index) {
+            if !self.state.pointer_adjustments.contains_key(&index)
+                && let Some((_, borrow)) = self.state.reference_adjustments.get(&index)
+            {
                 // Runtime reborrows have a fresh region. Keep its relation to
                 // the proof destination as well as the source-place conversion.
                 // A discarded repeat uses the freshened proof type here, not
@@ -91,6 +105,18 @@ impl Checker<'_> {
                     reference: None,
                 });
             }
+        }
+        self.publish_runtime_adjustments(solved)
+    }
+    /// Runtime selections remain distinct from the source-side lifetime proof views.
+    fn publish_runtime_adjustments(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<(), Error> {
+        for (index, adjustment) in self.state.adjustments.iter().enumerate() {
+            let key = self.key(adjustment.node);
+            let target = solved.types[adjustment.expected.0 as usize];
+            let kind = adjustment.kind;
             let facts = self.facts.node_mut(key).ok_or_else(|| {
                 crate::sema::model::Declarations::error(self.report, key, "invalid adjustment node")
             })?;
@@ -99,6 +125,13 @@ impl Checker<'_> {
             }
             facts.adjustment = (kind != AdjustmentKind::Equality || facts.ty != Some(target))
                 .then_some(Adjustment { kind, target });
+            if let Some(pending) = self.state.pointer_adjustments.get(&index) {
+                self.facts
+                    .pointer_adjustments
+                    .insert(key, solved.types[pending.intermediate.0 as usize]);
+            } else {
+                self.facts.pointer_adjustments.remove(&key);
+            }
             if let Some(pending) = self.state.unsizing_adjustments.get(&index) {
                 self.facts
                     .unsizing_adjustments

@@ -73,6 +73,15 @@ impl Engine<'_, '_> {
         match key {
             Key::Value(id) => match self.value(id)?.kind {
                 Rvalue::Read(place) => self.place_dependency(place),
+                Rvalue::Cast {
+                    kind: crate::sema::model::Cast::PointerToInteger,
+                    ..
+                }
+                | Rvalue::Address(_)
+                | Rvalue::IsVariant { .. }
+                | Rvalue::Length(_)
+                | Rvalue::TextEquals { .. }
+                | Rvalue::Validate(_) => Ok(false),
                 Rvalue::Borrow { place, .. } => {
                     if !self.borrow_allowed(self.value(id)?.ty)? {
                         return Ok(false);
@@ -104,10 +113,7 @@ impl Engine<'_, '_> {
                     self.push(Key::Value(left))?;
                     Ok(true)
                 }
-                Rvalue::IsVariant { .. }
-                | Rvalue::Length(_)
-                | Rvalue::TextEquals { .. }
-                | Rvalue::Validate(_) => Ok(false),
+
                 Rvalue::Unit
                 | Rvalue::Scalar(_)
                 | Rvalue::Text(_)

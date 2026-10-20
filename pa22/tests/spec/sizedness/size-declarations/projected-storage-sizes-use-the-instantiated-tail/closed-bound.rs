@@ -1,0 +1,19 @@
+trait Value {
+    type Out: ?Sized;
+}
+impl Value for u8 {
+    type Out = u16;
+}
+impl Value for u16 {
+    type Out = str;
+}
+struct S<T: Value> {
+    tag: u8,
+    tail: T::Out,
+}
+fn f()
+where
+    S<u8>: Sized,
+{
+}
+fn main() {}

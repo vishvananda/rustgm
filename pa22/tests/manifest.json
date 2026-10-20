@@ -1,0 +1,5192 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/constant-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/embedded-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/embedded-region.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/immutable-mut.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/mutable-live-shared.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/no-lasting-loan.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/raw-deref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/raw-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/raw-mut-deref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/raw-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/raw-strengthen.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/raw-weaken.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/reference-deref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/shared-live-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/shared-live-unique.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/shared-reference-mut.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/temporary-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/temporary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES"
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/cases/unique-reference-mut.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/raw-addresses-preserve-metadata-and-packed-places/local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:raw_addresses_preserve_metadata_and_packed_places",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/raw-addresses-preserve-metadata-and-packed-places/packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:raw_addresses_preserve_metadata_and_packed_places",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/raw-addresses-preserve-metadata-and-packed-places/tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:raw_addresses_preserve_metadata_and_packed_places",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/raw-addresses-preserve-metadata-and-packed-places/unique-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:raw_addresses_preserve_metadata_and_packed_places",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/addresses/pointer-addresses/raw-addresses-preserve-metadata-and-packed-places/wide.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.addresses"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_addresses.rs:raw_addresses_preserve_metadata_and_packed_places",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/bool-address.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-embedded-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-integer-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-integer-wide.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-pointer-integer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-reference-elements.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-unsize-elements.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-unsize-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-unsize-strengthen.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-unsizing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-wide-elements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-wide-integer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/cast-wide-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/char-address.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/function-item-integer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/function-item-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/function-pointer-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/generic-metadata-other.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/generic-metadata-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/generic-thin-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/generic-unknown-target.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/generic-wide-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/mutable-array-element.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/pointer-bool.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/pointer-small-int.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/raw-array-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/raw-function-pointer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/raw-pointer-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/reference-array-element.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/reference-array-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/reference-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/reference-string-slice.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/shared-array-mut-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/slice-string-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/small-signed-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/string-slice-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/cases/wide-integer-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/array-element.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/explicit-unsizing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/functions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/generic-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/integer-widths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/metadata-count.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/round-trip.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/pointer-casts/pointer-casts-execute-with-explicit-metadata/wide-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts.rs:pointer_casts_execute_with_explicit_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/aggregate.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/assignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrow-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrowed-callable-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrowed-empty-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrowed-generic-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrowed-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrowed-nested-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/borrowed-tuple-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/explicit-dereference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/match.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions.rs:structural_unsizing_preserves_fields_metadata_and_reborrows",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/array-deref-unsize.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/by-value-unsizing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/covariance.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/element-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/nested-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/nested-layer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/nested-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/prefix-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/prefix-use.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-const-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-elements.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-marker-change.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-multiple-types.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-mutable-lifetime-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-prefix-use.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-shared-invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-shared-lifetime-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-sized-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/projected-type-and-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/same-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/strengthen.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/struct-deref-unsize.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/tuple-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/tuple-unsize.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/weaken.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/coercions/tail-constraints/cases/wrong-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_constraints.rs:CASES"
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/aggregate-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/generic-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/nested-tail-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/projected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/read-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/repeat-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/static-base.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/tail-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/persistent/constant-tails-keep-lengths-locations-and-promotions/zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/persistent.rs:constant_tails_keep_lengths_locations_and_promotions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/absolute-unsize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/bytes-remetadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-address-int.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES"
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-nonnull.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-null.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-pointer-compare.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES"
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-pointer-dead-comparison.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES"
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-pointer-dead-integer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES"
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-pointer-int.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES"
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-pointer-mut.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-raw-packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-raw-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-raw-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-raw-temporary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "rule": "A raw constant address cannot create a temporary allocation."
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-string-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/constant-wide-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/inferred-element-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/inferred-pointer-element.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/inferred-reference-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/inferred-unsizing-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/null-unsize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/raw-null-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/cases/text-remetadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/absolute-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/absolute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/bytes-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/inference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/null-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/string-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/text-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/pointer-constants/pointer-constants-execute-with-backing-and-metadata/wide-thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_constants.rs:pointer_constants_execute_with_backing_and_metadata",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/aligned-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/aligned-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/aligned-zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/argument-temporary-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/borrowed-tail-write-after-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/integration/borrowed-tail-write-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/integration/bounds-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integration/bounds-last.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/bounds-overrun.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integration/bounds-zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integration/mutable-drop-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/nested-bounds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integration/nested-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/nested-temporary-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-aligned-direct-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-aligned-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Reifying the function forces tail address code generation; constructing this fixed DST requires later unsafe/library facilities."
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-aligned-raw-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Reifying the function forces tail address code generation; constructing this fixed DST requires later unsafe/library facilities."
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-aligned-ref-tail.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-explicit-align.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Declaration control: pinned rustc permits aligned elements behind a slice field."
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-raw-aligned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-reference-aligned.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/integration/packed-tail-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/integration/tail-drop-panic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integration/temporary-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/integration/temporary-extension.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/transparent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integration/tuple-reified-nested-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Reification emits the function body; stable tuple unsizing cannot construct an argument in the current safe subset."
+      }
+    },
+    {
+      "path": "tests/spec/integration/tuple-reified-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Reification emits the function body; stable tuple unsizing cannot construct an argument in the current safe subset."
+      }
+    },
+    {
+      "path": "tests/spec/integration/unicode-byte-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.integration"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/const-covariance.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/const-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/const-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/contextual-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/discarded-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/embedded-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/embedded-region.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/mixed-equality.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/mut-invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/mutable-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/mutable-mut.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/nested-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/outer-region.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/pointer-add.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/pointer-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/raw-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/raw-mut-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/raw-tail-weaken.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reference-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reference-mut-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reference-mut-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reference-tail-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reference-tail-region.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reference-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/reverse-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/shared-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/shared-mut.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/strengthen.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/thin-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/weaken.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/cases/wide-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/bytes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/const-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/contextual-branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/empty-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/mutable-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/projected-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/str.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/thin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pointers/pointer-coercions/pointer-metadata-and-reborrow-execution/zst-length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.pointers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_coercions.rs:pointer_metadata_and_reborrow_execution",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/borrowed-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/different-length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/match.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/multiple-types.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/trait-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/mapped-tails/projected-unsizing-consumes-the-actual-final-field/type-and-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_coercions/mapped_tails.rs:projected_unsizing_consumes_the_actual_final_field",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/early-associated-constants-recheck-nominal-size-after-fields-complete/relaxed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:early_associated_constants_recheck_nominal_size_after_fields_complete",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/early-associated-constants-recheck-nominal-size-after-fields-complete/sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:early_associated_constants_recheck_nominal_size_after_fields_complete",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/early-associated-constants-recheck-nominal-size-after-fields-complete/trait-argument-relaxed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:early_associated_constants_recheck_nominal_size_after_fields_complete",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/early-associated-constants-recheck-nominal-size-after-fields-complete/trait-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:early_associated_constants_recheck_nominal_size_after_fields_complete"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/early-associated-constants-recheck-nominal-size-after-fields-complete/unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:early_associated_constants_recheck_nominal_size_after_fields_complete"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/forward-and-recursive-projections-wait-for-size-evidence/forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:forward_and_recursive_projections_wait_for_size_evidence",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/forward-and-recursive-projections-wait-for-size-evidence/function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:forward_and_recursive_projections_wait_for_size_evidence",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/forward-and-recursive-projections-wait-for-size-evidence/mutual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:forward_and_recursive_projections_wait_for_size_evidence",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/forward-and-recursive-projections-wait-for-size-evidence/pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:forward_and_recursive_projections_wait_for_size_evidence",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/forward-and-recursive-projections-wait-for-size-evidence/self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:forward_and_recursive_projections_wait_for_size_evidence",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/callable-conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/callable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/clause-conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/clause-use.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/clause.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/closed-callable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/local-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/nested-conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/owner-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-size-proofs-preserve-callable-and-clause-lifetimes/owner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_size_proofs_preserve_callable_and_clause_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/array-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/assumed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/bound-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/closed-bound-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/closed-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/field-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/function-array-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/function-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/local-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/pointer-array-unsized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/pointer-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/projected-storage-sizes-use-the-instantiated-tail/relaxed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:projected_storage_sizes_use_the_instantiated_tail"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/by-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/concrete.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/disjoint-explicit-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/disjoint-instantiated-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/disjoint-sized-blanket.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/enum.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/overlapping-projected-tail.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/overlapping-relaxed-blanket.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/overlapping-sized-tail.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/packed-drop.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/packed-unknown.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/projected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/transparent-two.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/size-declarations/tail-cases/transparent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/size_declarations.rs:TAIL_CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/closed-sized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/closed-unsized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/copy-blanket.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/direct-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/generic-concrete-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/generic-fixed-projection.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/generic-lifetime-projection.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/missing-static-premise.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/nested-projection.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/open-projection.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/ordered-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/static-premise.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/static-projection.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/tuple-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance/body control; the empty entrypoint does not exercise this function."
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/cases/unordered-lifetimes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:CASES"
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/selected-unsized-implementations-execute-beside-sized-blankets/closed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:selected_unsized_implementations_execute_beside_sized_blankets",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/selected-unsized-implementations-execute-beside-sized-blankets/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:selected_unsized_implementations_execute_beside_sized_blankets",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/tail-overlap/selected-unsized-implementations-execute-beside-sized-blankets/lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/tail_overlap.rs:selected_unsized_implementations_execute_beside_sized_blankets",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/unsized-storage/projected-sized-wrappers-keep-thin-references-and-owned-storage/array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsized_storage.rs:projected_sized_wrappers_keep_thin_references_and_owned_storage",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/unsized-storage/projected-sized-wrappers-keep-thin-references-and-owned-storage/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsized_storage.rs:projected_sized_wrappers_keep_thin_references_and_owned_storage",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/unsized-storage/projected-sized-wrappers-keep-thin-references-and-owned-storage/reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsized_storage.rs:projected_sized_wrappers_keep_thin_references_and_owned_storage",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/unsized-storage/unsized-nominals-are-disjoint-from-sized-blanket-implementations/concrete.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsized_storage.rs:unsized_nominals_are_disjoint_from_sized_blanket_implementations",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sizedness/unsized-storage/unsized-nominals-are-disjoint-from-sized-blanket-implementations/instantiated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.sizedness"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsized_storage.rs:unsized_nominals_are_disjoint_from_sized_blanket_implementations",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

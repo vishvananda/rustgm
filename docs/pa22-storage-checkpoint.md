@@ -1,5 +1,8 @@
 # PA22 storage and reference coercions
 
+The [PA22 release](pa22-release.md) supersedes the implementation-status notes
+below. This document preserves its checkpoint evidence.
+
 PA22 remains **planned**; PA21 is the latest released assignment. This
 maintainer checkpoint extends the earlier metadata query with nominal sizedness,
 unsized field addressing, reference coercions and constant pointer metadata.

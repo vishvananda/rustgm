@@ -22,6 +22,12 @@ impl Checker<'_> {
         let Some(&expected) = self.state.unsizing_contexts.get(&node) else {
             return Ok(None);
         };
+        if matches!(
+            self.head(node, expected)?,
+            Some(Constructor::Pointer { .. })
+        ) {
+            return Ok(Some(expected));
+        }
         let mut term = self.child(node, expected, 0)?;
         let mut nominal = false;
         loop {

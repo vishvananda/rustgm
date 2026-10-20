@@ -131,6 +131,7 @@ impl References {
 #[derive(Clone, Copy)]
 pub(super) enum Expression {
     Borrow(NodeKey),
+    Address(NodeKey),
     Dereference(NodeKey),
     Field { value: NodeKey, index: u64 },
     Index { value: NodeKey, index: NodeKey },
@@ -138,7 +139,10 @@ pub(super) enum Expression {
 impl Expression {
     pub(super) fn dependencies(self, mut visit: impl FnMut(NodeKey)) {
         match self {
-            Self::Borrow(value) | Self::Dereference(value) | Self::Field { value, .. } => {
+            Self::Borrow(value)
+            | Self::Address(value)
+            | Self::Dereference(value)
+            | Self::Field { value, .. } => {
                 visit(value);
             }
             Self::Index { value, index } => {
@@ -165,11 +169,7 @@ impl Queries<'_> {
         else {
             return Err(self.error(query, "constant unsizing length is not concrete"));
         };
-        let Value::Reference(mut pointer) = value else {
-            return Err(self.error(query, "constant unsizing lacks reference backing"));
-        };
-        pointer.length = Some(length);
-        Ok(Value::Reference(pointer))
+        super::address_values::unsize(value, length).map_err(|e| self.error(query, e.message()))
     }
     pub(super) fn reference_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let facts =
@@ -181,6 +181,9 @@ impl Queries<'_> {
             match (Declarations::kind(self.report, key), facts.operation) {
                 (Kind::Unary { operand, .. }, Some(Operation::Borrow)) => {
                     Some(Expression::Borrow(child(operand)))
+                }
+                (Kind::Unary { operand, .. }, Some(Operation::Address)) => {
+                    Some(Expression::Address(child(operand)))
                 }
                 (Kind::Unary { operand, .. }, Some(Operation::Dereference)) => {
                     Some(Expression::Dereference(child(operand)))

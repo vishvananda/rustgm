@@ -342,8 +342,11 @@ impl BodyFacts {
         state: &mut State<I>,
         id: crate::body::ir::ValueId,
     ) -> Result<(), &'static str> {
-        if let Rvalue::Borrow { place, .. } = body.values[id.0 as usize].kind {
-            let Some(Kind::Reference { mutable, .. }) = types.kind(body.values[id.0 as usize].ty)
+        if let Rvalue::Borrow { place, .. } | Rvalue::Address(place) =
+            body.values[id.0 as usize].kind
+        {
+            let Some(Kind::Reference { mutable, .. } | Kind::Pointer { mutable, .. }) =
+                types.kind(body.values[id.0 as usize].ty)
             else {
                 return Err("borrow value has no reference type");
             };

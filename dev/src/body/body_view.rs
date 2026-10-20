@@ -240,6 +240,10 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             place(value, out)
         }
         Rvalue::Text(id) => write!(out, "text t{}", id.0),
+        Rvalue::Address(value) => {
+            write!(out, "address ")?;
+            place(value, out)
+        }
         Rvalue::Borrow { place: value, kind } => {
             write!(
                 out,

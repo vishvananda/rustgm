@@ -119,6 +119,33 @@ fn representations_preserve_packing_transparency_and_explicit_alignment() -> Res
 }
 
 #[test]
+fn checked_packing_keeps_slice_element_alignment_separate_from_containment()
+-> Result<(), &'static str> {
+    let mut f = Fixture::default();
+    let element = f.record(
+        Repr {
+            align: Some(64),
+            ..Repr::default()
+        },
+        &[U8],
+    )?;
+    let slice = f.types.intern(Kind::Slice(element))?;
+    let root = f.record(
+        Repr {
+            packed: Some(1),
+            ..Repr::default()
+        },
+        &[U8, slice],
+    )?;
+    f.definitions
+        .validate_packing(&f.types)
+        .map_err(|(_, message)| message)?;
+    assert_eq!(f.query(root)?, (1, vec![0, 1]));
+    assert_eq!(f.query(slice)?, (64, vec![]));
+    Ok(())
+}
+
+#[test]
 fn shared_deep_tails_and_failures_reuse_completed_work() -> Result<(), &'static str> {
     let mut f = Fixture::default();
     let mut root = f.types.intern(Kind::Slice(U16))?;

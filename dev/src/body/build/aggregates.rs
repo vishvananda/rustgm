@@ -33,7 +33,7 @@ impl Builder<'_> {
         if matches!(self.kind(node), Kind::Struct { base: Some(_), .. })
             || matches!(
                 self.fact(node)?.operation,
-                Some(Operation::AssignPlace { .. } | Operation::Borrow)
+                Some(Operation::AssignPlace { .. } | Operation::Borrow | Operation::Address)
             )
         {
             self.pop_place(node)?;

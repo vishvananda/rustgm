@@ -1,0 +1,30 @@
+function @rg.17() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rg.16
+    store ptr %t0, $s0
+    return void
+}
+function @rg.16(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p1, %t0
+    %t1 = load ptr $s0
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    %t4 = load i64 %t3
+    store ptr %t1, $s1
+    %t5 = addr $s1
+    %t6 = index u8 %t5, 8
+    store i64 %t4, %t6
+    %t7 = addr $s1
+    copyobj 16x8 %t7, %p0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

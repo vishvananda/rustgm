@@ -43,7 +43,7 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn propagate_reference(
+    pub(super) fn propagate_reference(
         &mut self,
         node: NodeId,
         expected: TermId,
@@ -367,7 +367,7 @@ impl Checker<'_> {
         let referent = if let Some(expected) = expected
             && matches!(
                 self.contextual_head(node, expected)?,
-                Some(Constructor::Reference { .. })
+                Some(Constructor::Reference { .. } | Constructor::Pointer { .. })
             ) {
             Some(self.child(node, expected, 0)?)
         } else {
@@ -400,6 +400,12 @@ impl Checker<'_> {
     }
     pub(super) fn dereference(&mut self, node: NodeId, operand: NodeId) -> Result<TermId, Error> {
         let term = self.term(operand)?;
+        if self.state.address_dereferences.contains(&node)
+            && matches!(self.head(node, term)?, Some(Constructor::Pointer { .. }))
+        {
+            self.selected(node, Operation::AddressDereference)?;
+            return self.child(node, term, 0);
+        }
         if !matches!(self.head(node, term)?, Some(Constructor::Reference { .. })) {
             return Err(self.error(
                 node,

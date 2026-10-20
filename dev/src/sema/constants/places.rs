@@ -12,6 +12,7 @@ pub(super) enum Work {
     Borrow {
         key: NodeKey,
         operand: NodeKey,
+        raw: bool,
     },
     Dereference {
         key: NodeKey,
@@ -39,8 +40,12 @@ impl Queries<'_> {
         self.work.push(super::Work::Reference(work));
     }
     pub(super) fn enter_reference(&mut self, key: NodeKey, expression: Reference) {
-        if let Reference::Borrow(operand) = expression {
-            self.reference_work(Work::Borrow { key, operand });
+        if let Reference::Borrow(operand) | Reference::Address(operand) = expression {
+            self.reference_work(Work::Borrow {
+                key,
+                operand,
+                raw: matches!(expression, Reference::Address(_)),
+            });
             self.work.push(super::Work::Enter(Query::Place(operand)));
         } else {
             self.reference_work(Work::Read(key));
@@ -133,26 +138,8 @@ impl Queries<'_> {
                 )?;
                 (Query::Place(key), value)
             }
-            Work::Borrow { key, operand } => {
-                let ty = self.place_type(key)?;
-                if matches!(
-                    self.typing.facts.types.kind(ty),
-                    Some(Type::Reference { mutable: true, .. })
-                ) {
-                    return Err(self.error(
-                        Query::Node(key),
-                        "mutable constant references require constant memory semantics",
-                    ));
-                }
-                let value = self.value(Query::Place(operand))?;
-                let mut place = self.place(key, value)?;
-                self.check_reference_alignment(key, place)?;
-                if matches!(place.access, Access::Owned) {
-                    place.access = Access::Shared;
-                    (Query::Node(key), self.insert_place(key, place)?)
-                } else {
-                    (Query::Node(key), value)
-                }
+            Work::Borrow { key, operand, raw } => {
+                (Query::Node(key), self.borrow_place(key, operand, raw)?)
             }
             Work::Dereference { key, operand } => {
                 let value = self.value(Query::Node(operand))?;
@@ -200,6 +187,45 @@ impl Queries<'_> {
             }
         };
         self.complete_query(query, value)
+    }
+    fn borrow_place(&mut self, key: NodeKey, operand: NodeKey, raw: bool) -> Result<Value, Error> {
+        let ty = self.place_type(key)?;
+        if matches!(
+            self.typing.facts.types.kind(ty),
+            Some(Type::Reference { mutable: true, .. })
+        ) {
+            return Err(self.error(
+                Query::Node(key),
+                "mutable constant references require constant memory semantics",
+            ));
+        }
+        let value = self.value(Query::Place(operand))?;
+        let mut place = self.place(key, value)?;
+        if raw {
+            if matches!(place.access, Access::Owned) {
+                return Err(self.error(
+                    Query::Node(key),
+                    "raw constant address requires existing storage",
+                ));
+            }
+            if matches!(
+                self.typing.facts.types.kind(ty),
+                Some(Type::Pointer { mutable: true, .. })
+            ) {
+                return Err(self.error(
+                    Query::Node(key),
+                    "mutable constant address requires mutable storage",
+                ));
+            }
+        } else {
+            self.check_reference_alignment(key, place)?;
+        }
+        if matches!(place.access, Access::Owned) {
+            place.access = Access::Shared;
+            self.insert_place(key, place)
+        } else {
+            Ok(value)
+        }
     }
     fn place_type(&mut self, key: NodeKey) -> Result<TypeId, Error> {
         let ty = self

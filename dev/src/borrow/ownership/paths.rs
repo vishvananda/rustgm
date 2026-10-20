@@ -130,6 +130,7 @@ impl Paths {
         }
         for value in &body.values {
             if let Rvalue::Read(Place::Temporary(id))
+            | Rvalue::Address(Place::Temporary(id))
             | Rvalue::Borrow {
                 place: Place::Temporary(id),
                 ..

@@ -1,4 +1,5 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
+mod addresses;
 mod aggregates;
 mod conditions;
 mod constructors;
@@ -7,6 +8,7 @@ mod drops;
 mod guards;
 mod matches;
 mod methods;
+mod operators;
 mod pattern_tests;
 mod patterns;
 mod references;
@@ -424,7 +426,10 @@ impl<'a> Builder<'a> {
                 AdjustmentKind::Unsize => {
                     value = self.selected_unsizing(node, value, adjustment.target)?;
                 }
-                AdjustmentKind::Reborrow => {
+                AdjustmentKind::Pointer => {
+                    value = self.selected_pointer(node, value, adjustment.target)?;
+                }
+                AdjustmentKind::Reborrow | AdjustmentKind::PointerReborrow => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
                         return Err(self.error(node, "missing selected reference adjustment"));
                     }
@@ -774,11 +779,12 @@ impl<'a> Builder<'a> {
                 if let Some(scopes) = self.expression_exit(node) {
                     self.scratch.work.push(Work::CloseScope { node, scopes });
                 }
-                if self
-                    .fact(node)?
-                    .adjustment
-                    .is_some_and(|a| a.kind == AdjustmentKind::Reborrow)
-                {
+                if self.fact(node)?.adjustment.is_some_and(|a| {
+                    matches!(
+                        a.kind,
+                        AdjustmentKind::Reborrow | AdjustmentKind::PointerReborrow
+                    )
+                }) {
                     self.scratch.unadjusted.push(node);
                     self.scratch.work.push(Work::Reborrow(node));
                     self.scratch.work.push(Work::Place(node));
@@ -1045,8 +1051,24 @@ impl<'a> Builder<'a> {
                             self.scratch.work.push(Work::Enter(value));
                         }
                     }
+                    Kind::Unary { .. }
+                        if matches!(
+                            self.fact(node)?.operation,
+                            Some(Operation::PointerAddress { .. })
+                        ) =>
+                    {
+                        let Some(Operation::PointerAddress { operand }) =
+                            self.fact(node)?.operation
+                        else {
+                            return Err(self.error(node, "missing raw pointer address operand"));
+                        };
+                        self.scratch.work.push(Work::Enter(operand));
+                    }
                     Kind::Unary { operand, .. }
-                        if self.fact(node)?.operation == Some(Operation::Borrow) =>
+                        if matches!(
+                            self.fact(node)?.operation,
+                            Some(Operation::Borrow | Operation::Address)
+                        ) =>
                     {
                         self.scratch.work.push(Work::Place(operand));
                     }
@@ -1335,26 +1357,7 @@ impl<'a> Builder<'a> {
                 }
                 self.unit(node)?
             }
-            Kind::Unary { .. } if self.fact(node)?.operation == Some(Operation::Borrow) => {
-                self.finish_borrow(node)?
-            }
-            Kind::Unary { operand, .. } => {
-                let Some(Operation::Unary {
-                    operator, literal, ..
-                }) = self.fact(node)?.operation
-                else {
-                    return Err(self.error(node, "missing unary selection"));
-                };
-                self.evaluate(
-                    node,
-                    ty,
-                    Rvalue::Unary {
-                        operator,
-                        operand: self.value(operand)?,
-                        literal,
-                    },
-                )?
-            }
+            Kind::Unary { operand, .. } => self.unary_value(node, operand)?,
             Kind::Binary { left, right, .. } => self.binary(node, left, right)?,
             Kind::Cast { value, .. } => {
                 let Some(Operation::Cast { kind, .. }) = self.fact(node)?.operation else {

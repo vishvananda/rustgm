@@ -1,0 +1,1 @@
+ERROR: file 0: 43: only a struct's final field may be unsized

@@ -70,7 +70,9 @@ impl Check {
         expression: Expression,
     ) -> Result<(), Error> {
         match expression {
-            Expression::Reference(references::Expression::Borrow(value)) => {
+            Expression::Reference(
+                references::Expression::Borrow(value) | references::Expression::Address(value),
+            ) => {
                 self.place(report, facts, value)?;
             }
             Expression::Reference(

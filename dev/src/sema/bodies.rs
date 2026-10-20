@@ -23,6 +23,9 @@ mod patterns;
 mod projections;
 mod readiness;
 pub(super) use readiness::{Dependency, Requirement};
+mod addresses;
+mod pointer_casts;
+mod pointers;
 mod references;
 mod selected_arguments;
 mod slots;
@@ -187,7 +190,10 @@ pub(super) struct State {
     reference_adjustments:
         std::collections::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
     unsizing_adjustments: std::collections::HashMap<usize, unsizing::Pending>,
+    pointer_adjustments: std::collections::HashMap<usize, pointers::Pending>,
+    pointer_casts: Vec<NodeId>,
     reference_expected: HashSet<NodeId>,
+    address_dereferences: HashSet<NodeId>,
     unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
@@ -282,7 +288,10 @@ impl<'a> Checker<'a> {
                 adjustments: Vec::new(),
                 reference_adjustments: std::collections::HashMap::new(),
                 unsizing_adjustments: std::collections::HashMap::new(),
+                pointer_adjustments: std::collections::HashMap::new(),
+                pointer_casts: Vec::new(),
                 reference_expected: HashSet::new(),
+                address_dereferences: HashSet::new(),
                 unsizing_contexts: std::collections::HashMap::new(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
@@ -720,6 +729,11 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut well_formed = HashSet::new();
         let mut nominal_types = bounds::Requirements::default();
+        // A pointer conversion's immediate reborrow introduces a dereferenced
+        // storage place even when the source expression is only a reference.
+        for ty in self.pointer_storage(solved) {
+            self.prepare_storage(body, ty)?;
+        }
         // A generic result retains declaration lifetimes even when its expression
         // uses free aliases. Ownership queries need both canonical field contexts.
         if self.facts.types.contains_parameters(self.state.result) == Some(true) {
@@ -848,7 +862,7 @@ impl Checker<'_> {
         if let Some(expected) = expected
             && matches!(
                 self.contextual_head(node, expected)?,
-                Some(Constructor::Reference { .. })
+                Some(Constructor::Reference { .. } | Constructor::Pointer { .. })
             )
         {
             self.state.reference_expected.insert(node);
@@ -877,6 +891,10 @@ impl Checker<'_> {
             } => {
                 return self.enter_borrow(node, operand, expected);
             }
+            Kind::Unary {
+                op: Unary::RawConst | Unary::RawMut,
+                operand,
+            } => return self.enter_address(node, operand, expected),
             Kind::Tuple(elements) | Kind::Array(elements) => {
                 return self.enter_elements(node, elements, expected);
             }
@@ -932,6 +950,7 @@ impl Checker<'_> {
             }
             Kind::Cast { value, ty } => {
                 self.annotation(ty)?;
+                self.hint_pointer_cast(node, ty, expected)?;
                 self.state.children.push(value);
             }
             Kind::FieldInit { value, .. }
@@ -1183,6 +1202,10 @@ impl Checker<'_> {
                 operand,
             } => self.borrow(node, operand, op == Unary::BorrowMut),
             Kind::Unary {
+                op: op @ (Unary::RawConst | Unary::RawMut),
+                operand,
+            } => self.address(node, operand, op == Unary::RawMut),
+            Kind::Unary {
                 op: Unary::Dereference,
                 operand,
             } => self.dereference(node, operand),
@@ -1245,6 +1268,7 @@ impl Checker<'_> {
             Kind::Cast { value, ty } => {
                 let source = self.term(value)?;
                 let target = self.term(ty)?;
+                self.prepare_pointer_cast(node, value, source, target)?;
                 if matches!(
                     self.head(node, source)?,
                     Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
@@ -1382,6 +1406,14 @@ impl Checker<'_> {
         {
             return Ok(());
         }
+        if matches!(expected_head, Some(Constructor::Pointer { .. }))
+            && matches!(
+                actual_head,
+                Some(Constructor::Reference { .. } | Constructor::Pointer { .. })
+            )
+        {
+            return self.pointer_coercion(source, actual, expected);
+        }
         let inferred = if expected_head.is_none() {
             self.inferred_regions(source, actual)?
         } else {
@@ -1414,6 +1446,11 @@ impl Checker<'_> {
             && matches!(bh, Some(Constructor::Reference { .. }))
         {
             return self.reference_join(node, a, b);
+        }
+        if matches!(ah, Some(Constructor::Pointer { .. }))
+            && matches!(bh, Some(Constructor::Pointer { .. }))
+        {
+            return self.pointer_join(node, a, b);
         }
         let a_item = matches!(
             ah,
@@ -1480,7 +1517,11 @@ impl Checker<'_> {
             | Op::Greater
             | Op::LessEqual
             | Op::GreaterEqual => {
-                self.equate(node, a, b)?;
+                if matches!(self.head(node, a)?, Some(Constructor::Pointer { .. })) {
+                    self.coerce(right, a)?;
+                } else {
+                    self.equate(node, a, b)?;
+                }
                 self.known(node, TypeId::primitive(Primitive::Bool))
             }
             Op::Plus
@@ -1932,12 +1973,13 @@ impl Checker<'_> {
         }
     }
     fn validate_operations(&mut self) -> Result<(), Error> {
-        for node in &self.state.checks {
-            let operation = match self.kind(*node) {
+        for index in 0..self.state.checks.len() {
+            let node = self.state.checks[index];
+            let operation = match self.kind(node) {
                 Kind::Unary { op, operand } => {
                     if !scalar::unary(op, self.primitive(operand)?) {
                         return Err(
-                            self.error(*node, "unary operator is not defined for this scalar type")
+                            self.error(node, "unary operator is not defined for this scalar type")
                         );
                     }
                     Operation::Unary {
@@ -1947,9 +1989,31 @@ impl Checker<'_> {
                     }
                 }
                 Kind::Binary { op, left, right } => {
-                    if !scalar::binary(op, self.primitive(left)?, self.primitive(right)?) {
+                    let pointer = matches!(
+                        self.facts.types.kind(self.ty(left)?),
+                        Some(Type::Pointer { .. })
+                    );
+                    if pointer && !self.state.in_function {
+                        return Err(
+                            self.error(node, "pointers cannot be compared during const eval")
+                        );
+                    }
+                    let valid = if pointer {
+                        matches!(
+                            op,
+                            Op::EqualEqual
+                                | Op::BangEqual
+                                | Op::Less
+                                | Op::LessEqual
+                                | Op::Greater
+                                | Op::GreaterEqual
+                        )
+                    } else {
+                        scalar::binary(op, self.primitive(left)?, self.primitive(right)?)
+                    };
+                    if !valid {
                         return Err(self.error(
-                            *node,
+                            node,
                             "binary operator is not defined for these scalar types",
                         ));
                     }
@@ -1959,40 +2023,10 @@ impl Checker<'_> {
                         right: self.ty(right)?,
                     }
                 }
-                Kind::Cast { value, ty } => {
-                    let kind = if matches!(
-                        self.facts.types.kind(self.ty(value)?),
-                        Some(Type::FunctionItem { .. })
-                    ) && matches!(
-                        self.facts.types.kind(self.ty(ty)?),
-                        Some(Type::Function { .. })
-                    ) {
-                        super::model::Cast::FunctionPointer
-                    } else if let Some(Type::Adt(item, _)) = self.facts.types.kind(self.ty(value)?)
-                    {
-                        if !self.facts.enum_casts.contains(&item)
-                            || self.facts.destructors.has_declared(item)
-                            || self.primitive(ty)?.integer().is_none()
-                        {
-                            return Err(self.error(
-                                *node,
-                                "only eligible field-less enums can be cast to integers",
-                            ));
-                        }
-                        super::model::Cast::EnumToInteger
-                    } else {
-                        scalar::cast(self.primitive(value)?, self.primitive(ty)?)
-                            .ok_or_else(|| self.error(*node, "invalid scalar cast"))?
-                    };
-                    Operation::Cast {
-                        kind,
-                        source: self.ty(value)?,
-                        target: self.ty(ty)?,
-                    }
-                }
-                _ => return Err(self.error(*node, "invalid scalar operation obligation")),
+                Kind::Cast { value, ty } => self.validate_cast(node, value, ty)?,
+                _ => return Err(self.error(node, "invalid scalar operation obligation")),
             };
-            let key = self.key(*node);
+            let key = self.key(node);
             if let Operation::Cast {
                 kind: super::model::Cast::FunctionPointer,
                 source,
@@ -2014,6 +2048,43 @@ impl Checker<'_> {
                 .operation = Some(operation);
         }
         Ok(())
+    }
+    fn validate_cast(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+        ty: NodeId,
+    ) -> Result<Operation, Error> {
+        let kind = if let Some(kind) = self.validate_pointer_cast(node, value, ty)? {
+            kind
+        } else if matches!(
+            self.facts.types.kind(self.ty(value)?),
+            Some(Type::FunctionItem { .. })
+        ) && matches!(
+            self.facts.types.kind(self.ty(ty)?),
+            Some(Type::Function { .. })
+        ) {
+            super::model::Cast::FunctionPointer
+        } else if let Some(Type::Adt(item, _)) = self.facts.types.kind(self.ty(value)?) {
+            if !self.facts.enum_casts.contains(&item)
+                || self.facts.destructors.has_declared(item)
+                || self.primitive(ty)?.integer().is_none()
+            {
+                return Err(self.error(
+                    node,
+                    "only eligible field-less enums can be cast to integers",
+                ));
+            }
+            super::model::Cast::EnumToInteger
+        } else {
+            scalar::cast(self.primitive(value)?, self.primitive(ty)?)
+                .ok_or_else(|| self.error(node, "invalid scalar cast"))?
+        };
+        Ok(Operation::Cast {
+            kind,
+            source: self.ty(value)?,
+            target: self.ty(ty)?,
+        })
     }
     fn validate_values(&mut self) -> Result<(), Error> {
         // Keep only negated literal IDs; no per-function copy of the file's AST.

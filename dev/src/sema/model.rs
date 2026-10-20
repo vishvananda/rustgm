@@ -21,6 +21,10 @@ pub enum Scalar {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cast {
     FunctionPointer,
+    Pointer,
+    PointerThin,
+    PointerToInteger,
+    IntegerToPointer,
     IntegerToInteger,
     IntegerToFloat,
     FloatToInteger,
@@ -33,6 +37,11 @@ pub enum Cast {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operation {
     Borrow,
+    Address,
+    AddressDereference,
+    PointerAddress {
+        operand: NodeId,
+    },
     Dereference,
     IndexSlice,
     Construct {
@@ -92,6 +101,8 @@ pub enum AdjustmentKind {
     ArrayToSlice,
     Unsize,
     Reborrow,
+    Pointer,
+    PointerReborrow,
     /// The same type shape, with a directed lifetime relation retained separately.
     Equality,
 }
@@ -330,6 +341,8 @@ pub struct Declarations {
     pub(crate) unsizing_rules: Option<Box<crate::types::unsizing::Rules>>,
     /// Selected terminal array; lowering must not rediscover structural eligibility.
     pub unsizing_adjustments: std::collections::HashMap<NodeKey, TypeId>,
+    /// Raw pointer type before a separately selected storage-tail unsizing.
+    pub pointer_adjustments: std::collections::HashMap<NodeKey, TypeId>,
     pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
     pub well_formed: Vec<WellFormed>,
     pub coercions: Vec<Coercion>,
@@ -431,6 +444,7 @@ impl Declarations {
             reference_adjustments: std::collections::HashMap::new(),
             unsizing_rules: None,
             unsizing_adjustments: std::collections::HashMap::new(),
+            pointer_adjustments: std::collections::HashMap::new(),
             partial_annotations: std::collections::HashMap::new(),
             well_formed: Vec::new(),
             type_outlives: Vec::new(),

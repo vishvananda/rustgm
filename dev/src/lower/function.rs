@@ -1,6 +1,7 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
 mod cleanup;
+mod pointers;
 mod references;
 mod selections;
 mod slices;
@@ -376,6 +377,9 @@ impl Lower<'_, '_> {
     }
     fn scalar(&mut self, scalar: Scalar, ty: Type) -> Result<Value, &'static str> {
         match scalar {
+            Scalar::Integer(bits) if ty == Type::Ptr => self
+                .builder
+                .literal(ty, Literal::Integer(bits & u128::from(u64::MAX))),
             Scalar::Integer(bits) => self.builder.integer(ty, bits),
             Scalar::Boolean(value) => self.builder.integer(ty, u128::from(value)),
             Scalar::Character(value) => self.builder.integer(ty, u128::from(u32::from(value))),
@@ -409,6 +413,10 @@ impl Lower<'_, '_> {
         representation: Representation,
     ) -> Result<Selected, &'static str> {
         match self.context.constants.view(value)? {
+            View::Address { bits } if value.length().is_none() => self
+                .builder
+                .literal(Type::Ptr, Literal::Integer(u128::from(bits)))
+                .map(Selected::Runtime),
             View::Scalar(scalar) => self
                 .scalar(scalar, representation.result())
                 .map(Selected::Runtime),
@@ -450,7 +458,7 @@ impl Lower<'_, '_> {
         let representation = self.context.representation(value.ty)?;
         let ty = representation.result();
         let runtime = match value.kind {
-            Rvalue::Borrow { place, .. } => {
+            Rvalue::Borrow { place, .. } | Rvalue::Address(place) => {
                 let address = self
                     .place(place)?
                     .ok_or("borrowed place lacks stable storage")?;
@@ -555,7 +563,17 @@ impl Lower<'_, '_> {
                 kind: Cast::FunctionPointer,
                 operand,
             } => return self.reify(operand),
-            Rvalue::Constrain(operand) => return self.constrain(operand, value.ty, representation),
+            Rvalue::Cast {
+                kind: Cast::Pointer,
+                operand,
+            }
+            | Rvalue::Constrain(operand) => {
+                return self.constrain(operand, value.ty, representation);
+            }
+            Rvalue::Cast {
+                kind: kind @ (Cast::PointerThin | Cast::PointerToInteger | Cast::IntegerToPointer),
+                operand,
+            } => self.pointer_cast(kind, operand, ty)?,
             Rvalue::Unsize {
                 value: operand,
                 array,
@@ -580,6 +598,16 @@ impl Lower<'_, '_> {
                 left,
                 right,
             } => {
+                if matches!(
+                    self.context
+                        .types
+                        .kind(self.body.values[left.0 as usize].ty),
+                    Some(crate::types::Kind::Pointer { .. })
+                ) {
+                    return self
+                        .pointer_comparison(operator, left, right)
+                        .map(Selected::Runtime);
+                }
                 let primitive = self.primitive(self.body.values[left.0 as usize].ty)?;
                 let lhs = self.value(left)?.runtime()?;
                 let rhs = self.value(right)?.runtime()?;

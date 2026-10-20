@@ -1,0 +1,1 @@
+ERROR: file 0: 50: raw pointer coercion cannot strengthen mutability

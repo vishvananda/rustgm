@@ -134,6 +134,8 @@ pub enum Rvalue {
     },
     /// A by-value use; ownership and Copy selection are checked by later stages.
     Read(Place),
+    /// Form a raw pointer; check access now, without creating a reference loan.
+    Address(Place),
     /// Form a reference to a place without reading or moving its referent.
     Borrow {
         place: Place,

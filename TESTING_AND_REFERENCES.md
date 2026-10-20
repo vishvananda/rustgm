@@ -743,3 +743,10 @@ initialization and movement. The expired-reference mention rejects; an unused
 reference and an uninitialized wildcard mention compile. Opaque variants belong
 to PA21. Independent-source outputs now use `.o`/`.rmeta` suffixes so the shared
 storage guard removes them after successful runs.
+
+
+PA22 publishes 328 LowIR cases: 236 accept, 92 reject. Every source is independently
+object-qualified with pinned rustc. Its 102 runtime comparisons include five
+expected panics; 134 compile-only controls are reported separately. Root report,
+source and native targets include PA22. PA23–PA38 remain planned and fail explicitly.
+See [docs/pa22-release.md](docs/pa22-release.md) for qualification and performance.

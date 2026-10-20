@@ -177,9 +177,16 @@ impl Checker<'_> {
             for index in mark..self.state.adjustments.len() {
                 let original = self
                     .state
-                    .unsizing_adjustments
+                    .pointer_adjustments
                     .get(&index)
-                    .map_or(self.state.adjustments[index].actual, |pending| pending.view);
+                    .map(|pending| pending.view)
+                    .or_else(|| {
+                        self.state
+                            .unsizing_adjustments
+                            .get(&index)
+                            .map(|pending| pending.view)
+                    })
+                    .unwrap_or(self.state.adjustments[index].actual);
                 let target = self.state.adjustments[index].expected;
                 let actual = self.inferred_regions(value, original)?;
                 let expected = self.inferred_regions(value, target)?;

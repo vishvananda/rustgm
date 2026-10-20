@@ -152,7 +152,7 @@ impl Queries {
                     .ok_or("unsized prefix exceeds target object limit")?;
             }
         }
-        if repr.packed.is_some() && explicit {
+        if !definitions.packing_checked() && repr.packed.is_some() && explicit {
             return Err("packed aggregate transitively contains an explicitly aligned type");
         }
         let tail_align = repr.packed.map_or(tail.align, |p| p.min(tail.align));
