@@ -27,7 +27,7 @@ impl OwnedCaller {
 
 pub(in crate::sema) enum Progress {
     Ready(Option<DefId>),
-    Pending(DefId),
+    Pending(crate::sema::traits::selection::Dependency),
 }
 enum Mode {
     Inherent(ModuleId),

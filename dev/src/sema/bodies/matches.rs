@@ -172,7 +172,12 @@ impl Checker<'_> {
         value: NodeId,
         arms: List,
     ) -> Result<TermId, Error> {
-        let mut common = self.known(node, TypeId::NEVER)?;
+        let expected = self.contextual_unsizing_result(node)?;
+        let mut common = if let Some(expected) = expected {
+            expected
+        } else {
+            self.known(node, TypeId::NEVER)?
+        };
         let unit = self.report.package.unit(self.state.file);
         for &wrapper in unit.configured.ast.list(arms) {
             if !self.active(wrapper) {
@@ -182,7 +187,9 @@ impl Checker<'_> {
             while let Kind::Attributed { value, .. } = self.kind(arm) {
                 arm = value;
             }
-            common = self.join_types(node, common, self.term(arm)?)?;
+            if expected.is_none() {
+                common = self.join_types(node, common, self.term(arm)?)?;
+            }
         }
         let id = *self
             .facts

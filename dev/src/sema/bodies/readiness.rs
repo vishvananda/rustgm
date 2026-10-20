@@ -11,6 +11,16 @@ pub(in crate::sema) enum Requirement {
     Nominal(ItemId),
     Definition(DefId),
     ImplHeader(DefId),
+    Fields(ItemId),
+}
+impl From<crate::sema::traits::selection::Dependency> for Requirement {
+    fn from(dependency: crate::sema::traits::selection::Dependency) -> Self {
+        use crate::sema::traits::selection::Dependency;
+        match dependency {
+            Dependency::Header(owner) => Self::ImplHeader(owner),
+            Dependency::Fields(item) => Self::Fields(item),
+        }
+    }
 }
 #[derive(Clone, Copy)]
 pub(super) enum Completion {
@@ -99,6 +109,7 @@ impl Checker<'_> {
                 Requirement::Nominal(_) => "missing struct member facts",
                 Requirement::Definition(_) => "missing completed associated type definition",
                 Requirement::ImplHeader(_) => "missing prepared implementation header",
+                Requirement::Fields(_) => "missing nominal field declarations",
             };
             return Err(self.error(dependency.source.node, message));
         }

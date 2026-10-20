@@ -236,7 +236,10 @@ fn partial_universal_inputs_survive_header_waits_without_claiming_foreign_alloca
             query = retained;
         }
         let header = delayed.pop().ok_or("missing delayed header")?;
-        assert_eq!(owner, header.owner);
+        assert_eq!(
+            owner,
+            crate::sema::traits::selection::Dependency::Header(header.owner)
+        );
         header_tests::publish(&mut facts, header)?;
         let suspension::Progress::Ready(Selection::Proven(mut evidence)) =
             query.resume(&mut facts, &mut context, &goal, end + 10)?

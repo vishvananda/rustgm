@@ -3,6 +3,7 @@ pub(in crate::sema) mod normal_form;
 mod normalization;
 mod quantified;
 pub(in crate::sema) use quantified::{Goal as QuantifiedGoal, Queries as QuantifiedQueries};
+mod shape_normalization;
 mod term_normalization;
 use crate::{
     sema::{
@@ -30,11 +31,14 @@ pub(crate) struct State {
     obligations: Obligations,
     sized: Vec<crate::types::TypeId>,
     retain_sized: bool,
+    provisional_size: bool,
     availability: Availability,
     quantified: Option<Box<quantified::Queries>>,
     terms: Option<Box<term_normalization::Terms>>,
+    shapes: Option<Box<shape_normalization::Sizes>>,
 }
 pub(crate) struct Projected {
+    pub provisional_size: bool,
     pub source: Option<selection::Source>,
     pub resolution: Option<substitute::Resolution>,
     pub proof: Obligations,
@@ -43,6 +47,9 @@ pub(crate) struct Projected {
     pub family: crate::types::GenericArgs,
 }
 impl State {
+    pub(super) fn append_proof(&mut self, proof: Obligations) -> Result<(), &'static str> {
+        self.obligations.extend(proof)
+    }
     pub(super) const fn region_frontier(&self) -> u32 {
         self.obligations.regions.end
     }
@@ -110,9 +117,11 @@ impl State {
             obligations,
             sized: Vec::new(),
             retain_sized: false,
+            provisional_size: false,
             availability: Availability::Declarations,
             quantified: None,
             terms: None,
+            shapes: None,
         })
     }
 
@@ -239,6 +248,7 @@ impl State {
         match selected {
             selection::Selection::Proven(mut evidence) => {
                 let source = evidence.source;
+                self.provisional_size |= evidence.provisional_size;
                 self.sized.append(&mut evidence.sized);
                 self.obligations.append(evidence)?;
                 Ok(Some(source))

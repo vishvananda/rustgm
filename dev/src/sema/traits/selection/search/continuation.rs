@@ -1,14 +1,12 @@
 //! Retain the exact candidate and proof frontier while a header is prepared.
-use super::{Action, Caller, Decision, Declarations, Frame, Node, Predicate, Search};
-use crate::{
-    resolve::model::DefId, sema::traits::implementations::Availability, types::shape_key::ShapeKey,
-};
+use super::{Action, Caller, Decision, Declarations, Dependency, Frame, Node, Predicate, Search};
+use crate::{sema::traits::implementations::Availability, types::shape_key::ShapeKey};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Progress {
     Ready(Decision),
-    Pending(DefId),
+    Pending(Dependency),
     Inferred,
 }
 
@@ -29,8 +27,9 @@ pub(super) struct Query {
     pub reused: bool,
     pub steps: usize,
     pub builtins: crate::sema::nominals::Proof,
+    pub sizes: Option<Box<crate::sema::nominals::sizes::Query>>,
     pub stack: Vec<Frame>,
-    waiting: Option<DefId>,
+    waiting: Option<Dependency>,
     decision: Option<Decision>,
 }
 
@@ -58,6 +57,7 @@ impl<'a> Search<'a> {
                 allocations: super::allocations::Allocations::new(first),
                 availability,
                 builtins,
+                sizes: None,
                 nodes: Vec::new(),
                 active: HashSet::new(),
                 families: HashSet::new(),
@@ -100,12 +100,7 @@ impl<'a> Search<'a> {
 
     pub(super) fn poll(&mut self, facts: &mut Declarations) -> Result<Progress, String> {
         if let Some(owner) = self.query.waiting {
-            let registry = facts
-                .generics
-                .implementations
-                .as_ref()
-                .ok_or("pending trait selection lost its implementation inventory")?;
-            if registry.header(owner).is_none() {
+            if !owner.ready(facts) {
                 return Ok(Progress::Pending(owner));
             }
             self.query.waiting = None;
@@ -255,7 +250,7 @@ impl<'a> Search<'a> {
             .ok_or("missing pending trait candidates")?;
         for owner in pending.by_ref() {
             if registry.header(owner).is_none() {
-                return Ok(Action::Wait(owner));
+                return Ok(Action::Wait(Dependency::Header(owner)));
             }
         }
         frame.pending_headers = None;

@@ -10,6 +10,28 @@ use crate::types::{
 };
 pub(super) use universal::Requirements;
 impl Checker<'_> {
+    pub(super) fn body_is_sized(&mut self, node: NodeId, ty: TypeId) -> Result<bool, Error> {
+        let sized = self.body_shape(node, ty)?.sized;
+        if sized
+            && self.facts.types.nominal_sizes_pending()
+            && self.facts.types.contains_nominals(ty) == Some(true)
+        {
+            let requirement = crate::sema::nominals::sizes::Requirement {
+                body: self.state.body,
+                source: self.key(node),
+                ty,
+                environment: self.state.method_environment.clone(),
+            };
+            self.facts
+                .generics
+                .size_rules
+                .get_or_insert_with(Default::default)
+                .require(requirement)
+                .map_err(|e| self.error(node, e))?;
+        }
+        Ok(sized)
+    }
+
     pub(super) fn nominal_requirements(
         &mut self,
         node: NodeId,
@@ -116,6 +138,9 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn body_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
+        if self.facts.types.contains_projected_sizes(ty) == Some(true) {
+            return self.projected_storage_shape(node, ty);
+        }
         if self.facts.types.is_sized(ty) == Some(true)
             && self.facts.types.is_well_formed(ty) == Some(true)
         {
@@ -160,6 +185,33 @@ impl Checker<'_> {
             })
         }
     }
+    fn projected_storage_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
+        let ty = self.alias_type(node, ty)?;
+        let first = u32::try_from(self.facts.body_regions.len())
+            .ok()
+            .and_then(|count| count.checked_add(1))
+            .ok_or_else(|| self.error(node, "too many body proof regions"))?;
+        let mut proof = self.state.nominal_shapes.take().unwrap_or_else(|| {
+            Box::new(crate::sema::nominals::Proof::for_declaration(
+                self.state.method_environment.clone(),
+                0,
+                first,
+            ))
+        });
+        proof
+            .resume_body_shapes(first)
+            .map_err(|e| self.error(node, e))?;
+        let result = proof
+            .check(self.facts, ty)
+            .map_err(|e| self.error(node, e))?;
+        if let Some(evidence) = proof.take_trait_proof() {
+            evidence
+                .retain_body(self.facts, self.state.body, self.key(node))
+                .map_err(|e| self.error(node, e))?;
+        }
+        self.state.nominal_shapes = Some(proof);
+        Ok(result)
+    }
     pub(super) fn prove_bound(
         &mut self,
         node: NodeId,
@@ -195,7 +247,7 @@ impl Checker<'_> {
             );
         }
         let valid = if bound == Bound::Sized {
-            self.body_shape(node, ty)?.sized
+            self.body_is_sized(node, ty)?
         } else {
             if self.facts.generics.has_nominal_requirements {
                 self.prepare_storage(node, ty)?;

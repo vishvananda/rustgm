@@ -6,7 +6,7 @@ use crate::{
         program::{MemorySpan, Value},
         vocabulary::{Binary, Predicate, Type},
     },
-    types::{Kind, Primitive, TypeId},
+    types::{Kind, TypeId},
 };
 
 impl Lower<'_, '_> {
@@ -19,7 +19,7 @@ impl Lower<'_, '_> {
         let projection = &self.body.projections[id.0 as usize];
         if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
             let address = self.dereference(base, projection.ty)?;
-            let length = if self.context.types.is_sized(projection.ty) == Some(false) {
+            let length = if self.context.wide_referent(projection.ty)? {
                 let tail = self.offset(base, 8)?;
                 Some(self.builder.load(Type::I64, tail.operand)?)
             } else {
@@ -148,6 +148,18 @@ impl Lower<'_, '_> {
         let length = self.builder.integer(Type::I64, u128::from(length))?;
         self.wide_pointer(pointer, length)
     }
+    pub(super) fn selected_unsizing(
+        &mut self,
+        operand: ValueId,
+        array: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let Some(Kind::Array { length, .. }) = self.context.types.kind(array) else {
+            return Err("selected unsizing retains an unresolved terminal array");
+        };
+        let pointer = self.value(operand)?.runtime()?;
+        let length = self.builder.integer(Type::I64, u128::from(length))?;
+        self.wide_pointer(pointer, length)
+    }
     pub(super) fn slice_length(&mut self, place: Place) -> Result<Value, &'static str> {
         if let Some(Kind::Array { length, .. }) = self.context.types.kind(self.place_type(place)?) {
             return self.builder.integer(Type::I64, u128::from(length));
@@ -167,10 +179,7 @@ impl Lower<'_, '_> {
     ) -> Result<(), &'static str> {
         let ty = self.body.projections[id.0 as usize].ty;
         let address = self.dereference(base, ty)?;
-        if matches!(
-            self.context.types.kind(ty),
-            Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
-        ) {
+        if self.context.wide_referent(ty)? {
             let tail = self.offset(base, 8)?;
             let length = self.builder.load(Type::I64, tail.operand)?;
             self.slice_lengths.insert(id, length);

@@ -146,7 +146,7 @@ impl Context<'_> {
                 }
                 Origin::Allocation => {
                     let value = location.value.ok_or("constant allocation lacks a value")?;
-                    let global = if self.types.is_sized(location.ty) == Some(false) {
+                    let global = if self.wide_referent(location.ty)? {
                         let (View::Text(text) | View::Bytes(text)) = self.constants.view(value)?
                         else {
                             return Err("unsized constant allocation lacks byte storage");

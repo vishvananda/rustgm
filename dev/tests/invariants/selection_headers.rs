@@ -56,7 +56,9 @@ fn nested_header_waits_keep_private_lifetimes_disjoint_from_declaration_allocati
         let first = Frame::new(&facts, &mut context, &goal, 1)?;
         let mut progress = search.begin(&mut facts, first)?;
         let mut foreign = Vec::new();
-        while let Progress::Pending(owner) = progress {
+        while let Progress::Pending(crate::sema::traits::selection::Dependency::Header(owner)) =
+            progress
+        {
             let first = search.query.allocations.end();
             if first > 1 {
                 assert!(search.resume_at(first - 1).is_err());
@@ -181,7 +183,10 @@ pub(super) fn stable_poll(
         search.query.active.len(),
     );
     for _ in 0..8 {
-        assert_eq!(search.poll(facts)?, Progress::Pending(owner));
+        assert_eq!(
+            search.poll(facts)?,
+            Progress::Pending(crate::sema::traits::selection::Dependency::Header(owner))
+        );
         assert_eq!(
             (
                 search.query.steps,
@@ -235,7 +240,9 @@ fn nested_conditions_resume_after_header_publication_without_replaying_ancestors
         let first = Frame::new(&facts, &mut context, &goal, 1)?;
         let mut progress = search.begin(&mut facts, first)?;
         let mut waits = 0;
-        while let Progress::Pending(owner) = progress {
+        while let Progress::Pending(crate::sema::traits::selection::Dependency::Header(owner)) =
+            progress
+        {
             stable_poll(&mut search, &mut facts, owner)?;
             let index = delayed
                 .iter()
@@ -298,7 +305,9 @@ fn pending_alternative_does_not_commit_the_first_candidates_inference()
     let first = Frame::new(&facts, &mut context, &goal, 1)?;
     assert_eq!(
         search.begin(&mut facts, first)?,
-        Progress::Pending(header.owner)
+        Progress::Pending(crate::sema::traits::selection::Dependency::Header(
+            header.owner
+        ))
     );
     stable_poll(&mut search, &mut facts, header.owner)?;
     assert!(search.query.nodes.is_empty());
@@ -351,7 +360,9 @@ fn input_normalization_suspends_for_its_actual_trait_premise()
     let first = Frame::new(&facts, &mut context, &goal, 1)?;
     assert_eq!(
         search.begin(&mut facts, first)?,
-        Progress::Pending(header.owner)
+        Progress::Pending(crate::sema::traits::selection::Dependency::Header(
+            header.owner
+        ))
     );
     stable_poll(&mut search, &mut facts, header.owner)?;
     publish(&mut facts, header)?;

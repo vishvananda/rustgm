@@ -1,5 +1,5 @@
 //! Deferred applicability goals retain isolated equations and their private region frontier.
-use super::{Context, Declarations, DefId, OwnedCaller};
+use super::{Context, Declarations, OwnedCaller};
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/path_readiness.rs"]
 mod tests;
@@ -13,7 +13,7 @@ use crate::{
 
 pub(super) enum Progress {
     Ready(bool),
-    Pending(DefId),
+    Pending(selection::Dependency),
 }
 pub(super) struct Pending {
     goals: Vec<usize>,
@@ -88,6 +88,7 @@ impl Pending {
             .implementations
             .as_ref()
             .is_none_or(|registry| registry.constant_headers_ready())
+            && !facts.types.nominal_sizes_pending()
         {
             let empty = Assumptions::default();
             selection::select_available(

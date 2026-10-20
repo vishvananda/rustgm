@@ -167,7 +167,7 @@ impl Search<'_> {
             .map_err(inference)?;
         inputs.ready = true;
         if frame.goal.builtin_bound().is_some() {
-            return self.complete_builtin(facts, frame).map(Action::Complete);
+            return self.complete_builtin(facts, frame);
         }
         match self.assume(facts, frame) {
             Ok(Some(action)) => return Ok(action),
@@ -231,6 +231,7 @@ impl Search<'_> {
         let children = normalization.proof.into_iter().chain([selected]).collect();
         let index = self.query.push(
             Node {
+                provisional_size: false,
                 goal,
                 source,
                 children,
@@ -262,6 +263,7 @@ impl Search<'_> {
         let scope = self.query.node_scope(selected);
         let index = self.query.push(
             Node {
+                provisional_size: false,
                 goal,
                 source,
                 children: vec![prefix, selected],

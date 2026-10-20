@@ -161,6 +161,24 @@ impl Templates {
         if matches!(types.kind(ty), Some(Kind::Adt(..))) {
             definitions.instantiate(types, ty)?;
         }
+        if let Some(
+            Kind::Reference {
+                referent: pointee, ..
+            }
+            | Kind::Pointer { pointee, .. },
+        ) = types.kind(ty)
+            && types.is_sized(pointee) != Some(true)
+            && !definitions.prepare_metadata(types, pointee)?
+        {
+            self.states.insert(
+                ty,
+                State::Complete(Properties {
+                    known: false,
+                    transparent: true,
+                }),
+            );
+            return Ok(());
+        }
         self.work.push((ty, true));
         children(types, definitions, ty, |child| {
             if self.steps.saturating_add(self.work.len()) >= 1_000_000 {
@@ -191,7 +209,11 @@ impl Templates {
             Ok(())
         })?;
         match kind {
-            Kind::Parameter(_) | Kind::Projection(_) | Kind::ArrayTerm { .. } => {
+            Kind::Parameter(_)
+            | Kind::Projection(_)
+            | Kind::ArrayTerm { .. }
+            | Kind::Slice(_)
+            | Kind::Primitive(Primitive::Str) => {
                 properties.known = false;
             }
             Kind::Pointer { pointee, .. }
@@ -261,7 +283,9 @@ fn children(
         .ok_or("invalid template representation type")?
     {
         Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
-        Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => visit(element)?,
+        Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
+            visit(element)?;
+        }
         Kind::Tuple(list) => {
             for &child in types
                 .list(list)
@@ -283,9 +307,6 @@ fn children(
                     visit(child)?;
                 }
             }
-        }
-        Kind::Slice(_) | Kind::Primitive(Primitive::Str) => {
-            return Err("unsized field has no storage layout");
         }
         _ => {}
     }

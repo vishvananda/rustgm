@@ -122,13 +122,15 @@ impl Checker<'_> {
         expected: TermId,
         identity_reborrow: bool,
     ) -> Result<bool, Error> {
-        let (converted, selection) = self.reference_conversion(node, actual, expected)?;
+        let (converted, selection, mut unsizing) =
+            self.reference_conversion(node, actual, expected)?;
         let Some(selection) = selection else {
             return Ok(false);
         };
         if !identity_reborrow
             && selection.dereferences == 1
             && !selection.unsize
+            && unsizing.is_none()
             && matches!(
                 self.head(node, expected)?,
                 Some(Constructor::Reference { mutable: true, .. })
@@ -145,7 +147,11 @@ impl Checker<'_> {
             Some(Constructor::Reference { mutable: false, .. })
         );
         let kind = if shared && selection.dereferences == 1 {
-            AdjustmentKind::ArrayToSlice
+            if unsizing.is_some() {
+                AdjustmentKind::Unsize
+            } else {
+                AdjustmentKind::ArrayToSlice
+            }
         } else {
             // An implicit borrow has its own inferred region. The selected
             // coercion separately relates it to the destination; a discarded
@@ -157,17 +163,41 @@ impl Checker<'_> {
             let Some(Constructor::Reference { mutable, .. }) = self.head(node, expected)? else {
                 return Err(self.error(node, "missing reference coercion target"));
             };
-            let referent = self.child(node, expected, 0)?;
+            let referent = if unsizing.is_some() {
+                let mut source = actual;
+                for _ in 0..selection.dereferences {
+                    source = self.child(node, source, 0)?;
+                }
+                source
+            } else {
+                self.child(node, expected, 0)?
+            };
             let borrow = self
                 .state
                 .infer
                 .construct(Constructor::Reference { mutable, region }, &[referent])
                 .map_err(|e| self.error(node, e))?;
+            if let Some(pending) = &mut unsizing {
+                pending.borrow_view = Some(
+                    self.state
+                        .infer
+                        .construct(Constructor::Reference { mutable, region }, &[pending.view])
+                        .map_err(|e| self.error(node, e))?,
+                );
+            }
             self.state
                 .reference_adjustments
                 .insert(self.state.adjustments.len(), (selection, borrow));
             AdjustmentKind::Reborrow
         };
+        if let Some(mut pending) = unsizing {
+            self.prepare_unsizing_relations(node, &mut pending)?;
+            pending.view =
+                self.unsizing_source_view(node, actual, selection.dereferences, pending.view)?;
+            self.state
+                .unsizing_adjustments
+                .insert(self.state.adjustments.len(), pending);
+        }
         self.record_adjustment(node, expected, kind)?;
         Ok(true)
     }
@@ -192,7 +222,7 @@ impl Checker<'_> {
         } else {
             (b, a)
         };
-        let (converted, _) = self.reference_conversion(node, actual, expected)?;
+        let (converted, _, _) = self.reference_conversion(node, actual, expected)?;
         self.callable_shape(node, converted, expected)?;
         self.inferred_regions(node, expected)
     }
@@ -201,7 +231,14 @@ impl Checker<'_> {
         node: NodeId,
         actual: TermId,
         expected: TermId,
-    ) -> Result<(TermId, Option<ReferenceConversion>), Error> {
+    ) -> Result<
+        (
+            TermId,
+            Option<ReferenceConversion>,
+            Option<super::unsizing::Pending>,
+        ),
+        Error,
+    > {
         let (
             Some(Constructor::Reference { mutable: from, .. }),
             Some(Constructor::Reference {
@@ -233,10 +270,34 @@ impl Checker<'_> {
         }
         let unsize = matches!(self.head(node, source)?, Some(Constructor::Array(_)))
             && self.head(node, target)? == Some(Constructor::Slice);
-        if !from && dereferences == 1 && !unsize {
-            return Ok((actual, None));
+        let pending = if !unsize
+            && matches!(
+                self.head(node, source)?,
+                Some(
+                    Constructor::Adt(..)
+                        | Constructor::AdtArgs(..)
+                        | Constructor::ArrayTerm(_)
+                        | Constructor::ArrayInfer(_)
+                )
+            ) {
+            self.unsizing_referent(node, source, target)?
+        } else {
+            None
+        };
+        if !from && dereferences == 1 && !unsize && pending.is_none() {
+            return Ok((actual, None, None));
         }
-        let referent = if unsize {
+        if dereferences != 1 && (unsize || pending.is_some()) {
+            return Err(self.error(
+                node,
+                "unsizing cannot follow implicit reference dereferences",
+            ));
+        }
+        let referent = if let Some(pending) = &pending {
+            self.state.call_types.demand_fields(source);
+            self.state.call_types.demand_fields(target);
+            pending.view
+        } else if unsize {
             let element = self.child(node, source, 0)?;
             self.state
                 .infer
@@ -263,6 +324,7 @@ impl Checker<'_> {
                 unsize,
                 two_phase: false,
             }),
+            pending,
         ))
     }
     fn reference_depth(&mut self, node: NodeId, mut term: TermId) -> Result<u32, Error> {

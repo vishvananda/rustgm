@@ -286,7 +286,10 @@ fn family_conditions_retain_universal_proof_across_header_waits_and_foreign_allo
     else {
         return Err("family condition bypassed its pending header".into());
     };
-    assert_eq!(waiting, owner);
+    assert_eq!(
+        waiting,
+        crate::sema::traits::selection::Dependency::Header(owner)
+    );
     let end = query.allocation_end();
     for _ in 0..3 {
         let normal_form::Progress::Pending(waiting, retained) =
@@ -294,7 +297,10 @@ fn family_conditions_retain_universal_proof_across_header_waits_and_foreign_allo
         else {
             return Err("pending family condition lost its continuation".into());
         };
-        assert_eq!(waiting, owner);
+        assert_eq!(
+            waiting,
+            crate::sema::traits::selection::Dependency::Header(owner)
+        );
         assert_eq!(retained.allocation_end(), end);
         query = retained;
     }

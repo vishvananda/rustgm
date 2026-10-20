@@ -153,6 +153,11 @@ pub enum Rvalue {
     ConstArgument(crate::types::arguments::ConstId),
     Reify(ValueId),
     Constrain(ValueId),
+    /// A proved structural unsizing carries its terminal array through specialization.
+    Unsize {
+        value: ValueId,
+        array: TypeId,
+    },
     Unary {
         operator: Unary,
         operand: ValueId,

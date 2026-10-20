@@ -274,7 +274,10 @@ fn header_waits_preserve_the_universal_and_exclude_foreign_allocations() -> Test
         Availability::Declarations,
     );
     let first = Frame::new(&facts, &mut context, &goal, 1)?;
-    let super::continuation::Progress::Pending(owner) = search.begin(&mut facts, first)? else {
+    let super::continuation::Progress::Pending(crate::sema::traits::selection::Dependency::Header(
+        owner,
+    )) = search.begin(&mut facts, first)?
+    else {
         return Err("missing universal header wait".into());
     };
     header_tests::stable_poll(&mut search, &mut facts, owner)?;

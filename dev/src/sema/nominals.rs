@@ -1,6 +1,7 @@
 //! Nominal use requirements are instantiated once; proofs belong to the caller's environment.
 mod formation;
 mod requirements;
+pub(in crate::sema) mod sizes;
 mod terms;
 pub(crate) mod traits;
 use super::model::Declarations;
@@ -16,7 +17,7 @@ pub(super) use requirements::{Requirements, requirements};
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {
     environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
-    shapes: Option<crate::types::parameters::shape::Shapes>,
+    shapes: Option<Box<crate::types::parameters::shape::Shapes>>,
     term_shapes: Option<Box<crate::types::parameters::shape::Shapes>>,
     builtin_inputs: Option<Box<terms::Inputs>>,
     copies: crate::types::copy::Copies,
@@ -26,6 +27,13 @@ pub(super) struct Proof {
     provisional: bool,
 }
 impl Proof {
+    pub(super) fn resume_body_shapes(&mut self, first: u32) -> Result<(), &'static str> {
+        if self.traits.is_some() || self.scope.is_none_or(|(count, _)| count != 0) {
+            return Err("body shape proof was not published before resumption");
+        }
+        self.scope = Some((0, first));
+        Ok(())
+    }
     pub(super) fn normalize(
         &mut self,
         facts: &mut Declarations,
@@ -55,9 +63,9 @@ impl Proof {
     ) -> Self {
         Self {
             environment: Some(std::sync::Arc::clone(&environment)),
-            shapes: Some(crate::types::parameters::shape::Shapes::new(
+            shapes: Some(Box::new(crate::types::parameters::shape::Shapes::new(
                 std::sync::Arc::clone(&environment),
-            )),
+            ))),
             term_shapes: None,
             builtin_inputs: None,
             copies: crate::types::copy::Copies::for_coherence(environment),
@@ -70,9 +78,11 @@ impl Proof {
     pub fn new(
         environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     ) -> Self {
-        let shapes = environment
-            .as_ref()
-            .map(|env| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(env)));
+        let shapes = environment.as_ref().map(|env| {
+            Box::new(crate::types::parameters::shape::Shapes::new(
+                std::sync::Arc::clone(env),
+            ))
+        });
         let copies =
             environment
                 .as_ref()
@@ -146,7 +156,6 @@ impl Proof {
         ty: TypeId,
         count: Option<u32>,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
-        let depth = u16::from(count.is_some());
         if count.is_some() && self.term_shapes.is_none() {
             let environment = if let Some(environment) = &self.environment {
                 std::sync::Arc::clone(environment)
@@ -160,14 +169,19 @@ impl Proof {
                 crate::types::parameters::shape::Shapes::for_clause_terms(environment),
             ));
         }
+        if count.is_none()
+            && self.shapes.is_none()
+            && facts.types.contains_projected_sizes(ty) == Some(true)
+        {
+            let environment = std::sync::Arc::new(
+                crate::types::parameters::environment::Environment::new(&facts.types, &[])?,
+            );
+            self.shapes = Some(Box::new(crate::types::parameters::shape::Shapes::new(
+                environment,
+            )));
+        }
         let projected = facts.types.contains_projections(ty) == Some(true);
-        let shapes = if count.is_some() {
-            self.term_shapes.as_deref_mut()
-        } else {
-            self.shapes.as_mut()
-        };
-        if let Some(shapes) = shapes
-            && let Some(properties) = shapes.try_demand_inside(&facts.types, ty, depth)?
+        if let Some(properties) = self.shape_properties(facts, ty, count, false)?
             && (!projected || properties.sized && properties.well_formed)
         {
             return Ok(properties);
@@ -177,19 +191,11 @@ impl Proof {
         } else {
             self.normalize(facts, ty)?
         };
-        let shapes = if count.is_some() {
-            self.term_shapes.as_deref_mut()
-        } else {
-            self.shapes.as_mut()
-        };
-        if let Some(shapes) = shapes {
-            return if projected {
-                shapes.normalized_inside(&facts.types, ty, depth)
-            } else {
-                shapes
-                    .try_demand_inside(&facts.types, ty, depth)?
-                    .ok_or("associated type shape checking requires normalization")
-            };
+        if let Some(properties) = self.shape_properties(facts, ty, count, projected)? {
+            return Ok(properties);
+        }
+        if self.shapes.is_some() || count.is_some() {
+            return Err("associated type shape checking requires normalization");
         }
         Ok(crate::types::parameters::shape::Properties {
             sized: facts
@@ -201,6 +207,45 @@ impl Proof {
                 .is_well_formed(ty)
                 .ok_or("invalid declaration shape type")?,
         })
+    }
+    fn shape_properties(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        count: Option<u32>,
+        normalized: bool,
+    ) -> Result<Option<crate::types::parameters::shape::Properties>, &'static str> {
+        use crate::types::parameters::shape::Progress;
+        let shapes = if count.is_some() {
+            self.term_shapes.take()
+        } else {
+            self.shapes.take()
+        };
+        let Some(mut shapes) = shapes else {
+            return Ok(None);
+        };
+        let result = loop {
+            match shapes.advance(&facts.types, ty, u16::from(count.is_some()), normalized)? {
+                Progress::Ready(properties) => break Some(properties),
+                Progress::Projection => break None,
+                Progress::Size(request) => {
+                    let sized = self.trait_state(facts)?.shape_size(
+                        facts,
+                        &mut shapes,
+                        request,
+                        count,
+                        normalized,
+                    )?;
+                    shapes.answer_size(&facts.types, normalized, request, sized)?;
+                }
+            }
+        };
+        if count.is_some() {
+            self.term_shapes = Some(shapes);
+        } else {
+            self.shapes = Some(shapes);
+        }
+        Ok(result)
     }
     pub fn check(
         &mut self,

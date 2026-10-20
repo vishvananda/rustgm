@@ -90,6 +90,7 @@ pub enum AdjustmentKind {
     Never,
     FunctionPointer,
     ArrayToSlice,
+    Unsize,
     Reborrow,
     /// The same type shape, with a directed lifetime relation retained separately.
     Equality,
@@ -259,6 +260,10 @@ pub struct ReferenceAlignment {
 /// Work observations are not language facts and are never part of a text oracle.
 #[derive(Default)]
 pub struct BodyWork {
+    /// Actual typed unsizing DAG inputs and reuse, separate from eligibility queries.
+    pub unsizing_inputs: usize,
+    pub unsizing_fields: usize,
+    pub inference_steps: usize,
     /// Actual ordinary trait goal attempts, including resumed retained candidates.
     pub trait_selections: usize,
     /// Field storage preparation uses its own cursor after consuming inference.
@@ -322,6 +327,9 @@ pub struct Declarations {
     /// Packed source places remain checked even when their CFG is unreachable.
     pub reference_alignment: Vec<ReferenceAlignment>,
     pub reference_adjustments: std::collections::HashMap<NodeKey, ReferenceAdjustment>,
+    pub(crate) unsizing_rules: Option<Box<crate::types::unsizing::Rules>>,
+    /// Selected terminal array; lowering must not rediscover structural eligibility.
+    pub unsizing_adjustments: std::collections::HashMap<NodeKey, TypeId>,
     pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
     pub well_formed: Vec<WellFormed>,
     pub coercions: Vec<Coercion>,
@@ -421,6 +429,8 @@ impl Declarations {
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
             reference_adjustments: std::collections::HashMap::new(),
+            unsizing_rules: None,
+            unsizing_adjustments: std::collections::HashMap::new(),
             partial_annotations: std::collections::HashMap::new(),
             well_formed: Vec::new(),
             type_outlives: Vec::new(),

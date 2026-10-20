@@ -26,9 +26,11 @@ The remaining source contract is:
   and raw pointers, including nested tail projections and reborrows. An empty
   or zero-sized-element slice still has its original element count.
 - Support built-in array-to-slice and struct-tail unsizing at coercion sites.
-  For a generic struct, the changed type parameter may occur only in its
-  final field, which must itself support the unsizing. Preserve the other
-  arguments and prove element types, mutability and lifetimes independently.
+  For a generic struct, changed type or const parameters may occur only in its
+  final field, whose instantiated type must support the unsizing. Multiple
+  parameters may change, including marker types used by associated-type
+  projections; those marker types need not themselves unsize. Preserve the
+  other arguments and prove element types, mutability and lifetimes independently.
 - Cover shared/mutable references and const/mutable raw pointers. Creating or
   coercing a raw pointer is safe; dereferencing it still needs the unsafe
   semantics owned by PA27. Do not infer nested coercions through arbitrary
@@ -47,7 +49,9 @@ and bounds behavior without requiring library methods.
 
 The pinned language rules are in
 [dynamically sized types](../doc/rust-reference/src/dynamically-sized-types.md)
-and [type coercions](../doc/rust-reference/src/type-coercions.md).
+and [type coercions](../doc/rust-reference/src/type-coercions.md). The detailed
+multiple-parameter struct rule is documented in
+[Rust 1.98's `Unsize` definition](https://github.com/rust-lang/rust/blob/1.98.0/library/core/src/marker.rs#L202-L208).
 
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned

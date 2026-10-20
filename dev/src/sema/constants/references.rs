@@ -5,6 +5,21 @@ use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Id(u32);
+/// Metadata belongs to a pointer value, while its backing location keeps its
+/// original sized type and allocation identity.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(in crate::sema) struct Pointer {
+    pub place: Id,
+    pub length: Option<u64>,
+}
+impl Pointer {
+    pub(super) const fn new(place: Id) -> Self {
+        Self {
+            place,
+            length: None,
+        }
+    }
+}
 #[derive(Clone, Copy)]
 pub(super) struct ProjectionId(u32);
 struct Projection {
@@ -36,7 +51,7 @@ pub(in crate::sema) struct References {
 impl References {
     pub(super) fn static_place(&mut self, id: DefId, ty: TypeId) -> Result<Value, &'static str> {
         if let Some(&place) = self.statics.get(&id) {
-            return Ok(Value::Reference(place));
+            return Ok(Value::Reference(Pointer::new(place)));
         }
         let value = self.insert(Place {
             value: None,
@@ -57,8 +72,8 @@ impl References {
         Ok(())
     }
     pub(super) fn id(value: Value) -> Result<Id, &'static str> {
-        if let Value::Reference(id) = value {
-            Ok(id)
+        if let Value::Reference(pointer) = value {
+            Ok(pointer.place)
         } else {
             Err("constant value is not a reference")
         }
@@ -72,7 +87,7 @@ impl References {
         }
         let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
         self.places.push(place);
-        Ok(Value::Reference(id))
+        Ok(Value::Reference(Pointer::new(id)))
     }
     pub(super) fn project(
         &mut self,
@@ -90,7 +105,7 @@ impl References {
         place.projection = Some(projection);
         self.projections.push(Projection { base, index });
         self.places.push(place);
-        Ok(Value::Reference(id))
+        Ok(Value::Reference(Pointer::new(id)))
     }
     pub(super) fn projection(&self, place: Place) -> Result<Option<(Id, u64)>, &'static str> {
         place
@@ -104,11 +119,11 @@ impl References {
             .transpose()
     }
     pub(super) fn get(&self, value: Value) -> Result<Place, &'static str> {
-        let Value::Reference(id) = value else {
+        let Value::Reference(pointer) = value else {
             return Err("constant value is not a reference");
         };
         self.places
-            .get(id.0 as usize)
+            .get(pointer.place.0 as usize)
             .copied()
             .ok_or("missing constant place")
     }
@@ -134,6 +149,28 @@ impl Expression {
     }
 }
 impl Queries<'_> {
+    pub(super) fn adjusted_reference(
+        &mut self,
+        query: Query,
+        value: Value,
+    ) -> Result<Value, Error> {
+        let Query::Node(key) = query else {
+            return Ok(value);
+        };
+        let Some(&array) = self.typing.facts.unsizing_adjustments.get(&key) else {
+            return Ok(value);
+        };
+        let array = self.specialized_type(key, array)?;
+        let Some(crate::types::Kind::Array { length, .. }) = self.typing.facts.types.kind(array)
+        else {
+            return Err(self.error(query, "constant unsizing length is not concrete"));
+        };
+        let Value::Reference(mut pointer) = value else {
+            return Err(self.error(query, "constant unsizing lacks reference backing"));
+        };
+        pointer.length = Some(length);
+        Ok(Value::Reference(pointer))
+    }
     pub(super) fn reference_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let facts =
             self.typing.facts.node(key).ok_or_else(|| {

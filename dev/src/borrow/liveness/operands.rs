@@ -46,7 +46,9 @@ impl Requirements {
                     .ok_or("operand lifetime input must precede its result")
             };
             let id = match value.kind {
-                Rvalue::Constrain(value) | Rvalue::Repeat { value, .. } => input(value)?,
+                Rvalue::Constrain(value)
+                | Rvalue::Unsize { value, .. }
+                | Rvalue::Repeat { value, .. } => input(value)?,
                 Rvalue::Aggregate { fields, .. } => {
                     components.clear();
                     for &value in body.arguments(fields) {

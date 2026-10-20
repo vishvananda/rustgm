@@ -32,6 +32,24 @@ pub(in crate::sema) use search::{
 };
 use std::sync::Arc;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(in crate::sema) enum Dependency {
+    Header(DefId),
+    Fields(crate::types::ItemId),
+}
+impl Dependency {
+    fn ready(self, facts: &Declarations) -> bool {
+        match self {
+            Self::Header(owner) => facts
+                .generics
+                .implementations
+                .as_ref()
+                .is_some_and(|registry| registry.header(owner).is_some()),
+            Self::Fields(item) => facts.aggregates.get(item).is_some(),
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub(in crate::sema) enum Source {
     Equality,
@@ -92,6 +110,8 @@ impl Source {
     }
 }
 pub(in crate::sema) struct Evidence {
+    /// At least one selected branch assumed an active nominal's unfinished size.
+    pub provisional_size: bool,
     pub source: Source,
     pub proof: Obligations,
     pub sized: Vec<TypeId>,
@@ -257,6 +277,7 @@ pub(in crate::sema) fn select_assumption(
             let mut obligations = Obligations::new(proof.regions.start);
             obligations.regions.end = proof.regions.end;
             Ok(Selection::Proven(Evidence {
+                provisional_size: false,
                 source,
                 proof: obligations,
                 sized: Vec::new(),

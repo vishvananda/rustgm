@@ -131,6 +131,9 @@ fn rewrite(
             Rvalue::Call { signature, .. } => {
                 *signature = fold.apply(&mut facts.types, *signature)?;
             }
+            Rvalue::Unsize { array, .. } => {
+                *array = fold.apply(&mut facts.types, *array)?;
+            }
             _ => {}
         }
         facts.aggregates.prepare(&mut facts.types, value.ty)?;

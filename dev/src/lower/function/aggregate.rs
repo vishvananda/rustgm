@@ -205,6 +205,9 @@ impl Lower<'_, '_> {
             return self
                 .project_slice_pattern(id, base.ok_or("slice pattern has no data address")?);
         }
+        if let ProjectionKind::Field(field) = projection.kind {
+            return self.project_field(id, base, base_type, field);
+        }
         let layout = self.context.layout(base_type)?;
         let leaf = self.context.layout(projection.ty)?;
         let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
@@ -215,14 +218,7 @@ impl Lower<'_, '_> {
             | ProjectionKind::Subslice { .. } => {
                 return Err("reference projection escaped its typed dispatch");
             }
-            ProjectionKind::Field(field) => {
-                let offset = self.selected_field_offset(&layout, field)?;
-                if retained {
-                    Some(self.offset(base.ok_or("nonzero field has no base storage")?, offset)?)
-                } else {
-                    None
-                }
-            }
+            ProjectionKind::Field(_) => return Err("field projection escaped its typed dispatch"),
             ProjectionKind::IndexParameter { .. } => {
                 return Err("symbolic array bound requires concrete instantiation");
             }
@@ -269,14 +265,31 @@ impl Lower<'_, '_> {
         self.projections[id.0 as usize] = Projected::Ready(address);
         Ok(())
     }
-    pub(super) fn selected_field_offset(
-        &self,
-        layout: &Layout,
+    fn project_field(
+        &mut self,
+        id: ProjectionId,
+        base: Option<Address>,
+        base_type: TypeId,
         field: Selection,
-    ) -> Result<u64, &'static str> {
-        self.context
-            .selected_field(layout, field)
-            .map(|(_, offset)| offset)
+    ) -> Result<(), &'static str> {
+        let projection = &self.body.projections[id.0 as usize];
+        let (_, offset) = self.context.place_field(base_type, field)?;
+        let ty = projection.ty;
+        let wide = self.context.wide_referent(ty)?;
+        let retained = wide
+            || self.context.layout(ty)?.size != 0
+            || self.addresses.needs(Place::Projection(id));
+        let address = if retained {
+            Some(self.offset(base.ok_or("retained field has no base storage")?, offset)?)
+        } else {
+            None
+        };
+        if wide {
+            let length = self.slice_length(projection.base)?;
+            self.slice_lengths.insert(id, length);
+        }
+        self.projections[id.0 as usize] = Projected::Ready(address);
+        Ok(())
     }
     fn pattern_offset(
         &mut self,

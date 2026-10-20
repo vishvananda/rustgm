@@ -17,7 +17,7 @@ use std::sync::Arc;
 
 pub(in crate::sema) enum Progress {
     Ready(Projected),
-    Pending(DefId, Box<Query>),
+    Pending(selection::Dependency, Box<Query>),
 }
 pub(in crate::sema) struct Query {
     state: State,
@@ -51,6 +51,7 @@ pub(in crate::sema) fn begin(
             .map_err(|_| "invalid or exhausted canonical projection premise")?
     {
         return Ok(Progress::Ready(Projected {
+            provisional_size: false,
             source: Some(source),
             resolution: Some(resolution),
             proof: Obligations::new(first),
@@ -218,6 +219,7 @@ impl Query {
             .implementations
             .as_ref()
             .is_none_or(|registry| registry.constant_headers_ready())
+            && !facts.types.nominal_sizes_pending()
         {
             let empty = Assumptions::default();
             let caller = selection::Caller {
@@ -299,11 +301,13 @@ impl Query {
         mut resolution: Option<Resolution>,
     ) -> Result<Progress, &'static str> {
         let sized = std::mem::take(&mut self.state.sized);
+        let provisional_size = self.state.provisional_size;
         let proof = self.state.finish();
         if let Some(Resolution::Type(ty)) = &mut resolution {
             *ty = proof.restoration()?.apply(&mut facts.types, *ty)?;
         }
         Ok(Progress::Ready(Projected {
+            provisional_size,
             source: self.source,
             resolution,
             proof,

@@ -483,7 +483,7 @@ impl Checker<'_> {
             && let Some(owner) = self.advance_projection_parent(&mut query, resolved)?
         {
             return Ok(Completion::Dependency(
-                super::Requirement::ImplHeader(owner),
+                super::Requirement::from(owner),
                 Continuation::Parent {
                     query: Box::new(query),
                     watch,

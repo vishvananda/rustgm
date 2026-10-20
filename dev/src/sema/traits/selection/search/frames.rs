@@ -157,6 +157,9 @@ impl Search<'_> {
                 .types
                 .contains_projections(ty)
                 .ok_or("missing builtin subject")?
+                || bound == Bound::Sized
+                    && !facts.types.nominal_sizes_sealed()
+                    && facts.types.contains_nominals(ty) == Some(true)
             {
                 trial.pending.push(index);
                 trial.requirements = Some(Box::new(requirements));
@@ -187,6 +190,7 @@ impl Search<'_> {
                 .map_err(|_| "impl region count overflow")?;
         let node = self.query.push(
             Node {
+                provisional_size: false,
                 goal,
                 source: Some(Source::Implementation {
                     owner: trial.instance.owner,

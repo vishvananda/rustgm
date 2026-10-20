@@ -133,6 +133,9 @@ impl Checker<'_> {
                             crate::sema::bodies::Requirement::ImplHeader(owner) => {
                                 Work::ImplHeader(owner, super::impl_headers::Phase::Begin)
                             }
+                            crate::sema::bodies::Requirement::Fields(item) => {
+                                Work::Fields(item, false)
+                            }
                         });
                     }
                     constants::ArgumentDependency::Initializer(definition) => {

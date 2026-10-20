@@ -126,7 +126,7 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(node, "missing constant parameter"))?;
                 match (parameter.kind, argument) {
                     (ParameterKind::Type { sized }, Canonical::Type(ty)) => {
-                        if sized && !self.body_shape(node, ty)?.sized {
+                        if sized && !self.body_is_sized(node, ty)? {
                             return Err(self.error(node, "constant type argument must be sized"));
                         }
                     }

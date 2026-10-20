@@ -45,7 +45,7 @@ use std::collections::{HashMap, HashSet};
 pub(super) enum Value {
     Scalar(Scalar),
     Function(crate::types::instance::Instance),
-    Reference(references::Id),
+    Reference(references::Pointer),
     Text(super::text::Id),
     Bytes(super::text::Id),
     Variant(VariantId),
@@ -529,8 +529,7 @@ impl Queries<'_> {
             Query::Node(key) => match self.expression(key)? {
                 Expression::Reference(expression) => self.enter_reference(key, expression),
                 Expression::Value(value) => {
-                    self.states
-                        .insert(self.state_key(query), State::Ready(value));
+                    self.complete_query(query, value)?;
                 }
                 Expression::Product(expression) => {
                     self.work.push(Work::Finish(key));
@@ -618,15 +617,11 @@ impl Queries<'_> {
         let query = Query::Node(key);
         if let Expression::Product(expression) = self.expression(key)? {
             let value = self.product_value(key, expression)?;
-            self.states
-                .insert(self.state_key(query), State::Ready(value));
-            return Ok(());
+            return self.complete_query(query, value);
         }
         if let Expression::Constructor(expression) = self.expression(key)? {
             let value = self.constructor_value(key, expression)?;
-            self.states
-                .insert(self.state_key(query), State::Ready(value));
-            return Ok(());
+            return self.complete_query(query, value);
         }
         let value = match self.expression(key)? {
             Expression::Unary {

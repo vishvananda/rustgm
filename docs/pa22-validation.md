@@ -4,6 +4,11 @@ PA22 remains **planned**. PA21 is the latest released assignment. This record
 tracks the first PA22 metadata checkpoint, not completion of unsized source
 semantics or publication of a new grading suite.
 
+The subsequent [storage and reference-coercion checkpoint](pa22-storage-checkpoint.md)
+records nominal sizedness, tail addressing, structural/projected unsizing and
+constant metadata, together with its newer qualification and remaining work.
+The measurements and implementation status below describe the first checkpoint.
+
 ## Storage-tail metadata
 
 `abi::metadata::Queries` classifies prepared types as thin, length-bearing or
@@ -110,7 +115,7 @@ qualification, and removed the six benchmark object files after measurement.
 Source evidence, diagnostics and timing observations remain. Only the current
 PA21 release and PA22 development comparison binaries are pinned.
 
-## Remaining release work
+## Release work identified at the first checkpoint
 
 Nominal sizedness must stop treating all aggregate identities as unconditionally
 sized, without introducing stale canonical properties or recursive template

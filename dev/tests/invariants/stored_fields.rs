@@ -24,9 +24,8 @@ impl Sources for NoFiles {
         Ok(None)
     }
 }
-fn context() -> Result<(Declarations, TypeId), Box<dyn std::error::Error>> {
-    let source = "trait A<'a>{type Out;}impl<'a,'b:'a>A<'a>for &'b u8{type Out=u16;}struct W<'a,T:A<'a>>{value:T::Out}";
-    let report = resolve::analyze_expanded(resolve::expansion::analyze(
+fn report(source: &str) -> Result<resolve::expansion::Report, Box<dyn std::error::Error>> {
+    Ok(resolve::analyze_expanded(resolve::expansion::analyze(
         InputFile {
             identity: "fields.rs".into(),
             path: "fields.rs".into(),
@@ -34,7 +33,11 @@ fn context() -> Result<(Declarations, TypeId), Box<dyn std::error::Error>> {
         },
         &mut NoFiles,
         &Config::default(),
-    )?)?;
+    )?)?)
+}
+fn context() -> Result<(Declarations, TypeId), Box<dyn std::error::Error>> {
+    let source = "trait A<'a>{type Out;}impl<'a,'b:'a>A<'a>for &'b u8{type Out=u16;}struct W<'a,T:A<'a>>{value:T::Out}";
+    let report = report(source)?;
     let owner = report
         .resolution
         .definitions

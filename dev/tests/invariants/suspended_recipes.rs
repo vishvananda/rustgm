@@ -123,7 +123,9 @@ fn an_unfinished_nominal_yields_its_identity_without_expanding_referents() -> Te
         GenericArgs, ItemId,
         aggregate::{Kind as AggregateKind, Repr, Variant},
     };
-    let (mut facts, _) = context()?;
+    // Exercise an unfinished declaration, before the declaration rules freeze.
+    let report = super::report("")?;
+    let mut facts = crate::sema::model::Declarations::new(&report)?;
     let owner = ItemId(10000);
     let root = facts.types.intern(Kind::Adt(owner, GenericArgs::EMPTY))?;
     let reference = facts.types.intern(Kind::Reference {

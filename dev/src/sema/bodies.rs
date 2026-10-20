@@ -28,6 +28,7 @@ mod selected_arguments;
 mod slots;
 mod text;
 mod trait_goals;
+mod unsizing;
 use super::{
     declarations,
     model::{AdjustmentKind, Declarations, Function, Operation, RegionEquality},
@@ -185,7 +186,9 @@ pub(super) struct State {
     adjustments: Vec<PendingAdjustment>,
     reference_adjustments:
         std::collections::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
+    unsizing_adjustments: std::collections::HashMap<usize, unsizing::Pending>,
     reference_expected: HashSet<NodeId>,
+    unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
     break_roots: std::collections::HashMap<NodeId, usize>,
@@ -195,6 +198,7 @@ pub(super) struct State {
     call_types: Box<calls::CallTypes>,
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
+    nominal_shapes: Option<Box<super::nominals::Proof>>,
     body_binders: u32,
     environment_owner: Option<DefId>,
     method_constants: Option<Box<super::arguments::Cache>>,
@@ -276,7 +280,9 @@ impl<'a> Checker<'a> {
                 negated: HashSet::new(),
                 adjustments: Vec::new(),
                 reference_adjustments: std::collections::HashMap::new(),
+                unsizing_adjustments: std::collections::HashMap::new(),
                 reference_expected: HashSet::new(),
+                unsizing_contexts: std::collections::HashMap::new(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
                 break_roots: std::collections::HashMap::new(),
@@ -286,6 +292,7 @@ impl<'a> Checker<'a> {
                 call_types: scratch.call_types.unwrap_or_default(),
                 parameter_copies: None,
                 parameter_shapes: None,
+                nominal_shapes: None,
                 body_binders: 0,
                 method_constants: None,
                 method_environment: None,
@@ -753,7 +760,7 @@ impl Checker<'_> {
             let id = self.state.bindings[index];
             if let Some(term) = self.state.locals.remove(id.0 as usize) {
                 let ty = solved.types[term.0 as usize];
-                if !self.body_shape(body, ty)?.sized {
+                if !self.body_is_sized(body, ty)? {
                     return Err(self.error(body, "local bindings must be sized"));
                 }
                 self.facts.definitions[id.0 as usize] = Some(ty);
@@ -842,6 +849,9 @@ impl Checker<'_> {
             )
         {
             self.state.reference_expected.insert(node);
+            if matches!(self.kind(node), Kind::If { .. } | Kind::Match { .. }) {
+                self.state.unsizing_contexts.insert(node, expected);
+            }
         }
         if let Some(frame) = self.state.frames.last_mut()
             && frame.kind == FrameKind::While
@@ -1379,7 +1389,11 @@ impl Checker<'_> {
         Ok(())
     }
     fn join(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<TermId, Error> {
-        let common = self.join_types(node, self.term(left)?, self.term(right)?)?;
+        let common = if let Some(expected) = self.contextual_unsizing_result(node)? {
+            expected
+        } else {
+            self.join_types(node, self.term(left)?, self.term(right)?)?
+        };
         self.coerce(left, common)?;
         self.coerce(right, common)?;
         Ok(common)
@@ -1728,7 +1742,11 @@ impl Checker<'_> {
         };
         if constructor && let Some(expected) = expected {
             let result = self.child(node, term, parameters as usize)?;
-            self.shape_equation(node, result, expected)?;
+            if let Some(expected) =
+                self.unsizing_constructor_context(node, result, Some(expected))?
+            {
+                self.shape_equation(node, result, expected)?;
+            }
         }
         self.schedule_call_arguments(node, term, arguments, 0)
     }

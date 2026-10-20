@@ -29,8 +29,10 @@ impl Lower<'_, '_> {
             | ProjectionKind::FromEnd { .. }
             | ProjectionKind::Subslice { .. } => Ok(Step::Dynamic(id)),
             ProjectionKind::Field(field) => {
-                let layout = self.context.layout(self.place_type(projection.base)?)?;
-                Ok(Step::Offset(self.selected_field_offset(&layout, field)?))
+                let (_, offset) = self
+                    .context
+                    .place_field(self.place_type(projection.base)?, field)?;
+                Ok(Step::Offset(offset))
             }
             ProjectionKind::ConstantIndex(index) => {
                 let ty = self.place_type(projection.base)?;
@@ -121,7 +123,7 @@ impl Lower<'_, '_> {
     pub(super) fn select(&mut self, id: ProjectionId, anchor: Place) -> Result<(), &'static str> {
         let (recipe, mut parent) = self.selection_recipe(id, anchor)?;
         let ty = self.body.projections[id.0 as usize].ty;
-        let wide = self.context.types.is_sized(ty) == Some(false);
+        let wide = self.context.wide_referent(ty)?;
         if !wide
             && self.context.layout(ty)?.size == 0
             && !self.addresses.needs(Place::Projection(id))
@@ -132,7 +134,7 @@ impl Lower<'_, '_> {
         let mut base = self
             .place(anchor)?
             .ok_or("pattern selection has no input storage")?;
-        let mut length = if self.context.types.is_sized(self.place_type(anchor)?) == Some(false) {
+        let mut length = if self.context.wide_referent(self.place_type(anchor)?)? {
             Some(self.slice_length(anchor)?)
         } else {
             None

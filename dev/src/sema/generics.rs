@@ -136,6 +136,7 @@ pub struct Generics {
     pub(super) method_uses: HashMap<crate::resolve::unit::NodeKey, DeferredUse>,
     pub(super) parents: HashMap<DefId, DefId>,
     pub storage: Option<crate::types::aggregate::finiteness::Storage>,
+    pub(super) size_rules: Option<Box<super::nominals::sizes::Pending>>,
     pub(super) nominal_contracts: std::collections::HashSet<DefId>,
     pub(super) nominal_requirements:
         HashMap<TypeId, Arc<[crate::types::parameters::clauses::Clause]>>,

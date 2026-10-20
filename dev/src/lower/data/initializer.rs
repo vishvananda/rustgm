@@ -84,6 +84,7 @@ impl Context<'_> {
                 offset,
                 id,
                 matches!(layout.shape, Shape::WidePointer),
+                value.length(),
             ),
             View::Bytes(id) => {
                 if let Some(Kind::Reference { .. }) = self.types.kind(ty) {
@@ -174,6 +175,7 @@ impl Context<'_> {
         offset: u64,
         id: crate::sema::values::LocationId,
         wide: bool,
+        metadata: Option<u64>,
     ) -> Result<(), &'static str> {
         let pointer = self.constant_pointer(id)?;
         let addend =
@@ -181,7 +183,9 @@ impl Context<'_> {
         self.initialize_pointer(init, offset, Target::Global(pointer.global), addend)?;
         if wide {
             let location = self.constants.location(id)?;
-            let length = if let Some(Kind::Array { length, .. }) = self.types.kind(location.ty) {
+            let length = if let Some(length) = metadata {
+                length
+            } else if let Some(Kind::Array { length, .. }) = self.types.kind(location.ty) {
                 length
             } else {
                 let value = location

@@ -29,11 +29,13 @@ struct Selected {
 }
 enum Selection {
     Deferred,
-    Header(DefId),
+    Dependency(crate::sema::traits::selection::Dependency),
     Definition(Selected),
     Resolved(Resolution),
 }
 struct Query {
+    original: TypeId,
+    provisional_size: bool,
     fold: Normalizer,
     context: regions::Context,
     selected: Option<Selected>,
@@ -48,6 +50,7 @@ enum Destination {
     Annotation,
     Requirement,
     Sized,
+    Recheck(TypeId),
 }
 #[derive(Clone, Copy)]
 struct Root {
@@ -56,6 +59,7 @@ struct Root {
 }
 #[derive(Default)]
 pub(super) struct Pending {
+    rechecks: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId, TypeId)>,
     lookup: lookup::Pending,
     sized: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId)>,
     alias_environments:
@@ -260,6 +264,8 @@ impl Checker<'_> {
         self.projections.roots.insert(
             key,
             Query {
+                original: root.ty,
+                provisional_size: false,
                 fold,
                 context,
                 selected: None,
@@ -281,13 +287,26 @@ impl Checker<'_> {
                     .roots
                     .remove(&key)
                     .ok_or_else(|| self.error(key, "missing completed projection query"))?;
+                if query.provisional_size {
+                    self.projections.rechecks.push((
+                        key,
+                        query.context,
+                        query.ambient,
+                        query.original,
+                        ty,
+                    ));
+                }
                 match query.destination {
+                    Destination::Recheck(expected) if ty != expected => Err(self.error(
+                        key,
+                        "projection normalization changed after declaration completion",
+                    )),
                     Destination::Sized => {
                         let depth = self.ambient_depth(key, query.ambient)?;
                         self.prove_alias_size(key, query.context, depth, ty)
                     }
                     Destination::Annotation => self.store(key, ty),
-                    Destination::Requirement => Ok(()),
+                    Destination::Recheck(_) | Destination::Requirement => Ok(()),
                 }
             }
             Step::Resolve(request) => {
@@ -304,10 +323,9 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let selected = match self.select_projection(key, request)? {
             Selection::Deferred => return self.defer_projection_requirement(key, request),
-            Selection::Header(owner) => {
+            Selection::Dependency(dependency) => {
                 self.work.push(Work::ProjectionSelection(key, request));
-                self.work
-                    .push(Work::ImplHeader(owner, super::impl_headers::Phase::Begin));
+                self.work.push(Work::selection_dependency(dependency));
                 return Ok(());
             }
             Selection::Definition(selected) => selected,

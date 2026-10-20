@@ -382,6 +382,7 @@ impl super::Query {
         self.allocations.record(regions.end);
         Ok(self.push(
             super::Node {
+                provisional_size: false,
                 goal: evidence.premise.predicate,
                 source: Some(Source::Equality),
                 children: vec![parent],

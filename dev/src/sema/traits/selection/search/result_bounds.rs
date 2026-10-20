@@ -55,6 +55,7 @@ impl Search<'_> {
             .map_err(inference)?;
         let index = self.query.push(
             Node {
+                provisional_size: false,
                 goal,
                 source: Some(Source::result(&selected).map_err(inference)?),
                 children: Vec::new(),

@@ -99,7 +99,9 @@ fn callable_input_header_waits_preserve_scoped_debts_and_foreign_gaps() -> TestR
         let frame = Frame::new(&facts, &mut context, &goal, 1)?;
         let mut progress = search.begin(&mut facts, frame)?;
         let mut gaps = Vec::new();
-        while let Progress::Pending(owner) = progress {
+        while let Progress::Pending(crate::sema::traits::selection::Dependency::Header(owner)) =
+            progress
+        {
             header_tests::stable_poll(&mut search, &mut facts, owner)?;
             let end = search.query.allocations.end();
             gaps.push(end..end + 3);

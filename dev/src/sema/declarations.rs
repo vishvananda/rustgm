@@ -102,6 +102,16 @@ enum Work {
     Signature(NodeKey, Option<DefId>, SignaturePhase),
     Receiver(NodeKey, DefId, BinderId),
 }
+impl Work {
+    fn selection_dependency(dependency: super::traits::selection::Dependency) -> Self {
+        match dependency {
+            super::traits::selection::Dependency::Header(owner) => {
+                Self::ImplHeader(owner, impl_headers::Phase::Begin)
+            }
+            super::traits::selection::Dependency::Fields(item) => Self::Fields(item, false),
+        }
+    }
+}
 struct Signature {
     parameters: List,
     result: Option<NodeId>,

@@ -1,12 +1,9 @@
 //! Partial parent proofs retain their exact frontier while a member result infers inputs.
 use super::{Checker, Completion, Continuation, Error, Query, Task, WatchId};
-use crate::{
-    resolve::model::DefId,
-    sema::traits::{
-        assumptions::Assumptions,
-        obligations::Reservation,
-        selection::{self, OwnedCaller, Selection},
-    },
+use crate::sema::traits::{
+    assumptions::Assumptions,
+    obligations::Reservation,
+    selection::{self, OwnedCaller, Selection},
 };
 use std::sync::Arc;
 
@@ -27,7 +24,7 @@ impl Checker<'_> {
         if query.parent.is_none() {
             if let Some(owner) = self.advance_projection_parent(&mut query, false)? {
                 return Ok(Completion::Dependency(
-                    super::super::Requirement::ImplHeader(owner),
+                    super::super::Requirement::from(owner),
                     Continuation::Parent {
                         query: Box::new(query),
                         watch,
@@ -51,7 +48,7 @@ impl Checker<'_> {
         &mut self,
         query: &mut Query,
         resolved: bool,
-    ) -> Result<Option<DefId>, Error> {
+    ) -> Result<Option<selection::Dependency>, Error> {
         if matches!(query.parent.as_deref(), Some(Parent::Proven))
             || (resolved && query.parent.is_none())
         {

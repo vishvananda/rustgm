@@ -162,6 +162,9 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
                 assert_eq!(observations(&query, &facts)?, before);
             }
             facts.body_regions.extend([region; 3]);
+            let crate::sema::traits::selection::Dependency::Header(owner) = owner else {
+                return Err("expected an implementation header dependency".into());
+            };
             let (item, header) = delayed.remove(&owner).ok_or("unknown pending owner")?;
             facts
                 .generics

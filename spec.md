@@ -2883,13 +2883,54 @@ memoizes shared suffixes and failed paths, and bounds work without recursive
 host calls or whole-cache failure scans. It must not reveal an opaque hidden
 type to justify public bounds. Metadata classification does not prove source
 well-formedness, an unsizing conversion or a caller's `Sized` requirement.
-Keep those proofs separate when enabling the remaining PA22 source behavior.
+Keep those proofs separate from the PA22 source rules.
+
+Nominal sizedness follows declaration schemas, including full mixed argument
+slots and projected storage conditions. Seal these schemas after fields complete;
+reserved nominal identities must not permanently claim `Sized`. Retain the
+original scoped demands for final checking when declaration proofs use
+provisional size facts.
+Shape queries preserve one frontier across a size dependency. An internal
+failure releases that frontier while keeping completed independent results;
+an invalid resume request must not discard a legitimate pending query.
+
+Built-in struct unsizing changes only parameters confined to its final field.
+Several type or const parameters may change. Normalize and prove the actual
+field conversion; associated-type marker arguments need not themselves unsize.
+Follow one storage tail rather than expanding both marker and field proof trees.
+Check ordinary argument compatibility without rescanning the same deep argument
+at every wrapper. Projected field equality is independent of subtyping the outer
+reference. Keep original reference ancestry and regions in the source proof;
+mutable conversions borrow the original sized place before building metadata.
+
+Retain the terminal source array identity as a typed unsizing selection.
+`Rvalue::Unsize` carries that identity through generic substitution, instance
+normalization and lowering. The normalized physical field supplies the length,
+which can differ from an array used as a marker argument. Lowering consumes
+the selection and never reconstructs eligibility from matching pointer widths.
+Contextual branch results select the declared DST destination before joining
+different sized inputs. Borrowed constructors preserve element expectations
+while inferring the source array length instead of constructing an unsized value.
+
+Unsized field addressing needs prefix offsets and tail alignment, not an invented
+fixed size for the complete object. Cache these partial layouts separately from
+sized layouts and forward metadata through final-field projections. References
+and pointers stop storage-tail traversal; recursive pointer prefixes must not
+become by-value layout cycles. Physical classification may use completed
+normalized storage but cannot grant a caller a semantic proof.
 
 Literal backing is immutable and shared by canonical bytes. Empty strings and
 byte strings receive nonnull backing with zero logical length. Persistent wide
 values serialize both the address and length at their canonical offsets;
 packed fields use the existing byte serializer and pointer startup fixups.
 Metadata and literal identities must not enlarge ordinary scalar place facts.
+
+An unsized constant pointer retains its selected length with the pointer value.
+Its backing location keeps the original sized type, allocation identity and
+physical field types. Subobject projections reuse that backing and forward tail
+metadata; unsizing itself does not allocate a replacement object. Constant
+evaluation and promotion consume the same typed array selection. Generic
+promotion retains a deferred value until the selected length is concrete.
 
 Dynamic slice patterns test exact or minimum length before selecting any element.
 Suffix projections retain the tested minimum length as a typed fact; rest

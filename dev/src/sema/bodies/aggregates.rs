@@ -175,7 +175,11 @@ impl Checker<'_> {
             // No element is stored. Keep higher-ranked type compatibility while
             // removing the discarded value's free storage-lifetime obligations.
             for index in mark..self.state.adjustments.len() {
-                let original = self.state.adjustments[index].actual;
+                let original = self
+                    .state
+                    .unsizing_adjustments
+                    .get(&index)
+                    .map_or(self.state.adjustments[index].actual, |pending| pending.view);
                 let target = self.state.adjustments[index].expected;
                 let actual = self.inferred_regions(value, original)?;
                 let expected = self.inferred_regions(value, target)?;
@@ -184,6 +188,7 @@ impl Checker<'_> {
                         .discarded_adjustments
                         .insert(index, (actual, expected));
                 }
+                self.freshen_unsizing_relations(value, index)?;
             }
         }
         Ok(term)
@@ -312,6 +317,7 @@ impl Checker<'_> {
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
         let term = self.nominal_term(node, path, variant.owner, expected)?;
+        let expected = self.unsizing_constructor_context(node, term, expected)?;
         if let Some(expected) = expected {
             self.shape_equation(node, term, expected)?;
         }

@@ -92,6 +92,7 @@ impl Engine<'_, '_> {
                 Rvalue::Repeat { .. } if self.empty_repeat(id)? => Ok(true),
                 Rvalue::Repeat { value: operand, .. }
                 | Rvalue::Constrain(operand)
+                | Rvalue::Unsize { value: operand, .. }
                 | Rvalue::Reify(operand)
                 | Rvalue::Unary { operand, .. }
                 | Rvalue::Cast { operand, .. } => {

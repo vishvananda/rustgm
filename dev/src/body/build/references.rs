@@ -40,8 +40,29 @@ impl Builder<'_> {
             BorrowKind::Immediate
         };
         let value = self.evaluate(node, reference.borrow, Rvalue::Borrow { place, kind })?;
-        let value = self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?;
+        let value = if self.facts.unsizing_adjustments.contains_key(&key) {
+            self.selected_unsizing(node, value, adjustment.target)?
+        } else {
+            self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?
+        };
         self.save(node, value)
+    }
+    pub(super) fn selected_unsizing(
+        &mut self,
+        node: NodeId,
+        value: ValueId,
+        target: TypeId,
+    ) -> Result<ValueId, Error> {
+        let key = super::NodeKey {
+            node,
+            ..self.body.source
+        };
+        let array = *self
+            .facts
+            .unsizing_adjustments
+            .get(&key)
+            .ok_or_else(|| self.error(node, "missing selected unsizing array"))?;
+        self.evaluate(node, target, Rvalue::Unsize { value, array })
     }
     pub(super) fn place_type(&self, node: NodeId, place: Place) -> Result<TypeId, Error> {
         match place {

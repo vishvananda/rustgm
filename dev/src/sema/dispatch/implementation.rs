@@ -24,7 +24,7 @@ pub(super) fn select(
     predicate: Predicate,
     caller: selection::Caller<'_>,
     availability: Availability,
-) -> Result<(Target, Obligations), String> {
+) -> Result<(Target, Obligations, bool), String> {
     let before = context.region_equalities.len();
     let mut substitution =
         Instantiation::new(context, &facts.types, &[]).map_err(|e| e.to_string())?;
@@ -43,7 +43,11 @@ pub(super) fn select(
     proof
         .equalities
         .extend(context.region_equalities.drain(before..));
-    Ok((Target { owner, arguments }, proof))
+    Ok((
+        Target { owner, arguments },
+        proof,
+        evidence.provisional_size,
+    ))
 }
 
 /// Return a reusable target only when its complete arguments can escape the

@@ -262,7 +262,7 @@ impl Checker<'_> {
                 }
                 if let (ParameterKind::Type { sized: true }, Canonical::Type(actual)) =
                     (parameter.kind, argument)
-                    && !self.body_shape(node, actual)?.sized
+                    && !self.body_is_sized(node, actual)?
                 {
                     return Err(self.error(node, "generic type argument must be sized"));
                 }

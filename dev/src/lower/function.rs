@@ -556,6 +556,12 @@ impl Lower<'_, '_> {
                 operand,
             } => return self.reify(operand),
             Rvalue::Constrain(operand) => return self.constrain(operand, value.ty, representation),
+            Rvalue::Unsize {
+                value: operand,
+                array,
+            } => {
+                return self.selected_unsizing(operand, array);
+            }
             Rvalue::Unary {
                 operator,
                 operand,

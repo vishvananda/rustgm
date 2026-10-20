@@ -31,6 +31,7 @@ enum Expansion {
 pub(crate) struct Dispatcher {
     availability: super::traits::implementations::Availability,
     share_constants: bool,
+    provisional_size: bool,
     normalize: Bound,
     context: Context,
     obligations: Obligations,
@@ -60,6 +61,7 @@ impl Dispatcher {
         Ok(Self {
             availability: super::traits::implementations::Availability::Validated,
             share_constants: universals == 0,
+            provisional_size: false,
             normalize: Bound::new(regions),
             context: Context::default(),
             obligations,
@@ -219,6 +221,7 @@ impl Dispatcher {
                 // An empty proof permits sharing across callers only when no
                 // caller environment or universal mapping participated.
                 if share
+                    && !self.provisional_size
                     && before == incomplete
                     && self.obligations.is_empty()
                     && self.context.region_equalities.is_empty()
@@ -370,31 +373,61 @@ impl Dispatcher {
             // No inference term or private identity from a discharged closed
             // query survives into this dispatcher's other selections.
             let mut context = Context::default();
-            let (target, proof) =
+            let (target, proof, provisional) =
                 implementation::select(facts, &mut context, predicate, caller, self.availability)?;
+            self.provisional_size |= provisional;
             let certified = implementation::certify(facts, &mut context, target, &proof)?;
             self.context
                 .account_work(context.steps)
                 .map_err(|e| e.to_string())?;
             if let Some(target) = certified {
-                facts
-                    .dispatch_dependencies
-                    .certify(self.availability, predicate, target);
+                if provisional {
+                    facts
+                        .generics
+                        .size_rules
+                        .get_or_insert_with(Default::default)
+                        .require_dispatch(super::nominals::sizes::Dispatch {
+                            predicate,
+                            owner: target.owner,
+                            arguments: target.arguments,
+                        })?;
+                } else {
+                    facts
+                        .dispatch_dependencies
+                        .certify(self.availability, predicate, target);
+                }
                 (target, Obligations::new(first))
             } else {
                 (target, proof)
             }
         } else {
-            implementation::select(
+            let (target, proof, provisional) = implementation::select(
                 facts,
                 &mut self.context,
                 predicate,
                 caller,
                 self.availability,
-            )?
+            )?;
+            self.provisional_size |= provisional;
+            (target, proof)
         };
         Ok((target.owner, target.arguments, proof))
     }
+
+    /// An independently discharged closed proof can be repeated without a body
+    /// namespace. Its chosen target must remain identical after sizes settle.
+    pub(in crate::sema) fn recheck_size(
+        facts: &mut Declarations,
+        expected: super::nominals::sizes::Dispatch,
+    ) -> Result<(), String> {
+        let mut dispatch = Self::declaration(1)?;
+        let (owner, arguments, proof) = dispatch.implementation(facts, expected.predicate)?;
+        if owner != expected.owner || arguments != expected.arguments || !proof.is_empty() {
+            return Err("constant selection changed after nominal sizedness completed".into());
+        }
+        Ok(())
+    }
+
     pub(crate) fn finish(mut self) -> Obligations {
         self.obligations
             .equalities

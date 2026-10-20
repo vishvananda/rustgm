@@ -75,7 +75,7 @@ impl Checker<'_> {
                     .get_mut(&key)
                     .ok_or_else(|| Error::at(key.file, 0, "missing suspended projection"))?
                     .pending = Some(Pending { query, delivery });
-                return Ok(Selection::Header(owner));
+                return Ok(Selection::Dependency(owner));
             }
         };
         self.finish_projection_selection(key, request, context, projected, delivery)
@@ -153,6 +153,18 @@ impl Checker<'_> {
         projected: Projected,
         delivery: Delivery,
     ) -> Result<Selection, Error> {
+        if projected.provisional_size {
+            if delivery.deferred {
+                // A lazy alias retains the original requirement at its use,
+                // rather than treating an active field's size as a final fact.
+                return Ok(Selection::Deferred);
+            }
+            self.projections
+                .roots
+                .get_mut(&key)
+                .ok_or_else(|| Error::at(key.file, 0, "missing provisional projection query"))?
+                .provisional_size = true;
+        }
         let Some(source) = projected.source else {
             return if delivery.deferred {
                 Ok(Selection::Deferred)

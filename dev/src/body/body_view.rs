@@ -277,6 +277,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::ConstArgument(id) => write!(out, "const-argument const={}", id.0),
         Rvalue::Reify(value) => write!(out, "reify v{}", value.0),
         Rvalue::Constrain(value) => write!(out, "constrain v{}", value.0),
+        Rvalue::Unsize { value, array } => write!(out, "unsize v{} array={}", value.0, array.0),
         Rvalue::Unary {
             operator,
             operand,

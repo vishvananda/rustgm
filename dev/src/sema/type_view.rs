@@ -147,6 +147,7 @@ pub fn coercions(coercions: &[super::model::Coercion], out: &mut impl Write) -> 
             AdjustmentKind::Never => "never",
             AdjustmentKind::FunctionPointer => "function-pointer",
             AdjustmentKind::ArrayToSlice => "array-to-slice",
+            AdjustmentKind::Unsize => "unsize",
             AdjustmentKind::Reborrow => "reborrow",
             AdjustmentKind::Equality => "same-shape",
         };
@@ -254,6 +255,7 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                     AdjustmentKind::FunctionPointer => "function-pointer",
                     AdjustmentKind::Equality => "equality",
                     AdjustmentKind::ArrayToSlice => "array-to-slice",
+                    AdjustmentKind::Unsize => "unsize",
                     AdjustmentKind::Reborrow => "reborrow",
                 };
                 writeln!(

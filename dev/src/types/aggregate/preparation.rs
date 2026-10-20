@@ -120,6 +120,14 @@ impl Definitions {
                 | Kind::ArrayTerm { element, .. }
                 | Kind::Slice(element) => work.push(element),
                 Kind::Reference { referent, .. } if references => work.push(referent),
+                Kind::Reference {
+                    referent: pointee, ..
+                }
+                | Kind::Pointer { pointee, .. }
+                    if types.is_sized(pointee) != Some(true) =>
+                {
+                    self.prepare_metadata(types, pointee)?;
+                }
                 // Sized references/raw pointers do not require their referent's fields.
                 // Function signatures and rigid parameters own no nested values.
                 _ => {}

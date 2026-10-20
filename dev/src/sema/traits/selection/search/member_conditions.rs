@@ -135,6 +135,7 @@ impl Search<'_> {
             .ok_or("family formation has no parent proof")?;
         let proof = &self.query.nodes[parent];
         let node = Node {
+            provisional_size: false,
             goal: proof.goal,
             source: proof.source,
             children: std::mem::take(&mut formation.children),

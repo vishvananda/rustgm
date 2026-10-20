@@ -161,7 +161,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(node, e))?;
                 pending.query = Some(query);
                 return Ok(Some(Dependency {
-                    requirement: Requirement::ImplHeader(owner),
+                    requirement: Requirement::from(owner),
                     source,
                 }));
             }

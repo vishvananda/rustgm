@@ -125,8 +125,8 @@ impl Checker<'_> {
                 continuation,
                 super::super::Requirement::Definition(definition),
             ),
-            Progress::Header(owner) => {
-                self.suspend_projection(continuation, super::super::Requirement::ImplHeader(owner))
+            Progress::Dependency(owner) => {
+                self.suspend_projection(continuation, super::super::Requirement::from(owner))
             }
             Progress::Complete { ty, steps } => {
                 self.facts.body_work.projection_steps += steps;

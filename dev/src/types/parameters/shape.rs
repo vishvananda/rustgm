@@ -1,8 +1,11 @@
 //! Structural well-formedness and sizedness under one immutable bound environment.
+mod size_demands;
 use super::environment::{BuiltinQuery, Environment};
 use crate::types::{
-    Kind, Primitive, Store, TypeId, bound_uses::captures::Captures, substitute::lookup::Lookup,
+    Kind, Primitive, Store, TypeId, bound_uses::captures::Captures, lifetime_proof::ScopeId,
+    substitute::lookup::Lookup,
 };
+pub(crate) use size_demands::{Progress, Request};
 use std::{collections::HashMap, sync::Arc};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Properties {
@@ -15,9 +18,10 @@ pub struct Shapes {
     cache: HashMap<TypeId, Properties>,
     normalized_queries: Option<Box<Self>>,
     scoped: Option<Box<Scoped>>,
-    work: Vec<(TypeId, u16, bool)>,
+    work: Vec<(TypeId, u16, ScopeId, bool)>,
     steps: usize,
     defer_local_sized: bool,
+    nominal: size_demands::Sizes,
 }
 #[derive(Default)]
 struct Scoped {
@@ -45,6 +49,7 @@ impl Shapes {
             work: Vec::new(),
             steps: 0,
             defer_local_sized: false,
+            nominal: size_demands::Sizes::default(),
         }
     }
     /// Declaration formation may defer a Sized requirement mentioning a local
@@ -57,8 +62,11 @@ impl Shapes {
     /// # Errors
     /// Rejects invalid/foreign parameter types and exhausted graph work.
     pub fn demand(&mut self, types: &Store, ty: TypeId) -> Result<Properties, &'static str> {
-        self.try_demand(types, ty)?
-            .ok_or("associated type shape checking requires normalization")
+        let result = self.try_demand(types, ty)?;
+        if result.is_none() {
+            self.cancel();
+        }
+        result.ok_or("associated type shape checking requires normalization")
     }
     /// A complete structural proof under the fixed assumptions avoids repeating
     /// normalization. None requests parent evidence without caching permission.
@@ -95,14 +103,16 @@ impl Shapes {
     ) -> Result<Properties, &'static str> {
         // Raw structural queries cannot reuse a cache populated under a
         // separately retained normalization proof.
-        self.normalized_queries
-            .get_or_insert_with(|| {
-                let mut queries = Self::new(Arc::clone(&self.environment));
-                queries.defer_local_sized = self.defer_local_sized;
-                Box::new(queries)
-            })
-            .demand_with(types, ty, depth, true)?
-            .ok_or("missing normalized shape proof")
+        let query = self.normalized_queries.get_or_insert_with(|| {
+            let mut queries = Self::new(Arc::clone(&self.environment));
+            queries.defer_local_sized = self.defer_local_sized;
+            Box::new(queries)
+        });
+        let result = query.demand_with(types, ty, depth, true)?;
+        if result.is_none() {
+            query.cancel();
+        }
+        result.ok_or("missing normalized shape proof")
     }
     fn demand_with(
         &mut self,
@@ -111,18 +121,40 @@ impl Shapes {
         depth: u16,
         normalized: bool,
     ) -> Result<Option<Properties>, &'static str> {
-        let depth = cache_depth(types, ty, depth);
-        if let Some(value) = self.cached(ty, depth) {
+        if let Some(value) = self.cached(ty, cache_depth(types, ty, depth)) {
             return Ok(Some(*value));
         }
+        if !self.nominal.resume(ty, depth)? {
+            self.work.clear();
+            self.work.push((ty, depth, ScopeId::ROOT, false));
+        }
+        // A rejected root must not leave a resumable frontier behind. Completed
+        // siblings still belong to this fixed environment and remain reusable.
+        // Resume validation above leaves an existing, valid suspension untouched.
+        let result = self.walk_with(types, ty, depth, normalized);
+        if result.is_err() {
+            self.cancel();
+        }
+        result
+    }
+    fn cancel(&mut self) {
         self.work.clear();
-        self.work.push((ty, depth, false));
-        while let Some((ty, depth, finish)) = self.work.pop() {
+        self.nominal.cancel();
+    }
+    fn walk_with(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+        normalized: bool,
+    ) -> Result<Option<Properties>, &'static str> {
+        while let Some((ty, depth, scope, finish)) = self.work.pop() {
             self.steps += 1;
             if self.steps.saturating_add(self.work.len()) > 1_000_000 {
                 return Err("generic shape work budget exceeded");
             }
-            if self.cached(ty, depth).is_some() {
+            let key_depth = cache_depth(types, ty, depth);
+            if self.cached(ty, key_depth).is_some() {
                 continue;
             }
             let kind = types.kind(ty).ok_or("invalid generic shape type")?;
@@ -130,17 +162,19 @@ impl Shapes {
                 && !normalized
                 && !self.assumes_trait(types, application, depth)?
             {
+                self.nominal.root = None;
                 return Ok(None);
             }
             if types.contains_parameters(ty) == Some(false)
                 && types.contains_projections(ty) == Some(false)
+                && types.contains_projected_sizes(ty) != Some(true)
                 && (!self.defer_local_sized || types.is_well_formed(ty) == Some(true))
             {
                 let sized =
                     types.is_sized(ty) == Some(true) || self.assumes_sized(types, ty, depth)?;
                 self.save(
                     ty,
-                    depth,
+                    key_depth,
                     Properties {
                         sized,
                         well_formed: types.is_well_formed(ty) == Some(true),
@@ -149,21 +183,41 @@ impl Shapes {
                 continue;
             }
             if !finish {
-                self.work.push((ty, depth, true));
+                self.work.push((ty, depth, scope, true));
+                let child_scope = if types.contains_projected_sizes(ty) == Some(true) {
+                    self.nominal.children(kind, scope)?
+                } else {
+                    scope
+                };
                 children(types, kind, depth, |child, depth| {
                     if self.steps.saturating_add(self.work.len()) >= 1_000_000 {
                         return Err("generic shape work budget exceeded");
                     }
-                    self.work
-                        .push((child, cache_depth(types, child, depth), false));
+                    self.work.push((child, depth, child_scope, false));
                     Ok(())
                 })?;
                 continue;
             }
+            if let Kind::Adt(item, _) = kind
+                && matches!(
+                    types.nominal_size_rule(item),
+                    Some(crate::types::sizedness::Rule::Projection(_))
+                )
+                && !self.nominal.answers.contains_key(&(ty, key_depth))
+            {
+                if self.assumes_sized(types, ty, depth)? {
+                    self.nominal.answers.insert((ty, key_depth), true);
+                } else {
+                    self.work.push((ty, depth, scope, true));
+                    self.nominal.pending = Some(Request { ty, depth, scope });
+                    return Ok(None);
+                }
+            }
             let value = self.composite(types, ty, kind, depth)?;
-            self.save(ty, depth, value);
+            self.save(ty, key_depth, value);
         }
-        self.cached(ty, depth)
+        self.nominal.root = None;
+        self.cached(ty, cache_depth(types, ty, depth))
             .copied()
             .map(Some)
             .ok_or("missing generic shape result")
@@ -208,6 +262,29 @@ impl Shapes {
             Ok(())
         })?;
         match kind {
+            Kind::Adt(item, arguments) => {
+                use crate::types::{arguments::Argument, sizedness::Rule};
+                value.sized = match types.nominal_size_rule(item) {
+                    None | Some(Rule::Sized) => true,
+                    Some(Rule::Unsized) => false,
+                    Some(Rule::Projection(_)) => *self
+                        .nominal
+                        .answers
+                        .get(&(ty, cache_depth(types, ty, depth)))
+                        .ok_or("missing projected nominal size proof")?,
+                    Some(Rule::Argument(slot)) => {
+                        let Some(Argument::Type(ty)) = types
+                            .arguments(arguments)
+                            .and_then(|mut args| args.nth(slot as usize))
+                        else {
+                            return Err("missing nominal sizedness argument");
+                        };
+                        self.cached(ty, cache_depth(types, ty, depth))
+                            .ok_or("missing nominal sizedness argument proof")?
+                            .sized
+                    }
+                };
+            }
             Kind::Parameter(id) => {
                 let abilities = self
                     .environment
@@ -231,7 +308,8 @@ impl Shapes {
         ty: TypeId,
         depth: u16,
     ) -> Result<bool, &'static str> {
-        if !self.defer_local_sized || depth == 0 {
+        let root_depth = self.nominal.root.map_or(0, |(_, depth)| depth);
+        if depth == 0 || !self.defer_local_sized && depth <= root_depth {
             return Ok(false);
         }
         let captures = self

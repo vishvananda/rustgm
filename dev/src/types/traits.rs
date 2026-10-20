@@ -21,6 +21,29 @@ pub(super) struct Storage {
 }
 
 impl Store {
+    pub(super) fn trait_application_count(&self) -> usize {
+        self.arguments
+            .as_ref()
+            .and_then(|storage| storage.traits.as_ref())
+            .map_or(0, |storage| storage.applications.len())
+    }
+    pub(super) fn refresh_trait_properties(
+        &mut self,
+        id: ApplicationId,
+    ) -> Result<(), &'static str> {
+        let application = self
+            .trait_application(id)
+            .ok_or("invalid trait application")?;
+        let mut properties = Properties::default();
+        self.argument_properties(application.arguments, &mut properties)?;
+        let storage = self
+            .arguments
+            .as_mut()
+            .and_then(|storage| storage.traits.as_mut())
+            .ok_or("missing trait application storage")?;
+        storage.properties[id.0 as usize] = properties;
+        Ok(())
+    }
     pub(crate) fn find_trait_application(&self, application: Application) -> Option<ApplicationId> {
         self.arguments
             .as_ref()?

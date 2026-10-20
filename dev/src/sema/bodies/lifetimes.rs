@@ -25,6 +25,7 @@ impl Checker<'_> {
             })
             .transpose()
             .map_err(|e| self.error(body_key.node, e))?;
+        self.publish_unsizing_relations(solved, body_key, defining.as_mut())?;
         for (index, adjustment) in self.state.adjustments.iter().enumerate() {
             let key = self.key(adjustment.node);
             let target = solved.types[adjustment.expected.0 as usize];
@@ -45,6 +46,11 @@ impl Checker<'_> {
                 .map_or((actual, target), |(a, b)| {
                     (solved.types[a.0 as usize], solved.types[b.0 as usize])
                 });
+            if !self.state.discarded_adjustments.contains_key(&index)
+                && let Some(pending) = self.state.unsizing_adjustments.get(&index)
+            {
+                proof_actual = solved.types[pending.view.0 as usize];
+            }
             if let Some(fold) = &mut defining {
                 proof_actual = fold
                     .apply(&mut self.facts.types, proof_actual)
@@ -73,7 +79,13 @@ impl Checker<'_> {
                 self.facts.retain_coercion(Coercion {
                     body: body_key,
                     source: key,
-                    actual: solved.types[borrow.0 as usize],
+                    actual: solved.types[self
+                        .state
+                        .unsizing_adjustments
+                        .get(&index)
+                        .and_then(|pending| pending.borrow_view)
+                        .unwrap_or(*borrow)
+                        .0 as usize],
                     expected: proof_expected,
                     kind: AdjustmentKind::Equality,
                     reference: None,
@@ -87,6 +99,13 @@ impl Checker<'_> {
             }
             facts.adjustment = (kind != AdjustmentKind::Equality || facts.ty != Some(target))
                 .then_some(Adjustment { kind, target });
+            if let Some(pending) = self.state.unsizing_adjustments.get(&index) {
+                self.facts
+                    .unsizing_adjustments
+                    .insert(key, solved.types[pending.array.0 as usize]);
+            } else {
+                self.facts.unsizing_adjustments.remove(&key);
+            }
             if let Some((conversion, borrow)) = self.state.reference_adjustments.get(&index) {
                 self.facts.reference_adjustments.insert(
                     key,

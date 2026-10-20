@@ -4,7 +4,7 @@ use crate::types::{
     aggregate::{self, Definitions, Repr, Representation},
 };
 
-const MAX_SIZE: u64 = i64::MAX as u64;
+pub(super) const MAX_SIZE: u64 = i64::MAX as u64;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LayoutId(pub u32);
 #[derive(Clone, Copy, Debug)]
@@ -78,9 +78,35 @@ pub struct Layouts {
     offsets: Vec<u64>,
     work: Vec<(TypeId, bool)>,
     metadata: Option<Box<super::metadata::Queries>>,
+    tails: Option<Box<super::tails::Queries>>,
     pub steps: usize,
 }
 impl Layouts {
+    /// Classify a prepared referent's physical pointer metadata. A missing
+    /// canonical Sized proof does not by itself imply a wide pointer.
+    /// # Errors
+    /// Rejects invalid or incomplete storage facts and exhausted tail queries.
+    pub fn pointer_metadata(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<super::metadata::Metadata, &'static str> {
+        use super::metadata::Metadata;
+        if types.is_sized(ty) == Some(true) {
+            return Ok(Metadata::Thin);
+        }
+        if matches!(
+            types.kind(ty),
+            Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
+        ) {
+            return Ok(Metadata::Length);
+        }
+        self.metadata
+            .get_or_insert_with(Default::default)
+            .demand(types, definitions, ty)
+    }
+
     /// Required reference alignment, including referents without a fixed size.
     /// Pointer storage alignment does not depend on its referent's metadata.
     /// # Errors
@@ -95,10 +121,71 @@ impl Layouts {
             Some(Kind::Primitive(Primitive::Str)) => return Ok(1),
             Some(Kind::Reference { .. } | Kind::Pointer { .. }) => return Ok(8),
             Some(Kind::Slice(element)) => element,
-            _ => ty,
+            _ => {
+                if self
+                    .pointer_metadata(types, definitions, ty)
+                    .map_err(|message| Error { ty, message })?
+                    == super::metadata::Metadata::Length
+                {
+                    let id = self.tail_layout(types, definitions, ty)?;
+                    return self
+                        .tails
+                        .as_ref()
+                        .and_then(|tails| tails.at(id))
+                        .map(|layout| layout.align)
+                        .ok_or(Error {
+                            ty,
+                            message: "missing unsized referent alignment",
+                        });
+                }
+                ty
+            }
         };
         let id = self.demand(types, definitions, ty)?;
         Ok(self.records[id.0 as usize].align)
+    }
+    fn tail_layout(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<super::tails::Id, Error> {
+        let mut tails = self.tails.take().unwrap_or_default();
+        let result = tails.demand(types, definitions, self, ty);
+        self.tails = Some(tails);
+        result.map_err(|message| Error { ty, message })
+    }
+
+    /// One selected field of a prepared unsized struct or tuple.
+    /// # Errors
+    /// Rejects invalid fields and the same unresolved layouts as `reference_align`.
+    pub fn unsized_field(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        index: u32,
+    ) -> Result<(TypeId, u64), Error> {
+        let id = self.tail_layout(types, definitions, ty)?;
+        let result = (|| {
+            let tails = self.tails.as_ref().ok_or("missing unsized layout query")?;
+            let fields = tails
+                .at(id)
+                .and_then(|layout| layout.fields)
+                .ok_or("unsized referent has no aggregate fields")?;
+            let field = types
+                .list(fields.types)
+                .and_then(|list| list.get(index as usize))
+                .copied()
+                .ok_or("invalid unsized field index")?;
+            let offset = tails
+                .offsets(fields)
+                .get(index as usize)
+                .copied()
+                .ok_or("missing unsized field offset")?;
+            Ok((field, offset))
+        })();
+        result.map_err(|message| Error { ty, message })
     }
     #[must_use]
     pub fn get(&self, ty: TypeId) -> Option<&Layout> {
@@ -269,23 +356,11 @@ impl Layouts {
             | Kind::Reference {
                 referent: pointee, ..
             } => {
-                let wide = matches!(
-                    types.kind(pointee),
-                    Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
-                );
-                let wide = if wide || types.is_sized(pointee) == Some(true) {
-                    wide
-                } else {
-                    match self.metadata.get_or_insert_with(Default::default).demand(
-                        types,
-                        definitions,
-                        pointee,
-                    )? {
-                        super::metadata::Metadata::Thin => false,
-                        super::metadata::Metadata::Length => true,
-                        super::metadata::Metadata::Unknown(_) => {
-                            return Err("unsized pointer metadata requires later layout support");
-                        }
+                let wide = match self.pointer_metadata(types, definitions, pointee)? {
+                    super::metadata::Metadata::Thin => false,
+                    super::metadata::Metadata::Length => true,
+                    super::metadata::Metadata::Unknown(_) => {
+                        return Err("unsized pointer metadata requires later layout support");
                     }
                 };
                 Ok(Layout {
@@ -524,7 +599,7 @@ fn primitive(primitive: Primitive) -> Result<Layout, &'static str> {
     };
     Ok(scalar(u64::from(bytes), bytes))
 }
-fn padded(size: u64, align: u32) -> Result<u64, &'static str> {
+pub(super) fn padded(size: u64, align: u32) -> Result<u64, &'static str> {
     let mask = u64::from(align) - 1;
     size.checked_add(mask)
         .map(|n| n & !mask)

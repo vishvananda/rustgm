@@ -23,10 +23,7 @@ impl Checker<'_> {
         if let PathProgress::Pending(owner) = &progress {
             self.method_queries.insert(key, Box::new(query));
             self.work.push(resume);
-            self.work.push(super::Work::ImplHeader(
-                *owner,
-                super::impl_headers::Phase::Begin,
-            ));
+            self.work.push(super::Work::selection_dependency(*owner));
         }
         Ok(progress)
     }

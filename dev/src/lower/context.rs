@@ -261,11 +261,10 @@ impl<'a> Context<'a> {
                 pointee: referent, ..
             },
         ) = self.types.kind(ty)
-            && matches!(
-                self.types.kind(referent),
-                Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
-            )
         {
+            if !self.wide_referent(referent)? {
+                return Ok(Representation::Scalar(Type::Ptr));
+            }
             let layout = self.layout(ty)?;
             return Ok(Representation::Object(MemorySpan {
                 bytes: layout.size,
@@ -288,6 +287,17 @@ impl<'a> Context<'a> {
             });
         }
         representation(self.types, ty).map(Representation::Scalar)
+    }
+    pub fn wide_referent(&mut self, ty: TypeId) -> Result<bool, &'static str> {
+        use crate::abi::metadata::Metadata;
+        match self
+            .layouts
+            .pointer_metadata(self.types, self.aggregates, ty)?
+        {
+            Metadata::Thin => Ok(false),
+            Metadata::Length => Ok(true),
+            Metadata::Unknown(_) => Err("lowering requires resolved pointer metadata"),
+        }
     }
     pub fn demand_definition(&mut self, definition: DefId) -> Result<SymbolId, &'static str> {
         let ty = self

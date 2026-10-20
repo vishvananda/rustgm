@@ -17,7 +17,7 @@ use std::{collections::HashMap, sync::Arc};
 pub(in crate::sema) enum Progress {
     Complete { ty: TypeId, steps: usize },
     Definition(DefId),
-    Header(DefId),
+    Dependency(crate::sema::traits::selection::Dependency),
 }
 struct Header {
     request: Request,
@@ -167,7 +167,7 @@ impl Cursor {
                         query,
                         frontier: None,
                     });
-                    return Ok(Progress::Header(owner));
+                    return Ok(Progress::Dependency(owner));
                 }
             };
             let resolution = self.selected_resolution(facts, request, &projected)?;

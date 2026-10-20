@@ -56,6 +56,14 @@ impl Checker<'_> {
     pub(super) fn validate_fields(&mut self) -> Result<(), Error> {
         for index in 0..self.nominals.entries.len() {
             let item = self.nominals.entries[index].item;
+            let definition = self.facts.aggregates.get(item).ok_or_else(|| {
+                self.error(
+                    self.nominals.entries[index].key,
+                    "missing field declaration",
+                )
+            })?;
+            let kind = definition.kind;
+            let packed = definition.repr.packed.is_some();
             let owner = crate::resolve::model::DefId(item.0);
             let environment = self.facts.generics.environments.get(&owner).cloned();
             let mut proof = self.declaration_proof(owner, environment);
@@ -63,20 +71,52 @@ impl Checker<'_> {
             for ordinal in 0..self.facts.members.variants(item).len() {
                 let id = self.facts.members.variants(item)[ordinal];
                 let variant = self.facts.members.variants[id.0 as usize];
-                for field in variant.start..variant.end {
-                    let field = self.facts.members.fields[field as usize];
+                for position in variant.start..variant.end {
+                    let field = self.facts.members.fields[position as usize];
                     let properties = proof
                         .check(&mut self.facts, field.ty)
                         .map_err(|e| self.error(field.node, e))?;
-                    if !properties.well_formed || !properties.sized {
-                        return Err(self.error(
-                            field.node,
-                            "aggregate fields must be well-formed and sized in this profile",
-                        ));
+                    if !properties.well_formed
+                        || !properties.sized
+                            && (kind != crate::types::aggregate::Kind::Struct
+                                || position + 1 != variant.end)
+                    {
+                        return Err(
+                            self.error(field.node, "only a struct's final field may be unsized")
+                        );
+                    }
+                    if packed && !properties.sized {
+                        self.validate_packed_tail(owner, field)?;
                     }
                 }
             }
             self.retain_trait_proof(owner, self.nominals.entries[index].key, &mut proof);
+        }
+        Ok(())
+    }
+
+    fn validate_packed_tail(
+        &mut self,
+        owner: crate::resolve::model::DefId,
+        field: crate::sema::members::Field,
+    ) -> Result<(), Error> {
+        let mut drops =
+            crate::types::destruction::NeedsDrop::new(self.facts.destructors.declared());
+        if let Some(environment) = self.facts.generics.environments.get(&owner) {
+            drops = drops.scoped(std::sync::Arc::clone(environment));
+        }
+        self.facts
+            .aggregates
+            .prepare(&mut self.facts.types, field.ty)
+            .map_err(|e| self.error(field.node, e))?;
+        if drops
+            .demand(&self.facts.types, &self.facts.aggregates, field.ty)
+            .map_err(|e| self.error(field.node, e))?
+        {
+            return Err(self.error(
+                field.node,
+                "an unsized packed tail must not need destruction",
+            ));
         }
         Ok(())
     }

@@ -19,11 +19,13 @@ mod properties;
 pub mod region_graph;
 pub mod relations;
 pub(crate) mod shape_key;
+pub mod sizedness;
 pub mod specialize;
 pub(crate) mod structural;
 pub(crate) mod subject_head;
 pub mod substitute;
 pub mod traits;
+pub mod unsizing;
 pub mod variance;
 
 use crate::support::intern_slice::Slices;
@@ -218,6 +220,8 @@ pub struct Store {
     opaque_outlives: Option<Box<opaque::bounds::Declarations>>,
     storage_heads: Option<HashMap<TypeId, TypeId>>,
     shifts: Option<Box<binder_shift::Shifts>>,
+    nominal_sizes: Option<std::sync::Arc<sizedness::Rules>>,
+    has_nominals: bool,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -249,6 +253,8 @@ impl Default for Store {
             opaque_outlives: None,
             storage_heads: None,
             shifts: None,
+            nominal_sizes: None,
+            has_nominals: false,
         }
     }
 }
@@ -405,6 +411,7 @@ impl Store {
         }
         let id = TypeId(u32::try_from(self.kinds.len()).map_err(|_| "too many canonical types")?);
         let properties = self.properties(kind)?;
+        self.has_nominals |= matches!(kind, Kind::Adt(..));
         self.kinds.push(kind);
         self.properties.push(properties);
         self.index.insert(kind, id);
@@ -419,8 +426,6 @@ impl Store {
         };
         let mut result = Properties::default();
         match kind {
-            // The closed aggregate profile requires sized, well-formed fields at
-            // declaration completion. Nominal recursion is not a structural child edge.
             Kind::Never => {}
             Kind::Parameter(id) => {
                 let parameter = self.parameter(id).ok_or("invalid type parameter")?;
@@ -430,8 +435,8 @@ impl Store {
                 result.set(Property::Sized, sized);
                 result.set(Property::Parameters, true);
             }
-            Kind::Adt(_, args) => {
-                self.argument_properties(args, &mut result)?;
+            Kind::Adt(item, args) => {
+                result = self.nominal_properties(item, args)?;
             }
             Kind::Projection(application) => {
                 result = self.projection_properties(application)?;

@@ -169,8 +169,8 @@ impl Batch {
                     Normalization::Definition(definition) => {
                         return Ok(Some(Requirement::Definition(definition)));
                     }
-                    Normalization::Header(owner) => {
-                        return Ok(Some(Requirement::ImplHeader(owner)));
+                    Normalization::Dependency(owner) => {
+                        return Ok(Some(Requirement::from(owner)));
                     }
                     Normalization::Complete { ty, steps } => {
                         facts.body_work.storage_steps += steps;

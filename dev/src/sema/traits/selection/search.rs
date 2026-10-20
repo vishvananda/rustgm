@@ -34,6 +34,9 @@ mod result_bounds;
 #[path = "../../../../tests/invariants/contract_evidence.rs"]
 mod result_tests;
 mod scopes;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/size_readiness.rs"]
+mod size_tests;
 mod suspension;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_inference.rs"]
@@ -56,7 +59,8 @@ mod tests;
 #[path = "../../../../tests/invariants/universal_work.rs"]
 mod universal_work;
 use super::{
-    Caller, Context, Declarations, Evidence, Goal, Predicate, Selection, Source, inference,
+    Caller, Context, Declarations, Dependency, Evidence, Goal, Predicate, Selection, Source,
+    inference,
 };
 use crate::types::{infer, lifetime_proof::ScopeId, outlives::Pair};
 use continuation::Query;
@@ -72,10 +76,11 @@ enum Action {
     Continue,
     Descend,
     Complete(Decision),
-    Wait(crate::resolve::model::DefId),
+    Wait(Dependency),
     Yield,
 }
 struct Node {
+    provisional_size: bool,
     goal: Predicate,
     source: Option<Source>,
     children: Vec<usize>,
@@ -189,6 +194,9 @@ impl Search<'_> {
         if frame.normalizing() {
             return self.advance_normalization(facts, frame);
         }
+        if frame.goal.builtin_bound().is_some() {
+            return self.complete_builtin(facts, frame);
+        }
         if let Some(trial) = &mut frame.trial {
             if trial.cursor == trial.pending.len() {
                 trial.pending.clear();
@@ -284,7 +292,7 @@ impl Search<'_> {
             return if let Some(action) = self.start_inputs(facts, frame)? {
                 Ok(action)
             } else {
-                self.complete_builtin(facts, frame).map(Action::Complete)
+                self.complete_builtin(facts, frame)
             };
         }
         let needs_normalization = match self.assume(facts, frame) {
@@ -343,6 +351,7 @@ impl Search<'_> {
                     .map_err(|_| infer::Error::InvalidIdentity)?;
                 let index = self.query.push(
                     Node {
+                        provisional_size: false,
                         goal,
                         source: Some(Source::assumed(&proof)?),
                         children: Vec::new(),
@@ -481,6 +490,7 @@ impl Search<'_> {
             .take()
             .ok_or("missing selected trait evidence")?;
         let mut evidence = Evidence {
+            provisional_size: self.query.nodes[root].provisional_size,
             source,
             proof: self.query.allocations.finish(self.query.nodes[root].end),
             sized: Vec::new(),

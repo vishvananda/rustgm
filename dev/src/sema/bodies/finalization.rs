@@ -98,6 +98,7 @@ impl Checker<'_> {
             evidence,
             ..
         } = finalization;
+        self.facts.body_work.inference_steps += solved.steps;
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
         self.publish_constant_uses(arguments)?;
         self.publish_methods(&solved);
@@ -163,7 +164,9 @@ impl Checker<'_> {
         self.state.negated.clear();
         self.state.adjustments.clear();
         self.state.reference_adjustments.clear();
+        self.state.unsizing_adjustments.clear();
         self.state.reference_expected.clear();
+        self.state.unsizing_contexts.clear();
         self.state.reference_work.clear();
         self.state.reference_steps = 0;
         self.state.break_roots.clear();

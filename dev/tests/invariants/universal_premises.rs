@@ -378,7 +378,9 @@ fn assumption_instances_after_header_waits_exclude_foreign_allocation_gaps() -> 
     let frame = Frame::new(&facts, &mut context, &goal, 2)?;
     assert_eq!(
         search.begin(&mut facts, frame)?,
-        Progress::Pending(header.owner)
+        Progress::Pending(crate::sema::traits::selection::Dependency::Header(
+            header.owner
+        ))
     );
     header_tests::stable_poll(&mut search, &mut facts, header.owner)?;
     let first = search.query.allocations.end();

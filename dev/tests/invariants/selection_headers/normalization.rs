@@ -96,7 +96,13 @@ fn fixture(depth: usize, restricted: bool, base: &str, region: RegionId) -> Test
     })
 }
 
-fn ready(fixture: &mut Fixture, owner: DefId) -> TestResult {
+fn ready(
+    fixture: &mut Fixture,
+    dependency: crate::sema::traits::selection::Dependency,
+) -> TestResult {
+    let crate::sema::traits::selection::Dependency::Header(owner) = dependency else {
+        return Err("expected an implementation header dependency".into());
+    };
     let index = fixture
         .pending
         .iter()
@@ -152,7 +158,7 @@ fn scoped_projection_waits_preserve_one_provider_and_exclude_foreign_regions() -
         let mut gaps = Vec::new();
         loop {
             match cursor.advance(&mut f.facts, &mut proof, &mut provider)? {
-                Progress::Header(owner) => {
+                Progress::Dependency(owner) => {
                     let end = cursor.allocation_end(&proof);
                     reservation.reserve(
                         &mut f.facts,
@@ -168,7 +174,7 @@ fn scoped_projection_waits_preserve_one_provider_and_exclude_foreign_regions() -
                         cursor.resume_at(&mut proof, first)?;
                         assert_eq!(
                             cursor.advance(&mut f.facts, &mut proof, &mut provider)?,
-                            Progress::Header(owner)
+                            Progress::Dependency(owner)
                         );
                         assert_eq!(f.facts.types.len(), types);
                         assert_eq!(proof.regions, 1..1);

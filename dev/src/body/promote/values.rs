@@ -163,6 +163,7 @@ impl Engine<'_, '_> {
             Rvalue::Read(place) => self.place_value(place)?.map(|v| v.value),
             Rvalue::Borrow { place, .. } => self.borrow_value(place, ty)?,
             Rvalue::Constrain(operand) => return self.ready(Key::Value(operand)),
+            Rvalue::Unsize { value, array } => self.unsize(value, array)?,
             Rvalue::Reify(operand) => self.ready(Key::Value(operand))?.map(|v| v.value),
             Rvalue::Unary {
                 operator,
@@ -238,6 +239,24 @@ impl Engine<'_, '_> {
                 }
                 (Some(Type::Array { .. } | Type::ArrayTerm { .. }), _) => Evaluated::Deferred,
                 _ => return Err("promotion repeat is not an array".into()),
+            },
+        ))
+    }
+    fn unsize(
+        &self,
+        operand: ValueId,
+        array: crate::types::TypeId,
+    ) -> Result<Option<Evaluated>, Error> {
+        let Some(value) = self.ready(Key::Value(operand))? else {
+            return Ok(None);
+        };
+        Ok(Some(
+            match (self.evaluator.facts().types.kind(array), value.value) {
+                (Some(Type::Array { length, .. }), Evaluated::Constant(value)) => {
+                    Evaluated::Constant(value.unsize(length)?)
+                }
+                (Some(Type::Array { .. } | Type::ArrayTerm { .. }), _) => Evaluated::Deferred,
+                _ => return Err("selected promotion unsizing lacks an array".into()),
             },
         ))
     }

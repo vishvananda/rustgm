@@ -190,7 +190,7 @@ fn operands<'a>(
                 .ok_or("invalid owned operand list")?;
             Ok((values, Disposition::Transfer))
         }
-        Rvalue::Constrain(id) => Ok(one(id)),
+        Rvalue::Constrain(id) | Rvalue::Unsize { value: id, .. } => Ok(one(id)),
         Rvalue::Repeat {
             value: operand,
             mode,

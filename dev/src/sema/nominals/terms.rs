@@ -77,16 +77,33 @@ impl Proof {
                 satisfied: true,
             });
         }
-        let satisfied = Self::closed_builtin(facts, Predicate { ty, ..value })?;
+        let satisfied = self.closed_builtin(facts, Predicate { ty, ..value })?;
         Ok(BuiltinFormation {
             subject: Some(ty),
             satisfied,
         })
     }
 
-    fn closed_builtin(facts: &mut Declarations, value: Predicate) -> Result<bool, &'static str> {
+    fn closed_builtin(
+        &mut self,
+        facts: &mut Declarations,
+        value: Predicate,
+    ) -> Result<bool, &'static str> {
         let ty = value.ty;
         if value.bound == Bound::Sized {
+            if facts.types.contains_projected_sizes(ty) == Some(true) {
+                let first = self.region_frontier(facts)?;
+                let count = self
+                    .scope
+                    .ok_or("closed size proof requires a declaration scope")?
+                    .0;
+                let mut closed = Self::for_declaration(None, count, first);
+                let sized = closed.shape(facts, ty)?.sized;
+                if let Some(evidence) = closed.take_trait_proof() {
+                    self.trait_state(facts)?.append_proof(evidence)?;
+                }
+                return Ok(sized);
+            }
             return Ok(facts.types.is_sized(ty) == Some(true));
         }
         if facts.generics.has_nominal_requirements {
@@ -142,10 +159,7 @@ impl Proof {
     #[cfg(test)]
     pub(in crate::sema) fn formation_steps(&self) -> usize {
         self.checked.steps()
-            + self
-                .shapes
-                .as_ref()
-                .map_or(0, crate::types::parameters::shape::Shapes::steps)
+            + self.shapes.as_ref().map_or(0, |shapes| shapes.steps())
             + self.term_shapes.as_ref().map_or(0, |shapes| shapes.steps())
             + self
                 .builtin_inputs

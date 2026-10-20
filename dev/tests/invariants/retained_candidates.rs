@@ -87,7 +87,12 @@ fn retained_candidate_waits_for_its_condition_header_after_caller_inference() ->
     search.resume_at(4)?;
     search.refresh_inputs(&mut facts, &mut context)?;
     let header = delayed.pop().ok_or("missing condition header")?;
-    assert_eq!(search.poll(&mut facts)?, Progress::Pending(header.owner));
+    assert_eq!(
+        search.poll(&mut facts)?,
+        Progress::Pending(crate::sema::traits::selection::Dependency::Header(
+            header.owner
+        ))
+    );
     header_tests::stable_poll(&mut search, &mut facts, header.owner)?;
     header_tests::publish(&mut facts, header)?;
     search.resume_at(7)?;

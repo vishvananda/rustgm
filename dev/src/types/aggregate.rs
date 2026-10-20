@@ -2,6 +2,7 @@
 mod field_forms;
 pub mod finiteness;
 mod instances;
+mod metadata;
 mod packing;
 mod preparation;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
@@ -50,6 +51,7 @@ pub struct Definitions {
     variants: Vec<Variant>,
     instances: Option<Box<instances::Instances>>,
     storage: Option<Box<field_forms::Fields>>,
+    metadata_ready: std::collections::HashSet<TypeId>,
 }
 impl Definitions {
     /// Instantiate immediate fields from completed templates, keyed by the full

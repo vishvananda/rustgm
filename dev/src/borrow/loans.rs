@@ -119,7 +119,7 @@ impl Flow<'_> {
                     self.generated[index] = (start, self.loans.len());
                     self.origins[index] = Some(id);
                 }
-                Rvalue::Constrain(value) | Rvalue::Reify(value) => {
+                Rvalue::Constrain(value) | Rvalue::Unsize { value, .. } | Rvalue::Reify(value) => {
                     self.origins[index] = self.origins.get(value.0 as usize).copied().flatten();
                 }
                 _ => {}

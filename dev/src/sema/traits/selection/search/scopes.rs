@@ -53,8 +53,12 @@ impl Query {
         }
         Ok(())
     }
-    pub(super) fn push(&mut self, node: Node, scope: ScopeId, regions: Range<u32>) -> usize {
+    pub(super) fn push(&mut self, mut node: Node, scope: ScopeId, regions: Range<u32>) -> usize {
         let index = self.nodes.len();
+        node.provisional_size |= node
+            .children
+            .iter()
+            .any(|&child| self.nodes[child].provisional_size);
         if let Some(scopes) = &mut self.scopes {
             let nested = node.children.iter().any(|child| {
                 scopes
@@ -83,10 +87,12 @@ impl Query {
             .map_or(ScopeId::ROOT, |node| node.scope)
     }
     pub(super) fn cacheable(&self, node: usize) -> bool {
-        self.scopes
-            .as_ref()
-            .and_then(|scopes| scopes.nodes.get(&node))
-            .is_none_or(|node| !node.nested)
+        !self.nodes[node].provisional_size
+            && self
+                .scopes
+                .as_ref()
+                .and_then(|scopes| scopes.nodes.get(&node))
+                .is_none_or(|node| !node.nested)
     }
     pub(super) fn completed(&self, scope: ScopeId, goal: Predicate) -> Option<Decision> {
         if scope == ScopeId::ROOT {

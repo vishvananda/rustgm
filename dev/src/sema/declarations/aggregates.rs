@@ -4,6 +4,7 @@ mod formation;
 mod headers;
 mod outlives;
 mod readiness;
+mod sizedness;
 mod validation;
 use super::{
     Checker, DefId, DefKind, Error, ItemId, ItemKind, Kind, List, NodeKey, State, Type, Work,
@@ -52,6 +53,8 @@ impl Checker<'_> {
             self.drain(steps, limit)?;
         }
         self.validate_storage()?;
+        self.complete_nominal_sizes()?;
+        self.complete_size_rechecks(steps, limit)?;
         self.validate_fields()?;
         self.nominal_defaults()?;
         self.lifetime_variances()?;
@@ -72,6 +75,12 @@ impl Checker<'_> {
                 return Err(self.error(key, "cycle in nominal field dependencies"));
             }
             self.nominals.entries[index].state = State::Active;
+            self.facts
+                .generics
+                .size_rules
+                .get_or_insert_with(Default::default)
+                .active
+                .insert(item);
             self.work.push(Work::Fields(item, true));
             for group in (0..self.nominals.entries[index].groups.len()).rev() {
                 let group = self.nominals.entries[index].groups[group];
@@ -143,6 +152,9 @@ impl Checker<'_> {
             .insert(item, kind, repr, &variants)
             .map_err(|e| self.error(key, e))?;
         self.nominals.entries[index].state = State::Complete;
+        if let Some(pending) = &mut self.facts.generics.size_rules {
+            pending.active.remove(&item);
+        }
         self.publish_constructors(item)
     }
     pub(super) fn complete_layouts(&mut self) -> Result<(), Error> {
@@ -176,6 +188,7 @@ impl Checker<'_> {
             if self.facts.generics.storage.is_none()
                 && !transparent
                 && !self.facts.associated.has_associated_types()
+                && self.facts.types.is_sized(ty) == Some(true)
             {
                 self.facts
                     .layouts

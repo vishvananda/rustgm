@@ -83,7 +83,7 @@ impl<'a> Reader<'a> {
                     id
                 })
             }
-            Value::Reference(id) => View::Reference(LocationId(id)),
+            Value::Reference(pointer) => View::Reference(LocationId(pointer.place)),
             Value::Text(id) => View::Text(id),
             Value::Bytes(id) => View::Bytes(id),
             Value::Variant(id) => View::Product {
@@ -110,7 +110,10 @@ impl<'a> Reader<'a> {
     /// # Errors
     /// Rejects an invalid location identity.
     pub fn location(self, id: LocationId) -> Result<Location, &'static str> {
-        let place = self.facts.constant_references.get(Value::Reference(id.0))?;
+        let place = self
+            .facts
+            .constant_references
+            .get(Value::Reference(references::Pointer::new(id.0)))?;
         let origin =
             if let Some((base, index)) = self.facts.constant_references.projection(place)? {
                 Origin::Projection {
@@ -151,6 +154,27 @@ impl<'a> Reader<'a> {
     }
 }
 impl Constant {
+    /// Selected wide-pointer metadata does not alter the backing location.
+    #[must_use]
+    pub const fn length(self) -> Option<u64> {
+        if let Value::Reference(pointer) = self.0 {
+            pointer.length
+        } else {
+            None
+        }
+    }
+    /// Attach the already-proved terminal array length without allocating storage.
+    /// # Errors
+    /// Rejects values without a backing reference.
+    pub fn unsize(self, length: u64) -> Result<Self, Failure> {
+        let Value::Reference(mut pointer) = self.0 else {
+            return Err(Failure::Invalid(
+                "unsizing constant lacks reference backing",
+            ));
+        };
+        pointer.length = Some(length);
+        Ok(Self(Value::Reference(pointer)))
+    }
     /// Read an evaluated generic scalar without confusing a rigid parameter with a definition.
     /// # Errors
     /// Rejects unknown constants, invalid scalar kinds or malformed character bits.

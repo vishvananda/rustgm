@@ -16,7 +16,7 @@ pub(super) enum Work {
 impl Queries<'_> {
     pub(super) fn enter_contents(&mut self, key: NodeKey, id: Id) -> Result<(), Error> {
         let query = Query::Contents(key, id);
-        let place = self.place(key, Value::Reference(id))?;
+        let place = self.place(key, Value::Reference(super::references::Pointer::new(id)))?;
         if let Some(value) = place.value {
             self.states
                 .insert(self.state_key(query), State::Ready(value));
@@ -126,8 +126,8 @@ impl Queries<'_> {
             }
             work.push((value, true));
             match value {
-                Value::Reference(id) => {
-                    let query = Query::Contents(key, id);
+                Value::Reference(pointer) => {
+                    let query = Query::Contents(key, pointer.place);
                     self.work.push(Pending::Enter(query));
                     self.drain()?;
                     work.push((self.value(query)?, false));

@@ -1,13 +1,10 @@
 //! Owned immutable caller facts accompany a suspended search, without copying its environment.
 use super::{Caller, Context, Declarations, Frame, Goal, Query, Search, Selection, continuation};
-use crate::{
-    resolve::model::DefId,
-    sema::traits::selection::{Availability, OwnedCaller},
-};
+use crate::sema::traits::selection::{Availability, Dependency, OwnedCaller};
 
 pub(in crate::sema) enum Progress {
     Ready(Selection),
-    Pending(DefId, Box<Pending>),
+    Pending(Dependency, Box<Pending>),
     Inferred { query: Box<Pending> },
 }
 pub(in crate::sema) struct Pending {

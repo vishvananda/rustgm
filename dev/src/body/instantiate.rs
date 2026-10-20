@@ -348,6 +348,10 @@ fn substitute(
     }
     for value in &mut body.values {
         match &mut value.kind {
+            Rvalue::Unsize { array, .. } => {
+                *array = bound.apply(&mut facts.types, *array)?;
+                projected |= facts.types.contains_projections(*array) == Some(true);
+            }
             Rvalue::Call { signature, .. } => {
                 *signature = bound.apply(&mut facts.types, *signature)?;
                 projected |= facts.types.contains_projections(*signature) == Some(true);

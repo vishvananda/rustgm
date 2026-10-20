@@ -124,6 +124,7 @@ pub(in crate::sema) fn finish(
 
 impl Queries<'_> {
     pub(super) fn complete_query(&mut self, query: Query, value: Value) -> Result<(), Error> {
+        let value = self.adjusted_reference(query, value)?;
         if let Query::Variant(variant) = query
             && let Some(pending) = &mut self.discriminants
         {

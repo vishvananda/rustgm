@@ -90,7 +90,7 @@ impl State {
         {
             Progress::Complete { ty, steps } => (ty, steps),
             Progress::Definition(_) => return Err("missing completed associated type definition"),
-            Progress::Header(_) => {
+            Progress::Dependency(_) => {
                 return Err("projection selection requires a prepared implementation header");
             }
         };

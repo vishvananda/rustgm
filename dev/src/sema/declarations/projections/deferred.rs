@@ -3,6 +3,27 @@ use super::{Checker, Destination, Error, NodeKey, Request, Resolution, TypeId, r
 use crate::{resolve::model::DefKind, types::parameters::predicates::Predicate};
 
 impl Checker<'_> {
+    pub(in super::super) fn complete_size_rechecks(
+        &mut self,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        while let Some((key, context, ambient, ty, expected)) = self.projections.rechecks.pop() {
+            self.start_scoped_normalization(
+                key,
+                super::Root {
+                    ty,
+                    normalized_subject: None,
+                },
+                context,
+                Destination::Recheck(expected),
+                ambient,
+            )?;
+            self.drain(steps, limit)?;
+        }
+        Ok(())
+    }
+
     pub(super) fn alias_parameter_environment(
         &mut self,
         key: NodeKey,
@@ -136,7 +157,9 @@ impl Checker<'_> {
             .projection_alias_owner(context)
             .ok_or_else(|| self.error(key, "missing alias premise owner"))?;
         for ty in sized {
-            if self.facts.types.contains_parameters(ty) != Some(true) {
+            if self.facts.types.contains_parameters(ty) != Some(true)
+                && self.facts.types.contains_nominals(ty) != Some(true)
+            {
                 continue;
             }
             let ty = if let Some(restore) = &mut restore {

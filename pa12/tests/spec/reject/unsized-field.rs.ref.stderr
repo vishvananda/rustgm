@@ -1,1 +1,1 @@
-ERROR: file 0: 9: aggregate fields must be well-formed and sized in this profile
+ERROR: file 0: 25: local bindings must be sized

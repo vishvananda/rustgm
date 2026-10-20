@@ -53,25 +53,31 @@ impl Address {
 }
 
 impl super::context::Context<'_> {
+    pub fn place_field(
+        &mut self,
+        ty: crate::types::TypeId,
+        selection: crate::body::ir::Selection,
+    ) -> Result<(crate::types::TypeId, u64), &'static str> {
+        if self.wide_referent(ty)? {
+            let (variant, field) = self.field_indices(selection)?;
+            if variant != 0 {
+                return Err("unsized place cannot have an enum variant");
+            }
+            return self
+                .layouts
+                .unsized_field(self.types, self.aggregates, ty, field)
+                .map_err(|error| error.message);
+        }
+        let layout = self.layout(ty)?;
+        self.selected_field(&layout, selection)
+    }
+
     pub fn selected_field(
         &self,
         layout: &crate::abi::layout::Layout,
         selection: crate::body::ir::Selection,
     ) -> Result<(crate::types::TypeId, u64), &'static str> {
-        use crate::body::ir::Selection;
-        let (variant, field) = match selection {
-            Selection::Tuple(index) => (0, index),
-            Selection::Nominal(id) => (
-                self.members
-                    .variant(id)
-                    .and_then(|v| self.members.variants.get(v.0 as usize))
-                    .ok_or("missing selected field variant")?
-                    .ordinal,
-                self.members
-                    .ordinal(id)
-                    .ok_or("missing selected field ordinal")?,
-            ),
-        };
+        let (variant, field) = self.field_indices(selection)?;
         let variant = self
             .layouts
             .variants(layout)
@@ -88,5 +94,24 @@ impl super::context::Context<'_> {
             .get(field as usize)
             .ok_or("missing selected field offset")?;
         Ok((ty, offset))
+    }
+    fn field_indices(
+        &self,
+        selection: crate::body::ir::Selection,
+    ) -> Result<(u32, u32), &'static str> {
+        use crate::body::ir::Selection;
+        Ok(match selection {
+            Selection::Tuple(index) => (0, index),
+            Selection::Nominal(id) => (
+                self.members
+                    .variant(id)
+                    .and_then(|v| self.members.variants.get(v.0 as usize))
+                    .ok_or("missing selected field variant")?
+                    .ordinal,
+                self.members
+                    .ordinal(id)
+                    .ok_or("missing selected field ordinal")?,
+            ),
+        })
     }
 }

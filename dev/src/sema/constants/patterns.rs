@@ -14,7 +14,7 @@ struct Expansion<'a> {
     source: NodeKey,
     work: Vec<(PatternId, Value)>,
     products: HashMap<(products::Id, TypeId), PatternId>,
-    references: HashMap<(super::references::Id, TypeId), PatternId>,
+    references: HashMap<(super::references::Pointer, TypeId), PatternId>,
     texts: HashMap<(crate::sema::text::Id, TypeId), PatternId>,
     remaining: u64,
 }

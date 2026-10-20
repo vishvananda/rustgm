@@ -153,6 +153,9 @@ pub(super) fn normalize(
         if let Rvalue::Call { signature, .. } = &mut value.kind {
             *signature = ty(facts, &mut session, &mut storage, *signature)?;
         }
+        if let Rvalue::Unsize { array, .. } = &mut value.kind {
+            *array = ty(facts, &mut session, &mut storage, *array)?;
+        }
     }
     let scoped_terms = rewrite_contract(facts, contract, &mut session)?;
     assumptions::normalize(facts, contract, &mut proof)?;

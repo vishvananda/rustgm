@@ -421,6 +421,9 @@ impl<'a> Builder<'a> {
                         value = self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?;
                     }
                 }
+                AdjustmentKind::Unsize => {
+                    value = self.selected_unsizing(node, value, adjustment.target)?;
+                }
                 AdjustmentKind::Reborrow => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
                         return Err(self.error(node, "missing selected reference adjustment"));
