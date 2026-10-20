@@ -1,10 +1,10 @@
 # RustGM Programming Assignment 21: Advanced generic relationships
 
-Status: **planned**. These are implementation and release requirements, not a
-released grading contract. Prerequisite: PA20. The bounded source profile is
-Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The stage must continue to fail until its complete
-manifest and reviewed text oracles ship.
+Status: **implemented-draft**. Prerequisite: PA20. The public suite contains
+744 cases: 298 generic-semantic inspections and 446 LowIR checks. The bounded
+source profile is Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
+debug assertions disabled. The manifest declares 260 native executions, including
+four expected destructor panics. See [the validation review](../docs/pa21-validation.md).
 
 ## Required implementation
 
@@ -108,12 +108,57 @@ the supported constructors.
 
 ## Tool surface
 
-Develop a separate `--emit-generic-semantics` and `--count-generic-semantics` view.
-PA19's `semantic-crate 1` and PA20's `trait-semantics 1` bytes remain unchanged.
-The new view must expose canonical binder scopes, quantified predicates, family
-parameters/contracts, opaque identities/captures and retained proof relationships.
-Define the exact vocabulary, deterministic ordering and counts from actual typed
-facts before generating public references; no draft row is a grading contract.
+`--emit-generic-semantics` emits `generic-semantics 1`; the matching
+`--count-generic-semantics` mode emits only the final counts and a newline.
+PA19's `semantic-crate 1` and PA20's `trait-semantics 1` remain separate contracts.
+The new inspection consumes typed facts without running additional proofs.
+
+The following vocabulary defines the text contract in the manifest and sidecars:
+
+- First come PA19's type, definition, owner, parameter, predicate, implementation,
+  dispatch and pending lifetime records, then PA20's associated member, constant
+  and normalization records. Quantified predicates use `forall=<quantifier-id>`
+  in place of an ordinary predicate. Type rows expose opaque identities with
+  their complete mixed capture arguments and projections with separate family
+  arguments. All identifiers retain their typed arena identity.
+- `quantifier <id> regions=<count> <predicate>` records each canonical quantified
+  clause in arena order. Bound lifetime spelling follows the existing type view;
+  binder depth and slot distinguish local names from enclosing captures.
+- `family def=<id> captures=<count> regions=<count> complete=<bool>` introduces
+  a family, sorted by definition identity. Its `family-bound def=<id> index=<n>
+  <clause>` and `family-region def=<id> index=<n> longer=<region>
+  shorter=<region>` rows retain contract order. Parent captures and total
+  lifetime slots are separate counts; ordinary parameter rows supply type and
+  const parameter identities and kinds.
+- `opaque <id> owner=<def> source=<file>:<node> application=<type> hidden=<type|->
+  role=<trait-result|defining-result> storage-proof=pending` records each opaque
+  declaration in identity order. `opaque-bound id=<id> index=<n> <clause>` keeps
+  the published bound order. The application type contains exactly the selected
+  edition-2024 or precise captures. A retained hidden type is private defining
+  evidence, not permission for a caller to equate it with the public identity.
+- `opaque-body-result def=<id> type=<type>` records the private body result,
+  sorted by defining function. `opaque-implementation owner=<impl> id=<opaque>
+  type=<type> parent-regions=<count> regions=[<region>,...]` records a proved
+  trait-method override template, sorted by impl owner and opaque identity.
+  Its ordered region map translates trait method slots into template coordinates.
+- `proof <id> body=<file>:<node> source=<file>:<node> pending` introduces a
+  retained proof in insertion order. Its ordered `proof-source`, `proof-scope`,
+  `proof-owned`, `proof-block`, `proof-relation` and `proof-type` rows preserve
+  source indices, parent scopes, universal counts, scope depths, half-open owned
+  lifetime intervals, restoration blocks, equalities/outlives and type-outlives
+  debts. Scope zero is the body root; nested scopes have explicit parents.
+  Block `aliases` and `source` flags describe restoration, not new assumptions.
+- `eof <counts>` ends the full view. Counts extend PA20's totals in this order:
+  `quantifiers`, `families`, `family-bounds`, `family-regions`, `opaques`,
+  `opaque-bounds`, `hidden-types`, `opaque-body-results`, `opaque-implementations`,
+  `proofs`, `proof-scopes`, `proof-blocks`, `proof-sources`, `proof-owned`,
+  `proof-relations`, `proof-types`. Each counts its matching records;
+  `hidden-types` counts opaque records with a non-dash hidden value.
+
+Numbers are decimal, booleans are `true`/`false`, and list commas have no spaces.
+Full and count views have identical counts. Hash-table iteration never determines
+row order. Pending markers are intentional: an accepted inspection can still
+fail the complete region, loan or storage proof required by LowIR.
 
 The supplemental `--emit-lowir` lane proves complete region, ownership,
 destruction and layout obligations before emitting the existing LowIR contract.
@@ -154,5 +199,5 @@ negative controls and preserve any independently qualified gaps.
 Publish the semantic and lowering contracts, complete manifest, sidecars and
 validation review together. Run every active earlier stage, strict lint, audits,
 harness, upstream/backend checks, independent source/native checks and affected
-scaling measurements. Keep planned-stage discovery failing until then. Student
-export remains a later operation; this repository owns the full solution.
+scaling measurements. PA22 and later stages continue to fail explicitly until
+released. Student export remains a later operation; this repository owns the full solution.

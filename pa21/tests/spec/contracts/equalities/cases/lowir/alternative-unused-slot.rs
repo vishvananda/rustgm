@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}fn f<'x,T>(x:&'x u8)-><T as A<'x>>::Out where for<'a>T:A<'a,Out=&'a u8>,for<'unused,'a>T:A<'a,Out=&'a u8>{x}fn main(){let n=7;if *f::<u8>(&n)!=7{loop{}}}

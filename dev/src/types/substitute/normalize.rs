@@ -1,14 +1,16 @@
 //! Suspend the common type fold at projections so semantic selection can borrow the store.
+mod aliases;
 mod scopes;
 use super::{Action, Bound, Key};
-use crate::types::{Kind, Store, TypeId, lifetime_proof::ScopeId, projection::Application};
+use crate::types::{Kind, Store, TypeId, lifetime_proof::ScopeId};
+pub use aliases::Alias;
 use scopes::{Frame, Suspended};
 use std::collections::{HashMap, HashSet};
 
 /// Inputs have already been normalized in the indicated surrounding binder depth.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Request {
-    pub application: Application,
+    pub alias: Alias,
     pub depth: u16,
     /// Identity in this normalizer's callable binder tree; siblings are distinct.
     pub scope: ScopeId,
@@ -120,7 +122,7 @@ impl Normalizer {
         let key = (request.source, 0);
         match resolution {
             Resolution::Opaque | Resolution::Deferred => {
-                let ty = store.intern(Kind::Projection(request.application))?;
+                let ty = store.intern(request.alias.kind())?;
                 self.frame.fold.completed.insert(key, ty);
                 self.frame.active.remove(&key);
             }
@@ -171,9 +173,18 @@ impl Normalizer {
                 }
                 let kind = store.kind(key.0).ok_or("invalid normalization type")?;
                 let kind = self.frame.fold.rebuild(store, kind, key.1)?;
-                if let Kind::Projection(application) = kind {
+                let alias = match kind {
+                    Kind::Projection(application) => Some(Alias::Associated(application)),
+                    Kind::Opaque(id, arguments)
+                        if store.opaque_declaration(id).is_some_and(|d| d.trait_result) =>
+                    {
+                        Some(Alias::TraitResult(id, arguments))
+                    }
+                    _ => None,
+                };
+                if let Some(alias) = alias {
                     let request = Request {
-                        application,
+                        alias,
                         depth: u16::try_from(self.suspended.len())
                             .map_err(|_| "normalization binder depth exhausted")?,
                         scope: self.frame.scope,

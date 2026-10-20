@@ -18,6 +18,7 @@ pub mod members;
 pub mod methods;
 pub mod model;
 mod nominals;
+pub mod opaque;
 pub mod pattern_view;
 pub mod patterns;
 pub(crate) mod projections;

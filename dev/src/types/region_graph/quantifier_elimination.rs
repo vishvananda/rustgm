@@ -10,7 +10,7 @@ impl Graph {
     /// Eliminate existential paths with the same scoped propagation as `solve`.
     /// A condition on a younger universal cannot become an outer assumption.
     pub(crate) fn outer_conditions(&self) -> Result<Vec<(Region, Region)>, Error> {
-        if self.verifications.is_some() {
+        if self.verifications.is_some() || self.members.is_some() {
             return Err(Error::Identity);
         }
         let mut conditions = HashSet::new();

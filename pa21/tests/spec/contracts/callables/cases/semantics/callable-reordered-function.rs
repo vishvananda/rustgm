@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Accept{}impl Accept for for<'a>fn(&'a u8)->&'a u8{}fn f<T>()where (for<'a>fn(&'a u8)-><T as A<'a>>::Out):Accept,T:for<'a>A<'a>{}fn main(){f::<u8>();}

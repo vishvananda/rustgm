@@ -9,9 +9,8 @@ use crate::{
     sema::traits::equalities,
     types::{
         infer::predicates::Predicate as Goal,
-        parameters::predicates::Bound,
         projection::Application,
-        substitute::{Request, Resolution},
+        substitute::{Alias, Request, Resolution},
     },
 };
 use std::sync::Arc;
@@ -22,7 +21,7 @@ pub(in crate::sema) enum Progress {
 }
 pub(in crate::sema) struct Query {
     state: State,
-    application: Application,
+    alias: Alias,
     requirement: Predicate,
     goal: Goal,
     assumptions: Option<Arc<Assumptions>>,
@@ -42,30 +41,28 @@ pub(in crate::sema) fn begin(
     retain_sized: bool,
     availability: Availability,
 ) -> Result<Progress, &'static str> {
-    if !facts
-        .associated
-        .families
-        .contains_key(&DefId(request.application.item.0))
-        && let Some((source, resolution)) =
-            selection::known_normalized(facts, environment.as_deref(), request)
-                .map_err(|_| "invalid or exhausted canonical projection premise")?
+    if request.alias.associated().is_some_and(|application| {
+        !facts
+            .associated
+            .families
+            .contains_key(&DefId(application.item.0))
+    }) && let Some((source, resolution)) =
+        selection::known_normalized(facts, environment.as_deref(), request)
+            .map_err(|_| "invalid or exhausted canonical projection premise")?
     {
         return Ok(Progress::Ready(Projected {
             source: Some(source),
             resolution: Some(resolution),
             proof: Obligations::new(first),
             sized: Vec::new(),
-            family: request.application.arguments,
+            family: request.alias.arguments(),
         }));
     }
-    let requirement = Predicate {
-        ty: request.application.subject,
-        bound: Bound::Trait(request.application.trait_application),
-    };
+    let requirement = crate::sema::opaque::overrides::requirement(facts, request.alias)?;
     let (mut state, requirement, arguments) = opening::prepare(
         facts,
         environment,
-        (requirement, request.application.arguments),
+        (requirement, request.alias.arguments()),
         first,
         retain_sized,
         availability,
@@ -74,10 +71,7 @@ pub(in crate::sema) fn begin(
     let frontier = state.obligations.regions.end;
     Query {
         state,
-        application: Application {
-            arguments,
-            ..request.application
-        },
+        alias: request.alias.with_arguments(arguments),
         requirement,
         goal,
         assumptions: None,
@@ -164,6 +158,14 @@ impl Query {
             ) {
                 return self.finish(facts, None);
             }
+            if matches!(self.alias, Alias::TraitResult(..)) {
+                if self.requirement.is_concrete(&facts.types)? {
+                    self.closed = true;
+                    self.goal = self.state.projection_goal(facts, self.requirement)?;
+                    continue;
+                }
+                return self.finish(facts, Some(Resolution::Opaque));
+            }
             match self.equality(facts)? {
                 equalities::Selection::Proven(evidence) => {
                     let ty = evidence.append_to(&mut self.state.obligations)?;
@@ -187,11 +189,12 @@ impl Query {
         let state = &mut self.state;
         let selected = if let Some(pending) = self.pending.take() {
             pending.resume(facts, &mut state.context, &self.goal, self.frontier)
-        } else if facts
-            .associated
-            .families
-            .contains_key(&DefId(self.application.item.0))
-        {
+        } else if let Some(application) = self.alias.associated().filter(|application| {
+            facts
+                .associated
+                .families
+                .contains_key(&DefId(application.item.0))
+        }) {
             let crate::types::parameters::predicates::Bound::Trait(trait_application) =
                 self.requirement.bound
             else {
@@ -200,7 +203,7 @@ impl Query {
             let application = Application {
                 subject: self.requirement.ty,
                 trait_application,
-                ..self.application
+                ..application
             };
             let caller = state.owned_caller(&mut self.assumptions, self.closed);
             selection::begin_projection(
@@ -266,14 +269,18 @@ impl Query {
         &mut self,
         facts: &mut Declarations,
     ) -> Result<equalities::Selection, &'static str> {
+        let application = self
+            .alias
+            .associated()
+            .ok_or("trait result has no written equality")?;
         let predicate = self.state.projection_goal(facts, self.requirement)?;
         let inferred = crate::types::infer::projections::Application {
-            item: self.application.item,
+            item: application.item,
             predicate,
             arguments: self
                 .state
                 .context
-                .known_arguments(&facts.types, self.application.arguments)
+                .known_arguments(&facts.types, self.alias.arguments())
                 .map_err(|_| "invalid canonical family arguments")?,
         };
         equalities::for_projection(
@@ -301,7 +308,7 @@ impl Query {
             resolution,
             proof,
             sized,
-            family: self.application.arguments,
+            family: self.alias.arguments(),
         }))
     }
 }

@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Both{}impl Both for (for<'a>fn(&'a u8)->&'a u8,for<'b>fn(&'b u16)->&'b u8){}fn f<T>()where T:for<'a>A<'a>,(for<'a>fn(&'a u8)-><T as A<'a>>::Out,for<'b>fn(&'b u16)-><T as A<'b>>::Out):Both{}fn main(){f::<u8>();}

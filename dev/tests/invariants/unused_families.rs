@@ -238,7 +238,7 @@ fn check(source: &str) -> TestResult {
     Ok(())
 }
 
-fn prepare(checker: &mut Checker<'_>) -> TestResult {
+pub(super) fn prepare(checker: &mut Checker<'_>) -> TestResult {
     let report = checker.report;
     reserve(checker)?;
     let members = checker.facts.associated.members().to_vec();

@@ -50,6 +50,7 @@ pub enum Mode {
     Types,
     Semantics,
     Relationships,
+    Generics,
     Patterns,
     Layouts,
     Bodies,
@@ -82,6 +83,7 @@ pub fn run(
             | Mode::Types
             | Mode::Semantics
             | Mode::Relationships
+            | Mode::Generics
             | Mode::Patterns
             | Mode::Layouts
             | Mode::Bodies
@@ -99,6 +101,7 @@ pub fn run(
             Mode::Types
                 | Mode::Semantics
                 | Mode::Relationships
+                | Mode::Generics
                 | Mode::Patterns
                 | Mode::Layouts
                 | Mode::Bodies
@@ -248,6 +251,14 @@ fn semantic(
             rustgm::sema::semantic_view::relationships::count(&report, &facts, out)
         } else {
             rustgm::sema::semantic_view::relationships::write(&report, &facts, out)
+        }
+        .map_err(|e| e.to_string());
+    }
+    if matches!(mode, Mode::Generics) {
+        return if count {
+            rustgm::sema::semantic_view::generics::count(&report, &facts, out)
+        } else {
+            rustgm::sema::semantic_view::generics::write(&report, &facts, out)
         }
         .map_err(|e| e.to_string());
     }

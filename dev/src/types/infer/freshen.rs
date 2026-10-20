@@ -125,8 +125,8 @@ impl Context {
                     // closed canonical subtrees. Rebuilding may shift their binders.
                     projections |= match self.terms[id.0 as usize].value {
                         Value::Known(ty) => store.contains_projections(ty) == Some(true),
-                        Value::Construct(Constructor::Projection(_)) => true,
-                        _ => false,
+                        Value::Construct(kind) => kind.normalizable(store),
+                        Value::Variable(_) => false,
                     };
                     if self.closed(store, id, depth)? || scratch.closed.contains(&(id, depth)) {
                         scratch.values.push(id);
@@ -140,7 +140,7 @@ impl Context {
                         scratch.values.push(id);
                         continue;
                     }
-                    if matches!(original, Constructor::Projection(_)) {
+                    if original.normalizable(store) {
                         if self.opaque_projection(id).is_some() {
                             // An opaque result has no exposed reference shape.
                             // Its operation inputs remain invariant identities.
@@ -184,6 +184,10 @@ impl Context {
                     }
                     let term = self.terms[id.0 as usize];
                     let kind = match original {
+                        Constructor::Opaque(id, args) => Constructor::Opaque(
+                            id,
+                            self.argument_regions(args, |r| fresh(r, depth, &mut next))?,
+                        ),
                         Constructor::AdtArgs(item, args) => Constructor::AdtArgs(
                             item,
                             self.argument_regions(args, |r| fresh(r, depth, &mut next))?,

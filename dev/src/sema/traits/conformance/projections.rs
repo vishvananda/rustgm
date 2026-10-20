@@ -40,20 +40,23 @@ impl Definitions {
         facts: &mut Declarations,
         request: Request,
     ) -> Result<Option<TypeId>, &'static str> {
-        let Some(&result) = self.results.get(&request.application.item) else {
+        let Some(application) = request.alias.associated() else {
+            return facts.types.intern(request.alias.kind()).map(Some);
+        };
+        let Some(&result) = self.results.get(&application.item) else {
             return Ok(None);
         };
         let mut shift = substitute::Bound::shift(request.depth);
         let parent = shift.predicate(&mut facts.types, self.parent)?;
         if parent
             != (Predicate {
-                ty: request.application.subject,
-                bound: Bound::Trait(request.application.trait_application),
+                ty: application.subject,
+                bound: Bound::Trait(application.trait_application),
             })
         {
             return Ok(None);
         }
-        if request.application.arguments != GenericArgs::EMPTY {
+        if application.arguments != GenericArgs::EMPTY {
             return Err("associated families require advanced generic relationships");
         }
         shift.apply(&mut facts.types, result).map(Some)

@@ -311,7 +311,7 @@
       "path": "pa21",
       "title": "Advanced generic relationships",
       "mode": "--emit-generic-semantics",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "Variance, higher-ranked bounds, GATs, opaque types and generic drop checking",
       "test_families": [
         "binders",

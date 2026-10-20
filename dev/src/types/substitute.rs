@@ -2,12 +2,13 @@
 mod equation_closure;
 pub(crate) use equation_closure::RegionEquations;
 mod export;
+pub(crate) mod families;
 mod items;
 pub use export::ExportSource;
 pub(crate) mod lookup;
 mod normalize;
 mod rewrite;
-pub use normalize::{Normalizer, Request, Resolution, Step};
+pub use normalize::{Alias, Normalizer, Request, Resolution, Step};
 mod parameters;
 mod predicates;
 mod region_mapping;
@@ -273,7 +274,7 @@ impl Bound {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }
-            Kind::Adt(_, arguments) => {
+            Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }

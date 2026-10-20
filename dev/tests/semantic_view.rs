@@ -1,4 +1,6 @@
 //! The PA19 inspection view reports selection while preserving later proof boundaries.
+#[path = "semantic_view/generics.rs"]
+mod generics;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "semantic_view/relationships.rs"]

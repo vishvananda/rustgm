@@ -3,8 +3,12 @@
 mod conformance;
 #[path = "family_formation.rs"]
 mod formation;
+#[path = "input_contracts/consumers.rs"]
+mod input_consumers;
 #[path = "family_paths.rs"]
 mod paths;
+#[path = "input_contracts/required.rs"]
+mod required;
 use super::Checker;
 use crate::{
     resolve::{

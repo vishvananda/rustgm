@@ -155,7 +155,17 @@ impl Dispatcher {
             return Err("concrete dispatch retains unresolved parameters".into());
         }
         let arguments = arguments::Arguments::new(facts, ty)?;
-        let predicate = arguments.goal(facts, trait_owner)?;
+        let mut predicate = arguments.goal(facts, trait_owner)?;
+        if self.caller.is_none()
+            && matches!(
+                self.availability,
+                super::traits::implementations::Availability::Validated
+            )
+            && matches!(facts.types.kind(predicate.ty), Some(Kind::Opaque(..)))
+        {
+            facts.prepare_opaque_storage()?;
+            predicate.ty = facts.types.storage_head(predicate.ty)?;
+        }
         let (owner, implementation, evidence) = self.implementation(facts, predicate)?;
         let target = facts
             .generics

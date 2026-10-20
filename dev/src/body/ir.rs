@@ -198,6 +198,8 @@ pub struct Temporary {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Action {
+    /// A wildcard mentions a place's type without reading, moving or borrowing it.
+    Mention(Place),
     /// Start a new guard attempt; previous attempts cannot keep protections live.
     GuardStart(GuardId),
     /// Keep guard protections live on paths that finish evaluating the guard.

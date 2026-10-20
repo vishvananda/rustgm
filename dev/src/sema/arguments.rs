@@ -56,6 +56,11 @@ pub(super) fn arity(
     count: usize,
     pending: impl Fn(crate::resolve::model::DefId) -> bool,
 ) -> Result<usize, &'static str> {
+    let explicit = parameters
+        .iter()
+        .position(|p| p.anonymous)
+        .unwrap_or(parameters.len());
+    let parameters = &parameters[..explicit];
     let offset = parameters
         .iter()
         .take_while(|p| matches!(p.argument, crate::types::arguments::Argument::Lifetime(_)))

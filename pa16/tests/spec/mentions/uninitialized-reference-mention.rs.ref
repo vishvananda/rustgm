@@ -1,0 +1,10 @@
+function @rg.13() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}

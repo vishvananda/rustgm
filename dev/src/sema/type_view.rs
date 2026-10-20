@@ -348,6 +348,10 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             write!(out, "aggregate def={}", item.0)?;
             region_arguments(store, args, out)
         }
+        Kind::Opaque(id, arguments) => {
+            write!(out, "opaque id={}", id.0)?;
+            generic_arguments(store, arguments, out)
+        }
         Kind::Projection(application) => {
             let trait_ = store
                 .trait_application(application.trait_application)

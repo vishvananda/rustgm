@@ -64,6 +64,7 @@ fn facts(implementation: &str) -> TestResult<(Declarations, ItemId)> {
         facts.generics.parameters.insert(
             member,
             vec![Parameter {
+                anonymous: false,
                 binding: member,
                 argument: Canonical::Type(template),
                 default: None,

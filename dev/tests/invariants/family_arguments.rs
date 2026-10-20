@@ -21,6 +21,7 @@ fn parameter(store: &mut Store, owner: u32, index: u32, constant: bool) -> TestR
         },
     })?;
     Ok(Parameter {
+        anonymous: false,
         binding: DefId(index),
         argument: if constant {
             Argument::Const(store.intern_const(crate::types::arguments::ConstKind::Parameter(id))?)
@@ -51,6 +52,7 @@ fn mixed_arguments_preserve_anonymous_captures_and_nested_local_binders() -> Tes
     let element = parameter(&mut store, 2, 1, false)?;
     let constant = parameter(&mut store, 2, 2, true)?;
     let lifetime = Parameter {
+        anonymous: false,
         binding: DefId(9),
         argument: Argument::Lifetime(RegionId::bound(0, 2)?),
         default: None,
@@ -145,6 +147,7 @@ fn malformed_family_arity_kinds_and_captured_slots_cannot_build_a_mapping() -> T
     let ty = parameter(&mut store, 2, 1, false)?;
     let constant = parameter(&mut store, 2, 2, true)?;
     let lifetime = Parameter {
+        anonymous: false,
         binding: DefId(9),
         argument: Argument::Lifetime(RegionId::bound(0, 1)?),
         default: None,

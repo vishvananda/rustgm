@@ -80,8 +80,15 @@ pub(super) struct Projected {
     mapping: Mapping,
     scan: Scan,
     work: Vec<(TypeId, bool)>,
+    pub families: Option<Box<super::families::Families>>,
 }
 impl Bounds {
+    pub(super) fn has_family_inputs(&self) -> bool {
+        self.projected
+            .as_ref()
+            .is_some_and(|p| p.families.is_some())
+    }
+
     #[must_use]
     pub fn projections(&self, item: ItemId) -> &[ProjectionPair] {
         self.projected
@@ -123,6 +130,13 @@ impl Bounds {
     }
 }
 impl Projected {
+    pub(super) fn with_families(families: super::families::Families) -> Result<Self, &'static str> {
+        let mut result = Self::default();
+        result.scan.budget.work(families.steps())?;
+        result.families = Some(Box::new(families));
+        Ok(result)
+    }
+
     fn prepare(&mut self, types: &mut Store, root: TypeId) -> Result<(), &'static str> {
         if self.prepared.contains(&root) {
             return Ok(());
@@ -147,6 +161,9 @@ impl Projected {
             self.work.push((ty, true));
             self.scan.work.clear();
             if let Kind::Projection(application) = kind {
+                if let Some(families) = &mut self.families {
+                    families.prepare(types, application, &mut self.scan.budget)?;
+                }
                 self.scan.projected_inputs(types, application, 0)?;
             } else {
                 children(types, ty, 0, &mut self.scan.work, &mut self.scan.budget)?;

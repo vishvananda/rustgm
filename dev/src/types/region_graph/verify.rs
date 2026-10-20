@@ -1,7 +1,9 @@
 //! Shared typed alternatives survive symbolic proof and runtime extent checking.
 mod entailment;
+mod probes;
 use super::{Error, Graph, Region, Solution};
 use crate::support::intern_slice::Slices;
+pub(crate) use probes::Answers;
 use std::collections::HashMap;
 
 /// Identity in one graph's append-only verification arena.
@@ -129,40 +131,51 @@ impl Verifications {
         let mut work = Vec::new();
         for &(root, source) in &self.requests {
             context.charge(1)?;
-            work.push((root, false));
-            while let Some((id, finish)) = work.pop() {
-                context.charge(1)?;
-                let index = id.0 as usize;
-                if values.get(index).ok_or(Error::Identity)?.is_some() {
-                    continue;
-                }
-                if let Some(previous) = previous {
-                    match previous.get(index).ok_or(Error::Identity)? {
-                        Some(false) => {
-                            values[index] = Some(false);
-                            continue;
-                        }
-                        Some(true) => {}
-                        None => return Err(Error::Identity),
-                    }
-                }
-                let node = self.nodes[index];
-                let children = self.children(node)?;
-                if !finish && !children.is_empty() {
-                    work.push((id, true));
-                    for &child in children.iter().rev() {
-                        context.charge(1)?;
-                        work.push((child, false));
-                    }
-                } else {
-                    values[index] = Some(self.evaluate(node, &values, context)?);
-                }
-            }
+            self.evaluate_root(root, previous, &mut values, &mut work, context)?;
             if values[root.0 as usize] != Some(true) {
                 return Err(Error::Verification { source });
             }
         }
         Ok(values)
+    }
+    fn evaluate_root(
+        &self,
+        root: VerificationId,
+        previous: Option<&[Option<bool>]>,
+        values: &mut [Option<bool>],
+        work: &mut Vec<(VerificationId, bool)>,
+        context: &mut impl Relations,
+    ) -> Result<(), Error> {
+        work.push((root, false));
+        while let Some((id, finish)) = work.pop() {
+            context.charge(1)?;
+            let index = id.0 as usize;
+            if values.get(index).ok_or(Error::Identity)?.is_some() {
+                continue;
+            }
+            if let Some(previous) = previous {
+                match previous.get(index).ok_or(Error::Identity)? {
+                    Some(false) => {
+                        values[index] = Some(false);
+                        continue;
+                    }
+                    Some(true) => {}
+                    None => return Err(Error::Identity),
+                }
+            }
+            let node = self.nodes[index];
+            let children = self.children(node)?;
+            if !finish && !children.is_empty() {
+                work.push((id, true));
+                for &child in children.iter().rev() {
+                    context.charge(1)?;
+                    work.push((child, false));
+                }
+            } else {
+                values[index] = Some(self.evaluate(node, values, context)?);
+            }
+        }
+        Ok(())
     }
     fn evaluate(
         &self,

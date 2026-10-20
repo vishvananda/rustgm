@@ -1,0 +1,149 @@
+generic-semantics 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 parameter def=14 index=0
+type 20 projection def=15 self=19 trait=13 arguments=[region:bound:0:0,region:bound:0:1] family arguments=[]
+type 21 reference mutable=false region=bound:0:0 referent=11
+type 22 reference mutable=false region=bound:0:1 referent=11
+type 23 tuple [21,22]
+type 24 parameter def=18 index=2
+type 25 projection def=15 self=24 trait=13 arguments=[region:bound:0:0,region:bound:0:1] family arguments=[]
+type 26 projection def=15 self=24 trait=13 arguments=[region:region:5,region:region:6] family arguments=[]
+type 27 reference mutable=false region=region:6 referent=11
+type 28 reference mutable=false region=region:5 referent=11
+type 29 tuple [28,27]
+type 30 function binders=2 parameters=[21,22] result=23 unsafe=false
+type 31 function binders=2 parameters=[21,22] result=25 unsafe=false
+type 32 function-item def=18 signature=30
+type 33 function-item def=18 signature=31
+type 34 function binders=0 parameters=[] result=1 unsafe=false
+type 35 function-item def=19 signature=34
+type 36 reference mutable=false region=region:1 referent=11
+type 37 reference mutable=false region=region:2 referent=11
+type 38 tuple [36,37]
+type 39 function binders=0 parameters=[36,37] result=38 unsafe=false
+type 40 reference mutable=false region=region:12 referent=11
+type 41 reference mutable=false region=region:11 referent=11
+type 42 tuple [41,40]
+type 43 projection def=15 self=11 trait=13 arguments=[region:region:11,region:region:12] family arguments=[]
+type 44 projection def=15 self=11 trait=13 arguments=[region:static,region:static] family arguments=[]
+type 45 reference mutable=false region=static referent=11
+type 46 tuple [45,45]
+type 47 reference mutable=false region=region:14 referent=11
+type 48 reference mutable=false region=region:13 referent=11
+type 49 tuple [48,47]
+type 50 projection def=15 self=11 trait=13 arguments=[region:bound:0:0,region:bound:0:1] family arguments=[]
+type 51 function-item def=18 signature=30 arguments=[type:11]
+type 52 reference mutable=false region=region:3 referent=11
+type 53 reference mutable=false region=region:4 referent=11
+def 14 type=19 name="Self" source=0:3
+def 15 type=20 name="Out" source=0:2
+def 16 type=11 name="Self" source=0:27
+def 17 type=23 name="Out" source=0:26
+def 18 type=32 name="f" source=0:94
+def 19 type=35 name="main" source=0:140
+def 20 type=2 name="bool"
+def 21 type=3 name="char"
+def 22 type=4 name="str"
+def 23 type=5 name="i8"
+def 24 type=6 name="i16"
+def 25 type=7 name="i32"
+def 26 type=8 name="i64"
+def 27 type=9 name="i128"
+def 28 type=10 name="isize"
+def 29 type=11 name="u8"
+def 30 type=12 name="u16"
+def 31 type=13 name="u32"
+def 32 type=14 name="u64"
+def 33 type=15 name="u128"
+def 34 type=16 name="usize"
+def 35 type=17 name="f32"
+def 36 type=18 name="f64"
+def 43 type=24 name="T" source=0:30
+def 46 type=21 name="x" source=0:33
+def 47 type=22 name="y" source=0:42
+def 48 type=11 name="n" source=0:97
+def 49 type=11 name="m" source=0:102
+def 50 type=29 name="p" source=0:107
+associated-owner 0 kind=trait self-def=14 self=19 source=0:3 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:27 unsafe=false
+associated-member def=15 owner=0
+associated-member def=17 owner=1
+parameter owner=13 binding=37 argument=region:bound:0:0 default=-
+parameter owner=13 binding=38 argument=region:bound:0:1 default=-
+parameter owner=14 binding=14 argument=type:19 default=-
+parameter owner=18 binding=43 argument=type:24 default=-
+predicate owner=13 source=0:3 subject=19 bound=trait:13 arguments=[region:bound:0:0,region:bound:0:1]
+predicate owner=18 source=0:86 forall=0
+predicate owner=18 source=0:83 forall=1
+impl owner=16 source=0:27 subject=11 bound=trait:13 arguments=[region:bound:0:0,region:bound:0:1]
+impl-type owner=16 declaration=15 definition=17
+implementation-use source=0:113 owner=16 arguments=[region:region:9,region:region:10]
+region-var region:1 body=0:139 source=0:120 origin=call-argument pending
+region-var region:2 body=0:139 source=0:120 origin=call-argument pending
+region-var region:3 body=0:139 source=0:116 origin=expression-borrow pending
+region-var region:4 body=0:139 source=0:119 origin=expression-borrow pending
+region-var region:5 body=0:139 source=0:120 origin=inference pending
+region-var region:6 body=0:139 source=0:120 origin=inference pending
+region-var region:7 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:8 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:9 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:10 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:11 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:12 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:13 body=0:139 source=0:113 origin=quantified-proof pending
+region-var region:14 body=0:139 source=0:113 origin=quantified-proof pending
+region-coercion body=0:139 source=0:116 actual=52 expected=36 kind=same-shape pending
+region-coercion body=0:139 source=0:119 actual=53 expected=37 kind=same-shape pending
+region-coercion body=0:139 source=0:120 actual=38 expected=29 kind=same-shape pending
+associated-type def=15 type=20
+result-contract def=15 projection=20
+result-bound def=15 index=0 subject=20 bound=sized
+associated-type def=17 type=23
+normalized-node source=0:59 original=25 result=23
+normalized-node source=0:60 original=25 result=23
+normalized-node source=0:94 original=33 result=32
+quantifier 0 regions=2 subject=24 bound=trait:13 arguments=[region:bound:0:0,region:bound:0:1]
+quantifier 1 regions=2 subject=25 bound=projection-equal:23
+proof 0 body=0:139 source=0:113 pending
+proof-scope proof=0 scope=1 parent=0 regions=2 depth=1
+proof-owned proof=0 start=7 end=11
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=7 end=11
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=7 end=9
+proof-block proof=0 index=2 scope=1 aliases=false source=0 start=9 end=11
+proof-block proof=0 index=3 scope=1 aliases=false source=0 start=11 end=11
+proof-relation proof=0 block=3 kind=equal left=region:7 right=region:9
+proof-relation proof=0 block=3 kind=equal left=region:8 right=region:10
+proof-relation proof=0 block=3 kind=equal left=region:7 right=bound:0:0
+proof-relation proof=0 block=3 kind=equal left=region:8 right=bound:0:1
+proof 1 body=0:139 source=0:113 pending
+proof-scope proof=1 scope=1 parent=0 regions=2 depth=1
+proof-owned proof=1 start=11 end=15
+proof-block proof=1 index=0 scope=0 aliases=false source=0 start=11 end=15
+proof-block proof=1 index=1 scope=1 aliases=false source=0 start=11 end=13
+proof-block proof=1 index=2 scope=1 aliases=false source=0 start=13 end=15
+proof-block proof=1 index=3 scope=1 aliases=false source=0 start=15 end=15
+proof-relation proof=1 block=3 kind=equal left=region:14 right=region:12
+proof-relation proof=1 block=3 kind=equal left=region:13 right=region:11
+proof-relation proof=1 block=3 kind=equal left=region:11 right=region:13
+proof-relation proof=1 block=3 kind=equal left=region:12 right=region:14
+proof-relation proof=1 block=3 kind=equal left=region:11 right=bound:0:0
+proof-relation proof=1 block=3 kind=equal left=region:12 right=bound:0:1
+eof owners=2 members=2 parameters=4 predicates=3 impls=1 calls=0 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0 quantifiers=2 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=2 proof-scopes=2 proof-blocks=8 proof-sources=0 proof-owned=2 proof-relations=10 proof-types=0

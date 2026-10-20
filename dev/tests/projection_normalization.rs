@@ -44,11 +44,25 @@ fn dependencies_precede_selection_and_completed_roots_reuse_results() -> TestRes
     let root = store.intern(Kind::Tuple(list))?;
     let mut fold = Normalizer::default();
     let first = request(fold.start(&mut store, root)?)?;
-    assert_eq!(first.application.subject, byte);
+    assert_eq!(
+        first
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        byte
+    );
     assert!(fold.start(&mut store, root).is_err());
     let word = TypeId::primitive(Primitive::U16);
     let second = request(fold.resume(&mut store, first, Resolution::Type(word))?)?;
-    assert_eq!(second.application.subject, word);
+    assert_eq!(
+        second
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        word
+    );
     assert!(fold.resume(&mut store, first, Resolution::Opaque).is_err());
     let result = fold.resume(&mut store, second, Resolution::Type(byte))?;
     let list = store.intern_list(&[byte, byte, word])?;
@@ -69,7 +83,14 @@ fn checked_children_make_appended_projection_work_linear() -> TestResult {
             let root = projected(&mut store, child)?;
             let mut fold = Normalizer::default();
             let query = request(fold.start_with_input(&mut store, root, child)?)?;
-            assert_eq!(query.application.subject, child);
+            assert_eq!(
+                query
+                    .alias
+                    .associated()
+                    .ok_or("expected associated projection")?
+                    .subject,
+                child
+            );
             assert!(fold.start_with_input(&mut store, root, child).is_err());
             assert_eq!(
                 fold.resume(&mut store, query, Resolution::Opaque)?,
@@ -104,11 +125,31 @@ fn checked_subjects_do_not_skip_new_arguments_or_replacement_dependencies() -> T
     }))?;
     let mut fold = Normalizer::default();
     let argument = request(fold.start_with_input(&mut store, root, checked)?)?;
-    assert_eq!(argument.application.subject, word);
+    assert_eq!(
+        argument
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        word
+    );
     let outer = request(fold.resume(&mut store, argument, Resolution::Type(byte))?)?;
-    assert_eq!(outer.application.subject, checked);
+    assert_eq!(
+        outer
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        checked
+    );
     let arguments = store
-        .trait_application(outer.application.trait_application)
+        .trait_application(
+            outer
+                .alias
+                .associated()
+                .ok_or("expected associated projection")?
+                .trait_application,
+        )
         .ok_or("missing trait")?
         .arguments;
     assert_eq!(
@@ -120,7 +161,13 @@ fn checked_subjects_do_not_skip_new_arguments_or_replacement_dependencies() -> T
     );
     let replacement = projected(&mut store, TypeId::UNIT)?;
     let next = request(fold.resume(&mut store, outer, Resolution::Type(replacement))?)?;
-    assert_eq!(next.application.subject, TypeId::UNIT);
+    assert_eq!(
+        next.alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        TypeId::UNIT
+    );
     assert_eq!(
         fold.resume(&mut store, next, Resolution::Type(word))?,
         Step::Complete(word)
@@ -148,7 +195,14 @@ fn checked_root_inputs_do_not_authorize_a_nested_callable_scope() -> TestResult 
     let mut fold = Normalizer::default();
     let query = request(fold.start_with_input(&mut store, callable, checked)?)?;
     assert_eq!(query.depth, 1);
-    assert_eq!(query.application.subject, reference);
+    assert_eq!(
+        query
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        reference
+    );
     assert_eq!(
         fold.resume(&mut store, query, Resolution::Opaque)?,
         Step::Complete(callable)
@@ -206,7 +260,14 @@ fn opaque_results_keep_normalized_inputs_and_binder_depths_distinct() -> TestRes
     })?;
     let query = request(fold.start(&mut store, callable)?)?;
     assert_eq!(query.depth, 1);
-    assert_eq!(query.application.subject, subject);
+    assert_eq!(
+        query
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        subject
+    );
     let result = fold.resume(&mut store, query, Resolution::Type(subject))?;
     let parameters = store.intern_list(&[subject])?;
     let expected = store.intern(Kind::Function {
@@ -235,7 +296,13 @@ fn generated_shared_results_use_bounded_iterative_work() -> TestResult {
     let mut step = fold.start(&mut store, inputs[9999])?;
     let mut requests = 0;
     while let Step::Resolve(query) = step {
-        let Some(Kind::Array { length, .. }) = store.kind(query.application.subject) else {
+        let Some(Kind::Array { length, .. }) = store.kind(
+            query
+                .alias
+                .associated()
+                .ok_or("expected associated projection")?
+                .subject,
+        ) else {
             return Err("missing ordinal".into());
         };
         let ty = if length == 0 {
@@ -282,7 +349,7 @@ fn sibling_callable_requests_have_independent_scopes_and_caches() -> TestResult 
     assert_eq!(fold.binder(first.scope), Some((ScopeId::ROOT, 2)));
     let second = request(fold.resume(&mut store, first, Resolution::Type(word))?)?;
     assert_eq!(second.depth, first.depth);
-    assert_eq!(second.application, first.application);
+    assert_eq!(second.alias, first.alias);
     assert_ne!(second.scope, first.scope);
     assert_eq!(fold.binder(second.scope), Some((ScopeId::ROOT, 1)));
     assert!(
@@ -367,7 +434,14 @@ fn selected_callable_results_open_a_scope_before_normalizing_their_children() ->
     assert_eq!(query.scope, ScopeId::ROOT);
     let nested = request(fold.resume(&mut store, query, Resolution::Type(callable))?)?;
     assert_eq!(fold.binder(nested.scope), Some((ScopeId::ROOT, 1)));
-    assert_eq!(nested.application.subject, reference);
+    assert_eq!(
+        nested
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .subject,
+        reference
+    );
     assert_eq!(nested.depth, 1);
     let Step::Complete(result) = fold.resume(&mut store, nested, Resolution::Type(reference))?
     else {

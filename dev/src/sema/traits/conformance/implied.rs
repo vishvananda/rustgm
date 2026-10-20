@@ -3,24 +3,18 @@ use super::{Contract, Declarations};
 use crate::{
     sema::projections::families,
     types::{
-        bound_uses::captures::Captures,
-        outlives::Pair,
+        outlives::{Implied, Pair},
         parameters::clauses::Clause,
-        substitute::{Bound, Request},
+        substitute::Request,
     },
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Formation {
     clauses: Vec<Clause>,
     regions: Vec<Pair>,
-    scopes: HashMap<u16, Scope>,
+    implied: Implied,
     steps: usize,
-}
-struct Scope {
-    captures: Captures,
-    lower: Bound,
 }
 impl Formation {
     pub fn record(
@@ -28,55 +22,29 @@ impl Formation {
         facts: &mut Declarations,
         request: Request,
     ) -> Result<(), &'static str> {
-        let Some(required) = families::requirements(facts, request.application)? else {
+        let Some(application) = request.alias.associated() else {
+            return Ok(());
+        };
+        let Some(required) = families::requirements(facts, application)? else {
             return Ok(());
         };
         self.steps = self.steps.saturating_add(required.steps);
-        let mut scope = (request.depth != 0).then(|| {
-            self.scopes.entry(request.depth).or_insert_with(|| Scope {
-                captures: Captures::new(request.depth),
-                lower: Bound::lower(request.depth),
-            })
-        });
-        let before = scope
-            .as_ref()
-            .map_or(0, |s| s.captures.steps.saturating_add(s.lower.steps));
         for clause in required.clauses {
-            if !clause.is_outlives(&facts.types)? {
-                continue;
+            if let Some(predicate) =
+                self.implied
+                    .outlives(&mut facts.types, clause, request.depth)?
+            {
+                self.clauses.push(predicate.into());
             }
-            let clause = if let Some(scope) = &mut scope {
-                // A surrounding callable's local lifetimes are not universally
-                // true caller assumptions. Only captured conditions can escape.
-                if scope.captures.clause(&facts.types, clause)? {
-                    continue;
-                }
-                scope.lower.clause(&mut facts.types, clause)?
-            } else {
-                clause
-            };
-            self.clauses.push(clause);
         }
-        for (a, b) in required.regions {
-            let pair = if let Some(scope) = &mut scope {
-                if [a, b].iter().any(|r| {
-                    r.bound_parts()
-                        .is_some_and(|(depth, _)| depth < request.depth)
-                }) {
-                    continue;
-                }
-                (scope.lower.region(a, 0)?, scope.lower.region(b, 0)?)
-            } else {
-                (a, b)
-            };
-            self.regions.push(pair);
+        for pair in required.regions {
+            if let Some(pair) = self.implied.regions(pair, request.depth)? {
+                self.regions.push(pair);
+            }
         }
-        let after = scope
-            .as_ref()
-            .map_or(0, |s| s.captures.steps.saturating_add(s.lower.steps));
-        self.steps = self.steps.saturating_add(after.saturating_sub(before));
         if self
             .steps
+            .saturating_add(self.implied.steps())
             .saturating_add(self.clauses.len())
             .saturating_add(self.regions.len())
             > 1_000_000

@@ -1,0 +1,1 @@
+ERROR: file 0: 20: opaque bound uses an excluded lifetime capture

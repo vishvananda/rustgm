@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a,'x>A<'a>for &'x u8{type Out=(&'a u8,&'x u8);}trait Family<'x>{type Item:for<'a>A<'a,Out=(&'a u8,&'x u8)>;}impl<'x>Family<'x>for &'x u8{type Item=&'x u8;}fn f<'x,'y,T:Family<'x>>(x:&'x u8,y:&'y u8)-><<T as Family<'x>>::Item as A<'y>>::Out{(y,x)}fn main(){let n=7;let m=9;let p=f::<&u8>(&n,&m);if *p.0!=9||*p.1!=7{loop{}}}

@@ -1,0 +1,50 @@
+function @rg.20() -> void {
+  slot $s0 : u8
+  slot $s1 : u8
+  slot $s2 : ptr
+  slot $s3 : ptr
+  block ^b0:
+    store u8 7, $s0
+    store u8 9, $s1
+    %t0 = call ptr @rg.19.i2()
+    store ptr %t0, $s2
+    %t1 = load ptr $s2
+    %t2 = addr $s0
+    %t3 = addr $s1
+    %t4 = call ptr %t1(%t2, %t3) as (%p0 : ptr, %p1 : ptr) -> ptr
+    store ptr %t4, $s3
+    %t5 = load ptr $s3
+    %t6 = load u8 %t5
+    %t7 = cmp ne u8 %t6, 7
+    %t8 = convert trunc i1 i64 %t7
+    branch %t8, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b1:
+    jump ^b4
+  block ^b4:
+    jump ^b4
+  block ^b5:
+    unreachable
+}
+function @rg.19.i2() -> ptr {
+  block ^b0:
+    %t0 = addr @rg.18
+    return ptr %t0
+}
+function @rg.18(%p0 : ptr, %p1 : ptr) -> ptr {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    return ptr %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.20()
+    return i64 0
+}

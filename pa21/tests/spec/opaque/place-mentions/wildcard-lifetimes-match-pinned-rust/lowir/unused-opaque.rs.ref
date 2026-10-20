@@ -1,0 +1,22 @@
+function @rg.14() -> void {
+  slot $s0 : ptr
+  slot $s1 : u8
+  block ^b0:
+    store u8 7, $s1
+    %t0 = addr $s1
+    %t1 = call ptr @rg.13.i1(%t0)
+    store ptr %t1, $s0
+    return void
+}
+function @rg.13.i1(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    return ptr %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

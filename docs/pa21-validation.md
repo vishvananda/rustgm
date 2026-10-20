@@ -1,10 +1,138 @@
 # PA21 implementation evidence
 
-PA21 remains **planned**. Its handout describes the required higher-ranked
-relationships, associated type families, opaque types, variance and generic drop
-checking. The proposed generic-semantic inspection mode is not implemented yet;
-there is no public PA21 manifest or generated grading contract. PA1–PA20 retain
-their released modes and exact text oracles.
+PA21 is complete for its documented Rust 1.98.0 / edition-2024 course profile.
+The published suite has **744 cases**: 298 generic-semantic inspections and 446
+LowIR checks. Its **260 native executions** comprise 256 clean successes and
+four expected destructor panics. All 744 source outcomes are independently
+qualified with pinned rustc object generation. PA22 and later assignments remain
+explicitly planned. The historical sections below describe earlier checkpoints,
+including gaps that this release has since closed.
+
+## Release qualification
+
+The final compiler SHA-256 is
+`0f43fe91623ecc405b6f3c34e5f3a426acd7b6d7c6d30e340cbabec513d5d647`.
+
+| Check | Result |
+| --- | --- |
+| Release maintainer tests | 1,717 passed, including 448 library invariants |
+| Explicit native maintainer groups | 102 passed |
+| PA1–PA21 exact text cases | 7,040 passed |
+| Independent source checks | 6,839 passed |
+| Independent native checks | 3,549 passed; 2,170 execution comparisons and three codegen-only comparisons |
+| Strict Clippy, formatting and Rust architecture/file audit | Passed; 1,015 audited files |
+| Audit tests, harness, fixture discovery, upstream/backend and literal/layout checks | Passed |
+
+The first publication run completed all 64 gates. A subsequent determinism repair
+reran 37 gates, including the full release/native maintainer suites, all public
+text suites and PA21 source/native qualification. Its only compiler change orders
+nonempty opaque trait-result bindings, which belong to PA21. The 27 earlier-stage
+independent source/native checks remain valid: their source inputs, backend and
+full emitted text are unchanged. Their receipts are retained explicitly rather
+than repeating those executions. Existing qualified rustc/runtime differences
+remain described in the manifests; these totals do not redefine those contracts.
+
+## Completed implementation and oracle review
+
+Trait-method outputs use the ordinary scoped normalization pipeline with a typed
+anonymous-result alias. Conformance retains proved output templates and complete
+parent/method substitutions, including result-only type/const inference. The
+original declared signature supplies implied well-formedness; a refined result
+cannot justify a missing input requirement. Concrete callers see valid refinement;
+generic callers retain the trait-declared promises. Quantified/GAT result,
+lifetime, escape, selected destructor and distinct-implementation controls pass.
+
+Defining recursive equations retain the complete capture application. An ignored
+recursive result does not become a defining use; an actual defining comparison
+requires all type, const and lifetime identities. Private proof substitutions keep
+original callable/result identities intact for callers and execution. The pinned
+unconstrained recursive fallback is unit. Twenty-three independently qualified
+source controls and seven recursive native executions cover references, generic
+inputs, tuple outputs, precise capture and inherent methods.
+
+A repeated-process probe found unstable type interning when a generic trait
+method returns two opaque results. Conformance now processes those bindings in
+opaque identity order before closing their types. Three shared/distinct-input
+and parent/method-lifetime probes pass repeated full inspections, LowIR emission
+and native execution. One semantic and one executable public fixture preserve
+the discovered case. All 2,226 preexisting PA21 sidecars remain byte-identical.
+
+The PA18 opaque-return boundary moved byte-for-byte into PA21. Three plain
+reference wildcard controls were added to PA16. Every retained earlier stdout
+oracle remains byte-identical. One PA20 rejection diagnostic changed deliberately:
+the unique published result outlives promise reports the missing lifetime edge
+at the call, replacing a projected-type outlives diagnostic. Pinned rustc reports
+the same missing relationship. The oracle review asserts that this is the only
+changed PA20 sidecar. Current suite counts and boundary descriptions in the
+handouts now agree with their manifests.
+
+## Performance review
+
+The release matrix uses immutable baseline/candidate binaries, frozen inputs,
+same-binary calibration, five ABBA blocks with three executions per observation,
+full output equality, Callgrind instruction profiles and eight RSS observations
+per input. Every raw observation remains retained. The baseline SHA-256 is
+`e7dfd81904ea6f2e688ef6010d815e0cc8d6626291f748dd435d7eb1e8381b08`.
+
+There are **19 shared workloads and nine candidate-only workloads**. The initial
+plan incorrectly classified the three GAT-width inputs as shared. The baseline
+rejected the first at its advanced-generic feature boundary; that diagnostic,
+original plan and all completed observations were retained. The resumed run
+measures those inputs as new capability. A separate qualification confirms that
+the baseline rejects all nine new-feature inputs. No unsupported baseline result
+is counted as an A/B speedup.
+
+All shared outputs are byte-identical. Shared instruction changes range from
+**+0.10% to +1.25%**; no instruction-review threshold is exceeded. The existing
+whole-program quantified/distinct-capture workloads retain their earlier
+borrow-checker scaling. The new GAT/opaque measurements show near-linear
+instruction growth over the tested 16–256 range:
+
+| Input family | Median milliseconds at 16 / 64 / 256 | Million instructions at 16 / 64 / 256 |
+| --- | --- | --- |
+| Independent opaque declarations | 5.06 / 10.36 / 28.03 | 4.45 / 15.98 / 62.13 |
+| Repeated opaque instances | 4.28 / 6.42 / 11.40 | 2.12 / 5.78 / 20.38 |
+| GAT argument width | 5.45 / 6.28 / 10.11 | 2.19 / 5.55 / 18.92 |
+
+Shared-workload median RSS increases by **288–962 KiB**. The largest increase is
+in the ordinary control. Its DHAT profile changes total allocated bytes by **55**
+and peak allocated bytes by **36**, with the same peak block count. Allocated
+executable code/data sections grow by about **368 KiB**. The RSS increase is
+recorded separately from heap growth; it is not evidence of a growing per-query
+allocation problem on that control.
+
+Wall timing is noisy on this host. One longer paired run covers every shared
+input whose initial A/A spread exceeded 20%, plus the ordinary control, using
+16 executions per observation and both A/A and B/B calibration. Those six runs
+are retained alongside the initial matrix. The quantified-width-64 follow-up
+reports a **+7.05%** median, but its five paired blocks range from **−10.27% to
++11.92%** while both executables shift between roughly 20 ms and 33 ms during
+the run. Its instruction increase is **0.58%**. These nonstationary wall samples
+support neither a stable speedup claim nor a confident wall-regression claim.
+The release accepts the measured small instruction overhead and records these
+wall-time and RSS limits explicitly.
+
+## Evidence and generated storage
+
+Local receipts are under `obj/pa21-release/`:
+
+- `publication/`: the initial complete 64-gate run.
+- `ordering-probes/`, `ordering-fix-v2/` and `ordering-probes-v2/`: the discovered
+  nondeterminism, repair, independent controls and unchanged-oracle assertion.
+- `publication-v2/`: final compiler qualification and retained earlier checks.
+- `oracle-review/`: source qualification, migration and the reviewed PA20 diagnostic.
+- `performance/`: plans, input hashes, every timing/RSS observation, instruction
+  profiles, heap review and the longer calibration follow-up.
+- `review.json`: aggregate counts, candidate identity and performance decision.
+
+The independent-source harness now gives generated objects/metadata `.o`/`.rmeta`
+suffixes so successful guarded runs remove them. The two full publication runs
+reclaimed **7.74 GiB** and **7.65 GiB**, respectively; scoped follow-ups also clean
+their declared output directories. Source inputs, diagnostics, receipts and timing
+observations remain. The 40 GiB reserve and exclusive cleanup lock remain enabled.
+Only the current compiler baseline needs a retained executable after publication.
+
+The following sections preserve historical implementation and measurement records.
 
 ## Quantified clause representation
 
@@ -3150,3 +3278,344 @@ authorize outer lifetimes. Original hypotheses, sources, diagnostics and reviewe
 outcomes remain in `formation-hypotheses/`. Shared family formation should reuse
 the existing whole-quantified-clause filter before decomposition. The public GAT
 source gate remains closed, and all remaining PA21–PA25 work is still required.
+
+## Shared whole-clause filtering for family implications
+
+Six additional source probes independently qualify four accepted and two rejected
+programs with pinned rustc. Before the fix, method conformance incorrectly accepts
+`type Out<T> where for<'a> T: 'a` used in an unconstrained method signature.
+The collector grants the dependent quantified clause as a caller assumption,
+which lets that assumption discharge its own formation debt. Rustc rejects the
+same program. The original failed maintainer run is retained.
+
+Family conformance now uses the nominal whole-clause filter before admitting an
+implied lifetime condition. The common capture/lowering helper handles both the
+clause's quantifier and surrounding callable binders. Dependent conditions remain
+proof obligations; explicit static conditions, unused quantifiers and independent
+outer captures remain usable. All **42 conformance source controls** pass, with
+**26 accepted and 16 rejected**. The composite negative already rejects at family
+definition checking, so it is not credited as a method-implication regression.
+Typed controls separately prove that no independent component of a dependent
+composite condition escapes the filter.
+
+Three new invariants cover whole-clause filtering, nested local/captured lifetimes
+and growing shared subjects. The latter uses exactly **11n work steps and 2n new
+types** for n = 16, 64, 256 and 1,024; repeated queries allocate no further types.
+Three existing nominal formation/lifting tests also pass. An initial selector
+matched zero tests and receives no coverage credit; its replacement selectors each
+execute their named test. These are seven focused tests in total, including the
+42-case conformance test. Strict Clippy, the **966-file audit**, layout checks and
+all **6,294 PA text cases** pass; the text sweep takes **15.77 seconds** against
+debug candidate `e93cf8ac78aba9de33183637a502a41059ed240b8a273bf392a13a601cc3b127`.
+Compiler/test identities remain unchanged during validation. No fixture, manifest
+or generated oracle changes. Evidence and reviewed failed controls are under
+`obj/pa21-work/implied-family-clauses-v1/`.
+
+The shared family application preparation and declaration/body consumers still
+need integration. This edit stays within the next coherent family-formation batch;
+full release/native qualification is not repeated for this intermediate change.
+The public GAT gate remains closed, and the PA21–PA25 release requirements remain.
+
+## Shared family input preparation and lifetime consumers
+
+The parent/member argument mapper now lives in the types layer, shared by
+semantic normalization and family lifetime preparation. It preserves simultaneous
+type/const replacement, complete captured lifetime prefixes and separate Self
+identity. Completed trait family input contracts are published in declaration
+order; impl conditions and result promises cannot become trait input facts.
+Preparation shares the existing structural outlives walk and caches substituted
+conditions by the complete application. Immutable lifetime queries require that
+preparation first. Ordinary programs without families retain the existing path.
+
+Eight pinned-rustc object-generation probes establish three accepted and five
+rejected outcomes. Two initially predicted positives are rejected: naming a
+family in a nominal field cannot grant its required input lifetime, even when a
+concrete associated definition erases that lifetime. The implementation therefore
+keeps family conditions out of nominal field implication. Explicit bounds remain
+usable, and the original written projection retains its formation debt through
+normalization. Original hypotheses, diagnostics and the provisional inference
+implementation remain under `obj/pa21-work/shared-family-inputs-v1/`.
+
+The same eight sources pass an internal consumer test using production declaration
+validation, generic body templates and body region checking. A declared static
+family input supplies the implied permission needed by a default method body;
+a dependent quantified input or a static result promise does not. The helper
+crosses only the deliberately closed public declaration gate. This is internal
+semantic and lifetime evidence, not public GAT support or native execution.
+
+Two early consumer runs used incomplete test preparation: one omitted the final
+projection validation and call-argument preparation, and another used the legacy
+concrete-only body builder. Their outcomes are retained as harness failures and
+receive no semantic coverage credit. The production final declaration gate was
+already present; no missing production check is inferred from those failed runs.
+
+Four typed invariants exercise missing preparation and retry, complete application
+identity, callable-local whole-condition filtering, independently bounded nominal
+fields and growing application counts. Preparation takes **25n + 18 work steps**
+at n = 16, 64, 256 and 1,024; repeated preparation adds no work. This measures the
+shared preparation algorithm, not end-to-end compiler performance. Changed-path
+timing and an ordinary control remain part of the combined publication checkpoint.
+
+The final focused checkpoint passes formatting, strict all-target Clippy, the
+**971-file audit**, layout checks, the four typed tests and the eight-source
+consumer test. All **6,294 PA text cases** match in **15.93 seconds**;
+PA21–PA25 retain planned status 2. Source hashes are unchanged throughout the run.
+The audit's initial filename-ownership finding is fixed by grouping input-contract
+tests and naming the declaration publication module by its responsibility. All
+failed receipts remain. No fixture, manifest or oracle changes. Full release/native
+qualification remains deferred to the combined family-formation publication batch.
+
+
+## Public family source integration in progress
+
+Required GAT where-clause analysis now uses retained signatures, member-level
+intersections and a dependency worklist for associated result bounds. Its 37
+pinned-rustc controls contain 21 accepts and 16 rejects. Batched pure outlives
+queries share verification evaluation and assumption reachability; independent
+required-bound sites use **26n + 5** work and reachability controls use **7n + 6**.
+These are algorithmic work measurements, not end-to-end throughput claims.
+
+The first checkpoint passes 427 unit tests and 82 affected integration tests, but
+the cheap PA sweep catches a changed PA20 error location/message. Associated result
+projection roots now wait for all sibling contracts and are validated at their
+written source before enclosing predicates. The focused correction passes 35
+family invariants and the full PA20 text suite without changing an oracle.
+
+The public GAT declaration gate is removed. **87 source-to-LowIR outcomes** match
+independent rustc object generation: 40 accepts and 47 rejects, covering required
+clauses, family conformance and lifetime consumers. Source, hash and diagnostic
+receipts are retained under `obj/pa21-work/gat-source-v1/source-v1/`.
+
+Family equality bindings now resolve and instantiate their own arguments in the
+correct lexical binder, including higher-ranked and inherited bindings. A focused
+15-source corpus matches rustc after fixing an erased-input bug: `Out<U> = u8`
+cannot authorize a missing `U: 'static` requirement. The complete original family
+selector is retained as its own formation root. Sources and all failed attempts
+remain under `obj/pa21-work/gat-values-v1/`; executable qualification is in progress.
+PA21's opaque/capture implementation, new inspection output and assignment release
+contract remain unfinished. This entry does not claim PA21 completion.
+
+
+The completed GAT value checkpoint passes all 427 library unit tests, the
+15-source integration control, **10 native rustc/CPPGM comparisons**, strict
+all-target Clippy, formatting and the **980-file audit**. Every native control
+also produces identical LowIR on repeated compilation. All **6,294 PA1–PA20 text
+cases** retain their existing bytes; PA21–PA25 still reject planned discovery.
+The first audit finding concerned repeated filename stems; modules are now named
+for their selector responsibility and the public tests live in `gat_values.rs`.
+Evidence is in `obj/pa21-work/gat-values-v1/qualification-v2/`. Scoped cleanup
+removes 20 generated executables (0.04 GiB) and retains sources and receipts.
+The full release/native publication batch and immutable performance comparison
+remain due; they have not been repeated for each development fix.
+
+
+Sixteen additional independently qualified controls cover covariance and
+invariance, mutable access and aliasing, borrow escape, nominal family storage,
+owned drop behavior, and lifetime/trait/projected requirements inside equality
+selectors. All outcomes agree with rustc. The expanded `gat_values` integration
+suite now checks **31 sources** and **14 executable comparisons**, including
+observable generic destruction. Targeted Clippy and both integration tests pass;
+unchanged compiler checks from the preceding checkpoint are retained. Evidence
+is in `obj/pa21-work/gat-ownership-v1/qualified-v1/`; scoped cleanup removes 28
+executables (0.06 GiB). This completes the current public GAT integration batch;
+argument-position `impl Trait` implementation is now the next feature work.
+
+
+## Argument-position impl Trait
+
+Each input `impl Trait` occurrence now gets a distinct unnameable function type
+parameter. The resolver records its owner/source without inserting a lexical
+binding. Bounds, generic inference, calls, lifetimes and lowering reuse ordinary
+type-parameter machinery. Typed metadata distinguishes anonymous parameters from
+written ones: turbofish arity excludes them, and trait method conformance rejects
+replacing an anonymous parameter with a named parameter. Nested nominal and
+reference input types are supported; nested callable types do not declare input
+parameters for an enclosing function.
+
+The initial independent probe matches 17 source outcomes. Two invalid-position
+controls reach existing unsupported-annotation handling and receive no dedicated
+placement-rule coverage credit. A later probe catches acceptance of a lifetime-only
+`impl` bound; the resolver now requires an actual trait bound and explicitly
+rejects input-position precise captures. The original five-case probe also
+corrects an expectation about defined extern-C generic functions: rustc accepts
+that source, while RustGM retains its later-FFI boundary. It is not counted as a
+new PA21 rejection rule. Original hypotheses and failures are preserved.
+
+The final integration suite independently qualifies **19 source controls** and
+executes **seven native comparisons** against rustc, retaining repeated LowIR
+byte equality. Strict all-target Clippy, formatting, the **982-file audit** and
+all **6,294 active PA text cases** pass. All 427 library unit tests passed before
+the isolated minimum-bound validation correction; the focused source/native and
+text checks cover that correction. The final batch takes **105.59 seconds**,
+including **14.97 seconds** for PA text. Its source snapshot and debug candidate
+`c9e8198c485a2b4264c5f3fe9176c8fdefb093301e68f1c7f29cc79c83c6ded7` remain unchanged during validation. Evidence is in
+`obj/pa21-work/anonymous-inputs-v1/qualification-v5/`.
+
+Return-position opaque identities, hidden-type checking, automatic/precise capture
+and trait-method opaque results remain next. Their initial 24-source corpus is
+independently qualified with rustc: 12 accepted, 12 rejected. This is source-rule
+research, not RustGM opaque-result support. PA21's semantic inspection and reviewed
+assignment release contract are still required; PA21–PA25 remain planned.
+Full release/native publication qualification and immutable performance comparison
+remain due for the combined compiler change.
+
+## Opaque-return typing checkpoint (not a release)
+
+A dedicated opaque type identity now retains complete captured inputs separately
+from the defining body's inferred representation. Defining result variables use
+the existing body constraint graph, including nested outputs and early returns.
+Callers retain the published identity and bounds; trait selection maps those
+bounds without consulting the hidden type. The new `return_types` maintainer
+suite independently qualifies 19 semantic outcomes against rustc (nine accepts,
+ten rejects), including generic type/const identity and hidden capability checks.
+These are type-checking outcomes, not native execution qualifications.
+
+Candidate `310c41df6743ac079fc9714861e44bbd8b716bf3bef245cf25300fd7d83f8d15` passes strict all-target/all-feature Clippy, formatting, the
+989-file audit and 427 library tests plus three source suite functions. The
+source snapshot remains unchanged through the recorded checks. Existing PA text
+results are **6,293/6,294**: PA18's opaque-return boundary reaches the unfinished
+body-lowering boundary instead of its previous annotation diagnostic. Its oracle
+and manifest remain unchanged. The failed receipt is retained; no release is
+claimed and no compatibility rejection was inserted to hide this transition.
+PA19 and PA20 pass; PA21–PA25 remain planned.
+
+Pinned rustc metadata and object probes also distinguish opaque recursion:
+direct self calls and returned self-referencing function items are accepted,
+whereas mutually recursive opaque-return calls are rejected. The initial direct
+self-call rejection hypothesis was corrected from that evidence. RustGM still
+accepts the mutual-call case during semantic analysis; this remains an open gap.
+Do not turn arbitrary callable-signature recursion into a hidden-type cycle.
+
+Capture proofs, precise capture lists, trait-method results, representation
+reveal, ownership/destruction, executable lowering and the PA21 inspection/release
+contract remain unfinished. Evidence and next implementation boundaries are in
+`obj/pa21-work/opaque-results-v1/typing-checkpoint.md`; the recorded validation
+status is explicitly `incomplete.json`. No public references were regenerated.
+
+
+## Opaque storage, execution and precise captures (not a release)
+
+Opaque results now reach actual executable lowering. The CFG keeps a private
+solved result while the callable signature retains its public opaque identity.
+An append-only scan prepares complete captured applications and caches flattened
+storage heads; callers never use those heads for type equality or permissions.
+Concrete trait dispatch, layout, non-Copy destruction and selected cleanup share
+that storage boundary. The existing template-layout checker validates hidden
+by-value finiteness even for unused and generic bodies, without unfolding
+function-item signatures as physical storage.
+
+Precise `use<...>` lists select resolved parameters in declaration order. Checks
+cover required type/const parameters, anonymous input parameters, duplicate
+entries, lifetime ordering, non-parameter names and lifetime bounds omitted from
+the selected captures. Opaque application relations retain invariant arguments;
+ordinary liveness retains captured input dependencies.
+
+The permanent `return_types` suite now has **27 rustc-qualified semantic
+outcomes**, **18 accepted source-to-LowIR cases and native comparisons**, and
+**two independently rejected unused recursive hidden-storage cases**. The native
+cases cover generic and const captures, nested results, user-trait dispatch,
+inherent/default methods, precise empty/type/const/elided captures, returned self
+and mutual function items, alias chains and three observable destructor aborts.
+The destructor controls include generic arguments and struct fields; omitting
+cleanup would produce a different execution outcome. All four suite functions
+pass, including its normally ignored CPPGM/rustc execution check. This does not
+qualify general reference-valued hidden types or trait-impl RPIT conformance.
+
+The first storage checkpoint preserves unchanged compiler/test hashes through
+29 checks: formatting, strict all-target/all-feature Clippy, the **991-file audit**,
+**427 library tests**, earlier APIT/GAT source suites and every PA discovery/text
+check. It takes **92.59 seconds**, with **17.46 seconds** in PA checks. PA1–20 stay
+at **6,293/6,294**. The sole PA18 boundary now compiles successfully instead of
+reaching an unfinished lowering error: its old rejection oracle is intentionally
+unchanged until the explicit PA21 ownership/release migration. PA19/20 pass and
+PA21–25 retain planned-stage failure. No fixture, manifest or oracle was changed.
+
+A subsequent independently qualified probe exposed infinite hidden tuple types
+in unused functions. After the finiteness fix, candidate
+`a6428588d0cb373ebc32dbc3213d5cdd9653651681a0ecfbb0f319c78b4f97c8`
+passes the complete return-types suite again, strict Clippy, formatting, the
+991-file audit and all 427 library tests. The latter validation takes 127.67
+seconds. Both snapshots have explicitly **incomplete** receipts under
+`obj/pa21-work/opaque-results-v1/{storage,finiteness}-checkpoint-v1/`.
+Generated native executables and object files were pruned after successful runs.
+
+The remaining reference-lifetime failure is understood: ordinary return coercion
+creates fresh lifetimes and directed constraints, so restoring already-known
+equalities cannot infer a portable hidden type. Rust's
+[member-constraint procedure](https://rustc-dev-guide.rust-lang.org/borrow-check/region-inference/member-constraints.html)
+selects permitted captured lifetimes using upper/lower bounds and minimal choices.
+Fifteen new object-generation probes agree with their predeclared rustc hypotheses,
+including ordered versus unrelated branch lifetimes, reborrows, excluded captures,
+static promises and recursion. Their RustGM failures remain recorded, including
+valid reference results, a static result promise that should avoid overcapture,
+and direct self recursion. Mutual recursion rejects in lowering but still needs
+correct defining-context typing. Keep the paired passing function-item cases.
+
+Next work is that shared member-constraint/capture proof, published result-bound
+closure (including quantified bounds), anonymous associated results for trait
+impls, the generic-semantics view and the full PA21 public release. Publication
+release/native/independent/performance gates remain due. No push is qualified by
+these incomplete checkpoints. Implementation details and the next exact boundary
+are retained in `obj/pa21-work/opaque-results-v1/storage-checkpoint.md` and
+`member-choices-v1/next.md`.
+
+## Hidden reference results and member selection (not a release)
+
+Ordinary hidden references now reach LowIR and native execution after a complete
+defining-body proof. The `return_regions` suite independently qualifies **17
+source outcomes** (11 accept, six reject) against rustc 1.98. Its **11 native
+comparisons**, together with the earlier 18, pass with repeated LowIR byte equality.
+Controls cover input/elided references, reborrows, ordered/unrelated branches,
+promotion with unrelated captures, precise capture/escape, nested opaque results,
+shortening to an explicitly permitted lifetime, equivalent capture names and a
+nested function-pointer binder. The negative cases include local and caller
+escapes, excluded/unrelated captures and invariant reference branches.
+
+The shared region solver now interns capture lists and candidate sets, shares
+assumption reachability, and follows required SCC dependencies before choosing.
+Selected equalities remain obligations in the final graph. Ordinary graphs have
+no member allocation; their SCC queries do not allocate rank arrays. Seventeen
+new graph/typed tests include 512 independent finite-order comparisons and three
+scaling families. At 16/64/256/1024 elements, charged work is respectively
+653/2573/10253/40973 for independent members sharing a wide capture list,
+503/1943/7703/30743 for a shared variable chain, and
+401/1361/5201/20561 for an assumption chain above incomparable alternatives.
+These are internal work counts, not frontend wall-time claims.
+
+The broad guide omits a relevant selection detail. The
+[pinned member implementation](https://github.com/rust-lang/rust/blob/1.98.0/compiler/rustc_borrowck/src/region_infer/opaque_types/member_constraints.rs)
+selects the least candidate comparable with every remaining alternative; this
+can choose static when other captures are incomparable. The implementation
+matches that rule. Topological candidate ordering and shared reverse reachability
+avoid repeatedly walking the long-chain scaling case. The
+[pinned defining-context implementation](https://github.com/rust-lang/rust/blob/1.98.0/compiler/rustc_borrowck/src/region_infer/opaque_types/mod.rs)
+also keeps inference choices separate from the final equality obligations.
+
+Defining opaque bodies use the checked template path even without generic
+parameters. Promotion and borrow provenance precede the member proof. Semantic
+analysis retains private inferred roots and free-region occurrences; only the
+completed defining proof publishes portable hidden types. Restorations remain
+separate for distinct precise capture lists. Ordinary obligation processing
+registers membership without an extra scan. Storage preparation follows closure;
+ordinary CFG construction skips bodies already owned by templates. The original
+private body result and public callable signature remain distinct.
+
+Candidate `3a5abd249e633953753859ed653a0e118d937416e904f2bd514af59b3eef7eae`
+passes formatting, all-target/all-feature strict Clippy, the **1,000-file audit**,
+**444 library tests**, the APIT/GAT/opaque source suites and all applicable PA
+checks except the already-obsolete PA18 opaque rejection oracle. Earlier text
+results remain **6,293/6,294**; PA19/20 pass and PA21–25 still reject as planned.
+The 29-check snapshot takes 145.28 seconds, including 35.45 seconds in PA checks.
+The exact compiler/test hashes and explicit incomplete receipt are under
+`obj/pa21-work/opaque-results-v1/reference-checkpoint-v1/`. All six functions in
+the two opaque suites, including native execution, passed immediately before
+that unchanged compiler snapshot; 58 generated binaries were pruned afterward.
+
+PA21 still requires published outlives promises (the static-promise overcapture
+probe remains a known failure), shared/quantified result-bound closure, trait-impl
+opaque results, correct direct/mutual defining recursion, the generic-semantics
+view and the public fixture/manifest/oracle release. The obsolete PA18 fixture
+needs its reviewed ownership migration. Full publication release/native/
+independent/performance gates remain due; these checkpoints do not qualify a
+push or assignment release. See `opaque-results-v1/reference-checkpoint.md` for
+the current implementation handoff. Earlier checkpoints remain historical.

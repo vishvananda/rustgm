@@ -51,7 +51,7 @@ impl Checker<'_> {
             return Ok(());
         }
         let unit = self.report.package.unit(key.file);
-        let nodes: Vec<_> = unit
+        let mut nodes: Vec<_> = unit
             .configured
             .ast
             .list(item.generics)
@@ -60,6 +60,9 @@ impl Checker<'_> {
             .filter(|node| unit.configured.active[node.0 as usize])
             .map(|node| self.unattributed(NodeKey { node, ..key }))
             .collect();
+        if let Some(anonymous) = self.report.resolution.anonymous_parameters.get(&key) {
+            nodes.extend(anonymous);
+        }
         self.prepare_bounds(owner, key, &nodes, context)?;
         if !(nodes.iter().any(|key| {
             self.generic_syntax(*key)
@@ -135,6 +138,26 @@ impl Checker<'_> {
         Ok(())
     }
     fn generic_syntax(&self, key: NodeKey) -> Result<GenericParameter, Error> {
+        if let Kind::TraitType {
+            opaque: true,
+            bounds,
+        } = self.kind(key)
+        {
+            return Ok(GenericParameter {
+                flavor: GenericFlavor::Type,
+                name: self
+                    .report
+                    .package
+                    .unit(key.file)
+                    .configured
+                    .ast
+                    .node(key.node)
+                    .span,
+                ty: None,
+                bounds,
+                default: None,
+            });
+        }
         let Kind::Generic(index) = self.kind(key) else {
             return Err(self.error(key, "missing generic parameter syntax"));
         };
@@ -219,6 +242,7 @@ impl Checker<'_> {
                 }
             }
         };
+        let anonymous = matches!(self.kind(key), Kind::TraitType { opaque: true, .. });
         self.facts
             .generics
             .parameters
@@ -226,6 +250,7 @@ impl Checker<'_> {
             .ok_or_else(|| Error::at(key.file, 0, "missing generic owner"))?
             .push(Parameter {
                 binding,
+                anonymous,
                 argument,
                 default: None,
             });

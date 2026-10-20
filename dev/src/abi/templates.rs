@@ -260,6 +260,7 @@ fn children(
         .kind(ty)
         .ok_or("invalid template representation type")?
     {
+        Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => visit(element)?,
         Kind::Tuple(list) => {
             for &child in types

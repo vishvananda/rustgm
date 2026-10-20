@@ -188,33 +188,30 @@ impl Bounds {
         explicit: &[(ItemId, Pair)],
         predicates: impl IntoIterator<Item = (ItemId, Clause)>,
     ) -> Result<Self, &'static str> {
+        Self::infer_with_inputs(
+            types,
+            definitions,
+            explicit,
+            predicates,
+            super::families::Families::default(),
+        )
+    }
+
+    pub(crate) fn infer_with_inputs(
+        types: &mut Store,
+        definitions: &Definitions,
+        explicit: &[(ItemId, Pair)],
+        predicates: impl IntoIterator<Item = (ItemId, Clause)>,
+        families: super::families::Families,
+    ) -> Result<Self, &'static str> {
         let mut inference = Inference::default();
+        if !families.is_empty() {
+            inference.result.projected = Some(Box::new(
+                super::instances::Projected::with_families(families)?,
+            ));
+        }
         for definition in definitions {
-            inference
-                .result
-                .items
-                .insert(definition.item, Inferred::default());
-            inference.scan.clear();
-            for variant in definitions.variants(definition) {
-                for &ty in types
-                    .list(variant.fields)
-                    .ok_or("missing outlives field templates")?
-                {
-                    inference.scan.visit(types, ty)?;
-                }
-            }
-            inference.enqueue(types, definition.item)?;
-            for &use_ in &inference.scan.uses {
-                inference.scan.budget.charge()?;
-                if use_.callable {
-                    return Err("nominal field template contains an unnameable function item");
-                }
-                inference
-                    .reverse
-                    .entry(use_.item)
-                    .or_default()
-                    .push((definition.item, use_));
-            }
+            inference.fields(types, definitions, definition)?;
         }
         for &(item, pair) in explicit {
             inference.scan.clear();
@@ -255,6 +252,39 @@ struct Inference {
     projected: Option<Box<super::instances::Mapping>>,
 }
 impl Inference {
+    fn fields(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+        definition: &crate::types::aggregate::Definition,
+    ) -> Result<(), &'static str> {
+        self.result
+            .items
+            .insert(definition.item, Inferred::default());
+        self.scan.clear();
+        for variant in definitions.variants(definition) {
+            for &ty in types
+                .list(variant.fields)
+                .ok_or("missing outlives field templates")?
+            {
+                self.scan.visit(types, ty)?;
+            }
+        }
+        // Naming a family in a field does not grant its own input conditions.
+        // The declaration must prove them from explicit or independently inferred bounds.
+        self.enqueue(types, definition.item)?;
+        for &use_ in &self.scan.uses {
+            self.scan.budget.charge()?;
+            if use_.callable {
+                return Err("nominal field template contains an unnameable function item");
+            }
+            self.reverse
+                .entry(use_.item)
+                .or_default()
+                .push((definition.item, use_));
+        }
+        Ok(())
+    }
     fn enqueue(&mut self, types: &mut Store, owner: ItemId) -> Result<(), &'static str> {
         for index in 0..self.scan.projection_pairs.len() {
             let (projection, shorter) = self.scan.projection_pairs[index];

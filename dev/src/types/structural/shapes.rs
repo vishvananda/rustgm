@@ -121,6 +121,10 @@ impl Shapes {
                 self.child(Key::Type(element), finish, hash)?;
             }
             Kind::Tuple(list) => self.child(Key::List(list), finish, hash)?,
+            Kind::Opaque(id, arguments) => {
+                id.hash(hash);
+                self.child(Key::Arguments(arguments), finish, hash)?;
+            }
             Kind::Adt(item, arguments) => {
                 item.hash(hash);
                 self.child(Key::Arguments(arguments), finish, hash)?;

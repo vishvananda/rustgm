@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Second{type Value:for<'a>A<'a,Out=&'a u8>;}impl Second for u32{type Value=u8;}trait Family{type Item:Second;}impl Family for u16{type Item=u32;}fn f<'x,T:Family>(x:&'x u8)-><<<T as Family>::Item as Second>::Value as A<'x>>::Out{x}fn main(){let n=7;if *f::<u16>(&n)!=7{loop{}}}

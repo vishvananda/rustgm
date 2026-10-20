@@ -43,18 +43,20 @@ repository with pinned reference tools. It has not been built yet.
 - PA15 proves lifetime contracts and exposes region identities, assumptions and
   requirements, with 202 independently checked text-oracle cases.
 - PA16 checks loans, storage and non-lexical lifetimes and lowers checked
-  references, with 304 cases including 119 native executions.
+  references, with 307 cases including 121 native executions.
 - PA17 proves destructor lifetimes and lowers ordered conditional cleanup, with
   205 course cases, 135 native programs and 33 independently observed drop-order
   traces.
 - PA18 checks generic templates and emits demanded function, constructor and
-  destructor instances, with 438 course cases, 270 native executions and three
+  destructor instances, with 449 course cases, 277 native executions and three
   explicit code-generation-only controls.
 - PA19 provides trait/method semantic inspection and checked static dispatch, with
-  1,080 cases and 254 native execution controls.
+  1,095 cases and 262 native execution controls.
 - PA20 adds associated types/constants, normalized trait contracts and recursive
-  selection, with 1,345 text-oracle cases and 484 native execution controls.
-- PA21–PA38 have buildout briefs and Makefiles. Their suites and implementation
+  selection, with 1,381 text-oracle cases and 508 native execution controls.
+- PA21 adds higher-ranked bounds, GATs, opaque results and precise captures,
+  with 744 text-oracle cases and 260 native execution controls.
+- PA22–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
@@ -92,7 +94,9 @@ against the committed oracles without regenerating them.
 The maintainer also provides `--emit-semantics` and `--count-semantics` for
 PA19 trait/method inspection. PA20 uses `--emit-trait-semantics` and
 `--count-trait-semantics` to expose associated contracts and retained normal forms.
-Both LowIR lanes retain complete execution proofs.
+PA21 adds `--emit-generic-semantics` and `--count-generic-semantics` for quantified
+contracts, complete families, opaque captures and retained proof scopes.
+All LowIR lanes retain complete execution proofs.
 
 ## CPPGM backend
 

@@ -59,6 +59,7 @@ impl Machine<'_> {
             for statement in body.statements(block_data) {
                 self.fuel = self.fuel.checked_sub(1).ok_or("test execution exhausted")?;
                 match statement.action {
+                    Action::Mention(_) => {}
                     Action::StorageLive(local) => {
                         let local = local.0 as usize;
                         if frame.live[local] {

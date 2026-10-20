@@ -1,0 +1,1 @@
+struct D<'a>(&'a u8);impl<'a>Drop for D<'a>{fn drop(&mut self){let _=*self.0;}}trait F{type Out<'a>;}struct S;impl F for S{type Out<'a>=D<'a>;}fn bad<'a>()-><S as F>::Out<'a>{let v=7;D(&v)}fn main(){}

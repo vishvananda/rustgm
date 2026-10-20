@@ -7,7 +7,7 @@ use crate::{
         arguments::Argument,
         infer::{Context, TermId, arguments::Argument as Inferred},
         parameters::ParameterId,
-        substitute::Bound,
+        substitute::{Bound, families as family},
     },
 };
 use std::collections::{HashMap, hash_map::Entry};
@@ -103,10 +103,10 @@ impl Declarations {
         context
             .account_work(parameters.len())
             .map_err(|e| e.to_string())?;
-        member_mappings(
+        family::member_mappings(
             &self.types,
-            member,
-            parameters,
+            crate::types::ItemId(member.0),
+            parameters.iter().map(|p| p.argument),
             own.iter().copied(),
             &mut bindings,
             &mut regions,
@@ -196,110 +196,26 @@ fn joint(
     mappings(store, application, parameters, captures)?.finish(store)
 }
 
-struct Mappings {
-    parameters: Vec<(ParameterId, Argument)>,
-    regions: Vec<RegionId>,
-}
-impl Mappings {
-    fn finish(self, store: &Store) -> Result<Bound, &'static str> {
-        Bound::parameters_captured(store, &self.parameters, self.regions)
-    }
-}
-
 fn mappings(
     store: &Store,
     application: Application,
-    parameters: (&[Parameter], &[Parameter]),
+    (parent, own): (&[Parameter], &[Parameter]),
     captures: u32,
-) -> Result<Mappings, &'static str> {
-    let (parent, own) = parameters;
-    let mut parent_arguments = store
-        .arguments(application.parent)
-        .ok_or("invalid associated parent arguments")?;
-    let own_arguments = store
-        .arguments(application.own)
-        .ok_or("invalid associated family arguments")?;
-    let captures = captures as usize;
-    let parent_parameters = parent
-        .iter()
-        .filter(|p| !matches!(p.argument, Argument::Lifetime(_)));
-    if parent_arguments.len() != captures + parent_parameters.clone().count()
-        || own_arguments.len() != own.len()
-        || parent_arguments.len().saturating_add(own_arguments.len()) > 1_000_000
-    {
-        return Err("associated family argument arity or storage limit exceeded");
-    }
-    let mut regions = Vec::with_capacity(captures);
-    for _ in 0..captures {
-        let Some(Argument::Lifetime(region)) = parent_arguments.next() else {
-            return Err("associated parent requires its complete lifetime captures");
-        };
-        regions.push(region);
-    }
-    let mut mappings = Vec::new();
-    for (formal, actual) in parent_parameters.zip(parent_arguments) {
-        let parameter = parameter_id(store, formal.argument)?;
-        if store
-            .parameter(parameter)
-            .is_none_or(|p| p.owner.0 != application.owner.0)
-        {
-            return Err("associated parent parameter belongs to another owner");
-        }
-        mappings.push((parameter, actual));
-    }
-    member_mappings(
+) -> Result<family::Mappings, &'static str> {
+    family::mappings(
         store,
-        application.member,
-        own,
-        own_arguments,
-        &mut mappings,
-        &mut regions,
-        |arg| match arg {
-            Argument::Lifetime(region) => Some(region),
-            Argument::Type(_) | Argument::Const(_) => None,
+        family::Application {
+            owner: crate::types::ItemId(application.owner.0),
+            parent: application.parent,
+            member: crate::types::ItemId(application.member.0),
+            own: application.own,
         },
-    )?;
-    Ok(Mappings {
-        parameters: mappings,
-        regions,
-    })
-}
-
-// Canonical normalization and inferred result shapes use the same declaration
-// identities, complete capture prefix, arity and lifetime-slot validation.
-fn member_mappings<A: Copy>(
-    store: &Store,
-    member: DefId,
-    parameters: &[Parameter],
-    arguments: impl ExactSizeIterator<Item = A>,
-    mappings: &mut Vec<(ParameterId, A)>,
-    regions: &mut Vec<RegionId>,
-    lifetime: impl Fn(A) -> Option<RegionId>,
-) -> Result<(), &'static str> {
-    if parameters.len() != arguments.len() || parameters.len() > 1_000_000 {
-        return Err("associated family argument arity or storage limit exceeded");
-    }
-    for (formal, actual) in parameters.iter().zip(arguments) {
-        if let Argument::Lifetime(region) = formal.argument {
-            let slot =
-                u16::try_from(regions.len()).map_err(|_| "family lifetime capacity exceeded")?;
-            if region != RegionId::bound(0, slot)? {
-                return Err("associated family lifetime is outside its captured binder");
-            }
-            regions
-                .push(lifetime(actual).ok_or("associated family lifetime argument kind mismatch")?);
-        } else {
-            let parameter = parameter_id(store, formal.argument)?;
-            if store
-                .parameter(parameter)
-                .is_none_or(|p| p.owner.0 != member.0)
-            {
-                return Err("associated family parameter belongs to another member");
-            }
-            mappings.push((parameter, actual));
-        }
-    }
-    Ok(())
+        (
+            parent.iter().map(|p| p.argument),
+            own.iter().map(|p| p.argument),
+        ),
+        captures,
+    )
 }
 
 #[cfg(test)]

@@ -46,6 +46,9 @@ pub(super) fn specialize(
     }
     for obligation in &mut contract.obligations {
         match &mut obligation.kind {
+            Kind::Membership { captures, .. } => {
+                *captures = bound.apply_arguments(&mut facts.types, *captures)?;
+            }
             Kind::Coercion {
                 actual, expected, ..
             } => {

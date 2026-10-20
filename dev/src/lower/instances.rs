@@ -64,6 +64,24 @@ pub fn build(
     )
     .map_err(|e| diagnostic(report, e.node, e.message))?;
     let inputs = contracts.bodies;
+    if !facts.opaques.owners.is_empty() {
+        let owners: std::collections::HashMap<_, _> = facts
+            .functions
+            .iter()
+            .filter(|f| facts.opaques.owners.contains_key(&f.definition))
+            .filter_map(|f| f.body.map(|body| (body, f.definition)))
+            .collect();
+        for proof in &checked.regions().bodies {
+            if let Some(&owner) = owners.get(&proof.source) {
+                facts
+                    .close_opaque_results(owner, &proof.hidden_regions)
+                    .map_err(|e| diagnostic(report, Some(proof.source), e.into()))?;
+            }
+        }
+    }
+    facts
+        .prepare_opaque_storage()
+        .map_err(|e| diagnostic(report, None, e.into()))?;
     let program = demand::prepare(report, facts, entry, &checked, inputs)?;
     program
         .with_checked(|checked| super::build(facts, checked, entry))

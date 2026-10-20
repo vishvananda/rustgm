@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Accept{}impl Accept for for<'a>fn(&'a u8)->&'a u8{}fn f<T>(g:for<'a>fn(&'a u8)-><T as A<'a>>::Out)->for<'a>fn(&'a u8)-><T as A<'a>>::Out where T:for<'a>A<'a>,(for<'a>fn(&'a u8)-><T as A<'a>>::Out):Accept{g}fn id(x:&u8)->&u8{x}fn main(){let n=7;let g=f::<u8>(id);if *g(&n)!=7{loop{}}}

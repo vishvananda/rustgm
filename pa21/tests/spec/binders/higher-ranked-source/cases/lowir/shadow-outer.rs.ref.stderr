@@ -1,0 +1,1 @@
+ERROR: file 0: 23: quantified lifetime shadows an enclosing lifetime

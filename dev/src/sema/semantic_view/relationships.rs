@@ -9,7 +9,7 @@ use std::io::Write;
 pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "trait-semantics 1")?;
     super::records(report, facts, out)?;
-    members(report, facts, out)?;
+    members(report, facts, out, false)?;
     constants(facts, out)?;
     normalized(facts, out)?;
     write!(out, "eof ")?;
@@ -20,6 +20,15 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
 /// # Errors
 /// Propagates output failures.
 pub fn count(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+    totals(report, facts, out)?;
+    writeln!(out)
+}
+
+pub(super) fn totals(
+    report: &Report,
+    facts: &Declarations,
+    out: &mut impl Write,
+) -> io::Result<()> {
     let mut types = 0;
     let mut constants = 0;
     let mut contracts = 0;
@@ -37,7 +46,7 @@ pub fn count(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
     }
     let (nodes, definitions) = facts.unreduced.normalization_counts();
     super::totals(facts, out)?;
-    writeln!(
+    write!(
         out,
         " type-members={types} constant-members={constants} result-contracts={contracts} result-bounds={bounds} impl-constants={} constant-uses={} constant-dispatches={} normalized-nodes={nodes} normalized-definitions={definitions}",
         facts
@@ -50,7 +59,12 @@ pub fn count(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
     )
 }
 
-fn members(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+pub(super) fn members(
+    report: &Report,
+    facts: &Declarations,
+    out: &mut impl Write,
+    advanced: bool,
+) -> io::Result<()> {
     for member in facts.associated.members() {
         let label = match report.resolution.definitions[member.definition.0 as usize].kind {
             DefKind::TypeAlias => "associated-type",
@@ -76,11 +90,7 @@ fn members(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::R
                     "result-bound def={} index={index} ",
                     member.definition.0
                 )?;
-                super::requirement(
-                    &facts.types,
-                    bound.ordinary().map_err(io::Error::other)?,
-                    out,
-                )?;
+                super::clause(&facts.types, bound, out, advanced)?;
                 writeln!(out)?;
             }
         }
@@ -88,7 +98,7 @@ fn members(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::R
     Ok(())
 }
 
-fn constants(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+pub(super) fn constants(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for implementation in facts.generics.implementations() {
         for &(declaration, selected) in &implementation.constants {
             writeln!(
@@ -128,7 +138,7 @@ fn constants(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     Ok(())
 }
 
-fn normalized(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+pub(super) fn normalized(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     let mut nodes: Vec<_> = facts.unreduced.node_entries().collect();
     nodes.sort_unstable_by_key(|&(key, _)| super::source(key));
     for (key, original) in nodes {

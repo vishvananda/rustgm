@@ -1,8 +1,8 @@
 //! Opaque result bounds are alternatives, retained until symbolic and runtime proof.
 use super::{Constraints, Error, Region, Scope, identity_guard::View};
 use crate::types::{
-    ItemId, Kind,
-    outlives::{Projection, TypeComponents},
+    Kind,
+    outlives::{Projection, ResultId, TypeComponents},
     region_graph::VerificationId,
 };
 use std::collections::{HashMap, HashSet};
@@ -21,14 +21,35 @@ pub(super) struct Request {
 }
 #[derive(Default)]
 pub(super) struct State {
-    assumptions: HashMap<ItemId, Vec<Assumption>>,
+    assumptions: HashMap<ResultId, Vec<Assumption>>,
     unique: HashSet<Assumption>,
     pub pending: Vec<Request>,
     components: TypeComponents,
     pub(super) quantified: Option<Box<super::universal_bounds::State>>,
 }
 impl State {
-    pub fn assume(&mut self, item: ItemId, view: View, longer: Region) {
+    pub(super) fn test(
+        &mut self,
+        proof: &mut Constraints<'_>,
+        view: View,
+        shorter: Region,
+    ) -> Result<VerificationId, Error> {
+        Builder {
+            proof,
+            state: self,
+            source: 0,
+            nodes: HashMap::new(),
+            done: HashMap::new(),
+            work: Vec::new(),
+        }
+        .build(Key {
+            projection: view.projection,
+            scope: view.scope,
+            shorter,
+            forced: false,
+        })
+    }
+    pub fn assume(&mut self, item: ResultId, view: View, longer: Region) {
         let value = Assumption {
             projection: view.projection,
             scope: view.scope,
@@ -88,6 +109,10 @@ impl Builder<'_, '_> {
             shorter: request.shorter,
             forced: true,
         };
+        let result = self.build(root)?;
+        self.proof.graph.require_verification(result, self.source)
+    }
+    fn build(&mut self, root: Key) -> Result<VerificationId, Error> {
         self.work.push((root, false));
         while let Some((key, finish)) = self.work.pop() {
             self.charge(1)?;
@@ -114,34 +139,36 @@ impl Builder<'_, '_> {
                 self.nodes.insert(key, node);
             }
         }
-        self.proof
-            .graph
-            .require_verification(*self.done.get(&root).ok_or(Error::Identity)?, self.source)
+        self.done.get(&root).copied().ok_or(Error::Identity)
     }
-    fn alternatives(&mut self, key: Key) -> Result<Vec<VerificationId>, Error> {
-        let Some(Kind::Projection(application)) = self.proof.types.kind(key.projection.ty) else {
-            return Err(Error::Identity);
-        };
+    fn alternatives(&mut self, key: Key) -> Result<(Vec<VerificationId>, Option<Region>), Error> {
         let mut alternatives = Vec::new();
-        for longer in self
-            .proof
-            .types
-            .projection_outlives(application, key.projection.depth)
-            .map_err(|_| Error::Identity)?
-        {
-            self.charge(1)?;
-            if let Some(longer) = longer.map_err(|_| Error::Identity)? {
-                let longer = self.proof.region(longer, key.scope)?;
-                alternatives.push(self.proof.graph.verify_outlives(longer, key.shorter)?);
-            }
-        }
+        let types = self.proof.types;
+        let mut unique = match types.kind(key.projection.ty) {
+            Some(Kind::Projection(application)) => self.declared(
+                key,
+                types
+                    .projection_outlives(application, key.projection.depth)
+                    .map_err(|_| Error::Identity)?,
+                &mut alternatives,
+            )?,
+            Some(Kind::Opaque(id, captures)) => self.declared(
+                key,
+                types.opaque_outlives(id, captures, key.projection.depth),
+                &mut alternatives,
+            )?,
+            _ => return Err(Error::Identity),
+        };
+        let identity = types
+            .result_identity(key.projection.ty)
+            .ok_or(Error::Identity)?;
         if self
             .state
             .components
             .captures(self.proof.types, key.projection)
             .map_err(|_| Error::Identity)?
         {
-            return Ok(alternatives);
+            return Ok((alternatives, unique));
         }
         if let Some(patterns) = &mut self.state.quantified {
             let before = patterns.steps();
@@ -155,16 +182,15 @@ impl Builder<'_, '_> {
             );
             let work = patterns.steps().saturating_sub(before);
             self.charge(work)?;
-            alternatives.extend(found?);
+            let found = found?;
+            if !found.is_empty() {
+                unique = None;
+            }
+            alternatives.extend(found);
         }
-        for index in 0..self
-            .state
-            .assumptions
-            .get(&application.item)
-            .map_or(0, Vec::len)
-        {
+        for index in 0..self.state.assumptions.get(&identity).map_or(0, Vec::len) {
             self.charge(1)?;
-            let assumption = self.state.assumptions[&application.item][index];
+            let assumption = self.state.assumptions[&identity][index];
             if self
                 .state
                 .components
@@ -183,6 +209,9 @@ impl Builder<'_, '_> {
                     scope: assumption.scope,
                 },
             )? {
+                if unique != Some(assumption.longer) {
+                    unique = None;
+                }
                 guard.push(
                     self.proof
                         .graph
@@ -191,10 +220,39 @@ impl Builder<'_, '_> {
                 alternatives.push(self.proof.graph.verify_all(&guard)?);
             }
         }
-        Ok(alternatives)
+        Ok((alternatives, unique))
+    }
+    fn declared(
+        &mut self,
+        key: Key,
+        promises: impl Iterator<Item = Result<Option<crate::types::RegionId>, &'static str>>,
+        alternatives: &mut Vec<VerificationId>,
+    ) -> Result<Option<Region>, Error> {
+        let mut unique = None;
+        let mut multiple = false;
+        for longer in promises {
+            self.charge(1)?;
+            if let Some(longer) = longer.map_err(|_| Error::Identity)? {
+                let longer = self.proof.region(longer, key.scope)?;
+                multiple |= unique.is_some_and(|prior| prior != longer);
+                unique = Some(longer);
+                alternatives.push(self.proof.graph.verify_outlives(longer, key.shorter)?);
+            } else {
+                multiple = true;
+            }
+        }
+        Ok(unique.filter(|_| !multiple))
     }
     fn node(&mut self, key: Key) -> Result<Node, Error> {
-        let alternatives = self.alternatives(key)?;
+        let (alternatives, unique) = self.alternatives(key)?;
+        // A sole declared target also occurs in the alias inputs. With no
+        // competing caller promise, every available rule needs this edge.
+        // Retain it for inference instead of merely testing the least solution.
+        if key.forced
+            && let Some(longer) = unique
+        {
+            self.proof.graph.require(longer, key.shorter, self.source)?;
+        }
         let forced = key.forced && alternatives.is_empty();
         let parts = self
             .state

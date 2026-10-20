@@ -4,6 +4,7 @@ use crate::{
     sema::model::Declarations,
     types::{
         ItemId,
+        outlives::ResultId,
         parameters::{
             clauses::{Clause, Quantifier},
             predicates::Bound,
@@ -34,6 +35,13 @@ pub(super) fn for_result(
     facts: &mut Declarations,
     item: DefId,
 ) -> Result<(Arc<Index>, usize), String> {
+    for_declaration(facts, ResultId::Associated(crate::types::ItemId(item.0)))
+}
+
+pub(super) fn for_declaration(
+    facts: &mut Declarations,
+    item: ResultId,
+) -> Result<(Arc<Index>, usize), String> {
     if let Some(index) = facts
         .generics
         .traits
@@ -42,21 +50,31 @@ pub(super) fn for_result(
     {
         return Ok((Arc::clone(index), 1));
     }
-    let contract = facts
-        .associated
-        .type_contract(item)
-        .ok_or("missing associated result contract")?;
-    let (index, steps) = Closure::new(contract).complete(facts)?;
+    let closure = match item {
+        ResultId::Associated(item) => {
+            let contract = facts
+                .associated
+                .type_contract(DefId(item.0))
+                .ok_or("missing associated result contract")?;
+            Closure::new(contract.projection, contract.bounds.iter().copied())
+        }
+        ResultId::Opaque(id) => {
+            let contract = facts
+                .opaques
+                .declarations
+                .get(&id)
+                .ok_or("missing opaque result contract")?;
+            Closure::new(contract.application, contract.bounds.iter().copied())
+        }
+    };
+    let (index, steps) = closure.complete(facts)?;
     let index = Arc::new(index);
-    let cache = &mut facts
-        .generics
-        .traits
-        .as_mut()
-        .ok_or("missing result rule contracts")?
-        .result_rules;
-    if cache.enabled {
-        cache.account(steps)?;
-        cache.templates.insert(item, Arc::clone(&index));
+    if let Some(contracts) = &mut facts.generics.traits {
+        let cache = &mut contracts.result_rules;
+        if cache.enabled {
+            cache.account(steps)?;
+            cache.templates.insert(item, Arc::clone(&index));
+        }
     }
     Ok((index, steps))
 }
@@ -70,12 +88,10 @@ struct Closure {
     steps: usize,
 }
 impl Closure {
-    fn new(contract: &crate::sema::associated::TypeContract) -> Self {
-        let template = contract.projection;
-        let pending = contract
-            .bounds
-            .iter()
-            .copied()
+    fn new(template: crate::types::TypeId, bounds: impl Iterator<Item = Clause>) -> Self {
+        let mut steps = 0;
+        let pending = bounds
+            .inspect(|_| steps += 1)
             .filter(|clause| match clause {
                 Clause::Predicate(predicate) => {
                     (predicate.ty == template
@@ -90,7 +106,7 @@ impl Closure {
             pending,
             index: Index::default(),
             binders: HashMap::new(),
-            steps: contract.bounds.len(),
+            steps,
         }
     }
     fn charge(&mut self, work: usize) -> Result<(), &'static str> {
@@ -141,10 +157,20 @@ impl Closure {
             return Ok(());
         }
         if let Bound::Outlives(region) = predicate.bound {
-            // Quantified result requirements are not unconditional scalar promises.
-            if count.is_none() {
-                self.index.outlives.push(region);
-            }
+            // The exact subject comparison above proves that the result itself
+            // is independent of this quantifier. Only binder-independent targets
+            // become scalar promises; pinned Rust does not expose a quantified
+            // supertrait lifetime as an unconditional static capture promise.
+            let region = if count.is_some() {
+                match region.bound_parts() {
+                    Some((0, _)) => return Ok(()),
+                    Some((depth, index)) => crate::types::RegionId::bound(depth - 1, index)?,
+                    None => region,
+                }
+            } else {
+                region
+            };
+            self.index.outlives.push(region);
             return Ok(());
         }
         let Bound::Trait(application) = predicate.bound else {

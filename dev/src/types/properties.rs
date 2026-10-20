@@ -12,6 +12,7 @@ pub(super) enum Property {
     Callables,
     Projections,
     NonStaticFreeRegions,
+    Opaques,
 }
 impl Property {
     const fn mask(self) -> u16 {
@@ -24,7 +25,8 @@ const DEPENDENCIES: u16 = Property::Regions.mask()
     | Property::Parameters.mask()
     | Property::Callables.mask()
     | Property::Projections.mask()
-    | Property::NonStaticFreeRegions.mask();
+    | Property::NonStaticFreeRegions.mask()
+    | Property::Opaques.mask();
 
 #[derive(Clone, Copy)]
 pub(super) struct Properties {

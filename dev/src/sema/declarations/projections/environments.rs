@@ -12,9 +12,12 @@ impl Checker<'_> {
         key: NodeKey,
         request: Request,
     ) -> Result<(), Error> {
+        let Some(application) = request.alias.associated() else {
+            return Ok(());
+        };
         let predicate = Predicate {
-            ty: request.application.subject,
-            bound: Bound::Trait(request.application.trait_application),
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
         };
         if !predicate
             .contains_parameters(&self.facts.types)

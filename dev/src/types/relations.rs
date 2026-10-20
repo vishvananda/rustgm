@@ -4,7 +4,9 @@ mod equivalence;
 pub(crate) use equivalence::RegionEqualities;
 mod clauses;
 mod identity_guard;
+mod membership;
 mod projected_bounds;
+mod queries;
 mod scopes;
 use super::structural;
 mod type_bounds;
@@ -550,33 +552,11 @@ impl<'a> Constraints<'a> {
                 }
             }
             (Kind::Adt(x, left), Kind::Adt(y, right)) if x == y => {
-                let a = self.types.arguments(left).ok_or(Error::Identity)?;
-                let b = self.types.arguments(right).ok_or(Error::Identity)?;
-                if a.len() != b.len() {
-                    return Err(Error::Identity);
-                }
-                if a.len() != 0 {
-                    let variances = self.variances.get(x).ok_or(Error::Identity)?;
-                    if a.len() != variances.len() {
-                        return Err(Error::Identity);
-                    }
-                    for ((a, b), &variance) in a.zip(b).zip(variances) {
-                        if self.steps >= self.limit {
-                            return Err(Error::Budget);
-                        }
-                        self.steps += 1;
-                        match (a, b) {
-                            (Argument::Lifetime(a), Argument::Lifetime(b)) => {
-                                self.regions(relation, a, b, variance, source)?;
-                            }
-                            (Argument::Type(a), Argument::Type(b)) => {
-                                self.child(relation, a, b, variance)?;
-                            }
-                            (Argument::Const(a), Argument::Const(b)) if a == b => {}
-                            _ => return Err(Error::Identity),
-                        }
-                    }
-                }
+                let variances = self.variances.get(x).unwrap_or(&[]);
+                self.relate_arguments(relation, left, right, Some(variances), source)?;
+            }
+            (Kind::Opaque(x, left), Kind::Opaque(y, right)) if x == y => {
+                self.relate_arguments(relation, left, right, None, source)?;
             }
             (Kind::Function { .. }, Kind::Function { .. }) => self.function(relation, a, b)?,
             (Kind::FunctionItem { signature, .. }, Kind::Function { .. }) => {
@@ -598,6 +578,36 @@ impl<'a> Constraints<'a> {
                 self.relate_projection(relation, source)?;
             }
             _ => return Err(Error::Identity),
+        }
+        Ok(())
+    }
+    fn relate_arguments(
+        &mut self,
+        relation: Relation,
+        left: super::GenericArgs,
+        right: super::GenericArgs,
+        variances: Option<&[Variance]>,
+        source: u32,
+    ) -> Result<(), Error> {
+        let a = self.types.arguments(left).ok_or(Error::Identity)?;
+        let b = self.types.arguments(right).ok_or(Error::Identity)?;
+        if a.len() != b.len() || variances.is_some_and(|v| v.len() != a.len()) {
+            return Err(Error::Identity);
+        }
+        for (index, (a, b)) in a.zip(b).enumerate() {
+            if self.steps >= self.limit {
+                return Err(Error::Budget);
+            }
+            self.steps += 1;
+            let variance = variances.map_or(Variance::Invariant, |v| v[index]);
+            match (a, b) {
+                (Argument::Lifetime(a), Argument::Lifetime(b)) => {
+                    self.regions(relation, a, b, variance, source)?;
+                }
+                (Argument::Type(a), Argument::Type(b)) => self.child(relation, a, b, variance)?,
+                (Argument::Const(a), Argument::Const(b)) if a == b => {}
+                _ => return Err(Error::Identity),
+            }
         }
         Ok(())
     }

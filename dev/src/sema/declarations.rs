@@ -1,7 +1,9 @@
 //! Demand aliases and function signatures through an iterative dependency graph.
+mod abstract_types;
 mod aggregates;
 mod annotations;
 mod associated;
+mod capture_bounds;
 mod constants;
 mod contracts;
 mod deferred_arguments;
@@ -112,6 +114,7 @@ struct Checker<'a> {
     impl_headers: impl_headers::Pending,
     constant_members: traits::ConstantReadiness,
     associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
+    opaque_syntax: std::collections::HashMap<NodeKey, abstract_types::Pending>,
     associated_bindings: generics::bindings::Pending,
     projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
@@ -167,6 +170,7 @@ impl<'a> Checker<'a> {
             impl_headers: impl_headers::Pending::default(),
             constant_members: traits::ConstantReadiness::default(),
             associated_type_bounds: std::collections::HashMap::new(),
+            opaque_syntax: std::collections::HashMap::new(),
             associated_bindings: generics::bindings::Pending::default(),
             projections: projections::Pending::default(),
             trait_proofs: trait_regions::Proofs::default(),
@@ -250,10 +254,13 @@ impl Checker<'_> {
         }
         self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
+        super::traits::results::prepare_opaque_outlives(&mut self.facts)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.trait_defaults()?;
         self.validate_destructors()?;
         self.validate_owner_bounds()?;
         self.validate_associated_type_bounds()?;
+        self.validate_required_family_bounds()?;
         self.validate_signatures()?;
         self.validate_trait_implementations()?;
         self.validate_trait_impl_owners()?;
@@ -663,58 +670,18 @@ impl Checker<'_> {
             return Ok(());
         }
         let kind = self.kind(key);
-        if !finish {
-            if matches!(
-                kind,
-                Kind::Path { .. } | Kind::Applied { .. } | Kind::Qualified { .. }
-            ) && self.schedule_implicit_projection(key, context)?
-            {
-                return Ok(());
-            }
-            if matches!(kind, Kind::Qualified { .. }) {
-                return self.schedule_projection_path(key, context);
-            }
-            if let Kind::FunctionType(_) = kind {
-                self.work
-                    .push(Work::Signature(key, None, SignaturePhase::Begin(context)));
-                return Ok(());
-            }
-            if let Kind::Type {
-                flavor: TypeFlavor::Ref | TypeFlavor::RefMut,
-                elements,
-            } = kind
-            {
-                self.schedule_reference(key, elements, context)?;
-                return Ok(());
-            }
-            self.work.push(Work::Node(key, true, context));
-            match kind {
-                Kind::NeverType => {}
-                Kind::Group(node) | Kind::Attributed { value: node, .. } => {
-                    self.node_work(key.file, node, context);
-                }
-                Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
-                    self.schedule_type_path(key, context)?;
-                }
-                Kind::Type { flavor, elements } => {
-                    let unit = self.report.package.unit(key.file);
-                    let elements = unit.configured.ast.list(elements);
-                    let count = elements
-                        .len()
-                        .saturating_sub(usize::from(flavor == TypeFlavor::Array));
-                    for child in elements[..count].iter().rev().copied() {
-                        self.node_work(key.file, child, context);
-                    }
-                }
-                Kind::InferType => {
-                    return Err(self.error(
-                        key,
-                        "inference placeholders are not allowed in item signatures",
-                    ));
-                }
-                _ => return Err(self.error(key, "unsupported type annotation")),
+        if let Kind::TraitType {
+            opaque: true,
+            bounds,
+        } = kind
+        {
+            if let Some(ty) = self.opaque_result(key, bounds, context, finish)? {
+                self.store(key, ty)?;
             }
             return Ok(());
+        }
+        if !finish {
+            return self.schedule_annotation(key, kind, context);
         }
         if self.partial_compound(key) {
             self.facts

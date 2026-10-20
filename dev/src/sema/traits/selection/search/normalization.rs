@@ -1,13 +1,11 @@
 //! Normalization requests descend on the existing proof stack and retain their evidence.
 use super::{Action, Decision, Declarations, Frame, Goal, Search, Source, inference};
-use crate::sema::{projections::implementation_result, traits::equalities};
+use crate::sema::{projections::Definition, traits::equalities};
 use crate::types::{
     TypeId,
     infer::{Instantiation, projections::Application},
     lifetime_proof::ScopeId,
-    parameters::predicates::{Bound, Predicate},
-    projection,
-    substitute::{Normalizer, Resolution, Step},
+    substitute::{Alias, Normalizer, Resolution, Step},
 };
 
 pub(super) enum Purpose {
@@ -27,7 +25,7 @@ pub(super) struct Normalization {
 }
 struct Opened {
     goal: Goal,
-    application: projection::Application,
+    application: Alias,
 }
 struct Completion {
     opened: Opened,
@@ -88,7 +86,9 @@ impl Frame {
             child.normalized_inputs = Some(super::frames::NormalizedInputs {
                 proof: normalization.proof,
             });
-            child.prepare_formation(facts, opened.application)?;
+            if let Some(application) = opened.application.associated() {
+                child.prepare_formation(facts, application)?;
+            }
             return Ok(child);
         }
         let trial = self.trial.as_mut().ok_or("missing descending candidate")?;
@@ -143,7 +143,7 @@ impl Search<'_> {
             match normalization.step {
                 Step::Complete(value) => value,
                 Step::Resolve(request) => {
-                    let mut application = request.application;
+                    let mut application = request.alias;
                     if request.depth != 0 || normalization.scoped.is_some() {
                         let scoped = normalization.scoped.get_or_insert_with(|| {
                             Box::new(super::callable_queries::Scoped::new(
@@ -182,10 +182,8 @@ impl Search<'_> {
                     let mut substitution =
                         Instantiation::new(&mut frame.inputs.context, &facts.types, &[])
                             .map_err(inference)?;
-                    let predicate = Predicate {
-                        ty: application.subject,
-                        bound: Bound::Trait(application.trait_application),
-                    };
+                    let predicate =
+                        crate::sema::opaque::overrides::requirement(facts, application)?;
                     normalization.opened = Some(Opened {
                         application,
                         goal: frame
@@ -296,17 +294,39 @@ impl Search<'_> {
             .ok_or("missing equality premise evidence")?;
         let resolution = match source {
             Source::Implementation { .. } => {
-                Resolution::Type(implementation_result(facts, opened.application, source)?)
+                if let Some(application) = opened.application.associated() {
+                    Resolution::Type(crate::sema::projections::implementation_result(
+                        facts,
+                        application,
+                        source,
+                    )?)
+                } else if let Some(definition) = Definition::alias(
+                    facts,
+                    opened.application,
+                    opened.application.arguments(),
+                    source,
+                )? {
+                    Resolution::Type(
+                        definition
+                            .result(facts)?
+                            .ok_or("missing completed associated result")?,
+                    )
+                } else {
+                    Resolution::Opaque
+                }
             }
             Source::Assumption(_)
             | Source::ResultBound(_)
             | Source::QuantifiedAssumption { .. }
             | Source::QuantifiedResultBound { .. } => {
+                let Some(application) = opened.application.associated() else {
+                    return Ok((Some(Resolution::Opaque), node));
+                };
                 let application = Application {
-                    item: opened.application.item,
+                    item: application.item,
                     predicate: opened.goal,
                     arguments: context
-                        .known_arguments(&facts.types, opened.application.arguments)
+                        .known_arguments(&facts.types, opened.application.arguments())
                         .map_err(inference)?,
                 };
                 match equalities::for_projection(

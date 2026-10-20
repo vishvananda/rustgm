@@ -46,6 +46,14 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
 /// # Errors
 /// Reports ordinary CFG construction and destruction errors.
 pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error> {
+    concrete_except(report, facts, |_| false)
+}
+
+pub(crate) fn concrete_except(
+    report: &Report,
+    facts: &Declarations,
+    template: impl Fn(DefId) -> bool,
+) -> Result<Program, Error> {
     let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
         crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
@@ -61,7 +69,10 @@ pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error>
         body_regions: facts.body_regions.clone(),
     };
     for function in &facts.functions {
-        if function.body.is_none() || facts.generics.has_parameters(function.definition) {
+        if function.body.is_none()
+            || facts.generics.has_parameters(function.definition)
+            || template(function.definition)
+        {
             continue;
         }
         program.bodies.push(function_body(
@@ -148,6 +159,12 @@ fn function_body(
     let Some(Type::Function { result, .. }) = facts.types.kind(function.signature) else {
         return Err(Error::at(source.file, 0, "missing function signature"));
     };
+    let result = facts
+        .opaques
+        .body_results
+        .get(&function.definition)
+        .copied()
+        .unwrap_or(result);
     let body = Body::new(
         Owner::Function {
             definition: function.definition,
@@ -736,7 +753,14 @@ impl<'a> Builder<'a> {
             }
             Work::ReadPlace(node) => self.read_place(node)?,
             Work::DiscardPlace(node) => {
-                self.pop_place(node)?;
+                if let Some(place) = self.pop_place(node)? {
+                    let ty = self.ty(node)?;
+                    if self.facts.types.contains_regions(ty) != Some(false)
+                        || self.facts.types.contains_parameters(ty) != Some(false)
+                    {
+                        self.statement(node, Action::Mention(place))?;
+                    }
+                }
             }
             Work::Reborrow(node) => self.finish_reborrow(node)?,
             Work::MethodReceiver(node) => self.method_receiver(node)?,
@@ -1010,10 +1034,8 @@ impl<'a> Builder<'a> {
                         value: Some(value),
                         ..
                     } if self.discarded_local(pattern, value)? => {
-                        if self.projected_syntax(value) {
-                            self.scratch.work.push(Work::DiscardPlace(value));
-                            self.scratch.work.push(Work::Place(value));
-                        }
+                        self.scratch.work.push(Work::DiscardPlace(value));
+                        self.scratch.work.push(Work::Place(value));
                     }
                     Kind::Let { value, .. } | Kind::Return(value) | Kind::Break { value, .. } => {
                         if let Some(value) = value {

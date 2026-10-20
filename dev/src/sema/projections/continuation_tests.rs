@@ -171,10 +171,7 @@ fn shared_graphs_resume_each_selection_once_and_reuse_completed_roots() -> TestR
         let mut cursor = Cursor::new(None, &proof, ScopeId::ROOT, Availability::Validated)?;
         let mut requests = HashSet::new();
         let mut provider = |_: &mut Declarations, request: Request| {
-            assert!(
-                requests.insert(request.application),
-                "selection was replayed"
-            );
+            assert!(requests.insert(request.alias), "selection was replayed");
             Ok(None)
         };
         cursor.start(&mut facts, child)?;
@@ -275,7 +272,7 @@ fn callable_proofs_survive_interleaved_waits_without_gaining_permissions() -> Te
         let mut cursor = Cursor::new(None, &proof, ScopeId::ROOT, Availability::Validated)?;
         let mut requests = HashSet::new();
         let mut provider = |_: &mut Declarations, request: Request| {
-            assert!(requests.insert((request.application, request.scope)));
+            assert!(requests.insert((request.alias, request.scope)));
             Ok(None)
         };
         cursor.start(&mut facts, root)?;

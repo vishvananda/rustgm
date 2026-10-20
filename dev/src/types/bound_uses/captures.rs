@@ -256,7 +256,7 @@ impl<Q: Query> Occurrences<Q> {
                 found = self.child(store, (result, nested), finish)?;
                 Some((parameters, nested))
             }
-            Kind::Adt(_, arguments) => {
+            Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                 found = self.arguments(store, arguments, depth, finish)?;
                 None
             }

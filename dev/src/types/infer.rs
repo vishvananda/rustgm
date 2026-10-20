@@ -6,6 +6,7 @@ mod compare;
 mod completed;
 pub mod constants;
 pub mod deferred;
+mod defining;
 pub mod dependencies;
 mod freshen;
 pub use freshen::FreshRegions;
@@ -43,6 +44,7 @@ pub enum Constructor {
     ArrayTerm(super::arguments::ConstId),
     ArrayInfer(constants::ConstTermId),
     AdtArgs(ItemId, arguments::ArgumentsId),
+    Opaque(super::opaque::OpaqueId, arguments::ArgumentsId),
     FunctionItemArgs(ItemId, arguments::ArgumentsId),
     Projection(projections::Projection),
     Slice,
@@ -100,6 +102,7 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 #[derive(Default)]
 pub struct Context {
+    defining: Option<Box<defining::Definitions>>,
     arguments: Option<Box<arguments::Storage>>,
     dependencies: Option<Box<dependencies::Storage>>,
     resolution: Option<Box<resolve::Resolution>>,
@@ -123,11 +126,7 @@ pub struct Context {
     pub steps: usize,
 }
 impl Context {
-    fn push(&mut self, value: Value, children: &[TermId]) -> Result<TermId, Error> {
-        if children.iter().any(|id| id.0 as usize >= self.terms.len()) {
-            return Err(Error::InvalidIdentity);
-        }
-        let id = TermId(u32::try_from(self.terms.len()).map_err(|_| Error::Overflow)?);
+    fn append_edges(&mut self, children: &[TermId]) -> Result<(u32, u32), Error> {
         let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
         let end = self
             .edges
@@ -136,6 +135,14 @@ impl Context {
             .and_then(|n| u32::try_from(n).ok())
             .ok_or(Error::Overflow)?;
         self.edges.extend_from_slice(children);
+        Ok((start, end))
+    }
+    fn push(&mut self, value: Value, children: &[TermId]) -> Result<TermId, Error> {
+        if children.iter().any(|id| id.0 as usize >= self.terms.len()) {
+            return Err(Error::InvalidIdentity);
+        }
+        let id = TermId(u32::try_from(self.terms.len()).map_err(|_| Error::Overflow)?);
+        let (start, end) = self.append_edges(children)?;
         self.terms.push(Term {
             parent: id,
             rank: 0,
@@ -168,7 +175,9 @@ impl Context {
     /// Rejects invalid arity, child identities and compact arena overflow.
     pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
         let valid = match kind {
-            Constructor::AdtArgs(_, id) => children.len() == self.argument_arity(id)?,
+            Constructor::AdtArgs(_, id) | Constructor::Opaque(_, id) => {
+                children.len() == self.argument_arity(id)?
+            }
             Constructor::Projection(value) => {
                 children.len().checked_sub(1) == Some(self.argument_arity(value.arguments)?)
                     && value.trait_arguments as usize <= self.slots(value.arguments)?.len()
@@ -396,6 +405,12 @@ impl Context {
             if a == b {
                 continue;
             }
+            let left = self.defining_root(store, a, b)?;
+            let b = self.defining_root(store, b, a)?;
+            let a = left;
+            if a == b {
+                continue;
+            }
             if let Some(blocked) = &mut blocked {
                 let first = self.needs_normalization(store, a)?;
                 let second = self.needs_normalization(store, b)?;
@@ -441,7 +456,7 @@ impl Context {
             return Ok(None);
         }
         let kind = self.materialize(store, id)?;
-        if matches!(kind, Constructor::Projection(_)) && self.opaque_projection(id).is_none() {
+        if kind.normalizable(store) && self.opaque_projection(id).is_none() {
             return Err(Error::Normalization);
         }
         if let Constructor::ArrayInfer(length) = kind
@@ -521,14 +536,14 @@ impl Context {
     ) -> Result<(), Error> {
         let left = self.materialize(store, a)?;
         let right = self.materialize(store, b)?;
+        if left.normalizable(store) || right.normalizable(store) {
+            return match (self.opaque_projection(a), self.opaque_projection(b)) {
+                (Some(x), Some(y)) if x == y => Ok(()),
+                (Some(_), Some(_)) => Err(Error::Mismatch),
+                _ => Err(Error::Normalization),
+            };
+        }
         match (left, right) {
-            (Constructor::Projection(_), _) | (_, Constructor::Projection(_)) => {
-                return match (self.opaque_projection(a), self.opaque_projection(b)) {
-                    (Some(x), Some(y)) if x == y => Ok(()),
-                    (Some(_), Some(_)) => Err(Error::Mismatch),
-                    _ => Err(Error::Normalization),
-                };
-            }
             (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
             | (Constructor::AdtArgs(y, inferred), Constructor::Adt(x, known))
             | (Constructor::FunctionItem(x, known), Constructor::FunctionItemArgs(y, inferred))
@@ -537,6 +552,9 @@ impl Context {
             {
                 let known = self.materialize_arguments(store, known, &mut Vec::new())?;
                 self.equate_arguments(known, inferred, record_regions)?;
+            }
+            (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) if x == y => {
+                self.equate_arguments(a, b, record_regions)?;
             }
             (Constructor::AdtArgs(x, a), Constructor::AdtArgs(y, b))
             | (Constructor::FunctionItemArgs(x, a), Constructor::FunctionItemArgs(y, b))
@@ -628,6 +646,9 @@ impl Context {
         children.clear();
         let constructor = match store.kind(ty).ok_or(Error::InvalidIdentity)? {
             Kind::Never => Constructor::Never,
+            Kind::Opaque(id, args) => {
+                Constructor::Opaque(id, self.materialize_arguments(store, args, &mut children)?)
+            }
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
             Kind::Projection(value) => self.materialize_projection(store, value, &mut children)?,
@@ -704,14 +725,7 @@ impl Context {
                 }
             }
         };
-        let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
-        let end = self
-            .edges
-            .len()
-            .checked_add(children.len())
-            .and_then(|n| u32::try_from(n).ok())
-            .ok_or(Error::Overflow)?;
-        self.edges.extend_from_slice(&children);
+        let (start, end) = self.append_edges(&children)?;
         let term = &mut self.terms[id.0 as usize];
         term.value = Value::Construct(constructor);
         term.start = start;
@@ -725,6 +739,8 @@ impl Context {
 pub struct Solved {
     /// One canonical type per original inference term, including unified aliases.
     pub types: Vec<TypeId>,
+    /// Defining-use equations only; capture equality remains in the region proof.
+    pub defining_opaques: HashMap<TypeId, TypeId>,
     pub region_equalities: Vec<(RegionId, RegionId)>,
     pub steps: usize,
 }
@@ -796,11 +812,12 @@ impl Context {
             let root = self.root(id)?;
             resolved[ordinal] = resolved[root.0 as usize];
         }
-        let types = resolved
+        let types: Vec<_> = resolved
             .into_iter()
             .map(|ty| ty.ok_or(Error::InvalidIdentity))
             .collect::<Result<_, _>>()?;
         Ok(Solved {
+            defining_opaques: self.defining_types(&types),
             types,
             region_equalities: std::mem::take(&mut self.region_equalities),
             steps: self.steps,
@@ -816,6 +833,7 @@ fn canonical(
     let kind = match constructor {
         Constructor::ArrayInfer(_)
         | Constructor::Projection(_)
+        | Constructor::Opaque(..)
         | Constructor::AdtArgs(..)
         | Constructor::FunctionItemArgs(..) => return Err(Error::InvalidIdentity),
         Constructor::Primitive(p) => Kind::Primitive(p),

@@ -190,22 +190,14 @@ impl Copies {
                 definitions.shape(types, ty)?;
             }
             let initial = match kind {
+                Kind::Opaque(id, _) => {
+                    types
+                        .opaque_declaration(id)
+                        .ok_or("invalid opaque declaration")?
+                        .copies
+                }
                 Kind::Projection(application) => {
-                    let mut promises = types
-                        .projection_schema(application.item)
-                        .ok_or("missing associated type declaration")?
-                        .copies;
-                    if let Some(environment) =
-                        self.scope.as_ref().and_then(|s| s.environment.as_ref())
-                    {
-                        let extra = environment.projection_promises(application.item).copies;
-                        promises.copy |= extra.copy;
-                        promises.clone_ |= extra.clone_;
-                    }
-                    if promises == Properties::default() && assumed.is_none() {
-                        return Err("associated type Copy checking requires normalization");
-                    }
-                    promises
+                    self.projected_copies(types, application.item, assumed.is_some())?
                 }
                 Kind::Parameter(id) => {
                     let abilities = self
@@ -250,6 +242,26 @@ impl Copies {
         }
         Ok(())
     }
+    fn projected_copies(
+        &self,
+        types: &Store,
+        item: ItemId,
+        assumed: bool,
+    ) -> Result<Properties, &'static str> {
+        let mut promises = types
+            .projection_schema(item)
+            .ok_or("missing associated type declaration")?
+            .copies;
+        if let Some(environment) = self.scope.as_ref().and_then(|s| s.environment.as_ref()) {
+            let extra = environment.projection_promises(item).copies;
+            promises.copy |= extra.copy;
+            promises.clone_ |= extra.clone_;
+        }
+        if promises == Properties::default() && !assumed {
+            return Err("associated type Copy checking requires normalization");
+        }
+        Ok(promises)
+    }
     fn intercrate_properties(
         &mut self,
         types: &Store,
@@ -264,7 +276,7 @@ impl Copies {
             return Ok(Some(Properties::default()));
         }
         match kind {
-            Kind::Adt(..) | Kind::Parameter(_) => Ok(None),
+            Kind::Adt(..) | Kind::Parameter(_) | Kind::Opaque(..) => Ok(None),
             Kind::Reference {
                 mutable: true,
                 mut referent,

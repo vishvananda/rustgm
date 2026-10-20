@@ -367,7 +367,9 @@ impl Checker<'_> {
                 | crate::resolve::model::DefKind::SelfType
                 | crate::resolve::model::DefKind::Struct
                 | crate::resolve::model::DefKind::Enum
-        );
+        ) || self.facts.associated.trait_owner(owner).is_some()
+            && self.report.resolution.definitions[owner.0 as usize].kind
+                == crate::resolve::model::DefKind::TypeAlias;
         let mut work = vec![(key.node, true)];
         let mut children = Vec::new();
         let mut seen = std::collections::HashSet::new();
@@ -422,6 +424,8 @@ impl Checker<'_> {
         })?;
         let mut completed = Vec::with_capacity(bounds.len());
         let mut input_count = 0;
+        let work_start = self.work.len();
+        let mut pending_bindings = false;
         for &bound in &bounds {
             let ty = match bound.subject {
                 Subject::Parameter(id) | Subject::Associated(id) => self.facts.definitions
@@ -461,18 +465,28 @@ impl Checker<'_> {
                 value: self.bound_clause(bound.source, bound.scope, value)?,
             });
             if let Written::User { path, .. } = bound.bound {
-                self.complete_associated_bindings(
-                    owner,
-                    path,
-                    value,
-                    original,
-                    bound.scope,
+                pending_bindings |= self.complete_associated_bindings(
+                    super::bindings::Binding {
+                        owner,
+                        path,
+                        predicate: value,
+                        original,
+                        scope: bound.scope,
+                        context: bound.context(context),
+                    },
                     &mut completed,
                 )?;
             }
             if !matches!(bound.subject, Subject::Associated(_)) {
                 input_count = completed.len();
             }
+        }
+        if pending_bindings {
+            let arguments = self.work.split_off(work_start);
+            self.work.push(Work::Bounds(owner, context));
+            self.work.extend(arguments);
+            self.bound_syntax.insert(owner, bounds);
+            return Ok(());
         }
         if let Some(family) = self.facts.associated.families.get_mut(&owner) {
             // Associated result syntax is appended after the member's inputs.
@@ -484,7 +498,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn bound_values(
+    pub(in crate::sema::declarations) fn bound_values(
         &mut self,
         written: Written,
         subject: crate::types::TypeId,

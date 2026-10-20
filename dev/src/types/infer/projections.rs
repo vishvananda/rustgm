@@ -31,7 +31,7 @@ impl Projection {
 impl Constructor {
     pub(super) fn application(self) -> Option<(ArgumentsId, usize)> {
         match self {
-            Self::AdtArgs(_, args) => Some((args, 0)),
+            Self::AdtArgs(_, args) | Self::Opaque(_, args) => Some((args, 0)),
             Self::FunctionItemArgs(_, args) => Some((args, 1)),
             Self::Projection(value) => Some((value.arguments, 1)),
             _ => None,
@@ -40,6 +40,7 @@ impl Constructor {
     pub(super) fn with_arguments(self, arguments: ArgumentsId) -> Result<Self, Error> {
         match self {
             Self::AdtArgs(item, _) => Ok(Self::AdtArgs(item, arguments)),
+            Self::Opaque(id, _) => Ok(Self::Opaque(id, arguments)),
             Self::FunctionItemArgs(item, _) => Ok(Self::FunctionItemArgs(item, arguments)),
             Self::Projection(value) => Ok(Self::Projection(Projection { arguments, ..value })),
             _ => Err(Error::InvalidIdentity),
@@ -48,6 +49,24 @@ impl Constructor {
 }
 
 impl Context {
+    /// Inspect a result declaration before resolving its potentially growing inputs.
+    pub(crate) fn result_identity(
+        &mut self,
+        store: &Store,
+        term: TermId,
+    ) -> Result<Option<crate::types::outlives::ResultId>, Error> {
+        use crate::types::outlives::ResultId;
+        self.step()?;
+        let term = self.root(term)?;
+        Ok(match self.terms[term.0 as usize].value {
+            Value::Known(ty) => store.result_identity(ty),
+            Value::Construct(Constructor::Projection(value)) => {
+                Some(ResultId::Associated(value.item))
+            }
+            Value::Construct(Constructor::Opaque(id, _)) => Some(ResultId::Opaque(id)),
+            _ => None,
+        })
+    }
     /// Inspect an associated operation's identity without resolving or materializing
     /// its input graph. Other outer shapes and unresolved variables return None.
     /// This metadata query supplies no evidence that the projection can be formed.

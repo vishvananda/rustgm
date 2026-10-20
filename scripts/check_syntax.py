@@ -77,7 +77,8 @@ def check(stage, app):
             shutil.rmtree(case_directory)
         case_directory.mkdir(parents=True)
         source = case_directory / fixture.name
-        binary = case_directory / "output"
+        suffix = "" if kind == "predicate" else ".o" if metadata.get("emit") == "obj" else ".rmeta"
+        binary = case_directory / ("output" + suffix)
         for auxiliary in case.get("auxiliary", []):
             original = ROOT / stage / auxiliary
             destination = case_directory / original.relative_to(fixture.parent)

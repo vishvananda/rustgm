@@ -4243,6 +4243,56 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/mentions/expired-reference-mention.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.borrows"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/mentions/unused-expired-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.borrows"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/mentions/uninitialized-reference-mention.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.borrows"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ],
   "additional_modes": [

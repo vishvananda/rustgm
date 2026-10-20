@@ -10,6 +10,7 @@ mod dot_calls;
 mod field_storage;
 mod finalization;
 mod generics;
+mod hidden_results;
 mod item_values;
 mod lifetimes;
 mod matches;
@@ -159,6 +160,8 @@ pub(super) struct State {
     module: ModuleId,
     field_seen: Vec<bool>,
     result: TypeId,
+    result_term: Option<TermId>,
+    opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
     in_function: bool,
     infer: Context,
     terms: slots::Terms,
@@ -252,6 +255,8 @@ impl<'a> Checker<'a> {
                 module: ModuleId(0),
                 field_seen: Vec::new(),
                 result: TypeId::UNIT,
+                result_term: None,
+                opaque_terms: Vec::new(),
                 in_function: true,
                 infer: Context::default(),
                 touched: scratch.touched,
@@ -352,6 +357,8 @@ impl<'a> Checker<'a> {
         self.prepare_file(key.file);
         self.state.module = module;
         self.state.result = ty;
+        self.state.result_term = None;
+        self.state.opaque_terms.clear();
         self.state.in_function = false;
     }
     pub(super) fn anonymous_constant(
@@ -530,6 +537,7 @@ impl Checker<'_> {
             return Err(self.error(body.node, "missing function signature"));
         };
         self.state.result = result;
+        self.prepare_opaque_results(body.node)?;
         let unit = self.report.package.unit(self.state.file);
         for mut node in unit
             .configured
@@ -954,7 +962,7 @@ impl Checker<'_> {
                 return Ok(());
             }
             Kind::Return(value) => {
-                let result = self.known(node, self.state.result)?;
+                let result = self.result_term(node)?;
                 self.state
                     .work
                     .extend(value.map(|n| Work::Enter(n, Some(result))));
@@ -1196,7 +1204,7 @@ impl Checker<'_> {
                 if !self.state.in_function {
                     return Err(self.error(node, "return is outside a function"));
                 }
-                let expected = self.known(node, self.state.result)?;
+                let expected = self.result_term(node)?;
                 if let Some(value) = value {
                     self.coerce(value, expected)?;
                 } else {

@@ -183,11 +183,19 @@ impl Regions {
                 } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                     return Err("generic drop checking requires a parameter environment");
                 }
-                if let Kind::Projection(application) = kind
-                    && !types
+                let symbolic_result = match kind {
+                    Kind::Projection(application) => !types
                         .projection_schema(application.item)
-                        .is_some_and(|schema| schema.copies.copy)
-                {
+                        .is_some_and(|schema| schema.copies.copy),
+                    Kind::Opaque(id, _) => {
+                        self.environment.is_some()
+                            && !types
+                                .opaque_declaration(id)
+                                .is_some_and(|declaration| declaration.copies.copy)
+                    }
+                    _ => false,
+                };
+                if symbolic_result {
                     if let Some(environment) = &self.environment {
                         let components = self.components.get_or_insert_with(Default::default);
                         let parts = components.live_value(types, ty)?;
@@ -241,7 +249,7 @@ impl Regions {
             if types.region_args(args).is_none() {
                 if self.custom.contains(&item) {
                     let components = self.components.get_or_insert_with(Default::default);
-                    let parts = components.get(types, ty)?;
+                    let parts = components.drop_inputs(types, ty)?;
                     if let Some(environment) = &self.environment {
                         if parts
                             .parameters
@@ -351,6 +359,14 @@ fn dependencies(
             )?;
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
+            Kind::Opaque(id, _) => {
+                if !types
+                    .opaque_declaration(id)
+                    .is_some_and(|declaration| declaration.copies.copy)
+                {
+                    visit(Key::Type(types.storage_head(ty)?))?;
+                }
+            }
             Kind::Parameter(_) => {
                 return Err("generic drop checking requires a parameter environment");
             }

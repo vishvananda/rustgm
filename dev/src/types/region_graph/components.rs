@@ -40,38 +40,67 @@ struct Frame {
     edge: Option<usize>,
 }
 struct Search<'a> {
-    graph: &'a Graph,
+    heads: &'a [Option<usize>],
+    edges: &'a [Edge],
+    limit: usize,
     numbers: Vec<usize>,
     low: Vec<usize>,
     active: Vec<bool>,
     stack: Vec<usize>,
     frames: Vec<Frame>,
     classes: Vec<Region>,
+    ranks: Vec<usize>,
+    components: usize,
     members: Vec<usize>,
     next: usize,
-    static_target: usize,
+    static_target: Option<usize>,
     steps: usize,
 }
 impl Graph {
     /// Compute mutual entailment from declared/implied bounds only. Static
     /// intrinsically outlives all nodes, including unmentioned universals.
     pub(crate) fn assumption_classes(&self) -> Result<Vec<Region>, Error> {
+        self.classes(&self.assumed_heads, &self.assumptions, true, false)
+            .map(|(classes, _, _)| classes)
+    }
+
+    pub(super) fn required_classes(&self) -> Result<(Vec<Region>, Vec<usize>, usize), Error> {
+        // Reversing every required edge preserves its strongly connected classes.
+        self.classes(&self.incoming, &self.obligations, false, true)
+    }
+
+    pub(super) fn classes(
+        &self,
+        heads: &[Option<usize>],
+        edges: &[Edge],
+        static_reaches_all: bool,
+        ranked: bool,
+    ) -> Result<(Vec<Region>, Vec<usize>, usize), Error> {
         Search {
-            graph: self,
+            heads,
+            edges,
+            limit: self.limit,
             numbers: vec![0; self.kinds.len()],
             low: vec![0; self.kinds.len()],
             active: vec![false; self.kinds.len()],
             stack: Vec::new(),
             frames: Vec::new(),
             classes: vec![Region::STATIC; self.kinds.len()],
+            ranks: if ranked {
+                vec![0; self.kinds.len()]
+            } else {
+                Vec::new()
+            },
+            components: 0,
             members: Vec::new(),
             next: 0,
-            static_target: 1,
+            static_target: static_reaches_all.then_some(1),
             steps: 0,
         }
         .run()
     }
 }
+
 impl Search<'_> {
     fn enter(&mut self, node: usize) {
         self.next += 1;
@@ -81,26 +110,38 @@ impl Search<'_> {
         self.stack.push(node);
         self.frames.push(Frame {
             node,
-            edge: self.graph.assumed_heads[node],
+            edge: self.heads[node],
         });
     }
-    fn run(mut self) -> Result<Vec<Region>, Error> {
-        // Static reaches every vertex; one traversal covers the entire graph.
-        self.enter(0);
+    fn run(mut self) -> Result<(Vec<Region>, Vec<usize>, usize), Error> {
+        for root in 0..self.numbers.len() {
+            if self.numbers[root] == 0 {
+                self.enter(root);
+                self.traverse()?;
+            }
+        }
+        Ok((self.classes, self.ranks, self.steps))
+    }
+    fn traverse(&mut self) -> Result<(), Error> {
         while let Some(frame) = self.frames.last_mut() {
             self.steps = self.steps.saturating_add(1);
-            if self.steps > self.graph.limit {
+            if self.steps > self.limit {
                 return Err(Error::Budget);
             }
             let node = frame.node;
             let target = if let Some(edge) = frame.edge {
-                let edge = self.graph.assumptions[edge];
+                let edge = self.edges[edge];
                 frame.edge = edge.next;
                 Some(edge.target.0 as usize)
-            } else if node == 0 && self.static_target < self.numbers.len() {
-                let target = self.static_target;
-                self.static_target += 1;
-                Some(target)
+            } else if node == 0 {
+                self.static_target.and_then(|target| {
+                    if target < self.numbers.len() {
+                        self.static_target = Some(target + 1);
+                        Some(target)
+                    } else {
+                        None
+                    }
+                })
             } else {
                 None
             };
@@ -114,7 +155,7 @@ impl Search<'_> {
                 self.finish(node)?;
             }
         }
-        Ok(self.classes)
+        Ok(())
     }
     fn finish(&mut self, node: usize) -> Result<(), Error> {
         self.frames.pop();
@@ -133,7 +174,11 @@ impl Search<'_> {
             let representative = Region(u32::try_from(representative).map_err(|_| Error::Budget)?);
             for &member in &self.members {
                 self.classes[member] = representative;
+                if !self.ranks.is_empty() {
+                    self.ranks[member] = self.components;
+                }
             }
+            self.components += 1;
         }
         if let Some(parent) = self.frames.last() {
             self.low[parent.node] = self.low[parent.node].min(self.low[node]);

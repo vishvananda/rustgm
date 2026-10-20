@@ -152,8 +152,55 @@ the original application's formation requirements. Only the declared method
 signature grants implied lifetime conditions; constants grant none. Conditions
 captured by nested callables may escape to the enclosing method, while conditions
 on those callables' local lifetimes remain obligations in their own scopes.
+A nominal or family input clause mentioning its own quantified lifetime cannot
+grant an implied bound. Filter the whole clause before decomposing its subject;
+independent components do not escape a dependent condition. Reuse the same typed
+capture/lowering machinery for quantified and surrounding callable binders, while
+preserving explicit static bounds and vacuous quantifiers.
 An impl lifetime erased from the executable signature still represents an
 independent universal when checking its written formation requirements.
+
+Publish completed family input lifetime schemas separately from result promises.
+Share the typed parent/member substitution engine with ordinary normalization,
+including Self's separate declaration identity and the complete capture prefix.
+Prepare applications during the existing structural outlives traversal before
+immutable queries, keyed by member, Self, full trait inputs and own arguments.
+Cache substituted conditions, never caller permissions. Exclude dependent whole
+quantified clauses from implication and defer whole conditions containing local
+callable lifetimes before extracting components. Repeated preparation must reuse
+completed applications; charge first preparation and mapping to bounded work.
+
+Naming a family application in a nominal field does not imply its input bounds.
+The declaration must establish those bounds independently, including when a
+concrete definition erases them. Retain the original projection's proof debt
+through normalization and discharge it at the final declaration lifetime gate.
+Checked signature inputs may supply ordinary implied conditions to default method
+bodies; a result promise cannot grant a lifetime bound on its inputs.
+
+Compute required GAT where clauses from retained typed signatures and written
+associated result bounds. Collect complete argument positions across every use
+within one member; intersect contributions from distinct members that mention the
+family. Method outputs participate in finding uses, while only inputs contribute
+implied well-formedness. Exclude static lifetime arguments and callable-local
+lifetimes from candidate bounds. Lift outer captures without changing their
+formal argument positions. Constants and members of another trait do not
+contribute. Keep an empty contribution distinct from an absent use.
+
+Index the member-to-family dependency edges once. Count each contributing member
+once per candidate bound and publish only unanimous requirements. When a family's
+required set grows, revisit its dependent result-bound uses through a bounded
+worklist. Tentative requirements belong only to this analysis; they never modify
+caller environments. Finally prove every derived requirement from the family's
+actual declared environment. Use the original predicate prefix when separating
+written input/result clauses from later supertrait elaboration.
+
+Batch candidate lifetime questions within each immutable declaration environment.
+Reuse the existing typed conjunction, alternative and projection-identity tests,
+without forcing their components as obligations. Unknown relationships return
+false; unfinished proofs, foreign identities and exhausted work are errors.
+Cache assumption reachability once per queried source lifetime so asking many
+targets does not repeat the same graph walk. Ordinary contracts without families
+must not allocate this analysis or scan unrelated member signatures.
 
 Shorthand associated type lookup keeps naming separate from projection proof.
 Index written parameter bounds by lexical owner and resolved subject; elaborate
@@ -1183,10 +1230,102 @@ where bound alone does not constrain it. Validate target and argument well-forme
 trait requirements and safety under the impl's own environment. Input types imply
 lifetime well-formedness facts, never new Copy or user-trait assumptions.
 
+Argument-position `impl Trait` introduces a distinct unnameable type parameter
+for each input occurrence. Resolution retains its function owner and source but
+adds no lexical binding or hygiene entry. Elaborate its written trait bounds with
+ordinary generic declarations, inference, calls and lifetime contracts. Require
+at least one trait bound and reject precise `use<...>` captures in input position.
+Anonymous parameters follow written parameters in typed metadata, remain separate
+when two inputs have the same bounds, and never consume a turbofish argument.
+Method conformance checks anonymous versus named parameter identity as well as
+arity and requirements; replacing one spelling with the other is not transparent.
+Nested callable types do not introduce input parameters for their enclosing item.
+
+Return-position opaque declarations keep a canonical identity and complete
+captures separate from private defining-body results. Every return path shares
+the same hidden inference term. Keep the public callable signature intact when
+building its CFG: the CFG result uses the solved private result, including
+nested opaque occurrences and early returns. Caller inference, equality and
+trait permissions consume published promises, never storage representations.
+
+Resolve precise capture lists to existing parameter identities and retain
+declaration order. Require every type/const parameter, reject anonymous input
+parameters, duplicates and misplaced lifetimes, and require all lifetimes used
+by published bounds. Preserve actual captures in caller liveness; an erased
+representation is never evidence that captured inputs can be forgotten. Published outlives promises use the shared associated/opaque result closure:
+a unique declared bound constrains the result without inventing a reverse bound
+on its captures. Locally quantified targets remain scoped and do not become static.
+Trait precise capture lists retain every parent trait parameter, including lifetimes
+and implicit Self.
+
+Retain unresolved hidden lifetime occurrences with the solved private result;
+never publish them in a portable representation. Build opaque defining bodies
+through the same scoped CFG/template path even without type/const parameters.
+Register member obligations while consuming the existing typed obligation stream,
+after ordinary variables and quantified scopes have their identities. Promotion
+and borrow-place provenance precede solving. Choose only captured root universals
+or static, and retain the selected equalities as obligations in the final proof.
+Publish portable hidden types only after the defining region and loan checks.
+Restoration caches belong to one capture list: equivalent names in different
+precise lists do not grant permission to use each other's spelling.
+
+Share captured lists, candidate sets and assumption reachability within each
+body. Required SCCs determine dependency order before making a conservative
+choice. Match the pinned compiler's least candidate comparable with all remaining
+choices; incomparable alternatives can therefore select static. Topological
+candidate order and shared reverse reachability avoid repeatedly searching a
+long assumption chain. Retain deterministic source identities, bounded work and
+the ordinary graph's allocation-free absence of member state. SCC ranks are
+requested only by member inference. No inference choice adds a universal
+assumption or replaces the later storage/loan checks.
+
+Storage preparation visits appended canonical opaque applications once and
+substitutes their complete captures. Cache flattened storage heads independently
+of canonical kinds. Reuse them for concrete trait dispatch, layout and cleanup;
+symbolic destruction retains possible cleanup without revealing hidden types.
+Validate by-value finiteness through the existing template-layout machinery,
+including unused and generic defining bodies. Function-item signatures are not
+physical storage edges. No opaque application authorizes execution until the
+ordinary template, instance, region, ownership and destruction proofs complete.
+
+Trait-method opaque outputs participate in ordinary normalization as a typed alias,
+with the complete capture application retained through proof scopes, header waits
+and symbolic output inference. A proved implementation stores its selected written
+result template, impl parent bindings and trait method lifetime coordinates.
+Anonymous outputs and named families share selection and simultaneous substitution;
+never invent synthetic definitions or infer a parent from a non-injective output.
+A symbolic result may reveal structure before all method inputs settle, but the
+original query still owes every input and implementation premise. Caller assumptions
+keep generic outputs opaque; only independently selected concrete implementations
+expose their declared refinement. Conformance uses the trait's original signature
+for implied well-formedness, then proves the actual output's separate requirements.
+
+Defining recursive equations keep the entire opaque capture application. Register
+private hidden roots only in the actual defining body, never in selection probes.
+Ordinary use of a recursive result may retain its public identity; equating it with
+a defining hidden root or concrete result requires complete capture equality.
+Those equalities remain lifetime proof obligations even for a shape comparison.
+Retain explicit successful defining uses for private coercion proof substitution;
+do not globally rewrite callable identities or reveal another capture application.
+Only an otherwise unconstrained recursive defining root receives the pinned unit
+fallback, after ordinary never-coercion handling. Infinite hidden storage still
+fails the existing finiteness check. Ordinary inference contexts allocate no
+opaque-defining table, and all additional traversal remains charged and iterative.
+
 Callable signatures inside bound subjects and arguments keep their own lifetime
 elision rules, while projection formation still waits for the complete written
 caller environment. Traverse those signatures when retaining raw bound roots;
 skipping lifetime-elision validation must not skip their deferred projections.
+
+Associated result bounds retain their typed projection roots until all sibling
+result contracts exist. Validate those roots before the enclosing predicate,
+using their original binder and written source location. Family equality bindings
+resolve their own type, const and lifetime arguments through the ordinary argument
+worklist. Publish a bound environment only after every binding argument completes;
+resume the entire pending batch once, rather than rescanning it for each binding.
+Retain the complete original family selector as a formation root independently of
+its equality result: an equality that reduces an output to `u8` cannot erase the
+family's input outlives, trait or projection requirements.
 
 Prepare raw typed impl bounds before normalizing their projected annotations, as
 for function bounds. An opaque projection can finish this declaration pass after

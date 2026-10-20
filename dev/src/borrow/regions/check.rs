@@ -12,6 +12,7 @@ pub struct Body {
     pub source: NodeKey,
     pub instance: Option<crate::types::instance::Instance>,
     pub solution: graph::Solution,
+    pub hidden_regions: Vec<crate::types::opaque::RegionChoice>,
     pub identities: super::constraints::Identities,
     pub builtins: Option<std::sync::Arc<crate::body::regions::BuiltinRequirements>>,
 }
@@ -241,6 +242,7 @@ fn body(
         .unwrap_or_default();
     let first_proof = input.obligations.len().saturating_add(provenance.len());
     let obligations = || input.obligations.iter().chain(&provenance).enumerate();
+    let mut members = super::membership::Requests::new(types);
     if !input.proofs.is_empty() {
         // An inferred input can contain a fresh existential owned by a retained
         // selection. Register ordinary variables before proof debts, then proof
@@ -250,6 +252,7 @@ fn body(
             queries,
             &mut constraints,
             cfg.is_some(),
+            &mut members,
         )?;
         quantified(input, queries, &mut constraints, first_proof)?;
     }
@@ -260,26 +263,27 @@ fn body(
         queries,
         &mut constraints,
         cfg.is_some(),
+        &mut members,
     )?;
     let proof = constraints.prove().map_err(|e| {
         let source = match e {
-            graph::Error::Unsatisfied { source, .. } | graph::Error::Verification { source } => {
-                input
-                    .obligations
-                    .get(source as usize)
-                    .or_else(|| {
-                        (source as usize)
-                            .checked_sub(input.obligations.len())
-                            .and_then(|i| provenance.get(i))
-                    })
-                    .map(|o| o.source)
-                    .or_else(|| {
-                        (source as usize)
-                            .checked_sub(first_proof)
-                            .and_then(|i| proof_source(input, i))
-                    })
-                    .unwrap_or(input.source)
-            }
+            graph::Error::Unsatisfied { source, .. }
+            | graph::Error::Verification { source }
+            | graph::Error::Membership { source } => input
+                .obligations
+                .get(source as usize)
+                .or_else(|| {
+                    (source as usize)
+                        .checked_sub(input.obligations.len())
+                        .and_then(|i| provenance.get(i))
+                })
+                .map(|o| o.source)
+                .or_else(|| {
+                    (source as usize)
+                        .checked_sub(first_proof)
+                        .and_then(|i| proof_source(input, i))
+                })
+                .unwrap_or(input.source),
             _ => input.source,
         };
         Error {
@@ -287,7 +291,9 @@ fn body(
             message: e.to_string(),
         }
     })?;
+    let hidden_regions = members.finish(&proof).map_err(|e| error(e.to_string()))?;
     Ok(Body {
+        hidden_regions,
         source: input.source,
         instance: cfg.and_then(|body| body.instance),
         solution: proof.solution,
@@ -300,6 +306,7 @@ fn require_obligations<'a>(
     queries: &mut Queries<'_>,
     constraints: &mut Constraints<'_>,
     has_provenance: bool,
+    members: &mut super::membership::Requests<'_>,
 ) -> Result<(), Error> {
     let mut formation = None;
     for (index, obligation) in obligations {
@@ -316,6 +323,7 @@ fn require_obligations<'a>(
             source,
             has_provenance,
             &mut formation,
+            members,
         )
         .map_err(error)?;
     }
@@ -366,8 +374,12 @@ fn apply<'a>(
     source: u32,
     has_provenance: bool,
     formation: &mut Option<Box<crate::types::outlives::Formation<'a>>>,
+    members: &mut super::membership::Requests<'_>,
 ) -> Result<(), String> {
     match obligation {
+        Obligation::Membership { region, captures } => {
+            members.require(constraints, region, captures, source)?;
+        }
         Obligation::Variable {
             id,
             needs_provenance,

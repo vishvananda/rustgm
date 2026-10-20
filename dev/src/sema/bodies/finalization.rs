@@ -28,6 +28,10 @@ impl Checker<'_> {
                 }
             }
         }
+        self.state
+            .infer
+            .default_defining_results(&self.facts.types)
+            .map_err(|e| self.error(body, e))?;
         let evidence = match self.infer_trait_obligations(body)? {
             super::trait_goals::Progress::Ready(evidence) => evidence,
             super::trait_goals::Progress::Prepare(dependency) => return Ok(Some(dependency)),
@@ -47,6 +51,7 @@ impl Checker<'_> {
                     .map(|pending| pending.arguments.as_slice()),
             )
             .map_err(|e| self.error(body, e))?;
+        self.complete_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;
         self.advance_finalization(Finalization {
             solved,

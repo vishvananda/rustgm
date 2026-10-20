@@ -2,6 +2,7 @@
 mod conformance;
 mod families;
 mod parameters;
+mod required;
 use super::super::generics::bounds::Syntax;
 use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, Type};
 use crate::{
@@ -112,11 +113,6 @@ impl Checker<'_> {
             if item.visibility != Visibility::Private {
                 return Err(self.error(key, "associated types require inherited visibility"));
             }
-            if item.generics.start != item.generics.end
-                || item.where_clause.start != item.where_clause.end
-            {
-                return Err(self.error(key, "associated type parameters and where clauses require advanced generic relationships"));
-            }
             let parent = match owner.kind {
                 OwnerKind::Trait { definition, .. } => {
                     if ty.is_some() {
@@ -173,7 +169,6 @@ impl Checker<'_> {
         let context = self.associated_type_context(id, key)?;
         self.schedule_bounds(id, context)?;
         self.drain(steps, limit)?;
-        self.retain_bound_projection_requirements(id, context)?;
         if let Some(family) = self.facts.associated.families.get_mut(&id) {
             family.requirements.get_or_insert_with(Vec::new);
         }
@@ -208,6 +203,7 @@ impl Checker<'_> {
     pub(in crate::sema::declarations) fn validate_associated_type_bounds(
         &mut self,
     ) -> Result<(), Error> {
+        let mut steps = 0;
         for index in 0..self.facts.associated.members().len() {
             let id = self.facts.associated.members()[index].definition;
             if !self.facts.associated.types.contains_key(&id)
@@ -228,6 +224,7 @@ impl Checker<'_> {
                 .generics
                 .complete_environment(&mut self.facts.types, id)
                 .map_err(|e| self.error(key, e))?;
+            self.validate_bound_projection_requirements(id, &mut steps, 1_000_000)?;
             let environment = self.facts.generics.environments.get(&id).cloned();
             let mut proof = self.declaration_proof(id, environment);
             self.validate_bounds(id, &mut proof)?;

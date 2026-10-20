@@ -185,13 +185,13 @@ normalization and general coherence to PA20; higher-ranked trait obligations,
 GATs and opaque identities/captures to PA21. PA18 uses existing lifetime/binder
 machinery as required by its signatures; it does not claim those later features.
 Unsized executable values and pointer metadata remain PA22, trait objects PA23,
-closures PA24 and general const functions PA25. The opaque-return boundary case
-has a documented rustc acceptance difference. The former associated-type boundary
-is an accepted maintainer control awaiting PA20's grading contract.
+closures PA24 and general const functions PA25. The former opaque-return boundary
+now belongs to PA21 with an accepted oracle. Method and associated-item controls
+belong to their later owning assignments.
 
 ## Validation
 
-The suite declares 450 fixtures: 280 accepted and 170 rejected. Of the accepted
+The suite declares 449 fixtures: 280 accepted and 169 rejected. Of the accepted
 programs, 277 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.

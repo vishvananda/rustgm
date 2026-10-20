@@ -223,6 +223,7 @@ fn materialize(
         }
         projections::normalize(facts, &mut body, contract, comparison)?;
     }
+    facts.prepare_opaque_storage()?;
     let needed = &mut cleanup.needed;
     if let Some(owned) = &source.owned {
         let mut concrete = Box::<drops::values::Facts>::default();
@@ -264,11 +265,20 @@ fn parameters(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'
     else {
         return Err("invalid callable instance");
     };
-    let callable = facts
-        .lifetimes
-        .callables
-        .get(item)
-        .ok_or("missing callable template")?;
+    let Some(callable) = facts.lifetimes.callables.get(item) else {
+        let owner = crate::resolve::model::DefId(item.0);
+        if arguments != crate::types::GenericArgs::EMPTY
+            || facts.generics.has_parameters(owner)
+            || facts.definitions.get(item.0 as usize).copied().flatten() != Some(instance.ty())
+        {
+            return Err("missing callable template");
+        }
+        return Ok(Inputs {
+            instance,
+            bindings: Vec::new(),
+            comparison: None,
+        });
+    };
     let parameters = facts
         .lifetimes
         .callables

@@ -84,7 +84,8 @@ impl Clause {
         let subject = store
             .kind(value.predicate.ty)
             .ok_or("invalid outlives assumption subject")?;
-        if !matches!(shorter.bound_parts(), Some((0, _))) || matches!(subject, Kind::Projection(_))
+        if !matches!(shorter.bound_parts(), Some((0, _)))
+            || matches!(subject, Kind::Projection(_) | Kind::Opaque(..))
         {
             return Ok(Some(self));
         }
@@ -201,6 +202,15 @@ pub(in crate::types) struct Storage {
 }
 
 impl Store {
+    /// Canonical predicate binders in identity order, without reopening any scope.
+    #[must_use]
+    pub fn quantified_clauses(&self) -> &[Quantified] {
+        self.arguments
+            .as_ref()
+            .and_then(|storage| storage.clauses.as_ref())
+            .map_or(&[], |storage| storage.values.as_slice())
+    }
+
     #[must_use]
     pub fn quantified(&self, id: QuantifiedId) -> Option<Quantified> {
         self.arguments

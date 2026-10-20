@@ -1,4 +1,4 @@
-//! Generic CFGs retain possible destruction; they are not executable programs.
+//! Definition CFGs retain possible destruction; they are not executable programs.
 pub use super::constructors::templates as constructors;
 use super::{Declarations, Error, Report, Scratch, function_body};
 use crate::{
@@ -15,7 +15,7 @@ pub struct Template {
 pub struct Templates {
     pub bodies: Vec<Template>,
 }
-/// Build each type/const generic body once using the ordinary scope/CFG builder.
+/// Build each generic or opaque-defining body once using the ordinary scope/CFG builder.
 /// The result retains possible cleanup even without a declared custom destructor.
 /// It cannot be passed to the concrete program verifier or `LowIR` lowerer.
 /// # Errors
@@ -25,27 +25,31 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> 
     let query = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
     let mut bodies = Vec::new();
     for function in &facts.functions {
-        if function.body.is_none() || !facts.generics.has_parameters(function.definition) {
+        if function.body.is_none()
+            || (!facts.generics.has_parameters(function.definition)
+                && !facts.opaques.owners.contains_key(&function.definition))
+        {
             continue;
         }
-        let environment = facts
-            .generics
-            .body_environment(function.definition)
-            .ok_or_else(|| {
-                Declarations::error(
-                    report,
-                    function.node,
-                    "missing completed generic body environment",
+        let environment =
+            if let Some(environment) = facts.generics.body_environment(function.definition) {
+                Arc::clone(environment)
+            } else {
+                Arc::new(
+                    facts
+                        .generics
+                        .parameter_environment(&facts.types, function.definition)
+                        .map_err(|e| Declarations::error(report, function.node, e))?,
                 )
-            })?;
-        let mut scoped = query.scoped(Arc::clone(environment));
+            };
+        let mut scoped = query.scoped(Arc::clone(&environment));
         let body = function_body(report, facts, &mut scratch, function, Some(&mut scoped))?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
             .map_err(|message| Declarations::error(report, body.source, message))?;
         bodies.push(Template {
             body,
             destruction,
-            environment: Arc::clone(environment),
+            environment,
         });
     }
     for initializer in &facts.initializers {

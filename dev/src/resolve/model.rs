@@ -243,6 +243,8 @@ pub struct AssociatedBinding {
 
 #[derive(Default)]
 pub struct Resolution {
+    /// Unnameable `impl Trait` input parameters, grouped by their owning function.
+    pub anonymous_parameters: HashMap<NodeKey, Vec<NodeKey>>,
     pub builtin_traits: BuiltinTraits,
     /// Language-owned identity, distinct from any user declaration named `Drop`.
     pub drop_trait: Option<DefId>,

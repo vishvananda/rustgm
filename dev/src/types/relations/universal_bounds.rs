@@ -9,7 +9,8 @@ use super::{
     persistent::{Id, Map, Node},
 };
 use crate::types::{
-    ItemId, Kind, Store,
+    Store,
+    outlives::ResultId,
     parameters::{
         clauses::QuantifiedId,
         predicates::{Bound, Predicate},
@@ -21,7 +22,7 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct State {
-    candidates: HashMap<(ItemId, u64), Vec<QuantifiedId>>,
+    candidates: HashMap<(ResultId, u64), Vec<QuantifiedId>>,
     seen: HashSet<Predicate>,
     shapes: Shapes,
     recipes: recipes::Recipes,
@@ -45,7 +46,7 @@ impl State {
         if self.seen.contains(&value.predicate) {
             return Ok(());
         }
-        let Some(Kind::Projection(application)) = types.kind(value.predicate.ty) else {
+        let Some(identity) = types.result_identity(value.predicate.ty) else {
             return Err(Error::Identity);
         };
         if !matches!(value.predicate.bound, Bound::Outlives(_)) {
@@ -53,7 +54,7 @@ impl State {
         }
         let shape = self.shapes.get(types, value.predicate.ty)?;
         self.candidates
-            .entry((application.item, shape))
+            .entry((identity, shape))
             .or_default()
             .push(id);
         self.seen.insert(value.predicate);
@@ -65,13 +66,10 @@ impl State {
         view: View,
         shorter: Region,
     ) -> Result<Vec<VerificationId>, Error> {
-        let Some(Kind::Projection(application)) = proof.types.kind(view.projection.ty) else {
+        let Some(identity) = proof.types.result_identity(view.projection.ty) else {
             return Err(Error::Identity);
         };
-        let key = (
-            application.item,
-            self.shapes.get(proof.types, view.projection.ty)?,
-        );
+        let key = (identity, self.shapes.get(proof.types, view.projection.ty)?);
         let mut result = Vec::new();
         for index in 0..self.candidates.get(&key).map_or(0, Vec::len) {
             proof.steps = proof.steps.saturating_add(1);

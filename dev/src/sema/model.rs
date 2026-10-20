@@ -297,6 +297,7 @@ pub struct StoredFieldWork {
     pub retained_bytes: usize,
 }
 pub struct Declarations {
+    pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
     pub unreduced: super::unreduced::Types,
@@ -400,6 +401,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             alias_requirements: super::alias_requirements::Requirements::default(),
             unreduced: super::unreduced::Types::default(),
@@ -463,9 +465,13 @@ impl Declarations {
                 .collect(),
             functions: Vec::new(),
         };
+        value.import_resolution(report)?;
+        Ok(value)
+    }
+    fn import_resolution(&mut self, report: &Report) -> Result<(), Error> {
         for reference in &report.resolution.references {
             if reference.namespace != Namespace::Macro {
-                let facts = value.node_mut(reference.node).ok_or_else(|| {
+                let facts = self.node_mut(reference.node).ok_or_else(|| {
                     Self::error(
                         report,
                         reference.node,
@@ -486,19 +492,17 @@ impl Declarations {
                     u32::try_from(index)
                         .map_err(|_| Self::error(report, key, "too many definitions"))?,
                 );
-                value
-                    .node_mut(key)
+                self.node_mut(key)
                     .ok_or_else(|| Self::error(report, key, "invalid binding node"))?
                     .binding = Some(id);
             }
         }
         for &(key, definition) in &report.resolution.pattern_aliases {
-            value
-                .node_mut(key)
+            self.node_mut(key)
                 .ok_or_else(|| Self::error(report, key, "invalid pattern binding alias"))?
                 .binding = Some(definition);
         }
-        Ok(value)
+        Ok(())
     }
     #[must_use]
     pub fn node(&self, key: NodeKey) -> Option<&NodeFacts> {

@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'static u8;}trait Accept{}impl Accept for for<'a>fn(&'a u8)->&'a u8{}trait Need{}impl<T>Need for T where T:for<'a>A<'a>,(for<'a>fn(&'a u8)-><T as A<'a>>::Out):Accept{}fn need<T:Need>(){}fn main(){need::<u8>();}

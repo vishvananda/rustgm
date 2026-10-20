@@ -1,0 +1,61 @@
+function @rg.14() -> void {
+  slot $s0 : obj<3x1>
+  slot $s1 : obj<4x1>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rg.13.i1(%t0)
+    %t1 = addr $s1
+    call void @rg.13.i2(%t1)
+    return void
+}
+function @rg.13.i1(%p0 : ptr) -> void {
+  slot $s0 : obj<3x1>
+  slot $s1 : i64
+  block ^b0:
+    store i64 0, $s1
+    jump ^b1
+  block ^b1:
+    %t0 = load i64 $s1
+    %t1 = cmp ult i64 %t0, 3
+    branch %t1, ^b2, ^b3
+  block ^b2:
+    %t2 = binary mul i64 %t0, 1
+    %t3 = addr $s0
+    %t4 = index u8 %t3, %t2
+    store u8 7, %t4
+    %t5 = binary add i64 %t0, 1
+    store i64 %t5, $s1
+    jump ^b1
+  block ^b3:
+    %t6 = addr $s0
+    copyobj 3x1 %t6, %p0
+    return void
+}
+function @rg.13.i2(%p0 : ptr) -> void {
+  slot $s0 : obj<4x1>
+  slot $s1 : i64
+  block ^b0:
+    store i64 0, $s1
+    jump ^b1
+  block ^b1:
+    %t0 = load i64 $s1
+    %t1 = cmp ult i64 %t0, 4
+    branch %t1, ^b2, ^b3
+  block ^b2:
+    %t2 = binary mul i64 %t0, 1
+    %t3 = addr $s0
+    %t4 = index u8 %t3, %t2
+    store u8 7, %t4
+    %t5 = binary add i64 %t0, 1
+    store i64 %t5, $s1
+    jump ^b1
+  block ^b3:
+    %t6 = addr $s0
+    copyobj 4x1 %t6, %p0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

@@ -163,6 +163,24 @@ impl Checker<'_> {
         queries: &mut Queries<'_>,
         count: u32,
     ) -> Result<Constraints<'_>, String> {
+        self.trait_region_environment_mode(owner, queries, count, true)
+    }
+
+    pub(super) fn trait_region_declared_environment(
+        &self,
+        owner: DefId,
+        queries: &mut Queries<'_>,
+    ) -> Result<Constraints<'_>, String> {
+        self.trait_region_environment_mode(owner, queries, self.trait_region_count(owner), false)
+    }
+
+    fn trait_region_environment_mode(
+        &self,
+        owner: DefId,
+        queries: &mut Queries<'_>,
+        count: u32,
+        imply_signature: bool,
+    ) -> Result<Constraints<'_>, String> {
         let function = self.facts.lifetimes.functions.get(&owner);
         let schema = self.facts.associated.schema(owner);
         let mut constraints = Constraints::new(
@@ -193,7 +211,7 @@ impl Checker<'_> {
                 .map_err(|e| e.to_string())?;
         }
         self.assume_trait_impl_inputs(owner, queries, &mut constraints)?;
-        if let Some(ty) = self.facts.definitions[owner.0 as usize] {
+        if imply_signature && let Some(ty) = self.facts.definitions[owner.0 as usize] {
             if function.is_some() {
                 let Some(Type::FunctionItem { signature, .. }) = self.facts.types.kind(ty) else {
                     return Err("missing trait-bound function signature".into());

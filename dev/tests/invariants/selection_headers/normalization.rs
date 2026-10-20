@@ -233,7 +233,11 @@ fn declaration_projection_templates_restore_results_before_fresh_rebasing() -> T
     };
     let definition = Definition::select(
         &f.facts,
-        request.application.item,
+        request
+            .alias
+            .associated()
+            .ok_or("expected associated projection")?
+            .item,
         projected.family,
         projected.source.ok_or("missing selected implementation")?,
     )?;
@@ -262,14 +266,15 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
         let Step::Resolve(request) = fold.start(&mut f.facts.types, f.root)? else {
             return Err("missing projection request".into());
         };
+        let application = request.alias.associated().ok_or("expected projection")?;
         let root = Predicate {
-            ty: request.application.subject,
-            bound: Bound::Trait(request.application.trait_application),
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
         };
         let arguments = f
             .facts
             .types
-            .trait_application(request.application.trait_application)
+            .trait_application(application.trait_application)
             .ok_or("missing trait")?
             .arguments;
         let premise = tests::predicate(&mut f.facts, f.base, root.ty, arguments)?;
@@ -323,7 +328,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
             ));
             let definition = Definition::select(
                 &f.facts,
-                request.application.item,
+                application.item,
                 projected.family,
                 projected.source.ok_or("missing implementation")?,
             )?;

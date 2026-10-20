@@ -1,0 +1,1 @@
+ERROR: file 0: 78: associated family lifetime contract is not satisfied: required lifetime does not outlive its target

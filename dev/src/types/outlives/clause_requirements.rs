@@ -25,7 +25,10 @@ impl<'a> Formation<'a> {
             types,
             bounds,
             callables,
-            scan: Scan::default(),
+            scan: Scan {
+                families: bounds.has_family_inputs(),
+                ..Scan::default()
+            },
             slots: Slots::default(),
             demand: Deferred::default(),
         }
@@ -53,6 +56,7 @@ impl<'a> Formation<'a> {
         self.scan.parameter_pairs.clear();
         self.scan.projection_pairs.clear();
         self.scan.uses.clear();
+        self.scan.family_uses.clear();
         self.scan.visit_with(self.types, ty, 1, &mut self.demand)?;
         self.scan
             .demands(self.types, self.bounds, self.callables, &mut self.demand)?;

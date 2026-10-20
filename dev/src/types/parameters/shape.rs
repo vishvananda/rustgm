@@ -373,7 +373,7 @@ fn children(
             visit(signature, depth)?;
             argument_types(types, arguments, depth, &mut visit)?;
         }
-        Kind::Adt(_, args) => {
+        Kind::Adt(_, args) | Kind::Opaque(_, args) => {
             // Field declarations prove the nominal's storage shape once. Uses
             // separately prove its substituted bounds; structural WF includes
             // every written type argument even when it is stored indirectly.

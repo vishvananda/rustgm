@@ -1,4 +1,5 @@
 //! Deterministic associated-item inspection consumes completed typed facts.
+pub mod generics;
 pub mod relationships;
 use super::{associated::OwnerKind, model::Declarations, type_view};
 use crate::{
@@ -54,11 +55,20 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
 }
 
 fn records(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+    records_with(report, facts, out, false)
+}
+
+fn records_with(
+    report: &Report,
+    facts: &Declarations,
+    out: &mut impl Write,
+    advanced: bool,
+) -> io::Result<()> {
     type_view::types(&facts.types, out)?;
     type_view::definitions(report, facts, out)?;
     owners(report, facts, out)?;
     parameters(facts, out)?;
-    predicates(facts, out)?;
+    predicates(facts, out, advanced)?;
     implementations(facts, out)?;
     uses(facts, out)?;
     type_view::body_regions(&facts.body_regions, out)?;
@@ -201,7 +211,7 @@ fn parameters(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     Ok(())
 }
 
-fn predicates(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+fn predicates(facts: &Declarations, out: &mut impl Write, advanced: bool) -> io::Result<()> {
     let mut owners: Vec<_> = facts.generics.predicates.iter().collect();
     owners.sort_unstable_by_key(|(id, _)| id.0);
     for (owner, predicates) in owners {
@@ -211,15 +221,24 @@ fn predicates(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
                 "predicate owner={} source={}:{} ",
                 owner.0, predicate.source.file.0, predicate.source.node.0
             )?;
-            requirement(
-                &facts.types,
-                predicate.value.ordinary().map_err(io::Error::other)?,
-                out,
-            )?;
+            clause(&facts.types, predicate.value, out, advanced)?;
             writeln!(out)?;
         }
     }
     Ok(())
+}
+
+fn clause(
+    store: &Store,
+    value: crate::types::parameters::clauses::Clause,
+    out: &mut impl Write,
+    advanced: bool,
+) -> io::Result<()> {
+    if advanced && let crate::types::parameters::clauses::Clause::ForAll(id) = value {
+        write!(out, "forall={}", id.0)
+    } else {
+        requirement(store, value.ordinary().map_err(io::Error::other)?, out)
+    }
 }
 
 fn requirement(store: &Store, predicate: Predicate, out: &mut impl Write) -> io::Result<()> {

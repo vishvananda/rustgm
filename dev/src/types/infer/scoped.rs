@@ -217,7 +217,9 @@ impl Context {
             Constructor::Adt(_, args) | Constructor::FunctionItem(_, args) => {
                 Some(self.materialize_arguments(store, args, &mut Vec::new())?)
             }
-            Constructor::AdtArgs(_, args) | Constructor::FunctionItemArgs(_, args) => Some(args),
+            Constructor::AdtArgs(_, args)
+            | Constructor::Opaque(_, args)
+            | Constructor::FunctionItemArgs(_, args) => Some(args),
             _ => None,
         })
     }

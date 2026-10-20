@@ -183,6 +183,36 @@ const CASES: &[(&str, &str, bool)] = &[
         "trait Q<P:Copy>{type Out<T>;const C:Self::Out<P>;}impl<P:Copy>Q<P> for u8{type Out<T>=u8;const C:u8=0;}",
         true,
     ),
+    (
+        "dependent-quantifier",
+        "trait Q{type Out<T> where for<'a>T:'a;fn f<T>(x:Self::Out<T>);}impl Q for u8{type Out<T>=u8 where for<'a>T:'a;fn f<T>(x:u8){}}",
+        false,
+    ),
+    (
+        "explicit-static",
+        "trait Q{type Out<T:'static>;fn f<T>(x:Self::Out<T>);}impl Q for u8{type Out<T>=u8 where T:'static;fn f<T>(x:u8){}}",
+        true,
+    ),
+    (
+        "dependent-proven",
+        "trait Q{type Out<T> where for<'a>T:'a;fn f<T:'static>(x:Self::Out<T>);}impl Q for u8{type Out<T>=u8 where for<'a>T:'a;fn f<T:'static>(x:u8){}}",
+        true,
+    ),
+    (
+        "unused-quantifier",
+        "trait Q{type Out<T> where for<'a>T:'static;fn f<T>(x:Self::Out<T>);}impl Q for u8{type Out<T>=u8 where for<'a>T:'static;fn f<T>(x:u8){}}",
+        true,
+    ),
+    (
+        "dependent-composite",
+        "trait Q{type Out<T> where for<'a>(&'a u8,T):'a;fn f<T>(x:Self::Out<T>);}impl Q for u8{type Out<T>=u8 where for<'a>(&'a u8,T):'a;fn f<T>(x:u8){}}",
+        false,
+    ),
+    (
+        "independent-composite",
+        "trait Q{type Out<T> where for<'a>(u8,T):'static;fn f<T>(x:Self::Out<T>);}impl Q for u8{type Out<T>=u8 where for<'a>(u8,T):'static;fn f<T>(x:u8){}}",
+        true,
+    ),
 ];
 
 fn check(source: &str) -> TestResult {
@@ -219,6 +249,7 @@ fn local_family_methods_and_constants_preserve_complete_applications() {
                 "implementation method early lifetime parameters disagree with trait",
                 "implementation method lifetime contract does not satisfy trait",
                 "implementation constant type does not satisfy trait",
+                "associated family lifetime contract is not satisfied",
                 "incompatible types",
             ]
             .iter()

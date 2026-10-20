@@ -150,6 +150,23 @@ impl Quantified {
     }
 }
 impl Obligations {
+    /// Borrow retained evidence blocks in proof order. Scope identities belong
+    /// to this object; the first block is its ordinary root evidence.
+    pub(crate) fn blocks(&self) -> impl Iterator<Item = (ScopeId, bool, u32, &Self)> {
+        std::iter::once((ScopeId::ROOT, false, 0, self)).chain(self.quantified.iter().flat_map(
+            |q| {
+                q.blocks.iter().enumerate().map(|(index, block)| {
+                    (
+                        block.scope,
+                        block.universal_aliases,
+                        q.origin(index),
+                        &block.proof,
+                    )
+                })
+            },
+        ))
+    }
+
     pub(crate) fn scope_depth(&self, scope: ScopeId) -> Result<u16, &'static str> {
         if scope == ScopeId::ROOT {
             return Ok(0);

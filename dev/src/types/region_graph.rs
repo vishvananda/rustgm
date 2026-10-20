@@ -1,8 +1,11 @@
 //! Bounded outlives propagation; universal assumptions never become obligations.
 mod components;
+mod members;
 mod quantifier_elimination;
 mod verify;
+pub use members::{ChoicesId, MembershipId};
 use std::collections::{HashMap, HashSet};
+pub(crate) use verify::Answers;
 pub use verify::VerificationId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -35,6 +38,9 @@ impl Kind {
 pub enum Error {
     Identity,
     Budget,
+    Membership {
+        source: u32,
+    },
     Verification {
         source: u32,
     },
@@ -49,6 +55,7 @@ impl std::fmt::Display for Error {
         out.write_str(match self {
             Self::Identity => "invalid lifetime constraint identity",
             Self::Budget => "lifetime constraint work budget exceeded",
+            Self::Membership { .. } => "hidden lifetime has no unique permitted choice",
             Self::Verification { .. } => "required type does not outlive its target",
             Self::Unsatisfied { .. } => "required lifetime does not outlive its target",
         })
@@ -69,6 +76,7 @@ pub struct Graph {
     obligations: Vec<Edge>,
     incoming: Vec<Option<usize>>,
     verifications: Option<Box<verify::Verifications>>,
+    members: Option<Box<members::Members>>,
     limit: usize,
 }
 pub struct Solution {
@@ -177,6 +185,7 @@ impl Graph {
             obligations: Vec::new(),
             incoming: vec![None; 2],
             verifications: None,
+            members: None,
             limit,
         }
     }
@@ -200,6 +209,7 @@ impl Graph {
             .saturating_add(self.assumptions.len())
             .saturating_add(self.obligations.len())
             .saturating_add(self.verifications.as_ref().map_or(0, |v| v.cost))
+            .saturating_add(self.members.as_ref().map_or(0, |m| m.cost))
             .saturating_add(extra)
             > self.limit
         {
@@ -256,7 +266,9 @@ impl Graph {
     /// # Errors
     /// Reports an unentailed universal relationship or bounded-resource failure.
     pub fn solve(mut self) -> Result<Solution, Error> {
+        let member_steps = self.select_members()?;
         let mut solver = Solver::new(&self);
+        solver.charge_many(member_steps)?;
         solver.propagate(|longer, shorter, source| {
             Err(Error::Unsatisfied {
                 source,
@@ -368,13 +380,27 @@ impl<'a> Solver<'a> {
         &mut self,
         mut unmet: impl FnMut(Region, Region, u32) -> Result<(), Error>,
     ) -> Result<(), Error> {
+        self.seed_rigids()?;
+        self.propagate_work(&mut unmet, |_, _| {})
+    }
+
+    fn seed_rigids(&mut self) -> Result<(), Error> {
         for (index, kind) in self.graph.kinds.iter().enumerate() {
             if kind.rigid() {
                 let id = Region(u32::try_from(index).map_err(|_| Error::Budget)?);
                 self.insert(id, id)?;
             }
         }
+        Ok(())
+    }
+
+    fn propagate_work(
+        &mut self,
+        mut unmet: impl FnMut(Region, Region, u32) -> Result<(), Error>,
+        mut observed: impl FnMut(Region, Region),
+    ) -> Result<(), Error> {
         while let Some((shorter, bound)) = self.work.pop() {
+            observed(shorter, bound);
             let mut edge = self.graph.incoming[shorter.0 as usize];
             while let Some(index) = edge {
                 self.charge()?;

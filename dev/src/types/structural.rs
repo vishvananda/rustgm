@@ -114,6 +114,9 @@ pub(crate) trait Compare<'t> {
             (Kind::Slice(a), Kind::Slice(b)) => self.child(a, b, depth)?,
             (Kind::Tuple(a), Kind::Tuple(b)) => return self.list(a, b, depth),
             (Kind::Adt(x, a), Kind::Adt(y, b)) if x == y => return self.arguments(a, b, depth),
+            (Kind::Opaque(x, a), Kind::Opaque(y, b)) if x == y => {
+                return self.arguments(a, b, depth);
+            }
             (
                 Kind::Function {
                     bound_regions: x,

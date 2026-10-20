@@ -353,6 +353,7 @@ impl Resolver<'_> {
         } else {
             self.declare_item(c, node, item, access)?
         };
+        self.reserve_anonymous_parameters(body_context, node, item)?;
         let mark = self.scratch.len();
         self.package
             .unit(c.file)

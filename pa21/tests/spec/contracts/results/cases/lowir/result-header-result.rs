@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Family where for<'a>Self::Item:A<'a,Out=&'a u8>{type Item;}impl Family for u16{type Item=u8;}fn f<'x,T:Family>(x:&'x u8)-><<T as Family>::Item as A<'x>>::Out{x}fn main(){let n=7;if *f::<u16>(&n)!=7{loop{}}}

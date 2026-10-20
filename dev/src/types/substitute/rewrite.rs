@@ -17,6 +17,7 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
     Ok(match kind {
         Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
         Kind::Adt(item, args) => Kind::Adt(item, folder.arguments(args, depth)?),
+        Kind::Opaque(id, args) => Kind::Opaque(id, folder.arguments(args, depth)?),
         Kind::Projection(application) => {
             let trait_application = folder.application(application.trait_application, depth)?;
             Kind::Projection(crate::types::projection::Application {

@@ -1,6 +1,6 @@
 //! Typed well-formedness and outlives clauses share one scoped relation graph.
 use super::{
-    Constraints, Error, Kind, ProofScope, Scope, identity_guard::View, projected_bounds::Request,
+    Constraints, Error, ProofScope, Scope, identity_guard::View, projected_bounds::Request,
 };
 use crate::types::{
     RegionId, TypeId,
@@ -30,7 +30,7 @@ impl Constraints<'_> {
         projection: Projection,
         shorter: RegionId,
     ) -> Result<(), String> {
-        let Some(Kind::Projection(application)) = self.types.kind(projection.ty) else {
+        let Some(identity) = self.types.result_identity(projection.ty) else {
             return Err("invalid outlives projection".into());
         };
         let longer = self.region(shorter, Scope(0)).map_err(|e| e.to_string())?;
@@ -39,7 +39,7 @@ impl Constraints<'_> {
             return Err(Error::Budget.to_string());
         }
         self.projected.get_or_insert_with(Default::default).assume(
-            application.item,
+            identity,
             View {
                 projection,
                 scope: Scope(0),
@@ -83,7 +83,7 @@ impl Constraints<'_> {
         source: u32,
     ) -> Result<(), Error> {
         let shorter = self.region(shorter, scope.scope)?;
-        if !matches!(self.types.kind(projection.ty), Some(Kind::Projection(_))) {
+        if self.types.result_identity(projection.ty).is_none() {
             return Err(Error::Identity);
         }
         self.steps = self.steps.saturating_add(1);

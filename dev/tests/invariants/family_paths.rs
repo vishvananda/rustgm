@@ -108,7 +108,7 @@ fn canonical_normalization_keeps_family_inputs_and_restores_selected_result_life
             .proof
             .restoration()?
             .apply_arguments(&mut facts.types, selected.family)?;
-        assert_eq!(own, request.application.arguments);
+        assert_eq!(own, request.alias.arguments());
         let Step::Complete(output) = fold.resume(&mut facts.types, request, expected)? else {
             return Err("family result did not complete normalization".into());
         };

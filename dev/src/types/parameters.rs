@@ -76,3 +76,21 @@ impl Store {
         Ok(id)
     }
 }
+
+pub(crate) fn argument_id(
+    store: &Store,
+    formal: super::arguments::Argument,
+) -> Result<crate::types::parameters::ParameterId, &'static str> {
+    use super::arguments::Argument;
+    match formal {
+        Argument::Type(ty) => match store.kind(ty) {
+            Some(Kind::Parameter(id)) => Ok(id),
+            _ => Err("missing rigid type parameter"),
+        },
+        Argument::Const(constant) => match store.const_kind(constant) {
+            Some(crate::types::arguments::ConstKind::Parameter(id)) => Ok(id),
+            _ => Err("missing rigid const parameter"),
+        },
+        Argument::Lifetime(_) => Err("late lifetime was retained as a type argument"),
+    }
+}

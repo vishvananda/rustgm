@@ -156,6 +156,7 @@ impl<'a> Catalog<'a> {
         self.result(ty)
     }
     fn key(&self, ty: TypeId) -> Result<Key, &'static str> {
+        let ty = self.types.storage_head(ty)?;
         self.types
             .kind(ty)
             .map(|kind| match kind {
@@ -176,6 +177,7 @@ impl<'a> Catalog<'a> {
     fn run(&mut self) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.cache.work.pop() {
             self.cache.charge(1)?;
+            let ty = self.types.storage_head(ty)?;
             let key = self.key(ty)?;
             match self.cache.states.get(&key) {
                 Some(State::Ready(_)) => continue,

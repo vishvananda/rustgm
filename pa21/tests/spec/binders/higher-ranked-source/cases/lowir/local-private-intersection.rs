@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}struct S<'x>(&'x u8);impl<'a,'w,'x>A<'a>for S<'x> where 'a:'w,'x:'w{type Out=&'x u8;}fn f<'b,T>(x:<T as A<'b>>::Out)-><T as A<'b>>::Out where for<'a>T:A<'a>{x}fn run<'x>(x:&'x u8)->&'x u8{f::<S<'x>>(x)}fn main(){let n=7;if *run(&n)!=7{loop{}}}

@@ -54,6 +54,7 @@ pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static st
 #[derive(Default)]
 pub struct Uses {
     opaque_projections: bool,
+    free: Option<HashSet<RegionId>>,
     pub indices: HashSet<u16>,
     seen: HashSet<(TypeId, u16)>,
     applications: HashSet<(super::traits::ApplicationId, u16)>,
@@ -61,6 +62,30 @@ pub struct Uses {
     pub steps: usize,
 }
 impl Uses {
+    pub(crate) fn including_free() -> Self {
+        Self {
+            free: Some(HashSet::new()),
+            ..Self::default()
+        }
+    }
+
+    pub(crate) fn free_regions(&self) -> impl Iterator<Item = RegionId> + '_ {
+        self.free.iter().flat_map(|regions| regions.iter().copied())
+    }
+
+    fn contains_uses(&self, store: &Store, ty: TypeId, depth: u16) -> Result<bool, &'static str> {
+        if self.free.is_some() {
+            store
+                .has_free_regions(ty, depth)
+                .ok_or("invalid lifetime-use type")
+        } else {
+            store
+                .escaping_binders(ty)
+                .map(|escaping| escaping > depth)
+                .ok_or("invalid bound-use type")
+        }
+    }
+
     /// Count only positions that determine a lifetime, excluding projection inputs.
     #[must_use]
     pub fn constraining() -> Self {
@@ -83,11 +108,7 @@ impl Uses {
         root: TypeId,
         depth: u16,
     ) -> Result<(), &'static str> {
-        if store
-            .escaping_binders(root)
-            .ok_or("invalid bound-use type")?
-            <= depth
-        {
+        if !self.contains_uses(store, root, depth)? {
             return Ok(());
         }
         self.push(root, depth)?;
@@ -147,12 +168,7 @@ impl Uses {
     fn drain(&mut self, store: &Store) -> Result<(), &'static str> {
         while let Some((ty, depth)) = self.work.pop() {
             self.steps += 1;
-            if store
-                .escaping_binders(ty)
-                .ok_or("invalid bound-use dependency")?
-                <= depth
-                || !self.seen.insert((ty, depth))
-            {
+            if !self.contains_uses(store, ty, depth)? || !self.seen.insert((ty, depth)) {
                 continue;
             }
             match store.kind(ty).ok_or("invalid bound-use type")? {
@@ -162,7 +178,7 @@ impl Uses {
                     self.region(region, depth);
                     self.push(referent, depth)?;
                 }
-                Kind::Adt(_, arguments) => {
+                Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                     self.arguments(store, arguments, depth)?;
                 }
                 Kind::Projection(application) => {
@@ -247,6 +263,13 @@ impl Uses {
         Ok(())
     }
     fn region(&mut self, region: RegionId, depth: u16) {
+        if region != RegionId::STATIC
+            && region.bound_parts().is_none()
+            && let Some(free) = &mut self.free
+        {
+            free.insert(region);
+        }
+
         if let Some((binder, index)) = region.bound_parts()
             && binder == depth
         {

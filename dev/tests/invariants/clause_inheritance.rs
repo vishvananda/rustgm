@@ -43,6 +43,7 @@ fn header(store: &mut Store, owner: ItemId, count: u16) -> Result<Header, &'stat
     let parameters = (0..count)
         .map(|slot| {
             Ok(Parameter {
+                anonymous: false,
                 binding: DefId(u32::from(slot)),
                 default: None,
                 argument: Argument::Lifetime(RegionId::bound(0, slot)?),
@@ -138,6 +139,7 @@ fn nested_supertraits_compose_independent_slots_and_preserve_outer_captures()
     generics.parameters.insert(
         owner,
         vec![Parameter {
+            anonymous: false,
             binding: DefId(11),
             argument: Argument::Type(parameter),
             default: None,
@@ -180,6 +182,7 @@ fn quantified_non_self_contracts_remain_requirements_without_granting_caller_per
     let mut first = header(&mut store, a, 1)?;
     let other = type_parameter(&mut store, a, 2)?;
     first.parameters.push(Parameter {
+        anonymous: false,
         binding: DefId(3),
         argument: Argument::Type(other),
         default: None,

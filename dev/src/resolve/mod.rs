@@ -1,3 +1,4 @@
+mod anonymous_parameters;
 mod bodies;
 mod builtins;
 pub mod expansion;

@@ -166,6 +166,17 @@ impl NeedsDrop {
             } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                 return Err("generic destruction checking requires a parameter environment");
             }
+            if let Kind::Opaque(id, _) = kind {
+                let copy = types
+                    .opaque_declaration(id)
+                    .ok_or("missing opaque declaration")?
+                    .copies
+                    .copy;
+                if copy || self.scope.is_some() {
+                    self.record(ty, State::Ready(!copy));
+                    continue;
+                }
+            }
             if let Kind::Projection(application) = kind {
                 if types
                     .projection_schema(application.item)
@@ -223,6 +234,7 @@ fn children(
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid destruction type")? {
+        Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
         Kind::Array { length: 0, .. } => {}
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
             visit(element)?;

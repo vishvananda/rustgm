@@ -11,6 +11,7 @@ pub mod infer;
 pub mod instance;
 pub mod length;
 pub mod lifetime_proof;
+pub mod opaque;
 pub mod outlives;
 pub mod parameters;
 pub mod projection;
@@ -170,6 +171,8 @@ pub enum Kind {
     Adt(ItemId, GenericArgs),
     /// An associated type application is not injective in Self or its arguments.
     Projection(projection::Application),
+    /// Declaration identity and captured inputs; representation is private to its body.
+    Opaque(opaque::OpaqueId, GenericArgs),
     Tuple(ListId),
     Array {
         element: TypeId,
@@ -211,6 +214,9 @@ pub struct Store {
     regions: Slices<RegionId>,
     arguments: Option<Box<arguments::Storage>>,
     shapes: Option<Box<substitute::Bound>>,
+    opaques: Option<Vec<opaque::Declaration>>,
+    opaque_outlives: Option<Box<opaque::bounds::Declarations>>,
+    storage_heads: Option<HashMap<TypeId, TypeId>>,
     shifts: Option<Box<binder_shift::Shifts>>,
 }
 impl Default for Store {
@@ -239,6 +245,9 @@ impl Default for Store {
             regions: Slices::default(),
             arguments: None,
             shapes: None,
+            opaques: None,
+            opaque_outlives: None,
+            storage_heads: None,
             shifts: None,
         }
     }
@@ -279,6 +288,13 @@ impl Store {
         self.properties
             .get(id.0 as usize)
             .map(|p| p.has(Property::Regions))
+    }
+    /// Representation reveal visits opaque identities even when their captures are closed.
+    #[must_use]
+    pub fn contains_opaques(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::Opaques))
     }
     /// Normalization must visit projections even when all of their inputs are closed.
     #[must_use]
@@ -362,6 +378,9 @@ impl Store {
                 .parameter(id)
                 .is_some_and(|p| matches!(p.kind, parameters::ParameterKind::Type { .. })),
             Kind::Adt(_, args) => self.arguments(args).is_some(),
+            Kind::Opaque(id, args) => {
+                self.opaque_declaration(id).is_some() && self.arguments(args).is_some()
+            }
             Kind::Projection(application) => self.valid_projection(application),
             Kind::Tuple(list) => self.list(list).is_some(),
             Kind::Slice(element)
@@ -417,6 +436,7 @@ impl Store {
             Kind::Projection(application) => {
                 result = self.projection_properties(application)?;
             }
+            Kind::Opaque(id, arguments) => result = self.opaque_properties(id, arguments)?,
             Kind::Primitive(p) => result.set(Property::Sized, p != Primitive::Str),
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }

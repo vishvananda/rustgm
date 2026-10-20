@@ -110,6 +110,6 @@ impl Scan {
                 }
             }
         }
-        Ok(())
+        self.family_demands(types, bounds, demand)
     }
 }

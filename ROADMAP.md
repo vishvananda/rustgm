@@ -26,7 +26,7 @@ No planned assignment is counted as passing.
 | [18](pa18/README.md) | Generics | implemented-draft |
 | [19](pa19/README.md) | Traits and methods | implemented-draft |
 | [20](pa20/README.md) | Trait solving | implemented-draft |
-| [21](pa21/README.md) | Advanced generic relationships | planned |
+| [21](pa21/README.md) | Advanced generic relationships | implemented-draft |
 | [22](pa22/README.md) | Unsized types | planned |
 | [23](pa23/README.md) | Trait objects | planned |
 | [24](pa24/README.md) | Closures | planned |

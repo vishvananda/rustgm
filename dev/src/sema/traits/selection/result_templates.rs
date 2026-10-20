@@ -9,9 +9,42 @@ use crate::{
     types::{
         infer::{Error, TermId, arguments::Argument, probe::Probe},
         lifetime_proof::Obligations,
+        outlives::ResultId,
         substitute::Bound,
     },
 };
+
+struct Application {
+    result: ResultId,
+    predicate: crate::types::infer::predicates::Predicate,
+    arguments: Vec<Argument>,
+}
+fn application(
+    facts: &mut Declarations,
+    context: &mut Context,
+    root: TermId,
+) -> Result<Application, String> {
+    if context
+        .trait_result(&facts.types, root)
+        .map_err(inference)?
+    {
+        let (id, predicate, arguments) =
+            crate::sema::opaque::refinement::application(facts, context, root)?;
+        return Ok(Application {
+            result: ResultId::Opaque(id),
+            predicate,
+            arguments,
+        });
+    }
+    let application = context
+        .projection_application(&facts.types, root)
+        .map_err(inference)?;
+    Ok(Application {
+        result: ResultId::Associated(application.item),
+        predicate: application.predicate,
+        arguments: application.arguments,
+    })
+}
 
 struct Candidate {
     probe: Probe,
@@ -30,16 +63,15 @@ pub(in crate::sema) fn symbolic_result(
     root: TermId,
     caller: &Caller<'_>,
 ) -> Result<Option<(TermId, Obligations)>, String> {
-    let application = source
-        .projection_application(&facts.types, root)
-        .map_err(inference)?;
+    let application = application(facts, source, root)?;
     let goal = &application.predicate;
     let (item, _) = goal
         .trait_arguments()
         .ok_or("missing projected trait goal")?;
-    let Some(subject) = Subject::query(&facts.types, source, goal.subject()).map_err(inference)?
-    else {
-        return Ok(None);
+    let subject = match Subject::query(&facts.types, source, goal.subject()) {
+        Ok(Some(subject)) => subject,
+        Ok(None) | Err(Error::Normalization) => return Ok(None),
+        Err(error) => return Err(inference(error)),
     };
     if caller.assumptions.may_have_subject(item, subject) {
         return Ok(None);
@@ -53,11 +85,12 @@ pub(in crate::sema) fn symbolic_result(
     else {
         return Ok(None);
     };
-    if let [owner] = owners.as_slice()
+    if let ResultId::Associated(item) = application.result
+        && let [owner] = owners.as_slice()
         && let Some(inputs) =
             super::header_inputs::independent(facts, source, goal, *owner).map_err(inference)?
     {
-        let definition = definition(facts, *owner, application.item)?;
+        let definition = definition(facts, *owner, item)?;
         let result = facts.infer_associated_definition(
             source,
             definition,
@@ -80,7 +113,7 @@ pub(in crate::sema) fn symbolic_result(
         return Ok(None);
     };
     let before = selected.probe.context().steps;
-    let result = selected.export(facts, source, application.item);
+    let result = selected.export(facts, source, application.result);
     source
         .account_work(selected.probe.context().steps.saturating_sub(before))
         .map_err(inference)?;
@@ -112,10 +145,7 @@ impl Candidate {
         proof
             .equalities
             .sort_unstable_by_key(|&(free, original)| (free.0, original.0));
-        let application = probe
-            .context()
-            .projection_application(&facts.types, root)
-            .map_err(inference)?;
+        let application = application(facts, probe.context(), root)?;
         let instance =
             instantiation::instantiate(facts, probe.context(), owner, proof.regions.end)?;
         proof.regions.end +=
@@ -143,19 +173,40 @@ impl Candidate {
         &mut self,
         facts: &mut Declarations,
         source: &mut Context,
-        item: crate::types::ItemId,
+        item: ResultId,
     ) -> Result<Option<TermId>, String> {
         if !self.probe.preserves_inputs(source).map_err(inference)? {
             return Ok(None);
         }
-        let definition = definition(facts, self.instance.owner, item)?;
-        let result = facts.infer_associated_definition(
-            self.probe.context(),
-            definition,
-            &self.arguments,
-            std::mem::take(&mut self.instance.bindings),
-            std::mem::take(&mut self.instance.regions),
-        )?;
+        let result = match item {
+            ResultId::Associated(item) => {
+                let definition = definition(facts, self.instance.owner, item)?;
+                facts.infer_associated_definition(
+                    self.probe.context(),
+                    definition,
+                    &self.arguments,
+                    std::mem::take(&mut self.instance.bindings),
+                    std::mem::take(&mut self.instance.regions),
+                )?
+            }
+            ResultId::Opaque(id) => {
+                let Some(result) = crate::sema::opaque::refinement::result(
+                    facts,
+                    self.probe.context(),
+                    crate::sema::opaque::refinement::Inputs {
+                        owner: self.instance.owner,
+                        id,
+                        arguments: std::mem::take(&mut self.arguments),
+                        bindings: std::mem::take(&mut self.instance.bindings),
+                        regions: std::mem::take(&mut self.instance.regions),
+                    },
+                )?
+                else {
+                    return Ok(None);
+                };
+                result
+            }
+        };
         self.proof
             .equalities
             .append(&mut self.probe.context().region_equalities);

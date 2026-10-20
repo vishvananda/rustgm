@@ -213,7 +213,7 @@ fn source_children(store: &Store, ty: TypeId, children: &mut Vec<TypeId>) -> Res
         | Kind::Pointer {
             pointee: element, ..
         } => children.push(element),
-        Kind::Adt(_, arguments) => children.extend(
+        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => children.extend(
             store
                 .arguments(arguments)
                 .ok_or(Error::InvalidIdentity)?

@@ -180,7 +180,7 @@ impl<'a> Proof<'a> {
             Action::Project(id) | Action::Select { projection: id, .. } => {
                 self.read(self.body.projections[id.0 as usize].base, live)?;
             }
-            Action::Store { .. } => {}
+            Action::Mention(_) | Action::Store { .. } => {}
         }
         Ok(())
     }

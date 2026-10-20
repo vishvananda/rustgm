@@ -1,5 +1,5 @@
 //! Unproved alias type formation is discharged with the actual use's completed environment.
-use super::{Checker, Destination, Error, NodeKey, Request, Resolution, Type, TypeId, regions};
+use super::{Checker, Destination, Error, NodeKey, Request, Resolution, TypeId, regions};
 use crate::{resolve::model::DefKind, types::parameters::predicates::Predicate};
 
 impl Checker<'_> {
@@ -63,7 +63,7 @@ impl Checker<'_> {
             .projection_alias_owner(context)
             .ok_or_else(|| self.error(key, "deferred projection requires an alias contract"))?;
         let scope = self.projection_alias_request_scope(key, request, context, template)?;
-        let ty = self.intern(key, Type::Projection(request.application))?;
+        let ty = self.intern(key, request.alias.kind())?;
         self.facts
             .alias_requirements
             .normalization(template.owner, template.parameters, ty, scope)

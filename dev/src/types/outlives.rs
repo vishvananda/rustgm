@@ -1,9 +1,11 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
 mod clause_requirements;
 mod clauses;
+pub(crate) use clauses::Implied;
 mod component_sets;
 mod components;
 mod contracts;
+pub(crate) mod families;
 mod instances;
 mod requirements;
 pub(crate) use clause_requirements::Formation;
@@ -40,6 +42,21 @@ impl Parts<'_> {
 pub struct Projection {
     pub ty: TypeId,
     pub depth: u16,
+}
+/// Disjoint declaration identities for public result contracts.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(crate) enum ResultId {
+    Associated(ItemId),
+    Opaque(super::opaque::OpaqueId),
+}
+impl Store {
+    pub(crate) fn result_identity(&self, ty: TypeId) -> Option<ResultId> {
+        match self.kind(ty)? {
+            Kind::Projection(application) => Some(ResultId::Associated(application.item)),
+            Kind::Opaque(id, _) => Some(ResultId::Opaque(id)),
+            _ => None,
+        }
+    }
 }
 pub type ProjectionPair = (Projection, RegionId);
 pub(crate) type ComponentLists = (Vec<RegionId>, Vec<ParameterId>, Vec<Projection>);
@@ -99,7 +116,7 @@ impl Budget {
         Ok(())
     }
 }
-fn free(region: RegionId, depth: u16) -> Result<Option<RegionId>, &'static str> {
+pub(super) fn free(region: RegionId, depth: u16) -> Result<Option<RegionId>, &'static str> {
     match region.bound_parts() {
         Some((binder, index)) if binder >= depth => {
             RegionId::bound(binder - depth, index).map(Some)
@@ -160,7 +177,7 @@ fn children(
                 }
             }
         }
-        Kind::Adt(_, arguments) => {
+        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
             let arguments = types
                 .arguments(arguments)
                 .ok_or("invalid nominal outlives arguments")?;
@@ -198,6 +215,8 @@ struct Scan {
     uses: Vec<Use>,
     projection_pairs: Vec<ProjectionPair>,
     unique_projections: HashSet<ProjectionPair>,
+    families: bool,
+    family_uses: Vec<(super::projection::Application, u16)>,
 }
 impl Scan {
     fn clear(&mut self) {
@@ -210,6 +229,7 @@ impl Scan {
         self.projection_pairs.clear();
         self.unique_projections.clear();
         self.seen.clear();
+        self.family_uses.clear();
     }
     fn record(&mut self, pair: Pair) {
         if useful(pair) && self.unique.insert(pair) {
@@ -238,6 +258,9 @@ impl Scan {
             }
             match types.kind(ty).ok_or("invalid well-formedness type")? {
                 Kind::Projection(application) => {
+                    if self.families {
+                        self.family_uses.push((application, depth));
+                    }
                     self.projected_inputs(types, application, depth)?;
                     continue;
                 }
@@ -328,11 +351,12 @@ pub struct QueryCache {
 impl QueryCache {
     #[must_use]
     pub fn attach<'a>(
-        self,
+        mut self,
         types: &'a Store,
         bounds: &'a Bounds,
         callables: &'a super::callable::Templates,
     ) -> Queries<'a> {
+        self.scan.families = bounds.has_family_inputs();
         Queries {
             types,
             bounds,

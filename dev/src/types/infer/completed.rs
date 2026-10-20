@@ -96,7 +96,7 @@ impl Context {
             ..Completed::default()
         };
         match kind {
-            Constructor::Projection(_) => return Ok(None),
+            kind if kind.normalizable(store) => return Ok(None),
             Constructor::ArrayInfer(id) if self.constants().value(id)?.is_none() => {
                 return Ok(None);
             }

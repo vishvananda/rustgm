@@ -45,6 +45,16 @@ impl Checker<'_> {
                 Err(error) => return Err(self.error(node, error)),
             };
         }
+        if !resolved
+            && self
+                .state
+                .infer
+                .trait_result(&self.facts.types, term)
+                .map_err(|e| self.error(node, e))?
+        {
+            self.defer_input_normalizations(query, term, watch)?;
+            return Ok(Readiness::Partial);
+        }
         if matches!(query.task, Task::Normalize { .. })
             && !resolved
             && !self.projection_subject_known(node, term)?

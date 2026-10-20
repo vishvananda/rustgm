@@ -304,7 +304,16 @@ impl Search<'_> {
         if needs_normalization {
             return Ok(Action::Complete(Decision::Deferred));
         }
-        if frame.normalized_inputs.is_some()
+        let opaque = !facts.opaques.declarations.is_empty()
+            && matches!(
+                frame
+                    .inputs
+                    .context
+                    .head(&facts.types, frame.goal.subject())
+                    .map_err(inference)?,
+                Some(infer::Constructor::Opaque(..))
+            );
+        if (frame.normalized_inputs.is_some() || opaque)
             && let Some(action) = self.derive_result(facts, frame)?
         {
             return Ok(action);

@@ -29,6 +29,8 @@ pub(super) enum ComponentKind {
     /// Explicit type bounds include every referent component, even in assumptions.
     TypeBound,
     LiveValue,
+    /// Custom destruction retains all type arguments, including zero-length arrays.
+    DropInputs,
     ProjectionInputs,
 }
 /// All components a type bound can constrain, including nested referents and
@@ -106,6 +108,15 @@ impl TypeComponents {
     pub(crate) fn get(&mut self, types: &Store, ty: TypeId) -> Result<Parts<'_>, &'static str> {
         self.components
             .get(types, ty, 0, ComponentKind::TypeBound, &mut self.budget)?
+            .scalar_only()
+    }
+    pub(crate) fn drop_inputs(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Result<Parts<'_>, &'static str> {
+        self.components
+            .get(types, ty, 0, ComponentKind::DropInputs, &mut self.budget)?
             .scalar_only()
     }
 }
@@ -283,6 +294,26 @@ impl Walk {
                     }
                 }
                 Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
+                Kind::Opaque(id, args) => {
+                    if matches!(kind, ComponentKind::LiveValue | ComponentKind::DropInputs) {
+                        let mut cost = 0;
+                        let bound = types.opaque_live_bound(id, args, depth, &mut cost)?;
+                        budget.work(cost)?;
+                        if let Some(bound) = bound {
+                            self.record_region(bound, 0, &mut values)?;
+                            continue;
+                        }
+                    } else if expanded != Some(ty) {
+                        projections.push(Projection { ty, depth });
+                        continue;
+                    }
+                    self.arguments(
+                        types.arguments(args).ok_or("missing live-value captures")?,
+                        depth,
+                        &mut values,
+                        budget,
+                    )?;
+                }
                 Kind::Adt(_, args)
                 | Kind::FunctionItem {
                     arguments: args, ..

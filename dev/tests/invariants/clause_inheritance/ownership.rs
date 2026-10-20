@@ -11,6 +11,7 @@ fn quantified_results_belong_only_to_the_captured_complete_formal_parent()
     let mut header = header(&mut store, owner, 1)?;
     let ty = type_parameter(&mut store, owner, 2)?;
     header.parameters.push(Parameter {
+        anonymous: false,
         binding: DefId(3),
         argument: Argument::Type(ty),
         default: None,

@@ -107,6 +107,7 @@ pub(super) fn prepare(
                     .map_err(error)?;
             body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
                 .map_err(|e| error(&e))?;
+            facts.prepare_opaque_storage().map_err(error)?;
             body::promote::instance(
                 report,
                 facts,
@@ -148,7 +149,9 @@ fn prepare_ordinary(
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
 ) -> Result<(proof::Builder, HashMap<ItemId, usize>), Error> {
-    let mut program = body::build_concrete(report, facts)?;
+    let mut program = body::concrete_except(report, facts, |owner| {
+        templates.get(ItemId(owner.0)).is_some()
+    })?;
     let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.source, c)).collect();
     for body in &mut program.bodies {
         let input = inputs.get_mut(&body.source).ok_or_else(|| {

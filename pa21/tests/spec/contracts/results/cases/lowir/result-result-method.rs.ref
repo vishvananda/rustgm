@@ -1,0 +1,41 @@
+function @rg.24() -> void {
+  slot $s0 : u8
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    %t1 = call u8 @rg.23.i2(%t0)
+    %t2 = cmp ne u8 %t1, 7
+    %t3 = convert trunc i1 i64 %t2
+    branch %t3, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b1:
+    jump ^b4
+  block ^b4:
+    jump ^b4
+  block ^b5:
+    unreachable
+}
+function @rg.23.i2(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call u8 @rg.17(%t0)
+    return u8 %t1
+}
+function @rg.17(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    return u8 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.24()
+    return i64 0
+}

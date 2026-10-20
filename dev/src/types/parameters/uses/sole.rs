@@ -209,7 +209,9 @@ fn parts(
                 Kind::Function {
                     parameters, result, ..
                 } => dependency(Node::Types(parameters))?.merge(dependency(Node::Type(result))?),
-                Kind::Adt(_, arguments) => dependency(Node::Arguments(arguments))?,
+                Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+                    dependency(Node::Arguments(arguments))?
+                }
                 Kind::FunctionItem {
                     arguments,
                     signature,

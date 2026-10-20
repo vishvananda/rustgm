@@ -85,13 +85,28 @@ impl Context {
 
     pub(super) fn is_projection(&self, store: &Store, term: TermId) -> Result<bool, Error> {
         Ok(match self.terms[term.0 as usize].value {
+            Value::Known(ty) => match store.kind(ty).ok_or(Error::InvalidIdentity)? {
+                Kind::Projection(_) => true,
+                Kind::Opaque(id, _) => store.opaque_declaration(id).is_some_and(|d| d.trait_result),
+                _ => false,
+            },
+            Value::Construct(kind) => kind.normalizable(store),
+            Value::Variable(_) => false,
+        })
+    }
+
+    /// Distinguish complete-capture result queries from named associated applications.
+    /// # Errors
+    /// Rejects invalid inference identities and exhausted work.
+    pub fn trait_result(&mut self, store: &Store, term: TermId) -> Result<bool, Error> {
+        let term = self.root(term)?;
+        Ok(match self.terms[term.0 as usize].value {
             Value::Known(ty) => {
-                matches!(
-                    store.kind(ty).ok_or(Error::InvalidIdentity)?,
-                    Kind::Projection(_)
-                )
+                matches!(store.kind(ty), Some(Kind::Opaque(id, _)) if store.opaque_declaration(id).is_some_and(|d| d.trait_result))
             }
-            Value::Construct(Constructor::Projection(_)) => true,
+            Value::Construct(Constructor::Opaque(id, _)) => {
+                store.opaque_declaration(id).is_some_and(|d| d.trait_result)
+            }
             _ => false,
         })
     }
@@ -269,5 +284,12 @@ impl Context {
             .as_mut()
             .map_or(0, |s| s.equations.normalized(term));
         self.account_work(count)
+    }
+}
+
+impl Constructor {
+    pub(super) fn normalizable(self, store: &Store) -> bool {
+        matches!(self, Self::Projection(_))
+            || matches!(self, Self::Opaque(id, _) if store.opaque_declaration(id).is_some_and(|d| d.trait_result))
     }
 }

@@ -208,7 +208,7 @@ impl Sets {
                 finish,
                 budget,
             ),
-            Kind::Projection(_) => self.atom(
+            Kind::Opaque(..) | Kind::Projection(_) => self.atom(
                 Atom::Projection(Projection {
                     ty,
                     depth: key.depth,

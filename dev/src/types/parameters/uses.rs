@@ -94,7 +94,9 @@ impl Uses {
                     self.work.push(result);
                     Some(parameters)
                 }
-                Kind::Adt(_, arguments) | Kind::FunctionItem { arguments, .. } => {
+                Kind::Adt(_, arguments)
+                | Kind::Opaque(_, arguments)
+                | Kind::FunctionItem { arguments, .. } => {
                     if let Some(Kind::FunctionItem { signature, .. }) = store.kind(ty) {
                         self.work.push(signature);
                     }

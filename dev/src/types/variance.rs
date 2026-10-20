@@ -322,6 +322,12 @@ impl Graph {
                 Kind::Adt(item, args) => {
                     self.nominal(types, owner, (item, args), position, depth)?;
                 }
+                Kind::Opaque(_, args) => {
+                    let invariant = self
+                        .solver
+                        .compose(position, Term::constant(Variance::Invariant))?;
+                    self.invariant_arguments(types, owner, args, invariant, depth)?;
+                }
                 Kind::Projection(application) => {
                     let invariant = self
                         .solver

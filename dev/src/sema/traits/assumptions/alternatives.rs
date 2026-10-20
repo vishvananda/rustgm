@@ -9,11 +9,14 @@ pub(super) fn subject(
 ) -> Result<Option<Subject>, infer::Error> {
     match Subject::query(store, context, goal.subject()) {
         Ok(subject) => Ok(subject),
-        Err(infer::Error::Normalization) => Ok(Some(Subject::Rigid(Head::Projection(
-            context
-                .projection_item(store, goal.subject())?
-                .ok_or(infer::Error::InvalidIdentity)?,
-        )))),
+        Err(infer::Error::Normalization) => {
+            let head = match context.result_identity(store, goal.subject())? {
+                Some(crate::types::outlives::ResultId::Associated(item)) => Head::Projection(item),
+                Some(crate::types::outlives::ResultId::Opaque(id)) => Head::Opaque(id),
+                None => return Err(infer::Error::InvalidIdentity),
+            };
+            Ok(Some(Subject::Rigid(head)))
+        }
         Err(error) => Err(error),
     }
 }

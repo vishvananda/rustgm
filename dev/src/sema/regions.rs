@@ -106,6 +106,21 @@ impl Regions {
         }
         Err("Self is outside its implementation lifetime environment")
     }
+    /// Opaque results in edition 2024 capture even unused named input lifetimes.
+    pub fn capture_all(&mut self, id: BinderId) -> Result<Vec<RegionId>, &'static str> {
+        let declared = self.binders[id.0].declared.clone();
+        for definition in declared {
+            self.named(Some(id), definition)?;
+        }
+        (0..self.count(id))
+            .map(|index| {
+                RegionId::bound(
+                    0,
+                    u16::try_from(index).map_err(|_| "too many captured lifetimes")?,
+                )
+            })
+            .collect()
+    }
     pub fn count(&self, id: BinderId) -> u32 {
         self.binders[id.0].count
     }

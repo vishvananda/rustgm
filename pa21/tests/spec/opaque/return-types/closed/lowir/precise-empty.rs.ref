@@ -1,0 +1,29 @@
+function @rg.15() -> void {
+  slot $s0 : u8
+  slot $s1 : u8
+  block ^b0:
+    store u8 7, $s1
+    %t0 = addr $s1
+    %t1 = call u8 @rg.13.i1(%t0)
+    store u8 %t1, $s0
+    %t2 = load u8 $s0
+    call void @rg.14.i2(%t2)
+    return void
+}
+function @rg.13.i1(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u8 7
+}
+function @rg.14.i2(%p0 : u8) -> void {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

@@ -1,0 +1,30 @@
+function @rg.20() -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = call ptr @rg.19.i3()
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = load ptr $s0
+    store ptr %t1, $s1
+    %t3 = addr $s1
+    %t4 = index u8 %t3, 8
+    store ptr %t2, %t4
+    return void
+}
+function @rg.19.i3() -> ptr {
+  block ^b0:
+    %t0 = addr @rg.18
+    return ptr %t0
+}
+function @rg.18(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.20()
+    return i64 0
+}

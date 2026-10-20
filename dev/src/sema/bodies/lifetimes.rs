@@ -16,6 +16,15 @@ impl Checker<'_> {
         solved: &crate::types::infer::Solved,
         body_key: crate::resolve::unit::NodeKey,
     ) -> Result<(), Error> {
+        let mut defining = (!solved.defining_opaques.is_empty())
+            .then(|| {
+                crate::types::substitute::Bound::defining_results(
+                    &self.facts.types,
+                    solved.defining_opaques.clone(),
+                )
+            })
+            .transpose()
+            .map_err(|e| self.error(body_key.node, e))?;
         for (index, adjustment) in self.state.adjustments.iter().enumerate() {
             let key = self.key(adjustment.node);
             let target = solved.types[adjustment.expected.0 as usize];
@@ -29,13 +38,21 @@ impl Checker<'_> {
                     .prepare(&mut self.facts.types, target)
                     .map_err(|e| self.error(adjustment.node, e))?;
             }
-            let (proof_actual, proof_expected) = self
+            let (mut proof_actual, mut proof_expected) = self
                 .state
                 .discarded_adjustments
                 .get(&index)
                 .map_or((actual, target), |(a, b)| {
                     (solved.types[a.0 as usize], solved.types[b.0 as usize])
                 });
+            if let Some(fold) = &mut defining {
+                proof_actual = fold
+                    .apply(&mut self.facts.types, proof_actual)
+                    .map_err(|e| self.error(adjustment.node, e))?;
+                proof_expected = fold
+                    .apply(&mut self.facts.types, proof_expected)
+                    .map_err(|e| self.error(adjustment.node, e))?;
+            }
             self.facts.retain_coercion(Coercion {
                 body: body_key,
                 source: key,

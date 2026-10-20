@@ -37,7 +37,7 @@ struct Shared {
 }
 
 impl Checker<'_> {
-    pub(super) fn prove_quantified_requirement(
+    pub(in crate::sema::bodies) fn prove_quantified_requirement(
         &mut self,
         node: NodeId,
         clause: Clause,

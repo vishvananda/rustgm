@@ -10,6 +10,10 @@ use std::collections::HashMap;
 
 impl Checker<'_> {
     pub(super) fn nominal_outlives(&mut self) -> Result<(), Error> {
+        let families = self
+            .facts
+            .family_outlives()
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         let predicates = self
             .facts
             .generics
@@ -17,11 +21,12 @@ impl Checker<'_> {
             .iter()
             .filter(|(owner, _)| self.facts.aggregates.get(ItemId(owner.0)).is_some())
             .flat_map(|(owner, predicates)| predicates.iter().map(|p| (ItemId(owner.0), p.value)));
-        let mut bounds = Bounds::infer_with_clauses(
+        let mut bounds = Bounds::infer_with_inputs(
             &mut self.facts.types,
             &self.facts.aggregates,
             &self.facts.lifetimes.nominal_bounds,
             predicates,
+            families,
         )
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         let mut explicit: HashMap<ItemId, Vec<Pair>> = HashMap::new();

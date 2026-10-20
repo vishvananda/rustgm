@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'static u8;}trait B<'a>{}impl<'a>B<'a>for &'a u8{}trait C{}impl<T>C for T where for<'a>T:A<'a>,for<'a><T as A<'a>>::Out:B<'a>{}fn need<T:C>(){}fn main(){need::<u8>();}

@@ -139,9 +139,14 @@ impl Cursor {
                 header.query.resume(facts, first)?
             } else {
                 if let Some(ty) = local(facts, request)? {
-                    step = self
-                        .fold
-                        .resume(&mut facts.types, request, Resolution::Type(ty))?;
+                    let resolution = if matches!(request.alias, substitute::Alias::TraitResult(..))
+                        && facts.types.kind(ty) == Some(request.alias.kind())
+                    {
+                        Resolution::Opaque
+                    } else {
+                        Resolution::Type(ty)
+                    };
+                    step = self.fold.resume(&mut facts.types, request, resolution)?;
                     continue;
                 }
                 let environment = self.environment(facts, request.depth)?;
@@ -198,8 +203,10 @@ impl Cursor {
         if let Some(resolution) = projected.resolution {
             return Ok(Some(resolution));
         }
-        let definition =
-            Definition::select(facts, request.application.item, projected.family, source)?;
+        let Some(definition) = Definition::alias(facts, request.alias, projected.family, source)?
+        else {
+            return Ok(Some(Resolution::Opaque));
+        };
         let mut restore =
             if projected.proof.regions.is_empty() && projected.proof.equalities.is_empty() {
                 None

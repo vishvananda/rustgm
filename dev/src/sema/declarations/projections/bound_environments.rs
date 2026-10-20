@@ -43,9 +43,8 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    /// Associated member clauses, like trait headers, retain their written
-    /// equations until all result contracts exist. Formation is still proved
-    /// by the ordinary deferred normalization pass in the original binder.
+    /// Trait headers retain their written equations until all result contracts
+    /// exist. The final normalization pass proves formation in the original binder.
     pub(in crate::sema::declarations) fn retain_bound_projection_requirements(
         &mut self,
         owner: DefId,
@@ -58,6 +57,34 @@ impl Checker<'_> {
                     .deferred
                     .push((key, context, super::scoped::Ambient::Root, ty));
             }
+        }
+        Ok(())
+    }
+
+    /// All sibling result contracts exist before member bounds are validated.
+    /// Prove their retained roots at the written type before checking the enclosing
+    /// predicate, preserving both projection debts and source diagnostics.
+    pub(in crate::sema::declarations) fn validate_bound_projection_requirements(
+        &mut self,
+        owner: DefId,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        let Some(bounds) = self.projections.raw_bounds.remove(&owner) else {
+            return Ok(());
+        };
+        for (key, context) in bounds.roots {
+            self.start_scoped_normalization(
+                key,
+                super::Root {
+                    ty: self.ty(key)?,
+                    normalized_subject: None,
+                },
+                context,
+                super::Destination::Requirement,
+                super::scoped::Ambient::Root,
+            )?;
+            self.drain(steps, limit)?;
         }
         Ok(())
     }
@@ -105,7 +132,20 @@ impl Checker<'_> {
                     for offset in list.start..list.end {
                         let node = self.report.package.unit(path.file).configured.ast.edges
                             [offset as usize];
-                        let value = self.associated_binding_value(NodeKey { node, ..path })?;
+                        let source = NodeKey { node, ..path };
+                        if self
+                            .facts
+                            .node(source)
+                            .is_some_and(|facts| facts.ty.is_some())
+                        {
+                            self.retain_bound_root(
+                                source,
+                                bound.context(context),
+                                &mut seen,
+                                &mut roots,
+                            )?;
+                        }
+                        let value = self.associated_binding_value(source)?;
                         self.retain_bound_root(
                             NodeKey {
                                 node: value,

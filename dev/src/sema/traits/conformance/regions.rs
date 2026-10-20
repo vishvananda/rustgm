@@ -29,7 +29,7 @@ pub(super) fn prove(
         constraints.assume(a, b).map_err(|e| e.to_string())?;
     }
     constraints.assume_outlives_clauses(&mut queries, contract.assumptions.iter().copied())?;
-    constraints.assume_signature(&mut queries, contract.expected)?;
+    constraints.assume_signature(&mut queries, contract.declared)?;
     for &ty in &contract.inputs {
         constraints.assume_well_formed(&mut queries, ty)?;
     }
@@ -78,6 +78,8 @@ pub(super) fn prove(
             .coerce(b, a, false, 0)
             .map_err(|e| e.to_string())?;
     }
+    let required = queries.symbolic_requirements(ar)?;
+    constraints.require_requirements(required, crate::types::relations::ProofScope::ROOT, 0)?;
     constraints
         .coerce(ar, br, false, 0)
         .map_err(|e| e.to_string())?;

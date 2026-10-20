@@ -1,0 +1,1 @@
+ERROR: file 0: 63: implementation result captures a lifetime excluded by the trait

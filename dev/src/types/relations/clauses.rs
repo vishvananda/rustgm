@@ -90,7 +90,7 @@ impl Constraints<'_> {
             .types
             .kind(value.predicate.ty)
             .ok_or("invalid outlives assumption subject")?;
-        if matches!(subject, Kind::Projection(_)) {
+        if matches!(subject, Kind::Projection(_) | Kind::Opaque(..)) {
             self.assume_quantified_projection(id)
                 .map_err(|e| e.to_string())?;
             return Ok(None);

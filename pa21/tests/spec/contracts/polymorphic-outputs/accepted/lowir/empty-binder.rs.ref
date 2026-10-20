@@ -1,0 +1,23 @@
+function @rg.14() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<2x1>
+  block ^b0:
+    %t0 = call u8 @rg.13.i1()
+    store u8 %t0, $s0
+    %t1 = load u8 $s0
+    %t2 = load u8 $s0
+    store u8 %t1, $s1
+    %t3 = addr $s1
+    %t4 = index u8 %t3, 1
+    store u8 %t2, %t4
+    return void
+}
+function @rg.13.i1() -> u8 {
+  block ^b0:
+    return u8 7
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

@@ -1,0 +1,1 @@
+trait A<'a>:'a{}impl<'a>A<'a>for u8{}trait Family{type Item:for<'a>A<'a>+'static;}impl Family for u16{type Item=u8;}fn need<'a,X:'a>(){}fn f<T:Family>(){need::<'static,<T as Family>::Item>();}fn main(){f::<u16>();}

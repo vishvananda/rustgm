@@ -1,6 +1,7 @@
 //! An override must implement the trait contract without strengthening its caller requirements.
 mod implied;
 mod mapping;
+mod outputs;
 mod projections;
 mod regions;
 #[cfg(test)]
@@ -23,7 +24,10 @@ pub(in crate::sema) use projections::Definitions;
 use std::sync::Arc;
 
 struct Contract {
+    outputs: Vec<(TypeId, Vec<Clause>)>,
     expected: TypeId,
+    declared: TypeId,
+    output_regions: Vec<RegionId>,
     actual: TypeId,
     environment: Arc<Environment>,
     parameters: Vec<ParameterId>,
@@ -65,15 +69,17 @@ pub(in crate::sema) fn check(
     implied.extend(&mut contract);
     contract.actual =
         definitions.signature(facts, &contract, &mut evidence, contract.actual, None)?;
+    contract.declared = contract.expected;
+    let outputs = outputs::instantiate(facts, &mut contract, &mut evidence)?;
     let mut shape = crate::types::infer::Context::default();
     let actual = shape
         .known(&facts.types, contract.actual)
         .map_err(|e| e.to_string())?;
-    let expected = shape
+    let expected_term = shape
         .known(&facts.types, contract.expected)
         .map_err(|e| e.to_string())?;
     shape
-        .equate_shape(&facts.types, actual, expected)
+        .equate_shape(&facts.types, actual, expected_term)
         .map_err(|e| e.to_string())?;
     let mut proof = Proof::for_declaration(
         Some(Arc::clone(&contract.environment)),
@@ -88,5 +94,22 @@ pub(in crate::sema) fn check(
     if let Some(required) = proof.take_trait_proof() {
         evidence.extend(required)?;
     }
-    regions::prove(facts, &contract, Some(&evidence))
+    regions::prove(facts, &contract, Some(&evidence))?;
+    let regions: std::sync::Arc<[_]> = contract.output_regions.into();
+    let parent_regions = facts
+        .lifetimes
+        .functions
+        .get(&expected.definition)
+        .map_or(0, |scheme| scheme.captures);
+    for (id, ty) in outputs {
+        facts.opaques.implementations.insert(
+            (owner, id),
+            crate::sema::opaque::Implementation {
+                ty,
+                parent_regions,
+                regions: std::sync::Arc::clone(&regions),
+            },
+        );
+    }
+    Ok(())
 }

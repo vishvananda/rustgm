@@ -1,5 +1,7 @@
 //! Associated result rules share capture-safe trait argument substitution.
 mod headers;
+mod opaque_bounds;
+pub(in crate::sema) use opaque_bounds::prepare_outlives as prepare_opaque_outlives;
 mod templates;
 use super::assumptions::Assumptions;
 use crate::{
@@ -22,7 +24,7 @@ pub(super) struct Cache {
     enabled: bool,
     entries: HashMap<(TypeId, ItemId), Arc<Assumptions>>,
     equalities: HashMap<(TypeId, ItemId), Arc<[Clause]>>,
-    templates: HashMap<DefId, Arc<templates::Index>>,
+    templates: HashMap<crate::types::outlives::ResultId, Arc<templates::Index>>,
     steps: usize,
 }
 impl Cache {
@@ -71,9 +73,6 @@ pub(in crate::sema) fn traits(
     ty: TypeId,
     item: ItemId,
 ) -> Result<Option<(Arc<Assumptions>, usize)>, String> {
-    let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
-        return Ok(None);
-    };
     if let Some(rules) = facts
         .generics
         .traits
@@ -82,6 +81,12 @@ pub(in crate::sema) fn traits(
     {
         return Ok(Some((rules, 1)));
     }
+    if let Some(Kind::Opaque(id, arguments)) = facts.types.kind(ty) {
+        return opaque_bounds::traits(facts, ty, id, arguments, item).map(Some);
+    }
+    let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
+        return Ok(None);
+    };
     let (templates, template_steps) = templates::for_result(facts, DefId(application.item.0))?;
     let parent = Predicate {
         ty: application.subject,
@@ -120,6 +125,24 @@ pub(in crate::sema) fn traits(
     Ok(Some((result, steps)))
 }
 
+pub(super) fn may_have_opaque_trait(
+    facts: &Declarations,
+    id: crate::types::opaque::OpaqueId,
+    item: ItemId,
+) -> bool {
+    facts
+        .generics
+        .traits
+        .as_ref()
+        .and_then(|contracts| {
+            contracts
+                .result_rules
+                .templates
+                .get(&crate::types::outlives::ResultId::Opaque(id))
+        })
+        .is_none_or(|index| index.candidates(item).is_some())
+}
+
 /// These equations describe a declared result, never evidence for forming its
 /// parent application. Callers must retain that proof before selecting a value.
 #[derive(Default)]
@@ -145,12 +168,12 @@ pub(super) fn equalities(
     item: ItemId,
 ) -> Result<Equations, String> {
     let Some(parent) = context
-        .projection_item(&facts.types, subject)
+        .result_identity(&facts.types, subject)
         .map_err(|e| e.to_string())?
     else {
         return Ok(Equations::default());
     };
-    let (templates, template_steps) = templates::for_result(facts, DefId(parent.0))?;
+    let (templates, template_steps) = templates::for_declaration(facts, parent)?;
     let Some(predicates) = templates.equalities(item) else {
         // Select declaration rules before resolving a possibly deep input graph.
         // The immutable index shares this miss without a mapped-rule allocation.
@@ -162,9 +185,6 @@ pub(super) fn equalities(
     let ty = context
         .resolved(&mut facts.types, subject)
         .map_err(|e| e.to_string())?;
-    let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
-        return Err("result equality subject lost its projection identity".into());
-    };
     if let Some(rules) = facts
         .generics
         .traits
@@ -177,13 +197,22 @@ pub(super) fn equalities(
         });
     }
     let mut result = Vec::with_capacity(predicates.len());
-    let mut fold = facts.trait_substitution(
-        Predicate {
-            ty: application.subject,
-            bound: Bound::Trait(application.trait_application),
-        },
-        Some((DefId(application.item.0), application.arguments)),
-    )?;
+    let mut fold = match facts.types.kind(ty) {
+        Some(Kind::Projection(application)) => facts.trait_substitution(
+            Predicate {
+                ty: application.subject,
+                bound: Bound::Trait(application.trait_application),
+            },
+            Some((DefId(application.item.0), application.arguments)),
+        )?,
+        Some(Kind::Opaque(id, arguments)) => facts
+            .opaques
+            .declarations
+            .get(&id)
+            .ok_or("missing opaque equality contract")?
+            .substitution(&facts.types, arguments)?,
+        _ => return Err("result equality subject lost its declaration identity".into()),
+    };
     for &predicate in predicates {
         result.push(fold.clause(&mut facts.types, predicate)?);
     }

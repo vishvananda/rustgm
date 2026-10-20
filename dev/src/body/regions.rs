@@ -15,6 +15,10 @@ pub enum Kind {
         id: RegionId,
         needs_provenance: bool,
     },
+    Membership {
+        region: RegionId,
+        captures: crate::types::GenericArgs,
+    },
     /// Region upper bound from function-owned storage; loan liveness is separate.
     LocalBorrow(RegionId),
     Equality(Pair),
@@ -176,6 +180,9 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             clause_terms::collect(facts, function.definition, |source, kind| {
                 add(body, source, kind)
             })?;
+            opaque_members(facts, function.definition, |source, kind| {
+                add(body, source, kind)
+            })?;
         }
     }
     collect_proofs(facts, &mut bodies, &index)?;
@@ -192,6 +199,29 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         nominal_requirements: &facts.lifetimes.nominal_requirements,
     })
 }
+fn opaque_members(
+    facts: &Declarations,
+    owner: crate::resolve::model::DefId,
+    mut add: impl FnMut(NodeKey, Kind) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    for id in facts.opaques.owners.get(&owner).into_iter().flatten() {
+        let declaration = facts
+            .opaques
+            .declarations
+            .get(id)
+            .ok_or("missing opaque result declaration")?;
+        let Some(crate::types::Kind::Opaque(_, captures)) =
+            facts.types.kind(declaration.application)
+        else {
+            return Err("invalid opaque capture application");
+        };
+        for &region in &declaration.free_regions {
+            add(declaration.source, Kind::Membership { region, captures })?;
+        }
+    }
+    Ok(())
+}
+
 fn collect_proofs(
     facts: &Declarations,
     bodies: &mut [Contract],

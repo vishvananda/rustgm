@@ -85,7 +85,7 @@ impl Checker<'_> {
     }
     pub(super) fn start_body(&mut self, body: NodeId) -> Result<(), Error> {
         self.state.steps = 0;
-        let expected = self.known(body, self.state.result)?;
+        let expected = self.result_term(body)?;
         self.state.work.push(Work::CoerceElement(body, expected));
         self.state.work.push(Work::Enter(body, Some(expected)));
         Ok(())

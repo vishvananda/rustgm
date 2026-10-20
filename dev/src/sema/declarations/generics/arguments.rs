@@ -18,6 +18,8 @@ impl Checker<'_> {
         })?;
         let list = if let Some(positional) = self.associated_bindings.positional(key) {
             Some(positional)
+        } else if let Some(binding) = self.report.resolution.associated_bindings.get(&key) {
+            binding.arguments
         } else {
             crate::sema::lifetimes::arguments(self.report, key, false)?
         };

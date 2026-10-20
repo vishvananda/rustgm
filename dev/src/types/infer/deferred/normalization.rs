@@ -1,5 +1,5 @@
 //! Commit a proved normal form through its original graph without equating projection inputs.
-use super::super::{Context, Error, Kind, Store, TermId, TypeId, Value};
+use super::super::{Context, Error, Store, TermId, TypeId, Value};
 
 impl Context {
     /// Retain an independent operation for an occurrence's formation proof.
@@ -121,7 +121,7 @@ impl Context {
         )?;
         for (_, term) in roots {
             let ty = self.resolved(store, term)?;
-            if !matches!(store.kind(ty), Some(Kind::Projection(_))) {
+            if !self.is_projection(store, term)? {
                 return Err(Error::InvalidIdentity);
             }
             self.dependencies

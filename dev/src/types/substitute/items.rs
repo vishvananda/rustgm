@@ -8,6 +8,7 @@ use std::collections::HashMap;
 pub(super) struct Replacements {
     values: HashMap<TypeId, TypeId>,
     scopes: HashMap<u16, Scope>,
+    recursive: bool,
 }
 struct Scope {
     captures: Captures,
@@ -15,6 +16,22 @@ struct Scope {
     raise: Bound,
 }
 impl Bound {
+    /// Replace only defining-result identities while constructing their obligations.
+    /// This does not publish representation or permit caller-side normalization.
+    pub(crate) fn defining_results(
+        store: &Store,
+        values: HashMap<TypeId, TypeId>,
+    ) -> Result<Self, &'static str> {
+        if values.iter().any(|(&source, &target)| {
+            source == target
+                || !matches!(store.kind(source), Some(Kind::Opaque(..)))
+                || store.kind(target).is_none()
+        }) {
+            return Err("invalid defining result replacement");
+        }
+        Ok(Self::replacements(values, false))
+    }
+
     pub(crate) fn selected_items(
         store: &Store,
         values: HashMap<TypeId, TypeId>,
@@ -28,12 +45,16 @@ impl Bound {
                 return Err("invalid selected callable replacement");
             }
         }
+        Ok(Self::replacements(values, true))
+    }
+    fn replacements(values: HashMap<TypeId, TypeId>, recursive: bool) -> Self {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Items(Box::new(Replacements {
             values,
             scopes: HashMap::new(),
+            recursive,
         }));
-        Ok(fold)
+        fold
     }
     pub(super) fn replace_item(
         &mut self,
@@ -44,14 +65,22 @@ impl Bound {
         let Action::Items(items) = &mut self.action else {
             return Ok(false);
         };
-        if !matches!(store.kind(key.0), Some(Kind::FunctionItem { .. })) {
+        if !matches!(
+            store.kind(key.0),
+            Some(Kind::FunctionItem { .. } | Kind::Opaque(..))
+        ) {
             return Ok(false);
         }
         let (replacement, steps) = items.lookup(store, key)?;
+        let recursive = items.recursive;
         self.account_arguments(steps)?;
         let Some(replacement) = replacement else {
             return Ok(false);
         };
+        if !recursive {
+            self.completed.insert(key, replacement);
+            return Ok(true);
+        }
         let child = (replacement, key.1);
         if let Some(result) = self.result(store, child)? {
             self.completed.insert(key, result);

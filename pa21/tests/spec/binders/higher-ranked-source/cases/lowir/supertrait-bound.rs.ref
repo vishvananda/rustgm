@@ -1,0 +1,19 @@
+function @rg.21() -> void {
+  block ^b0:
+    call void @rg.20.i1()
+    return void
+}
+function @rg.20.i1() -> void {
+  block ^b0:
+    call void @rg.19.i2()
+    return void
+}
+function @rg.19.i2() -> void {
+  block ^b0:
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.21()
+    return i64 0
+}

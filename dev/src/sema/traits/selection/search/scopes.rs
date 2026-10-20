@@ -108,35 +108,24 @@ impl Scopes {
         &mut self,
         facts: &mut Declarations,
         scope: ScopeId,
-        application: crate::types::projection::Application,
-    ) -> Result<(crate::types::projection::Application, usize, ScopeId), &'static str> {
-        use crate::types::parameters::predicates::Bound as TraitBound;
+        application: crate::types::substitute::Alias,
+    ) -> Result<(crate::types::substitute::Alias, usize, ScopeId), &'static str> {
+        use crate::types::{Kind, substitute::Alias};
         let universe = scope
             .0
             .checked_sub(1)
             .and_then(|id| self.universes.get_mut(id as usize))
             .ok_or("missing normalization universe")?;
         let before = universe.opening.steps;
-        let predicate = universe.opening.predicate(
-            &mut facts.types,
-            Predicate {
-                ty: application.subject,
-                bound: TraitBound::Trait(application.trait_application),
-            },
-        )?;
-        let TraitBound::Trait(trait_application) = predicate.bound else {
-            return Err("normalization application lost its parent trait");
+        let ty = facts.types.intern(application.kind())?;
+        let ty = universe.opening.apply(&mut facts.types, ty)?;
+        let application = match facts.types.kind(ty) {
+            Some(Kind::Projection(application)) => Alias::Associated(application),
+            Some(Kind::Opaque(id, arguments)) => Alias::TraitResult(id, arguments),
+            _ => return Err("normalization application lost its identity"),
         };
-        let arguments = universe
-            .opening
-            .apply_arguments(&mut facts.types, application.arguments)?;
         Ok((
-            crate::types::projection::Application {
-                subject: predicate.ty,
-                trait_application,
-                arguments,
-                ..application
-            },
+            application,
             universe.opening.steps.saturating_sub(before) + 1,
             universe.parent,
         ))

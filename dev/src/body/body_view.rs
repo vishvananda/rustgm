@@ -147,6 +147,10 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
         for statement in body.statements(block) {
             write!(out, "    ")?;
             match statement.action {
+                Action::Mention(source) => {
+                    write!(out, "mention ")?;
+                    place(source, out)?;
+                }
                 Action::GuardStart(id) => write!(out, "guard-start g{}", id.0)?,
                 Action::GuardUse(id) => write!(out, "guard-use g{}", id.0)?,
                 Action::BindView {

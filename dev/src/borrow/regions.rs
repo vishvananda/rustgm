@@ -1,5 +1,6 @@
 //! Lifetime contracts retain directed obligations independently of loan liveness.
 mod check;
+mod membership;
 pub use crate::types::region_graph as graph;
 pub use crate::types::relations as constraints;
 mod places;

@@ -128,7 +128,7 @@ impl Context {
                 _ => {}
             }
             let kind = self.materialize(store, id)?;
-            if S::COMPLETE && matches!(kind, Constructor::Projection(_)) {
+            if S::COMPLETE && kind.normalizable(store) {
                 return Err(Error::Normalization);
             }
             let scope = replacements.children(key, kind)?;

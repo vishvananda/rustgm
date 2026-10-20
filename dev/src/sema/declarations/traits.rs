@@ -80,7 +80,7 @@ impl Checker<'_> {
             self.implicit_trait_bound(owner, definition)?;
         }
         self.end_header_names();
-        self.complete_trait_bindings()?;
+        self.complete_trait_bindings(steps, limit)?;
         self.complete_trait_contracts()?;
         self.retain_header_projection_requirements()?;
         Ok(())
@@ -144,6 +144,7 @@ impl Checker<'_> {
         self.facts.generics.parameters.insert(
             owner.self_definition,
             vec![Parameter {
+                anonymous: false,
                 binding: owner.self_definition,
                 argument: Argument::Type(self_type),
                 default: None,

@@ -264,7 +264,8 @@ impl BodyFacts {
                     }
                 }
             }
-            Action::GuardStart(_)
+            Action::Mention(_)
+            | Action::GuardStart(_)
             | Action::GuardUse(_)
             | Action::Project(_)
             | Action::Select { .. } => {}

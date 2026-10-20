@@ -198,7 +198,8 @@ impl Lower<'_, '_> {
             Action::BindView { view, place } => self.bind_view(view, place)?,
             Action::Project(id) => self.project(id)?,
             Action::Select { projection, anchor } => self.select(projection, anchor)?,
-            Action::GuardStart(_)
+            Action::Mention(_)
+            | Action::GuardStart(_)
             | Action::GuardUse(_)
             | Action::StorageLive(_)
             | Action::StorageDead(_)

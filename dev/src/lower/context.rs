@@ -254,6 +254,7 @@ impl<'a> Context<'a> {
             .ok_or("missing demanded storage layout")
     }
     pub fn representation(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
+        let ty = self.types.storage_head(ty)?;
         if let Some(
             Kind::Reference { referent, .. }
             | Kind::Pointer {
@@ -383,6 +384,7 @@ impl<'a> Context<'a> {
     }
 }
 pub(super) fn representation(types: &Store, ty: TypeId) -> Result<Type, &'static str> {
+    let ty = types.storage_head(ty)?;
     if ty == TypeId::UNIT || ty == TypeId::NEVER {
         return Ok(Type::Void);
     }

@@ -14,11 +14,37 @@ use std::collections::HashMap;
 /// Construct and use this only with its original inference context and store.
 pub struct Instantiation {
     parameters: HashMap<ParameterId, Argument>,
+    opaques: HashMap<crate::types::opaque::OpaqueId, TermId>,
     completed: HashMap<(TermId, u16), TermId>,
     shifted: HashMap<(TermId, u16), TermId>,
     shifted_projections: bool,
 }
 impl Instantiation {
+    /// Use fresh hidden-type terms only while checking their defining result.
+    /// # Errors
+    /// Rejects invalid identities, duplicate declarations and exhausted inference resources.
+    pub fn opaque_results(
+        context: &mut Context,
+        store: &Store,
+        ids: &[crate::types::opaque::OpaqueId],
+    ) -> Result<Self, Error> {
+        let mut value = Self::new(context, store, &[])?;
+        for &id in ids {
+            if store.opaque_declaration(id).is_none() || value.opaques.contains_key(&id) {
+                return Err(Error::InvalidIdentity);
+            }
+            value
+                .opaques
+                .insert(id, context.variable(super::Domain::Any)?);
+        }
+        Ok(value)
+    }
+    /// Fresh terms to validate and publish after all defining-body return paths agree.
+    pub fn opaque_terms(
+        &self,
+    ) -> impl Iterator<Item = (crate::types::opaque::OpaqueId, TermId)> + use<'_> {
+        self.opaques.iter().map(|(&id, &term)| (id, term))
+    }
     /// Binder shifts can rebuild projections supplied through a type parameter,
     /// even when its template contains none. Register those new occurrences in
     /// their destination scope; this flag supplies no normalization permission.
@@ -56,6 +82,7 @@ impl Instantiation {
         }
         Ok(Self {
             parameters,
+            opaques: HashMap::new(),
             completed: HashMap::new(),
             shifted: HashMap::new(),
             shifted_projections: false,
@@ -117,7 +144,7 @@ impl Context {
         template: TypeId,
         substitution: &mut Instantiation,
     ) -> Result<TermId, Error> {
-        if substitution.parameters.is_empty() {
+        if substitution.parameters.is_empty() && substitution.opaques.is_empty() {
             // A rigid canonical graph needs no rebuilding when no parameter is
             // replaced. In particular, keep opaque projection inputs canonical
             // instead of materializing and resolving their complete DAG again.
@@ -134,11 +161,18 @@ impl Context {
             }
             if let Value::Known(ty) = self.terms[term.0 as usize].value
                 && store.contains_parameters(ty) == Some(false)
+                && (substitution.opaques.is_empty() || store.contains_opaques(ty) == Some(false))
             {
                 substitution.completed.insert((term, depth), term);
                 continue;
             }
             let kind = self.materialize(store, term)?;
+            if let Constructor::Opaque(id, _) = kind
+                && let Some(&value) = substitution.opaques.get(&id)
+            {
+                substitution.completed.insert((term, depth), value);
+                continue;
+            }
             if let Constructor::Parameter(id) = kind
                 && let Some(Argument::Type(value)) = substitution.parameters.get(&id)
             {

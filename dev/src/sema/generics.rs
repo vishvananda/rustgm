@@ -2,6 +2,7 @@
 mod builtin_formation;
 pub(super) mod captures;
 mod families;
+mod input_contracts;
 mod traits;
 use crate::{
     resolve::model::DefId,
@@ -17,22 +18,7 @@ use std::{
     sync::Arc,
 };
 
-pub(super) fn parameter_id(
-    store: &Store,
-    formal: Argument,
-) -> Result<crate::types::parameters::ParameterId, &'static str> {
-    match formal {
-        Argument::Type(ty) => match store.kind(ty) {
-            Some(Kind::Parameter(id)) => Ok(id),
-            _ => Err("missing rigid type parameter"),
-        },
-        Argument::Const(constant) => match store.const_kind(constant) {
-            Some(crate::types::arguments::ConstKind::Parameter(id)) => Ok(id),
-            _ => Err("missing rigid const parameter"),
-        },
-        Argument::Lifetime(_) => Err("late lifetime was retained as a type argument"),
-    }
-}
+pub(super) use crate::types::parameters::argument_id as parameter_id;
 
 impl super::model::Declarations {
     /// Read a resolved const parameter through the permitted argument wrappers.
@@ -77,6 +63,7 @@ impl super::model::Declarations {
 #[derive(Clone, Copy)]
 pub struct Parameter {
     pub binding: DefId,
+    pub anonymous: bool,
     pub argument: Argument,
     pub default: Option<Argument>,
 }
@@ -208,15 +195,17 @@ impl Generics {
         &self,
         owner: DefId,
     ) -> impl Iterator<Item = &Predicate> {
-        self.scopes(owner).flat_map(|id| {
-            let predicates = self.predicates.get(&id).map_or(&[][..], Vec::as_slice);
-            let count = self
-                .declared_predicate_counts
-                .get(&id)
-                .copied()
-                .unwrap_or(predicates.len());
-            predicates[..count].iter()
-        })
+        self.scopes(owner)
+            .flat_map(|id| self.declared_predicates(id))
+    }
+    pub(super) fn declared_predicates(&self, owner: DefId) -> &[Predicate] {
+        let predicates = self.predicates.get(&owner).map_or(&[][..], Vec::as_slice);
+        let count = self
+            .declared_predicate_counts
+            .get(&owner)
+            .copied()
+            .unwrap_or(predicates.len());
+        &predicates[..count]
     }
     #[must_use]
     pub fn has_parameters(&self, owner: DefId) -> bool {

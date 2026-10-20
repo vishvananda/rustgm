@@ -77,7 +77,7 @@ impl Context {
         scope: impl FnMut(ScopeId, TermId, u32) -> Result<ScopeId, Error>,
     ) -> Result<Vec<(ScopeId, TermId)>, Error> {
         let root = self.root(root)?;
-        if !matches!(self.materialize(store, root)?, Constructor::Projection(_)) {
+        if !self.materialize(store, root)?.normalizable(store) {
             return Err(Error::InvalidIdentity);
         }
         let entry = self.terms[root.0 as usize];
@@ -110,7 +110,7 @@ impl Context {
                 _ => {}
             }
             let kind = self.materialize(store, term)?;
-            if matches!(kind, Constructor::Projection(_)) {
+            if kind.normalizable(store) {
                 roots.push((ambient, term));
                 continue;
             }

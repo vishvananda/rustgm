@@ -550,6 +550,9 @@ impl Resolver<'_> {
                         NodeKey { file: c.file, node },
                         super::model::AssociatedBinding { name, arguments },
                     );
+                    if let Some(arguments) = arguments {
+                        self.generic_arguments(c, arguments)?;
+                    }
                     return Ok(());
                 }
                 _ => return Ok(()),

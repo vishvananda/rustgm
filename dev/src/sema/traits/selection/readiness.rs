@@ -28,6 +28,14 @@ pub(in crate::sema) fn requires_resolved_inputs(
     root: TermId,
     caller: &Caller<'_>,
 ) -> Result<bool, String> {
+    if context
+        .trait_result(&facts.types, root)
+        .map_err(inference)?
+    {
+        // Anonymous results expose a proved override template while retaining
+        // the complete parent/capture query for final normalization.
+        return Ok(true);
+    }
     let application = context
         .projection_application(&facts.types, root)
         .map_err(inference)?;

@@ -6,10 +6,11 @@ promoted from maintainer tests or authored for the public generic contract.
 `maintainer_origin` records that provenance. No upstream diagnostic or IR is
 used as a RustGM oracle.
 
-There are 425 cases: 262 accept and 163 reject. Accepted cases include 259
+There are 449 cases: 280 accept and 169 reject. Accepted cases include 277
 executed programs and three deliberately divergent code-generation-only cases.
-Four rejections reserve general methods, associated types and opaque types for
-later assignments. Growing generic demand requires rustc object generation;
+The former method, associated-item and opaque boundaries belong to their later
+owning assignments; PA21 accepts the migrated opaque-return source.
+Growing generic demand requires rustc object generation;
 metadata alone cannot demonstrate the expected recursion rejection.
 
 Clusters separate callable/constructor/destructor execution, aliases and default

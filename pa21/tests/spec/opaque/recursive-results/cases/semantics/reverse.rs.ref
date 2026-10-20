@@ -1,0 +1,49 @@
+generic-semantics 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 opaque id=0 arguments=[]
+type 20 function binders=0 parameters=[11] result=19 unsafe=false
+type 21 function-item def=13 signature=20
+type 22 function binders=0 parameters=[] result=1 unsafe=false
+type 23 function-item def=14 signature=22
+def 13 type=21 name="f" source=0:27
+def 14 type=23 name="main" source=0:29
+def 15 type=2 name="bool"
+def 16 type=3 name="char"
+def 17 type=4 name="str"
+def 18 type=5 name="i8"
+def 19 type=6 name="i16"
+def 20 type=7 name="i32"
+def 21 type=8 name="i64"
+def 22 type=9 name="i128"
+def 23 type=10 name="isize"
+def 24 type=11 name="u8"
+def 25 type=12 name="u16"
+def 26 type=13 name="u32"
+def 27 type=14 name="u64"
+def 28 type=15 name="u128"
+def 29 type=16 name="usize"
+def 30 type=17 name="f32"
+def 31 type=18 name="f64"
+def 32 type=11 name="n" source=0:2
+opaque 0 owner=13 source=0:10 application=19 hidden=11 role=defining-result storage-proof=pending
+opaque-bound id=0 index=0 subject=19 bound=copy
+opaque-body-result def=13 type=11
+eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

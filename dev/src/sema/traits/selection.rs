@@ -133,6 +133,9 @@ pub(in crate::sema) fn may_have_subject(
     let Some(subject) = subject else {
         return Ok(true);
     };
+    if let super::heads::Subject::Rigid(super::heads::Head::Opaque(id)) = subject {
+        return Ok(super::results::may_have_opaque_trait(facts, id, item));
+    }
     Ok(
         assumptions.is_some_and(|a| a.may_have_subject(item, subject))
             || facts

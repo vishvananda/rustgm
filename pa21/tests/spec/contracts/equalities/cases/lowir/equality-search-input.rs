@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Mark{}impl<'a>Mark for &'a u8{}fn need<U:Mark>(){}fn f<'x,T>()where for<'a>T:A<'a,Out=&'a u8>{need::<<T as A<'x>>::Out>();}fn main(){f::<u8>();}

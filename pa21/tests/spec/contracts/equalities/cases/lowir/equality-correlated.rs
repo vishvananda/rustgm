@@ -1,0 +1,1 @@
+trait A<'a,'b>{type Out;}impl<'a,'b>A<'a,'b>for u8{type Out=(&'a u8,&'b u8);}fn f<'x,'y,T>(x:&'x u8,y:&'y u8)-><T as A<'x,'y>>::Out where for<'a,'b>T:A<'a,'b,Out=(&'a u8,&'b u8)>{(x,y)}fn main(){let n=7;let m=9;let p=f::<u8>(&n,&m);if *p.0!=7||*p.1!=9{loop{}}}

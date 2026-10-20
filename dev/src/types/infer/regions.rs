@@ -163,7 +163,7 @@ impl Mapping {
                 }
                 Value::Construct(kind) => kind,
             };
-            self.projections |= matches!(kind, Constructor::Projection(_));
+            self.projections |= kind.normalizable(store);
             let child_depth = if matches!(kind, Constructor::Function { .. }) {
                 depth.checked_add(1).ok_or(Error::Overflow)?
             } else {

@@ -123,5 +123,5 @@ fn inspected_associated_values_execute_with_the_reported_member_choices() -> Tes
                 .ok_or("fixture check prelude changed")
         })
         .collect::<Result<Vec<_>, _>>()?;
-    native::check_cases("relationship-view", &cases)
+    native::check_cases("relationship-view/native", &cases)
 }

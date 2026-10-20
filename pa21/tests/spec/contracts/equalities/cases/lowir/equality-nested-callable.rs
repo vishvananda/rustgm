@@ -1,0 +1,1 @@
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=for<'b>fn(&'a u8,&'b u8)->&'a u8;}fn choose<'a,'b>(a:&'a u8,_:&'b u8)->&'a u8{a}fn f<'x,T>()-><T as A<'x>>::Out where for<'a>T:A<'a,Out=for<'b>fn(&'a u8,&'b u8)->&'a u8>{choose}fn main(){let n=7;let m=9;let g=f::<u8>();if *g(&n,&m)!=7{loop{}}}

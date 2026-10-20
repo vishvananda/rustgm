@@ -33,6 +33,11 @@ impl Checker<'_> {
         key: NodeKey,
         request: Request,
     ) -> Result<Selection, Error> {
+        if request.alias.associated().is_none() {
+            return Ok(Selection::Resolved(
+                crate::types::substitute::Resolution::Opaque,
+            ));
+        }
         let context = self
             .projections
             .roots
@@ -105,9 +110,13 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
             return Ok(Some(Attempt { progress, delivery }));
         }
+        let application = request
+            .alias
+            .associated()
+            .ok_or_else(|| self.error(key, "unexpected trait result declaration query"))?;
         let predicate = Predicate {
-            ty: request.application.subject,
-            bound: Bound::Trait(request.application.trait_application),
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
         };
         let deferred = self.may_defer_projection(key, context, predicate)?;
         if deferred
@@ -179,9 +188,16 @@ impl Checker<'_> {
         // Arguments use the private selection's original identities. Keep their
         // restoration before rebasing a canonical declaration template.
         self.retain_selection_proof(key, request, context, proof, delivery)?;
-        let definition =
-            crate::sema::projections::definition(&self.facts, owner, request.application.item)
-                .map_err(|e| self.error(key, e))?;
+        let definition = crate::sema::projections::definition(
+            &self.facts,
+            owner,
+            request
+                .alias
+                .associated()
+                .ok_or_else(|| self.error(key, "unexpected trait result selection"))?
+                .item,
+        )
+        .map_err(|e| self.error(key, e))?;
         Ok(Selection::Definition(Selected {
             request,
             owner,

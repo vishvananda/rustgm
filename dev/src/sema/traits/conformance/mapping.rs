@@ -21,6 +21,7 @@ struct Folders {
     expected: substitute::Bound,
     actual: substitute::Bound,
     universals: u32,
+    output_regions: Vec<RegionId>,
     variables: Vec<RegionId>,
 }
 fn scheme(facts: &Declarations, function: Function) -> FunctionRegions {
@@ -48,6 +49,22 @@ fn own_parameters(facts: &Declarations, owner: DefId) -> Vec<Parameter> {
         .filter(|p| !matches!(p.argument, Argument::Lifetime(_)))
         .copied()
         .collect()
+}
+fn paired_parameters(
+    facts: &Declarations,
+    expected: DefId,
+    actual: DefId,
+) -> Result<Vec<(Parameter, Parameter)>, String> {
+    let expected = own_parameters(facts, expected);
+    let actual = own_parameters(facts, actual);
+    if expected.len() != actual.len() {
+        return Err("implementation method generic parameter arity mismatch".into());
+    }
+    let parameters: Vec<_> = expected.into_iter().zip(actual).collect();
+    if parameters.iter().any(|(a, b)| a.anonymous != b.anonymous) {
+        return Err("implementation method anonymous parameters disagree with trait".into());
+    }
+    Ok(parameters)
 }
 fn universal(index: u32) -> Result<RegionId, &'static str> {
     RegionId::bound(
@@ -149,6 +166,7 @@ fn folders(
         variables.push(region);
     }
     rigid_unused(&mut b, &mut count)?;
+    let output_regions = a.clone();
     let expected = substitute::Bound::parameters_captured(&facts.types, &bindings, a)?;
     let replacements = method_parameters
         .iter()
@@ -159,6 +177,7 @@ fn folders(
         expected,
         actual,
         universals: count,
+        output_regions,
         variables,
     })
 }
@@ -185,12 +204,7 @@ pub(super) fn contract(
     expected: Function,
     actual: Function,
 ) -> Result<Contract, String> {
-    let a = own_parameters(facts, expected.definition);
-    let b = own_parameters(facts, actual.definition);
-    if a.len() != b.len() {
-        return Err("implementation method generic parameter arity mismatch".into());
-    }
-    let method_parameters: Vec<_> = a.iter().copied().zip(b).collect();
+    let method_parameters = paired_parameters(facts, expected.definition, actual.definition)?;
     let expected_regions = scheme(facts, expected);
     let actual_regions = scheme(facts, actual);
     let mut folders = folders(
@@ -232,7 +246,7 @@ pub(super) fn contract(
         .generics
         .parameters_in_scope(owner)
         .copied()
-        .chain(a)
+        .chain(method_parameters.iter().map(|(expected, _)| *expected))
         .collect();
     let (environment, parameters) = environment(&facts.types, &scope, &assumptions)?;
     let mut assumed_regions = pairs(
@@ -276,7 +290,10 @@ pub(super) fn contract(
             }),
     );
     Ok(Contract {
+        outputs: super::outputs::contracts(facts, expected.definition, &mut folders.expected)?,
         expected: expected_signature,
+        declared: expected_signature,
+        output_regions: folders.output_regions,
         actual: actual_signature,
         environment: environment.into(),
         parameters,

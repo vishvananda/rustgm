@@ -53,6 +53,7 @@ fn options() -> Result<Options, String> {
                     | "types"
                     | "semantics"
                     | "trait-semantics"
+                    | "generic-semantics"
                     | "patterns"
                     | "layouts"
                     | "body-ir"
@@ -116,6 +117,7 @@ fn compile(options: &Options) -> Result<(), String> {
             | "--emit-types"
             | "--emit-semantics"
             | "--emit-trait-semantics"
+            | "--emit-generic-semantics"
             | "--emit-patterns"
             | "--emit-layouts"
             | "--emit-body-ir"
@@ -138,6 +140,8 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Semantics
             } else if options.mode == "--emit-trait-semantics" {
                 modules::Mode::Relationships
+            } else if options.mode == "--emit-generic-semantics" {
+                modules::Mode::Generics
             } else if options.mode == "--emit-types" {
                 modules::Mode::Types
             } else if options.mode == "--emit-layouts" {

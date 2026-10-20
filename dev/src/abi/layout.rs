@@ -215,6 +215,7 @@ impl Layouts {
         self.states[ty.0 as usize] = State::Active;
         self.work.push((ty, true));
         match kind {
+            Kind::Opaque(..) => self.work.push((types.storage_head(ty)?, false)),
             Kind::Tuple(fields) => self.dependencies(types, fields)?,
             Kind::Array { element, .. } => self.work.push((element, false)),
             Kind::Adt(_, _) => {
@@ -247,6 +248,10 @@ impl Layouts {
         match kind {
             Kind::Parameter(_) => Err("generic type parameter has no concrete layout"),
             Kind::Projection(_) => Err("associated type layout requires normalization"),
+            Kind::Opaque(..) => self
+                .get(types.storage_head(ty)?)
+                .copied()
+                .ok_or("missing opaque representation layout"),
             Kind::ArrayTerm { .. } => Err("generic array length has no concrete layout"),
             Kind::Never => Ok(Layout {
                 size: 0,

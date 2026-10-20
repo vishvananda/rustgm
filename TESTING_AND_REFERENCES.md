@@ -236,8 +236,8 @@ retain the mandatory execution/outcome contract.
 An explicit `rustc.emit: "obj"` selects object generation in the independent
 acceptance checker. Growing-instance rejection and demand-only controls need
 that stronger check because metadata emission does not monomorphize bodies.
-It is valid only for complete programs. One PA18 rejection fixture declares
-a later PA21 boundary accepted by rustc; there are no new runtime differences.
+It is valid only for complete programs. The former PA18 opaque-return boundary moved byte-for-byte to PA21 with its
+accepted source and execution contract; there are no new runtime differences.
 The former associated-type boundary is retained byte-for-byte as an accepted
 maintainer control awaiting the PA20 grading contract.
 The generic constructor/destructor boundaries moved from PA12/PA17 with unchanged
@@ -710,7 +710,7 @@ semantic inspections and 809 LowIR checks, with 489 independent native execution
 One explicitly classified semantic-positive case defers an escaping-reference
 error to the complete proof. See `docs/pa20-validation.md` for the seven families,
 source provenance, count/row checks and reference review. `make test-native` and
-`make test-rustc` include PA20; PA21–PA38 remain planned and fail explicitly.
+`make test-rustc` include PA20; PA22–PA38 remain planned and fail explicitly.
 
 Parameter-default checks use their own lifetime eligibility rule, separate from
 closed definition-time bounds. The default-clause invariants retain unused
@@ -726,3 +726,20 @@ The shared parameter-occurrence invariants vary prefix depth and distinct bounds
 sharing a wide argument list. They count actual query work and retained summary
 entries, including constants, equality results and non-injective projection inputs.
 These are bounds on the index, not on whole-frontend work or total heap usage.
+
+
+PA21 adds `--emit-generic-semantics` and `--count-generic-semantics`, preserving
+PA19/PA20 inspection vocabularies. Its 744 cases contain 298 semantic views and
+446 LowIR checks, with 260 declared native executions: 256 pass and four expected
+destructor panics. Every source is object-qualified with pinned rustc. The seven
+families cover quantified scopes/contracts, complete GAT applications, opaque
+identity/capture, variance, destruction and integration. Run `make test-pa21` and
+`make test-native-pa21`; root report, independent and native targets include it.
+The full release evidence and the one reviewed PA20 lifetime diagnostic update
+are documented in [docs/pa21-validation.md](docs/pa21-validation.md).
+
+The three new PA16 wildcard controls distinguish type liveness from value reads,
+initialization and movement. The expired-reference mention rejects; an unused
+reference and an uninitialized wildcard mention compile. Opaque variants belong
+to PA21. Independent-source outputs now use `.o`/`.rmeta` suffixes so the shared
+storage guard removes them after successful runs.

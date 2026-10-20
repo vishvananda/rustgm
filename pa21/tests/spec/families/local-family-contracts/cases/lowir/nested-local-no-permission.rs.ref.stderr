@@ -1,0 +1,1 @@
+ERROR: file 0: 136: implementation method lifetime contract does not satisfy trait: required lifetime does not outlive its target

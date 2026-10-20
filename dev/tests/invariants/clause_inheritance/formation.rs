@@ -17,6 +17,7 @@ fn with_type(
     let mut value = header(store, owner, lifetimes)?;
     let ty = type_parameter(store, owner, u32::from(lifetimes) + 1)?;
     value.parameters.push(Parameter {
+        anonymous: false,
         binding: DefId(owner.0 + 100),
         default: None,
         argument: Argument::Type(ty),

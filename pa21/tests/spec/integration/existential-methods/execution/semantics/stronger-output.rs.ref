@@ -1,0 +1,119 @@
+generic-semantics 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 parameter def=16 index=0
+type 20 parameter def=21 index=0
+type 21 function binders=0 parameters=[2] result=1 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function binders=0 parameters=[11] result=11 unsafe=false
+type 24 function-item def=14 signature=23
+type 25 reference mutable=false region=bound:0:0 referent=19
+type 26 function binders=1 parameters=[25] result=11 unsafe=false
+type 27 function-item def=17 signature=26
+type 28 reference mutable=false region=bound:0:0 referent=11
+type 29 function binders=1 parameters=[28] result=11 unsafe=false
+type 30 function-item def=19 signature=29
+type 31 opaque id=0 arguments=[type:20]
+type 32 function binders=0 parameters=[] result=31 unsafe=false
+type 33 function-item def=22 signature=32
+type 34 opaque id=1 arguments=[]
+type 35 function binders=0 parameters=[] result=34 unsafe=false
+type 36 function-item def=24 signature=35
+type 37 function binders=0 parameters=[] result=1 unsafe=false
+type 38 function-item def=25 signature=37
+type 39 function binders=0 parameters=[28] result=11 unsafe=false
+type 40 reference mutable=false region=region:1 referent=11
+type 41 function binders=0 parameters=[40] result=11 unsafe=false
+type 42 opaque id=0 arguments=[type:12]
+type 43 function binders=0 parameters=[] result=42 unsafe=false
+type 44 function-item def=22 signature=35 arguments=[type:12]
+type 45 reference mutable=false region=static referent=34
+type 46 reference mutable=false region=bound:0:0 referent=34
+type 47 function binders=1 parameters=[46] result=11 unsafe=false
+type 48 function-item def=17 signature=47 arguments=[type:34]
+type 49 reference mutable=false region=region:1 referent=34
+type 50 function binders=0 parameters=[49] result=11 unsafe=false
+type 51 reference mutable=false region=region:2 referent=34
+def 13 type=22 name="check" source=0:19
+def 14 type=24 name="fail" source=0:35
+def 16 type=19 name="Self" source=0:45
+def 17 type=27 name="value" source=0:44
+def 18 type=11 name="Self" source=0:65
+def 19 type=30 name="value" source=0:64
+def 21 type=20 name="Self" source=0:71
+def 22 type=33 name="make" source=0:70
+def 23 type=12 name="Self" source=0:88
+def 24 type=36 name="make" source=0:87
+def 25 type=38 name="main" source=0:106
+def 26 type=2 name="bool"
+def 27 type=3 name="char"
+def 28 type=4 name="str"
+def 29 type=5 name="i8"
+def 30 type=6 name="i16"
+def 31 type=7 name="i32"
+def 32 type=8 name="i64"
+def 33 type=9 name="i128"
+def 34 type=10 name="isize"
+def 35 type=11 name="u8"
+def 36 type=12 name="u16"
+def 37 type=13 name="u32"
+def 38 type=14 name="u64"
+def 39 type=15 name="u128"
+def 40 type=16 name="usize"
+def 41 type=17 name="f32"
+def 42 type=18 name="f64"
+def 43 type=2 name="ok" source=0:2
+def 44 type=11 name="x" source=0:22
+def 46 type=28 name="self" source=0:54
+associated-owner 0 kind=trait self-def=16 self=19 source=0:45 trait=15 unsafe=false name="Value"
+associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:65 unsafe=false
+associated-owner 2 kind=trait self-def=21 self=20 source=0:71 trait=20 unsafe=false name="Make"
+associated-owner 3 kind=trait-impl self-def=23 self=12 source=0:88 unsafe=false
+associated-member def=17 owner=0 receiver=25 references=1
+associated-member def=19 owner=1 receiver=28 references=1
+associated-member def=22 owner=2
+associated-member def=24 owner=3
+parameter owner=16 binding=16 argument=type:19 default=-
+parameter owner=21 binding=21 argument=type:20 default=-
+predicate owner=15 source=0:45 subject=19 bound=trait:15 arguments=[]
+predicate owner=20 source=0:71 subject=20 bound=trait:20 arguments=[]
+impl owner=18 source=0:65 subject=11 bound=trait:15 arguments=[]
+impl-method owner=18 declaration=17 selected=19 default=false
+impl owner=23 source=0:88 subject=12 bound=trait:20 arguments=[]
+impl-method owner=23 declaration=22 selected=24 default=false
+method-call source=0:100 method=17 callable=48 dereferences=0 borrow=51 receiver=49 origin=lexical
+trait-path source=0:98 method=22 trait=20 qualifier=explicit origin=ordinary subject-source=0:93
+implementation-use source=0:84 owner=18 arguments=[]
+implementation-use source=0:98 owner=23 arguments=[]
+region-var region:1 body=0:105 source=0:100 origin=call-argument pending
+region-var region:2 body=0:105 source=0:100 origin=expression-borrow pending
+region-coercion body=0:105 source=0:100 actual=51 expected=49 kind=same-shape pending
+opaque 0 owner=22 source=0:69 application=31 hidden=- role=trait-result storage-proof=pending
+opaque-bound id=0 index=0 subject=31 bound=copy
+opaque 1 owner=24 source=0:84 application=34 hidden=11 role=defining-result storage-proof=pending
+opaque-bound id=1 index=0 subject=34 bound=copy
+opaque-bound id=1 index=1 subject=34 bound=trait:15 arguments=[]
+opaque-body-result def=24 type=11
+opaque-implementation owner=23 id=0 type=34 parent-regions=0 regions=[]
+proof 0 body=0:105 source=0:98 pending
+proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=1
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=1 end=1
+eof owners=4 members=4 parameters=2 predicates=2 impls=2 calls=1 paths=1 impl-uses=2 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=2 opaque-bounds=3 hidden-types=1 opaque-body-results=1 opaque-implementations=1 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

@@ -1,9 +1,12 @@
 # PA21 fixture ownership
 
-Planned: no graded manifest or generated references yet. Earlier PA20 contracts
-remain active and unchanged.
+The manifest registers 744 cases with committed stdout, stderr and status
+sidecars. There are 298 semantic inspections and 446 LowIR checks; 260 accepted
+LowIR programs declare native execution (256 pass, four destructor panics).
+All source outcomes are independently checked with pinned rustc object generation.
+Fixtures preserve the source controls in the named `maintainer_origin` field.
 
-Required families:
+The seven families are:
 
 - `binders`: both higher-ranked bound spellings, alpha-renaming, independent and
   correlated slots, nested callable scopes, outer captures, arbitrary local
@@ -35,8 +38,9 @@ proof of a negative language rule.
 Keep Fn/closure construction, trait objects, unsized execution, async and library
 hooks out of the initial quantified/family/opaque controls. Their owning stages
 must supply those capabilities explicitly. Preserve pinned upstream attribution
-and bytes for imports. Register every primary and auxiliary input when the stage
-is activated; a planned stage must not acquire an undeclared executable manifest.
+and bytes for imports. Every primary input is registered. The former PA18 opaque-return boundary moved
+here byte-for-byte with an accepted oracle; plain reference wildcard controls
+belong to PA16. No upstream input was modified or imported for this release.
 
 Maintainer invariants must test proof scope ownership, cache environment identity,
 completed versus pending failures, bounded work and structural sharing separately

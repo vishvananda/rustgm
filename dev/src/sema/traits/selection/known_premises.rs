@@ -25,21 +25,24 @@ pub(in crate::sema) fn normalized(
     environment: Option<&Environment>,
     request: Request,
 ) -> Result<Option<(Source, Resolution)>, String> {
+    let Some(application) = request.alias.associated() else {
+        return Ok(None);
+    };
     if let Some(environment) = environment
         && let Some((parent, result, steps)) =
-            exact_equality(&facts.types, environment, request.application)?
+            exact_equality(&facts.types, environment, application)?
     {
         let mut context = Context::default();
         context.account_work(steps).map_err(inference)?;
-        let competing =
-            if let Some(Kind::Projection(parent)) = facts.types.kind(request.application.subject) {
-                let (competing, steps) =
-                    results::has_equalities(facts, parent.item, request.application.item)?;
-                context.account_work(steps).map_err(inference)?;
-                competing
-            } else {
-                false
-            };
+        let competing = if let Some(Kind::Projection(parent)) =
+            facts.types.kind(application.subject)
+        {
+            let (competing, steps) = results::has_equalities(facts, parent.item, application.item)?;
+            context.account_work(steps).map_err(inference)?;
+            competing
+        } else {
+            false
+        };
         if !competing {
             return Ok(Some((Source::Assumption(parent), Resolution::Type(result))));
         }
@@ -82,7 +85,9 @@ pub(in crate::sema) fn opaque_normalized(
     environment: Option<&Environment>,
     request: Request,
 ) -> Result<Option<Source>, String> {
-    let application = request.application;
+    let Some(application) = request.alias.associated() else {
+        return Ok(None);
+    };
     let Some(Kind::Projection(parent)) = facts.types.kind(application.subject) else {
         return Ok(None);
     };

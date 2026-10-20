@@ -45,6 +45,7 @@ impl Head {
         match kind {
             Constructor::Primitive(p) => Self::Primitive(p),
             Constructor::Parameter(id) => Self::Parameter(id),
+            Constructor::Opaque(id, _) => Self::Opaque(id),
             Constructor::Projection(value) => Self::Projection(value.item()),
             Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => Self::Nominal(item),
             Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _) => {
