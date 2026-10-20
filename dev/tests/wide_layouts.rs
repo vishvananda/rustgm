@@ -12,7 +12,11 @@ fn wide_pointer_layouts_match_the_pinned_target_and_keep_unsized_referents()
     let mut layouts = Layouts::default();
     let slice = types.intern(Kind::Slice(TypeId::primitive(Primitive::U8)))?;
     let text = TypeId::primitive(Primitive::Str);
-    for referent in [slice, text] {
+    let fields = types.intern_list(&[TypeId::primitive(Primitive::U64), slice])?;
+    let tuple = types.intern(Kind::Tuple(fields))?;
+    let fields = types.intern_list(&[TypeId::UNIT, tuple])?;
+    let nested = types.intern(Kind::Tuple(fields))?;
+    for referent in [slice, text, tuple, nested] {
         for mutable in [false, true] {
             let reference = types.intern(Kind::Reference {
                 region: RegionId::STATIC,
@@ -51,7 +55,35 @@ fn wide_pointer_layouts_match_the_pinned_target_and_keep_unsized_referents()
     let source = folder.join("probe.rs");
     std::fs::write(
         &source,
-        "use std::mem::{size_of,align_of};fn check<T>(n:usize){assert_eq!(size_of::<T>(),n);assert_eq!(align_of::<T>(),8);}fn main(){check::<&[u8]>(16);check::<&mut [u8]>(16);check::<&str>(16);check::<&mut str>(16);check::<*const [u8]>(16);check::<*mut [u8]>(16);check::<*const str>(16);check::<*mut str>(16);check::<[&str;0]>(0);check::<[&[u8];3]>(48);}",
+        r"use std::mem::{size_of, align_of};
+fn check<T>(n:usize) {
+    assert_eq!(size_of::<T>(), n);
+    assert_eq!(align_of::<T>(), 8);
+}
+fn main() {
+    check::<&[u8]>(16);
+    check::<&mut [u8]>(16);
+    check::<&str>(16);
+    check::<&mut str>(16);
+    check::<*const [u8]>(16);
+    check::<*mut [u8]>(16);
+    check::<*const str>(16);
+    check::<*mut str>(16);
+    check::<[&str;0]>(0);
+    check::<[&[u8];3]>(48);
+    check::<&(u64,[u8])>(16);
+    check::<&mut (u64,[u8])>(16);
+    check::<*const (u64,[u8])>(16);
+    check::<*mut (u64,[u8])>(16);
+    check::<[&(u64,[u8]);0]>(0);
+    check::<[&(u64,[u8]);3]>(48);
+    check::<&((),(u64,[u8]))>(16);
+    check::<&mut ((),(u64,[u8]))>(16);
+    check::<*const ((),(u64,[u8]))>(16);
+    check::<*mut ((),(u64,[u8]))>(16);
+    check::<[&((),(u64,[u8]));0]>(0);
+    check::<[&((),(u64,[u8]));3]>(48);
+}",
     )?;
     let binary = folder.join("rustc");
     let compiled = Command::new("rustc")

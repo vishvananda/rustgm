@@ -2874,6 +2874,17 @@ Array-to-slice conversions use the checked source length and compatible element
 layout. Dynamic indexing checks that length before address calculation, even
 when the selected value is zero-sized. Reborrows retain the source metadata.
 
+PA22's metadata query follows the final field of a completed struct or tuple.
+References, raw pointers and arrays stop that traversal. Its typed result is
+thin, length-bearing, or unknown with the unresolved tail identity; declaration
+bounds can establish a thin rigid tail without inventing its size or alignment.
+The query consumes prepared field instances and normalized concrete storage,
+memoizes shared suffixes and failed paths, and bounds work without recursive
+host calls or whole-cache failure scans. It must not reveal an opaque hidden
+type to justify public bounds. Metadata classification does not prove source
+well-formedness, an unsizing conversion or a caller's `Sized` requirement.
+Keep those proofs separate when enabling the remaining PA22 source behavior.
+
 Literal backing is immutable and shared by canonical bytes. Empty strings and
 byte strings receive nonnull backing with zero logical length. Persistent wide
 values serialize both the address and length at their canonical offsets;

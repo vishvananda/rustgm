@@ -77,6 +77,7 @@ pub struct Layouts {
     variants: Vec<Variant>,
     offsets: Vec<u64>,
     work: Vec<(TypeId, bool)>,
+    metadata: Option<Box<super::metadata::Queries>>,
     pub steps: usize,
 }
 impl Layouts {
@@ -272,9 +273,21 @@ impl Layouts {
                     types.kind(pointee),
                     Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
                 );
-                if !wide && types.is_sized(pointee) != Some(true) {
-                    return Err("unsized pointer metadata requires later layout support");
-                }
+                let wide = if wide || types.is_sized(pointee) == Some(true) {
+                    wide
+                } else {
+                    match self.metadata.get_or_insert_with(Default::default).demand(
+                        types,
+                        definitions,
+                        pointee,
+                    )? {
+                        super::metadata::Metadata::Thin => false,
+                        super::metadata::Metadata::Length => true,
+                        super::metadata::Metadata::Unknown(_) => {
+                            return Err("unsized pointer metadata requires later layout support");
+                        }
+                    }
+                };
                 Ok(Layout {
                     contains_reference: matches!(kind, Kind::Reference { .. }),
                     shape: if wide {
