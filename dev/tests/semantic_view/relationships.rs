@@ -17,7 +17,10 @@ const MISSING: &str = r"trait A{type Out;}struct S;impl A for S{}fn main(){}
 ";
 
 fn inspect(source: &str) -> TestResult<String> {
-    let (report, facts) = semantic::analyze(source)?;
+    let report = semantic::resolve(source)?;
+    // CLI inspection completes required initializer selection as well as body
+    // inference; the lower-level helper intentionally stops before that gate.
+    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
     let mut bytes = Vec::new();
     relationships::write(&report, &facts, &mut bytes)?;
     let mut count = Vec::new();
@@ -55,10 +58,12 @@ fn associated_contracts_and_default_overrides_have_hand_checked_rows() -> TestRe
         "associated-type def=26 type=12",
         "impl-constant owner=23 declaration=18 selected=18 default=true",
         "impl-constant owner=25 declaration=18 selected=27 default=false",
+        "constant-dispatch declaration=18 arguments=[type:19] selected=18 arguments=[type:19]",
+        "constant-dispatch declaration=18 arguments=[type:20] selected=27 arguments=[]",
     ] {
         assert!(text.lines().any(|line| line == row), "{row}: {text}");
     }
-    assert!(text.ends_with("type-members=3 constant-members=2 result-contracts=1 result-bounds=2 impl-constants=2 constant-uses=2 constant-dispatches=0 normalized-nodes=4 normalized-definitions=0\n"));
+    assert!(text.ends_with("type-members=3 constant-members=2 result-contracts=1 result-bounds=2 impl-constants=2 constant-uses=2 constant-dispatches=2 normalized-nodes=4 normalized-definitions=0\n"));
     Ok(())
 }
 
