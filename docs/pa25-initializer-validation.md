@@ -72,6 +72,32 @@ the newly completed semantic facts; no references were changed. A merge-only
 duplicate standalone import test was removed in a separate commit before the
 final zero-finding audit.
 
+## Initializer-local borrow regions
+
+Explicit borrows, receiver autoref and callable autoref now use the existing
+owning-body `ExpressionBorrow` region in initializer and anonymous constant
+bodies as well as functions. Being outside a function does not establish static
+backing. The existing checked CFG place/promotion proof determines whether the
+referent is local, promoted, extended or static; `in_function` keeps its existing
+control and eligibility meaning.
+
+Twelve independent Rust object controls cover nine valid transient, mutable,
+projected, reborrowed, receiver, literal/static/const-backed cases and three
+invalid local escapes. Both semantic and LowIR outcomes agree. Two native groups
+execute local mutations, reborrows, const methods and valid static reference
+results. The PA20 selection and ordinary initializer policy regressions also
+pass, along with formatting, strict Clippy and the zero-finding file audit.
+
+Against immutable `50f6f63e`, the three already-valid literal/static/const-backed
+controls retain identical LowIR. Their type views gain the actual borrow region,
+reference type, coercion and adjustment; the declared static result is unchanged.
+Six previously rejected local-borrow controls now succeed. No references were
+regenerated. Evidence and exact view deltas are under
+`obj/parallel/pa25-initializer-lifetimes/`; the dev-source manifest SHA-256 is
+`fbf77d2b01d5c1a997613e2539a4c0cc609a375228ad223ebf5274339932270c`.
+General inline-const expressions inside runtime bodies remain an explicit
+unsupported boundary, including PA28's inline-const zero-array repeat control.
+
 ## Remaining PA25 work
 
 - Resume dynamic cross-body pattern dependencies and forward unready enum tags;

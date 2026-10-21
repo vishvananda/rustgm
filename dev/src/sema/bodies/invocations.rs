@@ -8,7 +8,7 @@ use crate::{
     },
     support::call_traits::CallTrait,
     types::{
-        ItemId, RegionId,
+        ItemId,
         infer::{Context, Domain, Solved, arguments::Argument, predicates::Predicate},
     },
 };
@@ -261,11 +261,7 @@ impl Checker<'_> {
         let borrow = match kind {
             Some(CallTrait::Fn | CallTrait::FnMut) => {
                 let mutable = kind == Some(CallTrait::FnMut);
-                let region = if self.state.in_function {
-                    self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?
-                } else {
-                    RegionId::STATIC
-                };
+                let region = self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?;
                 let term = self
                     .state
                     .infer

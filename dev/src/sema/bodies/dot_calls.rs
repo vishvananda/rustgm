@@ -5,7 +5,7 @@ use crate::{
         methods::{Call, receiver, selection::Caller},
         model::{AdjustmentKind, BodyRegionOrigin, Coercion},
     },
-    types::{RegionId, infer::Solved},
+    types::infer::Solved,
 };
 
 pub(super) struct Pending {
@@ -140,11 +140,7 @@ impl Checker<'_> {
             self.state.call_types.field_receivers.push(actual);
         }
         let borrow = if let Some(mutable) = borrow {
-            let region = if self.state.in_function {
-                self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?
-            } else {
-                RegionId::STATIC
-            };
+            let region = self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?;
             let value = self
                 .state
                 .infer

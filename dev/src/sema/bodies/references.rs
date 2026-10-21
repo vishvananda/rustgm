@@ -1,9 +1,6 @@
 //! Borrow and referent type facts remain distinct from later region/loan proofs.
 use super::{Checker, Constructor, Error, Kind, NodeId, Operation, TermId, Work};
-use crate::{
-    sema::model::{AdjustmentKind, BodyRegionOrigin, ReferenceConversion},
-    types::RegionId,
-};
+use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, ReferenceConversion};
 
 pub(super) enum CoercionWork {
     Enter(NodeId, TermId, bool, bool),
@@ -387,12 +384,7 @@ impl Checker<'_> {
         mutable: bool,
     ) -> Result<TermId, Error> {
         let referent = self.term(operand)?;
-        let region = if self.state.in_function {
-            self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?
-        } else {
-            // Constant inspection still checks promotion eligibility when demanded.
-            RegionId::STATIC
-        };
+        let region = self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?;
         let term = self
             .state
             .infer
