@@ -167,3 +167,13 @@ reference receipt preserves the full PA16 receipt. Independent commands and
 outputs are retained in `obj/parallel/zero-repeat-review/independent.json` for
 compiler `68d3a32e` (SHA-256
 `76a94721c579c2e008d0c6b1d3b873c0fb96058d975292cc608c709781c3bff2`).
+
+
+The combined release run also exposed two older `owned_operands` assertions
+that required one constant-instantiation effect for zero-length repeats. The
+reviewed tests now require zero such effects and no retained `Rvalue::Constant`
+operand. Zero-length ordinary constructor, function-call and block-expression
+operands still require disposal, while nonzero constant repeats retain their
+instantiation and lifetime-adjustment checks. These changes update the typed
+ownership invariants to the same independently established rule; they do not
+change compiler behavior.

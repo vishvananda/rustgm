@@ -116,23 +116,23 @@ fn owned_operands_transfer_once_across_stores_calls_aggregates_and_returns()
 fn repeat_operands_distinguish_disposal_transfer_and_constant_instantiation()
 -> Result<(), Box<dyn std::error::Error>> {
     let cases = [
-        ("zero-constructor", "D", 0, Disposition::Discard),
-        ("zero-call", "make()", 0, Disposition::Discard),
-        ("one-call", "make()", 1, Disposition::Transfer),
-        ("zero-constant", "ITEM", 0, Disposition::Instantiate),
+        ("zero-constructor", "D", 0, Some(Disposition::Discard)),
+        ("zero-call", "make()", 0, Some(Disposition::Discard)),
+        ("one-call", "make()", 1, Some(Disposition::Transfer)),
+        ("zero-constant", "ITEM", 0, None),
+        ("zero-grouped-constant", "(ITEM)", 0, None),
         (
-            "zero-grouped-constant",
-            "(ITEM)",
+            "zero-block-constant",
+            "{ITEM}",
             0,
-            Disposition::Instantiate,
+            Some(Disposition::Discard),
         ),
-        ("zero-block-constant", "{ITEM}", 0, Disposition::Discard),
-        ("one-constant", "ITEM", 1, Disposition::Instantiate),
+        ("one-constant", "ITEM", 1, Some(Disposition::Instantiate)),
         (
             "many-constant",
             "ITEM",
             1_000_000_000,
-            Disposition::Instantiate,
+            Some(Disposition::Instantiate),
         ),
     ];
     for (name, operand, length, expected) in cases {
@@ -144,6 +144,15 @@ fn repeat_operands_distinguish_disposal_transfer_and_constant_instantiation()
         let program = body::build(&report, &declarations)?;
         let mut seen = 0;
         for body in &program.bodies {
+            if expected.is_none() {
+                // A zero-length constant repeat never evaluates its operand;
+                // suppressing only the Repeat action would still be incorrect.
+                assert!(
+                    body.values
+                        .iter()
+                        .all(|value| !matches!(value.kind, Rvalue::Constant(_)))
+                );
+            }
             let facts = initialization::analyze(
                 &declarations.types,
                 &declarations.aggregates,
@@ -161,12 +170,12 @@ fn repeat_operands_distinguish_disposal_transfer_and_constant_instantiation()
                     && let Action::Evaluate(id) = body.statements[before as usize].action
                     && matches!(body.values[id.0 as usize].kind, Rvalue::Repeat { .. })
                 {
-                    assert_eq!(effect.disposition, expected, "{name}");
+                    assert_eq!(Some(effect.disposition), expected, "{name}");
                     seen += 1;
                 }
             }
         }
-        assert_eq!(seen, 1, "{name}");
+        assert_eq!(seen, usize::from(expected.is_some()), "{name}");
     }
     Ok(())
 }
@@ -183,6 +192,13 @@ fn selected_constant_repeats_survive_lifetime_adjustments() -> Result<(), Box<dy
         let program = body::build(&report, &declarations)?;
         let mut seen = 0;
         for body in &program.bodies {
+            if length == 0 {
+                assert!(
+                    body.values
+                        .iter()
+                        .all(|value| !matches!(value.kind, Rvalue::Constant(_)))
+                );
+            }
             let facts = initialization::analyze(
                 &declarations.types,
                 &declarations.aggregates,
@@ -210,7 +226,7 @@ fn selected_constant_repeats_survive_lifetime_adjustments() -> Result<(), Box<dy
                 }
             }
         }
-        assert_eq!(seen, 1);
+        assert_eq!(seen, usize::from(length != 0));
     }
     Ok(())
 }
