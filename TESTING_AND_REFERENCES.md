@@ -66,7 +66,17 @@ make test RUSTGM_TEST_APP=/absolute/path/to/candidate
 make ref-test-pa1
 ```
 
-Only the explicit `ref-test` targets regenerate sidecars. The generator first
+The course runner also accepts repeated `--case tests/.../name.rs` selectors.
+It validates the complete manifest and discovery before executing only those exact
+normalized paths; duplicates, unknown paths and empty selections fail. With
+`--bless`, a selection updates only its sidecars after every selected declared
+outcome passes. It preserves `reference.json` and writes a tracked scoped receipt
+under `reference-batches/`, binding selected case contracts, inputs, outputs and
+compiler sources to the preserved full-stage receipt. This is partial provenance,
+not qualification or regeneration of the rest of the stage. Layout checks overlay
+those explicitly selected facts while requiring complete current fixture coverage.
+
+Only the explicit `ref-test` targets and an authorized selected `--bless` batch regenerate sidecars. The generator first
 checks every declared outcome and writes no reference if any differs. Review
 the complete generated diff. `reference.json` records source and input hashes;
 it is provenance, not an alternate expected answer. Never auto-bless in CI.
