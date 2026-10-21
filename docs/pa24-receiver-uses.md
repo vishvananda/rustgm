@@ -27,8 +27,15 @@ is in `obj/parallel/capture-uses/`: `gate-v1` records the initial source tests;
 `gate-v2` retains the filename-ownership finding corrected by naming the prefix
 scaling test `prefix_growth`; `gate-v3` records the final static checks.
 
-The final direct-call/local-projection checks, prefix-growth invariant and five
-new native programs await the combined capture-execution gate. Adjusted
+The final direct-call/local-projection checks and prefix-growth invariant now
+pass with the closure lifetime regressions: twenty-seven source test functions,
+recorded in `obj/parallel/capture-uses/source-v2/`. For 8/32/128 distinct fields,
+retained path counts are 9/33/129 and graph work is 42/162/642; total inferred
+body work is 1,600/5,632/21,760. Repeated use of one field retains two paths and
+one capture, with graph work 28/100/388 and body work 641/1,385/4,361. Both
+series have constant added work per added source use over the measured widths.
+These counters establish source scaling; they are not wall-time measurements.
+The five new native programs await the combined capture-execution gate. Adjusted
 receivers, reference/slice or overloaded indexing, pattern and nested capture
 propagation remain separate work. The unadjusted source access map retains its
 original meaning; a future adjusted-access contract must preserve the exact
