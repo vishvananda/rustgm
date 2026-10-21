@@ -10,7 +10,7 @@ mod reference_tests;
 mod tests;
 use super::{
     Failure, Machine,
-    memory::{RawAccess, Resolved},
+    memory::{RawAccess, RawAlignment, Resolved},
 };
 use crate::{
     resolve::model::DefId,
@@ -328,7 +328,9 @@ impl Machine<'_, '_> {
         {
             return Err("constant raw target is outside allocation bounds".into());
         }
-        if root_layout.align < target.align || !offset.is_multiple_of(u64::from(target.align)) {
+        if access.alignment == RawAlignment::Required
+            && (root_layout.align < target.align || !offset.is_multiple_of(u64::from(target.align)))
+        {
             return Err(if write {
                 "constant raw pointer write is unaligned"
             } else {

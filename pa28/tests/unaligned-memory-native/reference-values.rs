@@ -1,0 +1,1 @@
+#[repr(C)]struct V<'a>{r:&'a u32,p:*const u32}#[repr(C,packed)]struct P<'a>{tag:u8,v:V<'a>}fn main(){let x=37u32;let mut p=P{tag:3,v:V{r:&x,p:&raw const x}};unsafe{let v=core::ptr::read_unaligned(&raw const p.v);check(*v.r==37&&*v.p==37);core::ptr::write_unaligned(&raw mut p.v,v);}let r=unsafe{core::ptr::read_unaligned(&raw const p.v.r)};check(*r==37);}

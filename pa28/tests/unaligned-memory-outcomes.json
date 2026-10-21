@@ -1,0 +1,1336 @@
+{
+  "stage": "planned-development-qualification-no-oracles",
+  "base": "9829fd38",
+  "source_sha256": "0129d266b263b7ccd3ef04227307a7b1dd50d6cb9cf0974f5624da20b8708be8",
+  "compiler_sha256": "07d3cbd1f7e1615bf0dde01bf4cd1f114cce2d57ae38b2441c6f9530479fe227",
+  "contract_sha256": "68ae3c53ff3cbf5cb4ee79be852ce6a5386ffbff23b2a318cbc1a07542c8cf3d",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu"
+  },
+  "cases": [
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-read.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "ebf0d7bd6507b97803e091b2d4348eeca2ddb71dac9784ba431f9e8a62f32cfb",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "9103c66797b190e22521e1447d58cbe77c77d0442ba2511a8fd280ba9e7cf1e8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "93c356a2d029f5eca662ae3a07ea3a8a69ee22ed6f7cfc18728b3beb7cc8be14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-write.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "34d65f838ce615c76630cf963707179273515f5eb1bb8fffc36b69566a3e6cfa",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "eff04065dca40d0b1514325a61b5963441b53893c53d929ca984e7127d8f9e63",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "93c356a2d029f5eca662ae3a07ea3a8a69ee22ed6f7cfc18728b3beb7cc8be14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-nested.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "b470ad34b4cd70189a785aedd68ca6f0e1670aa6c6940c874901d206e26af363",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "f862e5485b6ebd984f59c5cd50bcbb26de54750fd4cac08fc7a2d10a0cab6b2e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "5d80552926eac1893e5369f8b66d6494100414d0fee06eca27d8fb1de6ae4699",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/const-generic.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "ede85da93cc03e90f6fc2d19d90673b2edc2138feab1ef9b3138bfd018351a88",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "6414c1d9625298bd0c8c0d313110d077499fd4b7a64e9b06ef13c94380a0002b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "ce8d7b0d1ccfaeeb9b7f26f09ae68940a9e95caefaf31540b95144e22e410156",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "024f01ce58903e9df65e50808c50c03590e03e5f8f9df6674e135fb0b68c64db",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-product.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "4bee804de62238113e769b2f6f7b6caf86cc20d24d35ab89301efeb049027fee",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "d338537edc59d7dbb8ea4a2872d81e81aec284c036b5c892c4e2edd8ae033ca9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "c9a874006f19d055b3bf0a1658a88990603f20eaa609bcfb0175103ad4650754",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-array.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "17e4a0036be17fcf8e83916cd5605b93ee4d42b126adc138d9f13995ab342d39",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "0b0e69bf0a893e0049da1afcb94e902801ebff9517769c271ffff8f268dfd527",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "93c356a2d029f5eca662ae3a07ea3a8a69ee22ed6f7cfc18728b3beb7cc8be14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-reference.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "b67630d76cc8039a810f98d64a9ecdbecbd8e5ef7b9f55752bca073337e5245f",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "94e24ad969c4cb2a25fc234672c78a047307044446c63bf29957c384e41a4830",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "e0a9ca7e9de97dcea3a0cd2098cad388303f65f16a100496b7f1f6ce19dcd13f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "9be3fa0b7eb091ac5abb3dfc1613cf4e67808694939cbec8a702c606b257473c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-pointer.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "f3ace2f0c56d544f5d43d7f55c701c5204b6b45022a7177ae7c3621f246c47e0",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "d94d404a902a694adb83b45fec7713ce904c0fad45bd21da6c172b0e39bfa80e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "ce8d7b0d1ccfaeeb9b7f26f09ae68940a9e95caefaf31540b95144e22e410156",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "65fdb2490ca553c6035bfee5dcf27b7ecadc7ed373031ca171859e2de694db5c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "fa555b64bdcc01e0013c3d39a70902fc7b81255a112d0ed5411401a0f7cf7741"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/union-alias.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "3833d3212f5d94ba3a1138867e118f545824877305c09262dd0722fb3afa1911",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "06c407e6ff24f23175caf7787b2d45f1642b0919100ac17ddad59f7de097eb8b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "dbcca53c79e851f7777c3a449395275c67a06dffe293c8f2104f545460ae1529",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/union-repair.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "4c482a86e7937a146d7be2fa132b12116ff802b43501effb93969d4f8d312531",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "ba813e9f1eb6b8ec4589adb0c03de409d68e276d5a317afaca107e42e01a2cb4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "93c356a2d029f5eca662ae3a07ea3a8a69ee22ed6f7cfc18728b3beb7cc8be14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/write-authority.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "75eb2a1c4a07ad2187d175c8fbe4a2b02874261a583246911ab08756e7dba71d",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "af7119ef940ee633eace6c4bcd4a15f62ba8a2a795b7f43faed7d4e740b8decb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "dbcca53c79e851f7777c3a449395275c67a06dffe293c8f2104f545460ae1529",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/shared-derived.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "abb03c6ce8aa2d36fbd92a582cf0ec8f745abb8ec9318c83019e3b984d4212e4",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e58996291ed7b96128ffee096eb5263483929f6e3496388414587f1e7a7164d3"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e58996291ed7b96128ffee096eb5263483929f6e3496388414587f1e7a7164d3"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e58996291ed7b96128ffee096eb5263483929f6e3496388414587f1e7a7164d3"
+        }
+      },
+      "rustc_stderr_sha256": "b00e2a5e725d75739e6439a1a40867d8ff099d326dae460da11ee5e573962064"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/expired-read.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "34dcd759cb4e3f9758558e847d9b3466c02364661e17e951d274676a60287953",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        }
+      },
+      "rustc_stderr_sha256": "d3a8c9a7b9a33e45eeb4ad8facab970588bfba8d87bd0a2649ef665858d110c5"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/expired-write.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "9bd52fe8ee688bcb9faa906382e732a444563b7c810e7acd0803cdf8c0a7e429",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        }
+      },
+      "rustc_stderr_sha256": "7507afa33915d275e1404bd41cdebc51f74e741d63b53a469cd5097a81d1a22f"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/uninitialized-source.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "bb286f40b20a671c7068f607bfd2bda0df94ef755ece58b215c32b0a5baf3b3f",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7562530ead53a5de6f1344e4d908edf6c0076e54b3c461583622e6120feb2c1e"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7562530ead53a5de6f1344e4d908edf6c0076e54b3c461583622e6120feb2c1e"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7562530ead53a5de6f1344e4d908edf6c0076e54b3c461583622e6120feb2c1e"
+        }
+      },
+      "rustc_stderr_sha256": "2ab926734d367a603d2cf0e9b9a7668de03ddd5cfc63b9d435f8fde83c7c18ee"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/invalid-bool.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "40ed4e818a10b7ddbb25c0e91e05af4005d26b99c51fdaa3d14c3db0c11733b7",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b94fe437418d3fd0cb05f6c5a94ed82aa8b76433817679709892a6747781c935"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b94fe437418d3fd0cb05f6c5a94ed82aa8b76433817679709892a6747781c935"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b94fe437418d3fd0cb05f6c5a94ed82aa8b76433817679709892a6747781c935"
+        }
+      },
+      "rustc_stderr_sha256": "4057bf10fc50116c5217045ded57b42bd46fa361f3a568b178b2df6868a59bb8"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/uninitialized-bytes.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "4bd9c8ddaf33b1b09df1e6187b0ef2431a8bca802eadd31fb0a5b762897b3cf2",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "58422c4ea917992d8e1018d3700442fa339c3e626c2784aa184db1e1bfa4d0ce"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "58422c4ea917992d8e1018d3700442fa339c3e626c2784aa184db1e1bfa4d0ce"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "58422c4ea917992d8e1018d3700442fa339c3e626c2784aa184db1e1bfa4d0ce"
+        }
+      },
+      "rustc_stderr_sha256": "3a589b8cc9abba7927e0ebf11bad8fad7f2336434f177b0b14ca7622b3d51682"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/ordinary-aligned-read.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "68ab58bd1023fe831edbc15ac9dee3f66b52b71492bec1d3bdf3270d0a810f0e",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e448d5e8cf02e2e66603b26ce5f3b1fc40ccc8f3deb5c3970a00d8226c5c2393"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e448d5e8cf02e2e66603b26ce5f3b1fc40ccc8f3deb5c3970a00d8226c5c2393"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e448d5e8cf02e2e66603b26ce5f3b1fc40ccc8f3deb5c3970a00d8226c5c2393"
+        }
+      },
+      "rustc_stderr_sha256": "9f5a01a21d528805befe23a8403d652330fbb21e5ad35092781e681917558b9c"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/ordinary-aligned-write.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "973372c3dd8058b6ffebff0350575a87409aa34d12613cfe7dc5465388aeb1d7",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5216cd856d91bb6b31e6b3d945d3caca67979d85d1132159d797d12bd23bee05"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5216cd856d91bb6b31e6b3d945d3caca67979d85d1132159d797d12bd23bee05"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5216cd856d91bb6b31e6b3d945d3caca67979d85d1132159d797d12bd23bee05"
+        }
+      },
+      "rustc_stderr_sha256": "c66240d07f26a7d3dafe2e36477db4fd9839bc48b893ee480ffb2e7e1e8f5d0d"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-reference-forbidden.rs",
+      "rustc": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "sha256": "3512867b2da338260ea55ec469b87abe6c3ee1be0d06490ca00c390a8ee6b32d",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "f223589327ae74ee949888626a220afe2dd74339559efe7cc2e5e21d9c28fca3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3fce1232295cbfebd7490caa3816b8a3b779bcc875ddc6bad00b6197efc1705b"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3fce1232295cbfebd7490caa3816b8a3b779bcc875ddc6bad00b6197efc1705b"
+        }
+      },
+      "rustc_stderr_sha256": "60a6ee892feb783e949e531ca5d8fe36970fb9f0b196fb98c88c6a41e4b7af3c"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/read-unsafe.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "0ce61a185fa53e8bd72cf149dcf5ba040ed8aeea07ce89d42412b810cb07c952",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "223c600f49261bcefe4b254cd4fd037ce5bb54734343d42458c350e996dcc5eb"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "223c600f49261bcefe4b254cd4fd037ce5bb54734343d42458c350e996dcc5eb"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "223c600f49261bcefe4b254cd4fd037ce5bb54734343d42458c350e996dcc5eb"
+        }
+      },
+      "rustc_stderr_sha256": "7e158bbf4e539e63552edebd9efbee486aea8b075c3cbba3fc0b2a0489c511fd"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/write-unsafe.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "4454c668bad84285acc8c887694cf4747d94fca7f12593ba4cf0e7d62033d7f5",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bbe9481494458e3114bc3e995808e46c8bfcc7f525428c51d1ccff905f82c59e"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bbe9481494458e3114bc3e995808e46c8bfcc7f525428c51d1ccff905f82c59e"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bbe9481494458e3114bc3e995808e46c8bfcc7f525428c51d1ccff905f82c59e"
+        }
+      },
+      "rustc_stderr_sha256": "1d2b596af9f09816de31fb9961028d48064b597f8a57aa50f1f06f0c47906f44"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/wrong-type.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "17fe41afdc6a28acc11203c02d927b15e3ea7e4414e9f376a90366737a813eee",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6477c0ab88d1c96ad60d3208c0a66df134f29bf423cc3da83548128c5c481c53"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6477c0ab88d1c96ad60d3208c0a66df134f29bf423cc3da83548128c5c481c53"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6477c0ab88d1c96ad60d3208c0a66df134f29bf423cc3da83548128c5c481c53"
+        }
+      },
+      "rustc_stderr_sha256": "875fa24c8ade6a4dc75ed999df707bc2d78ccc785be62744afe2bb5cd81db68c"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/wrong-arity.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "ffde8f158741ff07d3a27e5182c517751e2cb9964ad98a4aa2d9955780d013e1",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a5ca417a1a3e03ea66284899614e859476aadf588c45f2f5165e120d23b3b1d1"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a5ca417a1a3e03ea66284899614e859476aadf588c45f2f5165e120d23b3b1d1"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a5ca417a1a3e03ea66284899614e859476aadf588c45f2f5165e120d23b3b1d1"
+        }
+      },
+      "rustc_stderr_sha256": "ab57fdd7e994fa87dfd5fe2410ceedc0298824d576b6f83a84565b77aee85cb3"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/reified.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "e42bca139d1a6fbf18945ebeaf1f9c685cc87dee7ca08269941a230cdafaea71",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "32fc01ce3b472091b63dd34f97f5ed74e33375aabcca4d67969a8e468cc3405c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "137b617473e5825028844bc52054e5736e03d8bfa113c58b953dac3a4531115a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "11403a50a159e4b9e564a5043608f7afc63664d0021bb6417c876d45720b2378",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/const-reified.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "2fe054cf5735d37838b1c28f79887b267766f2a57cc2a5c5083d9b6a7efe1379",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6d33c5e347c6f87eeef69d8518e4b53080198be482174c82cc68717e444ffaf6"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6d33c5e347c6f87eeef69d8518e4b53080198be482174c82cc68717e444ffaf6"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6d33c5e347c6f87eeef69d8518e4b53080198be482174c82cc68717e444ffaf6"
+        }
+      },
+      "rustc_stderr_sha256": "d7483f6d9c6a1a52afbde57fde56001527e4fc4a2f93e693481dcd5fde2566e8"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/identity.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "292857d1cbeb8a7943b4b6d4667d41027f5fc5f200045afb9efcde2a656a90cc",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "8a02988b8a4060813b4e5e2f95cd9188ed5a7429dfee37f27a6848aa8c8c656d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "4161366bda7b1eafb78a6c572af61a9bab78285487548c1d3d44a68c5927e29a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "163c912360e342452871f68b7e429968f25c6fcde649d556e07a629235608c92",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/shadow.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "c0899613904ba8d3b89a4d03cd209996c594383034049916d0c7dfbf12206cc8",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "16ef76ce9437365c0180469bdf1a345edf47674c399b8614c2c22b438b051430",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "e4bcfb6d10cac898926e0a975029df9a2d649b9813818c35aa6d58750aaa358a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "c2395de133e7e3013f9a4b6cee3b5dc2442e1ae84e6cc83e62d448de450a4115",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/ordinary-control.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "2d1ec6f5cf732cb87e3e9bb2d3ff6f31660f347fa43233ac1aea16f5c3a08602",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "3cedef6e7532901834e535b627bc0063905579f1f3645238ab9b44c5177c52ce",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "ec0ecc3f99abedbb87a69b08fa614aab52f80840c63ae4f0f2408a45c4d543ca",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "2cc0ae3682d28718cda929d7362a8a5550b76d2cbfe4cf8613b541a99e015b77",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/explicit-align-packed-invalid.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "8fea08915f5ca0e7eda7b8ce52a78e84d0acc73c60cd58ce4f8495b8e978ebea",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00a4999ef3486dac09eb495bfa4691273f97d8ee9391b643c3c7bcc8ba940745"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00a4999ef3486dac09eb495bfa4691273f97d8ee9391b643c3c7bcc8ba940745"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00a4999ef3486dac09eb495bfa4691273f97d8ee9391b643c3c7bcc8ba940745"
+        }
+      },
+      "rustc_stderr_sha256": "35315f31222f7f8f9182aad81d0abe47557befc7e06a7e07f521d43abc5cdbd6"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/symbolic-zst.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "146363a2b68b8325ab353896aa62171669f3fb65c38032bd937e534984a10b42",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 0,
+          "stdout_sha256": "4edec6e6ef691d548d4389fa92a361cc4da03bf9b4a875906f6a2e71aa54a716",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "asserted_status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "asserted_status": 0,
+          "stdout_sha256": "079badd3fbc2c17744b5c63b315cdf222b527b8a76e69fc4bcd356dd91edfa56",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/fresh-raw-anchor.rs",
+      "sha256": "9663284080ae165aa80bf7c48f27be944160978ea7610b5021c323cf6ad9846a",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "reason": "Loading a pointer value unaligned cannot relax a later ordinary dereference",
+      "outputs": {
+        "--emit-types": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "79cd75fcdb88c1f0dab535855b163be0668780e4d30206cd3145eafce7be1d8e"
+        },
+        "--emit-lowir": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "79cd75fcdb88c1f0dab535855b163be0668780e4d30206cd3145eafce7be1d8e"
+        },
+        "--emit-constants": {
+          "asserted_status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "79cd75fcdb88c1f0dab535855b163be0668780e4d30206cd3145eafce7be1d8e"
+        }
+      },
+      "rustc_stderr_sha256": "aeb24095377b6251ba6706692f3f8e5ca0faef34bd0b0700e41831f589417cac"
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/unaligned-memory-native/const-results.rs",
+      "status": 0,
+      "sha256": "c852b25fc27011fe2e46430439e3eb351677e4467d0422c035ae84aa84efcc4d",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "d42d98c043fa52232bb456875d9dc52b734e6eaa60a2b8b16072931fcee4c90c",
+      "lowir_sha256": "d955cd8d252c6360345ebfd516c56bd786fc68d6e2bbd52663c153eae37aa599",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/once-operands.rs",
+      "status": 0,
+      "sha256": "60e1bbcb74f19620396ae020d3b2058da953430ce92a08e729df6a46d753dfff",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "2346846c60c102b5cb268ccb60f7cfafc4b97f2ae73a32f691a41ca7703fc464",
+      "lowir_sha256": "09ad9d4d657600e7a9dc4be682cdcbf0d8260955e292913e883c7bb1f557dba9",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/overwrite-no-drop.rs",
+      "status": 0,
+      "sha256": "967f5fa421202f7a6e0c4555c5e42161e87e9daf2fcf304a7215d810eea11ad3",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "e09a001f9506ecfaf16e8c7d918501774bfa7f36796fd4e87a400b6199e6899e",
+      "lowir_sha256": "5f0b39171ea5f64f61e3e72ca864b186d915c7bb521ae0692e617534581906b8",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/owned-products.rs",
+      "status": 0,
+      "sha256": "d58f759ee3eb4c8ab4310766409512e8750e9b51856d0465f37b87698114f915",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "d8c38b40bd974b8692838f55485819ba6ea5b0c8433c8035001e8780e83025f6",
+      "lowir_sha256": "476a296b1858f0cc2bab5ca66422ff93bcad322bfa6cc4fada892d1665f09a48",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/read-forget.rs",
+      "status": 0,
+      "sha256": "9df11dd2fe232c0ad58337294ac0f5a021c441f306f30d4cdee9d754055c4cf5",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "4991cf27ec2630d61651a61ca83feadc9dab05bfd774d46318dbbdc2b7582695",
+      "lowir_sha256": "99ced18bb52130fda51b2c3b9bfd3fbe1d587be741dc72fc2f7505c9ea6c8423",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/reference-values.rs",
+      "status": 0,
+      "sha256": "a0e1467d8232c086f2d24683eed42ad527ba79fe6fc5b59ddec3f7927649342b",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "46cfd2766a9591c8719261fc0989323ca1201ee0a9c71614fb3e705caefa5f68",
+      "lowir_sha256": "80e3491f9870ed05b471f4426b0786b9c50ab23e185b06495972928ea2e1c966",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/reified-generic.rs",
+      "status": 0,
+      "sha256": "e7a117617f9150a48a49e42fb5a9b5eb0488dbfbb95404c40501afd3fa89a9ea",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "306836b5b1b1f48ff9693319fd017b251085e68ebf1c0f48032441e26fee18d4",
+      "lowir_sha256": "5f31e647a2520904328111402f7a4a87f1746fc182c0e0a08e70ba15c44162dd",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/scalar-widths.rs",
+      "status": 0,
+      "sha256": "db8906b233f8c01e79eef0147d8239683df7be7b888c4b41987ed7cb88a4dc1a",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "bdf5f7b932d43a578b8caa9aa554bd972ea8a86099afe5e576d6270a970b6dfb",
+      "lowir_sha256": "41ea3686c7ca1b98caba23813302d0f324a93c8211cb69eae345e092f1fe5de2",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/self-snapshot.rs",
+      "status": 0,
+      "sha256": "de2c2c2d810ee5badcd977af5d85433c128af389ad2b386d2cf4899b518e42b6",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "ef334c9f39fae41468830e7a960c798fe5e27de5a9d8e68c7c9dab125f89ab65",
+      "lowir_sha256": "11ad64d685327312151dc9423eb2eae724f64cdbfbb6de5d78d7cb6023121662",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/wide-reference.rs",
+      "status": 0,
+      "sha256": "2f6ce5f662f2872b933c19d33e53798abbbe25c604bb180bdd1a9f9c9ab63406",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK",
+      "compiled_source_sha256": "94ef267e77b463b72f76f110957eb5047bd1d808b98263d51ba428db3d126a60",
+      "lowir_sha256": "cbccbb42342fcd91fa762f9915c4f99530e6d65b5894d1aa6a8b6735eab0c6cd",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "asserted_rustc_status": 0,
+      "asserted_native_status": 0,
+      "asserted_empty_stdout": true,
+      "asserted_frontend_replay_equal": true,
+      "binaries_pruned_after_success": true
+    }
+  ],
+  "logical_scaling": [
+    {
+      "width": 8,
+      "repeats": 1,
+      "unrelated": 0,
+      "steps": 132,
+      "slots": 36
+    },
+    {
+      "width": 8,
+      "repeats": 8,
+      "unrelated": 0,
+      "steps": 510,
+      "slots": 99
+    },
+    {
+      "width": 8,
+      "repeats": 32,
+      "unrelated": 0,
+      "steps": 1806,
+      "slots": 315
+    },
+    {
+      "width": 8,
+      "repeats": 1,
+      "unrelated": 64,
+      "steps": 132,
+      "slots": 36
+    },
+    {
+      "width": 8,
+      "repeats": 8,
+      "unrelated": 64,
+      "steps": 510,
+      "slots": 99
+    },
+    {
+      "width": 8,
+      "repeats": 32,
+      "unrelated": 64,
+      "steps": 1806,
+      "slots": 315
+    },
+    {
+      "width": 32,
+      "repeats": 1,
+      "unrelated": 0,
+      "steps": 228,
+      "slots": 84
+    },
+    {
+      "width": 32,
+      "repeats": 8,
+      "unrelated": 0,
+      "steps": 606,
+      "slots": 147
+    },
+    {
+      "width": 32,
+      "repeats": 32,
+      "unrelated": 0,
+      "steps": 1902,
+      "slots": 363
+    },
+    {
+      "width": 32,
+      "repeats": 1,
+      "unrelated": 64,
+      "steps": 228,
+      "slots": 84
+    },
+    {
+      "width": 32,
+      "repeats": 8,
+      "unrelated": 64,
+      "steps": 606,
+      "slots": 147
+    },
+    {
+      "width": 32,
+      "repeats": 32,
+      "unrelated": 64,
+      "steps": 1902,
+      "slots": 363
+    },
+    {
+      "width": 128,
+      "repeats": 1,
+      "unrelated": 0,
+      "steps": 612,
+      "slots": 276
+    },
+    {
+      "width": 128,
+      "repeats": 8,
+      "unrelated": 0,
+      "steps": 990,
+      "slots": 339
+    },
+    {
+      "width": 128,
+      "repeats": 32,
+      "unrelated": 0,
+      "steps": 2286,
+      "slots": 555
+    },
+    {
+      "width": 128,
+      "repeats": 1,
+      "unrelated": 64,
+      "steps": 612,
+      "slots": 276
+    },
+    {
+      "width": 128,
+      "repeats": 8,
+      "unrelated": 64,
+      "steps": 990,
+      "slots": 339
+    },
+    {
+      "width": 128,
+      "repeats": 32,
+      "unrelated": 64,
+      "steps": 2286,
+      "slots": 555
+    }
+  ],
+  "active_text": [
+    {
+      "stage": "pa1",
+      "status": 0
+    },
+    {
+      "stage": "pa2",
+      "status": 0
+    },
+    {
+      "stage": "pa3",
+      "status": 0
+    },
+    {
+      "stage": "pa4",
+      "status": 0
+    },
+    {
+      "stage": "pa5",
+      "status": 0
+    },
+    {
+      "stage": "pa6",
+      "status": 0
+    },
+    {
+      "stage": "pa7",
+      "status": 0
+    },
+    {
+      "stage": "pa8",
+      "status": 0
+    },
+    {
+      "stage": "pa9",
+      "status": 0
+    },
+    {
+      "stage": "pa10",
+      "status": 0
+    },
+    {
+      "stage": "pa11",
+      "status": 0
+    },
+    {
+      "stage": "pa12",
+      "status": 0
+    },
+    {
+      "stage": "pa13",
+      "status": 0
+    },
+    {
+      "stage": "pa14",
+      "status": 0
+    },
+    {
+      "stage": "pa15",
+      "status": 0
+    },
+    {
+      "stage": "pa16",
+      "status": 0
+    },
+    {
+      "stage": "pa17",
+      "status": 0
+    },
+    {
+      "stage": "pa18",
+      "status": 0
+    },
+    {
+      "stage": "pa19",
+      "status": 0
+    },
+    {
+      "stage": "pa20",
+      "status": 0
+    },
+    {
+      "stage": "pa21",
+      "status": 0
+    },
+    {
+      "stage": "pa22",
+      "status": 0
+    },
+    {
+      "stage": "pa23",
+      "status": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "fmt",
+      "status": 0
+    },
+    {
+      "name": "clippy",
+      "status": 0
+    },
+    {
+      "name": "audit",
+      "status": 0
+    },
+    {
+      "name": "native",
+      "status": 0
+    },
+    {
+      "name": "scale",
+      "status": 0
+    },
+    {
+      "name": "memory_transfers",
+      "status": 0
+    },
+    {
+      "name": "owned_transfers",
+      "status": 0
+    },
+    {
+      "name": "volatile_intrinsics",
+      "status": 0
+    },
+    {
+      "name": "upstream",
+      "status": 0
+    },
+    {
+      "name": "layout",
+      "status": 0
+    }
+  ],
+  "additional_checks": [
+    "first2/reference-private:2 passed",
+    "third/transfer-private:3 passed",
+    "third/bounds-private:1 passed",
+    "third/unaligned source:31 cases passed",
+    "third/unaligned ordinary-versus-raw loop:6 points passed"
+  ],
+  "evidence": "obj/parallel/pa28/unaligned",
+  "no_full_release_or_benchmark_claim": true
+}

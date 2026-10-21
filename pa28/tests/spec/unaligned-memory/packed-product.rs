@@ -1,0 +1,1 @@
+#[repr(C)]struct V{a:u32,b:u64}#[repr(C,packed)]struct P{a:u8,v:V}const X:u64={let mut p=P{a:3,v:V{a:7,b:37}};unsafe{let v=core::ptr::read_unaligned(&raw const p.v);core::ptr::write_unaligned(&raw mut p.v,v);}p.v.b};fn main(){let _=X;}

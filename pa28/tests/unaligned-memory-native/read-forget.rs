@@ -1,0 +1,1 @@
+struct D{count:*mut u32,value:u64}impl Drop for D{fn drop(&mut self){unsafe{*self.count=*self.count+1;}}}#[repr(C,packed)]struct P{tag:u8,v:D}fn forget<T>(x:T){let _holder=core::mem::ManuallyDrop::new(x);}fn main(){let mut n=0u32;{let p=P{tag:3,v:D{count:&raw mut n,value:37}};let v=unsafe{core::ptr::read_unaligned(&raw const p.v)};forget(p);check(v.value==37&&n==0);}check(n==1);}

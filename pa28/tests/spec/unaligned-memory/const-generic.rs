@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct P{a:u8,b:u32}const unsafe fn take<T>(p:*const T)->T{unsafe{core::ptr::read_unaligned(p)}}const unsafe fn put<T>(p:*mut T,x:T){unsafe{core::ptr::write_unaligned(p,x)}}const X:u32={let mut p=P{a:3,b:7};unsafe{let q=&raw mut p.b;put(q,take(q)+30);p.b}};fn main(){let _=X;}

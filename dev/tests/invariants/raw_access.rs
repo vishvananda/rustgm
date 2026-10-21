@@ -23,6 +23,7 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
         ty,
         union: None,
         raw: Some(RawAccess {
+            alignment: crate::const_eval::memory::RawAlignment::Required,
             location: address.location(),
             ty,
         }),
@@ -119,35 +120,28 @@ fn outside_allocation_bounds(
         .evaluator
         .projection(array, 1, ty)
         .map_err(Failure::message)?;
-    assert_eq!(
-        machine
-            .read(Resolved {
-                address: invalid,
+    for alignment in [
+        crate::const_eval::memory::RawAlignment::Required,
+        crate::const_eval::memory::RawAlignment::Unaligned,
+    ] {
+        let place = Resolved {
+            address: invalid,
+            ty,
+            union: None,
+            raw: Some(RawAccess {
+                alignment,
+                location: invalid.location(),
                 ty,
-                union: None,
-                raw: Some(RawAccess {
-                    location: invalid.location(),
-                    ty
-                })
-            })
-            .err()
-            .map(Failure::message),
-        Some("constant index is out of bounds")
-    );
-    assert_eq!(
-        machine
-            .check_raw_write(Resolved {
-                address: invalid,
-                ty,
-                union: None,
-                raw: Some(RawAccess {
-                    location: invalid.location(),
-                    ty
-                })
-            })
-            .err()
-            .map(Failure::message),
-        Some("constant index is out of bounds")
-    );
+            }),
+        };
+        assert_eq!(
+            machine.read(place).err().map(Failure::message),
+            Some("constant index is out of bounds")
+        );
+        assert_eq!(
+            machine.check_raw_write(place).err().map(Failure::message),
+            Some("constant index is out of bounds")
+        );
+    }
     Ok(())
 }

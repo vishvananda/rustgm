@@ -5,6 +5,11 @@ Planned: no graded fixtures or generated reference outputs yet.
 Remaining families: atomic source operations and orderings; compare-exchange;
 numeric and memory intrinsics; overlap rules.
 
+`unaligned-memory-contract.json` declares the Sized unaligned transfer controls
+under `spec/unaligned-memory/` and the native ownership comparisons under
+`unaligned-memory-native/`. `unaligned-memory-outcomes.json` binds the checked
+inputs and outputs. These development receipts do not activate the assignment.
+
 `backend/` contains independent LowIR capability controls, run by the ignored
 `dev/tests/intrinsic_backend.rs` maintainer test. They do not establish Rust
 source support or activate a grading contract.

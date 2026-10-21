@@ -50,6 +50,17 @@ preserving padding and source/destination overlap. Reified calls use the same
 ordinary hidden-result and argument ABI. CTFE preserves typed values and scalar
 union Image initialization masks without creating a reference.
 
+Canonical `read_unaligned` and `write_unaligned` use the same Sized-only owned
+transfer rules. Their alignment relaxation belongs to that one raw operation;
+exact storage type, bounds, initialization, lifetime, write authority and static
+evaluation context remain checked. Loading a pointer value unaligned does not
+relax a later dereference. Reference formation and ordinary/volatile/atomic
+operations retain their independent alignment rules. Runtime aggregate copies
+use conservative alignment one over the existing ABI snapshots. The declared
+32 source outcomes and ten native comparisons are recorded in
+`tests/unaligned-memory-contract.json`; general reinterpretation and the retained
+numeric/ZST pointer profiles remain separate boundaries.
+
 Typed initializer owners determine static-read eligibility. Const functions
 inherit the caller's evaluation context; named, associated and inline constants
 establish constant context, including a whole-initializer inline block. Nonzero
@@ -150,6 +161,10 @@ after the seed to force a failure; expected old/final values and stale-return
 negative controls check retries on both sides of the high bit and at equality.
 See `tests/atomic-extrema-contract.json` and `docs/pa28-atomic-extrema.md`.
 Additional atomic widths and intrinsic families remain separate work.
+
+The current implementation and release gaps are reconciled in
+`docs/pa27-pa28-remaining.md`; historical checkpoint reviews preserve their
+original observations and explicitly superseded boundaries.
 
 External-open coverage keeps an unknown case separate from real variant IDs and
 runtime discriminants. Matching every current Ordering variant still needs a

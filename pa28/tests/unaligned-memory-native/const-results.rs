@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:3,b:7};unsafe{let q=&raw mut p.b;core::ptr::write_unaligned(q,core::ptr::read_unaligned(q)+30);p.b}};static N:u32=41;#[repr(C,packed)]struct Q{a:u8,r:&'static u32}const R:&u32={let q=Q{a:3,r:&N};unsafe{core::ptr::read_unaligned(&raw const q.r)}};fn main(){check(X==37&&*R==41);}

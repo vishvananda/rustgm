@@ -1,0 +1,426 @@
+{
+  "stage": "planned",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu"
+  },
+  "declared_before_qualification": true,
+  "cases": [
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-read.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "ebf0d7bd6507b97803e091b2d4348eeca2ddb71dac9784ba431f9e8a62f32cfb"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-write.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "34d65f838ce615c76630cf963707179273515f5eb1bb8fffc36b69566a3e6cfa"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-nested.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "b470ad34b4cd70189a785aedd68ca6f0e1670aa6c6940c874901d206e26af363"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/const-generic.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "ede85da93cc03e90f6fc2d19d90673b2edc2138feab1ef9b3138bfd018351a88"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-product.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "4bee804de62238113e769b2f6f7b6caf86cc20d24d35ab89301efeb049027fee"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-array.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "17e4a0036be17fcf8e83916cd5605b93ee4d42b126adc138d9f13995ab342d39"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-reference.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "b67630d76cc8039a810f98d64a9ecdbecbd8e5ef7b9f55752bca073337e5245f"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-pointer.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "f3ace2f0c56d544f5d43d7f55c701c5204b6b45022a7177ae7c3621f246c47e0"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/union-alias.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "3833d3212f5d94ba3a1138867e118f545824877305c09262dd0722fb3afa1911"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/union-repair.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "4c482a86e7937a146d7be2fa132b12116ff802b43501effb93969d4f8d312531"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/write-authority.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "75eb2a1c4a07ad2187d175c8fbe4a2b02874261a583246911ab08756e7dba71d"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/shared-derived.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "abb03c6ce8aa2d36fbd92a582cf0ec8f745abb8ec9318c83019e3b984d4212e4"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/expired-read.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "34dcd759cb4e3f9758558e847d9b3466c02364661e17e951d274676a60287953"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/expired-write.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "9bd52fe8ee688bcb9faa906382e732a444563b7c810e7acd0803cdf8c0a7e429"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/uninitialized-source.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "bb286f40b20a671c7068f607bfd2bda0df94ef755ece58b215c32b0a5baf3b3f"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/invalid-bool.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "40ed4e818a10b7ddbb25c0e91e05af4005d26b99c51fdaa3d14c3db0c11733b7"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/uninitialized-bytes.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "4bd9c8ddaf33b1b09df1e6187b0ef2431a8bca802eadd31fb0a5b762897b3cf2"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/ordinary-aligned-read.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "68ab58bd1023fe831edbc15ac9dee3f66b52b71492bec1d3bdf3270d0a810f0e"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/ordinary-aligned-write.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "973372c3dd8058b6ffebff0350575a87409aa34d12613cfe7dc5465388aeb1d7"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/packed-reference-forbidden.rs",
+      "rustc": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "sha256": "3512867b2da338260ea55ec469b87abe6c3ee1be0d06490ca00c390a8ee6b32d"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/read-unsafe.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "0ce61a185fa53e8bd72cf149dcf5ba040ed8aeea07ce89d42412b810cb07c952"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/write-unsafe.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "4454c668bad84285acc8c887694cf4747d94fca7f12593ba4cf0e7d62033d7f5"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/wrong-type.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "17fe41afdc6a28acc11203c02d927b15e3ea7e4414e9f376a90366737a813eee"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/wrong-arity.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "ffde8f158741ff07d3a27e5182c517751e2cb9964ad98a4aa2d9955780d013e1"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/reified.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "e42bca139d1a6fbf18945ebeaf1f9c685cc87dee7ca08269941a230cdafaea71"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/const-reified.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "2fe054cf5735d37838b1c28f79887b267766f2a57cc2a5c5083d9b6a7efe1379"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/identity.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "292857d1cbeb8a7943b4b6d4667d41027f5fc5f200045afb9efcde2a656a90cc"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/shadow.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "c0899613904ba8d3b89a4d03cd209996c594383034049916d0c7dfbf12206cc8"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/ordinary-control.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "2d1ec6f5cf732cb87e3e9bb2d3ff6f31660f347fa43233ac1aea16f5c3a08602"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/explicit-align-packed-invalid.rs",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "sha256": "8fea08915f5ca0e7eda7b8ce52a78e84d0acc73c60cd58ce4f8495b8e978ebea"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/symbolic-zst.rs",
+      "rustc": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "sha256": "146363a2b68b8325ab353896aa62171669f3fb65c38032bd937e534984a10b42"
+    },
+    {
+      "path": "pa28/tests/spec/unaligned-memory/fresh-raw-anchor.rs",
+      "sha256": "9663284080ae165aa80bf7c48f27be944160978ea7610b5021c323cf6ad9846a",
+      "rustc": 1,
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "reason": "Loading a pointer value unaligned cannot relax a later ordinary dereference"
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/unaligned-memory-native/const-results.rs",
+      "status": 0,
+      "sha256": "c852b25fc27011fe2e46430439e3eb351677e4467d0422c035ae84aa84efcc4d",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/once-operands.rs",
+      "status": 0,
+      "sha256": "60e1bbcb74f19620396ae020d3b2058da953430ce92a08e729df6a46d753dfff",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/overwrite-no-drop.rs",
+      "status": 0,
+      "sha256": "967f5fa421202f7a6e0c4555c5e42161e87e9daf2fcf304a7215d810eea11ad3",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/owned-products.rs",
+      "status": 0,
+      "sha256": "d58f759ee3eb4c8ab4310766409512e8750e9b51856d0465f37b87698114f915",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/read-forget.rs",
+      "status": 0,
+      "sha256": "9df11dd2fe232c0ad58337294ac0f5a021c441f306f30d4cdee9d754055c4cf5",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/reference-values.rs",
+      "status": 0,
+      "sha256": "a0e1467d8232c086f2d24683eed42ad527ba79fe6fc5b59ddec3f7927649342b",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/reified-generic.rs",
+      "status": 0,
+      "sha256": "e7a117617f9150a48a49e42fb5a9b5eb0488dbfbb95404c40501afd3fa89a9ea",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/scalar-widths.rs",
+      "status": 0,
+      "sha256": "db8906b233f8c01e79eef0147d8239683df7be7b888c4b41987ed7cb88a4dc1a",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/self-snapshot.rs",
+      "status": 0,
+      "sha256": "de2c2c2d810ee5badcd977af5d85433c128af389ad2b386d2cf4899b518e42b6",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    },
+    {
+      "path": "pa28/tests/unaligned-memory-native/wide-reference.rs",
+      "status": 0,
+      "sha256": "2f6ce5f662f2872b933c19d33e53798abbbe25c604bb180bdd1a9f9c9ab63406",
+      "source_prefix": "dev/tests/harness/native_references.rs CHECK"
+    }
+  ],
+  "hypothesis_correction": "Original symbolic-zst used repr(align(16)) inside packed, independently rejected E0588. Exact bytes retained as explicit-align-packed-invalid; corrected natural-alignment empty-array control separately declared.",
+  "identities": {
+    "ReadUnaligned": 17,
+    "WriteUnaligned": 18
+  },
+  "safety": "Unsafe",
+  "constant": "Allowed",
+  "representation": "Existing Intrinsic payload; private RawAlignment only; no Value/Origin/Pointer change",
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "repetitions": [
+      1,
+      8,
+      32
+    ],
+    "unrelated_types": [
+      0,
+      64
+    ],
+    "native_shims_per_input": 2,
+    "logical_controls": [
+      "separate linear width/repetition increments",
+      "repetition increment independent of width",
+      "no change with unrelated types",
+      "ordinary-versus-unaligned const-loop overhead at 8/32/128"
+    ]
+  },
+  "retained_native_setup_boundary": "Original read-forget used unresolved core::mem::forget; retained under obj/parallel/pa28/unaligned/native-2559604. Qualified replacement uses the existing canonical ManuallyDrop factory in a local Sized forget helper."
+}

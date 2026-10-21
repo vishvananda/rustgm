@@ -1,0 +1,1 @@
+struct D{count:*mut u32,value:u64}impl Drop for D{fn drop(&mut self){unsafe{*self.count=*self.count+1;}}}#[repr(C,packed)]struct P{tag:u8,v:D}fn main(){let mut n=0u32;{let mut p=P{tag:3,v:D{count:&raw mut n,value:7}};unsafe{core::ptr::write_unaligned(&raw mut p.v,D{count:&raw mut n,value:37});}check(n==0&&p.v.value==37);}check(n==1);}

@@ -1,7 +1,7 @@
 //! Exact typed pointer transfers reuse raw storage checks without creating references.
 use super::{
     Constant, Failure, Machine,
-    memory::{RawAccess, Resolved},
+    memory::{RawAccess, RawAlignment, Resolved},
 };
 use crate::{
     resolve::model::DefId,
@@ -39,7 +39,7 @@ impl Machine<'_, '_> {
         else {
             return Err("pointer memory operation requires a typed raw pointer".into());
         };
-        let writing = intrinsic == Intrinsic::Write;
+        let writing = intrinsic.writes_pointer();
         if mutable != writing
             || inputs.len() != if writing { 2 } else { 1 }
             || writing && (inputs[1] != pointee || result != TypeId::UNIT)
@@ -63,7 +63,7 @@ impl Machine<'_, '_> {
         }
         let ty = self.memory_pointee(intrinsic, instance)?;
         self.charge(1)?;
-        let writing = intrinsic == Intrinsic::Write;
+        let writing = intrinsic.writes_pointer();
         if arguments.len() != if writing { 2 } else { 1 } {
             return Err("pointer memory operation argument count mismatch".into());
         }
@@ -72,6 +72,11 @@ impl Machine<'_, '_> {
             address,
             ty,
             raw: Some(RawAccess {
+                alignment: if intrinsic.is_unaligned() {
+                    RawAlignment::Unaligned
+                } else {
+                    RawAlignment::Required
+                },
                 location: address.location(),
                 ty,
             }),

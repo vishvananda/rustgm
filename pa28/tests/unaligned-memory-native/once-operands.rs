@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct P{a:u8,b:u32}fn pointer(p:*mut u32,n:&mut u32)->*mut u32{*n=*n+1;p}fn argument(n:&mut u32)->u32{*n=*n+1;37}fn main(){let mut p=P{a:3,b:7};let mut n=0;unsafe{core::ptr::write_unaligned(pointer(&raw mut p.b,&mut n),argument(&mut n));let x=core::ptr::read_unaligned(pointer(&raw mut p.b,&mut n));check(x==37);}check(p.b==37&&n==3);}

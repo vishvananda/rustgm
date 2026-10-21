@@ -24,7 +24,7 @@ impl Context<'_> {
         let mut builder = Builder::default();
         let entry = builder.block()?;
         builder.enter(entry)?;
-        let writing = intrinsic == Intrinsic::Write;
+        let writing = intrinsic.writes_pointer();
         if !intrinsic.is_memory() {
             return Err("invalid pointer memory shim identity");
         }
@@ -45,7 +45,11 @@ impl Context<'_> {
                 // The ordinary Rust ABI supplies a fresh result destination or
                 // an owned argument snapshot, so these transfers cannot overlap.
                 builder.copy_object(
-                    span,
+                    if intrinsic.is_unaligned() {
+                        crate::lowir::program::MemorySpan { align: 1, ..span }
+                    } else {
+                        span
+                    },
                     Value {
                         ty: Type::Ptr,
                         operand: Operand::Parameter(1),

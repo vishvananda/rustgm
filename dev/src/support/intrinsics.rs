@@ -18,6 +18,8 @@ pub enum Intrinsic {
     Write,
     AtomicFetchMin,
     AtomicFetchMax,
+    ReadUnaligned,
+    WriteUnaligned,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -35,7 +37,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 17] = [
+    pub const ALL: [Self; 19] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -53,6 +55,8 @@ impl Intrinsic {
         Self::Write,
         Self::AtomicFetchMin,
         Self::AtomicFetchMax,
+        Self::ReadUnaligned,
+        Self::WriteUnaligned,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -74,6 +78,8 @@ impl Intrinsic {
             Self::Write => 14,
             Self::AtomicFetchMin => 15,
             Self::AtomicFetchMax => 16,
+            Self::ReadUnaligned => 17,
+            Self::WriteUnaligned => 18,
         }
     }
     #[must_use]
@@ -96,6 +102,8 @@ impl Intrinsic {
             Self::Write => "write",
             Self::AtomicFetchMin => "fetch_min",
             Self::AtomicFetchMax => "fetch_max",
+            Self::ReadUnaligned => "read_unaligned",
+            Self::WriteUnaligned => "write_unaligned",
         }
     }
     #[must_use]
@@ -104,7 +112,14 @@ impl Intrinsic {
     }
     #[must_use]
     pub const fn is_memory(self) -> bool {
-        matches!(self, Self::Read | Self::Write)
+        matches!(
+            self,
+            Self::Read | Self::Write | Self::ReadUnaligned | Self::WriteUnaligned
+        )
+    }
+    #[must_use]
+    pub const fn is_unaligned(self) -> bool {
+        matches!(self, Self::ReadUnaligned | Self::WriteUnaligned)
     }
     #[must_use]
     pub const fn is_pointer(self) -> bool {
@@ -131,7 +146,10 @@ impl Intrinsic {
     }
     #[must_use]
     pub const fn writes_pointer(self) -> bool {
-        matches!(self, Self::Write | Self::WriteVolatile)
+        matches!(
+            self,
+            Self::Write | Self::WriteVolatile | Self::WriteUnaligned
+        )
     }
     #[must_use]
     pub const fn atomic_order_valid(self, order: super::atomic_ordering::Ordering) -> bool {
@@ -149,7 +167,12 @@ impl Intrinsic {
             | Self::AtomicFetchNand
             | Self::AtomicFetchMin
             | Self::AtomicFetchMax => true,
-            Self::ReadVolatile | Self::WriteVolatile | Self::Read | Self::Write => false,
+            Self::ReadVolatile
+            | Self::WriteVolatile
+            | Self::Read
+            | Self::Write
+            | Self::ReadUnaligned
+            | Self::WriteUnaligned => false,
         }
     }
     #[must_use]

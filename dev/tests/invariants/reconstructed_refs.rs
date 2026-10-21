@@ -51,6 +51,7 @@ fn packed_raw_base_read_and_leaf_reference_require_distinct_alignment() -> Resul
         ty,
         union: None,
         raw: Some(RawAccess {
+            alignment: crate::const_eval::memory::RawAlignment::Required,
             location: address.location(),
             ty: packed,
         }),
@@ -78,6 +79,7 @@ fn packed_raw_base_read_and_leaf_reference_require_distinct_alignment() -> Resul
             .map(Failure::message),
         Some("constant raw shared reference lacks its access anchor")
     );
+    unaligned_field_access(&mut machine, field, ty)?;
     Ok(())
 }
 
@@ -135,4 +137,55 @@ fn reference(
             referent,
         })
         .map_err(str::to_owned)
+}
+
+fn unaligned_field_access(
+    machine: &mut Machine<'_, '_>,
+    address: Constant,
+    ty: TypeId,
+) -> Result<(), String> {
+    let mut place = Resolved {
+        address,
+        ty,
+        union: None,
+        raw: Some(RawAccess {
+            location: address.location(),
+            ty,
+            alignment: crate::const_eval::memory::RawAlignment::Required,
+        }),
+    };
+    assert_eq!(
+        machine.read(place).err().map(Failure::message),
+        Some("constant raw pointer read is unaligned")
+    );
+    place.raw = place.raw.map(|access| RawAccess {
+        alignment: crate::const_eval::memory::RawAlignment::Unaligned,
+        ..access
+    });
+    assert!(machine.read(place).map_err(Failure::message)?.is_some());
+    machine.check_raw_write(place).map_err(Failure::message)?;
+    assert_eq!(
+        machine
+            .check_raw_write(Resolved {
+                address: address.restrict_shared(),
+                ..place
+            })
+            .err()
+            .map(Failure::message),
+        Some("constant raw pointer write is derived from a shared reference")
+    );
+    for mutable in [false, true] {
+        assert_eq!(
+            machine
+                .raw_reference(place, mutable)
+                .err()
+                .map(Failure::message),
+            Some(if mutable {
+                "constant raw mutable reference is unaligned"
+            } else {
+                "constant raw shared reference is unaligned"
+            })
+        );
+    }
+    Ok(())
 }

@@ -17,8 +17,14 @@ enum Cell {
     },
     Empty,
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum RawAlignment {
+    Required,
+    Unaligned,
+}
 #[derive(Clone, Copy)]
 pub(super) struct RawAccess {
+    pub alignment: RawAlignment,
     pub location: Option<LocationId>,
     pub ty: TypeId,
 }
@@ -394,6 +400,7 @@ impl Machine<'_, '_> {
                     union: None,
                     raw: matches!(projection.kind, ProjectionKind::RawDereference { .. })
                         .then_some(RawAccess {
+                            alignment: RawAlignment::Required,
                             location: value.location(),
                             ty: projection.ty,
                         }),

@@ -1,0 +1,1 @@
+#[repr(C)]struct V{a:u8,b:u64,c:u64}#[repr(C,packed)]struct P{tag:u8,v:V}fn main(){let mut p=P{tag:3,v:V{a:5,b:7,c:11}};unsafe{let q=core::ptr::read_unaligned(&raw const p.v);core::ptr::write_unaligned(&raw mut p.v,V{a:13,b:37,c:41});check(q.a==5&&q.b==7&&q.c==11);core::ptr::write_unaligned(&raw mut p.v,q);}check(p.tag==3&&p.v.a==5&&p.v.b==7&&p.v.c==11);}

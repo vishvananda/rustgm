@@ -25,6 +25,7 @@ fn mutable_reference_preserves_authority_and_rejects_shared_input() -> Result<()
         ty,
         union: None,
         raw: Some(RawAccess {
+            alignment: crate::const_eval::memory::RawAlignment::Required,
             location: address.location(),
             ty,
         }),

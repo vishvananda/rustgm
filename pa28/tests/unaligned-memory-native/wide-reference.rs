@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct P<'a>{tag:u8,r:&'a [u32]}fn index()->usize{2}fn main(){let a=[3u32,7,37];let mut p=P{tag:5,r:&a};unsafe{let r=core::ptr::read_unaligned(&raw const p.r);check(r[index()]==37);core::ptr::write_unaligned(&raw mut p.r,r);}let r=unsafe{core::ptr::read_unaligned(&raw const p.r)};check(r[0]==3&&p.tag==5);}

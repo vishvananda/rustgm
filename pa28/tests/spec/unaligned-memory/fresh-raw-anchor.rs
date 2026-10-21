@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct P{a:u8,b:u32}#[repr(C,packed)]struct Q{a:u8,p:*const u32}const X:u32={let p=P{a:3,b:37};let q=Q{a:5,p:&raw const p.b};unsafe{let r=core::ptr::read_unaligned(&raw const q.p);*r}};fn main(){let _=X;}
