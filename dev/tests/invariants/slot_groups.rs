@@ -64,6 +64,7 @@ fn callable_parameter_lists_share_summaries_but_never_scope_coordinates() -> Res
             parameters,
             result: TypeId::primitive(primitive),
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         assert_eq!(slots.collect_inside(&types, callable, 0)?, 4);
         assert_eq!(slots.collect_inside(&types, callable, 1)?, 8);

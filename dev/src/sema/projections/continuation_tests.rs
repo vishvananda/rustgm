@@ -256,12 +256,14 @@ fn callable_proofs_survive_interleaved_waits_without_gaining_permissions() -> Te
                 result: projection,
                 bound_regions: 1,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             })?);
             expected.push(facts.types.intern(Kind::Function {
                 parameters,
                 result: template,
                 bound_regions: 1,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             })?);
         }
         let functions = facts.types.intern_list(&functions)?;

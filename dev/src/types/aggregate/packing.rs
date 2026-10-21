@@ -1,4 +1,4 @@
-//! The packed declaration restriction follows named struct fields, before substitution.
+//! The packed declaration restriction follows named struct and union fields.
 use super::{Definitions, Kind};
 use crate::types::{ItemId, Kind as Type, Store};
 use std::collections::{HashMap, HashSet};
@@ -30,7 +30,7 @@ impl Definitions {
         let mut work = Vec::new();
         let mut steps = 0_usize;
         for definition in &self.entries {
-            if definition.kind != Kind::Struct {
+            if !matches!(definition.kind, Kind::Struct | Kind::Union) {
                 continue;
             }
             if definition.repr.align.is_some() {
@@ -47,7 +47,7 @@ impl Definitions {
                         let field = self
                             .get(item)
                             .ok_or((definition.item, "missing packed nominal field"))?;
-                        if field.kind == Kind::Struct {
+                        if matches!(field.kind, Kind::Struct | Kind::Union) {
                             reverse.entry(item).or_default().push(definition.item);
                         }
                     }

@@ -1,0 +1,217 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/conventions/rust-to-c.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/c-to-rust.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/c-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/c-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/pointer-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/safe-to-unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/unsafe-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/unsafe-to-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/closure-to-c.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/c-call-trait.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/c-pointer-call-trait.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/const-c.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    },
+    {
+      "path": "tests/spec/conventions/nested-abi.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.callable-convention"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      }
+    }
+  ]
+}

@@ -26,6 +26,7 @@ fn callable(context: &mut Context, store: &Store, parameters: &[TermId]) -> Resu
             bound_regions: 2,
             parameters: u32::try_from(parameters.len()).map_err(|_| Error::Overflow)?,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &children,
     )

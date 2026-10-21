@@ -156,6 +156,7 @@ impl Checker<'_> {
         let Some(Type::Function {
             bound_regions,
             unsafe_,
+            convention,
             ..
         }) = self.facts.types.kind(ty)
         else {
@@ -173,6 +174,7 @@ impl Checker<'_> {
                 result,
                 bound_regions,
                 unsafe_,
+                convention,
             },
         )
     }

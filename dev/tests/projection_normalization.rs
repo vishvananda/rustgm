@@ -191,6 +191,7 @@ fn checked_root_inputs_do_not_authorize_a_nested_callable_scope() -> TestResult 
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut fold = Normalizer::default();
     let query = request(fold.start_with_input(&mut store, callable, checked)?)?;
@@ -257,6 +258,7 @@ fn opaque_results_keep_normalized_inputs_and_binder_depths_distinct() -> TestRes
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let query = request(fold.start(&mut store, callable)?)?;
     assert_eq!(query.depth, 1);
@@ -275,6 +277,7 @@ fn opaque_results_keep_normalized_inputs_and_binder_depths_distinct() -> TestRes
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(result, Step::Complete(expected));
     Ok(())
@@ -339,6 +342,7 @@ fn sibling_callable_requests_have_independent_scopes_and_caches() -> TestResult 
             parameters,
             result: TypeId::UNIT,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?);
     }
     let roots = store.intern_list(&callables)?;
@@ -390,6 +394,7 @@ fn empty_callable_binders_preserve_depth_with_linear_iterative_work() -> TestRes
             parameters,
             result: TypeId::UNIT,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?;
     }
     let mut fold = Normalizer::default();
@@ -428,6 +433,7 @@ fn selected_callable_results_open_a_scope_before_normalizing_their_children() ->
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut fold = Normalizer::default();
     let query = request(fold.start(&mut store, outer)?)?;

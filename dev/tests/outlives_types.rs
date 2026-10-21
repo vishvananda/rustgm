@@ -54,6 +54,7 @@ fn nested_binders_export_only_free_requirements() -> Result<(), &'static str> {
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let bounds = Bounds::default();
     let callables = rustgm::types::callable::Templates::default();
@@ -134,6 +135,7 @@ fn live_components_include_nested_free_regions_but_skip_static_bound_and_empty_v
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut query = rustgm::types::outlives::LiveRegions::default();
     assert_eq!(query.get(&store, outer)?, [a, b]);

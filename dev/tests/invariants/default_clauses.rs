@@ -188,6 +188,7 @@ fn default_clauses_defer_every_written_lifetime_occurrence() -> Result {
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let arguments = store.intern_arguments(&[Argument::Type(callable)])?;
     let application = store.intern_trait_application(traits::Application {

@@ -182,6 +182,7 @@ fn callable_signatures_and_unused_arguments_do_not_create_dependencies() -> Resu
         parameters: inputs,
         result: parameter,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     f.fields(ItemId(1), &[signature])?;
     let pointer = f.pointer(U8)?;

@@ -85,6 +85,7 @@ fn outer_captures_lift_through_both_binders_without_capturing_nested_locals() ->
         result,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let clause = quantified(&mut store, function, RegionId::bound(2, 1)?)?;
     let result = reference(&mut store, TypeId::UNIT, RegionId::bound(1, 1)?)?;
@@ -93,6 +94,7 @@ fn outer_captures_lift_through_both_binders_without_capturing_nested_locals() ->
         result,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let mut implied = Implied::default();
     assert_eq!(

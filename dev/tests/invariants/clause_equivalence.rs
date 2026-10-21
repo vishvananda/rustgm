@@ -135,6 +135,7 @@ fn callable(store: &mut Store, slot: u16, nested_subject: bool) -> TestResult<Cl
         result: inner,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     clause(
         store,

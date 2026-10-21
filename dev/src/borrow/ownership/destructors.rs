@@ -39,7 +39,10 @@ pub(super) fn check(
             continue;
         };
         let info = facts.paths.place(place).map_err(error)?;
-        if info.path.is_some_and(|path| protected[path.0 as usize]) {
+        if info.path.is_some_and(|path| {
+            protected[path.0 as usize]
+                || info.union && matches!(types.kind(facts.paths.entries[path.0 as usize].ty), Some(Kind::Adt(item, _)) if custom(item))
+        }) {
             let mut node = body.source;
             node.node = statement.source;
             return Err(Error {

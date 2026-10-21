@@ -12,6 +12,7 @@ fn signature(types: &mut Store, result: TypeId) -> Result<TypeId, &'static str> 
         result,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 

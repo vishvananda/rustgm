@@ -67,6 +67,11 @@ enum State {
     Ready(LayoutId),
     Failed(Error),
 }
+#[derive(Clone, Copy)]
+enum FieldStorage {
+    Product { base: u64, discriminant: u128 },
+    Union,
+}
 
 /// Cached queries belong to one canonical store and stable, completed definitions.
 /// Appending canonical types is allowed; changing an existing definition is not.
@@ -412,7 +417,16 @@ impl Layouts {
                     start: index(self.variants.len())?,
                     end: index(self.variants.len() + 1)?,
                 };
-                let layout = self.fields(types, fields, Repr::default(), 0, 0, false)?;
+                let layout = self.fields(
+                    types,
+                    fields,
+                    Repr::default(),
+                    FieldStorage::Product {
+                        base: 0,
+                        discriminant: 0,
+                    },
+                    false,
+                )?;
                 Ok(Layout {
                     shape: Shape::Aggregate {
                         variants,
@@ -433,12 +447,14 @@ impl Layouts {
         types: &Store,
         fields: ListId,
         repr: Repr,
-        base: u64,
-        discriminant: u128,
+        storage: FieldStorage,
         packing_checked: bool,
     ) -> Result<Layout, &'static str> {
         let start = index(self.offsets.len())?;
-        let mut size = base;
+        let (mut size, discriminant, union) = match storage {
+            FieldStorage::Product { base, discriminant } => (base, discriminant, false),
+            FieldStorage::Union => (0, 0, true),
+        };
         let mut align = repr.align.unwrap_or(1);
         let mut inhabited = true;
         let mut contains_explicit_align = repr.align.is_some();
@@ -450,8 +466,8 @@ impl Layouts {
                 return Err("packed aggregate transitively contains an explicitly aligned type");
             }
             contains_explicit_align |= field.contains_explicit_align;
-            contains_reference |= field.contains_reference;
-            inhabited &= field.inhabited;
+            contains_reference |= !union && field.contains_reference;
+            inhabited &= union || field.inhabited;
             if repr.representation == Representation::Transparent {
                 if field.size != 0 || field.align != 1 {
                     if transparent.is_some() {
@@ -465,6 +481,11 @@ impl Layouts {
                     .packed
                     .map_or(field.align, |pack| pack.min(field.align));
                 align = align.max(field_align);
+                if union {
+                    self.offsets.push(0);
+                    size = size.max(field.size);
+                    continue;
+                }
                 size = padded(size, field_align)?;
                 self.offsets.push(size);
                 size = size
@@ -510,16 +531,24 @@ impl Layouts {
             start: index(self.variants.len())?,
             end: index(self.variants.len() + variants.len())?,
         };
-        if definition.kind == aggregate::Kind::Struct
-            || repr.representation == Representation::Transparent
+        if matches!(
+            definition.kind,
+            aggregate::Kind::Struct | aggregate::Kind::Union
+        ) || repr.representation == Representation::Transparent
         {
             let variant = shape.variant(0).ok_or("aggregate has no field group")?;
             let layout = self.fields(
                 types,
                 variant.fields,
                 repr,
-                0,
-                variant.discriminant,
+                if definition.kind == aggregate::Kind::Union {
+                    FieldStorage::Union
+                } else {
+                    FieldStorage::Product {
+                        base: 0,
+                        discriminant: variant.discriminant,
+                    }
+                },
                 packing_checked,
             )?;
             return Ok(Layout {
@@ -550,8 +579,10 @@ impl Layouts {
                 types,
                 variant.fields,
                 Repr::default(),
-                if inline_tag { tag_layout.size } else { 0 },
-                variant.discriminant,
+                FieldStorage::Product {
+                    base: if inline_tag { tag_layout.size } else { 0 },
+                    discriminant: variant.discriminant,
+                },
                 packing_checked,
             )?;
             size = size.max(layout.size);
@@ -641,8 +672,11 @@ pub(crate) fn validate_repr(
         return Err("transparent representation requires one variant and no other modifiers");
     }
     match definition.kind {
-        aggregate::Kind::Struct if repr.tag.is_some() => {
+        aggregate::Kind::Struct | aggregate::Kind::Union if repr.tag.is_some() => {
             Err("integer representation requires an enum")
+        }
+        aggregate::Kind::Union if repr.representation == Representation::Transparent => {
+            Err("transparent representation is not allowed on a union")
         }
         aggregate::Kind::Enum if repr.packed.is_some() => {
             Err("packed representation requires a struct")

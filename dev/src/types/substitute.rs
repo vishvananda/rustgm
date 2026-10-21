@@ -155,6 +155,7 @@ impl Bound {
             parameters,
             result,
             unsafe_,
+            convention,
             ..
         }) = store.kind(ty)
         else {
@@ -178,6 +179,7 @@ impl Bound {
             parameters,
             result,
             unsafe_,
+            convention,
         })
     }
 

@@ -40,6 +40,11 @@ impl Checker<'_> {
                 .insert(item, attributes.equality);
         }
         let (kind, groups) = self.groups(key)?;
+        if kind == aggregate::Kind::Union
+            && attributes.equality != crate::types::equality::Properties::default()
+        {
+            return Err(self.error(key, "equality traits cannot be derived for a union"));
+        }
         self.nominals
             .index
             .insert(item, self.nominals.entries.len());

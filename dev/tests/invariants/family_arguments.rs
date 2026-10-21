@@ -73,6 +73,7 @@ fn mixed_arguments_preserve_anonymous_captures_and_nested_local_binders() -> Tes
         result: array,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let length = store.intern_constant(Constant { ty: SIZE, bits: 3 })?;
     let parent_arguments = store.intern_arguments(&[
@@ -111,6 +112,7 @@ fn mixed_arguments_preserve_anonymous_captures_and_nested_local_binders() -> Tes
         result: array,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     assert_eq!(result, expected);
     let before = fold.steps;

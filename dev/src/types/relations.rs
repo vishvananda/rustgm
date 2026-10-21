@@ -595,7 +595,15 @@ impl<'a> Constraints<'a> {
                 self.child(relation, ea, eb, Variance::Invariant)?;
             }
             (Kind::Function { .. }, Kind::Function { .. }) => self.function(relation, a, b)?,
-            (Kind::FunctionItem { signature, .. }, Kind::Function { .. }) => {
+            (Kind::FunctionItem { signature, .. }, Kind::Function { .. })
+            | (
+                Kind::Closure {
+                    signature,
+                    environment: TypeId::UNIT,
+                    ..
+                },
+                Kind::Function { .. },
+            ) => {
                 self.child(relation, signature, relation.expected, covariant)?;
             }
             (
@@ -654,18 +662,20 @@ impl<'a> Constraints<'a> {
                 parameters: ap,
                 result: ar,
                 unsafe_: au,
+                convention: av,
             },
             Kind::Function {
                 bound_regions: bc,
                 parameters: bp,
                 result: br,
                 unsafe_: bu,
+                convention: bv,
             },
         ) = (a, b)
         else {
             return Err(Error::Identity);
         };
-        if au != bu {
+        if au != bu || av != bv {
             return Err(Error::Identity);
         }
         let a = self.types.list(ap).ok_or(Error::Identity)?;

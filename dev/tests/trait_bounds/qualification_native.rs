@@ -1,6 +1,11 @@
 //! Qualified callable operands execute the explicitly selected trait implementation.
 const EXECUTIONS: &[(&str, &str, bool)] = &[
     (
+        "qualification-run-unsafe",
+        "trait A{unsafe fn f(self)->u8;}impl A for u8{unsafe fn f(self)->u8{self}}fn main(){let x=unsafe{<u8 as A>::f(7)};check(x==7);}",
+        false,
+    ),
+    (
         "qualification-run-primitive",
         "trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{self+1}}fn main(){let x=<u8 as A>::f(3);check(x==4);}",
         false,

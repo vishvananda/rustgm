@@ -145,6 +145,7 @@ fn a_shape_fold_still_erases_unused_callable_binders() -> Result<(), Error> {
             parameters,
             result: TypeId::primitive(Primitive::U8),
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })
         .map_err(|_| Error::InvalidIdentity)?;
     let mut context = Context::default();

@@ -70,6 +70,7 @@ fn callable(facts: &mut Declarations, parameters: &[TypeId], count: u32) -> Test
         result: TypeId::UNIT,
         bound_regions: count,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?)
 }
 

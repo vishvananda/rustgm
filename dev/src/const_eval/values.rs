@@ -56,6 +56,11 @@ impl Machine<'_, '_> {
                     .ok_or("missing constant scalar")?,
             ),
             Rvalue::Unit => self.evaluator.fields(&[], None)?,
+            Rvalue::Union { .. } => {
+                return Err(
+                    "union byte initialization in constant execution is not implemented".into(),
+                );
+            }
             Rvalue::Aggregate { fields, variant } => {
                 let arguments = self.arguments(frame, fields)?;
                 self.evaluator.fields(&arguments, variant)?

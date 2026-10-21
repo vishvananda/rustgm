@@ -287,12 +287,22 @@ fn qualification_preserves_context_and_implementation_requirements()
 }
 
 #[test]
-fn unsafe_qualified_calls_retain_the_pa27_boundary() -> Result<(), Box<dyn std::error::Error>> {
-    let source = "trait A{unsafe fn f(self)->u8;}impl A for u8{unsafe fn f(self)->u8{self}}fn main(){let x=unsafe{<u8 as A>::f(7)};}";
-    super::rustc::qualify("qualified-unsafe-pa27", source, true)?;
-    let error = super::prove(source)
-        .err()
-        .ok_or("unsafe calls are not part of PA19 execution")?;
-    assert!(error.to_string().contains("unsafe"), "{error}");
-    Ok(())
+fn unsafe_qualified_calls_require_lexical_permission() -> Result<(), Box<dyn std::error::Error>> {
+    cases(&[
+        (
+            "qualified-unsafe-block",
+            "trait A{unsafe fn f(self)->u8;}impl A for u8{unsafe fn f(self)->u8{self}}fn main(){let x=unsafe{<u8 as A>::f(7)};}",
+            true,
+        ),
+        (
+            "qualified-unsafe-missing",
+            "trait A{unsafe fn f(self)->u8;}impl A for u8{unsafe fn f(self)->u8{self}}fn main(){let x=<u8 as A>::f(7);}",
+            false,
+        ),
+        (
+            "qualified-unsafe-nested-item",
+            "trait A{unsafe fn f(self)->u8;}impl A for u8{unsafe fn f(self)->u8{self}}fn main(){unsafe{fn nested(){let x=<u8 as A>::f(7);}nested();}}",
+            false,
+        ),
+    ])
 }

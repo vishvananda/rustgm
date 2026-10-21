@@ -205,7 +205,7 @@ impl Lower<'_, '_> {
             return self
                 .project_slice_pattern(id, base.ok_or("slice pattern has no data address")?);
         }
-        if let ProjectionKind::Field(field) = projection.kind {
+        if let ProjectionKind::Field(field) | ProjectionKind::UnionField(field) = projection.kind {
             return self.project_field(id, base, base_type, field);
         }
         let layout = self.context.layout(base_type)?;
@@ -219,7 +219,9 @@ impl Lower<'_, '_> {
             | ProjectionKind::Subslice { .. } => {
                 return Err("reference projection escaped its typed dispatch");
             }
-            ProjectionKind::Field(_) => return Err("field projection escaped its typed dispatch"),
+            ProjectionKind::Field(_) | ProjectionKind::UnionField(_) => {
+                return Err("field projection escaped its typed dispatch");
+            }
             ProjectionKind::IndexParameter { .. } => {
                 return Err("symbolic array bound requires concrete instantiation");
             }
@@ -347,6 +349,24 @@ impl Lower<'_, '_> {
         start
             .checked_mul(stride)
             .ok_or("pattern array offset overflow")
+    }
+    pub(super) fn union(
+        &mut self,
+        ty: TypeId,
+        field: Selection,
+        value: ValueId,
+    ) -> Result<Selected, &'static str> {
+        let Some(address) = self.allocate(ty)? else {
+            return Ok(Selected::Unit);
+        };
+        let (_, offset) = self.context.place_field(ty, field)?;
+        let destination = self.field_address(address, offset, None)?;
+        self.write(
+            Some(destination),
+            self.value(value)?,
+            self.body.values[value.0 as usize].ty,
+        )?;
+        Ok(Selected::Object(address))
     }
     pub(super) fn aggregate(
         &mut self,

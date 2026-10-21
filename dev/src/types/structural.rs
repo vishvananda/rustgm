@@ -160,14 +160,16 @@ pub(crate) trait Compare<'t> {
                     parameters: a,
                     result: ar,
                     unsafe_: au,
+                    convention: av,
                 },
                 Kind::Function {
                     bound_regions: y,
                     parameters: b,
                     result: br,
                     unsafe_: bu,
+                    convention: bv,
                 },
-            ) if x == y && au == bu => {
+            ) if x == y && au == bu && av == bv => {
                 let depth = depth.checked_add(1).ok_or(Error::Budget)?;
                 self.child(ar, br, depth)?;
                 return self.list(a, b, depth);

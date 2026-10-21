@@ -29,7 +29,7 @@ impl Lower<'_, '_> {
             | ProjectionKind::RawDereference { .. }
             | ProjectionKind::FromEnd { .. }
             | ProjectionKind::Subslice { .. } => Ok(Step::Dynamic(id)),
-            ProjectionKind::Field(field) => {
+            ProjectionKind::Field(field) | ProjectionKind::UnionField(field) => {
                 let (_, offset) = self
                     .context
                     .place_field(self.place_type(projection.base)?, field)?;

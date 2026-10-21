@@ -215,6 +215,7 @@ fn signature(
         parameters,
         result,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 
@@ -579,6 +580,7 @@ fn one_projection_under_different_binders_has_separate_substitution_results() ->
         parameters,
         result: original,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut fold = Bound::new(vec![RegionId(9)]);
     let at_root = fold.apply(&mut store, original)?;
@@ -606,6 +608,7 @@ fn one_projection_under_different_binders_has_separate_substitution_results() ->
             parameters,
             result,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })
     );
     assert_ne!(at_root, result);

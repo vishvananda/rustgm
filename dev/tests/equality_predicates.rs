@@ -123,6 +123,7 @@ fn substitution_shares_both_roots_and_preserves_local_binders() -> TestResult {
         parameters,
         result: capture,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let predicate = Predicate {
         ty,
@@ -144,6 +145,7 @@ fn substitution_shares_both_roots_and_preserves_local_binders() -> TestResult {
         parameters,
         result: capture,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(
         substituted,

@@ -65,6 +65,7 @@ fn independent_nested_debts_survive_local_references_tuples_and_callable_binders
                         parameters,
                         result: TypeId::UNIT,
                         unsafe_: false,
+                        convention: rustgm::types::callable::Convention::RUST,
                     })?
                 }
             };

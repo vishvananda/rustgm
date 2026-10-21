@@ -10,6 +10,76 @@ pub(super) struct Context {
 }
 
 impl Checker<'_> {
+    pub(super) fn mark_union_write(&mut self, mut node: NodeId) -> Result<(), Error> {
+        if !self.facts.aggregates.has_unions() {
+            return Ok(());
+        }
+        for _ in 0..1_000_000 {
+            match self.kind(node) {
+                Kind::Group(base) | Kind::Attributed { value: base, .. } => node = base,
+                Kind::Field { value: base, .. } => {
+                    self.state.union_write_places.insert(node);
+                    node = base;
+                }
+                _ => return Ok(()),
+            }
+        }
+        Err(self.error(node, "union store place work budget exceeded"))
+    }
+    pub(super) fn check_union_access(&self, node: NodeId) -> Result<(), Error> {
+        if self.state.union_write_places.contains(&node)
+            || self.state.raw_address_places.contains(&node)
+        {
+            Ok(())
+        } else {
+            self.require_unsafe(node, "union field access requires an unsafe context")
+        }
+    }
+    pub(super) fn check_union_receiver(
+        &self,
+        node: NodeId,
+        mut place: NodeId,
+    ) -> Result<(), Error> {
+        if !self.facts.aggregates.has_unions()
+            || !self.facts.autoderefs.contains_key(&self.key(node))
+        {
+            return Ok(());
+        }
+        for _ in 0..1_000_000 {
+            match self.kind(place) {
+                Kind::Group(value) | Kind::Attributed { value, .. } => place = value,
+                Kind::Field { value, .. } => {
+                    let union = self
+                        .facts
+                        .node(self.key(place))
+                        .and_then(|f| f.operation)
+                        .and_then(|op| {
+                            if let super::Operation::Field {
+                                field: crate::sema::members::Selection::Nominal(field),
+                            } = op
+                            {
+                                Some(field)
+                            } else {
+                                None
+                            }
+                        })
+                        .and_then(|field| self.facts.members.variant(field))
+                        .map(|variant| self.facts.members.variants[variant.0 as usize].owner)
+                        .and_then(|owner| self.facts.aggregates.get(owner))
+                        .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union);
+                    if union {
+                        self.require_unsafe(
+                            place,
+                            "union field access requires an unsafe context",
+                        )?;
+                    }
+                    place = value;
+                }
+                _ => return Ok(()),
+            }
+        }
+        Err(self.error(node, "union receiver place work budget exceeded"))
+    }
     pub(super) fn enter_safety(&mut self, node: NodeId) -> Result<(), Error> {
         if matches!(
             self.kind(node),

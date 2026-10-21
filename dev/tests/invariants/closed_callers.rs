@@ -200,6 +200,7 @@ fn family_and_parent_aliases_share_one_mapping_without_opening_callable_locals()
             result: TypeId::UNIT,
             bound_regions: 1,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let own = facts.types.intern_arguments(&[
             Argument::Lifetime(outer),
@@ -247,6 +248,7 @@ fn family_and_parent_aliases_share_one_mapping_without_opening_callable_locals()
             result: TypeId::UNIT,
             bound_regions: 1,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let expected = facts.types.intern_arguments(&[
             Argument::Lifetime(RegionId(100)),

@@ -160,6 +160,7 @@ fn parameter_instantiation_preserves_projection_argument_kinds_and_binders() -> 
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut context = Context::default();
     let value = context.variable(Domain::Any)?;

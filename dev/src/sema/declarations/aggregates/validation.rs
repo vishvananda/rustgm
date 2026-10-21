@@ -63,6 +63,7 @@ impl Checker<'_> {
                 )
             })?;
             let kind = definition.kind;
+            let mut union_fields = super::unions::Fields::default();
             let packed = definition.repr.packed.is_some();
             let owner = crate::resolve::model::DefId(item.0);
             let environment = self.facts.generics.environments.get(&owner).cloned();
@@ -87,6 +88,9 @@ impl Checker<'_> {
                     }
                     if packed && !properties.sized {
                         self.validate_packed_tail(owner, field)?;
+                    }
+                    if kind == crate::types::aggregate::Kind::Union {
+                        self.validate_union_field(field, &mut proof, &mut union_fields)?;
                     }
                 }
             }

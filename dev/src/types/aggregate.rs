@@ -13,6 +13,7 @@ use std::collections::HashMap;
 pub enum Kind {
     Struct,
     Enum,
+    Union,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Representation {
@@ -53,6 +54,7 @@ pub struct Definitions {
     pending_discriminants: HashMap<ItemId, std::collections::HashSet<u32>>,
     discriminant_indexing: usize,
     discriminant_publications: usize,
+    unions: bool,
     packing_checked: bool,
     projected_templates: bool,
     entries: Vec<Definition>,
@@ -95,6 +97,10 @@ impl Definitions {
     #[must_use]
     pub fn discriminant_work(&self) -> (usize, usize) {
         (self.discriminant_indexing, self.discriminant_publications)
+    }
+    #[must_use]
+    pub const fn has_unions(&self) -> bool {
+        self.unions
     }
     /// Declaration policy suppresses implicit field cleanup, preserving an explicit destructor.
     #[must_use]
@@ -198,8 +204,8 @@ impl Definitions {
         if self.index.contains_key(&item) {
             return Err("aggregate definition already complete");
         }
-        if kind == Kind::Struct && variants.len() != 1 {
-            return Err("a struct has exactly one field group");
+        if matches!(kind, Kind::Struct | Kind::Union) && variants.len() != 1 {
+            return Err("a struct or union has exactly one field group");
         }
         let id = u32::try_from(self.entries.len()).map_err(|_| "too many aggregate definitions")?;
         let start =
@@ -220,6 +226,7 @@ impl Definitions {
             end,
         });
         self.index.insert(item, id);
+        self.unions |= kind == Kind::Union;
         Ok(())
     }
     #[must_use]

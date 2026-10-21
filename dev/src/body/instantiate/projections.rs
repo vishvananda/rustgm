@@ -226,6 +226,7 @@ fn rewrite_contract(
             parameters,
             result,
             unsafe_,
+            convention,
         }) = facts.types.kind(*signature)
         else {
             return Err("instance contract has no function signature");
@@ -246,6 +247,7 @@ fn rewrite_contract(
             parameters,
             result,
             unsafe_,
+            convention,
         })?;
     }
     for clause in &mut contract.type_assumptions {

@@ -51,7 +51,7 @@ pub(super) fn analyze(
             };
             if matches!(
                 unit.configured.ast.items[item as usize].kind,
-                ItemKind::Struct { .. } | ItemKind::Enum { .. }
+                ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. }
             ) {
                 let key = NodeKey { file, node };
                 representations.insert(key, parse(report, key, index)?);

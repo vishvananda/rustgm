@@ -276,6 +276,12 @@ impl Machine<'_, '_> {
                     self.evaluator
                         .projection(address, u64::from(index), projection.ty)?
                 }
+                ProjectionKind::UnionField(_) => {
+                    return Err(
+                        "union field reinterpretation in constant execution is not implemented"
+                            .into(),
+                    );
+                }
                 ProjectionKind::ConstantIndex(index) => {
                     self.evaluator.projection(address, index, projection.ty)?
                 }

@@ -594,6 +594,7 @@ fn body_proofs_restore_caller_captures_beneath_nested_callable_locals() -> Resul
             result: TypeId::UNIT,
             bound_regions: 1,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let arguments = f.facts.types.intern_arguments(&[
             Argument::Lifetime(RegionId::bound(0, 0)?),

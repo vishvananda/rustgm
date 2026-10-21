@@ -75,6 +75,9 @@ impl Checker<'_> {
                 self.derived_copy(entry.item, entry.key, true, entry.repr.packed.is_some())?;
             }
             if selected.clone_ {
+                if entry.kind == crate::types::aggregate::Kind::Union && !selected.copy {
+                    return Err(self.error(entry.key, "derived Clone for a union requires Copy"));
+                }
                 self.derived_copy(entry.item, entry.key, false, entry.repr.packed.is_some())?;
             }
         }

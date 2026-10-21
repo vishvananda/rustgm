@@ -46,6 +46,7 @@ pub fn select(report: &mut Report, facts: &Declarations) -> Result<DefId, Error>
         parameters,
         result,
         unsafe_,
+        convention,
     }) = facts.types.kind(signature)
     else {
         return Err(error("invalid main signature"));
@@ -57,6 +58,7 @@ pub fn select(report: &mut Report, facts: &Declarations) -> Result<DefId, Error>
             .ok_or_else(|| error("missing main parameter list"))?
             .is_empty()
         || unsafe_
+        || convention != crate::types::callable::Convention::RUST
         || (result != TypeId::UNIT && result != TypeId::NEVER)
     {
         return Err(error("main must be safe, parameterless and return () or !"));

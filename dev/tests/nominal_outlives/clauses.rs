@@ -205,6 +205,7 @@ fn nested_callable_locals_survive_removing_an_unused_outer_quantifier() -> TestR
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let projection = projected(&mut fixture, function)?;
     let value = clause(
@@ -226,6 +227,7 @@ fn nested_callable_locals_survive_removing_an_unused_outer_quantifier() -> TestR
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let ty = projected(&mut fixture, function)?;
     assert_eq!(

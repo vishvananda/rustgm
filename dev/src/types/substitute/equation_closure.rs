@@ -200,6 +200,7 @@ mod tests {
             parameters,
             result: reference,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         assert_eq!(fold.apply(&mut store, function)?, function);
         Ok(())

@@ -26,6 +26,7 @@ impl Index {
                 Some(Step::Field(Selection::Nominal(id))) => {
                     write!(out, " nominal-field={}", id.0)?;
                 }
+                Some(Step::UnionField(field)) => write!(out, " union-field={field:?}")?,
                 Some(Step::Element(index)) => write!(out, " index={index}")?,
                 Some(Step::Range(start, end)) => write!(out, " range={start}..{end}")?,
                 Some(Step::FromEnd { offset, minimum }) => {

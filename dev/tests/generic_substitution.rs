@@ -41,6 +41,7 @@ fn joint_substitution_does_not_capture_inserted_types_or_reprocess_their_regions
         parameters,
         result: t,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let argument = reference(&mut store, RegionId::bound(0, 3)?, byte)?;
     let args = store.intern_arguments(&[
@@ -59,6 +60,7 @@ fn joint_substitution_does_not_capture_inserted_types_or_reprocess_their_regions
         parameters,
         result: argument,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(result, expected);
     let steps = substitution.steps;
@@ -114,6 +116,7 @@ fn captured_lifetime_slots_do_not_renumber_named_type_or_const_arguments()
         parameters,
         result: t,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let argument = reference(&mut store, RegionId::bound(0, 6)?, TypeId::UNIT)?;
     let length = store.intern_constant(Constant {
@@ -141,6 +144,7 @@ fn captured_lifetime_slots_do_not_renumber_named_type_or_const_arguments()
         parameters,
         result: shifted,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(actual, expected);
     let steps = substitution.steps;
@@ -172,6 +176,7 @@ fn isolated_default_substitution_preserves_other_slots_and_every_binder() -> Res
         parameters,
         result: target,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let argument = reference(&mut store, RegionId::bound(0, 3)?, TypeId::UNIT)?;
     let mut substitution = Bound::parameter_only(&store, id, Argument::Type(argument))?;
@@ -184,6 +189,7 @@ fn isolated_default_substitution_preserves_other_slots_and_every_binder() -> Res
         parameters,
         result: shifted,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(result, expected);
     let steps = substitution.steps;
@@ -277,6 +283,7 @@ fn inserted_callable_binders_stay_local_and_shifted_arguments_share_work()
         parameters,
         result: outer,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let parameters = store.intern_list(&[a, b])?;
     let template = store.intern(Kind::Function {
@@ -284,6 +291,7 @@ fn inserted_callable_binders_stay_local_and_shifted_arguments_share_work()
         parameters,
         result: a,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let args = store.intern_arguments(&[Argument::Type(argument), Argument::Type(argument)])?;
     let result = Bound::joint(&store, owner, args)?.apply(&mut store, template)?;
@@ -294,6 +302,7 @@ fn inserted_callable_binders_stay_local_and_shifted_arguments_share_work()
         parameters,
         result: outer,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let parameters = store.intern_list(&[shifted, shifted])?;
     assert_eq!(
@@ -302,7 +311,8 @@ fn inserted_callable_binders_stay_local_and_shifted_arguments_share_work()
             bound_regions: 0,
             parameters,
             result: shifted,
-            unsafe_: false
+            unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })
     );
     Ok(())
@@ -332,6 +342,7 @@ fn missing_arguments_and_binder_overflow_fail_without_fabricating_results()
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let args = store.intern_arguments(&[Argument::Type(argument)])?;
     assert!(
@@ -382,6 +393,7 @@ fn extending_a_prefix_preserves_simultaneous_substitutions_and_cached_binder_shi
         result: t,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let shifted = reference(&mut store, RegionId::bound(1, 5)?, u)?;
     let local = reference(&mut store, RegionId::bound(0, 0)?, shifted)?;
@@ -391,6 +403,7 @@ fn extending_a_prefix_preserves_simultaneous_substitutions_and_cached_binder_shi
         result: shifted,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(prefix.apply(&mut store, function)?, expected);
     assert!(

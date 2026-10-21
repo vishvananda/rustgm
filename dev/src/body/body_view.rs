@@ -116,6 +116,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
                 write!(out, " raw-dereference mutable={mutable}")?;
             }
             ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
+            ProjectionKind::UnionField(field) => write!(out, " union-field={field:?}")?,
             ProjectionKind::Index { index, length } => {
                 write!(out, " index=v{} length={length}", index.0)?;
             }
@@ -221,6 +222,7 @@ pub(super) fn place(value: Place, out: &mut impl Write) -> io::Result<()> {
 }
 fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
     match value {
+        Rvalue::Union { field, value } => write!(out, "union field={field:?} value=v{}", value.0),
         Rvalue::Aggregate { variant, fields } => {
             write!(out, "aggregate")?;
             if let Some(variant) = variant {

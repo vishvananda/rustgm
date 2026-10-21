@@ -75,6 +75,19 @@ impl Queries<'_> {
                         self.error(Query::Node(key), "missing constant constructor selection")
                     );
                 };
+                let owner = self.typing.facts.members.variants[variant.0 as usize].owner;
+                if self
+                    .typing
+                    .facts
+                    .aggregates
+                    .get(owner)
+                    .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union)
+                {
+                    return Err(self.error(
+                        Query::Node(key),
+                        "union byte initialization in constant execution is not implemented",
+                    ));
+                }
                 Some(Expression::Record {
                     variant,
                     fields,

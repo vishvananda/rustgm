@@ -21,7 +21,7 @@ impl Lower<'_, '_> {
             let address = self.dereference(base, projection.ty)?;
             return Ok((address, self.load_metadata(base, projection.ty)?));
         }
-        if let ProjectionKind::Field(field) = projection.kind {
+        if let ProjectionKind::Field(field) | ProjectionKind::UnionField(field) = projection.kind {
             let (_, offset) = self
                 .context
                 .place_field(self.place_type(projection.base)?, field)?;

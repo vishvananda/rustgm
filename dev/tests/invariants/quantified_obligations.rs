@@ -364,6 +364,7 @@ fn nested_callable_locals_remain_distinct_from_the_quantified_capture() -> TestR
             result: TypeId::UNIT,
             bound_regions: 1,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let arguments = facts.types.intern_arguments(&[
             Argument::Lifetime(RegionId::bound(0, 0)?),

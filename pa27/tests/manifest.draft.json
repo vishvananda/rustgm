@@ -1752,6 +1752,1014 @@
       "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
     },
     {
+      "path": "tests/spec/unions/unsafe-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/safe-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/safe-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/safe-compound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/unsafe-compound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/single-init.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/empty-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/multiple-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/update-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/empty-union.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/nondrop-noncopy-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/copy-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/mut-reference-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/tuple-mut-reference-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/array-mut-reference-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/manuallydrop-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/fake-manuallydrop.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/copy-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/unbound-generic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/c-layout.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/packed-layout.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/packed-field-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/packed-raw-field-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/transparent-layout.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/borrow-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/borrow-unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/raw-address-safe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/uninit-field-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/uninit-field-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/nested-field-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/array-element-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/different-field-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/same-field-subfield-disjoint.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/different-field-subfield-overlap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/union-move-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/union-move-reuse.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/pattern-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/pattern-unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/pattern-two-fields.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/pattern-rest.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/invalid-bool-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.const-union-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/uninitialized-byte-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.const-union-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/raw-nested-field-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/raw-array-element-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/index-field-write-unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/uninit-field-write-unsafe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/wildcard-pattern-safe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/reference-field-store.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/tuple-reference-field-store.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/clone-without-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/clone-with-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/derive-equality.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/uninhabited-union-match.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/uninhabited-union-wildcard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/packed-aligned-union.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/packed-aligned-union-container.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/grouped-wildcard-safe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/nested-wildcard-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/uninit-wildcard-safe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/unions/raw-uninit-union-address.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/destructor-field-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/unused-invalid-bool-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.const-validity-uncovered"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:UNCOVERED_CONST_INITIALIZERS"
+    },
+    {
+      "path": "tests/spec/unions/unused-uninitialized-byte-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.const-validity-uncovered"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:UNCOVERED_CONST_INITIALIZERS"
+    },
+    {
+      "path": "tests/spec/unions-native/shared-bytes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_storage_executes",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/unions-native/float-bits.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_storage_executes",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/unions-native/value-transfer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_storage_executes",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/unions-native/raw-field-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_storage_executes",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/unions-native/union-destructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_storage_executes",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/policies/modules/external-inherit/main.rs",
       "exit_status": 1,
       "features": [
@@ -1762,6 +2770,10 @@
         "status": 1,
         "emit": "obj"
       },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/policies/modules/external-inherit/m.rs"
+      ],
       "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES"
     },
     {
@@ -1775,6 +2787,10 @@
         "status": 0,
         "emit": "obj"
       },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/policies/modules/external-outer-override/m.rs"
+      ],
       "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES",
       "native": {
         "kind": "codegen",
@@ -1792,6 +2808,10 @@
         "status": 0,
         "emit": "obj"
       },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/policies/modules/external-inner-override/m.rs"
+      ],
       "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES",
       "native": {
         "kind": "codegen",
@@ -1809,7 +2829,26 @@
         "status": 1,
         "emit": "obj"
       },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/policies/modules/external-forbid/m.rs"
+      ],
       "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES"
+    },
+    {
+      "path": "tests/spec/unions/valid-bool-const-unsupported.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.const-union-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid union byte reinterpretation is explicitly unsupported until const memory tracks initialized bytes and provenance."
+      },
+      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_constant_initialization_has_an_explicit_boundary"
     }
   ]
 }

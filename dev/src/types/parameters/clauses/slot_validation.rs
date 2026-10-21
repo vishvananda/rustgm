@@ -45,6 +45,7 @@ fn closed_binder_flags_reach_subjects_trait_arguments_and_equality_results()
             result: TypeId::UNIT,
             bound_regions: count,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         assert_eq!(store.escaping_binders(function), Some(0));
         let arguments = store.intern_arguments(&[Argument::Type(function)])?;

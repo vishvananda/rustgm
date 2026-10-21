@@ -252,6 +252,7 @@ impl Checker<'_> {
                 parameters,
                 result,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
                 bound_regions: u32::from(kind == Hook::Index),
             },
         )?;

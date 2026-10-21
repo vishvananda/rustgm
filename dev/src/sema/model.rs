@@ -317,7 +317,15 @@ pub struct StoredFieldWork {
     /// Charged recipe storage budget, not a measurement of allocator overhead.
     pub retained_bytes: usize,
 }
+/// Actual union declaration checks, separate from body and layout observations.
+#[derive(Default)]
+pub struct UnionWork {
+    pub fields: usize,
+    pub steps: usize,
+    pub unique_types: usize,
+}
 pub struct Declarations {
+    pub union_work: UnionWork,
     pub(super) safety_policies: super::safety::Policies,
     /// Immutable declaration permissions, shared by checked bodies and instances.
     pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
@@ -454,6 +462,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            union_work: UnionWork::default(),
             safety_policies: super::safety::Policies::analyze(report)?,
             mutable_statics: None,
             constant_functions: std::collections::HashSet::new(),

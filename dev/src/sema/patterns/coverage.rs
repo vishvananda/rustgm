@@ -155,7 +155,17 @@ impl<'a> Coverage<'a> {
             }
             return Ok(place);
         }
-        let valid = self.places[base.0 as usize].valid && step != Step::Dereference;
+        let union = if let Some(Type::Adt(item, _)) =
+            self.facts.types.kind(self.places[base.0 as usize].ty)
+        {
+            self.facts
+                .aggregates
+                .get(item)
+                .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union)
+        } else {
+            false
+        };
+        let valid = self.places[base.0 as usize].valid && step != Step::Dereference && !union;
         let id = PlaceId(u32::try_from(self.places.len()).map_err(|_| "too many coverage places")?);
         self.places.push(Place {
             ty,

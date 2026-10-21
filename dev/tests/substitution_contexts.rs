@@ -91,6 +91,7 @@ fn argument_universals_preserve_nested_binders_static_and_repeated_free_regions(
         parameters,
         result: captured,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut bound = Bound::universals(4);
     let transformed = bound.apply(&mut types, caller)?;
@@ -109,7 +110,8 @@ fn argument_universals_preserve_nested_binders_static_and_repeated_free_regions(
             bound_regions: 1,
             parameters,
             result: captured_nested,
-            unsafe_: false
+            unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })
     );
     assert_eq!(bound.universal_count(), 2);
@@ -146,6 +148,7 @@ fn mapped_types_shift_under_callable_binders_without_replacing_inserted_paramete
         parameters,
         result: parameter,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let argument = types.intern(Kind::Reference {
         mutable: false,
@@ -176,7 +179,8 @@ fn mapped_types_shift_under_callable_binders_without_replacing_inserted_paramete
             bound_regions: 1,
             parameters,
             result: argument,
-            unsafe_: false
+            unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })
     );
     Ok(())

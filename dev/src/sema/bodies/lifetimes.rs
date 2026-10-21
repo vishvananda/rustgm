@@ -59,6 +59,7 @@ impl Checker<'_> {
                             .get(&index)
                             .map(|pending| pending.view)
                     })
+                    .or_else(|| self.state.callable_adjustments.get(&index).copied())
             {
                 proof_actual = solved.types[view.0 as usize];
             }

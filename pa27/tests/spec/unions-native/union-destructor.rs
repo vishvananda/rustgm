@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+static mut N:u8=0;union U{x:u32,y:u32}impl Drop for U{fn drop(&mut self){unsafe{N+=1;}}}fn main(){{let mut u=U{x:3};u.y=9;unsafe{check(N==0);check(u.x==9);}}unsafe{check(N==1);}}

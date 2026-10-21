@@ -34,6 +34,7 @@ fn callable(
             bound_regions: count,
             parameters: 1,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &[argument, result],
     )
@@ -51,6 +52,7 @@ fn signature(
         parameters,
         result,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 

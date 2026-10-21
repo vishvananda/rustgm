@@ -88,6 +88,7 @@ impl Fixture {
             parameters,
             result: TypeId::UNIT,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?)
     }
 }

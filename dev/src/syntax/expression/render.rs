@@ -19,6 +19,16 @@ impl fmt::Display for Optional {
         }
     }
 }
+struct CallableAbi(crate::syntax::item::Abi);
+impl fmt::Display for CallableAbi {
+    fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0 {
+            crate::syntax::item::Abi::Rust => output.write_str("-"),
+            crate::syntax::item::Abi::Extern(None) => output.write_str("extern"),
+            crate::syntax::item::Abi::Extern(Some(node)) => write!(output, "{}", node.0),
+        }
+    }
+}
 struct Children<'a, L>(&'a Syntax<L>, List);
 impl<L> fmt::Display for Children<'_, L> {
     fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {

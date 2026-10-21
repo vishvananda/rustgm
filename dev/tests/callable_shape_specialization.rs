@@ -12,6 +12,7 @@ fn signature(store: &mut Store, parameter: TypeId, binders: u32) -> Result<TypeI
         result: TypeId::UNIT,
         bound_regions: binders,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 
@@ -32,6 +33,7 @@ fn partial(context: &mut Context, store: &Store) -> Result<(TermId, TermId), Err
             parameters: 1,
             bound_regions: 0,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &[hole, unit],
     )?;

@@ -220,7 +220,7 @@ impl<L> Syntax<L> {
             Kind::FunctionType(index) => {
                 let function = self.function_types[index as usize];
                 self.children(function.binders, output);
-                output.extend(function.abi);
+                output.extend(function.abi.literal());
                 self.children(function.parameters, output);
                 output.extend(function.result);
             }
@@ -262,7 +262,7 @@ impl<L> Syntax<L> {
                 body,
                 ..
             } => {
-                output.extend(abi);
+                output.extend(abi.literal());
                 self.children(parameters, output);
                 output.extend(result);
                 self.children(item.where_clause, output);

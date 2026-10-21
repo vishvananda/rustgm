@@ -201,6 +201,7 @@ fn captured_projection_components_preserve_skipped_callable_binders() -> Result 
             parameters,
             result,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?;
         let mut queries = Queries::new(&types, &bounds, &templates);
         let mut proof = Constraints::new(&types, &variances, 1, 100_000)?;
@@ -276,6 +277,7 @@ fn a_bound_on_an_escaping_result_does_not_grant_its_inputs_a_bound() -> Result {
         parameters,
         result: output,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let bounds = Bounds::default();
     let templates = Templates::default();
@@ -305,6 +307,7 @@ fn locally_bound_input_references_retain_their_referent_requirements() -> Result
             parameters,
             result: TypeId::UNIT,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?;
         let output = projection(&mut types, 11, function, &[])?;
         for assumption in [None, Some(ty), Some(nested), Some(output)] {

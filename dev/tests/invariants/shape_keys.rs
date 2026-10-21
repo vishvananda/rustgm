@@ -153,6 +153,7 @@ fn erased_callable_tails_do_not_repeat_work_at_each_binder_depth() -> TestResult
                 result: tail,
                 bound_regions: 1,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             })?;
             let goal = predicate(&mut store, byte, ItemId(1), &[Argument::Type(tail)])?;
             steps += store.shape_key(goal)?.1;

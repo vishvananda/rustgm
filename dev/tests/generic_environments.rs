@@ -153,6 +153,7 @@ fn references_and_callable_abilities_do_not_depend_on_referents() -> Result<(), 
         parameters,
         result: ty,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let item = types.intern(Kind::FunctionItem {
         item: ItemId(3),

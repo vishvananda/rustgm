@@ -116,6 +116,7 @@ fn zero_arrays_require_alignment_but_pointers_stop_the_storage_walk() -> TestRes
                     result: t,
                     bound_regions: 0,
                     unsafe_: false,
+                    convention: rustgm::types::callable::Convention::RUST,
                 })?
             }
         };

@@ -77,6 +77,7 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
             parameters,
             result,
             unsafe_,
+            convention,
         } => {
             let depth = nested(depth).map_err(F::Error::from)?;
             Kind::Function {
@@ -84,6 +85,7 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
                 parameters: folder.list(parameters, depth)?,
                 result: folder.child(result, depth)?,
                 unsafe_,
+                convention,
             }
         }
         Kind::FunctionItem {

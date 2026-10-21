@@ -204,6 +204,7 @@ fn mixed_argument_substitution_preserves_nested_binders_and_constants() -> Resul
         parameters,
         result: nominal,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let item = store.intern(Kind::FunctionItem {
         item: ItemId(7),
@@ -230,6 +231,7 @@ fn mixed_argument_substitution_preserves_nested_binders_and_constants() -> Resul
         parameters,
         result: nominal,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let expected = store.intern(Kind::FunctionItem {
         item: ItemId(7),
@@ -285,6 +287,7 @@ fn function_item_arguments_are_outside_the_signature_binder() -> Result<(), &'st
         parameters,
         result: reference,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let arguments =
         store.intern_arguments(&[Argument::Type(reference), Argument::Lifetime(region)])?;

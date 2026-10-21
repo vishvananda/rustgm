@@ -82,7 +82,8 @@ impl Engine<'_, '_> {
                 | Rvalue::IsVariant { .. }
                 | Rvalue::Length(_)
                 | Rvalue::TextEquals { .. }
-                | Rvalue::Validate(_) => Ok(false),
+                | Rvalue::Validate(_)
+                | Rvalue::Union { .. } => Ok(false),
                 Rvalue::Borrow { place, .. } => {
                     if !self.borrow_allowed(self.value(id)?.ty)? {
                         return Ok(false);
@@ -127,6 +128,7 @@ impl Engine<'_, '_> {
                 let projection = self.projection(id)?;
                 match projection.kind {
                     ProjectionKind::Dereference { .. }
+                    | ProjectionKind::UnionField(_)
                     | ProjectionKind::RawDereference { .. }
                     | ProjectionKind::Subarray { .. }
                     | ProjectionKind::Subslice { .. }

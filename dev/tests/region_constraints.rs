@@ -67,6 +67,7 @@ fn function(
         parameters,
         result,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 

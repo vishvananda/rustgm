@@ -260,6 +260,7 @@ fn parent_member_and_callable_local_regions_keep_their_own_binders() -> TestResu
         result: WORD,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     assert_eq!(c.resolved(&mut f.facts.types, result)?, expected);
     Ok(())

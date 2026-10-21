@@ -20,6 +20,7 @@ fn signature_environment_and_unused_inputs_share_inference_and_occurs_checks()
             bound_regions: 0,
             parameters: 1,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &[hole, hole],
     )?;
@@ -82,6 +83,7 @@ fn substitution_keeps_callable_binders_separate_from_environment_regions()
         result: input,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let args = store.intern_arguments(&[
         Argument::Type(ty),

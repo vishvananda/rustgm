@@ -229,6 +229,7 @@ fn closed_captures_preserve_nested_callable_locals_and_query_equations() -> Test
             bound_regions: 1,
             parameters: 2,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &parameters,
     )?;

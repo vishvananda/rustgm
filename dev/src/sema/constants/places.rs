@@ -388,6 +388,17 @@ impl Queries<'_> {
     }
     fn check_static_projection(&self, key: NodeKey, ty: TypeId, index: u64) -> Result<(), Error> {
         let facts = &*self.typing.facts;
+        if let Some(Type::Adt(item, _)) = facts.types.kind(ty)
+            && facts
+                .aggregates
+                .get(item)
+                .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union)
+        {
+            return Err(self.error(
+                Query::Place(key),
+                "union field reinterpretation in constant execution is not implemented",
+            ));
+        }
         let fields = match facts.types.kind(ty) {
             Some(Type::Array { length, .. }) => {
                 return if index < length {

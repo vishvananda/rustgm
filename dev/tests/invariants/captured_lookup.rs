@@ -30,6 +30,7 @@ fn function(
         result: TypeId::UNIT,
         bound_regions,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })
 }
 fn projected(store: &mut Store, depth: u16) -> std::result::Result<TypeId, &'static str> {

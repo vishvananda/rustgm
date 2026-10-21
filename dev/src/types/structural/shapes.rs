@@ -155,9 +155,11 @@ impl Shapes {
                 parameters,
                 result,
                 unsafe_,
+                convention,
             } => {
                 bound_regions.hash(hash);
                 unsafe_.hash(hash);
+                convention.hash(hash);
                 self.child(Key::List(parameters), finish, hash)?;
                 self.child(Key::Type(result), finish, hash)?;
             }

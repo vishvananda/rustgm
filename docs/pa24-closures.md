@@ -507,3 +507,51 @@ receiver kind, loans, moves and environment storage. The index is not yet wired
 into source capture construction. Initial focused checks cover nested scopes,
 shadowed definitions, macro hygiene and repeated-use scaling; final lint and
 combined validation remain pending.
+
+
+## Contextual reference signatures
+
+Known function-pointer expectations now supply a closure's quantified input and
+output contract. The isolated body receives its own universal lifetimes, while
+enclosing lifetimes cross the existing explicit interface. Elided annotations
+refine those contextual inputs; they do not introduce unrelated rigid lifetimes.
+The body must still prove every result and coercion. Empty closure environments
+now enter the same lifetime relation as function-item pointer conversions.
+
+`obj/parallel/closure-context-gates-v4/` records four passing lifetime groups,
+strict all-target/all-feature release Clippy and the file audit with zero findings.
+Sixteen contextual outcomes agree independently with pinned rustc, including
+separate/shared input lifetimes, mutable identity, outer lifetimes, nested callable
+signatures, arguments and returned pointers. All eleven positive cases execute
+through both rustc and CPPGM. Five negative cases cover crossed outputs, local
+and static escapes, a dangling call result and shared-to-mutable conversion.
+The seven existing uncontextual lifetime controls remain intact. The preceding
+`closure-context-gates-v2/` also passes pointer, safety and source-body groups;
+its audit prompted consolidation into the existing lifetime test owner.
+
+The retained candidate and preceding integrated baseline are pinned under
+`obj/parallel/closure-context-performance/binaries/`; timing qualification is
+pending. Safe-to-unsafe pointer conversion remains a separate callable conversion
+change coordinated with PA30. Capture construction, generic closure templates,
+dynamic callable adapters and contextual signatures with unresolved components
+still require work. No assignment was activated or text reference changed.
+
+
+The contextual development measurement is complete in
+`obj/parallel/closure-context-performance/measurement-v1/`. Immutable baseline
+`3b03e5e9` and candidate `584e421a` were compared on nine frozen, independently
+object-qualified sources: ordinary functions, scalar closures and contextual
+reference closures at widths 8/32/128. The six shared outputs match byte for
+byte. Reference closures are candidate-only observations because the baseline
+rejects them; they take 3.95/7.06/19.31 ms and 5.66/20.73/81.21 million
+instructions. These observations are consistent with additive independent-body
+work at the measured sizes, not a bound on every closure program.
+
+Shared instruction changes range from -0.62% to +0.07%. Paired wall medians
+range from -7.68% to -2.58%, with shared A/A spread up to 6.12%; individual
+blocks are noisy, so no general speedup or wall-time neutrality is claimed.
+Median RSS increases by 30–468 KiB on the shared inputs; the largest change
+remains unexplained. The candidate also includes the separately qualified
+`option_env!` checkpoint, so this comparison does not isolate each change.
+Every A/A, ABBA, RSS and instruction observation is retained. Successful cleanup
+removed the qualification object; both current comparison binaries remain pinned.

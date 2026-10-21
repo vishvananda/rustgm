@@ -611,10 +611,21 @@ impl Checker<'_> {
     ) -> Result<PatternKind, Error> {
         let variant_id = self.pattern_constructor(node, path, term)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
+        let union = self
+            .facts
+            .aggregates
+            .get(variant.owner)
+            .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union);
+        if union && rest {
+            return Err(self.error(node, "union patterns cannot contain rest"));
+        }
         self.state.field_seen.clear();
-        self.state
-            .field_seen
-            .resize((variant.end - variant.start) as usize, false);
+        if !union {
+            self.state
+                .field_seen
+                .resize((variant.end - variant.start) as usize, false);
+        }
+        let mut selected = 0;
         let start = self.pattern_index(node, self.facts.patterns.fields.len())?;
         let unit = self.report.package.unit(self.state.file);
         for &wrapper in unit.configured.ast.list(fields) {
@@ -628,6 +639,15 @@ impl Checker<'_> {
             let Kind::PatternField { name, pattern } = self.kind(field_node) else {
                 return Err(self.error(field_node, "missing pattern field syntax"));
             };
+            if union {
+                let mut inner = pattern;
+                while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(inner) {
+                    inner = value;
+                }
+                if !matches!(self.kind(inner), Kind::Wildcard) {
+                    self.require_unsafe(node, "union pattern access requires an unsafe context")?;
+                }
+            }
             let name = self.member_name(field_node, name)?;
             let field = self
                 .facts
@@ -635,7 +655,12 @@ impl Checker<'_> {
                 .field(variant_id, name)
                 .ok_or_else(|| self.error(field_node, "unknown pattern field"))?;
             self.accessible(field_node, field)?;
-            if std::mem::replace(
+            if union {
+                selected += 1;
+                if selected > 1 {
+                    return Err(self.error(node, "union pattern requires exactly one field"));
+                }
+            } else if std::mem::replace(
                 &mut self.state.field_seen[(field.0 - variant.start) as usize],
                 true,
             ) {
@@ -650,7 +675,10 @@ impl Checker<'_> {
                 pattern,
             });
         }
-        if !rest && self.state.field_seen.contains(&false) {
+        if union && selected != 1 {
+            return Err(self.error(node, "union pattern requires exactly one field"));
+        }
+        if !union && !rest && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing pattern fields without rest"));
         }
         let end = self.pattern_index(node, self.facts.patterns.fields.len())?;

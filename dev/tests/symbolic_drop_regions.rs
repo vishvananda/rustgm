@@ -106,6 +106,7 @@ fn array_bounds_and_nonowning_edges_do_not_expand_drop_components() -> Result<()
         parameters: list,
         result: ty,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let definitions = Definitions::default();
     let mut base = Regions::new([])?;

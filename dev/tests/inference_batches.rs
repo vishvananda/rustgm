@@ -152,6 +152,7 @@ fn mixed_inputs_keep_lifetime_equations_in_source_order() -> TestResult {
                 bound_regions: 0,
                 parameters: 0,
                 unsafe_: false,
+                convention: rustgm::types::callable::Convention::RUST,
             };
             let a = context.construct(kind, &[byte])?;
             let b = context.construct(kind, &[byte])?;

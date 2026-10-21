@@ -243,6 +243,7 @@ impl Checker<'_> {
                     parameters,
                     bound_regions: 0,
                     unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
                 },
                 &fields,
             )

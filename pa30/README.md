@@ -8,6 +8,20 @@ Prerequisite: PA29. The common source profile is Rust 1.98.0, initially edition
 
 C ABI, repr attributes, linkage and imported/exported declarations.
 
+The maintainer callable checkpoint retains `Abi::{Rust,C}` and a variadic bit
+independently of function safety and constant eligibility. Omitted `extern`
+remains distinct syntax and selects C. Fixed-arity scalar C definitions and
+function pointers use ordinary selected calls. Top-level safe-to-unsafe
+coercions retain a checked lifetime proof view; nested callable equality and
+calling-convention identity remain strict. Draft source outcomes are in
+`tests/convention-outcomes.json`; this does not activate the assignment.
+
+Foreign-block ownership and inherited ABI/safety, imported declarations,
+linkage attributes, C aggregate classification and variadic calls remain
+unfinished. The optional pinned object bridge has passed a read-only C
+handshake and requires separate implementation review. See
+`docs/pa30-callable-checkpoint.md` for qualification and remaining boundaries.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

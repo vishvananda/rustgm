@@ -3,6 +3,29 @@ use super::parameters::ParameterId;
 use super::{ItemId, Kind, RegionId, Store, TypeId, outlives::Pair};
 use std::collections::HashMap;
 
+/// Source calling convention; safety and constant eligibility are independent.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum Abi {
+    #[default]
+    Rust,
+    C,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct Convention {
+    pub abi: Abi,
+    pub variadic: bool,
+}
+impl Convention {
+    pub const RUST: Self = Self {
+        abi: Abi::Rust,
+        variadic: false,
+    };
+    pub const C: Self = Self {
+        abi: Abi::C,
+        variadic: false,
+    };
+}
+
 #[derive(Clone, Copy)]
 pub struct Template {
     /// Early parameters live outside the callable's late binder: depth one.

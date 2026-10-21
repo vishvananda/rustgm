@@ -190,6 +190,7 @@ impl Checker<'_> {
             bound_regions,
             parameters,
             unsafe_,
+            convention,
         }) = self.head(node, term)?
         else {
             return Err(self.error(node, "missing inferred callable signature"));
@@ -215,6 +216,7 @@ impl Checker<'_> {
                     bound_regions: 0,
                     parameters,
                     unsafe_,
+                    convention,
                 },
                 &children,
             )

@@ -25,6 +25,7 @@ fn reference_chain_selection_keeps_unresolved_work_linear() -> Result<(), Box<dy
                 parameters: 1,
                 bound_regions: 0,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             },
             &[unknown, unknown],
         )?;

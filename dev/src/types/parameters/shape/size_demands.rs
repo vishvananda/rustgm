@@ -252,6 +252,7 @@ mod tests {
             result: TypeId::UNIT,
             bound_regions: 2,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let parameters = types.intern_list(&[inner])?;
         let root = types.intern(Kind::Function {
@@ -259,6 +260,7 @@ mod tests {
             result: TypeId::UNIT,
             bound_regions: 0,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let mut shapes = Shapes::new(Arc::new(Environment::new(&types, &[])?));
         let Progress::Size(request) = shapes.advance(&types, root, 0, false)? else {
