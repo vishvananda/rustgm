@@ -127,6 +127,7 @@ impl Checker<'_> {
                 convention: crate::types::callable::Convention::RUST,
             })
             .map_err(|e| self.error(node, e))?;
+        let signature = self.alias_type(node, signature)?;
         self.state
             .opaque_callables
             .get_or_insert_with(Default::default)

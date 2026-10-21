@@ -55,22 +55,12 @@ impl Checker<'_> {
                 .infer
                 .define_opaque(&self.facts.types, application, term)
                 .map_err(|e| self.error(node, e))?;
-            // Declared bounds constrain the hidden representation before nested
-            // closure bodies finalize their input/output variables. Reuse the
-            // same substitution and ordinary obligation solver; declaration
-            // bounds are requirements, never assumptions about the hidden type.
+            // Callable result bounds provide input context before nested closure
+            // bodies finish. They are hints, not early proof obligations: the
+            // hidden representation must still prove every bound after inference.
             let bounds = self.facts.opaques.declarations[&id].bounds.clone();
-            let mut regions = crate::types::substitute::Bound::new(Vec::new());
             for clause in bounds {
-                let clause = self.alias_clause(node, clause)?;
                 self.declared_closure_signature(node, id, term, clause)?;
-                self.instantiate_bound_obligation(
-                    node,
-                    clause,
-                    None,
-                    &mut regions,
-                    &mut substitution,
-                )?;
             }
         }
         self.state.result_term = Some(result);
