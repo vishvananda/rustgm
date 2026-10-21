@@ -1,7 +1,8 @@
-# PA26 equality performance preparation
+# PA26 equality performance qualification
 
-This record prepares measurement; it reports no timing or instruction conclusion.
-PA26 remains planned. The integrator schedules the exclusive measurement window.
+Preparation and the prescribed exclusive measurement window are complete.
+PA26 remains planned. Results qualify the frozen equality checkpoint below,
+not the later ordering work or the whole assignment.
 
 The immutable baseline is `a72d8990e422dbd9c6e34542e234279c24c4ba6d` and candidate
 is `45870765b493ef74d70e6a5797faec07eed82d58`. Both were built offline from archived
@@ -41,3 +42,28 @@ one Callgrind observation per input/label. New-feature inputs have candidate-onl
 observations. Every execution must match its frozen output and successful status.
 There are no automatic repetitions. Unrelated host activity remains a possible
 source of wall-time noise even within the RustGM-exclusive window.
+
+The completed observations are retained in the integrator checkout under
+`obj/parallel/pa26-comparison-measurement-v1/`, including `plan.json`,
+`summary.json`, raw timings, RSS and Callgrind outputs. All five shared controls
+preserved exactly equal LowIR/status/diagnostics throughout measurement.
+
+| Shared control | Median paired wall change | Instructions A → B | Median RSS change |
+| --- | ---: | ---: | ---: |
+| Scalar | +5.22% | 1,308,884 → 1,308,435 | +322 KiB |
+| Generic Add | -0.41% | 2,767,902 → 2,768,194 | +236 KiB |
+| Assignment dot call | -0.35% | 1,748,776 → 1,747,225 | +354 KiB |
+| Mutable indexing | +0.61% | 3,251,808 → 3,249,239 | +120 KiB |
+| Nominal constant | -0.20% | 1,455,580 → 1,455,434 | -52 KiB |
+
+A/A paired wall ratios ranged from 0.9171 to 1.0576 across these controls;
+wall observations are noisy and do not establish a general speedup. The positive
+scalar wall change is retained. Shared instruction changes are small, between
+-0.0887% and +0.0106%; the positive RSS deltas are also retained rather than
+attributing them to noise without evidence.
+
+Candidate-only equality widths 32 and 128 used 56,320,148 and 219,397,116
+instructions, with median RSS 12,028 and 15,004 KiB. Four times the input width
+cost approximately 3.90 times the instructions in this range. This is a scaling
+observation, not a comparison with the rejecting baseline. Every observation,
+including the wider input's slower initial wall samples, remains in the record.
