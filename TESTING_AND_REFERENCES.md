@@ -74,7 +74,12 @@ outcome passes. It preserves `reference.json` and writes a tracked scoped receip
 under `reference-batches/`, binding selected case contracts, inputs, outputs and
 compiler sources to the preserved full-stage receipt. This is partial provenance,
 not qualification or regeneration of the rest of the stage. Layout checks overlay
-those explicitly selected facts while requiring complete current fixture coverage.
+those explicitly selected facts while requiring complete current fixture and
+case-contract coverage, including each case's effective mode. A legacy full
+receipt without per-case contracts permits partial generation only while its
+whole manifest hash is unchanged; refresh it fully before adding cases. Historical
+batches with a different base must be explicitly superseded with exact retained
+receipt hashes; missing, altered or unexplained historical batches fail validation.
 
 Only the explicit `ref-test` targets and an authorized selected `--bless` batch regenerate sidecars. The generator first
 checks every declared outcome and writes no reference if any differs. Review

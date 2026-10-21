@@ -135,6 +135,7 @@ def compare(fixture, actual):
 
 def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None, case_paths=None):
     manifest, cases = load_cases(root, stage)
+    all_cases = cases
     cases = reference_batches.select(cases, case_paths, stage)
     artifact_root = Path(evidence_root) if evidence_root is not None else Path("obj/tests")
     if not artifact_root.is_absolute():
@@ -170,7 +171,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
     if bless and not any(errors for _, _, _, errors in results):
         source_hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
                          for p in sorted((root / "dev").rglob("*.rs"))}
-        batch = reference_batches.prepare(root, stage, manifest, source_hashes, results) if case_paths is not None else None
+        batch = reference_batches.prepare(root, stage, manifest, all_cases, source_hashes, results) if case_paths is not None else None
         for _, fixture, actual, _ in results:
             for suffix, value in zip(SIDECARS, actual):
                 Path(str(fixture) + suffix).write_bytes(value)
@@ -181,6 +182,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
         else:
             receipt = {"schema": 1, "mode": manifest["mode"], "compiler_source_sha256": source_hashes,
                        "manifest_sha256": hashlib.sha256((root / stage / "tests/manifest.json").read_bytes()).hexdigest(),
+                       "case_contracts": {case["path"]: reference_batches.case_digest(case, manifest["mode"]) for case in cases},
                        "fixtures": {case["path"]: hashlib.sha256(fixture.read_bytes()).hexdigest()
                                     for case, fixture, _, _ in results}}
             previous_batches = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()

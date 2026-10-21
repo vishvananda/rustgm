@@ -179,6 +179,62 @@ class ScopedReferenceTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 check_layout.check(root)
 
+    def test_partial_batch_cannot_attest_unselected_contract_changes(self):
+        for mutation in ("args", "exit_status", "mode", "default_mode"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+                root, tests, manifest = self.fixture(directory)
+                (tests / "new.rs").write_text("new")
+                manifest["cases"].append({"path": "tests/new.rs", "exit_status": 0})
+                if mutation == "args":
+                    manifest["cases"][0]["args"] = ["--crate-name", "changed"]
+                elif mutation == "exit_status":
+                    manifest["cases"][0]["exit_status"] = 1
+                elif mutation == "mode":
+                    manifest["additional_modes"] = ["--emit-types"]
+                    manifest["cases"][0]["mode"] = "--emit-types"
+                else:
+                    manifest["mode"] = "--emit-types"
+                (tests / "manifest.json").write_text(json.dumps(manifest))
+                before = self.snapshot(root)
+                with self.assertRaisesRegex(ValueError, "case contract changed"):
+                    self.run_batch(root, "print('new')", ["tests/new.rs"])
+                self.assertEqual(self.snapshot(root), before)
+
+    def test_legacy_partial_generation_requires_an_unchanged_full_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, tests, manifest = self.fixture(directory)
+            base = root / "pa1/reference.json"
+            receipt = json.loads(base.read_text())
+            del receipt["case_contracts"]
+            base.write_text(json.dumps(receipt))
+            self.assertTrue(self.run_batch(root, "print('legacy selected')", ["tests/x.rs"]))
+            (tests / "new.rs").write_text("new")
+            manifest["cases"].append({"path": "tests/new.rs", "exit_status": 0})
+            (tests / "manifest.json").write_text(json.dumps(manifest))
+            before = self.snapshot(root)
+            with self.assertRaisesRegex(ValueError, "legacy reference receipt requires full refresh"):
+                self.run_batch(root, "print('new')", ["tests/new.rs"])
+            self.assertEqual(self.snapshot(root), before)
+
+    def test_unexplained_or_changed_superseded_batch_is_rejected(self):
+        for mutation in ("unexplained", "tamper", "missing"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+                root, _, manifest = self.fixture(directory)
+                self.assertTrue(self.run_batch(root, "print('selected')", ["tests/x.rs"]))
+                batch = next((root / "pa1/reference-batches").glob("*.json"))
+                if mutation == "unexplained":
+                    receipt = json.loads(batch.read_text())
+                    receipt["base_reference_sha256"] = "0" * 64
+                    batch.write_text(json.dumps(receipt))
+                else:
+                    self.assertTrue(self.run_batch(root, "print('full refresh')"))
+                    if mutation == "tamper":
+                        batch.write_bytes(batch.read_bytes() + b" ")
+                    else:
+                        batch.unlink()
+                with self.assertRaises(ValueError):
+                    reference_batches.validate(root, "pa1", manifest, manifest["cases"])
+
 
 if __name__ == "__main__":
     unittest.main()
