@@ -1,7 +1,7 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
-    body::ir::{LocalId, Place, ProjectionKind},
+    body::ir::{LocalId, Place, ProjectionKind, ValueId},
     sema::values::{LocationId, Origin, Reader, View},
     types::TypeId,
 };
@@ -195,6 +195,21 @@ impl Machine<'_, '_> {
         self.memory.cells[cell] = Cell::Frozen(value);
         Ok(())
     }
+    fn temporary(&mut self, frame: &mut Frame, id: ValueId) -> Result<Constant, Failure> {
+        if let Some(&address) = frame.temporaries.get(&id) {
+            return Ok(address);
+        }
+        let body = &self.bodies[frame.body];
+        let ty = body.values[id.0 as usize].ty;
+        let address = if let Some(&value) = body.promotions.get(&id) {
+            self.evaluator.borrow(value, ty)?
+        } else {
+            let value = Self::value(frame, id)?;
+            self.allocate(&mut frame.allocations, Some(value), ty)?
+        };
+        frame.temporaries.insert(id, address);
+        Ok(address)
+    }
     pub(super) fn place(&mut self, frame: &mut Frame, root: Place) -> Result<Constant, Failure> {
         let body = self.bodies[frame.body].clone();
         let mut current = root;
@@ -222,24 +237,7 @@ impl Machine<'_, '_> {
                     break self.evaluator.static_address(id, ty)?;
                 }
                 Place::Temporary(id) => {
-                    if let Some(&address) = frame.temporaries.get(&id) {
-                        break address;
-                    }
-                    if let Some(&value) = body.promotions.get(&id) {
-                        let address = self
-                            .evaluator
-                            .borrow(value, body.values[id.0 as usize].ty)?;
-                        frame.temporaries.insert(id, address);
-                        break address;
-                    }
-                    let value = Self::value(frame, id)?;
-                    let address = self.allocate(
-                        &mut frame.allocations,
-                        Some(value),
-                        body.values[id.0 as usize].ty,
-                    )?;
-                    frame.temporaries.insert(id, address);
-                    break address;
+                    break self.temporary(frame, id)?;
                 }
                 Place::Projection(id) => {
                     if let Some(&address) = frame.projections.get(&id) {
@@ -258,7 +256,9 @@ impl Machine<'_, '_> {
             address = match projection.kind {
                 ProjectionKind::Dereference { .. } => self.read(address)?,
                 ProjectionKind::RawDereference { .. } => {
-                    return Err("raw pointer dereference in constant execution is not implemented".into());
+                    return Err(
+                        "raw pointer dereference in constant execution is not implemented".into(),
+                    );
                 }
                 ProjectionKind::Field(field) => {
                     let index = match field {

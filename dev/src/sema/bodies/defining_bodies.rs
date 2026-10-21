@@ -14,6 +14,21 @@ struct Suspended {
     state: Box<State>,
 }
 
+/// Preserve functions already checked to satisfy an early constant demand.
+fn initial_states(facts: &Declarations) -> Vec<Status> {
+    facts
+        .functions
+        .iter()
+        .map(|function| {
+            if facts.typed_function_bodies.contains(&function.definition) {
+                Status::Complete
+            } else {
+                Status::Unseen
+            }
+        })
+        .collect()
+}
+
 impl Checker<'_> {
     pub(super) fn functions(
         &mut self,
@@ -33,22 +48,7 @@ impl Checker<'_> {
             .filter(|(_, function)| self.facts.opaques.owners.contains_key(&function.definition))
             .map(|(index, function)| (function.definition, index))
             .collect();
-        let mut states: Vec<_> = self
-            .facts
-            .functions
-            .iter()
-            .map(|function| {
-                if self
-                    .facts
-                    .typed_function_bodies
-                    .contains(&function.definition)
-                {
-                    Status::Complete
-                } else {
-                    Status::Unseen
-                }
-            })
-            .collect();
+        let mut states = initial_states(self.facts);
         let mut patterns: Vec<_> = std::iter::repeat_with(|| None).take(states.len()).collect();
         let mut stack: Vec<Suspended> = Vec::new();
         let mut cursor = 0;

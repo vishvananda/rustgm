@@ -145,7 +145,7 @@ fn scope(parent: Option<ScopeId>, closure: bool) -> Scope {
         trait_access: None,
         nominal_self: None,
         label_barrier: closure,
-        bindings: Default::default(),
+        bindings: std::collections::HashMap::default(),
         order: Vec::new(),
     }
 }
