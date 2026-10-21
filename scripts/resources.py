@@ -31,6 +31,23 @@ def register(root, name, outputs):
     print(f"Registered {name}: {root}")
 
 
+def set_jobs(root, jobs):
+    found = discover(root)
+    if found is None:
+        raise ValueError("shared controller is not configured")
+    directory, policy = found
+    updated = {**policy, "jobs": jobs}
+    validate(updated)
+    if active_records(directory, max(policy["jobs"], jobs)):
+        raise ValueError("finish guarded commands before changing job slots")
+    path = directory.parent / "rustgm-resources.json"
+    with lease(directory, root, policy, "exclusive", wait=0):
+        if json.loads(path.read_text()) != policy:
+            raise ValueError("resource policy changed; retry configuration")
+        atomic_json(path, updated)
+    print(f"Shared heavy-job slots: {jobs}; other resource limits unchanged")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
@@ -39,6 +56,8 @@ def main():
     registration.add_argument("--name", required=True)
     registration.add_argument("--output", action="append", default=[])
     sub.add_parser("status")
+    configuration = sub.add_parser("set-jobs")
+    configuration.add_argument("jobs", type=int, choices=(2, 3))
     launch = sub.add_parser("run")
     launch.add_argument("--exclusive", action="store_true")
     launch.add_argument("--wait-seconds", type=float, default=3600)
@@ -47,6 +66,8 @@ def main():
     try:
         if args.action == "register":
             register(args.worktree.resolve(), args.name, args.output)
+        elif args.action == "set-jobs":
+            set_jobs(ROOT, args.jobs)
         elif args.action == "status":
             found = discover(ROOT)
             if found is None:
