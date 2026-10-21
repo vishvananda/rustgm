@@ -1,0 +1,1 @@
+const X:u32={let mut x=7u32;let r=&mut x;let s=&r;let p=&raw const **s;unsafe{*p}};fn main(){let _=X;}

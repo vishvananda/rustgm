@@ -103,6 +103,11 @@ fully initialized ordinary symbolic storage and the actual leaf alignment.
 They monotonically restrict that pointer's write authority without changing an
 earlier writable alias. Packed raw-base by-value reads and source packed-reference
 rules remain separate. Existing final reference escape checks still apply.
+Physical direct-reference cells may differ only in their outer lifetime identity
+when raw storage is checked: outer mutability and the exact referent type must
+still match. This does not relax source lifetime proofs or recursively inspect
+unused inner references. Different inner lifetime structure remains unsupported;
+actual dereferences retain lifetime, initialization and per-pointer checks.
 Mutable/raw union-field references, numeric nonnull ZST pointers, and raw-derived
 references to mutable/foreign or cyclic static storage remain explicit capability
 boundaries; forming such a reference is not itself a contents read.

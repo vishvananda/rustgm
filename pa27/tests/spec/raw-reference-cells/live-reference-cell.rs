@@ -1,0 +1,1 @@
+const X:u32={let x=7u32;let r=unsafe{&*(&raw const x)};let p=&raw const r;unsafe{let outer=&*p;**outer}};fn main(){let _=X;}

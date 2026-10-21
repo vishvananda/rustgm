@@ -1,0 +1,1 @@
+mod case0{const X:u32={let r:&u32={let x=7u32;let p=&raw const x;unsafe{&*p}};let p=&raw const r;unsafe{let _outer=&*p;}37};pub fn value()->u32{X}}mod case1{struct S{p:*const u32}const X:u32={let p={let x=7u32;&raw const x};let s=S{p};let p=&raw const s;unsafe{let _outer=&*p;}37};pub fn value()->u32{X}}fn main(){check(case0::value()==37);check(case1::value()==37);}

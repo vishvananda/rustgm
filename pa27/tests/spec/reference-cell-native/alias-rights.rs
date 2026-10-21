@@ -1,0 +1,2 @@
+mod case0{#![allow(invalid_reference_casting)]
+const X:u32={let mut x=7u32;let r=&mut x;let s=&r;let p=(&raw const **s)as *mut u32;unsafe{*p=9;}x};pub fn value()->u32{X}}mod case1{const X:u32={let mut x=7u32;let r=&mut x;{let s=&r;let _old=**s;}*r=9;*r};pub fn value()->u32{X}}mod case2{const X:u32={let mut x=7u32;let r=&mut x;let s=&r;let p=&raw const **s;unsafe{*p}};pub fn value()->u32{X}}fn main(){check(case0::value()==9);check(case1::value()==9);check(case2::value()==7);}

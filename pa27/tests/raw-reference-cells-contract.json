@@ -1,0 +1,126 @@
+{
+  "stage": "predeclared-development-contract",
+  "baseline": "ebaf3216",
+  "scope": "private physical direct-reference-cell equality ignores only outer reference RegionId, preserving exact mutability and exact referent TypeId; no source equality/variance/proof changes; no graph walker",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/expired-reference-cell.rs",
+      "sha256": "63abcf0ff6e0cfb2c921f4b7f15db512ed6e353d98c78c50b7e14ce2cad98f89",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 1,
+      "evidence": "reference-graph-investigation",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/live-reference-cell.rs",
+      "sha256": "582fdc34f857c45bcf3b6aa4bf7b478e8b00bc66b2ff7d5b591b8064a1d76573",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 0,
+      "evidence": "reference-graph-investigation",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/dangling-raw-field.rs",
+      "sha256": "9bf380a28f7b61a4fd60c3429e1ede96c7e470b734a592c989d76c651c3ea3a0",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 0,
+      "evidence": "reference-graph-investigation",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/expired-reference-demanded.rs",
+      "sha256": "dffce80ccce76dfc4d523601fc096e695097b285c5539ff6f980a8a94c105c7b",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "original_rustc_hypothesis": 1,
+      "evidence": "reference-graph-followup",
+      "reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/ordinary-reference-cell-read.rs",
+      "sha256": "bd22041f8b87da351c57b3ead823fc644f7a886a9025cbc8dc88ac39eed6803d",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 0,
+      "evidence": "reference-graph-followup",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/nested-shared-write.rs",
+      "sha256": "5d4ccc61dd00e0a8886709672c53aa71a8cbe56d3d19f3fe63ed5b7b8d8f6066",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 1,
+      "evidence": "reference-graph-followup",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/original-mutable-after-sharing.rs",
+      "sha256": "09d4254176d997b51e326270c52ac4e31f13ddfa4017b3956ff6e97ba76467e5",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 0,
+      "evidence": "reference-graph-followup",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/nested-shared-read.rs",
+      "sha256": "dfb31f1adbaaaf1fff27cf78a5e761e5dc1b5d8ca72c7f9dc11ab59946525b92",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "original_rustc_hypothesis": 0,
+      "evidence": "reference-graph-followup",
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/different-inner-region.rs",
+      "sha256": "43c6f13eb42d5616abf384953630761d39f7064f9af03b2b0129dd96a6da1e16",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/different-referent.rs",
+      "sha256": "9e81b50e7fe7e1df6d42bccb7b42a1352ffa08f273313ada79d579e1ecce68e5",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/different-mutability.rs",
+      "sha256": "bfba149f3527be75cf82346c7206b0866c85f45a52224df0589af108b7c1c010",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/reference-cell-store.rs",
+      "sha256": "96df6fcfc0aadf06a0ec4341a5add10f3814faf185971c2ffc3cc981a5a475fe",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/dangling-raw-field-read.rs",
+      "sha256": "795a08cda66419bf43df447a2cbc12bbaf025babeebd52fe21333ca1f099174b",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa27/tests/spec/raw-reference-cells/shared-reference-cell-store.rs",
+      "sha256": "ace73d20528207f5cdeea017b33d46d98f0a5eabecc09bbfc7d923e851fd90e6",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    }
+  ]
+}

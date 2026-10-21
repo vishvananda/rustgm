@@ -4,7 +4,7 @@ use crate::{
     body, sema,
     sema::values::Constant,
     test_source,
-    types::{Kind, Primitive},
+    types::{Kind, Primitive, RegionId, Store},
 };
 #[test]
 fn packed_raw_base_read_and_leaf_reference_require_distinct_alignment() -> Result<(), String> {
@@ -79,4 +79,60 @@ fn packed_raw_base_read_and_leaf_reference_require_distinct_alignment() -> Resul
         Some("constant raw shared reference lacks its access anchor")
     );
     Ok(())
+}
+
+#[test]
+fn reference_cell_storage_equivalence_ignores_only_its_outer_region() -> Result<(), String> {
+    let report = test_source::resolve("const fn f(){}", true)?;
+    let facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let mut facts = sema::bodies::analyze(&report, facts).map_err(|e| e.to_string())?;
+    let bodies = body::build(&report, &facts).map_err(|e| e.to_string())?;
+    let scalar = TypeId::primitive(Primitive::U32);
+    let signed = TypeId::primitive(Primitive::I32);
+    let a = reference(&mut facts.types, 1, false, scalar)?;
+    let b = reference(&mut facts.types, 2, false, scalar)?;
+    let mutable = reference(&mut facts.types, 2, true, scalar)?;
+    let other = reference(&mut facts.types, 2, false, signed)?;
+    let nested_a = reference(&mut facts.types, 1, false, a)?;
+    let nested_b = reference(&mut facts.types, 2, false, b)?;
+    let pointer_a = facts.types.intern(Kind::Pointer {
+        mutable: false,
+        pointee: a,
+    })?;
+    let pointer_b = facts.types.intern(Kind::Pointer {
+        mutable: false,
+        pointee: b,
+    })?;
+    assert_ne!(a, b);
+    let evaluator = sema::values::Evaluator::new(&report, &mut facts);
+    let machine = Machine::new(evaluator, &bodies.bodies, super::super::Limits::default())?;
+    assert!(machine.same_raw_storage_type(a, a));
+    assert!(machine.same_raw_storage_type(a, b));
+    assert!(machine.same_raw_storage_type(b, a));
+    for (left, right) in [
+        (a, mutable),
+        (mutable, a),
+        (a, other),
+        (nested_a, nested_b),
+        (pointer_a, pointer_b),
+        (scalar, signed),
+    ] {
+        assert!(!machine.same_raw_storage_type(left, right));
+    }
+    Ok(())
+}
+
+fn reference(
+    types: &mut Store,
+    region: u32,
+    mutable: bool,
+    referent: TypeId,
+) -> Result<TypeId, String> {
+    types
+        .intern(Kind::Reference {
+            region: RegionId(region),
+            mutable,
+            referent,
+        })
+        .map_err(str::to_owned)
 }
