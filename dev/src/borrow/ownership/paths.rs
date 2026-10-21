@@ -46,7 +46,14 @@ pub(super) enum Access {
     StaticMutable,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum BindingAuthority {
+    Ordinary,
+    ImmutableCapture,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct PlaceInfo {
+    /// A capture's logical binding stays immutable until a source dereference.
+    pub binding: BindingAuthority,
     /// A move from any union field consumes its containing owned union.
     pub union: bool,
     /// Closest owned path: a dereference retains its pointer's path, never a
@@ -59,6 +66,7 @@ pub(super) struct PlaceInfo {
 }
 impl PlaceInfo {
     fn reference(mut self, mutable: bool) -> Self {
+        self.binding = BindingAuthority::Ordinary;
         self.access = if mutable {
             match self.access {
                 Access::StaticMutable | Access::RawMutable => self.access,
@@ -74,6 +82,7 @@ impl PlaceInfo {
     /// A raw referent is external memory, independent of its pointer's move path.
     fn raw(mutable: bool) -> Self {
         Self {
+            binding: BindingAuthority::Ordinary,
             union: false,
             path: None,
             indexed: false,
@@ -119,52 +128,7 @@ impl Paths {
         let mut fields = HashMap::new();
         let mut arrays = arrays::Arrays::default();
         for projection in &body.projections {
-            if let Place::Temporary(value) = projection.base {
-                paths.temporary(body, value)?;
-            }
-            let mut info = paths.place(projection.base)?;
-            let component = match projection.kind {
-                ProjectionKind::Dereference { mutable, .. } => {
-                    info = info.reference(mutable);
-                    None
-                }
-                ProjectionKind::RawDereference { mutable } => {
-                    info = PlaceInfo::raw(mutable);
-                    None
-                }
-                ProjectionKind::Field(field) => Some(Component::Field(field)),
-                ProjectionKind::UnionField(_) => {
-                    info.union = true;
-                    None
-                }
-                ProjectionKind::ConstantIndex(index) => Some(Component::Index(index)),
-                ProjectionKind::Subarray { start, end } => {
-                    info.empty = start == end;
-                    Some(Component::Subarray { start, end })
-                }
-                ProjectionKind::Index { .. }
-                | ProjectionKind::IndexParameter { .. }
-                | ProjectionKind::SliceIndex { .. }
-                | ProjectionKind::FromEnd { .. }
-                | ProjectionKind::Subslice { .. } => {
-                    info.indexed = true;
-                    None
-                }
-            };
-            if !info.indexed
-                && !info.union
-                && info.access == Access::Owned
-                && let (Some(parent), Some(component)) = (info.path, component)
-            {
-                info.path = Some(paths.component(
-                    types,
-                    &mut fields,
-                    &mut arrays,
-                    parent,
-                    component,
-                    projection.ty,
-                )?);
-            }
+            let info = paths.project(body, types, projection, &mut fields, &mut arrays)?;
             paths.projections.push(info);
         }
         for value in &body.values {
@@ -214,6 +178,65 @@ impl Paths {
         let partitions = self.partitions.as_ref()?;
         let &(start, end) = partitions.groups.get(&array)?;
         Some(&partitions.segments[start..end])
+    }
+    fn project(
+        &mut self,
+        body: &Body,
+        types: &Store,
+        projection: &crate::body::ir::Projection,
+        fields: &mut HashMap<(PathId, Component), PathId>,
+        arrays: &mut arrays::Arrays,
+    ) -> Result<PlaceInfo, &'static str> {
+        if let Place::Temporary(value) = projection.base {
+            self.temporary(body, value)?;
+        }
+        let mut info = self.place(projection.base)?;
+        let component = match projection.kind {
+            ProjectionKind::CaptureBoundary { mutable } => {
+                if body.place_type(projection.base) != Some(projection.ty) {
+                    return Err("capture boundary changes its place type");
+                }
+                if !mutable {
+                    info.binding = BindingAuthority::ImmutableCapture;
+                }
+                None
+            }
+            ProjectionKind::Dereference { mutable, .. } => {
+                info = info.reference(mutable);
+                None
+            }
+            ProjectionKind::RawDereference { mutable } => {
+                info = PlaceInfo::raw(mutable);
+                None
+            }
+            ProjectionKind::Field(field) => Some(Component::Field(field)),
+            ProjectionKind::UnionField(_) => {
+                info.union = true;
+                None
+            }
+            ProjectionKind::ConstantIndex(index) => Some(Component::Index(index)),
+            ProjectionKind::Subarray { start, end } => {
+                info.empty = start == end;
+                Some(Component::Subarray { start, end })
+            }
+            ProjectionKind::Index { .. }
+            | ProjectionKind::IndexParameter { .. }
+            | ProjectionKind::SliceIndex { .. }
+            | ProjectionKind::FromEnd { .. }
+            | ProjectionKind::Subslice { .. } => {
+                info.indexed = true;
+                None
+            }
+        };
+        if !info.indexed
+            && !info.union
+            && info.access == Access::Owned
+            && let (Some(parent), Some(component)) = (info.path, component)
+        {
+            info.path =
+                Some(self.component(types, fields, arrays, parent, component, projection.ty)?);
+        }
+        Ok(info)
     }
     fn temporary(&mut self, body: &Body, value: ValueId) -> Result<(), &'static str> {
         if !self.temporaries.contains_key(&value) {
@@ -356,6 +379,7 @@ impl Paths {
             }
             Place::Static(id) => {
                 return Ok(PlaceInfo {
+                    binding: BindingAuthority::Ordinary,
                     union: false,
                     path: None,
                     indexed: false,
@@ -373,6 +397,7 @@ impl Paths {
             }
         };
         Ok(PlaceInfo {
+            binding: BindingAuthority::Ordinary,
             union: false,
             path,
             indexed: false,

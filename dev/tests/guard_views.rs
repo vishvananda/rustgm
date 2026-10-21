@@ -340,3 +340,6 @@ fn array_view_ranges_keep_disjoint_and_overlapping_elements_distinct() -> Result
     }
     Ok(())
 }
+
+#[path = "guard_views/capture_permissions.rs"]
+mod capture_permissions;

@@ -25,6 +25,7 @@ impl Lower<'_, '_> {
     fn selection_step(&mut self, id: ProjectionId) -> Result<Step, &'static str> {
         let projection = &self.body.projections[id.0 as usize];
         match projection.kind {
+            ProjectionKind::CaptureBoundary { .. } => Ok(Step::Offset(0)),
             ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }
             | ProjectionKind::FromEnd { .. }

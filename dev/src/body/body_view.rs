@@ -26,7 +26,13 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
             Owner::Closure {
                 identity,
                 signature,
-            } => write!(out, "closure id={} signature={}", identity.0, signature.0)?,
+                execution,
+            } => {
+                write!(out, "closure id={} signature={}", identity.0, signature.0)?;
+                if let Some(execution) = execution {
+                    write!(out, " execution={}", execution.0)?;
+                }
+            }
             Owner::AnonymousConstant => write!(out, "anonymous-const")?,
             Owner::Function {
                 definition,
@@ -109,6 +115,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         write!(out, "  projection p{id} type={} base=", projection.ty.0)?;
         place(projection.base, out)?;
         match projection.kind {
+            ProjectionKind::CaptureBoundary { mutable } => {
+                write!(out, " capture-boundary mutable={mutable}")?;
+            }
             ProjectionKind::Dereference { region, mutable } => {
                 write!(out, " dereference region={} mutable={mutable}", region.0)?;
             }
@@ -251,10 +260,10 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             write!(
                 out,
                 "{} ",
-                if kind == super::ir::BorrowKind::TwoPhase {
-                    "borrow-two-phase"
-                } else {
-                    "borrow"
+                match kind {
+                    super::ir::BorrowKind::TwoPhase => "borrow-two-phase",
+                    super::ir::BorrowKind::UniqueImmutable => "borrow-unique-immutable",
+                    super::ir::BorrowKind::Immediate => "borrow",
                 }
             )?;
             place(value, out)

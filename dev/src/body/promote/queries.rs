@@ -140,9 +140,9 @@ impl Engine<'_, '_> {
                         self.push(Key::Value(index))?;
                         self.place_dependency(self.projection(id)?.base)
                     }
-                    ProjectionKind::ConstantIndex(_) | ProjectionKind::Field(_) => {
-                        self.place_dependency(projection.base)
-                    }
+                    ProjectionKind::CaptureBoundary { .. }
+                    | ProjectionKind::ConstantIndex(_)
+                    | ProjectionKind::Field(_) => self.place_dependency(projection.base),
                 }
             }
         }

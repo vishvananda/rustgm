@@ -92,7 +92,14 @@ impl Index {
                 continue;
             }
             let base = this.place(projection.base)?;
+            if matches!(projection.kind, ProjectionKind::CaptureBoundary { .. }) {
+                this.projections.push(base);
+                continue;
+            }
             let step = match projection.kind {
+                ProjectionKind::CaptureBoundary { .. } => {
+                    return Err("capture boundary escaped transparent loan dispatch");
+                }
                 ProjectionKind::Dereference { mutable, .. } => Step::Dereference { mutable },
                 ProjectionKind::RawDereference { .. } => {
                     return Err("raw loan root escaped dispatch");

@@ -42,6 +42,11 @@ pub enum Place {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum ProjectionKind {
+    /// Preserve source binding authority after dereferencing a stored capture.
+    /// This boundary has no physical field, address offset or owned move path.
+    CaptureBoundary {
+        mutable: bool,
+    },
     /// Referent access preserves the pointer's region and access capability.
     Dereference {
         region: crate::types::RegionId,
@@ -213,6 +218,8 @@ pub enum Rvalue {
 pub enum BorrowKind {
     Immediate,
     TwoPhase,
+    /// Capture-only exclusive formation; source binding replacement stays separate.
+    UniqueImmutable,
 }
 #[derive(Clone, Copy)]
 pub struct Value {
@@ -308,6 +315,8 @@ pub enum Owner {
     Closure {
         identity: crate::types::closure::ClosureId,
         signature: TypeId,
+        /// Checked hidden receiver signature, separate from the public callable.
+        execution: Option<TypeId>,
     },
     /// A declaration-time constant requiring lifetime/loan proof, never a native function.
     AnonymousConstant,

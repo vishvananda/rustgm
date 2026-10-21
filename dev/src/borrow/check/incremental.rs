@@ -92,6 +92,7 @@ impl Verifier {
                     Owner::Closure {
                         identity,
                         signature,
+                        ..
                     },
                     Some(Kind::Closure {
                         identity: actual,

@@ -47,6 +47,7 @@ pub(super) fn body(
         Owner::Closure {
             identity: closure.identity,
             signature: closure.signature,
+            execution: None,
         },
         closure.body,
         result,

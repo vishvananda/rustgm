@@ -367,8 +367,18 @@ impl BodyFacts {
                     return Err("borrowed place may be uninitialized or moved");
                 }
             }
+            let unique = matches!(
+                body.values[id.0 as usize].kind,
+                Rvalue::Borrow {
+                    kind: crate::body::ir::BorrowKind::UniqueImmutable,
+                    ..
+                }
+            );
+            if unique && !mutable {
+                return Err("unique capture requires an exclusive reference");
+            }
             if mutable {
-                self.mutable_borrow(body, info)?;
+                self.mutable_borrow(body, info, unique)?;
             }
         }
         if let Rvalue::IsVariant { place, .. }
@@ -421,6 +431,9 @@ impl BodyFacts {
         place: Place,
     ) -> Result<(), &'static str> {
         let info = self.paths.place(place)?;
+        if info.binding == paths::BindingAuthority::ImmutableCapture {
+            return Err("cannot assign through an immutable captured binding");
+        }
         if self.paths.view_root(body, info.path).is_some() {
             return Err("cannot assign through a guard binding");
         }
@@ -458,7 +471,15 @@ impl BodyFacts {
         }
         Ok(())
     }
-    fn mutable_borrow(&self, body: &Body, info: paths::PlaceInfo) -> Result<(), &'static str> {
+    fn mutable_borrow(
+        &self,
+        body: &Body,
+        info: paths::PlaceInfo,
+        unique: bool,
+    ) -> Result<(), &'static str> {
+        if info.binding == paths::BindingAuthority::ImmutableCapture && !unique {
+            return Err("cannot mutably borrow an immutable captured binding");
+        }
         if self.paths.view_root(body, info.path).is_some() {
             return Err("cannot mutably borrow through a guard binding");
         }
@@ -476,7 +497,7 @@ impl BodyFacts {
             // An unnamed parameter is owned input storage used by a pattern,
             // just like an rvalue temporary, rather than an immutable binding.
             let input = local.definition.is_none() && matches!(local.kind, LocalKind::Parameter(_));
-            if !local.mutable && !input {
+            if !local.mutable && !input && !unique {
                 return Err("cannot mutably borrow an immutable local");
             }
         }

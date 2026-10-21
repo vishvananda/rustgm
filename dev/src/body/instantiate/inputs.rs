@@ -219,6 +219,7 @@ pub(super) fn owner(
                 Owner::Closure {
                     identity,
                     signature,
+                    execution: None,
                 },
                 owner,
             ))

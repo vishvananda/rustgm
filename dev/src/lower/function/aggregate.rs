@@ -197,6 +197,17 @@ impl Lower<'_, '_> {
         if let ProjectionKind::SliceIndex { index } = projection.kind {
             return self.project_slice_index(id, index);
         }
+        if matches!(projection.kind, ProjectionKind::CaptureBoundary { .. }) {
+            if self.place_type(projection.base)? != projection.ty {
+                return Err("capture boundary changes native place type");
+            }
+            if self.context.wide_referent(projection.ty)? {
+                let metadata = self.metadata(projection.base)?;
+                self.place_metadata.insert(id, metadata);
+            }
+            self.projections[id.0 as usize] = Projected::Ready(base);
+            return Ok(());
+        }
         let base_type = self.place_type(projection.base)?;
         if matches!(
             self.context.types.kind(base_type),
@@ -212,6 +223,9 @@ impl Lower<'_, '_> {
         let leaf = self.context.layout(projection.ty)?;
         let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
         let address = match projection.kind {
+            ProjectionKind::CaptureBoundary { .. } => {
+                return Err("capture boundary escaped transparent native dispatch");
+            }
             ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }
             | ProjectionKind::SliceIndex { .. }

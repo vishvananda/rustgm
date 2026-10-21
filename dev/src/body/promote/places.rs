@@ -83,6 +83,7 @@ impl Engine<'_, '_> {
             return Ok(None);
         };
         let index = match projection.kind {
+            ProjectionKind::CaptureBoundary { .. } => return Ok(Some(base.value)),
             ProjectionKind::ConstantIndex(index) => index,
             ProjectionKind::Field(Selection::Tuple(index)) => u64::from(index),
             ProjectionKind::Field(Selection::Nominal(field)) => u64::from(

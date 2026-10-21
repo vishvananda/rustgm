@@ -257,6 +257,9 @@ impl Machine<'_, '_> {
         };
         while let Some((id, projection)) = pending.pop() {
             address = match projection.kind {
+                ProjectionKind::CaptureBoundary { .. } => {
+                    return Err("captured closure execution is not implemented in constants".into());
+                }
                 ProjectionKind::Dereference { .. } => self.read(address)?,
                 ProjectionKind::RawDereference { .. } => {
                     return Err(
