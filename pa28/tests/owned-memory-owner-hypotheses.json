@@ -1,0 +1,43 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-direct-inline.rs",
+      "sha256": "60566e130052098a5d915fa699962401d05650d13fe39e05dda5d476e9ddf647",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-grouped-inline.rs",
+      "sha256": "287baf1ff553c5b9ae6363fbc0531cb0cb2acf88b447943665fc89df944c10c8",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-grouped-plain.rs",
+      "sha256": "102b45c517c93f436fc0a355005340001c9e17266b94db1f4c00ddf8485496e3",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-block-inline.rs",
+      "sha256": "64050fea1e2ea876cc88e7d1a77728ddea2760eda827df126b633b3c384b17d9",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa25/tests/spec/inline-owner-context/static-inline-scalar.rs",
+      "sha256": "07468d88254801fd2fe8682dc06f3c39045b50714fa0a9df8889a3645218dabc",
+      "rustc_status": 0,
+      "original_declared_path": "pa28/tests/spec/owned-pointer-memory/static-inline-scalar.rs"
+    },
+    {
+      "path": "pa25/tests/spec/inline-owner-context/const-inline-scalar.rs",
+      "sha256": "353e280997fe0c79aa5be3259bd895ad34b1ad1c99648a5bc46f885c8b8b10da",
+      "rustc_status": 0,
+      "original_declared_path": "pa28/tests/spec/owned-pointer-memory/const-inline-scalar.rs"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-inline-reference.rs",
+      "sha256": "ce0239068897535d9b9ad52ad90dfaa2780dd21aaa558bb2c97caae61da91544",
+      "rustc_status": 0
+    }
+  ],
+  "placement_correction": "Two byte-identical scalar controls moved to earliest PA25 ownership after independent qualification."
+}

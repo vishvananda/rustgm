@@ -38,12 +38,14 @@ pub(super) struct Memory {
     cells: Vec<Cell>,
     roots: HashMap<LocationId, usize>,
     expired: HashSet<LocationId>,
-    // Successful closed callable capabilities only; access permission is never cached.
-    pub(super) copy_intrinsics: HashSet<crate::types::instance::Instance>,
+    // Completed ordinary root-type facts only; access permissions are never cached.
+    pub(super) ordinary_static_types: HashSet<TypeId>,
 }
 impl Memory {
     pub(super) fn retained_cells(&self) -> usize {
-        self.cells.len().saturating_add(self.copy_intrinsics.len())
+        self.cells
+            .len()
+            .saturating_add(self.ordinary_static_types.len().saturating_mul(4))
     }
     pub(super) fn expire(&mut self, locations: &[LocationId]) {
         self.expired.extend(locations.iter().copied());
@@ -198,6 +200,13 @@ impl Machine<'_, '_> {
             .ok_or("missing constant snapshot".into())
     }
     pub(super) fn read(&mut self, place: Resolved) -> Result<Option<Constant>, Failure> {
+        self.read_for(place, super::static_reads::ReadPurpose::Value)
+    }
+    pub(super) fn read_for(
+        &mut self,
+        place: Resolved,
+        purpose: super::static_reads::ReadPurpose,
+    ) -> Result<Option<Constant>, Failure> {
         let (root, path) = self.path(place.address)?;
         if let Some(access) = place.raw {
             self.check_raw_read(
@@ -217,11 +226,11 @@ impl Machine<'_, '_> {
             let cell = self.cell(root, path)?;
             self.freeze(cell)?
         } else {
-            let reader = Reader::new(self.evaluator.facts());
-            let location = reader.location(root)?;
+            let location = Reader::new(self.evaluator.facts()).location(root)?;
             let mut value = if let Origin::Static(id) = location.origin {
                 self.check_static_read(id)?;
-                let Some(value) = reader.definition(id) else {
+                self.check_static_value_read(location.ty, place.ty, purpose)?;
+                let Some(value) = Reader::new(self.evaluator.facts()).definition(id) else {
                     self.waiting = Some(super::Requirement::InitializerBody(id));
                     return Ok(None);
                 };

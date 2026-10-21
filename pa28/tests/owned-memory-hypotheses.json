@@ -1,0 +1,138 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "baseline": "30bc44cd",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/plain-runtime.rs",
+      "sha256": "a9dcff48455230b7c6a5764fe099b6e6e22ecc2fe2da2672272c71d71182c41c",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/drop-write.rs",
+      "sha256": "5fe3429910dcbdba1e2232def0a09b7ce9003968f1f3ce45f3a784a44364c025",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/ordinary-assignment.rs",
+      "sha256": "798e4eddfbd12e32d26f4e46e1b113970595207ad1671ebdf51064ee67001292",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/drop-read.rs",
+      "sha256": "b1a2b4f4ea6ae572d2c908f0231a31914b439a6ad5c187b3f4995a0e4b3cb485",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/drop-discarded-read.rs",
+      "sha256": "895ff38cb78a44c66f1c58eb06da9e5b101e5675b25eed7656790b90e59d04d3",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/move-then-reinitialize.rs",
+      "sha256": "a98d8d9125912430cb408dbce33ee2fe91eacbc9c7de05cabf82f9f69e6b1020",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/generic.rs",
+      "sha256": "666ff5aff4852b30b3138a26c7ad2459eabeae31d7f8ba6dd130fbc983055955",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/reified.rs",
+      "sha256": "03d025b0aa8fdb7382db224d0758eb58a37b2a7a07c525889b0ea79fdd697c9d",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/write-moves-source.rs",
+      "sha256": "3a68be03a162310232ba4565ff67133bc45d5e733aa993c9d0a9e16e58d6ddc9",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/read-preserves-source.rs",
+      "sha256": "ef48ff5a92c8527aebbe0e80fe335334e5b15037a9b09f1c8dc36fa9fccaad94",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/uninitialized-address.rs",
+      "sha256": "b7241a51e74563e31f4d70575dbe1bc984b5ed09d33849956c29ec42de2475dc",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-plain.rs",
+      "sha256": "23ccf7a959423675462c775ffc168526b381c7dfe36a245cebd8d7b90e68ed11",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-move-reinitialize.rs",
+      "sha256": "c83adbe2727e15a9df8dff19f5ea775349c0eb73889848c9aa62a62fe36709ca",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-moved-raw-field.rs",
+      "sha256": "ed822d32ef78f5060b2efcb7f09ed332cb19ce20732ddf544f4d16fc5f8dd4fa",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-moved-ptr-read.rs",
+      "sha256": "f9a032629781d840de886d9c83e9582d3a6fbd4dc9f60fd77797f91f463b1323",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-reference-transfer.rs",
+      "sha256": "931425f0970740112aa1e09329104832d8c834d26e036f1501e10098c423734e",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-reference-alias-use.rs",
+      "sha256": "e0b10ccfaaa18abebad3f75aeb5b8dab9fceac398b213ebe4195e3b846f49434",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-raw-field-transfer.rs",
+      "sha256": "cac2c98c3836e219ffd1b54807dcf74dcba6e7a478a5009e98fe78963faae6b2",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-drop-forbidden.rs",
+      "sha256": "04a716d3986df3c093cf93e2494d879d72993744be5e3a3ad2746b45829f870f",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-static-drop-result.rs",
+      "sha256": "b0ec79963db3dc434d73b1741c532021d06bf0f11f11abf20981d6d09934fb0e",
+      "rustc_status": 0,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-shared-write.rs",
+      "sha256": "d98971c9dc20936c9b806c3fa34604b90e74c5650d255c6b5408b6a4bcbfe63f",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-stale-read.rs",
+      "sha256": "25ca32bd1a09cbe9c89665b37e08f4759a9ec7a1a624205197719325628a4161",
+      "rustc_status": 1,
+      "source_origin": "authored independent non-Copy ownership and raw storage hypothesis"
+    }
+  ]
+}

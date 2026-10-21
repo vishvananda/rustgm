@@ -1,7 +1,4 @@
 //! Copy/Clone obligations under fixed assumptions, independent of storage layout.
-#[cfg(test)]
-#[path = "../../tests/invariants/copy_budget.rs"]
-mod budget_tests;
 use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Primitive, Store, TypeId, aggregate::Definitions};
 use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
@@ -49,32 +46,8 @@ pub struct Copies {
     states: Vec<State>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
-    limit: Option<usize>,
 }
 impl Copies {
-    /// Closed queries keep sparse state without importing declaration assumptions.
-    #[must_use]
-    pub fn bounded(limit: usize) -> Self {
-        Self {
-            scope: Some(Box::new(Scope {
-                environment: None,
-                builtins: None,
-                states: HashMap::new(),
-            })),
-            limit: Some(limit),
-            ..Self::default()
-        }
-    }
-    fn charge(&mut self) -> Result<(), &'static str> {
-        self.steps = self
-            .steps
-            .checked_add(1)
-            .ok_or("Copy query work overflow")?;
-        if self.limit.is_some_and(|limit| self.steps > limit) {
-            return Err("Copy query work budget exceeded");
-        }
-        Ok(())
-    }
     #[must_use]
     pub fn in_environment(environment: Arc<Environment>) -> Self {
         Self {
@@ -181,9 +154,6 @@ impl Copies {
         selected: &HashMap<ItemId, Properties, S>,
     ) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
-            if self.limit.is_some() {
-                self.charge()?;
-            }
             let kind = types.kind(ty).ok_or("invalid Copy type")?;
             let state = self.state(ty);
             match state {
@@ -261,9 +231,6 @@ impl Copies {
                             result.clone_ &= properties.copy;
                         }
                     } else {
-                        if self.limit.is_some() {
-                            self.charge()?;
-                        }
                         self.work.push((child, false));
                     }
                     Ok(())

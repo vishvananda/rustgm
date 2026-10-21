@@ -1,0 +1,1 @@
+struct D{n:*mut u32,w:u32}impl Drop for D{fn drop(&mut self){unsafe{*self.n+=self.w;}}}fn main(){let mut n=0u32;{let mut d=D{n:&raw mut n,w:1};let f:unsafe fn(*const D)->D=core::ptr::read::<D>;let g:unsafe fn(*mut D,D)=core::ptr::write::<D>;unsafe{let q=f(&raw const d);g(&raw mut d,q);}}}

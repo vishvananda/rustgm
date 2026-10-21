@@ -1,0 +1,20 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-direct-reference-cell.rs",
+      "sha256": "cd07d7b26ee53f1463dd46634d9e0345bc54b7e8b98bead846ccbe72404f19ab",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/mixed-static-first.rs",
+      "sha256": "a1908e36f691727597dcf779e9d137d88bdf562fa66bff696569677ab5dd867e",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/mixed-const-first.rs",
+      "sha256": "171d6a63acdd9f8fd8973203c60db12ff78457f62c3959741a9e75690e82a04f",
+      "rustc_status": 1
+    }
+  ]
+}

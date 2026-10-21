@@ -1,0 +1,20 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-named-const.rs",
+      "sha256": "f7b46b00a18cf67b57d2afdc6ed23cdc363df40b043f78cc2cc836b0413c752a",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-inline-const.rs",
+      "sha256": "034147c54783e0cb100f6fb2bcf9bc2ce0653f09bb1ce3967436fa4d1086929d",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-const-function.rs",
+      "sha256": "a29423dd2a581784065cc6f52a084cfd71501dee522d0c878693107038dd5e5a",
+      "rustc_status": 0
+    }
+  ]
+}

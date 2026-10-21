@@ -1,0 +1,40 @@
+{
+  "stage": "predeclared-before-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-interior-read.rs",
+      "sha256": "f201c44ec96ff7c3d73359e7164c13f34591fa009fb483ff107e8a0a26064a72",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-interior-field-read.rs",
+      "sha256": "4272b350057099ccb569fe9d0ffed3741defe7ad7bb72687a8fe37d190263573",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-mutable-read.rs",
+      "sha256": "efeb55fa8efaf36f2d8d1aa29ebd2a279afec01308e3040da67fe4705920e502",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-reference.rs",
+      "sha256": "8a0d10eb49887f79e6d4380f7f851c29f822726e93c5bbca9633ac27eb5b84bd",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-zst-field.rs",
+      "sha256": "bd7bbce8e35b2eb50d541b697a5886445b24da22806cf59c3d8bb4327c11cdbb",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-interior-function.rs",
+      "sha256": "4e4f8a31ec9e44911dc90f1932634eafd3206af51a0097ceb531db90588822a8",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-function.rs",
+      "sha256": "90bc76ce9f361391ad97e735d6b8f843143036da1e96dff6e4d5dc980b8c8bb4",
+      "rustc_status": 1
+    }
+  ]
+}

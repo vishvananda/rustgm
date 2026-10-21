@@ -1,0 +1,22 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-associated-const.rs",
+      "sha256": "dcad2ee6612f26941284efb2496761755378ee54588075eda5287ffb3311f9c3",
+      "rustc_status": 1
+    }
+  ],
+  "placement_corrections": [
+    {
+      "original_path": "pa28/tests/spec/owned-pointer-memory/static-inline-scalar.rs",
+      "path": "pa25/tests/spec/inline-owner-context/static-inline-scalar.rs",
+      "sha256": "07468d88254801fd2fe8682dc06f3c39045b50714fa0a9df8889a3645218dabc"
+    },
+    {
+      "original_path": "pa28/tests/spec/owned-pointer-memory/const-inline-scalar.rs",
+      "path": "pa25/tests/spec/inline-owner-context/const-inline-scalar.rs",
+      "sha256": "353e280997fe0c79aa5be3259bd895ad34b1ad1c99648a5bc46f885c8b8b10da"
+    }
+  ]
+}

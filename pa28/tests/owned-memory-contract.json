@@ -1,0 +1,778 @@
+{
+  "stage": "planned-development-contract-no-oracles",
+  "base": "4b099b49",
+  "supersedes_copy_only_checkpoint": "30bc44cd (integrated a71386f6)",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort"
+  },
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/plain-runtime.rs",
+      "sha256": "a9dcff48455230b7c6a5764fe099b6e6e22ecc2fe2da2672272c71d71182c41c",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/drop-write.rs",
+      "sha256": "5fe3429910dcbdba1e2232def0a09b7ce9003968f1f3ce45f3a784a44364c025",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/ordinary-assignment.rs",
+      "sha256": "798e4eddfbd12e32d26f4e46e1b113970595207ad1671ebdf51064ee67001292",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/drop-read.rs",
+      "sha256": "b1a2b4f4ea6ae572d2c908f0231a31914b439a6ad5c187b3f4995a0e4b3cb485",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/drop-discarded-read.rs",
+      "sha256": "895ff38cb78a44c66f1c58eb06da9e5b101e5675b25eed7656790b90e59d04d3",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/move-then-reinitialize.rs",
+      "sha256": "a98d8d9125912430cb408dbce33ee2fe91eacbc9c7de05cabf82f9f69e6b1020",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/generic.rs",
+      "sha256": "666ff5aff4852b30b3138a26c7ad2459eabeae31d7f8ba6dd130fbc983055955",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/reified.rs",
+      "sha256": "03d025b0aa8fdb7382db224d0758eb58a37b2a7a07c525889b0ea79fdd697c9d",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/write-moves-source.rs",
+      "sha256": "3a68be03a162310232ba4565ff67133bc45d5e733aa993c9d0a9e16e58d6ddc9",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        0,
+        1,
+        1
+      ],
+      "reason": "local may be uninitialized or moved at this read",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/read-preserves-source.rs",
+      "sha256": "ef48ff5a92c8527aebbe0e80fe335334e5b15037a9b09f1c8dc36fa9fccaad94",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/uninitialized-address.rs",
+      "sha256": "b7241a51e74563e31f4d70575dbe1bc984b5ed09d33849956c29ec42de2475dc",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        0,
+        1,
+        1
+      ],
+      "reason": "borrowed place may be uninitialized or moved",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-plain.rs",
+      "sha256": "23ccf7a959423675462c775ffc168526b381c7dfe36a245cebd8d7b90e68ed11",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-move-reinitialize.rs",
+      "sha256": "c83adbe2727e15a9df8dff19f5ea775349c0eb73889848c9aa62a62fe36709ca",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-moved-raw-field.rs",
+      "sha256": "ed822d32ef78f5060b2efcb7f09ed332cb19ce20732ddf544f4d16fc5f8dd4fa",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-moved-ptr-read.rs",
+      "sha256": "f9a032629781d840de886d9c83e9582d3a6fbd4dc9f60fd77797f91f463b1323",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-reference-transfer.rs",
+      "sha256": "931425f0970740112aa1e09329104832d8c834d26e036f1501e10098c423734e",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "classification": "positive profile boundary"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-reference-alias-use.rs",
+      "sha256": "e0b10ccfaaa18abebad3f75aeb5b8dab9fceac398b213ebe4195e3b846f49434",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "classification": "positive profile boundary"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-raw-field-transfer.rs",
+      "sha256": "cac2c98c3836e219ffd1b54807dcf74dcba6e7a478a5009e98fe78963faae6b2",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-drop-forbidden.rs",
+      "sha256": "04a716d3986df3c093cf93e2494d879d72993744be5e3a3ad2746b45829f870f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant evaluation cannot run destructors",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-static-drop-result.rs",
+      "sha256": "b0ec79963db3dc434d73b1741c532021d06bf0f11f11abf20981d6d09934fb0e",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-shared-write.rs",
+      "sha256": "d98971c9dc20936c9b806c3fa34604b90e74c5650d255c6b5408b6a4bcbfe63f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-stale-read.rs",
+      "sha256": "25ca32bd1a09cbe9c89665b37e08f4759a9ec7a1a624205197719325628a4161",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-static.rs",
+      "sha256": "a694d1bc2db94c5e94bb4ef4fedcddfeb8749f4a6c5f5bc9a4d826a2d7ee0445",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-whole.rs",
+      "sha256": "9ac1f67922f0219fdd19fe7a6134206791966ed0baec08fb1faf6dc6bc4aa3ce",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-ordinary-field.rs",
+      "sha256": "ad70561e4bde6e166e41a2b0d8de6038c86b4271473e0c9182cd7d90c9bb6093",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-inactive.rs",
+      "sha256": "48c2630f4c25c33e4961e9597f46b76cca9b214b711076a73f1994cb17a7862b",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-zero-array.rs",
+      "sha256": "84f4f045cd0278d392e9ba31bcc881583698f664181ce1f2421c31f1eed53a51",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-local.rs",
+      "sha256": "04fe137e82c3373f443239581a1fd91048e7bfd3ad5bb1c17b6ce24ca096946d",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-reference-slot.rs",
+      "sha256": "dda64290ace2a65a5719c0a33de7f6ba1db6a72a22d0e7cc9a62c1c9f219a241",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-union-mask.rs",
+      "sha256": "5c49930b33a7d09d6380b39b5525dd1f1d9d9097f1858558100793a7528380af",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant union scalar read uses uninitialized bytes",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-union-preserve.rs",
+      "sha256": "3dfeae2459376ca9ecc0ad4a30fc24627081cd1684b6fde3e94c8959376097cb",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-interior-read.rs",
+      "sha256": "f201c44ec96ff7c3d73359e7164c13f34591fa009fb483ff107e8a0a26064a72",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-interior-field-read.rs",
+      "sha256": "4272b350057099ccb569fe9d0ffed3741defe7ad7bb72687a8fe37d190263573",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-mutable-read.rs",
+      "sha256": "efeb55fa8efaf36f2d8d1aa29ebd2a279afec01308e3040da67fe4705920e502",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read mutable static storage",
+      "classification": "positive profile boundary"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-reference.rs",
+      "sha256": "8a0d10eb49887f79e6d4380f7f851c29f822726e93c5bbca9633ac27eb5b84bd",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-zst-field.rs",
+      "sha256": "bd7bbce8e35b2eb50d541b697a5886445b24da22806cf59c3d8bb4327c11cdbb",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-interior-function.rs",
+      "sha256": "4e4f8a31ec9e44911dc90f1932634eafd3206af51a0097ceb531db90588822a8",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-function.rs",
+      "sha256": "90bc76ce9f361391ad97e735d6b8f843143036da1e96dff6e4d5dc980b8c8bb4",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-named-const.rs",
+      "sha256": "f7b46b00a18cf67b57d2afdc6ed23cdc363df40b043f78cc2cc836b0413c752a",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-inline-const.rs",
+      "sha256": "034147c54783e0cb100f6fb2bcf9bc2ce0653f09bb1ce3967436fa4d1086929d",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-const-function.rs",
+      "sha256": "a29423dd2a581784065cc6f52a084cfd71501dee522d0c878693107038dd5e5a",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-direct-reference-cell.rs",
+      "sha256": "cd07d7b26ee53f1463dd46634d9e0345bc54b7e8b98bead846ccbe72404f19ab",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/mixed-static-first.rs",
+      "sha256": "a1908e36f691727597dcf779e9d137d88bdf562fa66bff696569677ab5dd867e",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/mixed-const-first.rs",
+      "sha256": "171d6a63acdd9f8fd8973203c60db12ff78457f62c3959741a9e75690e82a04f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-direct-inline.rs",
+      "sha256": "60566e130052098a5d915fa699962401d05650d13fe39e05dda5d476e9ddf647",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-grouped-inline.rs",
+      "sha256": "287baf1ff553c5b9ae6363fbc0531cb0cb2acf88b447943665fc89df944c10c8",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-grouped-plain.rs",
+      "sha256": "102b45c517c93f436fc0a355005340001c9e17266b94db1f4c00ddf8485496e3",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-nested-block-inline.rs",
+      "sha256": "64050fea1e2ea876cc88e7d1a77728ddea2760eda827df126b633b3c384b17d9",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa25/tests/spec/inline-owner-context/static-inline-scalar.rs",
+      "sha256": "07468d88254801fd2fe8682dc06f3c39045b50714fa0a9df8889a3645218dabc",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa25/tests/spec/inline-owner-context/const-inline-scalar.rs",
+      "sha256": "353e280997fe0c79aa5be3259bd895ad34b1ad1c99648a5bc46f885c8b8b10da",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-inline-reference.rs",
+      "sha256": "ce0239068897535d9b9ad52ad90dfaa2780dd21aaa558bb2c97caae61da91544",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "classification": "supported independently declared outcome"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/static-associated-const.rs",
+      "sha256": "dcad2ee6612f26941284efb2496761755378ee54588075eda5287ffb3311f9c3",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot read interior-mutable static storage",
+      "classification": "supported independently declared outcome"
+    }
+  ],
+  "native_cases": [
+    {
+      "path": "pa28/tests/owned-memory-native/const-plain.rs",
+      "sha256": "739868455ba32f73964ea9bbf11501a136584f31c3a1abe03cda3327fc5deb11",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/direct-reference-cell.rs",
+      "sha256": "1b68b3cf2017f5d769959b12ed2cfcfa58c4ad8612e6b896679267811c342e2e",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/generic.rs",
+      "sha256": "7552b894dad54bd7b642e09069da18cd1256c920b50b2c2d93fd83bd1d8a3a08",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/ignored-read.rs",
+      "sha256": "314fa8aabb3ac2df5dcb7b87c60b4e67f6480f3157bcf47cd2a9c00a8a7e73ca",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/move-reinitialize.rs",
+      "sha256": "91c701f76122bee7924087bb94e18a492f03b34190f717135a8c5c332524825b",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/nested-fields.rs",
+      "sha256": "9ff229242ceacf68e7a0212b83536d1e0fce426f16dc81c42d8e39b6e6773694",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/ordinary-assignment.rs",
+      "sha256": "349be2b73dc6abf6ba8da2d845e507a7954f0aab799579dc035209313835a0ca",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/overwrite-no-drop.rs",
+      "sha256": "de8ef7c034f0cf2c61cd1823c933d9bfaabf527b2fc1f8b5e7d969098e058533",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/read-forget.rs",
+      "sha256": "ceaade396d3a4c5e509075cf99604d514e2b36406981aaf9c71a19bdc356cd88",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/read-replace.rs",
+      "sha256": "4579208ccfdc66cadf1f60999e5ddb4224224d57655e2bc23518775e21c09000",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/reified.rs",
+      "sha256": "9219326ac28e5c2f544b3f888d65a6026f60ef786d5b1ecae3d7a79bdc225e1d",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/static-context.rs",
+      "sha256": "5a548c3d76aef2e15c8b2576d4dc4ca89e373408fbdade52aa9b1101d07328ef",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/static-reference.rs",
+      "sha256": "6d1bc92be3893a86ac795f0dfef9be3ebd01d04a522ac5ee544a31c08126e8a8",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/zero-sized-drop.rs",
+      "sha256": "b5a2052b6519397d3ad9105f0652436ff82e7916965364d5e70feaf9ec9b5937",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "hypothesis_corrections": [
+    {
+      "names": [
+        "const-moved-raw-field",
+        "const-moved-ptr-read",
+        "const-reference-alias-use"
+      ],
+      "original_prediction": 1,
+      "qualified_rustc_status": 0,
+      "original_plan": "owned-memory-hypotheses.json"
+    },
+    {
+      "names": [
+        "const-interior-ordinary-field",
+        "const-interior-inactive"
+      ],
+      "original_prediction": 0,
+      "qualified_rustc_status": 1,
+      "original_plan": "owned-memory-static-hypotheses.json"
+    }
+  ],
+  "remaining_boundaries": [
+    "Nominal aggregate lifetime differences outside the existing exact physical storage profile.",
+    "Mutable/external static reads or writes beyond the existing CTFE profiles.",
+    "Numeric and expired zero-size pointer profiles; general pointer reinterpretation and pointer-bearing union Images.",
+    "The original wide slice-index/.len consumer controls remain independently retained; combined-main qualification belongs to integrator."
+  ]
+}

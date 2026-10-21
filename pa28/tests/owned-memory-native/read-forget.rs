@@ -1,0 +1,1 @@
+struct D{n:*mut u32,w:u32}impl Drop for D{fn drop(&mut self){unsafe{*self.n+=self.w;}}}fn forget<T>(x:T){let _holder=core::mem::ManuallyDrop::new(x);}fn main(){let mut n=0u32;{let d=D{n:&raw mut n,w:1};let q=unsafe{core::ptr::read(&raw const d)};forget(d);check(n==0);let _=q;}check(n==1);}

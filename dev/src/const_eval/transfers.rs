@@ -5,7 +5,6 @@ use super::{
 };
 use crate::{
     resolve::model::DefId,
-    sema::values::Reader,
     support::intrinsics::{ConstPermission, Intrinsic},
     types::{Kind, TypeId, callable::Convention, instance::Instance},
 };
@@ -64,21 +63,6 @@ impl Machine<'_, '_> {
         }
         let ty = self.memory_pointee(intrinsic, instance)?;
         self.charge(1)?;
-        if !self.memory.copy_intrinsics.contains(&instance) {
-            let (properties, work) = Reader::new(self.evaluator.facts())
-                .copy_properties(ty, self.limits.steps.saturating_sub(self.work.steps))?;
-            self.charge(work)?;
-            self.work.copy_steps = self
-                .work
-                .copy_steps
-                .checked_add(work)
-                .ok_or("constant Copy work overflow")?;
-            if !properties.copy {
-                return Err("non-Copy pointer memory operations are not implemented".into());
-            }
-            self.reserve_cells(1)?;
-            self.memory.copy_intrinsics.insert(instance);
-        }
         let writing = intrinsic == Intrinsic::Write;
         if arguments.len() != if writing { 2 } else { 1 } {
             return Err("pointer memory operation argument count mismatch".into());

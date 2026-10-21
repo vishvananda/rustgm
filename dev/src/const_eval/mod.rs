@@ -4,6 +4,7 @@ mod memory;
 mod raw_reads;
 mod readiness;
 mod returns;
+mod static_reads;
 mod transfers;
 mod values;
 
@@ -13,6 +14,7 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::values::{Constant, Evaluator, Failure},
 };
+use static_reads::EvaluationContext;
 use std::collections::{HashMap, HashSet};
 
 /// Deterministic execution limits are independent of the host stack and time.
@@ -34,7 +36,6 @@ impl Default for Limits {
 #[derive(Clone, Copy, Default, Debug)]
 pub struct Work {
     pub steps: usize,
-    pub copy_steps: usize,
     pub calls: usize,
     pub peak_frames: usize,
     pub peak_slots: usize,
@@ -44,6 +45,7 @@ pub struct Error {
     pub message: &'static str,
 }
 struct Frame {
+    context: EvaluationContext,
     body: usize,
     block: BlockId,
     next: u32,
@@ -74,6 +76,7 @@ pub struct Machine<'a, 'b> {
         crate::types::TypeId,
     )>,
     waiting: Option<Requirement>,
+    context: EvaluationContext,
 }
 pub(crate) struct State {
     frames: Vec<Frame>,
@@ -136,6 +139,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             active_inline: HashSet::new(),
             active_anonymous: HashSet::new(),
             waiting: None,
+            context: EvaluationContext::Constant,
         }
     }
     #[must_use]
@@ -291,6 +295,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             .first()
             .ok_or("constant body has no entry block")?;
         let mut frame = Frame {
+            context: self.frame_context(body.owner),
             body: index,
             block: BlockId(0),
             next: first.start,
@@ -335,6 +340,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                 return Err((0, "missing constant execution frame".into()));
             };
             let index = frame.body;
+            self.context = frame.context;
             let mut frame = if frame.inline_cursor == usize::MAX {
                 frame
             } else {

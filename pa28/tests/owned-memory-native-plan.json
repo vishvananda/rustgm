@@ -1,0 +1,83 @@
+{
+  "stage": "predeclared-before-independent-native-qualification",
+  "check_prefix": "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\n",
+  "cases": [
+    {
+      "path": "pa28/tests/owned-memory-native/overwrite-no-drop.rs",
+      "sha256": "de8ef7c034f0cf2c61cd1823c933d9bfaabf527b2fc1f8b5e7d969098e058533",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/ordinary-assignment.rs",
+      "sha256": "349be2b73dc6abf6ba8da2d845e507a7954f0aab799579dc035209313835a0ca",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/read-forget.rs",
+      "sha256": "ceaade396d3a4c5e509075cf99604d514e2b36406981aaf9c71a19bdc356cd88",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/read-replace.rs",
+      "sha256": "4579208ccfdc66cadf1f60999e5ddb4224224d57655e2bc23518775e21c09000",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/move-reinitialize.rs",
+      "sha256": "91c701f76122bee7924087bb94e18a492f03b34190f717135a8c5c332524825b",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/generic.rs",
+      "sha256": "7552b894dad54bd7b642e09069da18cd1256c920b50b2c2d93fd83bd1d8a3a08",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/reified.rs",
+      "sha256": "9219326ac28e5c2f544b3f888d65a6026f60ef786d5b1ecae3d7a79bdc225e1d",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/nested-fields.rs",
+      "sha256": "9ff229242ceacf68e7a0212b83536d1e0fce426f16dc81c42d8e39b6e6773694",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/ignored-read.rs",
+      "sha256": "314fa8aabb3ac2df5dcb7b87c60b4e67f6480f3157bcf47cd2a9c00a8a7e73ca",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/zero-sized-drop.rs",
+      "sha256": "b5a2052b6519397d3ad9105f0652436ff82e7916965364d5e70feaf9ec9b5937",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/const-plain.rs",
+      "sha256": "739868455ba32f73964ea9bbf11501a136584f31c3a1abe03cda3327fc5deb11",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "source_origin": "authored destructor/transfer control; runtime harness prepends CHECK"
+    }
+  ]
+}

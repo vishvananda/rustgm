@@ -1,0 +1,59 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-static.rs",
+      "sha256": "a694d1bc2db94c5e94bb4ef4fedcddfeb8749f4a6c5f5bc9a4d826a2d7ee0445",
+      "rustc_status": 1,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-whole.rs",
+      "sha256": "9ac1f67922f0219fdd19fe7a6134206791966ed0baec08fb1faf6dc6bc4aa3ce",
+      "rustc_status": 1,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-ordinary-field.rs",
+      "sha256": "ad70561e4bde6e166e41a2b0d8de6038c86b4271473e0c9182cd7d90c9bb6093",
+      "rustc_status": 0,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-inactive.rs",
+      "sha256": "48c2630f4c25c33e4961e9597f46b76cca9b214b711076a73f1994cb17a7862b",
+      "rustc_status": 0,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-zero-array.rs",
+      "sha256": "84f4f045cd0278d392e9ba31bcc881583698f664181ce1f2421c31f1eed53a51",
+      "rustc_status": 0,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-local.rs",
+      "sha256": "04fe137e82c3373f443239581a1fd91048e7bfd3ad5bb1c17b6ce24ca096946d",
+      "rustc_status": 0,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-interior-reference-slot.rs",
+      "sha256": "dda64290ace2a65a5719c0a33de7f6ba1db6a72a22d0e7cc9a62c1c9f219a241",
+      "rustc_status": 0,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-union-mask.rs",
+      "sha256": "5c49930b33a7d09d6380b39b5525dd1f1d9d9097f1858558100793a7528380af",
+      "rustc_status": 1,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    },
+    {
+      "path": "pa28/tests/spec/owned-pointer-memory/const-union-preserve.rs",
+      "sha256": "3dfeae2459376ca9ecc0ad4a30fc24627081cd1684b6fde3e94c8959376097cb",
+      "rustc_status": 0,
+      "source_origin": "authored opposing immutable interior static/union initialization control"
+    }
+  ]
+}

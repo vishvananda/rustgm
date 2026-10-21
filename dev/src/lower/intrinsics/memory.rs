@@ -14,9 +14,6 @@ use crate::{
 };
 impl Context<'_> {
     pub(super) fn memory_type(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
-        if !self.constants.copy_properties(ty, 1_000_000)?.0.copy {
-            return Err("non-Copy pointer memory operations are not implemented");
-        }
         self.layout(ty)?;
         self.representation(ty)
     }

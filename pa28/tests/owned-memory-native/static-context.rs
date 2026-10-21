@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;static S:AtomicU32=AtomicU32::new(7);const fn get()->AtomicU32{unsafe{core::ptr::read(&raw const S)}}static X:AtomicU32=get();static Y:u32={struct W{a:u32,b:AtomicU32}static WIDE:W=W{a:37,b:AtomicU32::new(3)};unsafe{core::ptr::read(&raw const WIDE.a)}};fn main(){check(X.load(core::sync::atomic::Ordering::Relaxed)==7&&Y==37);}

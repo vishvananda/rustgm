@@ -40,7 +40,7 @@ impl Queries<'_> {
             && let Some(super::instances::ValueScope::Initializer { index, .. }) = self.value_scope
         {
             let initializer = self.typing.facts.initializers[index];
-            if initializer.value == source && initializer.semantic_source() != source {
+            if initializer.value == source {
                 return Ok(Target::Initializer(initializer.definition));
             }
         }

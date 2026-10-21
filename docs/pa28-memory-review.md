@@ -105,3 +105,8 @@ remain required follow-up work. No planned assignment is activated and no oracle
 is generated. The inherited PA16 receipt/layout discrepancy is integrator-owned
 and already corrected in its combined checkout; this worker does not regenerate
 or repeat that known stale check.
+
+The later Sized non-Copy checkpoint supersedes this review's concrete Copy-only
+profile, capability cache, bounded Copy API and copy_steps counter. Their original
+measurements and hypotheses above remain historical evidence. Current transfer
+and static-context contracts are tracked in `pa28-owned-memory-review.md`.

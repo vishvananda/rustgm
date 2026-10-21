@@ -768,7 +768,11 @@ impl Checker<'_> {
         {
             match self.kind(node) {
                 Kind::Group(value) | Kind::Attributed { value, .. } => node.node = value,
-                Kind::Closure { .. } => return Ok(declaration),
+                Kind::Closure { .. }
+                | Kind::Block {
+                    flavor: crate::syntax::ast::BlockFlavor::Const,
+                    ..
+                } => return Ok(declaration),
                 _ => return Ok(root),
             }
         }

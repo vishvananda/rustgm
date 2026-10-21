@@ -1,4 +1,4 @@
-//! Closed stored fields and Copy capabilities consume immutable published facts.
+//! Closed stored field types are read from published shapes without semantic queries.
 use super::{Constant, Reader, View};
 use crate::types::{Kind, TypeId, aggregate::ShapeReadiness};
 
@@ -30,22 +30,6 @@ impl FieldTypes<'_> {
     }
 }
 impl<'a> Reader<'a> {
-    /// Copy capability is queried under fixed completed facts and no assumptions.
-    pub(crate) fn copy_properties(
-        self,
-        ty: TypeId,
-        limit: usize,
-    ) -> Result<(crate::types::copy::Properties, usize), &'static str> {
-        let mut query = crate::types::copy::Copies::bounded(limit);
-        let properties = query.demand(
-            &self.facts.types,
-            &self.facts.aggregates,
-            &self.facts.derives,
-            ty,
-        )?;
-        Ok((properties, query.steps))
-    }
-
     /// Read the active product's closed stored field types, preserving array compression.
     /// # Errors
     /// Rejects unpublished shapes, invalid variants and non-product types.

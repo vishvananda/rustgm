@@ -33,24 +33,36 @@ writes, the source program must meet the selected type's validity and alignment
 requirements; an unsafe block does not validate a pointer or its contents.
 
 The ordinary memory slice adds canonical `core::ptr` / `std::ptr` `read` and
-`write`. Their real signature requires only Sized T; the initial concrete
-implementation profile is Copy, with explicit non-Copy capability diagnostics.
+`write` with their real Sized-only signatures. Concrete non-Copy transfers now
+use ordinary source move/drop rules and the existing owned ABI snapshots.
+`write` consumes its value argument without dropping overwritten storage;
+`read` returns an owned snapshot without marking the source local moved.
+Unsafe caller obligations remain, including avoiding invalid duplicate ownership.
+The earlier Copy-only capability restriction, query, cache and counters are
+superseded; they are retained only in the historical checkpoint review.
+
 Both operations require unsafe permission and permit const execution through
 existing symbolic raw-access checks. Per-pointer authority, exact selected
 storage, initialization, bounds, raw-target alignment and liveness remain checked
-at every access. Cached Copy capability grants no write permission.
+at every access. No successful read or final `*mut` type grants write authority.
+Runtime object transfers use completed CopyObject spans and owned ABI snapshots,
+preserving padding and source/destination overlap. Reified calls use the same
+ordinary hidden-result and argument ABI. CTFE preserves typed values and scalar
+union Image initialization masks without creating a reference.
 
-Runtime object transfers use completed CopyObject spans and fresh owned ABI
-snapshots, preserving padding and source/destination aliasing semantics. Reified
-calls use the same ordinary hidden-result and argument ABI. CTFE preserves typed
-values and scalar union Image initialization masks; writes can initialize or
-repair fields without creating a reference. Live symbolic aligned ZSTs and sized
-wide reference values have dedicated controls. Numeric/expired zero-size pointer
-profiles, non-Copy transfers and existing general reinterpretation limits remain
-explicit boundaries. `tests/pointer-memory-outcomes.json` records 42 independent
-object outcomes, eleven native comparisons and bounded traversal/storage controls.
-The retained original wide slice-index/.len consumer boundaries are described in
-`docs/pa28-memory-review.md` and require combined-main qualification.
+Typed initializer owners determine static-read eligibility. Const functions
+inherit the caller's evaluation context; named, associated and inline constants
+establish constant context, including a whole-initializer inline block. Nonzero
+constant reads reject interior-mutable static roots even through ordinary fields
+or inactive variants. Static initializer reads, zero-byte reads, local interior
+values and independent reference validity retain separate controls.
+`tests/owned-memory-contract.json` declares 52 object/three-view outcomes and
+14 native comparisons. Three Rust-positive profile boundaries remain explicit:
+two nominal mutable-reference lifetime cases and mutable-static initializer
+reads. Numeric/expired zero-size pointer profiles and general reinterpretation
+remain open. Original slice-index/.len consumer controls are retained pending
+combined-main qualification. See `docs/pa28-owned-memory-review.md` and the
+historical `docs/pa28-memory-review.md`; these checkpoints do not activate PA28.
 
 Aggregate, zero-sized and wide-pointer volatile transfers remain explicitly
 unsupported. Ordinary object copies or zero initialization cannot substitute for

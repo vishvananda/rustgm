@@ -1,4 +1,4 @@
-//! Sized Copy pointer memory operations preserve ownership snapshots and raw authority.
+//! Sized pointer memory operations preserve ownership snapshots and raw authority.
 #[path = "memory_transfers/capabilities.rs"]
 mod capabilities;
 #[path = "harness/checked_sources.rs"]
@@ -96,12 +96,7 @@ const CASES: &[(&str, i32, [i32; 3], &str)] = &[
         "constant execution cannot write static storage",
     ),
     ("pointer-value", 0, [0, 0, 0], ""),
-    (
-        "noncopy-boundary",
-        0,
-        [0, 1, 0],
-        "non-Copy pointer memory operations are not implemented",
-    ),
+    ("noncopy-boundary", 0, [0, 0, 0], ""),
     (
         "const-reified",
         1,

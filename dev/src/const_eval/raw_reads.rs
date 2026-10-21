@@ -79,7 +79,10 @@ impl Machine<'_, '_> {
         }
         Ok(())
     }
-    fn footprint(&mut self, ty: TypeId) -> Result<crate::sema::values::StorageLayout, Failure> {
+    pub(super) fn footprint(
+        &mut self,
+        ty: TypeId,
+    ) -> Result<crate::sema::values::StorageLayout, Failure> {
         let (layout, work) = self
             .evaluator
             .storage_layout(ty, self.limits.steps.saturating_sub(self.work.steps))?;
@@ -221,7 +224,10 @@ impl Machine<'_, '_> {
             }
             .into());
         }
-        if self.read(place)?.is_none() {
+        if self
+            .read_for(place, super::static_reads::ReadPurpose::ReferenceValidation)?
+            .is_none()
+        {
             return Ok(None);
         }
         Ok(Some(if mutable {

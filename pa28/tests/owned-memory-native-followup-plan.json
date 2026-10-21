@@ -1,0 +1,23 @@
+{
+  "stage": "predeclared-before-independent-execution",
+  "cases": [
+    {
+      "path": "pa28/tests/owned-memory-native/direct-reference-cell.rs",
+      "sha256": "1b68b3cf2017f5d769959b12ed2cfcfa58c4ad8612e6b896679267811c342e2e",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/static-context.rs",
+      "sha256": "5a548c3d76aef2e15c8b2576d4dc4ca89e373408fbdade52aa9b1101d07328ef",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/owned-memory-native/static-reference.rs",
+      "sha256": "6d1bc92be3893a86ac795f0dfef9be3ebd01d04a522ac5ee544a31c08126e8a8",
+      "rustc_status": 0,
+      "execution_status": 0
+    }
+  ]
+}
