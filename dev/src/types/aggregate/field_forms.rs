@@ -1,5 +1,5 @@
 //! Concrete field normal forms are structural data, separate from their raw proof roots.
-use super::{Definitions, ListId, Store, TypeId};
+use super::{Definitions, ListId, ShapeReadiness, Store, TypeId};
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -13,6 +13,50 @@ impl Fields {
     }
 }
 impl Definitions {
+    /// Read available fields without starting substitution or semantic work.
+    /// Pending fields are distinct from an empty shape and from malformed IDs.
+    /// Discriminants do not participate in structural storage readiness.
+    /// # Errors
+    /// Preserves malformed identities and failed field instantiations.
+    pub fn try_shape(&self, types: &Store, ty: TypeId) -> Result<ShapeReadiness<'_>, &'static str> {
+        let Some(crate::types::Kind::Adt(item, arguments)) = types.kind(ty) else {
+            return Err("aggregate shape requires a nominal type");
+        };
+        types
+            .arguments(arguments)
+            .ok_or("invalid aggregate arguments")?;
+        let Some(definition) = self.get(item) else {
+            return Ok(ShapeReadiness::Pending);
+        };
+        if types.region_args(arguments).is_none()
+            && self.instances.as_ref().is_none_or(|i| !i.contains(ty))
+        {
+            return Ok(ShapeReadiness::Pending);
+        }
+        if types.contains_parameters(ty) == Some(false)
+            && self.storage.as_ref().is_none_or(|s| s.get(ty).is_none())
+        {
+            if self.has_projected_fields(ty) {
+                return Ok(ShapeReadiness::Pending);
+            }
+            // An undemanded region-only shape may still contain a closed
+            // associated projection. Inspect typed flags, never diagnostic text.
+            for variant in self.variants(definition) {
+                for &field in types
+                    .list(variant.fields)
+                    .ok_or("invalid aggregate fields")?
+                {
+                    if types
+                        .contains_projections(field)
+                        .ok_or("invalid aggregate field type")?
+                    {
+                        return Ok(ShapeReadiness::Pending);
+                    }
+                }
+            }
+        }
+        self.shape(types, ty).map(ShapeReadiness::Ready)
+    }
     /// Index typed field flags as each declaration publishes its field lists.
     /// Signature-only associated items do not require storage graph preparation.
     pub(crate) fn index_field_projections(

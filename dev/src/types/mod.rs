@@ -12,6 +12,7 @@ pub mod dynamic;
 pub mod equality;
 pub mod infer;
 pub mod instance;
+pub mod interior_mutability;
 pub mod length;
 pub mod lifetime_proof;
 pub mod opaque;

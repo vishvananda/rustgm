@@ -7,6 +7,20 @@ mod packing;
 mod preparation;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
+
+/// Completed fields may still await concrete substitution or storage normalization.
+pub enum ShapeReadiness<'a> {
+    Pending,
+    Ready(Shape<'a>),
+}
+
+/// Permission to mutate owned storage through a shared reference is nominal metadata.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum SharedMutation {
+    #[default]
+    Ordinary,
+    Interior,
+}
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -64,6 +78,7 @@ pub struct Definitions {
     storage: Option<Box<field_forms::Fields>>,
     metadata_ready: std::collections::HashSet<TypeId>,
     suppressed_fields: std::collections::HashSet<ItemId>,
+    interior_storage: std::collections::HashSet<ItemId>,
 }
 impl Definitions {
     pub(crate) fn mark_discriminants_pending(&mut self, item: ItemId) -> Result<(), &'static str> {
@@ -101,6 +116,16 @@ impl Definitions {
     #[must_use]
     pub const fn has_unions(&self) -> bool {
         self.unions
+    }
+    /// This direct nominal policy does not inspect children or grant an auto trait.
+    #[must_use]
+    pub fn shared_mutation(&self, item: ItemId) -> Option<SharedMutation> {
+        self.get(item)?;
+        Some(if self.interior_storage.contains(&item) {
+            SharedMutation::Interior
+        } else {
+            SharedMutation::Ordinary
+        })
     }
     /// Declaration policy suppresses implicit field cleanup, preserving an explicit destructor.
     #[must_use]
@@ -201,6 +226,17 @@ impl Definitions {
         repr: Repr,
         variants: &[Variant],
     ) -> Result<(), &'static str> {
+        self.insert_with_mutation(item, kind, repr, variants, SharedMutation::Ordinary)
+    }
+    /// Publish the storage policy in the same transaction as its one-time shape.
+    pub(crate) fn insert_with_mutation(
+        &mut self,
+        item: ItemId,
+        kind: Kind,
+        repr: Repr,
+        variants: &[Variant],
+        mutation: SharedMutation,
+    ) -> Result<(), &'static str> {
         if self.index.contains_key(&item) {
             return Err("aggregate definition already complete");
         }
@@ -227,6 +263,9 @@ impl Definitions {
         });
         self.index.insert(item, id);
         self.unions |= kind == Kind::Union;
+        if mutation == SharedMutation::Interior {
+            self.interior_storage.insert(item);
+        }
         Ok(())
     }
     #[must_use]
