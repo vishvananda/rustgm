@@ -97,14 +97,18 @@ impl Builder<'_> {
             .ok_or_else(|| self.error(node, "missing selected unsizing conversion"))?;
         self.evaluate(node, target, Rvalue::Unsize { value, conversion })
     }
+    pub(super) fn static_place(&mut self, node: NodeId, id: super::DefId) -> Result<Place, Error> {
+        let ty = self.facts.definitions[id.0 as usize]
+            .ok_or_else(|| self.error(node, "missing static place type"))?;
+        std::sync::Arc::make_mut(self.body.static_types.get_or_insert_with(Default::default))
+            .entry(id)
+            .or_insert(ty);
+        Ok(Place::Static(id))
+    }
     pub(super) fn place_type(&self, node: NodeId, place: Place) -> Result<TypeId, Error> {
-        match place {
-            Place::Local(id) => Ok(self.body.locals[id.0 as usize].ty),
-            Place::Temporary(id) => Ok(self.body.values[id.0 as usize].ty),
-            Place::Projection(id) => Ok(self.body.projections[id.0 as usize].ty),
-            Place::Static(id) => self.facts.definitions[id.0 as usize]
-                .ok_or_else(|| self.error(node, "missing static place type")),
-        }
+        self.body
+            .place_type(place)
+            .ok_or_else(|| self.error(node, "missing typed place"))
     }
     pub(super) fn dereference_place(&mut self, node: NodeId, base: Place) -> Result<Place, Error> {
         let id = self.dereference_projection(node, base)?;

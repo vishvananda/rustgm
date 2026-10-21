@@ -21,6 +21,8 @@ impl Fixture {
             definitions: aggregate::Definitions::default(),
             body: Body {
                 const_context: false,
+                mutable_statics: None,
+                static_types: None,
                 instance: None,
                 owned: None,
                 storage: None,

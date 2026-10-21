@@ -47,6 +47,9 @@ impl Checker<'_> {
             }
         };
         let pattern = self.selected_pattern(pattern, term)?;
+        if matches!(self.kind(node), Kind::Let { .. }) {
+            self.check_static_binding(node, pattern, Some(value))?;
+        }
         self.state.alignment.patterns.push((pattern, Some(value)));
         let otherwise = match self.kind(node) {
             Kind::Let { otherwise, .. } => otherwise.map(|n| self.key(n)),

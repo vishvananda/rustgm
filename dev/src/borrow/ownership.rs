@@ -460,7 +460,8 @@ impl BodyFacts {
             return Err("cannot mutably borrow through a guard binding");
         }
         if matches!(info.access, Access::Shared | Access::RawShared)
-            || (info.path.is_none() && info.access != Access::RawMutable)
+            || (info.path.is_none()
+                && !matches!(info.access, Access::RawMutable | Access::StaticMutable))
         {
             return Err("cannot mutably borrow shared or static storage");
         }

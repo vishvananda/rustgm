@@ -934,6 +934,7 @@ impl Checker<'_> {
                 .unwrap_or(true);
             self.pattern(node, term, valid)?;
             let root = self.facts.patterns.roots[&self.key(node)];
+            self.check_static_binding(node, root, input)?;
             self.state.alignment.patterns.push((root, input));
             return Ok(());
         }

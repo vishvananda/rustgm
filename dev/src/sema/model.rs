@@ -315,6 +315,8 @@ pub struct StoredFieldWork {
     pub retained_bytes: usize,
 }
 pub struct Declarations {
+    /// Immutable declaration permissions, shared by checked bodies and instances.
+    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
     /// Const permission belongs to a selected declaration, not its callable type.
     pub(crate) constant_functions: std::collections::HashSet<DefId>,
     pub(super) target_feature_functions: std::collections::HashSet<DefId>,
@@ -435,6 +437,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            mutable_statics: None,
             constant_functions: std::collections::HashSet::new(),
             target_feature_functions: std::collections::HashSet::new(),
             closures: super::closures::Bodies::default(),
@@ -524,6 +527,21 @@ impl Declarations {
             }
         }
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
+            if definition.kind == DefKind::Static
+                && let Some(key) = definition.node
+                && let Kind::Item(item) = Self::kind(report, key)
+                && matches!(
+                    report.package.unit(key.file).configured.ast.items[item as usize].kind,
+                    crate::syntax::item::ItemKind::Static { mutable: true, .. }
+                )
+            {
+                let id = DefId(
+                    u32::try_from(index)
+                        .map_err(|_| Self::error(report, key, "too many static declarations"))?,
+                );
+                std::sync::Arc::make_mut(self.mutable_statics.get_or_insert_with(Default::default))
+                    .insert(id);
+            }
             if (matches!(
                 definition.kind,
                 DefKind::Local | DefKind::Parameter | DefKind::Label | DefKind::Generic

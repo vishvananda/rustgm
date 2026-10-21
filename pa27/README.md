@@ -24,6 +24,14 @@ address does not itself create a reference or its alignment promise. The direct
 `&raw const *pointer` cancellation does not read its referent, while accessing a
 field through the pointer still requires unsafe permission.
 
+Mutable static storage requires unsafe permission for reads and writes. Keep its
+declaration mutability separate from the permission to form a reference: the
+edition-2024 `static_mut_refs` lint denies explicit and implicit references by
+default. A direct raw address does not create such a reference. Retain the types
+of static places actually used by each body so assignment cleanup can run an old
+value's destructor before replacing it. Constant evaluation has its own mutable
+static access restrictions, including inside an unsafe block.
+
 Union fields share storage and therefore overlap during borrow checking. Exactly
 one field initializes a union; reading or borrowing a union field requires unsafe
 permission, while assigning a field does not. Enforce the pinned allowed-field

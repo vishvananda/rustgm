@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+static mut N:u8=0;struct S(u8);impl Drop for S{fn drop(&mut self){unsafe{N+=1;}}}static mut X:S=S(3);fn main(){unsafe{X=S(9);check(N==1);check(X.0==9);}}

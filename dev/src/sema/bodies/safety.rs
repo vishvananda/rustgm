@@ -44,12 +44,61 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn mutable_static(&self, id: super::DefId) -> bool {
-        self.report.resolution.definitions[id.0 as usize].node.is_some_and(|key| {
-            matches!(super::Declarations::kind(self.report, key), Kind::Item(item)
-                if matches!(self.report.package.unit(key.file).configured.ast.items[item as usize].kind,
-                    crate::syntax::item::ItemKind::Static { mutable: true, .. }))
-        })
+    pub(super) fn mutable_static(&self, id: super::DefId) -> bool {
+        self.facts
+            .mutable_statics
+            .as_ref()
+            .is_some_and(|ids| ids.contains(&id))
+    }
+    pub(super) fn check_static_binding(
+        &mut self,
+        source: NodeId,
+        pattern: crate::sema::patterns::PatternId,
+        input: Option<NodeId>,
+    ) -> Result<(), Error> {
+        if let Some(input) = input
+            && matches!(
+                self.facts.patterns.nodes[pattern.0 as usize].kind,
+                crate::sema::patterns::Kind::Binding {
+                    capture: crate::sema::patterns::Capture::Borrow { .. },
+                    ..
+                }
+            )
+        {
+            self.check_static_reference(source, input)?;
+        }
+        Ok(())
+    }
+    pub(super) fn check_static_reference(
+        &self,
+        source: NodeId,
+        mut place: NodeId,
+    ) -> Result<(), Error> {
+        if self.facts.mutable_statics.is_none() {
+            return Ok(());
+        }
+        for _ in 0..1_000_000 {
+            if self.facts.autoderefs.contains_key(&self.key(place)) {
+                return Ok(());
+            }
+            match self.kind(place) {
+                Kind::Group(base)
+                | Kind::Attributed { value: base, .. }
+                | Kind::Field { value: base, .. }
+                | Kind::Index { value: base, .. } => place = base,
+                Kind::Path { .. } | Kind::Name(_) => {
+                    if self.facts.node(self.key(place)).and_then(|f| f.reference)
+                        .is_some_and(|target| matches!(target,
+                            crate::resolve::model::Target::Definition(id) if self.mutable_static(id)))
+                    {
+                        return Err(self.error(source, "references to mutable statics are denied in edition 2024"));
+                    }
+                    return Ok(());
+                }
+                _ => return Ok(()),
+            }
+        }
+        Err(self.error(source, "static reference place work budget exceeded"))
     }
     pub(super) fn check_static_access(&self, node: NodeId, id: super::DefId) -> Result<(), Error> {
         if self.mutable_static(id) && !self.state.raw_address_places.contains(&node) {

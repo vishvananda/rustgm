@@ -163,6 +163,7 @@ impl Checker<'_> {
     pub(super) fn publish_reference_alignment(&mut self) -> Result<(), Error> {
         for i in 0..self.state.alignment.borrows.len() {
             let (source, operand) = self.state.alignment.borrows[i];
+            self.check_static_reference(source, operand)?;
             let packed = self.packed_place(operand)?;
             self.alignment_requirement(source, self.ty(operand)?, packed, false)?;
         }

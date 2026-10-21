@@ -566,6 +566,12 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "assignment requires a place"));
         };
+        if self.report.resolution.definitions[target.0 as usize].kind == DefKind::Static {
+            if !self.mutable_static(target) {
+                return Err(self.error(node, "cannot assign to immutable static storage"));
+            }
+            return Ok(None);
+        }
         if !matches!(
             self.report.resolution.definitions[target.0 as usize].kind,
             DefKind::Local | DefKind::Parameter

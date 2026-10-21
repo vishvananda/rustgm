@@ -5,7 +5,7 @@ use super::{
     schedule::{Cleanup, Schedule},
 };
 use crate::{
-    body::ir::{Place, Selection},
+    body::ir::Selection,
     borrow::ownership::{
         Component, Error, PathId, Paths,
         initialization::{self, Point, Status},
@@ -100,13 +100,9 @@ pub fn select(
             builder.charge(1)?;
             if let initialization::Event::Cleanup(candidate) = event {
                 let body = facts.body();
-                let ty = match candidate.place {
-                    Place::Local(id) => body.locals.get(id.0 as usize).map(|l| l.ty),
-                    Place::Temporary(id) => body.values.get(id.0 as usize).map(|v| v.ty),
-                    Place::Projection(id) => body.projections.get(id.0 as usize).map(|p| p.ty),
-                    Place::Static(_) => None,
-                }
-                .ok_or("invalid abstract cleanup place")?;
+                let ty = body
+                    .place_type(candidate.place)
+                    .ok_or("invalid abstract cleanup place")?;
                 let tracked = candidate.path.map_or(Tracking::External, Tracking::Path);
                 // Initialization is already proved. A moved value has no
                 // cleanup access, so it demands no recursive type property.

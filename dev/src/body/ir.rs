@@ -1,9 +1,8 @@
 //! Function-owned flat control-flow storage. Values snapshot reads before later effects.
-pub use crate::resolve::unit::NodeKey;
+pub use crate::resolve::{model::DefId, unit::NodeKey};
 pub use crate::sema::members::{Selection, VariantId};
 use crate::{
     lex::token::Punctuation,
-    resolve::model::DefId,
     sema::model::{Cast, InitializerKind, RegionEquality, Scalar},
     syntax::ast::{NodeId, Unary},
     types::TypeId,
@@ -309,6 +308,10 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    /// Canonical types of static places actually referenced by this CFG.
+    pub static_types: Option<std::sync::Arc<std::collections::HashMap<DefId, TypeId>>>,
+    /// Immutable declaration permissions, shared by checked bodies and instances.
+    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
     /// Constant eligibility applies independently of whether execution is demanded.
     pub const_context: bool,
     /// Concrete specialization identity; diagnostics keep the original source owner.
@@ -351,6 +354,16 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    /// Read place types from retained CFG facts, including external static storage.
+    #[must_use]
+    pub fn place_type(&self, place: Place) -> Option<TypeId> {
+        match place {
+            Place::Local(id) => self.locals.get(id.0 as usize).map(|l| l.ty),
+            Place::Temporary(id) => self.values.get(id.0 as usize).map(|v| v.ty),
+            Place::Projection(id) => self.projections.get(id.0 as usize).map(|p| p.ty),
+            Place::Static(id) => self.static_types.as_ref()?.get(&id).copied(),
+        }
+    }
     #[must_use]
     pub fn callable_target(
         &self,

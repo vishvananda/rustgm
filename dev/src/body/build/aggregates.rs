@@ -77,7 +77,7 @@ impl Builder<'_> {
                 };
                 let place = match self.report.resolution.definitions[definition.0 as usize].kind {
                     DefKind::Local | DefKind::Parameter => self.local_place(node, definition)?,
-                    DefKind::Static => Place::Static(definition),
+                    DefKind::Static => self.static_place(node, definition)?,
                     _ => {
                         self.scratch.work.push(Work::TemporaryPlace(node));
                         self.enter_materialized(node);

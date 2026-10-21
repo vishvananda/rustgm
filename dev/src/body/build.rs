@@ -198,6 +198,8 @@ fn function_body(
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            mutable_statics: None,
+            static_types: None,
             const_context: matches!(owner, Owner::Initializer { .. } | Owner::AnonymousConstant),
             instance: None,
             owned: None,
@@ -353,10 +355,11 @@ impl<'a> Builder<'a> {
         report: &'a Report,
         facts: &'a Declarations,
         scratch: &'a mut Scratch,
-        body: Body,
+        mut body: Body,
         scope_plan: scopes::Facts,
         drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
     ) -> Self {
+        body.mutable_statics.clone_from(&facts.mutable_statics);
         Self {
             drop_query,
             report,
@@ -1303,7 +1306,7 @@ impl<'a> Builder<'a> {
                         .get(&definition)
                         .ok_or_else(|| self.error(node, "missing const parameter value"))?,
                 ),
-                DefKind::Static => Rvalue::Read(Place::Static(definition)),
+                DefKind::Static => Rvalue::Read(self.static_place(node, definition)?),
                 _ => return Err(self.error(node, "unsupported resolved body value")),
             },
         )
