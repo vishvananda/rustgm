@@ -12,6 +12,13 @@ pub struct SlotId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TempId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ObjectTempId(pub u32);
+#[derive(Clone, Copy, Debug)]
+pub enum ResultId {
+    Scalar(TempId),
+    Object(ObjectTempId),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct LiteralId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct SpanId(pub u32);
@@ -28,6 +35,7 @@ pub enum Storage {
 #[derive(Clone, Copy, Debug)]
 pub enum Operand {
     Temporary(TempId),
+    ObjectTemporary(ObjectTempId),
     Parameter(u32),
     Slot(SlotId),
     Symbol(SymbolId),
@@ -43,6 +51,21 @@ pub struct Value {
 pub struct Range {
     pub start: u32,
     pub end: u32,
+}
+#[derive(Clone, Copy, Debug)]
+pub enum CallArguments {
+    Scalar(Range),
+    Object(Range),
+}
+#[derive(Clone, Copy, Debug)]
+pub enum BoundaryArgument {
+    Scalar(Value),
+    Object { operand: Operand, span: SpanId },
+}
+#[derive(Default)]
+pub struct ObjectFunction {
+    pub temporaries: Vec<SpanId>,
+    pub arguments: Vec<BoundaryArgument>,
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Literal {
@@ -127,11 +150,11 @@ pub enum Operation {
     Call {
         signature: SignatureId,
         callee: Operand,
-        arguments: Range,
+        arguments: CallArguments,
     },
 }
 pub struct Instruction {
-    pub result: Option<TempId>,
+    pub result: Option<ResultId>,
     pub operation: Operation,
 }
 #[derive(Clone, Copy, Debug)]
@@ -143,6 +166,10 @@ pub enum Terminator {
         no: BlockId,
     },
     Return(Option<Value>),
+    ReturnObject {
+        operand: Operand,
+        span: SpanId,
+    },
     Unreachable,
 }
 pub struct Block {
@@ -151,6 +178,7 @@ pub struct Block {
 }
 #[derive(Default)]
 pub struct Function {
+    pub objects: Option<Box<ObjectFunction>>,
     pub slots: Vec<Storage>,
     pub spans: Vec<MemorySpan>,
     pub temporaries: Vec<Type>,
@@ -160,7 +188,11 @@ pub struct Function {
     pub blocks: Vec<Block>,
     pub order: Vec<BlockId>,
 }
-pub struct Signature {
+pub enum Signature {
+    Scalar(ScalarSignature),
+    Object(super::boundary::SignatureIdLocal),
+}
+pub struct ScalarSignature {
     pub parameters: Range,
     pub result: Type,
     pub noreturn: bool,
@@ -183,6 +215,7 @@ pub struct Program {
     pub data: Vec<super::data::Item>,
     pub parameters: Vec<Type>,
     pub signatures: Vec<Signature>,
+    pub(super) objects: Option<Box<super::boundary::Signatures>>,
     pub symbols: Vec<Symbol>,
     pub(super) names: std::collections::HashMap<String, Name>,
 }
@@ -205,10 +238,50 @@ impl Program {
         self.symbols[symbol.0 as usize].body = Some(body);
         Ok(())
     }
-    #[must_use]
-    pub fn parameters(&self, signature: SignatureId) -> &[Type] {
-        let list = self.signatures[signature.0 as usize].parameters;
-        &self.parameters[list.start as usize..list.end as usize]
+    /// # Errors
+    /// Rejects invalid or object signature identities.
+    pub fn scalar_signature(
+        &self,
+        signature: SignatureId,
+    ) -> Result<&ScalarSignature, &'static str> {
+        match self.signatures.get(signature.0 as usize) {
+            Some(Signature::Scalar(value)) => Ok(value),
+            _ => Err("LowIR signature is not scalar"),
+        }
+    }
+    /// # Errors
+    /// Rejects malformed signature parameter ranges and non-scalar signatures.
+    pub fn parameters(&self, signature: SignatureId) -> Result<&[Type], &'static str> {
+        let list = self.scalar_signature(signature)?.parameters;
+        self.parameters
+            .get(list.start as usize..list.end as usize)
+            .ok_or("invalid LowIR parameter range")
+    }
+    /// # Errors
+    /// Rejects invalid signature identities.
+    pub fn noreturn(&self, signature: SignatureId) -> Result<bool, &'static str> {
+        match self.signatures.get(signature.0 as usize) {
+            Some(Signature::Scalar(value)) => Ok(value.noreturn),
+            Some(Signature::Object(_)) => Ok(self.object_boundary(signature)?.noreturn),
+            None => Err("invalid LowIR signature"),
+        }
+    }
+    /// # Errors
+    /// Rejects invalid signature identities and malformed parameter ranges.
+    pub fn compatible(&self, a: SignatureId, b: SignatureId) -> Result<bool, &'static str> {
+        match (
+            self.signatures.get(a.0 as usize),
+            self.signatures.get(b.0 as usize),
+        ) {
+            (Some(Signature::Scalar(x)), Some(Signature::Scalar(y))) => Ok(x.result == y.result
+                && x.noreturn == y.noreturn
+                && self.parameters(a)? == self.parameters(b)?),
+            (Some(Signature::Object(_)), Some(Signature::Object(_))) => {
+                Ok(self.object_boundary(a)? == self.object_boundary(b)?)
+            }
+            (None, _) | (_, None) => Err("invalid LowIR signature comparison"),
+            _ => Ok(false),
+        }
     }
     /// # Errors
     /// Rejects exhausted compact identities and void parameters.
@@ -230,11 +303,11 @@ impl Program {
                 .ok_or("LowIR parameter space exhausted")?,
         )?;
         self.parameters.extend_from_slice(parameters);
-        self.signatures.push(Signature {
+        self.signatures.push(Signature::Scalar(ScalarSignature {
             parameters: Range { start, end },
             result,
             noreturn,
-        });
+        }));
         Ok(id)
     }
     /// # Errors
@@ -253,13 +326,7 @@ impl Program {
                 return Err("LowIR symbol kind conflicts with prior declaration");
             };
             let previous = &self.symbols[id.0 as usize];
-            let a = &self.signatures[previous.signature.0 as usize];
-            let b = &self.signatures[signature.0 as usize];
-            if previous.entry != entry
-                || a.result != b.result
-                || a.noreturn != b.noreturn
-                || self.parameters(previous.signature) != self.parameters(signature)
-            {
+            if previous.entry != entry || !self.compatible(previous.signature, signature)? {
                 return Err("incompatible LowIR symbol declarations");
             }
             return Ok(id);

@@ -75,7 +75,7 @@ impl Context<'_> {
         builder.enter(entry)?;
         let mut arguments = self
             .output
-            .parameters(signature)
+            .parameters(signature)?
             .iter()
             .enumerate()
             .map(|(index, &ty)| {
@@ -100,7 +100,7 @@ impl Context<'_> {
         )?;
         let method = builder.load(Type::Ptr, address.operand)?;
         arguments[receiver_index] = data;
-        let native = &self.output.signatures[signature.0 as usize];
+        let native = self.output.scalar_signature(signature)?;
         let value = builder.call(signature, native.result, method.operand, &arguments)?;
         builder.terminate(if native.noreturn {
             Terminator::Unreachable

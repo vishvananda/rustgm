@@ -38,9 +38,9 @@ fn table(program: &Program) -> Result<(GlobalId, SymbolId), Box<dyn std::error::
     };
     let function = &program.symbols[drop.0 as usize];
     assert!(function.body.is_some());
-    assert_eq!(program.parameters(function.signature), &[Type::Ptr]);
+    assert_eq!(program.parameters(function.signature)?, &[Type::Ptr]);
     assert_eq!(
-        program.signatures[function.signature.0 as usize].result,
+        program.scalar_signature(function.signature)?.result,
         Type::Void
     );
     Ok((GlobalId(u32::try_from(index)?), *drop))

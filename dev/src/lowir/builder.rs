@@ -2,11 +2,13 @@
 use super::{
     program::{
         self, Access, Block, BlockId, Function, Instruction, Literal, LiteralId, MemorySpan,
-        Operand, Operation, Range, SignatureId, SlotId, SpanId, Storage, TempId, Terminator, Value,
+        Operand, Operation, Range, ResultId, SignatureId, SlotId, SpanId, Storage, TempId,
+        Terminator, Value,
     },
     vocabulary::{Binary, Convert, Predicate, Type, Unary},
 };
 use std::collections::HashMap;
+mod objects;
 
 #[derive(Default)]
 pub struct Builder {
@@ -119,12 +121,12 @@ impl Builder {
     }
     /// # Errors
     /// Rejects instructions outside an open block and exhausted instruction space.
-    fn emit(&mut self, operation: Operation, result: Option<TempId>) -> Result<(), &'static str> {
+    fn emit(&mut self, operation: Operation, result: Option<ResultId>) -> Result<(), &'static str> {
         let block = self.current.ok_or("LowIR instruction without open block")?;
         let end = program::index(self.function.instructions.len() + 1)?;
-        self.function
-            .instructions
-            .push(Instruction { result, operation });
+        let instruction = Instruction { result, operation };
+        super::validation::scalar_operation(&self.function, &instruction)?;
+        self.function.instructions.push(instruction);
         self.function.blocks[block.0 as usize].instructions.end = end;
         Ok(())
     }
@@ -134,7 +136,7 @@ impl Builder {
         }
         let result = TempId(program::index(self.function.temporaries.len())?);
         self.function.temporaries.push(ty);
-        self.emit(operation, Some(result))?;
+        self.emit(operation, Some(ResultId::Scalar(result)))?;
         Ok(Value {
             ty,
             operand: Operand::Temporary(result),
@@ -397,7 +399,7 @@ impl Builder {
         let operation = Operation::Call {
             signature,
             callee,
-            arguments: Range { start, end },
+            arguments: program::CallArguments::Scalar(Range { start, end }),
         };
         if result == Type::Void {
             self.emit(operation, None)?;

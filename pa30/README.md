@@ -38,7 +38,13 @@ dependencies in executable and entry-free modes. Draft outcomes are in
 `tests/static-outcomes.json`; qualification and boundaries are recorded in
 `docs/pa30-static-checkpoint.md`.
 
-C aggregate callable classification, variadic calls and static crate-metadata
+The maintainer aggregate-callable checkpoint classifies nonempty aligned
+`repr(C)` scalar-field structs once and retains INTEGER/SSE/none/MEMORY classes
+for imports, exports and callbacks. Sparse object temporaries preserve ordinary
+scalar record sizes. Native controls exercise mixed results, register rollback,
+large values, padding and Drop. Draft outcomes are in
+`tests/aggregate-outcomes.json`; see `docs/pa30-aggregate-abi.md` for the profile
+and explicit boundaries. Variadic calls and static/aggregate crate-metadata
 transport remain unfinished. The reviewed optional object backend
 profile is selected explicitly; its native tests use the test-only
 `object-interop-tests` Cargo feature and fail if the profile is missing. PA30's

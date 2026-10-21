@@ -41,12 +41,7 @@ impl Context<'_> {
     pub(super) fn entry_abi(&mut self, actual: TypeId, formal: TypeId) -> Result<(), &'static str> {
         let actual = self.signature(actual)?;
         let formal = self.signature(formal)?;
-        let a = &self.output.signatures[actual.0 as usize];
-        let b = &self.output.signatures[formal.0 as usize];
-        if a.result != b.result
-            || a.noreturn != b.noreturn
-            || self.output.parameters(actual) != self.output.parameters(formal)
-        {
+        if !self.output.compatible(actual, formal)? {
             return Err("proved closure entry ABI differs from execution body");
         }
         Ok(())

@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/aggregate-abi/interop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "ef8abc1caaad2887617383783b92e5bc57c0b876311ec507fdf659d715a61e81",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true
+    },
+    {
+      "path": "tests/spec/aggregate-abi/rust-repr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "8f8d1c7a2e4ce3c7504a97dd9bc7e2c10f27936b7c80bb2e839f16c62043020b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/packed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "187fd6e626b2f83333b54531a7b717b7fa7f3bb512d4a1576105fdc5abf9c5c6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/union.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "6fa46f1f909d0913e66c8f9b6ee9fc4916e08c81a3e405d03096ca1ab8caed8b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/enum.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "57f6e53d3425d19e66ffa3a0cc1f5136893176d7308c9badc13c89749c8597e6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "e7db7ce40316b0ebf077b1c94ed4978965e214bd5d76257502096d96f303fcc4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/nested.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "5235f8ff1d931fadb55e079bd19871ceac17b3ebd21ea024bc59c047ba154fe2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "64cfa1394d5b3b23d745bebe97d2e87fa976285354304fd1587528e9fa5771f1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/unsafe-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "3d1072818f6488819348ac5fe1864e3149c31806f818d8756329168d9dc7421a",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/const-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "348c9668dd9d8f3739ca4c31b1344b4d2eed980a9a2a57db763576e691e89fd5",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/wrong-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "f5319fccf12291103b6d466a279441c2cf5c8732c8f669cdd1a9549629cde77f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false
+    },
+    {
+      "path": "tests/spec/aggregate-abi/aligned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "728e6fe2087d87ef08a2eb25a66dc177f01b768801cba5b0b6eb8cf37af71c70",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true
+    },
+    {
+      "path": "tests/spec/aggregate-abi/indirect.rs",
+      "exit_status": 0,
+      "features": [
+        "pa30.c-aggregate-abi"
+      ],
+      "source_sha256": "02df900e26eebcac17f1c0802817bc57d4eb8c57371ed6dd2b200a186dbfe31e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true
+    }
+  ],
+  "providers": [
+    {
+      "path": "tests/spec/aggregate-abi/interop.c",
+      "source_sha256": "e30e03a53d41e28550e2244b0102aace2de0b39013f87125a0f124f614c9ff9b"
+    },
+    {
+      "path": "tests/spec/aggregate-abi/aligned.c",
+      "source_sha256": "96ea0af09a32e45140e75cf5a1440c7bb3e164d53b51dbb811e529e55a7b194a"
+    },
+    {
+      "path": "tests/spec/aggregate-abi/indirect.c",
+      "source_sha256": "15479d37f054ae1b49728c3d5409d2329a674c333c5e2c1d79795d89d78be29c"
+    }
+  ]
+}

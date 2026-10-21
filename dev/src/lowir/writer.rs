@@ -4,9 +4,11 @@ use super::{
         Access, Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Storage,
         Terminator,
     },
+    validation,
     vocabulary::Type,
 };
 use std::io::{self, Write};
+mod objects;
 
 /// Count owned, already constructed records without rendering them.
 ///
@@ -24,7 +26,11 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
         blocks += body.blocks.len();
         instructions += body.instructions.len();
         slots += body.slots.len();
-        temporaries += body.temporaries.len();
+        temporaries += body.temporaries.len()
+            + body
+                .objects
+                .as_ref()
+                .map_or(0, |objects| objects.temporaries.len());
     }
     write!(
         out,
@@ -47,25 +53,26 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
 pub fn write(program: &Program, out: &mut impl Write) -> io::Result<()> {
     globals(program, out)?;
     for symbol in &program.symbols {
-        let signature = program
-            .signatures
-            .get(symbol.signature.0 as usize)
-            .ok_or_else(|| io::Error::other("invalid LowIR signature"))?;
         if symbol.body.is_none() {
             write!(out, "declare ")?;
         }
         write!(out, "function @{}(", symbol.name)?;
         parameters(program, symbol.signature, true, out)?;
-        write!(out, ") -> {}", signature.result.name())?;
+        write!(out, ") -> ")?;
+        objects::result(program, symbol.signature, out)?;
+        objects::result_metadata(program, symbol.signature, out)?;
         if symbol.entry {
             write!(out, " [role=entry]")?;
         }
-        if signature.noreturn {
+        if program
+            .noreturn(symbol.signature)
+            .map_err(io::Error::other)?
+        {
             write!(out, " [return=noreturn]")?;
         }
         if let Some(function) = &symbol.body {
             writeln!(out, " {{")?;
-            function_body(program, function, out)?;
+            function_body(program, symbol.signature, function, out)?;
             writeln!(out, "}}")?;
         } else {
             writeln!(out)?;
@@ -79,17 +86,9 @@ fn parameters(
     names: bool,
     out: &mut impl Write,
 ) -> io::Result<()> {
-    for (index, ty) in program.parameters(signature).iter().enumerate() {
-        if index != 0 {
-            write!(out, ", ")?;
-        }
-        if names {
-            write!(out, "%p{index} : ")?;
-        }
-        write!(out, "{}", ty.name())?;
-    }
-    Ok(())
+    objects::parameters(program, signature, names, out)
 }
+
 fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
     use super::data::{GlobalKind, Item};
     for global in &program.globals {
@@ -143,7 +142,12 @@ fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
     }
     Ok(())
 }
-fn function_body(program: &Program, function: &Function, out: &mut impl Write) -> io::Result<()> {
+fn function_body(
+    program: &Program,
+    signature: SignatureId,
+    function: &Function,
+    out: &mut impl Write,
+) -> io::Result<()> {
     for (index, storage) in function.slots.iter().enumerate() {
         write!(out, "  slot $s{index} : ")?;
         match storage {
@@ -168,25 +172,28 @@ fn function_body(program: &Program, function: &Function, out: &mut impl Write) -
             [block.instructions.start as usize..block.instructions.end as usize]
         {
             write!(out, "    ")?;
+            validation::scalar_operation(function, inst).map_err(io::Error::other)?;
             if let Some(temp) = inst.result {
-                write!(out, "%t{} = ", temp.0)?;
+                match temp {
+                    super::program::ResultId::Scalar(id) => write!(out, "%t{} = ", id.0)?,
+                    super::program::ResultId::Object(id) => write!(out, "%o{} = ", id.0)?,
+                }
             }
-            instruction(program, function, inst, out)?;
+            instruction(program, signature, function, inst, out)?;
             writeln!(out)?;
         }
         write!(out, "    ")?;
         match block.terminator {
             Terminator::Jump(target) => write!(out, "jump ^b{}", target.0)?,
             Terminator::Branch { condition, yes, no } => {
+                validation::scalar_operand(condition).map_err(io::Error::other)?;
                 write!(out, "branch ")?;
                 operand(program, function, condition, out)?;
                 write!(out, ", ^b{}, ^b{}", yes.0, no.0)?;
             }
-            Terminator::Return(Some(value)) => {
-                write!(out, "return {} ", value.ty.name())?;
-                operand(program, function, value.operand, out)?;
+            value @ (Terminator::Return(_) | Terminator::ReturnObject { .. }) => {
+                objects::returned(program, function, signature, value, out)?;
             }
-            Terminator::Return(None) => write!(out, "return void")?,
             Terminator::Unreachable => write!(out, "unreachable")?,
         }
         writeln!(out)?;
@@ -194,9 +201,11 @@ fn function_body(program: &Program, function: &Function, out: &mut impl Write) -
     Ok(())
 }
 fn result_type(function: &Function, inst: &Instruction) -> io::Result<Type> {
-    let temp = inst
-        .result
-        .ok_or_else(|| io::Error::other("LowIR instruction lacks result"))?;
+    let Some(super::program::ResultId::Scalar(temp)) = inst.result else {
+        return Err(io::Error::other(
+            "LowIR scalar instruction lacks scalar result",
+        ));
+    };
     function
         .temporaries
         .get(temp.0 as usize)
@@ -209,6 +218,7 @@ fn result_type(function: &Function, inst: &Instruction) -> io::Result<Type> {
 )]
 fn instruction(
     program: &Program,
+    signature: SignatureId,
     function: &Function,
     inst: &Instruction,
     out: &mut impl Write,
@@ -241,6 +251,8 @@ fn instruction(
                 .spans
                 .get(span.0 as usize)
                 .ok_or_else(|| io::Error::other("invalid LowIR copy span"))?;
+            validation::copy_source(program, function, signature, source, *span)
+                .map_err(io::Error::other)?;
             write!(out, "copyobj {}x{} ", span.bytes, span.align)?;
             operand(program, function, source, out)?;
             write!(out, ", ")?;
@@ -353,39 +365,7 @@ fn instruction(
             )?;
             value.operand
         }
-        Operation::Call {
-            signature,
-            callee,
-            arguments,
-        } => {
-            let data = program
-                .signatures
-                .get(signature.0 as usize)
-                .ok_or_else(|| io::Error::other("invalid call signature"))?;
-            write!(out, "call {} ", data.result.name())?;
-            operand(program, function, callee, out)?;
-            write!(out, "(")?;
-            for (index, value) in function.arguments
-                [arguments.start as usize..arguments.end as usize]
-                .iter()
-                .enumerate()
-            {
-                if index != 0 {
-                    write!(out, ", ")?;
-                }
-                operand(program, function, value.operand, out)?;
-            }
-            write!(out, ")")?;
-            if !matches!(callee, Operand::Symbol(_)) {
-                write!(out, " as (")?;
-                parameters(program, signature, true, out)?;
-                write!(out, ") -> {}", data.result.name())?;
-                if data.noreturn {
-                    write!(out, " [return=noreturn]")?;
-                }
-            }
-            return Ok(());
-        }
+        Operation::Call { .. } => return objects::call(program, function, signature, inst, out),
     };
     operand(program, function, value, out)
 }
@@ -396,7 +376,24 @@ fn operand(
     out: &mut impl Write,
 ) -> io::Result<()> {
     match value {
-        Operand::Temporary(id) => write!(out, "%t{}", id.0),
+        Operand::Temporary(id) => {
+            if function.temporaries.get(id.0 as usize).is_none() {
+                return Err(io::Error::other("invalid scalar temporary"));
+            }
+            write!(out, "%t{}", id.0)
+        }
+        Operand::ObjectTemporary(id) => {
+            if function
+                .objects
+                .as_ref()
+                .and_then(|objects| objects.temporaries.get(id.0 as usize))
+                .and_then(|span| function.spans.get(span.0 as usize))
+                .is_none()
+            {
+                return Err(io::Error::other("invalid object temporary"));
+            }
+            write!(out, "%o{}", id.0)
+        }
         Operand::Parameter(index) => write!(out, "%p{index}"),
         Operand::Slot(id) => write!(out, "$s{}", id.0),
         Operand::Symbol(id) => write!(

@@ -152,8 +152,8 @@ fn instrument(program: &mut Program, observer: &str, expected: &[u8]) -> Result<
         .position(|s| s.name == observer)
         .ok_or("observer not demanded")?;
     let signature = program.symbols[observer].signature;
-    assert_eq!(program.parameters(signature), &[Type::U8]);
-    assert_eq!(program.signatures[signature.0 as usize].result, Type::Void);
+    assert_eq!(program.parameters(signature)?, &[Type::U8]);
+    assert_eq!(program.scalar_signature(signature)?.result, Type::Void);
     let index = program.global(
         "test.trace.index".into(),
         MemorySpan { bytes: 8, align: 8 },

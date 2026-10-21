@@ -1,5 +1,6 @@
 //! Demand and ABI identities are indexed by already selected semantic definitions/types.
 mod adapters;
+mod c_boundary;
 use super::{Error, data, function, remainder};
 use crate::{
     abi::layout::{Layout, Layouts},
@@ -47,6 +48,7 @@ pub(super) struct Context<'a> {
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
+    c_abi: Option<Box<crate::abi::classification::Plans>>,
     queue: Vec<usize>,
     pub drop_queue: Vec<crate::body::drops::glue::Id>,
     pub drop_symbols: Vec<Option<SymbolId>>,
@@ -141,6 +143,7 @@ impl<'a> Context<'a> {
             instance_indices: HashMap::new(),
             symbols: vec![None; bodies.bodies.len()],
             signatures: HashMap::new(),
+            c_abi: None,
             queue: Vec::new(),
             drop_queue: Vec::new(),
             drop_symbols: vec![None; destruction.map_or(0, |d| d.recipes().recipes().len())],
@@ -241,7 +244,8 @@ impl<'a> Context<'a> {
             })?;
             let body = &bodies.bodies[index];
             let plan = destruction.and_then(|proof| proof.plan(index));
-            let lowered = function::lower(self, index, body, plan)?;
+            let signature = self.output.symbols[symbol.0 as usize].signature;
+            let lowered = function::lower(self, index, body, plan, signature)?;
             self.output
                 .define(symbol, lowered)
                 .map_err(|message| Error {
@@ -321,23 +325,25 @@ impl<'a> Context<'a> {
         }
         let result_type = self.representation(result)?;
         if convention.abi == crate::types::callable::Abi::C
-            && matches!(result_type, Representation::Object(_))
+            && (matches!(result_type, Representation::Object(_))
+                || self.non_scalar_boundary(result)?)
         {
-            return Err("C aggregate result classification is not implemented");
+            return self.object_signature(ty);
         }
         if matches!(result_type, Representation::Object(_)) {
             native.push(Type::Ptr);
         }
-        for ty in self
+        for parameter in self
             .types
             .list(parameters)
             .ok_or("missing parameter list")?
         {
-            let representation = self.representation(*ty)?;
+            let representation = self.representation(*parameter)?;
             if convention.abi == crate::types::callable::Abi::C
-                && matches!(representation, Representation::Object(_))
+                && (matches!(representation, Representation::Object(_))
+                    || self.non_scalar_boundary(*parameter)?)
             {
-                return Err("C aggregate argument classification is not implemented");
+                return self.object_signature(ty);
             }
             let representation = representation.parameter();
             if representation != Type::Void {
@@ -606,7 +612,7 @@ impl<'a> Context<'a> {
         builder.enter(entry)?;
         self.initialize_addresses(&mut builder)?;
         builder.call(target, Type::Void, Operand::Symbol(root), &[])?;
-        if self.output.signatures[target.0 as usize].noreturn {
+        if self.output.noreturn(target)? {
             builder.terminate(Terminator::Unreachable)?;
         } else {
             let zero = builder.integer(Type::I64, 0)?;

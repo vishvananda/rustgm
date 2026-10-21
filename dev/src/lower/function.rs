@@ -1,5 +1,6 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
+mod c_boundary;
 mod cleanup;
 mod intrinsics;
 mod invocations;
@@ -57,6 +58,8 @@ impl Selected {
 }
 struct Lower<'a, 'b> {
     body_index: usize,
+    native: crate::lowir::program::SignatureId,
+    object_arguments: Vec<crate::lowir::boundary::Value>,
     context: &'a mut Context<'b>,
     body: &'b ir::Body,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
@@ -81,6 +84,7 @@ pub(super) fn lower<'a>(
     body_index: usize,
     body: &'a ir::Body,
     plan: Option<&'a crate::borrow::destruction::Plan>,
+    native: crate::lowir::program::SignatureId,
 ) -> Result<Function, Error> {
     let cleanup = plan
         .map(|p| cleanup::Pending::new(body, p).map(Box::new))
@@ -91,6 +95,8 @@ pub(super) fn lower<'a>(
         })?;
     let mut lower = Lower {
         body_index,
+        native,
+        object_arguments: Vec::new(),
         context,
         body,
         cleanup,
@@ -160,22 +166,7 @@ impl Lower<'_, '_> {
                     yes: self.target(id, yes)?,
                     no: self.target(id, no)?,
                 },
-                ir::Terminator::Return(value) => Terminator::Return(match self.value(value)? {
-                    Selected::Runtime(value) => Some(value),
-                    Selected::Object(address) => {
-                        let align = self.context.layout(self.body.result)?.align;
-                        self.write(
-                            Some(Address {
-                                operand: Operand::Parameter(0),
-                                align,
-                            }),
-                            Selected::Object(address),
-                            self.body.result,
-                        )?;
-                        None
-                    }
-                    Selected::Unit | Selected::Item(_) => None,
-                }),
+                ir::Terminator::Return(value) => self.returned(value)?,
                 ir::Terminator::Unreachable => Terminator::Unreachable,
             };
             self.builder.terminate(terminator)?;
@@ -260,6 +251,12 @@ impl Lower<'_, '_> {
         Ok(())
     }
     fn parameters(&mut self) -> Result<(), &'static str> {
+        if matches!(
+            self.context.output.signatures.get(self.native.0 as usize),
+            Some(crate::lowir::program::Signature::Object(_))
+        ) {
+            return self.object_parameters();
+        }
         let mut parameter = u32::from(matches!(
             self.context.representation(self.body.result)?,
             Representation::Object(_)
@@ -739,6 +736,12 @@ impl Lower<'_, '_> {
         result: TypeId,
     ) -> Result<Selected, &'static str> {
         let signature = self.context.signature(signature)?;
+        if matches!(
+            self.context.output.signatures.get(signature.0 as usize),
+            Some(crate::lowir::program::Signature::Object(_))
+        ) {
+            return self.object_call(signature, callee, arguments, result);
+        }
         let representation = self.context.representation(result)?;
         self.arguments.clear();
         let destination = if matches!(representation, Representation::Object(_)) {
