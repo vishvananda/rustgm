@@ -32,6 +32,8 @@ pub(super) struct Slots {
     frames: HashMap<TermId, Owner>,
     classes: Classes,
 }
+const MAX_RECORDS: usize = (64 * 1024 * 1024) / 128;
+
 impl Slots {
     fn new() -> Self {
         Self {
@@ -40,17 +42,32 @@ impl Slots {
             classes: Classes::default(),
         }
     }
-    fn bounded(&self) -> Result<(), Error> {
-        let slots = self.definitions.len() + self.frames.len() + self.classes.len();
-        // Conservative logical charge for three sparse map entries, not allocator telemetry.
-        if slots > (64 * 1024 * 1024) / 128 {
+    fn check_growth(retained: usize, additional: usize) -> Result<(), Error> {
+        // Conservative logical charge per sparse entry, not allocator telemetry.
+        if retained
+            .checked_add(additional)
+            .is_none_or(|size| size > MAX_RECORDS)
+        {
             return Err(Error::Budget);
         }
         Ok(())
     }
+    fn preflight(&self, additional: usize) -> Result<(), Error> {
+        let retained = self.definitions.len() + self.frames.len() + self.classes.len();
+        Self::check_growth(retained, additional)
+    }
+    fn bounded(&self) -> Result<(), Error> {
+        self.preflight(0)
+    }
 }
 
 impl Context {
+    fn preflight_signature_records(&self, additional: usize) -> Result<(), Error> {
+        self.signature_slots.as_ref().map_or_else(
+            || Slots::check_growth(0, additional),
+            |facts| facts.preflight(additional),
+        )
+    }
     /// Only the original pending closure signature can define fresh public holes.
     /// Imports retain origin and loss history but cannot acquire this authority.
     pub(crate) fn define_signature_slots(
@@ -84,6 +101,12 @@ impl Context {
         if bound_regions == 0 {
             return Ok(());
         }
+        let additional = slots
+            .len()
+            .checked_mul(2)
+            .and_then(|size| size.checked_add(1))
+            .ok_or(Error::Budget)?;
+        self.preflight_signature_records(additional)?;
         self.account_work(slots.len())?;
         let mut distinct = std::collections::HashSet::new();
         for (index, &slot) in slots.iter().enumerate() {
@@ -164,6 +187,9 @@ impl Context {
         if !linked && !facts.classes.contains_key(a) && !facts.classes.contains_key(b) {
             return Ok(());
         }
+        let additional = usize::from(!facts.classes.contains_key(a))
+            + usize::from(a != b && !facts.classes.contains_key(b));
+        self.preflight_signature_records(additional)?;
         self.step()?;
         let defaults = (self.slot_class(a)?, self.slot_class(b)?);
         let facts = self

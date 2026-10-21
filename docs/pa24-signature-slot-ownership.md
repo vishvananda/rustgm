@@ -97,3 +97,17 @@ ordinary object-family counters exactly: repeated 9494/37838/151214 and distinct
 9851/39419/157691 at widths 8/32/128. This is work-counter evidence, not an RSS or
 wall-time neutrality claim. The prior unexplained scalar RSS observation remains
 unresolved; no benchmark was rerun here.
+
+Retained-capacity follow-up: registration preflights the whole new frame plus
+both records per fresh slot before allocating validation scratch or inserting
+any catalog entries. Import preflights its exact missing class/definition/frame
+records, actual folds preflight a missing frame, and loss/union operations
+preflight their missing class records. Existing defensive postchecks remain.
+The budget is logical retained storage, not allocator telemetry; existing
+capacity and checked growth prevent batch overshoot or arithmetic wraparound.
+Private controls cover a 262144-slot rejected registration with no catalog
+allocation, exact remaining capacity, existing records and overflow.
+The isolated capacity follow-up passes all 22 ownership tests, strict release
+all-target/all-feature Clippy and the 1468-file architecture audit with zero
+findings. Evidence: `obj/parallel/pa24-signature-owners/capacity/`, resource
+receipt `79a76cc7840743c3b9d1d814621e0157`. No broad functional suite was repeated.

@@ -239,3 +239,49 @@ fn ordinary_inference_allocates_no_signature_catalog() -> TestResult {
 
 #[path = "placeholder_history.rs"]
 mod history;
+
+#[test]
+fn oversized_signature_batch_rejects_before_catalog_allocation() -> TestResult {
+    let mut store = Store::default();
+    let mut context = Context::default();
+    // Each hole requires both a definition and a class, plus one frame.
+    let slots = (0..MAX_RECORDS / 2)
+        .map(|_| context.variable(Domain::Any))
+        .collect::<Result<Vec<_>, _>>()?;
+    let signature = function(&mut context, &slots)?;
+    let environment = context.known(&store, TypeId::UNIT)?;
+    let origin = store.reserve_closure()?;
+    let closure = context.closure(origin, signature, environment, &[])?;
+    let before = context.steps;
+    assert_eq!(
+        context.define_signature_slots(&store, closure, signature, &slots),
+        Err(Error::Budget)
+    );
+    assert!(context.signature_slots.is_none());
+    assert!(context.steps - before < slots.len());
+    Ok(())
+}
+
+#[test]
+fn retained_capacity_preflight_counts_existing_records_and_checks_overflow() -> TestResult {
+    let mut store = Store::default();
+    let mut context = Context::default();
+    definition(&mut store, &mut context)?;
+    let facts = context.signature_slots.as_ref().ok_or("missing catalog")?;
+    let retained = facts.definitions.len() + facts.frames.len() + facts.classes.len();
+    assert_eq!(retained, 5);
+    assert_eq!(facts.preflight(MAX_RECORDS - retained), Ok(()));
+    assert_eq!(
+        facts.preflight(MAX_RECORDS - retained + 1),
+        Err(Error::Budget)
+    );
+    assert_eq!(facts.preflight(usize::MAX), Err(Error::Budget));
+    assert_eq!(Slots::check_growth(MAX_RECORDS, 0), Ok(()));
+    assert_eq!(Slots::check_growth(MAX_RECORDS, 1), Err(Error::Budget));
+    assert_eq!(Slots::check_growth(usize::MAX, 1), Err(Error::Budget));
+    assert_eq!(
+        facts.definitions.len() + facts.frames.len() + facts.classes.len(),
+        retained
+    );
+    Ok(())
+}

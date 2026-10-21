@@ -37,6 +37,21 @@ impl Context {
         if class.is_none() && owner_frame.is_none() && owner_definition.is_none() {
             return Ok(());
         }
+        let additional = self.signature_slots.as_ref().map_or_else(
+            || {
+                usize::from(class.is_some())
+                    + usize::from(owner_frame.is_some())
+                    + usize::from(owner_definition.is_some())
+            },
+            |facts| {
+                usize::from(class.is_some() && !facts.classes.contains_key(copied))
+                    + usize::from(owner_frame.is_some() && !facts.frames.contains_key(&copied))
+                    + usize::from(
+                        owner_definition.is_some() && !facts.definitions.contains_key(&copied),
+                    )
+            },
+        );
+        self.preflight_signature_records(additional)?;
         let facts = self
             .signature_slots
             .get_or_insert_with(|| Box::new(Slots::new()));
@@ -77,6 +92,8 @@ impl Context {
         }
         self.step()?;
         let frame = self.signature_frame(original);
+        let additional = usize::from(frame.is_some() && self.signature_frame(copied).is_none());
+        self.preflight_signature_records(additional)?;
         let facts = self
             .signature_slots
             .as_mut()
@@ -106,6 +123,7 @@ impl Context {
             .signature_slots
             .as_mut()
             .ok_or(Error::InvalidIdentity)?;
+        facts.preflight(usize::from(!facts.classes.contains_key(original)))?;
         let steps = facts.classes.merge_value(original, class)?;
         facts.bounded()?;
         self.account_work(steps)
