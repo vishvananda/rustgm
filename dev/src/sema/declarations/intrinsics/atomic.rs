@@ -50,10 +50,10 @@ impl Checker<'_> {
             Type::Function {
                 bound_regions: 1,
                 parameters,
-                result: if kind == Intrinsic::AtomicLoad {
-                    scalar
-                } else {
+                result: if kind == Intrinsic::AtomicStore {
                     TypeId::UNIT
+                } else {
+                    scalar
                 },
                 unsafe_: false,
                 convention: Convention::RUST,

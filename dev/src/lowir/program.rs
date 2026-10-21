@@ -68,6 +68,16 @@ pub enum Operation {
         address: Operand,
         ordering: super::atomic::StoreOrder,
     },
+    AtomicExchange {
+        value: Value,
+        address: Operand,
+        ordering: super::atomic::RmwOrder,
+    },
+    AtomicAddFetch {
+        value: Value,
+        address: Operand,
+        ordering: super::atomic::RmwOrder,
+    },
     Copy(Value),
     Address(Operand),
     Index {

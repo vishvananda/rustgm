@@ -130,7 +130,10 @@ impl Resolver<'_> {
         owner: DefId,
         scope: ScopeId,
     ) -> Result<(), Error> {
-        for kind in [Intrinsic::AtomicLoad, Intrinsic::AtomicStore] {
+        for kind in Intrinsic::ALL
+            .into_iter()
+            .filter(|kind| !kind.is_volatile())
+        {
             let definition = self.builtin_definition(
                 Context { scope, ..c },
                 node,

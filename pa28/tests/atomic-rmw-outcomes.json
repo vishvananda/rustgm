@@ -1,0 +1,714 @@
+{
+  "stage": "draft-qualified-checkpoint",
+  "baseline": "51408d58",
+  "profile": "canonical AtomicU32 swap/fetch_add; safe runtime-only; all five Rust orderings valid",
+  "rustc": "1.98.0 / edition2024 / x86_64 / full objects and native execution",
+  "compiler_source_sha256": "cef517affabf04c4eacac50a475cad61478470462487a24c2aed4446f6c44c01",
+  "source_hash_encoding": "SHA256 of compact sorted JSON mapping every dev/**/*.rs path to its SHA256",
+  "source_manifest": "obj/parallel/pa28/rmw-final/source-manifest.json",
+  "source_manifest_file_sha256": "9d920e937904fd6b6c91d647a72790887c59f56d532eb93afdaa615ff8d72841",
+  "frontend_binary_sha256": "82ad9c4f6f04ef6cf947440cf0a7cd7a551e892f4b0c9b301a810d19fcb69692",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-rmw/swap-orders.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "f56df7c937b4ad1a406cff004ac9ca871d67404f4d6bc7d73fb9e5ae1c4a1465",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "a6a23f8d0af73f44bfedd508d3bcd5afcb42ed41c6ae76cfa4a2f4158ca704a8",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "9d6e87ca1c997bd9464537e753031af7b8c3a8d1581a19bef2ef514298d38b52",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "faf62659f4b7ae3807bfce9f396c3e27a2a21481cc732ab6c611491464388d78",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "99b2616687979c3790b815213d81ac8c6074154e0935ce35d70168ab0b4c5d42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/add-orders.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "b46d2b56ebe14c78b503d0ac201b48249cb542f180025d656d923184e5628565",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "27e8813721222b9e35e80529013e4d86ce5dd6867d5d3d079cfb7313363d309c",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f4e1a193044982d89bb490bee9a2804075178e71dc91d3bc817324ec6969f94f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "e034a2ef349c21ac2662ec37b543c0485937341333cf3a22a58c72638380784f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "99b2616687979c3790b815213d81ac8c6074154e0935ce35d70168ab0b4c5d42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/variable-order.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "4c87171e5b0e6433d934f20015b7e3617eddbc02653ed17160c1d843a2a6fffa",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "444ec5dd769d80b368fc13d81f9fd04515fa0b470f1ec653eda66e57f7ed3f0c",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "e62bc636f27cb29f7f62ecac088624a630ff794e0d228b4703b562a57179a4e3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7b8c66d2796d284782d836c6ef6d4d460bf34259a8fc0a80b56826bfeba08078",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a4d92a4aec2f6acf9a3166a8f2fe91b7502369775d69b12882a981577128de78",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/aliased-order.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "f3cda536518cee93b80ab0a89bf8526e1e4b82d65b4ad60616ec352521d8cd5e",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "4d73ab9d075805fe748cb9d060077a974e2a3b151e021152f67cae2152b2b232",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "829f7278377238ce65ff26f03735688c122ef90eb009bf53f92c04e6992b9636",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "fbef263f00b8c49ce7c8c46dc9942442232ab4a2479fb69ed58f23babac66cc2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "f0001ede8ee660d75deac91d87f9c71b8a135ad4b5a403d1c265682ed5c87b53",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/reified.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "0137636e5d09f7c9df6e1d4a8d0a67305f3a6467a71b2edeb9ecb1ca931becda",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "c93d935ceb36c0f210e98fa74a5c032aee290f9f258fef92b3fb2219f1f06fa4",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c9ccfa8adce377a65c470807fc37d7899e5ce46fd95fae68231dfc47dec47972",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "2fc8ae5e61d9ed322d6b25dbdd099dfe3c2a91a01744ae4deea889138883fd27",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "99b2616687979c3790b815213d81ac8c6074154e0935ce35d70168ab0b4c5d42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/ufcs.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "d201379e9d52b8f58a53a0aff86de47cb2a23c061edc0b65adf9b2de8cce0616",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "1dd1d96a71d95a5e18c9fbf8699849f7039f87ff54bae5bf712200cb3de89157",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "6484360caff63d0bd0d1ad5ae3e9073a4a24f7753ccb14df0c45a7478e1ac21d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "c16e370317ce7443756b1acc7e611e7893645cd219efba3f64fd433271d71e43",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "99b2616687979c3790b815213d81ac8c6074154e0935ce35d70168ab0b4c5d42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/shared-static.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "4bdccba13968440e926a95aa8b9bfa50d0a5eb27d51505a2f59409a737fb5699",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "08a866ca2ec35a75b7aef75463cdb590c0b1712f7119a8d18f6cd97cd060c283",
+      "rustc_stderr_sha256": "0c80d87ec31eeca383054b15b6f6dda2d179c62e4f05274ed73e56aab423b6a7",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f7de5997fe01602a72132126beeee06aecf03025d3051824d06819a11a531666",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a188788b24ffbd77d141045927f374b395ae8a97157bb76a6b51a5660d913471",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "17aab336b5ef02dab4446f2b442247f39115d1be12d70104666a09f079d7f223",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrapping.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "d26cfd9644a86a1fe6cc8d30b9e294ae5323a7f63127db8392f25df727711524",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "75a466d1ba7e556bcdc0b9a7971c6135e9824d0b4d6b188442410852d988da9e",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "b9fd240739b32aaa28a53f58a50abf722c1a050bafbf4e65b723319d3814cca0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "54edfe6621aa8dc5aab6e66018cd146eae32a9caf8000140b8c2bcf6ad29d322",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "99b2616687979c3790b815213d81ac8c6074154e0935ce35d70168ab0b4c5d42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/unsafe-narrowing.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "92080fd44466796cc14b25d72e4b02f99ff8e09bf96a9bd4c6a8352a180d3bfd",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "7120d74ed33f23c2346c6473cff16163f6a746142360d94cf1f2d80f7fb0188d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "d86d12ed5cf2d66c53d52d1a42fafe215f6d328a6e96370cbe8c6d62ede2e345",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "99b2616687979c3790b815213d81ac8c6074154e0935ce35d70168ab0b4c5d42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-swap.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "be3b2ed133b6b5012220a345db3fe379ae4eff639398d0ce19958f2aa15d7a86",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "b4a075b2a14bd0eac52b9ce87dc43f08e57e60c026beca6e1de351813b80b59a",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-add.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "5841f44d413a771ed2a22d65af452cfa5a9c53aa2937df5d5165ec0292ad30bf",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "8df37760e86fd4286b5d7f59b79566f7643fabcb12e6b473c6a524212247f8aa",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-dead-add.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "ea6a4b2a3073db91c2e131382f88bca4b587029d3027741ec02edfb55b9613d5",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "cf320e3458321cc5bf5806f77f87134ec18cc1c3edb706ff44be4f0fe89501fc",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-reified.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "0ebbce05aaa6050ad728c52abaa6574dcc5fd340cb4b37643d0817aacac19705",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "648e62b52eae1613cfb3249ca67cda4700681b71a6cd9553ff2dfee976573e07",
+          "stderr": "ERROR: file 0: 104: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "648e62b52eae1613cfb3249ca67cda4700681b71a6cd9553ff2dfee976573e07",
+          "stderr": "ERROR: file 0: 104: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "648e62b52eae1613cfb3249ca67cda4700681b71a6cd9553ff2dfee976573e07",
+          "stderr": "ERROR: file 0: 104: non-const calls are not allowed in constant initializers\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/packed-receiver.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+      "frontend_types_status": 0,
+      "phase_boundary": "Earlier type inspection retains the alignment obligation; executable checking rejects the implicit receiver reference.",
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "e64c4aa3891daacb74fbcef70020f3b7c1f544f1d804cce83cffbadfa129b3ee",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a0610ba6deb10b56c92abaada19da38a934594502aef9e24c366fb08dc90f277",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d",
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d",
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrong-value.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "ad0ea9c0cdc683b5316cace34842ce6e53db3b98ec535279801d4bfe55a92024",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "3552c13f20961bc9541c875ead7592f70a4a17bb82eb4a6c65cac085106c3a45",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c92d0f7ce71b79cd9b8b983af869e34b91a2f48ca6864bf9e9006fc62c18f1a1",
+          "stderr": "ERROR: file 0: 99: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c92d0f7ce71b79cd9b8b983af869e34b91a2f48ca6864bf9e9006fc62c18f1a1",
+          "stderr": "ERROR: file 0: 99: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c92d0f7ce71b79cd9b8b983af869e34b91a2f48ca6864bf9e9006fc62c18f1a1",
+          "stderr": "ERROR: file 0: 99: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrong-order.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "45d22030bbae9e518fd7bc179bc2f357863151cb9977ac92b48607d3b2a034dc",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c155f8956bb568c1673b5afa60c006a2655e62c3c9360ef1965bccf558c269ce",
+          "stderr": "ERROR: file 0: 96: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c155f8956bb568c1673b5afa60c006a2655e62c3c9360ef1965bccf558c269ce",
+          "stderr": "ERROR: file 0: 96: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c155f8956bb568c1673b5afa60c006a2655e62c3c9360ef1965bccf558c269ce",
+          "stderr": "ERROR: file 0: 96: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrong-arity.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "41dacf23a2922dad390964db1fd6d2c1c67bd55d74f849f9eabcbb5c66723185",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586",
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586",
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586",
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/generic-argument.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "b22005e0759df5578ef88122a259454d454cfe1981f211d7f7f21b845507c0a8",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059",
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059",
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059",
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/local-shadow.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "fb00bae64a8425894a79706cbf12f9491125aebb9d70e4d1e3e3d56bcb9e1408",
+      "frontend_types_status": 0,
+      "rustc_object_sha256": "0fdc3c5ea0d651405743fb1746c9c2419b9690aa3249dfd75fbff143b4beb394",
+      "rustc_stderr_sha256": "abdb6af31a03718622a9736c6ecfe4825229e39b2d318f0c2661ac023ae59ae5",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "7cd54c0c3641806fc352b1c0e1e9cce885518b8657a52a44a804fd15a6cef0b1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "c62e0b2eac68acd17d9f459292f2461bae9e27e3ddc96ba69fcbefe5c34cf3c6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "0da50790a8091a202230ec70fbe1494930d22291411bd0aa3df35ba708100420",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-swap-alias.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "72e2a1ee7c9084ad97c441edec03cfd56b6be3d0c479b63e873176d8cb2ff5b7",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "b5b5255252b87e03f9439b3622605a2267ee53a1591f3a5cb27b4b7f83a260c0",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-add-alias.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "51f5d3c967cfa38e48c611d9b83845ee08c1b723ab0b085fe1a3e849c6abd49c",
+      "frontend_types_status": 1,
+      "rustc_object_sha256": null,
+      "rustc_stderr_sha256": "8584658b5df65714060ad88dc0122778a67f0cc478b85b240daac9bd7aad7170",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/orders.rs",
+      "sha256": "728d27df1153c41d1667d475c41829f8018cb48afbdd6a79554047f7190e97d4",
+      "qualified_input_sha256": "4b6545a0823bc9d096cd49a554bf9eb0efa1ff574d85989eb3d2a5ce1e238607",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "8299a76ad0975071be87eaf14675454f4d4d10aed8f25aa08f60a4ff1a413bb4",
+      "native_binary_sha256": "cd07ae7c763bc7f4e519f351e6f9a4ea59f3e1be49e4407a97ef54345c7ff7fa",
+      "lowir_sha256": "c63d4c6df9c0a98811281d22906fc0e528debe39fc21f8e1f3dda7ec74fc2646",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/wrapping.rs",
+      "sha256": "fa3a63c303497ba1e84eefd7182a582d109972d05cef6ef6e9c5684d141f5748",
+      "qualified_input_sha256": "f43fd5731e7ac3a37b6b26beeffd483154ec54cf784f7368b0064caacfbdf068",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "ff0deda4588281d9b299b47483c24c2a62340a01dd8eb49ac6b59f26894fd53c",
+      "native_binary_sha256": "50d3f18ecba22a8b6e07b13c4f8d764961b62757700a90a2d2833aad7589625b",
+      "lowir_sha256": "a3c99373256922f1676ae86d3f87cc840f58e4f1ad97744b99b0a15eec15ee10",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/reified.rs",
+      "sha256": "22ddc60dd99696a5e76ea656878fd17ae874cece35597d6e27d7a8a4976a2af6",
+      "qualified_input_sha256": "ebc241c26f542c8aca0e90096263d7830790f74ae47d8ce2c21a62a01014cebf",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "085595880c6e478e1ec1b40171e9df1a2c13cefb4e182241031d874b1a32286a",
+      "native_binary_sha256": "d0f4b42edb3a802d9eceb9e1c69a3b206c8906bb427cfeffa75a395a82112b44",
+      "lowir_sha256": "a0c508c390ad04db8bff59708a508455ef9816c53e66377249340ddfb25510e6",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/effects-storage.rs",
+      "sha256": "94db5d74ab28acfb8f89ff1e7a000ca77549e42287796391d853bed6664c2ebf",
+      "qualified_input_sha256": "7f56a35968fc9cb96f2e9230ec19e1c8664acc7a93ab16eccce37ffd8f815b3f",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "f754359ff9814bb744c905d14b1d0b52b706f368b3d483043ba14c719690549f",
+      "native_binary_sha256": "d64e91984fd7ea8767d8f02936f0f2cd6cfb136a7975e1fbcdb9e7f88676a53d",
+      "lowir_sha256": "b5858d21b4f0a3f97b81724c8dabc44993c3f9a75b997c4cd8ede282bdda9da8",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_evidence": "obj/parallel/pa28/rmw-source-115528",
+  "native_evidence": "obj/parallel/pa28/rmw-native-115528",
+  "ordinary_output_control": [
+    {
+      "mode": "--emit-types",
+      "image_checkpoint_sha256": "ec6482cdb55208fbe0e17d430c6e8f1a958f2ed9f660b0b3a0b5e424856557c0",
+      "candidate_sha256": "ec6482cdb55208fbe0e17d430c6e8f1a958f2ed9f660b0b3a0b5e424856557c0",
+      "byte_equal": true
+    },
+    {
+      "mode": "--emit-lowir",
+      "image_checkpoint_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+      "candidate_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+      "byte_equal": true
+    }
+  ],
+  "scaling": {
+    "callers": [
+      8,
+      32,
+      128
+    ],
+    "canonical_atomic_methods": 4,
+    "emitted_rmw_shims": 2,
+    "exchanges": 5,
+    "add_fetches": 5,
+    "wrapping_subtractions": 5,
+    "extra_atomic_loads": 0,
+    "non_atomic_memory_accesses": "Only one U8 Ordering-argument load from parameter2 in each RMW shim; no other load/store/object-copy.",
+    "body_work_bound": "steps < 1024*(callers+1)"
+  },
+  "gates": [
+    "obj/parallel/pa28/rmw-final/gates.json",
+    "obj/parallel/pa28/rmw-final/close-final.json"
+  ],
+  "limitations": [
+    "No concurrency stress suite or full/performance matrix in this focused checkpoint.",
+    "Compare-exchange and additional intrinsic families remain queued.",
+    "Packed receiver type inspection retains an obligation and remains status0; executable/constant inspection rejects the unaligned reference.",
+    "No backend change, assignment activation or generated reference update."
+  ]
+}

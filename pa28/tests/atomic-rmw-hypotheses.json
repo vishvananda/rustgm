@@ -1,0 +1,185 @@
+{
+  "stage": "draft-predeclared",
+  "baseline": "51408d58",
+  "profile": "canonical AtomicU32 swap/fetch_add; safe runtime-only; all five Rust orderings valid",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-rmw/swap-orders.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "f56df7c937b4ad1a406cff004ac9ca871d67404f4d6bc7d73fb9e5ae1c4a1465",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/add-orders.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "b46d2b56ebe14c78b503d0ac201b48249cb542f180025d656d923184e5628565",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/variable-order.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "4c87171e5b0e6433d934f20015b7e3617eddbc02653ed17160c1d843a2a6fffa",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/aliased-order.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "f3cda536518cee93b80ab0a89bf8526e1e4b82d65b4ad60616ec352521d8cd5e",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/reified.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "0137636e5d09f7c9df6e1d4a8d0a67305f3a6467a71b2edeb9ecb1ca931becda",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/ufcs.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "d201379e9d52b8f58a53a0aff86de47cb2a23c061edc0b65adf9b2de8cce0616",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/shared-static.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "4bdccba13968440e926a95aa8b9bfa50d0a5eb27d51505a2f59409a737fb5699",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrapping.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "d26cfd9644a86a1fe6cc8d30b9e294ae5323a7f63127db8392f25df727711524",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/unsafe-narrowing.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-swap.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "be3b2ed133b6b5012220a345db3fe379ae4eff639398d0ce19958f2aa15d7a86",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-add.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "5841f44d413a771ed2a22d65af452cfa5a9c53aa2937df5d5165ec0292ad30bf",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-dead-add.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "ea6a4b2a3073db91c2e131382f88bca4b587029d3027741ec02edfb55b9613d5",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-reified.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/packed-receiver.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+      "frontend_types_status": 0,
+      "phase_boundary": "Earlier type inspection retains the alignment obligation; executable checking rejects the implicit receiver reference."
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrong-value.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "ad0ea9c0cdc683b5316cace34842ce6e53db3b98ec535279801d4bfe55a92024",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrong-order.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/wrong-arity.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/generic-argument.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/local-shadow.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "sha256": "fb00bae64a8425894a79706cbf12f9491125aebb9d70e4d1e3e3d56bcb9e1408",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-swap-alias.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "72e2a1ee7c9084ad97c441edec03cfd56b6be3d0c479b63e873176d8cb2ff5b7",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw/const-add-alias.rs",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "sha256": "51f5d3c967cfa38e48c611d9b83845ee08c1b723ab0b085fe1a3e849c6abd49c",
+      "frontend_types_status": 1
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/orders.rs",
+      "sha256": "728d27df1153c41d1667d475c41829f8018cb48afbdd6a79554047f7190e97d4",
+      "qualified_input_sha256": "4b6545a0823bc9d096cd49a554bf9eb0efa1ff574d85989eb3d2a5ce1e238607",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/wrapping.rs",
+      "sha256": "fa3a63c303497ba1e84eefd7182a582d109972d05cef6ef6e9c5684d141f5748",
+      "qualified_input_sha256": "f43fd5731e7ac3a37b6b26beeffd483154ec54cf784f7368b0064caacfbdf068",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/reified.rs",
+      "sha256": "22ddc60dd99696a5e76ea656878fd17ae874cece35597d6e27d7a8a4976a2af6",
+      "qualified_input_sha256": "ebc241c26f542c8aca0e90096263d7830790f74ae47d8ce2c21a62a01014cebf",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-rmw-native/effects-storage.rs",
+      "sha256": "94db5d74ab28acfb8f89ff1e7a000ca77549e42287796391d853bed6664c2ebf",
+      "qualified_input_sha256": "7f56a35968fc9cb96f2e9230ec19e1c8664acc7a93ab16eccce37ffd8f815b3f",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    }
+  ]
+}

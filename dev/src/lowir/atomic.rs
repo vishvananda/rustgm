@@ -31,3 +31,24 @@ impl StoreOrder {
         }
     }
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RmwOrder {
+    Relaxed,
+    Acquire,
+    Release,
+    AcquireRelease,
+    Sequential,
+}
+impl RmwOrder {
+    #[must_use]
+    pub const fn encoding(self) -> u8 {
+        match self {
+            Self::Relaxed => 0,
+            Self::Acquire => 2,
+            Self::Release => 3,
+            Self::AcquireRelease => 4,
+            Self::Sequential => 5,
+        }
+    }
+}

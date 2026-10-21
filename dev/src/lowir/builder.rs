@@ -217,6 +217,46 @@ impl Builder {
         )
     }
     /// # Errors
+    /// Rejects unsupported widths and invalid construction state.
+    pub fn atomic_exchange(
+        &mut self,
+        value: Value,
+        address: Operand,
+        ordering: super::atomic::RmwOrder,
+    ) -> Result<Value, &'static str> {
+        if value.ty != Type::U32 {
+            return Err("atomic exchange currently requires u32");
+        }
+        self.value(
+            value.ty,
+            Operation::AtomicExchange {
+                value,
+                address,
+                ordering,
+            },
+        )
+    }
+    /// # Errors
+    /// Rejects unsupported widths and invalid construction state.
+    pub fn atomic_add_fetch(
+        &mut self,
+        value: Value,
+        address: Operand,
+        ordering: super::atomic::RmwOrder,
+    ) -> Result<Value, &'static str> {
+        if value.ty != Type::U32 {
+            return Err("atomic add-fetch currently requires u32");
+        }
+        self.value(
+            value.ty,
+            Operation::AtomicAddFetch {
+                value,
+                address,
+                ordering,
+            },
+        )
+    }
+    /// # Errors
     /// Rejects invalid construction state or void loads.
     pub fn load(&mut self, ty: Type, address: Operand) -> Result<Value, &'static str> {
         self.memory_load(Access::Ordinary, ty, address)

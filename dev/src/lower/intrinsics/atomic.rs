@@ -2,10 +2,10 @@
 use crate::{
     lower::context::Context,
     lowir::{
-        atomic::{LoadOrder, StoreOrder},
+        atomic::{LoadOrder, RmwOrder, StoreOrder},
         builder::Builder,
         program::{Function, Operand, Terminator, Value},
-        vocabulary::{Predicate, Type},
+        vocabulary::{Binary, Predicate, Type},
     },
     support::{atomic_ordering::Ordering, intrinsics::Intrinsic},
     types::{Kind, ListId, Primitive, TypeId},
@@ -31,11 +31,13 @@ impl Context<'_> {
             .types
             .list(parameters)
             .ok_or("missing atomic intrinsic parameters")?;
-        let writing = intrinsic == Intrinsic::AtomicStore;
+        let storing = intrinsic == Intrinsic::AtomicStore;
+        let loading = intrinsic == Intrinsic::AtomicLoad;
         let scalar = TypeId::primitive(Primitive::U32);
-        if inputs.len() != if writing { 3 } else { 2 }
-            || writing && (inputs[1] != scalar || result != TypeId::UNIT)
-            || !writing && result != scalar
+        if inputs.len() != if loading { 2 } else { 3 }
+            || !loading && inputs[1] != scalar
+            || storing && result != TypeId::UNIT
+            || !storing && result != scalar
             || !matches!(self.types.kind(inputs[0]), Some(Kind::Reference { mutable: false, referent, .. }) if referent == subject)
         {
             return Err("atomic intrinsic parameter or result type mismatch");
@@ -66,14 +68,16 @@ impl Context<'_> {
         let entry = builder.block()?;
         let invalid = builder.block()?;
         builder.enter(entry)?;
-        let writing = intrinsic == Intrinsic::AtomicStore;
-        let tag = builder.load(Type::U8, Operand::Parameter(if writing { 2 } else { 1 }))?;
-        for order in Ordering::ALL {
-            if !(if writing {
-                order.store_valid()
+        let tag = builder.load(
+            Type::U8,
+            Operand::Parameter(if intrinsic == Intrinsic::AtomicLoad {
+                1
             } else {
-                order.load_valid()
-            }) {
+                2
+            }),
+        )?;
+        for order in Ordering::ALL {
+            if !intrinsic.atomic_order_valid(order) {
                 continue;
             }
             let operation = builder.block()?;
@@ -86,7 +90,7 @@ impl Context<'_> {
                 no: next,
             })?;
             builder.enter(operation)?;
-            let result = atomic_operation(&mut builder, writing, order)?;
+            let result = atomic_operation(&mut builder, intrinsic, order)?;
             builder.terminate(Terminator::Return(result))?;
             builder.enter(next)?;
         }
@@ -101,11 +105,11 @@ impl Context<'_> {
 }
 fn atomic_operation(
     builder: &mut Builder,
-    writing: bool,
+    intrinsic: Intrinsic,
     order: Ordering,
 ) -> Result<Option<Value>, &'static str> {
     let pointer = Operand::Parameter(0);
-    if writing {
+    if intrinsic == Intrinsic::AtomicStore {
         let order = match order {
             Ordering::Relaxed => StoreOrder::Relaxed,
             Ordering::Release => StoreOrder::Release,
@@ -121,7 +125,7 @@ fn atomic_operation(
             order,
         )?;
         Ok(None)
-    } else {
+    } else if intrinsic == Intrinsic::AtomicLoad {
         let order = match order {
             Ordering::Relaxed => LoadOrder::Relaxed,
             Ordering::Acquire => LoadOrder::Acquire,
@@ -129,5 +133,28 @@ fn atomic_operation(
             _ => return Err("invalid atomic load order"),
         };
         builder.atomic_load(Type::U32, pointer, order).map(Some)
+    } else {
+        let order = match order {
+            Ordering::Relaxed => RmwOrder::Relaxed,
+            Ordering::Release => RmwOrder::Release,
+            Ordering::Acquire => RmwOrder::Acquire,
+            Ordering::AcquireRelease => RmwOrder::AcquireRelease,
+            Ordering::Sequential => RmwOrder::Sequential,
+        };
+        let value = Value {
+            ty: Type::U32,
+            operand: Operand::Parameter(1),
+        };
+        let result = match intrinsic {
+            Intrinsic::AtomicSwap => builder.atomic_exchange(value, pointer, order)?,
+            Intrinsic::AtomicFetchAdd => {
+                let updated = builder.atomic_add_fetch(value, pointer, order)?;
+                // Rust returns the old value. Pure wrapping subtraction uses the
+                // captured atomic result; it performs no additional memory read.
+                builder.binary(Binary::Sub, updated, value)?
+            }
+            _ => return Err("invalid atomic RMW identity"),
+        };
+        Ok(Some(result))
     }
 }

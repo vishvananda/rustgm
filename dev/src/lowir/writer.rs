@@ -246,6 +246,26 @@ fn instruction(
             write!(out, ", ")?;
             destination
         }
+        Operation::AtomicExchange {
+            value,
+            address,
+            ordering,
+        }
+        | Operation::AtomicAddFetch {
+            value,
+            address,
+            ordering,
+        } => {
+            let name = match inst.operation {
+                Operation::AtomicExchange { .. } => "atomic_exchange",
+                _ => "atomic_add_fetch",
+            };
+            write!(out, "{name} {} ", value.ty.name())?;
+            operand(program, function, address, out)?;
+            write!(out, ", ")?;
+            operand(program, function, value.operand, out)?;
+            return write!(out, ", {}", ordering.encoding());
+        }
         Operation::AtomicLoad {
             ty,
             address,

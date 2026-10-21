@@ -1,8 +1,6 @@
 //! The deny lint requires method-call syntax and a direct canonical variant expression.
 use super::{Checker, Error, Kind, NodeId, Target};
-use crate::support::{
-    atomic_ordering::Ordering, intrinsics::Intrinsic, library_types::LibraryType,
-};
+use crate::support::{atomic_ordering::Ordering, library_types::LibraryType};
 impl Checker<'_> {
     pub(super) fn validate_atomic_orderings(&self) -> Result<(), Error> {
         let Some(ordering) = self
@@ -61,11 +59,7 @@ impl Checker<'_> {
             }
             let order = Ordering::from_tag(variant.ordinal)
                 .ok_or_else(|| self.error(argument, "invalid canonical Ordering variant"))?;
-            let valid = if intrinsic == Intrinsic::AtomicLoad {
-                order.load_valid()
-            } else {
-                order.store_valid()
-            };
+            let valid = intrinsic.atomic_order_valid(order);
             if !valid {
                 return Err(self.error(argument, "invalid atomic ordering for this operation"));
             }

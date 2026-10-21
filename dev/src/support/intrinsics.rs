@@ -5,6 +5,8 @@ pub enum Intrinsic {
     WriteVolatile,
     AtomicLoad,
     AtomicStore,
+    AtomicSwap,
+    AtomicFetchAdd,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -22,11 +24,13 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 6] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
         Self::AtomicStore,
+        Self::AtomicSwap,
+        Self::AtomicFetchAdd,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -35,6 +39,8 @@ impl Intrinsic {
             Self::WriteVolatile => 1,
             Self::AtomicLoad => 2,
             Self::AtomicStore => 3,
+            Self::AtomicSwap => 4,
+            Self::AtomicFetchAdd => 5,
         }
     }
     #[must_use]
@@ -44,11 +50,22 @@ impl Intrinsic {
             Self::WriteVolatile => "write_volatile",
             Self::AtomicLoad => "load",
             Self::AtomicStore => "store",
+            Self::AtomicSwap => "swap",
+            Self::AtomicFetchAdd => "fetch_add",
         }
     }
     #[must_use]
     pub const fn is_volatile(self) -> bool {
         matches!(self, Self::ReadVolatile | Self::WriteVolatile)
+    }
+    #[must_use]
+    pub const fn atomic_order_valid(self, order: super::atomic_ordering::Ordering) -> bool {
+        match self {
+            Self::AtomicLoad => order.load_valid(),
+            Self::AtomicStore => order.store_valid(),
+            Self::AtomicSwap | Self::AtomicFetchAdd => true,
+            Self::ReadVolatile | Self::WriteVolatile => false,
+        }
     }
     #[must_use]
     pub const fn descriptor(self) -> Descriptor {

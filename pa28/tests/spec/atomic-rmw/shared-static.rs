@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};static A0:A=A::new(1);struct Pair{a:A,x:u32}static PAIR:Pair=Pair{a:A::new(2),x:3};fn main(){let _=A0.swap(3,O::AcqRel);let _=PAIR.a.fetch_add(4,O::Release);}

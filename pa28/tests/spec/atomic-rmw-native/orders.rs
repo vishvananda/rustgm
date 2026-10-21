@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn swap(a:&A,v:u32,o:O)->u32{a.swap(v,o)}fn add(a:&A,v:u32,o:O)->u32{a.fetch_add(v,o)}fn one(o:O){let a=A::new(7);check(swap(&a,11,o)==7);check(add(&a,3,o)==11);check(a.load(O::SeqCst)==14);}fn main(){one(O::Relaxed);one(O::Release);one(O::Acquire);one(O::AcqRel);one(O::SeqCst);}

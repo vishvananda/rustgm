@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};const SWAP:fn(&A,u32,O)->u32=A::swap;const ADD:fn(&A,u32,O)->u32=A::fetch_add;const ORDER:O=O::Release;fn main(){let a=A::new(19);check(SWAP(&a,31,O::Acquire)==19);check(ADD(&a,11,ORDER)==31);check(A::swap(&a,7,O::AcqRel)==42);check(A::fetch_add(&a,2,O::Relaxed)==7);check(a.load(O::SeqCst)==9);}

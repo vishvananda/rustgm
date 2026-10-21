@@ -50,7 +50,9 @@ reference slot can point to writable atomic storage.
 
 The draft `tests/atomic-storage-outcomes.json` records 27 independent source
 outcomes and five native storage comparisons using the already qualified
-volatile operations. Body-local inline const remains an explicit PA25 boundary.
+volatile operations. PA25 closed inline execution now supports the unchanged
+zero-array-repeat-return fixture; its former explicit boundary is superseded
+by independent source and native qualification.
 Initializer-local borrow controls consume PA25's actual body regions, while
 escaping local references remain invalid. These storage comparisons establish no atomic-operation or concurrent-execution
 claim.
@@ -64,6 +66,17 @@ syntax with a canonical variant obeys the scoped `invalid_atomic_ordering` lint,
 including allow/warn/deny/forbid inheritance. Atomic operations remain runtime-only
 through the existing whole-CFG constant eligibility gate. Packed receiver borrows
 retain the ordinary alignment check; raw address formation is a separate rule.
+
+The RMW slice adds canonical safe runtime `swap` and `fetch_add`, including
+reified method pointers. Every Rust Ordering is legal for these operations.
+A typed RMW ordering translates the same five Rust tags to backend codes.
+`swap` returns the backend exchange's old value; `fetch_add` subtracts its
+operand with wrapping u32 arithmetic from the captured add-and-fetch result.
+It performs no extra memory read. Shared static storage, nested aggregates,
+ignored results, variable/aliased orders and integer wraparound retain their
+runtime effects. Constant calls, including retained skipped branches and
+function-item aliases, remain forbidden independently of unsafe permission.
+Compare-exchange and additional atomic families remain separate work.
 
 External-open coverage keeps an unknown case separate from real variant IDs and
 runtime discriminants. Matching every current Ordering variant still needs a
