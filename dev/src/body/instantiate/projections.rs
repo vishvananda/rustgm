@@ -155,7 +155,10 @@ pub(super) fn normalize(
             *instance = crate::types::instance::Instance::new(&facts.types, actual)?;
         }
         if let Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } = &mut value.kind {
-            *signature = ty(facts, &mut session, &mut storage, *signature)?;
+            // Call arguments already inhabit the caller's proof scope. Their
+            // empty ABI record must not introduce another lifetime binder.
+            let normalized = body_signature(facts, &mut session, *signature)?;
+            *signature = ty(facts, &mut session, &mut storage, normalized)?;
         }
         if let Rvalue::Unsize { conversion, .. } = &mut value.kind {
             *conversion =
@@ -225,34 +228,7 @@ fn rewrite_contract(
     if let Some(signature) = &mut contract.signature {
         // This binder is the body's existing universal scope, not a fresh
         // nested callable scope. Its parameter/result roots live at ROOT.
-        let Some(crate::types::Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-            convention,
-        }) = facts.types.kind(*signature)
-        else {
-            return Err("instance contract has no function signature");
-        };
-        let parameters = facts
-            .types
-            .list(parameters)
-            .ok_or("invalid instance contract parameters")?
-            .to_vec();
-        let mut normalized = Vec::with_capacity(parameters.len());
-        for parameter in parameters {
-            normalized.push(session.normalize(facts, parameter)?.0);
-        }
-        let result = session.normalize(facts, result)?.0;
-        let parameters = facts.types.intern_list(&normalized)?;
-        *signature = facts.types.intern(crate::types::Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-            convention,
-        })?;
+        *signature = body_signature(facts, session, *signature)?;
     }
     for clause in &mut contract.type_assumptions {
         if let crate::types::parameters::clauses::Clause::Predicate(predicate) = clause {
@@ -284,4 +260,44 @@ fn rewrite_contract(
         }
     }
     Ok(scoped_terms)
+}
+
+/// The signature names an existing body scope; nested callable children retain
+/// their own binders through the ordinary type normalizer.
+fn body_signature(
+    facts: &mut Declarations,
+    session: &mut Concrete<'_>,
+    signature: TypeId,
+) -> Result<TypeId, &'static str> {
+    let Some(crate::types::Kind::Function {
+        bound_regions,
+        parameters,
+        result,
+        unsafe_,
+        convention,
+    }) = facts.types.kind(signature)
+    else {
+        return Err("instance contract has no function signature");
+    };
+    if facts.types.contains_projections(signature) == Some(false) {
+        return Ok(signature);
+    }
+    let parameters = facts
+        .types
+        .list(parameters)
+        .ok_or("invalid instance contract parameters")?
+        .to_vec();
+    let mut normalized = Vec::with_capacity(parameters.len());
+    for parameter in parameters {
+        normalized.push(session.normalize(facts, parameter)?.0);
+    }
+    let result = session.normalize(facts, result)?.0;
+    let parameters = facts.types.intern_list(&normalized)?;
+    facts.types.intern(crate::types::Kind::Function {
+        bound_regions,
+        parameters,
+        result,
+        unsafe_,
+        convention,
+    })
 }
