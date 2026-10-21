@@ -209,7 +209,7 @@ pub(super) fn owner(
                 .closures
                 .identity(identity)
                 .ok_or("missing closure template identity")?;
-            if closure.body != source.source {
+            if closure.semantic_source() != source.source {
                 return Err("closure instance selects a different source body");
             }
             let owner = closure

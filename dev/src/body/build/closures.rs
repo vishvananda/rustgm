@@ -49,11 +49,11 @@ pub(super) fn body(
             signature: closure.signature,
             execution: None,
         },
-        closure.body,
+        closure.semantic_source(),
         result,
     );
     Builder::new(report, facts, scratch, body, scope_plan, query)
-        .run(Some(closure.parameters))
+        .run_root(closure.body.node, Some(closure.parameters))
         .map_err(|e| report.diagnostic(e))
 }
 impl Builder<'_> {

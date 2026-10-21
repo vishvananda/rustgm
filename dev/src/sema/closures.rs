@@ -27,6 +27,13 @@ pub struct Body {
     /// Captured bodies have a distinct checked receiver prefix; public inputs stay unchanged.
     pub execution: Option<Execution>,
 }
+impl Body {
+    /// Semantic ownership remains distinct from the syntax root executed by the CFG.
+    #[must_use]
+    pub const fn semantic_source(&self) -> NodeKey {
+        self.body
+    }
+}
 #[derive(Clone, Copy)]
 pub struct Execution {
     pub self_ty: TypeId,

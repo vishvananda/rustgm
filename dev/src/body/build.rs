@@ -714,8 +714,11 @@ impl<'a> Builder<'a> {
         }
         Ok(())
     }
-    fn run(mut self, parameters: Option<List>) -> Result<Body, Error> {
+    fn run(self, parameters: Option<List>) -> Result<Body, Error> {
         let root = self.body.source.node;
+        self.run_root(root, parameters)
+    }
+    fn run_root(mut self, root: NodeId, parameters: Option<List>) -> Result<Body, Error> {
         if self
             .facts
             .patterns
