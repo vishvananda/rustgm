@@ -60,8 +60,9 @@ The specialization evidence is in
 manifest and candidate SHA-256
 `0cc5e9d885671fc5433ee11908420cda8695f1fb46a0da4f7c85e20c8d3910ac`.
 Earlier failed projection experiments and the v16 lint failure are retained;
-they are not passing coverage. Combined publication checks and a matched
-performance study remain pending. No assignment release claim is made.
+they are not passing coverage. The matched development study is recorded in
+[the specialization measurements](pa24-specialization-performance.md).
+Combined publication checks remain pending. No assignment release claim is made.
 Evidence remains under `obj/parallel/closure-templates-v*/` and the earlier
 v1/v2 logs. Ordinary native and active text coverage for the preceding compiler
 snapshot is recorded separately in the publication checkpoint.
