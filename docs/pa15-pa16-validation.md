@@ -146,3 +146,24 @@ the baseline is
 `obj/perf/*/samples.json` receipts and their raw `observations.jsonl` files.
 `proofviews-v1-perf-verified.json` records the summaries; the matching source
 hashes and immutable binary identities are retained beside it.
+
+
+## Zero-length constant repeat review
+
+The PA25 closed-inline-constant checkpoint also corrects the shared array-repeat
+builder: a named constant or inline constant used by a zero-length repeat is
+not evaluated. Ordinary expression operands still evaluate once. This follows
+the pinned Reference's `expr.array.repeat-const-item` and
+`expr.array.repeat-evaluation-zero` rules in
+`doc/rust-reference/src/expressions/array-expr.md`; initializer validity remains
+checked independently of runtime evaluation.
+
+The unchanged PA16 `thin-native/constant-repeat-lifetimes.rs` fixture passed
+pinned Rust 1.98 object generation and native execution with both rustc and the
+qualified CPPGM backend. Its selected generated LowIR oracle removes only the
+unused object slot and three address/copy instructions in `empty`; the source,
+manifest, expected acceptance and runtime assertions are unchanged. The scoped
+reference receipt preserves the full PA16 receipt. Independent commands and
+outputs are retained in `obj/parallel/zero-repeat-review/independent.json` for
+compiler `68d3a32e` (SHA-256
+`76a94721c579c2e008d0c6b1d3b873c0fb96058d975292cc608c709781c3bff2`).

@@ -144,12 +144,8 @@ function @rg.19(%p0 : ptr, %p1 : ptr) -> void {
 }
 function @rg.20(%p0 : ptr) -> void {
   slot $s0 : ptr
-  slot $s1 : obj<8x8>
   block ^b0:
     store ptr %p0, $s0
-    %t0 = addr @rg.data.0
-    %t1 = addr $s1
-    copyobj 8x8 %t0, %t1
     return void
 }
 declare function @abort() -> void [return=noreturn]
