@@ -30,7 +30,16 @@ multiple bodies from replacing each other, including generated helper names.
 Draft outcomes are in `tests/linkage-outcomes.json`; qualification and boundaries
 are recorded in `docs/pa30-linkage-checkpoint.md`.
 
-Foreign statics, C aggregate classification and variadic calls remain unfinished. The reviewed optional object backend
+The maintainer foreign-static checkpoint retains separate safety and mutability,
+real imported global declarations, exact exported storage and constant foreign
+addresses. A single typed function/global namespace validates aliases and kind
+collisions. Global export roots retain actual initializer and generic callback
+dependencies in executable and entry-free modes. Draft outcomes are in
+`tests/static-outcomes.json`; qualification and boundaries are recorded in
+`docs/pa30-static-checkpoint.md`.
+
+C aggregate callable classification, variadic calls and static crate-metadata
+transport remain unfinished. The reviewed optional object backend
 profile is selected explicitly; its native tests use the test-only
 `object-interop-tests` Cargo feature and fail if the profile is missing. PA30's
 release target and CI must configure that profile and run those tests before

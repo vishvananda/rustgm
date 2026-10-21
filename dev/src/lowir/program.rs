@@ -146,6 +146,11 @@ pub struct Symbol {
     pub entry: bool,
     pub body: Option<Function>,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Name {
+    Function(SymbolId),
+    Global(super::data::GlobalId),
+}
 #[derive(Default)]
 pub struct Program {
     pub globals: Vec<super::data::Global>,
@@ -153,7 +158,7 @@ pub struct Program {
     pub parameters: Vec<Type>,
     pub signatures: Vec<Signature>,
     pub symbols: Vec<Symbol>,
-    names: std::collections::HashMap<String, SymbolId>,
+    pub(super) names: std::collections::HashMap<String, Name>,
 }
 impl Program {
     /// Install exactly one function body for a canonical symbol declaration.
@@ -165,7 +170,7 @@ impl Program {
             .symbols
             .get(symbol.0 as usize)
             .ok_or("invalid LowIR definition symbol")?;
-        if self.names.get(&target.name) != Some(&symbol) {
+        if self.names.get(&target.name) != Some(&Name::Function(symbol)) {
             return Err("noncanonical LowIR definition symbol");
         }
         if target.body.is_some() {
@@ -217,7 +222,10 @@ impl Program {
         if signature.0 as usize >= self.signatures.len() {
             return Err("invalid LowIR signature");
         }
-        if let Some(&id) = self.names.get(&name) {
+        if let Some(&named) = self.names.get(&name) {
+            let Name::Function(id) = named else {
+                return Err("LowIR symbol kind conflicts with prior declaration");
+            };
             let previous = &self.symbols[id.0 as usize];
             let a = &self.signatures[previous.signature.0 as usize];
             let b = &self.signatures[signature.0 as usize];
@@ -231,7 +239,7 @@ impl Program {
             return Ok(id);
         }
         let id = SymbolId(index(self.symbols.len())?);
-        self.names.insert(name.clone(), id);
+        self.names.insert(name.clone(), Name::Function(id));
         self.symbols.push(Symbol {
             name,
             signature,

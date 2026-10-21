@@ -273,8 +273,15 @@ pub(super) fn item<L>(
             Children(ast, items)
         ),
         ItemKind::Const { ty, value } => write!(output, "const {} {}", ty.0, Optional(value)),
-        ItemKind::Static { mutable, ty, value } => {
-            write!(output, "static {mutable} {} {}", ty.0, Optional(value))
+        ItemKind::Static {
+            safety,
+            mutable,
+            ty,
+            value,
+        } => {
+            write!(output, "static ")?;
+            static_safety(safety, output)?;
+            write!(output, "{mutable} {} {}", ty.0, Optional(value))
         }
         ItemKind::TypeAlias { bounds, ty } => write!(
             output,
@@ -307,5 +314,13 @@ pub(super) fn item<L>(
         ),
         ItemKind::MacroRules { capture } => write!(output, "macro-rules {capture}"),
         ItemKind::MacroInvocation(value) => write!(output, "macro-invocation {}", value.0),
+    }
+}
+
+fn static_safety(safety: crate::syntax::item::Safety, output: &mut impl Write) -> io::Result<()> {
+    match safety {
+        crate::syntax::item::Safety::Default => Ok(()),
+        crate::syntax::item::Safety::Safe => write!(output, "safe "),
+        crate::syntax::item::Safety::Unsafe => write!(output, "unsafe "),
     }
 }

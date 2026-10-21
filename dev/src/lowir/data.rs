@@ -24,10 +24,16 @@ pub enum Item {
         addend: i64,
     },
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GlobalKind {
+    Declaration,
+    Definition,
+}
 pub struct Global {
     pub name: String,
     pub span: MemorySpan,
     pub readonly: bool,
+    pub kind: GlobalKind,
     pub items: Option<Range>,
 }
 impl Program {
@@ -40,6 +46,26 @@ impl Program {
         span: MemorySpan,
         readonly: bool,
     ) -> Result<GlobalId, &'static str> {
+        self.global_symbol(name, span, readonly, GlobalKind::Definition)
+    }
+    /// Declare external storage without an initializer or a local definition.
+    /// # Errors
+    /// Rejects invalid spans and incompatible or differently kinded aliases.
+    pub fn declare_global(
+        &mut self,
+        name: String,
+        span: MemorySpan,
+        readonly: bool,
+    ) -> Result<GlobalId, &'static str> {
+        self.global_symbol(name, span, readonly, GlobalKind::Declaration)
+    }
+    fn global_symbol(
+        &mut self,
+        name: String,
+        span: MemorySpan,
+        readonly: bool,
+        kind: GlobalKind,
+    ) -> Result<GlobalId, &'static str> {
         if span.bytes == 0
             || span.bytes > i64::MAX as u64
             || u64::from(span.align) > span.bytes
@@ -48,11 +74,26 @@ impl Program {
         {
             return Err("invalid LowIR global storage span");
         }
+        if let Some(&named) = self.names.get(&name) {
+            let program::Name::Global(id) = named else {
+                return Err("LowIR symbol kind conflicts with prior declaration");
+            };
+            let previous = &mut self.globals[id.0 as usize];
+            if previous.span != span || previous.readonly != readonly {
+                return Err("incompatible LowIR global declarations");
+            }
+            if kind == GlobalKind::Definition {
+                previous.kind = kind;
+            }
+            return Ok(id);
+        }
         let id = GlobalId(program::index(self.globals.len())?);
+        self.names.insert(name.clone(), program::Name::Global(id));
         self.globals.push(Global {
             name,
             span,
             readonly,
+            kind,
             items: None,
         });
         Ok(id)
@@ -66,6 +107,12 @@ impl Program {
             .globals
             .get(id.0 as usize)
             .ok_or("invalid LowIR global identity")?;
+        if self.names.get(&global.name) != Some(&program::Name::Global(id)) {
+            return Err("noncanonical LowIR global identity");
+        }
+        if global.kind != GlobalKind::Definition {
+            return Err("external LowIR global cannot have a local initializer");
+        }
         if global.items.is_some() {
             return Err("LowIR global initialized twice");
         }

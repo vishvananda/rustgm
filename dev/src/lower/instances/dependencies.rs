@@ -64,6 +64,40 @@ impl Dependencies {
         let result = self.run(facts, &mut layouts, body);
         facts.layouts = layouts;
         let result = result?;
+        Self::prepared(report, facts, result)
+    }
+    pub(super) fn global(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<Demands, String> {
+        let value = Reader::new(facts)
+            .definition(definition)
+            .ok_or("missing completed global export value")?;
+        let ty = facts
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or("missing global export type")?;
+        let mut layouts = std::mem::take(&mut facts.layouts);
+        let mut result = Discovered::default();
+        let evaluated = self.follow(
+            facts,
+            &mut layouts,
+            vec![Work::Value(ty, value)],
+            &mut result,
+        );
+        facts.layouts = layouts;
+        evaluated?;
+        Self::prepared(report, facts, result)
+    }
+    fn prepared(
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        result: Discovered,
+    ) -> Result<Demands, String> {
         let mut concrete = Vec::new();
         for instance in result.calls {
             if matches!(facts.types.kind(instance.ty()), Some(Kind::FunctionItem { item, .. })
@@ -160,8 +194,16 @@ impl Dependencies {
                 result.callable(&facts.types, body, ty)?;
             }
         }
-        for (id, _) in body::constants::references(body) {
+        for (id, static_) in body::constants::references(body) {
             self.charge(1)?;
+            if static_
+                && facts
+                    .foreign
+                    .as_deref()
+                    .is_some_and(|r| r.imports_global(id))
+            {
+                continue;
+            }
             let value = reader
                 .definition(id)
                 .ok_or("missing completed callable constant")?;
@@ -220,10 +262,18 @@ impl Dependencies {
                             location.ty,
                             location.value.ok_or("missing allocation value")?,
                         )),
-                        Origin::Static(id) => work.push(Work::Value(
-                            location.ty,
-                            reader.definition(id).ok_or("missing static value")?,
-                        )),
+                        Origin::Static(id) => {
+                            if !facts
+                                .foreign
+                                .as_deref()
+                                .is_some_and(|r| r.imports_global(id))
+                            {
+                                work.push(Work::Value(
+                                    location.ty,
+                                    reader.definition(id).ok_or("missing static value")?,
+                                ));
+                            }
+                        }
                     }
                 }
                 Work::Value(ty, value) => {

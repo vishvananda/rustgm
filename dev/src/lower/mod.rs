@@ -55,19 +55,12 @@ pub fn build_roots(
         ),
         message,
     })?;
-    build_exact_roots(
-        facts,
-        bodies,
-        Roots {
-            entry: roots.entry,
-            exports: &exports,
-        },
-    )
+    build_exact_roots(facts, bodies, exports.selected(roots.entry))
 }
 pub(crate) fn build_exact_roots(
     facts: &mut Declarations,
     bodies: &Checked<'_>,
-    roots: Roots<'_>,
+    roots: roots::Selected<'_>,
 ) -> Result<program::Program, Error> {
     let program = bodies.program();
     alignment::check(facts, program)?;

@@ -697,6 +697,22 @@ impl Checker<'_> {
                 .seal(id)
                 .map_err(|e| self.error(key, e))?;
         }
+        self.value_initializer(id, key, ty, item)
+    }
+    fn value_initializer(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+        ty: TypeId,
+        item: Item,
+    ) -> Result<(), Error> {
+        if let ItemKind::Static {
+            mutable, safety, ..
+        } = item.kind
+            && self.register_foreign_global(id, key, ty, mutable, safety)?
+        {
+            return Ok(());
+        }
         let (value, kind) = match item.kind {
             ItemKind::Const { value, .. } => (value, InitializerKind::Const),
             ItemKind::Static { value, mutable, .. } => (value, InitializerKind::Static { mutable }),

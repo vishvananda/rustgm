@@ -45,10 +45,7 @@ pub fn build_roots_prepared(
 ) -> Result<crate::lowir::program::Program, Error> {
     let exports = super::roots::exports(facts, roots.exports)
         .map_err(|e| diagnostic(report, None, e.into()))?;
-    let roots = super::Roots {
-        entry: roots.entry,
-        exports: &exports,
-    };
+    let roots = exports.selected(roots.entry);
     let mut templates = prepared.templates.finish(report, facts)?;
     let mut inputs = if let Some(collector) = prepared.contracts {
         collector.finish(facts)

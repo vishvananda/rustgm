@@ -91,15 +91,22 @@ fn parameters(
     Ok(())
 }
 fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
-    use super::data::Item;
+    use super::data::{GlobalKind, Item};
     for global in &program.globals {
-        let range = global
-            .items
-            .ok_or_else(|| io::Error::other("uninitialized LowIR global"))?;
-        let items = program
-            .data
-            .get(range.start as usize..range.end as usize)
-            .ok_or_else(|| io::Error::other("invalid LowIR global item range"))?;
+        let items = if global.kind == GlobalKind::Declaration {
+            write!(out, "declare ")?;
+            None
+        } else {
+            let range = global
+                .items
+                .ok_or_else(|| io::Error::other("uninitialized LowIR global"))?;
+            Some(
+                program
+                    .data
+                    .get(range.start as usize..range.end as usize)
+                    .ok_or_else(|| io::Error::other("invalid LowIR global item range"))?,
+            )
+        };
         write!(
             out,
             "global @{} : obj<{}x{}>",
@@ -108,6 +115,10 @@ fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
         if global.readonly {
             write!(out, " [storage=readonly]")?;
         }
+        let Some(items) = items else {
+            writeln!(out)?;
+            continue;
+        };
         writeln!(out, " = {{")?;
         for &item in items {
             match item {

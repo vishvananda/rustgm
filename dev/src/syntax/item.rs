@@ -99,6 +99,7 @@ pub enum ItemKind {
         value: Option<NodeId>,
     },
     Static {
+        safety: Safety,
         mutable: bool,
         ty: NodeId,
         value: Option<NodeId>,

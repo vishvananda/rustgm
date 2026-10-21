@@ -221,7 +221,7 @@ impl Parser<'_, '_> {
         } else if self.cursor.word("static")?
             || (self.cursor.word("const")? && !self.function_after_const()?)
         {
-            self.value_item(&mut item)?
+            self.value_item(&mut item, Safety::Default)?
         } else {
             let constant = self.word("const")?;
             let asynchronous = self.word("async")?;
@@ -230,9 +230,21 @@ impl Parser<'_, '_> {
                 && self
                     .cursor
                     .peek(1)?
-                    .is_some_and(|t| self.cursor.spelling(t) == "fn")
+                    .is_some_and(|t| matches!(self.cursor.spelling(t), "fn" | "static"))
                 && self.word("safe")?;
-            if self.word("trait")? {
+            let safety = if unsafe_ {
+                Safety::Unsafe
+            } else if safe {
+                Safety::Safe
+            } else {
+                Safety::Default
+            };
+            if self.cursor.word("static")? && (unsafe_ || safe) {
+                if constant || asynchronous {
+                    return Err(error(start, "invalid static qualifier"));
+                }
+                self.value_item(&mut item, safety)?
+            } else if self.word("trait")? {
                 if constant || asynchronous || safe {
                     return Err(error(start, "invalid trait qualifier"));
                 }
@@ -320,13 +332,7 @@ impl Parser<'_, '_> {
                             flags: FunctionFlags {
                                 constant,
                                 asynchronous,
-                                safety: if unsafe_ {
-                                    Safety::Unsafe
-                                } else if safe {
-                                    Safety::Safe
-                                } else {
-                                    Safety::Default
-                                },
+                                safety,
                             },
                             abi: if external {
                                 crate::syntax::item::Abi::Extern(abi)
@@ -363,6 +369,11 @@ impl Parser<'_, '_> {
     }
 
     fn validate_item(&mut self, item: &Item) -> Result<(), LexError> {
+        if self.item_scope != Scope::External
+            && matches!(item.kind, ItemKind::Static { safety, .. } if safety != Safety::Default)
+        {
+            return Err(self.error("static safety qualifier requires a foreign declaration")?);
+        }
         let valid = match self.item_scope {
             Scope::Module => true,
             Scope::Trait | Scope::Impl => matches!(
@@ -445,7 +456,7 @@ impl Parser<'_, '_> {
         }))
     }
 
-    fn value_item(&mut self, item: &mut Item) -> Result<ItemKind, LexError> {
+    fn value_item(&mut self, item: &mut Item, safety: Safety) -> Result<ItemKind, LexError> {
         let static_ = self.word("static")?;
         if !static_ {
             self.required()?;
@@ -461,7 +472,12 @@ impl Parser<'_, '_> {
         };
         self.expect(P::Semicolon)?;
         Ok(if static_ {
-            ItemKind::Static { mutable, ty, value }
+            ItemKind::Static {
+                safety,
+                mutable,
+                ty,
+                value,
+            }
         } else {
             ItemKind::Const { ty, value }
         })

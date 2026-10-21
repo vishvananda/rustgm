@@ -18,23 +18,48 @@ impl Roots<'_> {
         self.entry.into_iter().chain(self.exports.iter().copied())
     }
 }
-pub(super) fn exports(
-    facts: &Declarations,
-    explicit: &[DefId],
-) -> Result<Vec<DefId>, &'static str> {
+#[derive(Clone, Copy)]
+pub(crate) struct Selected<'a> {
+    pub functions: Roots<'a>,
+    pub globals: &'a [DefId],
+}
+pub(super) struct Exports {
+    functions: Vec<DefId>,
+    globals: Vec<DefId>,
+}
+impl Exports {
+    pub fn selected(&self, entry: Option<DefId>) -> Selected<'_> {
+        Selected {
+            functions: Roots {
+                entry,
+                exports: &self.functions,
+            },
+            globals: &self.globals,
+        }
+    }
+}
+pub(super) fn exports(facts: &Declarations, explicit: &[DefId]) -> Result<Exports, &'static str> {
     const LIMIT: usize = 100_000;
     if explicit.len() > LIMIT {
         return Err("export roots exceed 100000 function budget");
     }
-    let mut exports = facts
-        .foreign
-        .as_deref()
-        .map_or_else(Vec::new, crate::sema::foreign::Registry::exports);
-    if exports.len().saturating_add(explicit.len()) > LIMIT {
+    let (mut functions, globals) = facts.foreign.as_deref().map_or_else(
+        || (Vec::new(), Vec::new()),
+        crate::sema::foreign::Registry::all_exports,
+    );
+    if functions.len().saturating_add(explicit.len()) > LIMIT {
         return Err("export roots exceed 100000 function budget");
     }
-    exports.extend_from_slice(explicit);
-    exports.sort_unstable_by_key(|definition| definition.0);
-    exports.dedup();
-    Ok(exports)
+    if functions
+        .len()
+        .saturating_add(explicit.len())
+        .saturating_add(globals.len())
+        > LIMIT
+    {
+        return Err("export roots exceed 100000 definition budget");
+    }
+    functions.extend_from_slice(explicit);
+    functions.sort_unstable_by_key(|id| id.0);
+    functions.dedup();
+    Ok(Exports { functions, globals })
 }

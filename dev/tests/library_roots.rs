@@ -200,3 +200,23 @@ fn packed_address_fixups_require_an_executable_initialization_adapter()
     );
     Ok(())
 }
+
+#[test]
+fn exported_storage_roots_instantiate_callbacks_without_an_entry_adapter()
+-> Result<(), Box<dyn std::error::Error>> {
+    let text = "fn id<T:Copy>(n:T)->T{n}extern \"C\" fn callback(n:u32)->u32{id(n)+3}#[unsafe(no_mangle)]pub static CALLBACK:extern \"C\" fn(u32)->u32=callback;";
+    let library = compile(text, &[], false, &[])?;
+    assert_eq!(bodies(&library), 2);
+    assert!(library.symbols.iter().all(|symbol| !symbol.entry));
+    let storage = library
+        .globals
+        .iter()
+        .find(|g| g.name == "CALLBACK")
+        .ok_or("export")?;
+    assert_eq!(storage.kind, rustgm::lowir::data::GlobalKind::Definition);
+    assert!(storage.items.is_some());
+    let mut rendered = Vec::new();
+    rustgm::lowir::writer::write(&library, &mut rendered)?;
+    assert!(!String::from_utf8(rendered)?.contains("define entry"));
+    Ok(())
+}

@@ -70,6 +70,22 @@ impl Context<'_> {
         if let Some(&global) = self.data.globals.get(&Key::Definition(id)) {
             return Ok(global);
         }
+        if let Some(record) = self.foreign.and_then(|registry| registry.global(id))
+            && record.linkage == crate::support::linkage::Linkage::Import
+        {
+            let layout = self.layout(record.ty)?;
+            let name = self.data_name(Key::Definition(id))?;
+            let global = self.output.declare_global(
+                name,
+                MemorySpan {
+                    bytes: layout.size.max(u64::from(layout.align)),
+                    align: layout.align,
+                },
+                !record.mutable,
+            )?;
+            self.data.globals.insert(Key::Definition(id), global);
+            return Ok(global);
+        }
         let indices = self.data.static_indices.get_or_insert_with(|| {
             self.initializers
                 .iter()
@@ -105,8 +121,9 @@ impl Context<'_> {
         }
         let layout = self.layout(ty)?;
         self.data.charge(1)?;
+        let name = self.data_name(key)?;
         let global = self.output.global(
-            self.internal_name(format!("rg.data.{}", self.output.globals.len())),
+            name,
             MemorySpan {
                 bytes: layout.size.max(u64::from(layout.align)),
                 align: layout.align,
@@ -116,6 +133,19 @@ impl Context<'_> {
         self.data.globals.insert(key, global);
         self.data.pending.push(Pending { global, value, ty });
         Ok(global)
+    }
+    fn data_name(&self, key: Key) -> Result<String, &'static str> {
+        if let Key::Definition(id) = key
+            && let Some(record) = self.foreign.and_then(|registry| registry.global(id))
+        {
+            return super::linkage::select(
+                self.foreign.map(crate::sema::foreign::Registry::names),
+                record.naming,
+                super::linkage::Identity::Static(id),
+                |identity| self.rust_name(identity, None),
+            );
+        }
+        Ok(self.internal_name(format!("rg.data.{}", self.output.globals.len())))
     }
     fn constant_pointer(&mut self, mut id: LocationId) -> Result<Pointer, &'static str> {
         let mut path = Vec::new();

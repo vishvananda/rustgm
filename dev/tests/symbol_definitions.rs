@@ -109,3 +109,86 @@ fn invalid_definitions_do_not_change_bodies_or_canonical_names()
     program.define(selected, body(4)?)?;
     Ok(())
 }
+
+#[test]
+fn function_and_storage_names_share_one_kind_checked_namespace()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::program::MemorySpan;
+    for global_first in [false, true] {
+        let mut program = Program::default();
+        let signature = program.signature(&[], Type::I32, false)?;
+        let span = MemorySpan { bytes: 4, align: 4 };
+        if global_first {
+            let global = program.declare_global("shared".into(), span, true)?;
+            assert_eq!(
+                program.declare("shared".into(), signature, false),
+                Err("LowIR symbol kind conflicts with prior declaration")
+            );
+            assert!(program.symbols.is_empty());
+            assert_eq!(program.global("shared".into(), span, true)?, global);
+            program.initialize(global, &[rustgm::lowir::data::Item::Zero(4)])?;
+        } else {
+            let function = program.declare("shared".into(), signature, false)?;
+            assert_eq!(
+                program.declare_global("shared".into(), span, true),
+                Err("LowIR symbol kind conflicts with prior declaration")
+            );
+            assert!(program.globals.is_empty());
+            program.define(function, body(7)?)?;
+        }
+    }
+    Ok(())
+}
+#[test]
+fn storage_aliases_validate_before_upgrading_or_installing_data()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::{
+        data::{GlobalId, GlobalKind, Item},
+        program::MemorySpan,
+    };
+    let mut program = Program::default();
+    let span = MemorySpan { bytes: 8, align: 4 };
+    let imported = program.declare_global("storage".into(), span, true)?;
+    for (incompatible, readonly) in [
+        (MemorySpan { bytes: 4, align: 4 }, true),
+        (MemorySpan { bytes: 8, align: 8 }, true),
+        (span, false),
+    ] {
+        assert_eq!(
+            program.global("storage".into(), incompatible, readonly),
+            Err("incompatible LowIR global declarations")
+        );
+        assert_eq!(program.globals[0].kind, GlobalKind::Declaration);
+        assert!(program.globals[0].items.is_none());
+    }
+    assert_eq!(
+        program.initialize(imported, &[Item::Zero(8)]),
+        Err("external LowIR global cannot have a local initializer")
+    );
+    assert_eq!(
+        program.initialize(GlobalId(u32::MAX), &[Item::Zero(8)]),
+        Err("invalid LowIR global identity")
+    );
+    assert!(program.data.is_empty());
+    let definition = program.global("storage".into(), span, true)?;
+    assert_eq!(imported, definition);
+    assert_eq!(
+        program.initialize(definition, &[Item::Zero(9)]),
+        Err("LowIR global initializer exceeds storage span")
+    );
+    assert!(program.data.is_empty());
+    assert!(program.globals[0].items.is_none());
+    program.initialize(definition, &[Item::Zero(8)])?;
+    assert_eq!(
+        program.initialize(imported, &[Item::Zero(4)]),
+        Err("LowIR global initialized twice")
+    );
+    assert_eq!(program.data.len(), 1);
+    assert_eq!(
+        program.declare_global("storage".into(), span, true)?,
+        definition
+    );
+    assert_eq!(program.globals[0].kind, GlobalKind::Definition);
+    assert_eq!(program.globals.len(), 1);
+    Ok(())
+}

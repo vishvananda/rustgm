@@ -10,14 +10,15 @@ use std::collections::HashSet;
 /// # Errors
 /// Preserves required-constant diagnostics and unsupported evaluation boundaries.
 pub fn analyze(report: &Report, facts: &mut Declarations, bodies: &Program) -> Result<(), Error> {
-    prepare(report, facts, bodies.bodies.iter())
+    prepare(report, facts, bodies.bodies.iter(), &[])
 }
 pub(crate) fn analyze_bodies<'a>(
     report: &Report,
     facts: &mut Declarations,
     bodies: impl Iterator<Item = &'a super::ir::Body>,
+    globals: &[crate::resolve::model::DefId],
 ) -> Result<(), Error> {
-    prepare(report, facts, bodies)
+    prepare(report, facts, bodies, globals)
 }
 /// Complete constants for one newly demanded body without rescanning the program.
 /// # Errors
@@ -27,12 +28,13 @@ pub fn instance(
     facts: &mut Declarations,
     body: &super::ir::Body,
 ) -> Result<(), Error> {
-    prepare(report, facts, std::iter::once(body))
+    prepare(report, facts, std::iter::once(body), &[])
 }
 fn prepare<'a>(
     report: &Report,
     facts: &mut Declarations,
     bodies: impl Iterator<Item = &'a super::ir::Body>,
+    globals: &[crate::resolve::model::DefId],
 ) -> Result<(), Error> {
     let mut seen = HashSet::new();
     let mut demands = Vec::new();
@@ -43,6 +45,9 @@ fn prepare<'a>(
             demands.push((id, static_));
         }
     };
+    for &id in globals {
+        demand(id, true);
+    }
     for body in bodies {
         eligibility(report, facts, body)?;
         for value in &body.values {
@@ -53,6 +58,14 @@ fn prepare<'a>(
             }
         }
         for (id, static_) in references(body) {
+            if static_
+                && facts
+                    .foreign
+                    .as_deref()
+                    .is_some_and(|r| r.imports_global(id))
+            {
+                continue;
+            }
             demand(id, static_);
         }
     }

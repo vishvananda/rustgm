@@ -122,6 +122,7 @@ enum Expression {
     Forward(NodeKey),
     Constant(usize),
     Instance(crate::sema::values::Instance),
+    ForeignStatic(DefId),
     Unary {
         op: Unary,
         operand: NodeKey,
@@ -586,6 +587,12 @@ impl Queries<'_> {
                 }
                 Expression::Forward(child) => self.forward(query, Query::Node(child)),
                 Expression::Constant(index) => self.forward(query, Query::Constant(index)),
+                Expression::ForeignStatic(_) => {
+                    return Err(self.error(
+                        query,
+                        "foreign static value is unavailable during constant evaluation",
+                    ));
+                }
                 Expression::Instance(instance) => self.forward(query, Query::Instance(instance)),
                 Expression::Unary { operand, .. }
                 | Expression::Cast { operand, .. }
@@ -791,7 +798,10 @@ impl Queries<'_> {
                     // Prepare eligibility without evaluating skipped arithmetic.
                     self.work.push(Work::PrepareInstance(instance));
                 }
-                Expression::Value(_) | Expression::Constant(_) | Expression::Instance(_) => {}
+                Expression::Value(_)
+                | Expression::Constant(_)
+                | Expression::Instance(_)
+                | Expression::ForeignStatic(_) => {}
                 Expression::Execute => execution = true,
                 Expression::Reference(expression) => {
                     expression.dependencies(|child| self.scan.push(child));
@@ -949,6 +959,15 @@ impl Queries<'_> {
                                 .as_scalar()
                                 .map_err(|e| self.error(query, e.message()))?,
                         )));
+                    }
+                    if self
+                        .typing
+                        .facts
+                        .foreign
+                        .as_deref()
+                        .is_some_and(|r| r.imports_global(id))
+                    {
+                        return Ok(Expression::ForeignStatic(id));
                     }
                     let index = self.typing.facts.initializer_index(id).ok_or_else(|| {
                         self.error(query, "constant expression cannot read this declaration")

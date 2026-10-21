@@ -54,6 +54,24 @@ impl Queries<'_> {
     }
     pub(super) fn enter_place(&mut self, key: NodeKey) -> Result<(), Error> {
         match self.expression(key)? {
+            Expression::ForeignStatic(id) => {
+                let ty = self
+                    .typing
+                    .facts
+                    .definitions
+                    .get(id.0 as usize)
+                    .copied()
+                    .flatten()
+                    .ok_or_else(|| self.error(Query::Place(key), "missing foreign static type"))?;
+                let value = self
+                    .typing
+                    .facts
+                    .constant_references
+                    .static_place(id, ty)
+                    .map_err(|e| self.error(Query::Place(key), e))?;
+                self.states
+                    .insert(self.state_key(Query::Place(key)), State::Ready(value));
+            }
             Expression::Forward(child) => self.forward(Query::Place(key), Query::Place(child)),
             Expression::Reference(Reference::Dereference(operand)) => {
                 self.reference_work(Work::Dereference { key, operand });
@@ -424,20 +442,36 @@ impl Queries<'_> {
     }
     fn check_reference_alignment(&mut self, key: NodeKey, place: Place) -> Result<(), Error> {
         if let Access::Static(id) = place.access {
-            let index = self.typing.facts.initializer_index(id).ok_or_else(|| {
-                self.error(
-                    Query::Place(key),
-                    "constant reference has unsupported static provenance",
-                )
-            })?;
-            if !matches!(
-                self.typing.facts.initializers[index].kind,
-                InitializerKind::Static { mutable: false }
-            ) {
-                return Err(self.error(
-                    Query::Place(key),
-                    "constant reference requires immutable static storage",
-                ));
+            if let Some(global) = self
+                .typing
+                .facts
+                .foreign
+                .as_deref()
+                .and_then(|r| r.global(id))
+                && global.linkage == crate::support::linkage::Linkage::Import
+            {
+                if global.mutable {
+                    return Err(self.error(
+                        Query::Place(key),
+                        "constant reference requires immutable static storage",
+                    ));
+                }
+            } else {
+                let index = self.typing.facts.initializer_index(id).ok_or_else(|| {
+                    self.error(
+                        Query::Place(key),
+                        "constant reference has unsupported static provenance",
+                    )
+                })?;
+                if !matches!(
+                    self.typing.facts.initializers[index].kind,
+                    InitializerKind::Static { mutable: false }
+                ) {
+                    return Err(self.error(
+                        Query::Place(key),
+                        "constant reference requires immutable static storage",
+                    ));
+                }
             }
         }
         if let Some(packed) = place.packed {

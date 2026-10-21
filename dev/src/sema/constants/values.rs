@@ -344,7 +344,16 @@ impl<'a> Evaluator<'a> {
             .static_order
             .get(index)
         {
-            self.initializer(id)?;
+            if !self
+                .queries
+                .typing
+                .facts
+                .foreign
+                .as_deref()
+                .is_some_and(|r| r.imports_global(id))
+            {
+                self.initializer(id)?;
+            }
             index += 1;
         }
         Ok(())

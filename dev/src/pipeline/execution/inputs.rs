@@ -67,6 +67,7 @@ impl Context {
         report: &Report,
         facts: &mut Declarations,
         program: &mut Program,
+        globals: &[DefId],
     ) -> Result<(), Error> {
         let inputs = Rc::clone(
             &self
@@ -110,6 +111,7 @@ impl Context {
                     Slot::Local(index) => local.get(*index),
                     Slot::Shared(definition) => store.get(definition),
                 }),
+                globals,
             )
         };
         let mut store = inputs.try_borrow_mut().map_err(|_| {

@@ -57,7 +57,7 @@ pub(super) struct Context<'a> {
 pub(super) fn build(
     facts: &mut Declarations,
     bodies: &crate::borrow::Checked<'_>,
-    roots: super::Roots<'_>,
+    roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
     let mut layouts = std::mem::take(&mut facts.layouts);
     let result = Context::build(facts, &mut layouts, bodies, roots);
@@ -88,7 +88,7 @@ impl<'a> Context<'a> {
         facts: &'a Declarations,
         layouts: &'a mut Layouts,
         checked: &'a crate::borrow::Checked<'_>,
-        roots: super::Roots<'_>,
+        roots: super::roots::Selected<'_>,
     ) -> Result<Program, Error> {
         let bodies = checked.program();
         let destruction = checked.destruction();
@@ -146,7 +146,7 @@ impl<'a> Context<'a> {
             node: source,
             message,
         })?;
-        for definition in roots.iter() {
+        for definition in roots.functions.iter() {
             context
                 .demand_definition(definition)
                 .map_err(|message| Error {
@@ -154,8 +154,14 @@ impl<'a> Context<'a> {
                     message,
                 })?;
         }
+        for &definition in roots.globals {
+            context.static_data(definition).map_err(|message| Error {
+                node: source,
+                message,
+            })?;
+        }
         context.emit_pending(source)?;
-        if let Some(entry) = roots.entry {
+        if let Some(entry) = roots.functions.entry {
             let root = context.demand_definition(entry).map_err(|message| Error {
                 node: source,
                 message,

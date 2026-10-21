@@ -51,13 +51,17 @@ pub(in crate::sema::declarations) fn collect(
                 };
                 let error = |message| Error::at(file, attribute.span.start, message);
                 let Kind::Item(index) = unit.configured.ast.node(node).kind else {
-                    return Err(error("linkage attribute requires a function item"));
+                    return Err(error(
+                        "linkage attribute requires a function or static item",
+                    ));
                 };
                 if !matches!(
                     unit.configured.ast.items[index as usize].kind,
-                    ItemKind::Function { .. }
+                    ItemKind::Function { .. } | ItemKind::Static { .. }
                 ) {
-                    return Err(error("this linkage checkpoint supports function items"));
+                    return Err(error(
+                        "linkage attribute requires a function or static item",
+                    ));
                 }
                 if attribute.unsafe_wrapper != (name != "link_name") {
                     return Err(error("invalid unsafe wrapper for linkage attribute"));

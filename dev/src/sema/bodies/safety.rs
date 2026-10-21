@@ -176,6 +176,19 @@ impl Checker<'_> {
         Err(self.error(source, "static reference place work budget exceeded"))
     }
     pub(super) fn check_static_access(&self, node: NodeId, id: super::DefId) -> Result<(), Error> {
+        if self
+            .facts
+            .foreign
+            .as_deref()
+            .and_then(|registry| registry.global(id))
+            .is_some_and(|global| {
+                global.linkage == crate::support::linkage::Linkage::Import
+                    && global.safety != crate::syntax::item::Safety::Safe
+            })
+            && !self.state.raw_address_places.contains(&node)
+        {
+            self.require_unsafe(node, "foreign static access requires an unsafe context")?;
+        }
         if self.mutable_static(id) && !self.state.raw_address_places.contains(&node) {
             self.require_unsafe(node, "mutable static access requires an unsafe context")?;
         }

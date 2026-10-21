@@ -85,6 +85,88 @@ impl Checker<'_> {
         signature: TypeId,
         safety: Safety,
     ) -> Result<(), Error> {
+        let Some((naming, linkage)) = self.foreign_linkage(definition, key)? else {
+            return Ok(());
+        };
+        if linkage == crate::support::linkage::Linkage::Export
+            && (self.facts.generics.parameters.contains_key(&definition)
+                || self.facts.associated.schema(definition).is_some())
+        {
+            return Err(self.error(
+                key,
+                "generic function exports require a stable external argument identity",
+            ));
+        }
+        self.facts
+            .foreign
+            .get_or_insert_default()
+            .insert_function(
+                definition,
+                crate::sema::foreign::Function {
+                    signature,
+                    safety,
+                    naming,
+                    linkage,
+                },
+            )
+            .map_err(|e| self.error(key, e))
+    }
+    pub(super) fn register_foreign_global(
+        &mut self,
+        definition: DefId,
+        key: NodeKey,
+        ty: TypeId,
+        mutable: bool,
+        safety: Safety,
+    ) -> Result<bool, Error> {
+        let imported = self
+            .report
+            .resolution
+            .foreign_owners
+            .contains_key(&definition);
+        if !imported && safety != Safety::Default {
+            return Err(self.error(
+                key,
+                "static safety qualifier requires a foreign declaration",
+            ));
+        }
+        if imported
+            && matches!(
+                self.item(key)?.kind,
+                ItemKind::Static { value: Some(_), .. }
+            )
+        {
+            return Err(self.error(key, "foreign static cannot have an initializer"));
+        }
+        if let Some((naming, linkage)) = self.foreign_linkage(definition, key)? {
+            self.facts
+                .foreign
+                .get_or_insert_default()
+                .insert_global(
+                    definition,
+                    crate::sema::foreign::Global {
+                        ty,
+                        mutable,
+                        safety,
+                        naming,
+                        linkage,
+                    },
+                )
+                .map_err(|e| self.error(key, e))?;
+        }
+        Ok(imported)
+    }
+    fn foreign_linkage(
+        &mut self,
+        definition: DefId,
+        key: NodeKey,
+    ) -> Result<
+        Option<(
+            crate::support::linkage::Naming,
+            crate::support::linkage::Linkage,
+        )>,
+        Error,
+    > {
         use crate::support::linkage::{Linkage, Naming};
         let imported = self
             .report
@@ -94,47 +176,32 @@ impl Checker<'_> {
         let attributes = self.linkage_sources.get(&key).copied().unwrap_or_default();
         let export = attributes.no_mangle || attributes.export.is_some();
         if !imported && !export {
-            return Ok(());
+            return Ok(None);
         }
         if imported && export {
-            return Err(self.error(key, "linkage attribute does not match function ownership"));
-        }
-        if export
-            && (self.facts.generics.parameters.contains_key(&definition)
-                || self.facts.associated.schema(definition).is_some())
-        {
             return Err(self.error(
                 key,
-                "generic function exports require a stable external argument identity",
+                "linkage attribute does not match declaration ownership",
             ));
         }
-        let name = self.report.resolution.definitions[definition.0 as usize].name;
-        let spelling = self.report.package.names.get(name);
-        let registry = self.facts.foreign.get_or_insert_default();
         let exact = if imported {
             attributes.link
         } else {
             attributes.export
         };
+        let name = self.report.resolution.definitions[definition.0 as usize].name;
+        let spelling = self.report.package.names.get(name);
+        let registry = self.facts.foreign.get_or_insert_default();
         let exact = exact
             .map_or_else(|| registry.names_mut().intern(spelling), Ok)
             .map_err(|e| self.error(key, e))?;
-        self.facts
-            .foreign
-            .get_or_insert_default()
-            .insert_function(
-                definition,
-                crate::sema::foreign::Function {
-                    signature,
-                    safety,
-                    naming: Naming::Exact(exact),
-                    linkage: if imported {
-                        Linkage::Import
-                    } else {
-                        Linkage::Export
-                    },
-                },
-            )
-            .map_err(|e| self.error(key, e))
+        Ok(Some((
+            Naming::Exact(exact),
+            if imported {
+                Linkage::Import
+            } else {
+                Linkage::Export
+            },
+        )))
     }
 }

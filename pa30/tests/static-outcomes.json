@@ -1,0 +1,353 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "path": "tests/spec/statics/default-unsafe.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/default-safe-use.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/explicit-safe.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/explicit-unsafe.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/safe-mutable.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/mutable.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/mutable-raw-address.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/immutable-raw-address.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/mutable-reference.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/immutable-reference.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/export-static.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/self-alias.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/extern-rust.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/foreign-initializer.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/const-read.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/const-address.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/ordinary-safe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/ordinary-unsafe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/generated-collision.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "reason": "A valid exact function export collides with a generated global name; this remains an explicitly diagnosed implementation boundary."
+    },
+    {
+      "path": "tests/spec/statics/exact-kind-collision.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/safe-mutable-use.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/safe-immutable-reference.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/unsafe-raw-dereference.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/safe-mutable-reference.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/generated-import-collision.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "reason": "A valid exact function import collides with a generated global name; this remains an explicitly diagnosed implementation boundary."
+    },
+    {
+      "path": "tests/spec/statics/imports.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "auxiliary": [
+        "tests/spec/statics/imports.c"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/exports.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "auxiliary": [
+        "tests/spec/statics/exports.c"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/alias.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "auxiliary": [
+        "tests/spec/statics/imports.c"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/callback.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "auxiliary": [
+        "tests/spec/statics/callback.c"
+      ]
+    },
+    {
+      "path": "tests/spec/statics/pointer-constant.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics"
+      ],
+      "auxiliary": [
+        "tests/spec/statics/imports.c"
+      ]
+    }
+  ]
+}

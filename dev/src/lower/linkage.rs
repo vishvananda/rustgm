@@ -74,6 +74,9 @@ impl super::context::Context<'_> {
             .foreign
             .and_then(|registry| registry.function(definition))
             .is_some_and(|function| function.linkage == crate::support::linkage::Linkage::Import)
+            || self
+                .foreign
+                .is_some_and(|registry| registry.imports_global(definition))
         {
             return Err("Rust import is missing external symbol identity");
         }

@@ -54,24 +54,30 @@ impl Budget {
 pub(super) fn prepare(
     report: &Report,
     facts: &mut Declarations,
-    roots: crate::lower::Roots<'_>,
+    roots: crate::lower::roots::Selected<'_>,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
     concrete: HashMap<DefId, Body>,
     constants: Option<crate::pipeline::execution::Context>,
 ) -> Result<proof::Builder, Error> {
-    let (mut program, ordinary) =
-        prepare_ordinary(report, facts, templates, inputs, concrete, constants)?;
+    let (mut program, ordinary) = prepare_ordinary(
+        report,
+        facts,
+        templates,
+        inputs,
+        concrete,
+        constants,
+        roots.globals,
+    )?;
     // Discovery includes implicit constructor factories. With no templates,
     // ordinary lowering already follows calls and selected cleanup dependencies.
     // All source bodies have still been checked before taking this path.
     if templates.is_empty() && !facts.types.has_dynamic_shapes() {
         return Ok(program);
     }
-    let mut work = initial_work(report, facts, roots, &program, &ordinary)?;
+    let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, &ordinary)?;
     let mut instances = HashSet::new();
     let mut visited = HashSet::new();
-    let mut dependencies = Dependencies::default();
     let mut budget = Budget::default();
     let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {
@@ -158,20 +164,26 @@ pub(super) fn prepare(
             }
             index
         };
-        dependencies.schedule(report, facts, &mut program, index, &mut work)?;
+        dependencies.schedule(
+            report,
+            facts,
+            &mut program,
+            DependencyRoot::Body(index),
+            &mut work,
+        )?;
     }
     Ok(program)
 }
 
 fn initial_work(
     report: &Report,
-    facts: &Declarations,
-    roots: crate::lower::Roots<'_>,
-    program: &proof::Builder,
+    facts: &mut Declarations,
+    roots: crate::lower::roots::Selected<'_>,
+    program: &mut proof::Builder,
     ordinary: &Ordinary,
-) -> Result<Vec<Work>, Error> {
+) -> Result<(Vec<Work>, Dependencies), Error> {
     let mut work = Vec::new();
-    for definition in roots.iter().rev() {
+    for definition in roots.functions.iter().rev() {
         if facts
             .foreign
             .as_deref()
@@ -195,24 +207,77 @@ fn initial_work(
             .map_err(|e| diagnostic(report, Some(source), e.into()))?;
         work.push(Work::Enter(instance, source));
     }
-    Ok(work)
+    let dependencies =
+        Dependencies::roots(report, facts, program, roots.globals, &mut work)?;
+    Ok((work, dependencies))
 }
 
+#[derive(Clone, Copy)]
+enum DependencyRoot {
+    Body(usize),
+    Global(DefId),
+}
 impl Dependencies {
+    fn roots(
+        report: &Report,
+        facts: &mut Declarations,
+        program: &mut proof::Builder,
+        globals: &[DefId],
+        work: &mut Vec<Work>,
+    ) -> Result<Self, Error> {
+        let mut dependencies = Self::default();
+        for &definition in globals {
+            dependencies.schedule(
+                report,
+                facts,
+                program,
+                DependencyRoot::Global(definition),
+                work,
+            )?;
+        }
+        Ok(dependencies)
+    }
     fn schedule(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
         program: &mut proof::Builder,
-        index: usize,
+        root: DependencyRoot,
         work: &mut Vec<Work>,
     ) -> Result<(), Error> {
-        let body = program
-            .body(index)
-            .map_err(|e| diagnostic(report, None, e.into()))?;
-        let source = body.source;
+        let (source, demands, cleanup) = match root {
+            DependencyRoot::Body(index) => {
+                let body = program
+                    .body(index)
+                    .map_err(|e| diagnostic(report, None, e.into()))?;
+                let source = body.source;
+                let demands = self
+                    .collect(report, facts, body)
+                    .map_err(|e| diagnostic(report, Some(source), e))?;
+                let cleanup = program
+                    .cleanup_dependencies(facts, index)
+                    .map_err(|e| diagnostic(report, Some(source), e.into()))?;
+                (source, demands, cleanup)
+            }
+            DependencyRoot::Global(definition) => {
+                let initializer = facts
+                    .initializer_index(definition)
+                    .and_then(|index| facts.initializers.get(index))
+                    .ok_or_else(|| {
+                        diagnostic(
+                            report,
+                            None,
+                            "global export requires a local initializer".into(),
+                        )
+                    })?;
+                let source = initializer.value;
+                let demands = self
+                    .global(report, facts, definition)
+                    .map_err(|e| diagnostic(report, Some(source), e))?;
+                (source, demands, Vec::new())
+            }
+        };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
-        let demands = self.collect(report, facts, body).map_err(|e| error(&e))?;
         for ty in demands.closures {
             let instance = Instance::closure(&facts.types, ty).map_err(error)?;
             work.push(Work::Enter(instance, source));
@@ -223,7 +288,7 @@ impl Dependencies {
                 .object_dependencies(facts, &demands.object_types)
                 .map_err(error)?,
         );
-        next.extend(program.cleanup_dependencies(facts, index).map_err(error)?);
+        next.extend(cleanup);
         work.extend(next.into_iter().rev().map(|i| Work::Enter(i, source)));
         Ok(())
     }
@@ -236,6 +301,7 @@ fn prepare_ordinary(
     inputs: Vec<Contract>,
     concrete: HashMap<DefId, Body>,
     constants: Option<crate::pipeline::execution::Context>,
+    globals: &[DefId],
 ) -> Result<(proof::Builder, Ordinary), Error> {
     let mut program = body::concrete_prepared(
         report,
@@ -257,9 +323,9 @@ fn prepare_ordinary(
     }
     body::promote::analyze(report, facts, &mut program)?;
     if let Some(context) = constants {
-        context.constants(report, facts, &mut program)?;
+        context.constants(report, facts, &mut program, globals)?;
     } else {
-        body::constants::analyze(report, facts, &program)?;
+        body::constants::analyze_bodies(report, facts, program.bodies.iter(), globals)?;
     }
     let (mut program, bodies) =
         proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
