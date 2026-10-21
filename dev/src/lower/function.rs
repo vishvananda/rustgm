@@ -367,9 +367,16 @@ impl Lower<'_, '_> {
         }
     }
     fn reify(&mut self, id: ir::ValueId) -> Result<Selected, &'static str> {
+        let ty = self.body.values[id.0 as usize].ty;
         let selected = self.value(id)?;
-        if let Selected::Item(definition) = selected {
-            let symbol = self.context.demand(definition)?;
+        let symbol = if matches!(self.context.types.kind(ty), Some(Kind::Closure { .. })) {
+            Some(self.context.demand_closure(ty)?)
+        } else if let Selected::Item(definition) = selected {
+            Some(self.context.demand(definition)?)
+        } else {
+            None
+        };
+        if let Some(symbol) = symbol {
             self.builder
                 .address(Operand::Symbol(symbol))
                 .map(Selected::Runtime)

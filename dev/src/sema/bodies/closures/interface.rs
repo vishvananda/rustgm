@@ -2,6 +2,19 @@
 use super::{Argument, Checker, Constructor, Error, NodeId, Refinement, TermId, universes};
 use crate::types::{ItemId, Kind, RegionId, arguments::ConstKind, parameters::ParameterKind};
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn closure_pointer_environment(
+        &mut self,
+        node: NodeId,
+        source: TermId,
+    ) -> Result<(), Error> {
+        if matches!(self.head(node, source)?, Some(Constructor::Closure(..))) {
+            let environment = self.child(node, source, 1)?;
+            let empty = self.known(node, crate::types::TypeId::UNIT)?;
+            self.equate(node, environment, empty)?;
+        }
+        Ok(())
+    }
+
     pub(super) fn closure_body_interface(
         &mut self,
         node: NodeId,

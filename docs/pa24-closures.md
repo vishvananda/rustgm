@@ -443,3 +443,39 @@ Capture construction, closure-to-function-pointer coercion, generic closure
 body templates and dynamic callable adapters remain required PA24 work. The
 current empty environment is justified by rejecting outer-local lookup; it does
 not grant capture permissions. PA24 remains planned and no oracle was changed.
+
+
+## Function pointers and unsafe-context integration
+
+Noncapturing closures now use the ordinary function-pointer coercion and cast
+paths, constraining their environment to the empty tuple. Reification demands
+the checked closure symbol and discovers generic calls in its body. Conditional
+joins support distinct noncapturing closures and function items. Capture-bearing
+environments cannot satisfy the empty-environment constraint.
+
+PA26 operator checkpoint `9e8fc3b` and PA27 unsafe checkpoint `0211052f` are
+integrated locally. A closure copies its creating lexical safety context into
+its isolated child state; nested item functions retain their own context.
+`closure_safety.rs` independently qualifies six outcomes and executes two native
+controls. No call site grants unsafe permission to a closure defined elsewhere.
+
+`obj/parallel/pa24-integration-v1/` records clean formatting, strict Clippy and
+file audit, followed by 34 passing release test groups. The final pointer-only
+follow-up `obj/parallel/closure-pointers-v2.log` adds a demanded generic dependency:
+14 independently qualified pointer outcomes and eleven native programs pass.
+Together the source-body, pointer and safety lanes execute 30 native programs.
+Their two successful cleanup receipts are `1792554736433123479.jsonl` and
+`1792554818725652371.jsonl` (80 generated files, approximately 0.17 GiB).
+
+Full combined publication checks are still pending. Contextual higher-ranked
+function-pointer signatures, captures, generic closure templates and dynamic
+callable adapters remain required work; PA24 remains planned.
+
+
+The first combined active-oracle comparison, `obj/parallel/integrated-text-v1/`,
+checks all 7,784 cases in 23 assignments. All declared acceptance/rejection
+outcomes agree. Six diagnostic strings differ: three unsafe-context rejections
+in PA19/PA22 and three operator/index rejections in PA12/PA18/PA22. Independent
+review and reference regeneration are pending; no unexpected accepted-program
+output change was observed. This comparison is a failed byte gate until those
+reviewed diagnostics are published and the affected suites pass.

@@ -35,6 +35,24 @@ struct Discovered {
     tables: Vec<(TypeId, TypeId)>,
     upcasts: Vec<(TypeId, TypeId)>,
 }
+impl Discovered {
+    fn callable(
+        &mut self,
+        types: &crate::types::Store,
+        body: &Body,
+        ty: TypeId,
+    ) -> Result<(), &'static str> {
+        match types.kind(ty) {
+            Some(Kind::FunctionItem { .. }) => {
+                self.calls
+                    .push(body.callable_target(Instance::new(types, ty)?));
+            }
+            Some(Kind::Closure { identity, .. }) => self.closures.push(identity),
+            _ => {}
+        }
+        Ok(())
+    }
+}
 impl Dependencies {
     pub(super) fn collect(
         &mut self,
@@ -117,14 +135,7 @@ impl Dependencies {
                     self.charge(1)?;
                     ty = facts.types.storage_head(referent)?;
                 }
-                if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                    result
-                        .calls
-                        .push(body.callable_target(Instance::new(&facts.types, ty)?));
-                }
-                if let Some(Kind::Closure { identity, .. }) = facts.types.kind(ty) {
-                    result.closures.push(identity);
-                }
+                result.callable(&facts.types, body, ty)?;
             }
             let operand = match value.kind {
                 Rvalue::Reify(id)
@@ -141,11 +152,7 @@ impl Dependencies {
                     .get(id.0 as usize)
                     .ok_or("invalid callable operand")?
                     .ty;
-                if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                    result
-                        .calls
-                        .push(body.callable_target(Instance::new(&facts.types, ty)?));
-                }
+                result.callable(&facts.types, body, ty)?;
             }
         }
         for (id, _) in body::constants::references(body) {

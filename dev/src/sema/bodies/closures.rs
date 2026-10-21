@@ -161,6 +161,7 @@ impl Checker<'_> {
         child.body = self.key(body);
         child.module = self.state.module;
         child.in_function = true;
+        child.safety = self.state.safety;
         child.body_binders = entry
             .lifetimes
             .count()

@@ -1394,9 +1394,14 @@ impl Checker<'_> {
                 self.prepare_pointer_cast(node, value, source, target)?;
                 if matches!(
                     self.head(node, source)?,
-                    Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+                    Some(
+                        Constructor::FunctionItem(..)
+                            | Constructor::FunctionItemArgs(..)
+                            | Constructor::Closure(..)
+                    )
                 ) && matches!(self.head(node, target)?, Some(Constructor::Function { .. }))
                 {
+                    self.closure_pointer_environment(node, source)?;
                     let signature = self.child(node, source, 0)?;
                     self.callable_shape(node, signature, target)?;
                 }
@@ -1508,9 +1513,14 @@ impl Checker<'_> {
         }
         if matches!(
             actual_head,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            Some(
+                Constructor::FunctionItem(..)
+                    | Constructor::FunctionItemArgs(..)
+                    | Constructor::Closure(..)
+            )
         ) && matches!(expected_head, Some(Constructor::Function { .. }))
         {
+            self.closure_pointer_environment(source, actual)?;
             let signature = self.child(source, actual, 0)?;
             self.callable_shape(source, signature, expected)?;
             self.record_adjustment(source, expected, AdjustmentKind::FunctionPointer)?;
@@ -1577,11 +1587,19 @@ impl Checker<'_> {
         }
         let a_item = matches!(
             ah,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            Some(
+                Constructor::FunctionItem(..)
+                    | Constructor::FunctionItemArgs(..)
+                    | Constructor::Closure(..)
+            )
         );
         let b_item = matches!(
             bh,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            Some(
+                Constructor::FunctionItem(..)
+                    | Constructor::FunctionItemArgs(..)
+                    | Constructor::Closure(..)
+            )
         );
         let distinct_items = match (ah, bh) {
             (Some(Constructor::FunctionItem(a, _)), Some(Constructor::FunctionItem(b, _))) => {
@@ -2191,7 +2209,13 @@ impl Checker<'_> {
             kind
         } else if matches!(
             self.facts.types.kind(self.ty(value)?),
-            Some(Type::FunctionItem { .. })
+            Some(
+                Type::FunctionItem { .. }
+                    | Type::Closure {
+                        environment: TypeId::UNIT,
+                        ..
+                    }
+            )
         ) && matches!(
             self.facts.types.kind(self.ty(ty)?),
             Some(Type::Function { .. })
