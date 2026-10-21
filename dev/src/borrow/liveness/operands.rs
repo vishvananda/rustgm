@@ -47,6 +47,7 @@ impl Requirements {
             };
             let id = match value.kind {
                 Rvalue::Constrain(value)
+                | Rvalue::Union { value, .. }
                 | Rvalue::Unsize { value, .. }
                 | Rvalue::Repeat { value, .. } => input(value)?,
                 Rvalue::Aggregate { fields, .. } => {

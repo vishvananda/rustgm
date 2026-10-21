@@ -11,6 +11,7 @@ pub(super) struct Id(pub usize);
 enum Step {
     Dereference { mutable: bool },
     Field(Selection),
+    UnionField(Selection),
     Element(u64),
     Range(u64, u64),
     FromEnd { offset: u64, minimum: u64 },
@@ -97,6 +98,7 @@ impl Index {
                     return Err("raw loan root escaped dispatch");
                 }
                 ProjectionKind::Field(field) => Step::Field(field),
+                ProjectionKind::UnionField(field) => Step::UnionField(field),
                 ProjectionKind::ConstantIndex(i) => Step::Element(i),
                 ProjectionKind::Subarray { start, end } => Step::Range(start, end),
                 ProjectionKind::FromEnd { offset, minimum } => Step::FromEnd { offset, minimum },
@@ -366,6 +368,9 @@ impl Index {
             return Ok(false);
         }
         for (&a, &b) in self.left.iter().rev().zip(self.right.iter().rev()) {
+            if matches!((a, b), (Step::UnionField(a), Step::UnionField(b)) if a != b) {
+                return Ok(true);
+            }
             if disjoint(a, b) {
                 return Ok(false);
             }

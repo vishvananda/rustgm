@@ -233,6 +233,7 @@ impl<'a> Flow<'a> {
                 }
             }
             Rvalue::Reify(value)
+            | Rvalue::Union { value, .. }
             | Rvalue::Constrain(value)
             | Rvalue::Unsize { value, .. }
             | Rvalue::Repeat { value, .. }

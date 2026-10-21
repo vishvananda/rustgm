@@ -52,6 +52,8 @@ pub enum ProjectionKind {
         mutable: bool,
     },
     Field(crate::sema::members::Selection),
+    /// Different union fields overlap before any descendant disjointness test.
+    UnionField(crate::sema::members::Selection),
     Index {
         index: ValueId,
         length: u64,
@@ -128,6 +130,11 @@ pub enum Rvalue {
     Aggregate {
         variant: Option<VariantId>,
         fields: ValueList,
+    },
+    /// Initialize only the selected field's bytes, leaving other storage untouched.
+    Union {
+        field: Selection,
+        value: ValueId,
     },
     Repeat {
         value: ValueId,

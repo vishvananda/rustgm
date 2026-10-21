@@ -47,6 +47,26 @@ struct sequence. Validate demanded constant results using symbolic allocations,
 initialization, alignment and scalar validity; never obtain host addresses or
 execute input-language unsafe operations in the compiler implementation.
 
+The current runtime union checkpoint places every field at byte offset zero and
+initializes only the selected field's storage. Different fields overlap for
+loans; subfields within the same selected field retain ordinary disjointness.
+Moving a non-`Copy` field consumes the containing union. Field eligibility uses
+the canonical `ManuallyDrop` identity, and implicit field cleanup is suppressed
+while an explicit union destructor still runs.
+
+Constant union initialization and field reinterpretation remain explicitly
+unsupported. The draft tests distinguish this valid-Rust boundary from invalid
+boolean values and uninitialized-byte reads. Byte initialization, provenance and
+constant promotion must be qualified before release, together with the remaining
+packed-access, pattern and validity controls. This checkpoint does not activate
+the assignment or establish generated text references.
+
+The original unused invalid-boolean and uninitialized-byte constant inputs are
+also retained as uncovered cases: they currently escape evaluation. Demanding
+these constants produces the unsupported-union diagnostic, which establishes a
+feature boundary rather than scalar-validity enforcement. Both demanded and
+unused variants must reject for the appropriate validity reason before release.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

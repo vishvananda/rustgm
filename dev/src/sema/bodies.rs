@@ -232,6 +232,7 @@ pub(super) struct State {
     reference_expected: HashSet<NodeId>,
     address_dereferences: HashSet<NodeId>,
     raw_address_places: HashSet<NodeId>,
+    union_write_places: HashSet<NodeId>,
     unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
@@ -338,6 +339,7 @@ impl<'a> Checker<'a> {
                 reference_expected: HashSet::new(),
                 address_dereferences: HashSet::new(),
                 raw_address_places: HashSet::new(),
+                union_write_places: HashSet::new(),
                 unsizing_contexts: std::collections::HashMap::new(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
@@ -1136,6 +1138,7 @@ impl Checker<'_> {
                 left,
                 ..
             } => {
+                self.mark_union_write(left)?;
                 self.state.work.push(Work::AssignmentValue(node));
                 self.state.work.push(Work::Enter(left, None));
                 return Ok(());

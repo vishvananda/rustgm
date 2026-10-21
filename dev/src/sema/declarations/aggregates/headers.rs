@@ -26,7 +26,7 @@ impl Checker<'_> {
                 .ok_or_else(|| Error::at(FileId(0), 0, "nominal declaration has no syntax"))?;
             if !matches!(
                 self.item(key)?.kind,
-                ItemKind::Struct { .. } | ItemKind::Enum { .. }
+                ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. }
             ) {
                 return Err(self.error(
                     key,

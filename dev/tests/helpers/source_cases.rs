@@ -1,6 +1,7 @@
 //! Independently qualified outcomes pass through the complete command-line pipeline.
 #[path = "qualify.rs"]
 mod rustc;
+pub use rustc::qualify;
 use std::{path::Path, process::Command};
 
 pub fn check(suite: &str, cases: &[(&str, bool, &str)]) -> Result<(), Box<dyn std::error::Error>> {
@@ -10,7 +11,7 @@ pub fn check(suite: &str, cases: &[(&str, bool, &str)]) -> Result<(), Box<dyn st
     ));
     std::fs::create_dir_all(&folder)?;
     for &(name, expected, source) in cases {
-        rustc::qualify(&format!("{suite}-{name}"), source, expected)?;
+        qualify(&format!("{suite}-{name}"), source, expected)?;
         let input = folder.join(format!("{name}.rs"));
         std::fs::write(&input, format!("{source}fn main(){{}}"))?;
         let result = Command::new(env!("CARGO_BIN_EXE_rustgm"))

@@ -5,6 +5,7 @@ mod headers;
 mod outlives;
 mod readiness;
 mod sizedness;
+mod unions;
 mod validation;
 use super::{
     Checker, DefId, DefKind, Error, ItemId, ItemKind, Kind, List, NodeKey, State, Type, Work,
@@ -151,6 +152,9 @@ impl Checker<'_> {
             .aggregates
             .insert(item, kind, repr, &variants)
             .map_err(|e| self.error(key, e))?;
+        if kind == aggregate::Kind::Union {
+            self.register_union(item, key)?;
+        }
         self.nominals.entries[index].state = State::Complete;
         if let Some(pending) = &mut self.facts.generics.size_rules {
             pending.active.remove(&item);
@@ -217,6 +221,15 @@ impl Checker<'_> {
     }
     fn groups(&self, key: NodeKey) -> Result<(aggregate::Kind, Vec<Group>), Error> {
         match self.item(key)?.kind {
+            ItemKind::Union { fields } => Ok((
+                aggregate::Kind::Union,
+                vec![Group {
+                    key,
+                    shape: Shape::Record,
+                    fields,
+                    discriminant: None,
+                }],
+            )),
             ItemKind::Struct { shape, fields } => Ok((
                 aggregate::Kind::Struct,
                 vec![Group {

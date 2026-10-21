@@ -327,6 +327,11 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
+        let union = self
+            .facts
+            .aggregates
+            .get(variant.owner)
+            .is_some_and(|d| d.kind == aggregate::Kind::Union);
         let term = self.nominal_term(node, path, variant.owner, expected)?;
         let expected = self.unsizing_constructor_context(node, term, expected)?;
         if let Some(expected) = expected {
@@ -340,9 +345,12 @@ impl Checker<'_> {
             },
         )?;
         self.state.field_seen.clear();
-        self.state
-            .field_seen
-            .resize((variant.end - variant.start) as usize, false);
+        if !union {
+            self.state
+                .field_seen
+                .resize((variant.end - variant.start) as usize, false);
+        }
+        let mut initialized = 0;
         if let Some(base) = base {
             let definition = self
                 .facts
@@ -376,7 +384,12 @@ impl Checker<'_> {
                 .field(variant_id, name)
                 .ok_or_else(|| self.error(field_node, "unknown aggregate field"))?;
             self.accessible(field_node, field)?;
-            if std::mem::replace(
+            if union {
+                initialized += 1;
+                if initialized > 1 {
+                    return Err(self.error(node, "union initializer requires exactly one field"));
+                }
+            } else if std::mem::replace(
                 &mut self.state.field_seen[(field.0 - variant.start) as usize],
                 true,
             ) {
@@ -387,7 +400,10 @@ impl Checker<'_> {
             self.save(field_node, expected);
             self.state.work.push(Work::Enter(wrapper, Some(expected)));
         }
-        if base.is_none() && self.state.field_seen.contains(&false) {
+        if union && initialized != 1 {
+            return Err(self.error(node, "union initializer requires exactly one field"));
+        }
+        if !union && base.is_none() && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing aggregate field initializer"));
         }
         Ok(())
@@ -434,6 +450,7 @@ impl Checker<'_> {
     ) -> Result<Field, Error> {
         let name = self.member_name(node, name)?;
         let receiver = self.autoderef(node, self.term(value)?)?;
+        self.check_union_receiver(node, value)?;
         let kind = self.head(node, receiver)?.ok_or_else(|| {
             self.error(node, "field access requires a known tuple or struct type")
         })?;
@@ -469,6 +486,14 @@ impl Checker<'_> {
                 (Selection::Tuple(index), ty)
             }
             Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => {
+                if self
+                    .facts
+                    .aggregates
+                    .get(item)
+                    .is_some_and(|d| d.kind == aggregate::Kind::Union)
+                {
+                    self.check_union_access(node)?;
+                }
                 let variant = self.struct_variant(node, item)?;
                 let field = self
                     .facts

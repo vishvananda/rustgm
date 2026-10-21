@@ -225,6 +225,7 @@ impl Checker<'_> {
         self.state.reference_expected.clear();
         self.state.address_dereferences.clear();
         self.state.raw_address_places.clear();
+        self.state.union_write_places.clear();
         self.state.unsizing_contexts.clear();
         self.state.reference_work.clear();
         self.state.reference_steps = 0;

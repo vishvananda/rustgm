@@ -216,6 +216,7 @@ impl Engine<'_, '_> {
                 callee, arguments, ..
             } => self.call(callee, arguments)?,
             Rvalue::Invoke { .. }
+            | Rvalue::Union { .. }
             | Rvalue::Address(_)
             | Rvalue::IsVariant { .. }
             | Rvalue::Length(_)

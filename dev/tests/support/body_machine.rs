@@ -147,6 +147,7 @@ impl Machine<'_> {
             | Rvalue::AssociatedConstant(_)
             | Rvalue::Text(_)
             | Rvalue::Aggregate { .. }
+            | Rvalue::Union { .. }
             | Rvalue::Length(_)
             | Rvalue::TextEquals { .. }
             | Rvalue::IsVariant { .. }

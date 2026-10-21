@@ -434,7 +434,7 @@ impl BodyFacts {
             return Err("writing static storage requires unsafe checking");
         };
         let path = &self.paths.entries[path.0 as usize];
-        let projected = path.parent.is_some() || info.indexed;
+        let projected = path.parent.is_some() || info.indexed || info.union;
         if let Root::Local(local) = path.root
             && !body.locals[local.0 as usize].mutable
         {
@@ -452,6 +452,9 @@ impl BodyFacts {
         }
         if info.indexed && !state.initialized(path)? {
             return Err("indexed array may be uninitialized or moved");
+        }
+        if info.union && !state.initialized(path)? {
+            return Err("cannot assign a union field of an uninitialized or wholly moved value");
         }
         Ok(())
     }

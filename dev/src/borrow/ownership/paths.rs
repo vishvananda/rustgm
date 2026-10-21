@@ -47,6 +47,8 @@ pub(super) enum Access {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct PlaceInfo {
+    /// A move from any union field consumes its containing owned union.
+    pub union: bool,
     /// Closest owned path: a dereference retains its pointer's path, never a
     /// move path for borrowed contents. Access distinguishes these two cases.
     pub path: Option<PathId>,
@@ -72,6 +74,7 @@ impl PlaceInfo {
     /// A raw referent is external memory, independent of its pointer's move path.
     fn raw(mutable: bool) -> Self {
         Self {
+            union: false,
             path: None,
             indexed: false,
             access: if mutable {
@@ -130,6 +133,10 @@ impl Paths {
                     None
                 }
                 ProjectionKind::Field(field) => Some(Component::Field(field)),
+                ProjectionKind::UnionField(_) => {
+                    info.union = true;
+                    None
+                }
                 ProjectionKind::ConstantIndex(index) => Some(Component::Index(index)),
                 ProjectionKind::Subarray { start, end } => {
                     info.empty = start == end;
@@ -145,6 +152,7 @@ impl Paths {
                 }
             };
             if !info.indexed
+                && !info.union
                 && info.access == Access::Owned
                 && let (Some(parent), Some(component)) = (info.path, component)
             {
@@ -348,6 +356,7 @@ impl Paths {
             }
             Place::Static(id) => {
                 return Ok(PlaceInfo {
+                    union: false,
                     path: None,
                     indexed: false,
                     access: if self
@@ -364,6 +373,7 @@ impl Paths {
             }
         };
         Ok(PlaceInfo {
+            union: false,
             path,
             indexed: false,
             access: Access::Owned,

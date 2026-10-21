@@ -482,6 +482,12 @@ impl Lower<'_, '_> {
             Rvalue::Aggregate { variant, fields } => {
                 return self.aggregate(value.ty, variant, fields);
             }
+            Rvalue::Union {
+                field,
+                value: operand,
+            } => {
+                return self.union(value.ty, field, operand);
+            }
             Rvalue::Repeat { value: operand, .. } => return self.repeat(value.ty, operand),
             Rvalue::Function(definition) => {
                 if !matches!(self.context.types.kind(value.ty), Some(Kind::FunctionItem { item, .. }) if item.0 == definition.0)

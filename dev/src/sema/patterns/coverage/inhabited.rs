@@ -93,6 +93,10 @@ impl<'a> Inhabited<'a> {
                     if self.facts.aggregates.get(item).is_none() {
                         return Err("missing coverage aggregate");
                     }
+                    if self.union(item) {
+                        self.cache.values.insert((self.module, ty), true);
+                        continue;
+                    }
                     work.push((ty, true));
                     for &variant in self.facts.members.variants(item) {
                         for field in self
@@ -121,6 +125,9 @@ impl<'a> Inhabited<'a> {
             .ok_or("missing inhabitation result")
     }
     fn variant_ready(&self, id: VariantId) -> bool {
+        if self.union(self.facts.members.variants[id.0 as usize].owner) {
+            return true;
+        }
         self.facts.members.fields(id).is_some_and(|fields| {
             fields.iter().all(|f| {
                 !self.visible(f.access)
@@ -129,6 +136,9 @@ impl<'a> Inhabited<'a> {
         })
     }
     pub fn variant(&mut self, id: VariantId, graph: &mut Graph) -> Result<bool, &'static str> {
+        if self.union(self.facts.members.variants[id.0 as usize].owner) {
+            return Ok(true);
+        }
         for field in self
             .facts
             .members
@@ -140,6 +150,12 @@ impl<'a> Inhabited<'a> {
             }
         }
         Ok(true)
+    }
+    fn union(&self, item: ItemId) -> bool {
+        self.facts
+            .aggregates
+            .get(item)
+            .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union)
     }
     pub fn tags(
         &mut self,

@@ -147,8 +147,20 @@ impl Builder<'_> {
         node: NodeId,
         ty: TypeId,
         base: Place,
-        kind: ProjectionKind,
+        mut kind: ProjectionKind,
     ) -> Result<ProjectionId, Error> {
+        if let ProjectionKind::Field(Selection::Nominal(field)) = kind {
+            let union = self
+                .facts
+                .members
+                .variant(field)
+                .map(|id| self.facts.members.variants[id.0 as usize].owner)
+                .and_then(|owner| self.facts.aggregates.get(owner))
+                .is_some_and(|definition| definition.kind == crate::types::aggregate::Kind::Union);
+            if union {
+                kind = ProjectionKind::UnionField(Selection::Nominal(field));
+            }
+        }
         let id = ProjectionId(self.index(node, self.body.projections.len())?);
         self.body.projections.push(Projection { base, kind, ty });
         Ok(id)
@@ -272,6 +284,14 @@ impl Builder<'_> {
             return Err(self.error(node, "missing aggregate constructor selection"));
         };
         let variant = self.facts.members.variants[id.0 as usize];
+        if self
+            .facts
+            .aggregates
+            .get(variant.owner)
+            .is_some_and(|definition| definition.kind == crate::types::aggregate::Kind::Union)
+        {
+            return self.construct_union(node, fields);
+        }
         self.scratch.field_values.clear();
         self.scratch
             .field_values
@@ -323,6 +343,34 @@ impl Builder<'_> {
             Rvalue::Aggregate {
                 variant: Some(id),
                 fields: ValueList { start, end },
+            },
+        )
+    }
+    fn construct_union(&mut self, node: NodeId, fields: List) -> Result<ValueId, Error> {
+        let unit = self.report.package.unit(self.body.source.file);
+        let mut selected = None;
+        for mut field in unit.configured.ast.list(fields).iter().copied() {
+            if !self.active(field) {
+                continue;
+            }
+            while let Kind::Attributed { value, .. } = self.kind(field) {
+                field = value;
+            }
+            let Some(Operation::FieldInit { field: identity }) = self.fact(field)?.operation else {
+                return Err(self.error(field, "missing union initializer selection"));
+            };
+            if selected.replace((identity, self.value(field)?)).is_some() {
+                return Err(self.error(node, "multiple checked union initializers"));
+            }
+        }
+        let (field, value) =
+            selected.ok_or_else(|| self.error(node, "missing checked union initializer"))?;
+        self.evaluate(
+            node,
+            self.ty(node)?,
+            Rvalue::Union {
+                field: Selection::Nominal(field),
+                value,
             },
         )
     }

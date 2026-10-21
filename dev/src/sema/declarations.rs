@@ -619,20 +619,16 @@ impl Checker<'_> {
         }
         let definition = &self.report.resolution.definitions[id.0 as usize];
         if definition.kind == DefKind::Primitive {
-            let name = self.report.package.names.get(definition.name);
-            let primitive = Primitive::ALL
-                .into_iter()
-                .find(|p| p.name() == name)
-                .ok_or_else(|| Error::at(FileId(0), 0, "unknown primitive definition"))?;
-            self.facts.definitions[id.0 as usize] = Some(TypeId::primitive(primitive));
-            self.states[id.0 as usize] = State::Complete;
-            return Ok(());
+            return self.primitive_definition(id);
         }
         let key = definition
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "type declaration has no syntax"))?;
         let item = self.item(key)?;
-        if matches!(item.kind, ItemKind::Struct { .. } | ItemKind::Enum { .. }) {
+        if matches!(
+            item.kind,
+            ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. }
+        ) {
             return self.nominal_header(id, key, finish);
         }
         if !finish {
@@ -713,6 +709,17 @@ impl Checker<'_> {
             ty,
             kind,
         });
+        Ok(())
+    }
+    fn primitive_definition(&mut self, id: DefId) -> Result<(), Error> {
+        let definition = &self.report.resolution.definitions[id.0 as usize];
+        let name = self.report.package.names.get(definition.name);
+        let primitive = Primitive::ALL
+            .into_iter()
+            .find(|p| p.name() == name)
+            .ok_or_else(|| Error::at(FileId(0), 0, "unknown primitive definition"))?;
+        self.facts.definitions[id.0 as usize] = Some(TypeId::primitive(primitive));
+        self.states[id.0 as usize] = State::Complete;
         Ok(())
     }
     fn complete(&mut self, id: DefId, key: NodeKey, ty: TypeId) -> Result<(), Error> {
@@ -918,6 +925,7 @@ impl Checker<'_> {
                         | ItemKind::Function { .. }
                         | ItemKind::Struct { .. }
                         | ItemKind::Enum { .. }
+                        | ItemKind::Union { .. }
                         | ItemKind::Impl { .. }
                         | ItemKind::Trait { .. }
                 )
@@ -932,6 +940,7 @@ impl Checker<'_> {
                             | ItemKind::TypeAlias { .. }
                             | ItemKind::Struct { .. }
                             | ItemKind::Enum { .. }
+                            | ItemKind::Union { .. }
                             | ItemKind::Impl { .. }
                             | ItemKind::Trait { .. })
                     ))
@@ -940,9 +949,9 @@ impl Checker<'_> {
                     Ok(ItemKind::TypeAlias { .. }) => {
                         "generic aliases require later semantic assignments"
                     }
-                    Ok(ItemKind::Struct { .. } | ItemKind::Enum { .. }) => {
-                        "parameterized aggregates require lifetime or generic assignments"
-                    }
+                    Ok(
+                        ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. },
+                    ) => "parameterized aggregates require lifetime or generic assignments",
                     _ => {
                         "type/const parameters and lifetime bounds require later semantic assignments"
                     }

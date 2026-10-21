@@ -109,6 +109,8 @@ impl Paths {
             context.charge(context.suffix.len())?;
             for &(component, ty) in context.suffix.iter().rev() {
                 if !target.indexed
+                    && !target.union
+                    && !info.union
                     && target.access == Access::Owned
                     && let Some(parent) = target.path
                 {
@@ -123,6 +125,7 @@ impl Paths {
                 }
             }
             target.empty |= info.empty;
+            target.union |= info.union;
             target.indexed |= info.indexed;
             if info.access != Access::Owned {
                 target.access = if info.access == Access::Shared

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+#[repr(C)]union U{x:u32,b:[u8;4]}fn main(){let mut u=U{x:16909060};unsafe{check(u.b[0]==4);check(u.b[1]==3);u.b=[8,7,6,5];check(u.x==84281096);}}
