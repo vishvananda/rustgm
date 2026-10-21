@@ -1,8 +1,12 @@
 //! Closure bodies retain separate control state and exchange only interface constraints.
+mod bindings;
 mod completion;
 mod contextual;
+mod environment;
 mod interface;
+mod places;
 pub(super) mod universes;
+mod uses;
 use super::{Checker, Constructor, Domain, Error, Kind, NodeId, Scratch, TermId, TypeId, Work};
 use crate::{
     syntax::ast::List,
@@ -20,6 +24,10 @@ pub(super) struct Metadata {
     identity: ClosureId,
     parameters: List,
     signature: TermId,
+    self_ty: TermId,
+    bindings: Vec<(crate::resolve::model::DefId, TermId)>,
+    captures: Option<Box<uses::Captures>>,
+    fields: Vec<TermId>,
     lifetimes: universes::Interface,
 }
 impl Checker<'_> {
@@ -42,23 +50,9 @@ impl Checker<'_> {
             return Err(self.error(node, "async closure bodies are not implemented"));
         }
         self.check_closure_body_owner(body)?;
-        let nodes: Vec<_> = self
-            .report
-            .package
-            .unit(self.state.file)
-            .configured
-            .ast
-            .list(parameters)
-            .iter()
-            .copied()
-            .filter(|&node| self.active(node))
-            .collect();
+        let (nodes, terms) = self.closure_signature_inputs(node, parameters)?;
         let count =
             u32::try_from(nodes.len()).map_err(|_| self.error(node, "too many closure inputs"))?;
-        let mut terms = Vec::with_capacity(nodes.len() + 1);
-        for _ in 0..=nodes.len() {
-            terms.push(self.variable(node, Domain::Any)?);
-        }
         let annotations = self
             .facts
             .closures
@@ -86,18 +80,11 @@ impl Checker<'_> {
                 &terms,
             )
             .map_err(|e| self.error(node, e))?;
-        let identity = self
-            .facts
-            .types
-            .reserve_closure()
-            .map_err(|e| self.error(node, e))?;
-        let environment = self.known(node, TypeId::UNIT)?;
-        let arguments = self.closure_arguments(node)?;
-        let closure = self
-            .state
-            .infer
-            .closure(identity, signature, environment, &arguments)
-            .map_err(|e| self.error(node, e))?;
+        let bindings::Constructed {
+            identity,
+            self_ty: closure,
+            bindings,
+        } = self.closure_identity(node, signature)?;
         self.save(node, closure);
         self.state.work.push(Work::Exit(node));
         let mut lifetimes = universes::Interface::new(
@@ -106,8 +93,18 @@ impl Checker<'_> {
             expected.map(|expected| expected.regions),
         )
         .map_err(|e| self.error(node, e))?;
-        let (inputs, signature) =
-            self.closure_body_interface(node, &terms, count, &mut lifetimes, expected)?;
+        let (inputs, imported) = self.closure_body_interface(
+            node,
+            interface::Inputs {
+                terms: &terms,
+                self_ty: closure,
+                bindings,
+            },
+            count,
+            &mut lifetimes,
+            expected,
+        )?;
+        let signature = imported.signature;
         self.switch_closure_body(
             body,
             Entry {
@@ -118,6 +115,10 @@ impl Checker<'_> {
                     identity,
                     parameters,
                     signature,
+                    self_ty: imported.self_ty,
+                    bindings: imported.bindings,
+                    captures: None,
+                    fields: Vec::new(),
                     lifetimes,
                 }),
             },
@@ -189,6 +190,9 @@ impl Checker<'_> {
             .payload
             .closure()
             .map_err(|e| self.error(entry.source, e))?;
+        for &(definition, term) in &metadata.bindings {
+            child.locals[definition.0 as usize] = Some(term);
+        }
         child.body_binders = metadata
             .lifetimes
             .count()
@@ -226,15 +230,14 @@ impl Checker<'_> {
             .pop()
             .ok_or_else(|| self.error(body, "missing enclosing closure state"))?;
         let entry = &mut scheduler.entries[index];
+        let kind = self.collect_capture_environment(entry, parent.body)?;
         let metadata = entry
             .payload
             .closure_mut()
             .map_err(|e| self.error(entry.source, e))?;
-        // Until capture lowering is connected, any outer local use fails ordinary
-        // value lookup in this isolated body. Reaching here proves an empty environment.
         self.facts
             .types
-            .complete_closure(metadata.identity, CallKind::Shared)
+            .complete_closure(metadata.identity, kind)
             .map_err(|e| self.error(body, e))?;
         self.closure_result_boundary(&metadata.lifetimes)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);

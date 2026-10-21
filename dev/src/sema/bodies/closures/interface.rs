@@ -2,8 +2,43 @@
 use super::{
     Argument, Checker, Constructor, Error, NodeId, Refinement, TermId, contextual, universes,
 };
+use crate::resolve::model::DefId;
 use crate::types::{ItemId, Kind, RegionId, arguments::ConstKind, parameters::ParameterKind};
+
+pub(super) struct Inputs<'a> {
+    pub terms: &'a [TermId],
+    pub self_ty: TermId,
+    pub bindings: Vec<(DefId, TermId)>,
+}
+pub(super) struct Imported {
+    pub signature: TermId,
+    pub self_ty: TermId,
+    pub bindings: Vec<(DefId, TermId)>,
+}
 impl Checker<'_> {
+    pub(super) fn closure_signature_inputs(
+        &mut self,
+        node: NodeId,
+        parameters: crate::syntax::ast::List,
+    ) -> Result<(Vec<NodeId>, Vec<TermId>), Error> {
+        let nodes: Vec<_> = self
+            .report
+            .package
+            .unit(self.state.file)
+            .configured
+            .ast
+            .list(parameters)
+            .iter()
+            .copied()
+            .filter(|&node| self.active(node))
+            .collect();
+        let mut terms = Vec::with_capacity(nodes.len() + 1);
+        for _ in 0..=nodes.len() {
+            terms.push(self.variable(node, super::Domain::Any)?);
+        }
+        Ok((nodes, terms))
+    }
+
     pub(in crate::sema::bodies) fn closure_pointer_environment(
         &mut self,
         node: NodeId,
@@ -20,12 +55,20 @@ impl Checker<'_> {
     pub(super) fn closure_body_interface(
         &mut self,
         node: NodeId,
-        terms: &[TermId],
+        inputs: Inputs<'_>,
         parameters: u32,
         lifetimes: &mut universes::Interface,
         mut expected: Option<contextual::Expected>,
-    ) -> Result<(Refinement, TermId), Error> {
-        let mut roots: Vec<_> = terms.iter().copied().map(Argument::Type).collect();
+    ) -> Result<(Refinement, Imported), Error> {
+        let mut roots: Vec<_> = inputs.terms.iter().copied().map(Argument::Type).collect();
+        roots.push(Argument::Type(inputs.self_ty));
+        roots.extend(
+            inputs
+                .bindings
+                .iter()
+                .map(|&(_, term)| Argument::Type(term)),
+        );
+        let bindings = inputs.bindings;
         if let Some(contextual::Expected {
             signature: contextual::Signature::Inferred(signature),
             ..
@@ -46,13 +89,29 @@ impl Checker<'_> {
             };
             *signature = imported;
         }
-        let terms = roots
+        let mut terms = roots
             .into_iter()
             .map(|root| match root {
                 Argument::Type(term) => Ok(term),
                 _ => Err(self.error(node, "missing closure signature transport")),
             })
             .collect::<Result<Vec<_>, _>>()?;
+        // The callable retains its own binder while enclosing lifetimes and
+        // free locals open together in this body's one lifetime namespace.
+        let outer = terms.split_off(parameters as usize + 1);
+        let outer = inputs
+            .context
+            .map_region_roots(&mut self.facts.types, &outer, &mut lifetimes.opening)
+            .map_err(|e| self.error(node, e))?;
+        let mut outer = outer.into_iter();
+        let self_ty = outer
+            .next()
+            .ok_or_else(|| self.error(node, "missing closure self transport"))?;
+        let bindings = bindings
+            .into_iter()
+            .zip(outer)
+            .map(|((definition, _), term)| (definition, term))
+            .collect();
         let signature = inputs
             .context
             .construct(
@@ -75,7 +134,14 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))?;
         }
-        Ok((inputs, signature))
+        Ok((
+            inputs,
+            Imported {
+                signature,
+                self_ty,
+                bindings,
+            },
+        ))
     }
 
     pub(super) fn closure_arguments(&mut self, node: NodeId) -> Result<Vec<Argument>, Error> {

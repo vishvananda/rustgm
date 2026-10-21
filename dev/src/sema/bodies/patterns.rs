@@ -252,13 +252,21 @@ impl Checker<'_> {
         node: NodeId,
         origin: BodyRegionOrigin,
     ) -> Result<RegionId, Error> {
+        self.body_region_for(node, self.state.body, origin)
+    }
+    pub(super) fn body_region_for(
+        &mut self,
+        node: NodeId,
+        body: crate::resolve::unit::NodeKey,
+        origin: BodyRegionOrigin,
+    ) -> Result<RegionId, Error> {
         let ordinal = u32::try_from(self.facts.body_regions.len())
             .ok()
             .and_then(|n| n.checked_add(1))
             .filter(|n| *n < 0x8000_0000)
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
         self.facts.body_regions.push(BodyRegion {
-            body: self.state.body,
+            body,
             source: self.key(node),
             origin,
         });

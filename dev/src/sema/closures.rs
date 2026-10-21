@@ -54,9 +54,24 @@ pub struct Bodies {
     pub(crate) values: Vec<Body>,
     pub(crate) sources: HashMap<NodeKey, usize>,
     identities: Vec<u32>,
+    imports: Option<imports::Imports>,
     pub(crate) environments: HashMap<ClosureId, Environment>,
 }
 impl Bodies {
+    pub(crate) fn lexical_bindings(
+        &mut self,
+        resolution: &crate::resolve::model::Resolution,
+        scope: crate::resolve::model::ScopeId,
+    ) -> Result<&[DefId], &'static str> {
+        if self.imports.is_none() {
+            self.imports = Some(imports::Imports::collect(resolution)?);
+        }
+        self.imports
+            .as_ref()
+            .map(|imports| imports.bindings(scope))
+            .ok_or("missing closure import index")
+    }
+
     #[must_use]
     pub fn environment(&self, identity: ClosureId) -> Option<&Environment> {
         self.environments.get(&identity)

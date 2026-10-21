@@ -19,6 +19,11 @@ pub(super) struct Pending {
     borrow: Option<TermId>,
     pub receiver: TermId,
 }
+impl Pending {
+    pub(super) const fn capture_receiver(&self) -> (Option<CallTrait>, u32) {
+        (self.kind, self.dereferences)
+    }
+}
 impl Checker<'_> {
     pub(super) fn invocation_signature(
         &mut self,

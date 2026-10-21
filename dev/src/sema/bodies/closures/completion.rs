@@ -157,6 +157,7 @@ impl Checker<'_> {
             return Err(self.error(source, "missing completed closure signature"));
         };
         self.state.result = result;
+        let execution = self.publish_capture_environment(solved, signature)?;
         let body = Body {
             identity,
             source: self.key(source),
@@ -166,7 +167,7 @@ impl Checker<'_> {
             owner: self.state.environment_owner,
             universals: self.state.body_binders,
             inherited,
-            execution: None,
+            execution,
         };
         self.facts
             .closures
