@@ -31,6 +31,16 @@ impl Collector {
         self.populate(facts, &mut contract);
         Ok(contract)
     }
+    pub(crate) fn initializer(
+        &mut self,
+        facts: &Declarations,
+        initializer: &crate::sema::model::Initializer,
+    ) -> Result<Contract, &'static str> {
+        self.update(facts)?;
+        let mut contract = super::initializer_contract(facts, initializer)?;
+        self.populate(facts, &mut contract);
+        Ok(contract)
+    }
     /// Number of semantic facts visited, excluding fixed body-header construction.
     #[must_use]
     pub const fn observations(&self) -> usize {
@@ -99,7 +109,7 @@ impl Collector {
         for initializer in &facts.initializers {
             let mut contract = super::initializer_contract(facts, initializer)?;
             self.populate(facts, &mut contract);
-            index.insert(initializer.value, bodies.len());
+            index.insert(initializer.semantic_source(), bodies.len());
             bodies.push(contract);
         }
         for (source, _) in facts.constant_bodies() {

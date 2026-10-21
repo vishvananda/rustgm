@@ -10,7 +10,9 @@ mod decisions;
 mod drops;
 mod environments;
 mod guards;
+mod initializers;
 mod inline_roots;
+use initializers::body as initializer_body;
 mod intrinsics;
 mod invocations;
 mod matches;
@@ -104,20 +106,14 @@ pub(crate) fn concrete_prepared(
             drop_query.as_mut(),
         )?);
     }
-    for initializer in &facts.initializers {
-        if facts.associated.owner(initializer.definition).is_some()
-            || facts.generics.has_parameters(initializer.definition)
-        {
-            continue;
-        }
-        program.bodies.push(initializer_body(
-            report,
-            facts,
-            &mut scratch,
-            initializer,
-            drop_query.as_mut(),
-        )?);
-    }
+    initializers::concrete(
+        report,
+        facts,
+        &mut scratch,
+        &mut program,
+        &mut prepared,
+        drop_query.as_mut(),
+    )?;
     for (source, ty) in facts.constant_bodies() {
         if let Some(body) = prepared.remove(&super::ir::BodyKey::Anonymous(source)) {
             if body.source != source
@@ -170,30 +166,6 @@ pub(crate) fn concrete_prepared(
     }
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
-}
-fn initializer_body(
-    report: &Report,
-    facts: &Declarations,
-    scratch: &mut Scratch,
-    initializer: &crate::sema::model::Initializer,
-    query: Option<&mut crate::types::destruction::NeedsDrop>,
-) -> Result<Body, Error> {
-    let body = Body::new(
-        Owner::Initializer {
-            definition: initializer.definition,
-            kind: initializer.kind,
-        },
-        initializer.value,
-        initializer.ty,
-    );
-    let scope_plan = scopes::initializer_with_scratch(
-        report,
-        facts,
-        initializer,
-        std::mem::take(&mut scratch.scopes),
-    )?;
-    let builder = Builder::new(report, facts, scratch, body, scope_plan, query);
-    builder.run(None).map_err(|e| report.diagnostic(e))
 }
 fn function_body(
     report: &Report,

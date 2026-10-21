@@ -450,7 +450,8 @@ impl<'a> Evaluator<'a> {
             .queries
             .value_scope
             .replace(super::instances::ValueScope::Initializer {
-                body: self.queries.typing.facts.initializers[index].value,
+                body: self.queries.typing.facts.initializers[index].semantic_source(),
+                index,
             });
         self.queries.work.push(Work::Enter(query));
         let result = self

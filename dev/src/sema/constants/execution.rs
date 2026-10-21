@@ -3,6 +3,21 @@ use super::values::execution::{Progress, Request, Requirement, Target};
 use super::{Error, NodeKey, Queries, Query};
 
 impl Queries<'_> {
+    fn execution_target(&self, source: NodeKey, result: crate::types::TypeId) -> Target {
+        if self.execution_context().is_none()
+            && let Some(super::instances::ValueScope::Initializer { index, .. }) = self.value_scope
+        {
+            let initializer = self.typing.facts.initializers[index];
+            if initializer.value == source && initializer.semantic_source() != source {
+                return Target::Initializer(initializer.definition);
+            }
+        }
+        Target::Expression {
+            source,
+            result,
+            context: self.execution_context(),
+        }
+    }
     pub(super) fn check_execution(&mut self, source: NodeKey) -> Result<(), Error> {
         let result = self
             .typing
@@ -19,11 +34,7 @@ impl Queries<'_> {
             })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant eligibility type"))?;
         let result = self.specialized_type(source, result)?;
-        let target = Target::Expression {
-            source,
-            result,
-            context: self.execution_context(),
-        };
+        let target = self.execution_target(source, result);
         let mut executor = self.typing.facts.constant_executor.take().ok_or_else(|| {
             self.error(
                 Query::Node(source),
@@ -51,11 +62,7 @@ impl Queries<'_> {
             .ok_or_else(|| self.error(Query::Node(source), "missing constant execution type"))?;
         let result = self.specialized_type(source, result)?;
         let request = Request {
-            target: Target::Expression {
-                source,
-                result,
-                context: self.execution_context(),
-            },
+            target: self.execution_target(source, result),
             arguments: Vec::new(),
         };
         let mut executor = self.typing.facts.constant_executor.take().ok_or_else(|| {

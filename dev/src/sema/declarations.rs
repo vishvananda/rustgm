@@ -726,9 +726,17 @@ impl Checker<'_> {
         }
         let value =
             value.ok_or_else(|| self.error(key, "constant or static requires an initializer"))?;
+        let body = self.initializer_body_source(
+            key,
+            NodeKey {
+                file: key.file,
+                node: value,
+            },
+        )?;
         self.facts
             .push_initializer(Initializer {
                 typing: super::model::InitializerTyping::Unseen,
+                body,
                 definition: id,
                 node: key,
                 value: NodeKey {
@@ -740,6 +748,31 @@ impl Checker<'_> {
             })
             .map_err(|e| self.error(key, e))?;
         Ok(())
+    }
+    fn initializer_body_source(
+        &self,
+        declaration: NodeKey,
+        root: NodeKey,
+    ) -> Result<NodeKey, Error> {
+        let mut node = root;
+        // Parsed wrapper chains are bounded by this one syntax arena. Blocks
+        // remain real enclosing bodies; only transparent wrappers are opened.
+        for _ in 0..self
+            .report
+            .package
+            .unit(root.file)
+            .configured
+            .ast
+            .nodes
+            .len()
+        {
+            match self.kind(node) {
+                Kind::Group(value) | Kind::Attributed { value, .. } => node.node = value,
+                Kind::Closure { .. } => return Ok(declaration),
+                _ => return Ok(root),
+            }
+        }
+        Err(self.error(root, "initializer owner wrapper limit exceeded"))
     }
     fn primitive_definition(&mut self, id: DefId) -> Result<(), Error> {
         let definition = &self.report.resolution.definitions[id.0 as usize];

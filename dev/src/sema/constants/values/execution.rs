@@ -64,7 +64,7 @@ pub struct Work {
     pub peak_slots: usize,
     pub code_bytes: usize,
     pub template_bytes: usize,
-    /// Owned checked inline bodies retained before ordinary CFG handoff.
+    /// Owned checked constant bodies retained before ordinary CFG handoff.
     pub expression_bytes: usize,
 }
 

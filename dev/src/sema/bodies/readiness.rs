@@ -150,7 +150,7 @@ impl Checker<'_> {
             InitializerTyping::Unseen => {}
         }
         self.facts.initializers[index].typing = InitializerTyping::Active;
-        self.prepare_constant(initializer.value, initializer.ty, initializer.definition)?;
+        self.prepare_constant(initializer)?;
         self.state.completion = Completion::Initializer(index);
         self.start_body(initializer.value.node)?;
         self.advance_body()
