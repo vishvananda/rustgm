@@ -79,3 +79,7 @@ the default runtime invalid-reference-casting lint; and complete packed/pattern/
 release qualification. PA28 still lacks the other memory/numeric, broader volatile
 and atomic families/release contracts. No backend, active oracle, assignment
 activation or full-release claim occurs here.
+
+The later [direct union-borrow review](pa27-union-borrow-review.md) supersedes
+the direct source Borrow boundary for initialized scalar Images. Historical
+receipts above remain unchanged.

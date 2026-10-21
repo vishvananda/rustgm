@@ -1,0 +1,1 @@
+union U{a:u32,b:u32}const X:u32={let mut u=U{a:7};unsafe{{let r=&mut u.a;*r=37;}let first={let r=&u.b;*r};{let r=&mut u.b;*r=41;}let last={let r=&u.a;*r};first+last}};const Y:u32={let u=U{a:43};let p=&raw const u;unsafe{let r=&(*p).b;*r}};fn main(){check(X==78);check(Y==43);}

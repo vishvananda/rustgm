@@ -1,0 +1,19 @@
+{
+  "stage": "independent-followup-hypotheses",
+  "baseline": "first-direct-union-candidate",
+  "scope": "original raw-base anchor retention and aligned-but-packed source reference prohibition",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-borrows/raw-base.rs",
+      "sha256": "6ff3136dea208f0bd9a0f7fe4579bef38e31cf91b6e15c6541b4c0553cf37b07",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/packed-raw-base-aligned-source.rs",
+      "sha256": "e630832c9ca1287932a5073de96a04874bd65980f8d2856ad8cc199e3271e85b",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+#[derive(Copy,Clone)]union U<T:Copy>{a:T,b:u32}const fn selected<T:Copy>(x:T)->T{let u=U{a:x};unsafe{let r=&u.a;*r}}const fn borrow<'a>(u:&'a U<u32>)->&'a u32{unsafe{&u.b}}const X:u32={let mut u=U{a:7u32};let old=u;unsafe{let r=&mut u.a;*r=37;}let first=*borrow(&old);let last=*borrow(&u);first+last};const Y:u32=selected(41u32);fn main(){check(X==44);check(Y==41);}

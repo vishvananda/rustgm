@@ -136,6 +136,37 @@ impl Machine<'_, '_> {
         if place.raw.is_none() {
             return Err("constant raw shared reference lacks its access anchor".into());
         }
+        self.checked_reference(place, mutable)
+    }
+    pub(super) fn union_reference(
+        &mut self,
+        place: Resolved,
+        mutable: bool,
+    ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        let field = place
+            .union
+            .ok_or("constant union reference lacks a field capability")?;
+        let (address, work) = self.evaluator.union_address(
+            place.address,
+            field.owner,
+            field.field,
+            self.limits.steps.saturating_sub(self.work.steps),
+        )?;
+        self.charge(work)?;
+        self.checked_reference(
+            Resolved {
+                address,
+                union: None,
+                ..place
+            },
+            mutable,
+        )
+    }
+    fn checked_reference(
+        &mut self,
+        place: Resolved,
+        mutable: bool,
+    ) -> Result<Option<crate::sema::values::Constant>, Failure> {
         let (root, path) = self.path(place.address)?;
         let location = Reader::new(self.evaluator.facts()).location(root)?;
         if mutable {
@@ -174,6 +205,12 @@ impl Machine<'_, '_> {
             );
         }
         let leaf = self.footprint(ty)?;
+        if offset
+            .checked_add(leaf.size)
+            .is_none_or(|end| end > root_layout.size)
+        {
+            return Err("constant reference is outside allocation bounds".into());
+        }
         // A packed raw base may permit a by-value field read. Creating a
         // reference additionally requires the actual selected leaf's alignment.
         if root_layout.align < leaf.align || !offset.is_multiple_of(u64::from(leaf.align)) {

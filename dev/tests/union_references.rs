@@ -55,12 +55,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         1,
         "constant mutable raw references from shared-derived pointers are not implemented",
     ),
-    (
-        "direct-borrow-boundary",
-        0,
-        1,
-        "constant union field address formation requires byte-offset provenance and is not implemented",
-    ),
+    ("direct-borrow-boundary", 0, 0, ""),
     (
         "pointer-family-boundary",
         0,

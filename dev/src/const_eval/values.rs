@@ -178,14 +178,16 @@ impl Machine<'_, '_> {
                 let Some(place) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                if place.union.is_some() {
-                    return Err("constant union field address formation requires byte-offset provenance and is not implemented".into());
-                }
                 let shared = matches!(
                     self.evaluator.facts().types.kind(ty),
                     Some(Kind::Reference { mutable: false, .. })
                 );
-                if place.raw.is_some() {
+                if place.union.is_some() {
+                    let Some(address) = self.union_reference(place, !shared)? else {
+                        return Ok(None);
+                    };
+                    address
+                } else if place.raw.is_some() {
                     let address = if shared {
                         self.shared_raw_reference(place)?
                     } else {

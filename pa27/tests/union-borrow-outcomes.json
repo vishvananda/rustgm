@@ -1,0 +1,1745 @@
+{
+  "stage": "planned-development-checkpoint",
+  "assignment_active": false,
+  "baseline": "9d4e1494",
+  "source_sha256": "78b55aa1a68dada0a07b96fb2d91e6669f8f405b205d106a084a54f87fee5872",
+  "source_fingerprint_format": "sha256(concatenated sorted dev/**/*.rs relative path UTF8, NUL, file bytes, NUL)",
+  "compiler_sha256": "0a217619ddbb846c1e8ca70553fd34bcd1dab93d179ed343f6fd80b4cc59c2e2",
+  "frontend_cases": 22,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "backend": "unchanged backend.lock"
+  },
+  "summary": {
+    "rustc=0,types=0,execution=0": 9,
+    "rustc=1,types=1,execution=1": 7,
+    "rustc=1,types=0,execution=1": 2,
+    "rustc=0,types=1,execution=1": 4
+  },
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-borrows/shared-local.rs",
+      "sha256": "2ca87f4b77f5053899e900df03fc38958a8114cf96bc6f96076b2c17f24ade53",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/shared-local.rs:1:15\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:37};unsafe{let r=&u.a;*r}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "1ddf3611d29d40c3c96204a9debfb443d02394570fa4956abae7d93aad57b8b4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "890696a007e0f72191640f3113ada586c8411763384197ef10eb356ea736a436",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/mutable-local.rs",
+      "sha256": "b6a52264625602e41f1742c5b888521588399d66021d7595b5c8cefe27850a7d",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c43ffd69fd1e0061ecf3a5674b0be6077e47d444906bfc7ce4d98542f9ee58ff",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "890696a007e0f72191640f3113ada586c8411763384197ef10eb356ea736a436",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/cross-field-aliases.rs",
+      "sha256": "d4735ca6134829d17e3ea9d8c632f45b261b0f54634f22e70337999a66dec6e8",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "2f1a28026c5e3790e60ee2b654340af1fe486c6f95a9cd77c52b3efbad78f5e0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "b56a5548e5b0f98b3e09547cd02af32c23c29807da75b938ed0b34fe3edf39ac",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/static-shared.rs",
+      "sha256": "8a57d730fef03e7b6db574c5d71904857eb0c78372a9f118d4e12ac3d07b4fea",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "361946d64258c00f88a409909db3a632c929ddf1d34984afe3fab0a260fd5e0a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "ce8d7b0d1ccfaeeb9b7f26f09ae68940a9e95caefaf31540b95144e22e410156",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "53abee50a2be82558bba75150b4fc1b0d40a329aae00c8e63a694fc7d30fee78",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/generic.rs",
+      "sha256": "d9e98d2b9c599a9f872b7919d55bddf5f680039a5e4934e366e6389b3d68bc42",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/generic.rs:1:21\n  |\n1 | union U<T:Copy>{a:T,b:u32}const fn f<T:Copy>(x:T)->T{let u=U{a:x};unsafe{let r=&u.a;*r}}const X:u32=f::<u32>(37);fn main(){let _=X;}\n  |       -             ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a0487e1ee97a55c864d064e9d3e76b9c974b76b91b0c03705713ffdea2dbb199",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1b64e3b64af87fca980e866723a25a7e7847334a3176dc5952c955291df14fba",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/call-reference.rs",
+      "sha256": "f9cf3441903303637f0a7d2c28f46e8fd1c595cd2d2c8dff0f290d601b7e7d00",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "8c536d3dc604a4919e9654be7b7bc7b6e55977e26955aeb0bba72ba45405cab0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "884425aefe0b3ababef9a18bfca6935d28c68a4be07ec14a49d1ff72451540d8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/copy-snapshot.rs",
+      "sha256": "a83c9706ba4cdd48fe539b88d099599888940a64f7b5b4926d155cf4a039da42",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a17559ce62c26d700ad7e2dda7e71aaab9a2f0cff4ca2fbbf796f82760ac2b74",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "940630d592b940b7c9ad1f60cbb2695578f66c8ee2793c0eda304538f36e854a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/missing-unsafe-shared.rs",
+      "sha256": "2f6da2d358aace746e163172c747d63720a13ae80e5a7626732436629b6a2a37",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "union field access requires an unsafe context",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0133]: access to union field is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/missing-unsafe-shared.rs:1:55\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:37};let r=&u.a;*r};fn main(){let _=X;}\n  |                                                       ^^^ access to union field\n  |\n  = note: the field may not be properly initialized: using uninitialized data will cause undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9d93afe07d8c88b39b2f7fef8c20ac147e41af89b97662279dc62c645c65e6d3",
+          "stderr": "ERROR: file 0: 54: union field access requires an unsafe context\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9d93afe07d8c88b39b2f7fef8c20ac147e41af89b97662279dc62c645c65e6d3",
+          "stderr": "ERROR: file 0: 54: union field access requires an unsafe context\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9d93afe07d8c88b39b2f7fef8c20ac147e41af89b97662279dc62c645c65e6d3",
+          "stderr": "ERROR: file 0: 54: union field access requires an unsafe context\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/missing-unsafe-mutable.rs",
+      "sha256": "819d3839170988b246ab46edde184a2a945f28b97aa722ecdadf574bfa31dc2e",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "union field access requires an unsafe context",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0133]: access to union field is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/missing-unsafe-mutable.rs:1:62\n  |\n1 | union U{a:u32,b:u32}const X:u32={let mut u=U{a:7};let r=&mut u.a;*r=37;unsafe{u.b}};fn main(){let _=X;}\n  |                                                              ^^^ access to union field\n  |\n  = note: the field may not be properly initialized: using uninitialized data will cause undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b2488644fa92e3dbae35872424811bdf40a8110023c7bebdd467cd78b7f42996",
+          "stderr": "ERROR: file 0: 61: union field access requires an unsafe context\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b2488644fa92e3dbae35872424811bdf40a8110023c7bebdd467cd78b7f42996",
+          "stderr": "ERROR: file 0: 61: union field access requires an unsafe context\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b2488644fa92e3dbae35872424811bdf40a8110023c7bebdd467cd78b7f42996",
+          "stderr": "ERROR: file 0: 61: union field access requires an unsafe context\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/immutable-mutable-borrow.rs",
+      "sha256": "49b60f3cc3576a4ac9bf21508354599d87008afdd91d29cd565b47070b0984e1",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "cannot mutably borrow an immutable local",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0596]: cannot borrow `u.a` as mutable, as `u` is not declared as mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/immutable-mutable-borrow.rs:1:60\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:7};unsafe{let r=&mut u.a;*r=37;u.b}};fn main(){let _=X;}\n  |                                                            ^^^^^^^^ cannot borrow as mutable\n  |\nhelp: consider changing this to be mutable\n  |\n1 | union U{a:u32,b:u32}const X:u32={let mut u=U{a:7};unsafe{let r=&mut u.a;*r=37;u.b}};fn main(){let _=X;}\n  |                                      +++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0596`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "15eaf4870dd9aa0d3710f892167008b6e1d599886a7a729aa5654bdb108a39bf",
+          "stderr": "ERROR: file 0: 59: cannot mutably borrow an immutable local\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "15eaf4870dd9aa0d3710f892167008b6e1d599886a7a729aa5654bdb108a39bf",
+          "stderr": "ERROR: file 0: 59: cannot mutably borrow an immutable local\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "15eaf4870dd9aa0d3710f892167008b6e1d599886a7a729aa5654bdb108a39bf",
+          "stderr": "ERROR: file 0: 59: cannot mutably borrow an immutable local\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/packed-aligned-source.rs",
+      "sha256": "d0e78123f9674c4c9a86f3fe5cefe6106bfa69749256dcd66945058597321c08",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "reference to an unaligned packed field",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed union is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/packed-aligned-source.rs:1:126\n  |\n1 | ...u64,u:U}const X:u32={let w=W{prefix:0,u:U{a:37}};unsafe{let r=&w.u.a;*r}};fn main(){let _=X;}\n  |                                                                  ^^^^^^\n  |\n  = note: this union is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "020fad7347ae445b68ea2d135ec90d2b7a61f2e3a14eb5a54d93f72dd3606c7f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b53e3a8c61a3f8eea9617f2ec1c55c95d2732479ff53f0ea2665c5115cea77a2",
+          "stderr": "ERROR: file 0: 125: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b53e3a8c61a3f8eea9617f2ec1c55c95d2732479ff53f0ea2665c5115cea77a2",
+          "stderr": "ERROR: file 0: 125: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/invalid-bool.rs",
+      "sha256": "f6e9db173522f0a6b4848a0072bda4bdbbc36f9cc5be02e6a5cdb309aafe973a",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read has invalid bool representation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type bool: encountered 0x02, but expected a boolean\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-bool.rs:1:29\n  |\n1 | union U{bits:u32,value:bool}const X:bool={let u=U{bits:2};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                             ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 1, align: 1) {\n              02                                              \u2502 .\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-bool.rs:1:102\n  |\n1 | union U{bits:u32,value:bool}const X:bool={let u=U{bits:2};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                                                                                                      ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "856ea5d7d462bd7d3b1aacfb49a2ff07c51d8025a4999acb7c13c7b4d36fa38e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid bool representation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "856ea5d7d462bd7d3b1aacfb49a2ff07c51d8025a4999acb7c13c7b4d36fa38e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid bool representation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "856ea5d7d462bd7d3b1aacfb49a2ff07c51d8025a4999acb7c13c7b4d36fa38e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid bool representation\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/invalid-char.rs",
+      "sha256": "901f9180a64fd1de16f52b99c7b03e84e6539fbd51fce3fc119e1249aad51c0f",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read has invalid char representation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type char: encountered 0x0000d800, but expected a valid unicode scalar value (in `0..=0x10FFFF` but not in `0xD800..=0xDFFF`)\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-char.rs:1:29\n  |\n1 | union U{bits:u32,value:char}const X:char={let u=U{bits:0xd800};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                             ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 4, align: 4) {\n              00 d8 00 00                                     \u2502 ....\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-char.rs:1:107\n  |\n1 | union U{bits:u32,value:char}const X:char={let u=U{bits:0xd800};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a68f908a69fd11b466329dd647322679c5c826b878283b922bbeaf46b959335e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid char representation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a68f908a69fd11b466329dd647322679c5c826b878283b922bbeaf46b959335e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid char representation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a68f908a69fd11b466329dd647322679c5c826b878283b922bbeaf46b959335e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid char representation\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/uninitialized-wide.rs",
+      "sha256": "4296f901d8707d2b90db1a631b8cd0fc1b788945e972a35cdcbd61eb31c2d68b",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read uses uninitialized bytes",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: reading memory at alloc2[0x0..0x8], but memory is uninitialized at [0x1..0x8], and this operation requires initialized memory\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/uninitialized-wide.rs:1:78\n  |\n1 | union U{small:u8,wide:u64}const X:u64={let u=U{small:7};unsafe{let r=&u.wide;*r}};fn main(){let _=X;}\n  |                                                                              ^^ evaluation of `X` failed here\n  |\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              07 __ __ __ __ __ __ __                         \u2502 .\u2591\u2591\u2591\u2591\u2591\u2591\u2591\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/uninitialized-wide.rs:1:99\n  |\n1 | union U{small:u8,wide:u64}const X:u64={let u=U{small:7};unsafe{let r=&u.wide;*r}};fn main(){let _=X;}\n  |                                                                                                   ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b39fcbdf903c6fa1c922dda051121bde20f9433026fcf8b8cd34ae5cf809340c",
+          "stderr": "ERROR: file 0: 38: constant union scalar read uses uninitialized bytes\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b39fcbdf903c6fa1c922dda051121bde20f9433026fcf8b8cd34ae5cf809340c",
+          "stderr": "ERROR: file 0: 38: constant union scalar read uses uninitialized bytes\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b39fcbdf903c6fa1c922dda051121bde20f9433026fcf8b8cd34ae5cf809340c",
+          "stderr": "ERROR: file 0: 38: constant union scalar read uses uninitialized bytes\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/escape.rs",
+      "sha256": "ee0b37e124763584be970951dabdd4615569f2ca8d387982986c6072e9c7c3f3",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "required lifetime does not outlive its target",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0597]: `u.a` does not live long enough\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/escape.rs:1:56\n  |\n1 | union U{a:u32,b:u32}const R:&u32={let u=U{a:37};unsafe{&u.a}};fn main(){let _=R;}\n  |                                       -                ^^^^ - `u.a` dropped here while still borrowed\n  |                                       |                |\n  |                                       |                borrowed value does not live long enough\n  |                                       |                using this value as a constant requires that `u.a` is borrowed for `'static`\n  |                                       binding `u` declared here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0597`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "33813e5c2100efe0122d8d25e5d4f743c0a3f2472ca437c2c17de146875887ba",
+          "stderr": "ERROR: file 0: 55: required lifetime does not outlive its target\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "33813e5c2100efe0122d8d25e5d4f743c0a3f2472ca437c2c17de146875887ba",
+          "stderr": "ERROR: file 0: 55: required lifetime does not outlive its target\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "33813e5c2100efe0122d8d25e5d4f743c0a3f2472ca437c2c17de146875887ba",
+          "stderr": "ERROR: file 0: 55: required lifetime does not outlive its target\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/partial-write-only-boundary.rs",
+      "sha256": "f2463a0ad8586c1236fcd03bdf9394b43429ba501f5e2b43dade332bfe7afad5",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union scalar read uses uninitialized bytes",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b39fcbdf903c6fa1c922dda051121bde20f9433026fcf8b8cd34ae5cf809340c",
+          "stderr": "ERROR: file 0: 38: constant union scalar read uses uninitialized bytes\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b39fcbdf903c6fa1c922dda051121bde20f9433026fcf8b8cd34ae5cf809340c",
+          "stderr": "ERROR: file 0: 38: constant union scalar read uses uninitialized bytes\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b39fcbdf903c6fa1c922dda051121bde20f9433026fcf8b8cd34ae5cf809340c",
+          "stderr": "ERROR: file 0: 38: constant union scalar read uses uninitialized bytes\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/repair-bool-boundary.rs",
+      "sha256": "11df08dc54dfb551e9c16d6be67a69c9cde7dca216305836efbf8b3bf146edd1",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union scalar read has invalid bool representation",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "856ea5d7d462bd7d3b1aacfb49a2ff07c51d8025a4999acb7c13c7b4d36fa38e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid bool representation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "856ea5d7d462bd7d3b1aacfb49a2ff07c51d8025a4999acb7c13c7b4d36fa38e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid bool representation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "856ea5d7d462bd7d3b1aacfb49a2ff07c51d8025a4999acb7c13c7b4d36fa38e",
+          "stderr": "ERROR: file 0: 41: constant union scalar read has invalid bool representation\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/pointer-family-boundary.rs",
+      "sha256": "f08c74d5e279ad70d6fc75998d74593256087abfb9f4b35813e4973f228d2971",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `p` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/pointer-family-boundary.rs:1:15\n  |\n1 | union U{a:u32,p:*const u32}const X:u32={let u=U{a:37};unsafe{let r=&u.a;*r}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4552dc4889144324f15147b19e61fcd438ca4d57f49e4664c42f7e29bc6ad858",
+          "stderr": "ERROR: file 0: 39: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4552dc4889144324f15147b19e61fcd438ca4d57f49e4664c42f7e29bc6ad858",
+          "stderr": "ERROR: file 0: 39: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4552dc4889144324f15147b19e61fcd438ca4d57f49e4664c42f7e29bc6ad858",
+          "stderr": "ERROR: file 0: 39: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/unit-family-boundary.rs",
+      "sha256": "c3d7010f760b7db5dec1956a3dd35a7b2ac98038c68eba2755e3a4fe0c56341f",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/unit-family-boundary.rs:1:14\n  |\n1 | union U{a:(),b:u8}const X:u32={let u=U{a:()};unsafe{let _r=&u.a;}37};fn main(){let _=X;}\n  |       -      ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "efe033fc07bd8bbbe4380b7f497f889a128af77fc70594a0f4c66bd29c86a81d",
+          "stderr": "ERROR: file 0: 30: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "efe033fc07bd8bbbe4380b7f497f889a128af77fc70594a0f4c66bd29c86a81d",
+          "stderr": "ERROR: file 0: 30: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "efe033fc07bd8bbbe4380b7f497f889a128af77fc70594a0f4c66bd29c86a81d",
+          "stderr": "ERROR: file 0: 30: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/ordinary-scalar.rs",
+      "sha256": "8213e830136224a050821294a33ff6e8d8c06c0eec5705aca629e9e0d29c51f0",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a580adc95a0a3f970ec4bf812c128164391e1c86ad5c8d0c1d0a138263a37269",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/raw-base.rs",
+      "sha256": "6ff3136dea208f0bd9a0f7fe4579bef38e31cf91b6e15c6541b4c0553cf37b07",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/raw-base.rs:1:15\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:37};let p=&raw const u;unsafe{let r=&(*p).a;*r}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "593c11b3b60f4611c18d38a8a27ad0bdfc23dde0138051b5470406568746c2b7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "890696a007e0f72191640f3113ada586c8411763384197ef10eb356ea736a436",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/union-borrows/packed-raw-base-aligned-source.rs",
+      "sha256": "e630832c9ca1287932a5073de96a04874bd65980f8d2856ad8cc199e3271e85b",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": "reference to an unaligned packed field",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed union is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/packed-raw-base-aligned-source.rs:1:147\n  |\n1 | ...et w=W{prefix:0,u:U{a:37}};let p=&raw const w.u;unsafe{let r=&(*p).a;*r}};fn main(){let _=X;}\n  |                                                                 ^^^^^^^\n  |\n  = note: this union is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "732a12823f833e699aba247f50f4b934add40a29449fd9c8fc7570701b4bac2d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8cd5f50492b6e4f06886e55613846b939624fea85d7126e110994f4cfa7e0888",
+          "stderr": "ERROR: file 0: 146: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8cd5f50492b6e4f06886e55613846b939624fea85d7126e110994f4cfa7e0888",
+          "stderr": "ERROR: file 0: 146: reference to an unaligned packed field\n"
+        }
+      }
+    }
+  ],
+  "preimplementation_observations": {
+    "cases": [
+      {
+        "path": "pa27/tests/spec/union-borrows/shared-local.rs",
+        "sha256": "2ca87f4b77f5053899e900df03fc38958a8114cf96bc6f96076b2c17f24ade53",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/shared-local.rs:1:15\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:37};unsafe{let r=&u.a;*r}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/mutable-local.rs",
+        "sha256": "b6a52264625602e41f1742c5b888521588399d66021d7595b5c8cefe27850a7d",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/cross-field-aliases.rs",
+        "sha256": "d4735ca6134829d17e3ea9d8c632f45b261b0f54634f22e70337999a66dec6e8",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 32: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "871020aacaa4478bddecc9f050198c5fd65dbceb1ff5c4d5f8f0f605ad99d870"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/static-shared.rs",
+        "sha256": "8a57d730fef03e7b6db574c5d71904857eb0c78372a9f118d4e12ac3d07b4fea",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          }
+        },
+        "rustc_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/generic.rs",
+        "sha256": "d9e98d2b9c599a9f872b7919d55bddf5f680039a5e4934e366e6389b3d68bc42",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/generic.rs:1:21\n  |\n1 | union U<T:Copy>{a:T,b:u32}const fn f<T:Copy>(x:T)->T{let u=U{a:x};unsafe{let r=&u.a;*r}}const X:u32=f::<u32>(37);fn main(){let _=X;}\n  |       -             ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/call-reference.rs",
+        "sha256": "f9cf3441903303637f0a7d2c28f46e8fd1c595cd2d2c8dff0f290d601b7e7d00",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 52: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "f816fc665e0e0bd2fc250f78f73387c3381f84b074700e390c6c61231f74d8aa"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/copy-snapshot.rs",
+        "sha256": "a83c9706ba4cdd48fe539b88d099599888940a64f7b5b4926d155cf4a039da42",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 53: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "3a372077c7cbfaf3a005a9f7129703d397fe16e447f155b78b0eb43a3979e817"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 53: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "3a372077c7cbfaf3a005a9f7129703d397fe16e447f155b78b0eb43a3979e817"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 53: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "3a372077c7cbfaf3a005a9f7129703d397fe16e447f155b78b0eb43a3979e817"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/missing-unsafe-shared.rs",
+        "sha256": "2f6da2d358aace746e163172c747d63720a13ae80e5a7626732436629b6a2a37",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0133]: access to union field is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/missing-unsafe-shared.rs:1:55\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:37};let r=&u.a;*r};fn main(){let _=X;}\n  |                                                       ^^^ access to union field\n  |\n  = note: the field may not be properly initialized: using uninitialized data will cause undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 54: union field access requires an unsafe context\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "9d93afe07d8c88b39b2f7fef8c20ac147e41af89b97662279dc62c645c65e6d3"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 54: union field access requires an unsafe context\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "9d93afe07d8c88b39b2f7fef8c20ac147e41af89b97662279dc62c645c65e6d3"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 54: union field access requires an unsafe context\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "9d93afe07d8c88b39b2f7fef8c20ac147e41af89b97662279dc62c645c65e6d3"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/missing-unsafe-mutable.rs",
+        "sha256": "819d3839170988b246ab46edde184a2a945f28b97aa722ecdadf574bfa31dc2e",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0133]: access to union field is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/missing-unsafe-mutable.rs:1:62\n  |\n1 | union U{a:u32,b:u32}const X:u32={let mut u=U{a:7};let r=&mut u.a;*r=37;unsafe{u.b}};fn main(){let _=X;}\n  |                                                              ^^^ access to union field\n  |\n  = note: the field may not be properly initialized: using uninitialized data will cause undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 61: union field access requires an unsafe context\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "b2488644fa92e3dbae35872424811bdf40a8110023c7bebdd467cd78b7f42996"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 61: union field access requires an unsafe context\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "b2488644fa92e3dbae35872424811bdf40a8110023c7bebdd467cd78b7f42996"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 61: union field access requires an unsafe context\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "b2488644fa92e3dbae35872424811bdf40a8110023c7bebdd467cd78b7f42996"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/immutable-mutable-borrow.rs",
+        "sha256": "49b60f3cc3576a4ac9bf21508354599d87008afdd91d29cd565b47070b0984e1",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0596]: cannot borrow `u.a` as mutable, as `u` is not declared as mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/immutable-mutable-borrow.rs:1:60\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:7};unsafe{let r=&mut u.a;*r=37;u.b}};fn main(){let _=X;}\n  |                                                            ^^^^^^^^ cannot borrow as mutable\n  |\nhelp: consider changing this to be mutable\n  |\n1 | union U{a:u32,b:u32}const X:u32={let mut u=U{a:7};unsafe{let r=&mut u.a;*r=37;u.b}};fn main(){let _=X;}\n  |                                      +++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0596`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 59: cannot mutably borrow an immutable local\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "15eaf4870dd9aa0d3710f892167008b6e1d599886a7a729aa5654bdb108a39bf"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 59: cannot mutably borrow an immutable local\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "15eaf4870dd9aa0d3710f892167008b6e1d599886a7a729aa5654bdb108a39bf"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 59: cannot mutably borrow an immutable local\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "15eaf4870dd9aa0d3710f892167008b6e1d599886a7a729aa5654bdb108a39bf"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/packed-aligned-source.rs",
+        "sha256": "d0e78123f9674c4c9a86f3fe5cefe6106bfa69749256dcd66945058597321c08",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0793]: reference to field of packed union is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/packed-aligned-source.rs:1:126\n  |\n1 | ...u64,u:U}const X:u32={let w=W{prefix:0,u:U{a:37}};unsafe{let r=&w.u.a;*r}};fn main(){let _=X;}\n  |                                                                  ^^^^^^\n  |\n  = note: this union is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 83: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "d7e5de56924eeee91028d40d026dfbd58f6f45cbfcec7c806f5c1077d4467e00"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 83: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "d7e5de56924eeee91028d40d026dfbd58f6f45cbfcec7c806f5c1077d4467e00"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 83: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "d7e5de56924eeee91028d40d026dfbd58f6f45cbfcec7c806f5c1077d4467e00"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/invalid-bool.rs",
+        "sha256": "f6e9db173522f0a6b4848a0072bda4bdbbc36f9cc5be02e6a5cdb309aafe973a",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0080]: constructing invalid value of type bool: encountered 0x02, but expected a boolean\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-bool.rs:1:29\n  |\n1 | union U{bits:u32,value:bool}const X:bool={let u=U{bits:2};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                             ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 1, align: 1) {\n              02                                              \u2502 .\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-bool.rs:1:102\n  |\n1 | union U{bits:u32,value:bool}const X:bool={let u=U{bits:2};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                                                                                                      ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/invalid-char.rs",
+        "sha256": "901f9180a64fd1de16f52b99c7b03e84e6539fbd51fce3fc119e1249aad51c0f",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0080]: constructing invalid value of type char: encountered 0x0000d800, but expected a valid unicode scalar value (in `0..=0x10FFFF` but not in `0xD800..=0xDFFF`)\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-char.rs:1:29\n  |\n1 | union U{bits:u32,value:char}const X:char={let u=U{bits:0xd800};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                             ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 4, align: 4) {\n              00 d8 00 00                                     \u2502 ....\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/invalid-char.rs:1:107\n  |\n1 | union U{bits:u32,value:char}const X:char={let u=U{bits:0xd800};unsafe{let r=&u.value;*r}};fn main(){let _=X;}\n  |                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/uninitialized-wide.rs",
+        "sha256": "4296f901d8707d2b90db1a631b8cd0fc1b788945e972a35cdcbd61eb31c2d68b",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0080]: reading memory at alloc2[0x0..0x8], but memory is uninitialized at [0x1..0x8], and this operation requires initialized memory\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/uninitialized-wide.rs:1:78\n  |\n1 | union U{small:u8,wide:u64}const X:u64={let u=U{small:7};unsafe{let r=&u.wide;*r}};fn main(){let _=X;}\n  |                                                                              ^^ evaluation of `X` failed here\n  |\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              07 __ __ __ __ __ __ __                         \u2502 .\u2591\u2591\u2591\u2591\u2591\u2591\u2591\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/uninitialized-wide.rs:1:99\n  |\n1 | union U{small:u8,wide:u64}const X:u64={let u=U{small:7};unsafe{let r=&u.wide;*r}};fn main(){let _=X;}\n  |                                                                                                   ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 38: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "17519af89f3181e0575fc750555087876c0f807d43fa050f5144ea088543ab25"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 38: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "17519af89f3181e0575fc750555087876c0f807d43fa050f5144ea088543ab25"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 38: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "17519af89f3181e0575fc750555087876c0f807d43fa050f5144ea088543ab25"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/escape.rs",
+        "sha256": "ee0b37e124763584be970951dabdd4615569f2ca8d387982986c6072e9c7c3f3",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0597]: `u.a` does not live long enough\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/escape.rs:1:56\n  |\n1 | union U{a:u32,b:u32}const R:&u32={let u=U{a:37};unsafe{&u.a}};fn main(){let _=R;}\n  |                                       -                ^^^^ - `u.a` dropped here while still borrowed\n  |                                       |                |\n  |                                       |                borrowed value does not live long enough\n  |                                       |                using this value as a constant requires that `u.a` is borrowed for `'static`\n  |                                       binding `u` declared here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0597`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 55: required lifetime does not outlive its target\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "33813e5c2100efe0122d8d25e5d4f743c0a3f2472ca437c2c17de146875887ba"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 55: required lifetime does not outlive its target\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "33813e5c2100efe0122d8d25e5d4f743c0a3f2472ca437c2c17de146875887ba"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 55: required lifetime does not outlive its target\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "33813e5c2100efe0122d8d25e5d4f743c0a3f2472ca437c2c17de146875887ba"
+          }
+        }
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/partial-write-only-boundary.rs",
+        "sha256": "f2463a0ad8586c1236fcd03bdf9394b43429ba501f5e2b43dade332bfe7afad5",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 1,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 38: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "17519af89f3181e0575fc750555087876c0f807d43fa050f5144ea088543ab25"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 38: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "17519af89f3181e0575fc750555087876c0f807d43fa050f5144ea088543ab25"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 38: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "17519af89f3181e0575fc750555087876c0f807d43fa050f5144ea088543ab25"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/repair-bool-boundary.rs",
+        "sha256": "11df08dc54dfb551e9c16d6be67a69c9cde7dca216305836efbf8b3bf146edd1",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 1,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 41: constant union field address formation requires byte-offset provenance and is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "7c7f7193dbb69827e3f5442652764f0858c7a42c369c9607350bebb0ec1c5a4a"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/pointer-family-boundary.rs",
+        "sha256": "f08c74d5e279ad70d6fc75998d74593256087abfb9f4b35813e4973f228d2971",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 1,
+        "rustc_actual": 0,
+        "rustc_stderr": "warning: field `p` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/pointer-family-boundary.rs:1:15\n  |\n1 | union U{a:u32,p:*const u32}const X:u32={let u=U{a:37};unsafe{let r=&u.a;*r}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 39: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "4552dc4889144324f15147b19e61fcd438ca4d57f49e4664c42f7e29bc6ad858"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 39: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "4552dc4889144324f15147b19e61fcd438ca4d57f49e4664c42f7e29bc6ad858"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 39: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "4552dc4889144324f15147b19e61fcd438ca4d57f49e4664c42f7e29bc6ad858"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/unit-family-boundary.rs",
+        "sha256": "c3d7010f760b7db5dec1956a3dd35a7b2ac98038c68eba2755e3a4fe0c56341f",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 1,
+        "rustc_actual": 0,
+        "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/unit-family-boundary.rs:1:14\n  |\n1 | union U{a:(),b:u8}const X:u32={let u=U{a:()};unsafe{let _r=&u.a;}37};fn main(){let _=X;}\n  |       -      ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 30: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "efe033fc07bd8bbbe4380b7f497f889a128af77fc70594a0f4c66bd29c86a81d"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 30: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "efe033fc07bd8bbbe4380b7f497f889a128af77fc70594a0f4c66bd29c86a81d"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 30: constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "efe033fc07bd8bbbe4380b7f497f889a128af77fc70594a0f4c66bd29c86a81d"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/ordinary-scalar.rs",
+        "sha256": "8213e830136224a050821294a33ff6e8d8c06c0eec5705aca629e9e0d29c51f0",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "",
+        "frontend": {
+          "--emit-types": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "a580adc95a0a3f970ec4bf812c128164391e1c86ad5c8d0c1d0a138263a37269",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "--emit-lowir": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "--emit-constants": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      }
+    ]
+  },
+  "additional_raw_base_observations": {
+    "cases": [
+      {
+        "path": "pa27/tests/spec/union-borrows/raw-base.rs",
+        "sha256": "6ff3136dea208f0bd9a0f7fe4579bef38e31cf91b6e15c6541b4c0553cf37b07",
+        "rustc_hypothesis": 0,
+        "frontend_intended": 0,
+        "rustc_actual": 0,
+        "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/raw-base.rs:1:15\n  |\n1 | union U{a:u32,b:u32}const X:u32={let u=U{a:37};let p=&raw const u;unsafe{let r=&(*p).a;*r}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "593c11b3b60f4611c18d38a8a27ad0bdfc23dde0138051b5470406568746c2b7",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "--emit-lowir": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "--emit-constants": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "890696a007e0f72191640f3113ada586c8411763384197ef10eb356ea736a436",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+      },
+      {
+        "path": "pa27/tests/spec/union-borrows/packed-raw-base-aligned-source.rs",
+        "sha256": "e630832c9ca1287932a5073de96a04874bd65980f8d2856ad8cc199e3271e85b",
+        "rustc_hypothesis": 1,
+        "frontend_intended": 1,
+        "rustc_actual": 1,
+        "rustc_stderr": "error[E0793]: reference to field of packed union is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/union-borrows/packed-raw-base-aligned-source.rs:1:147\n  |\n1 | ...et w=W{prefix:0,u:U{a:37}};let p=&raw const w.u;unsafe{let r=&(*p).a;*r}};fn main(){let _=X;}\n  |                                                                 ^^^^^^^\n  |\n  = note: this union is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+        "frontend": {
+          "--emit-types": {
+            "status": 0,
+            "stderr": "",
+            "stdout_sha256": "732a12823f833e699aba247f50f4b934add40a29449fd9c8fc7570701b4bac2d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 146: reference to an unaligned packed field\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "8cd5f50492b6e4f06886e55613846b939624fea85d7126e110994f4cfa7e0888"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stderr": "ERROR: file 0: 146: reference to an unaligned packed field\n",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "8cd5f50492b6e4f06886e55613846b939624fea85d7126e110994f4cfa7e0888"
+          }
+        }
+      }
+    ]
+  },
+  "gates": [
+    {
+      "batch": "union-borrow-first",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 6.06924295425415
+    },
+    {
+      "batch": "union-borrow-first",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 50.32027554512024
+    },
+    {
+      "batch": "union-borrow-first",
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 24.009572505950928
+    },
+    {
+      "batch": "union-borrow-first",
+      "name": "private",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "const_eval::raw_reads::",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 67.76119089126587,
+      "selected_tests": 4,
+      "qualified": true
+    },
+    {
+      "batch": "union-borrow-first",
+      "name": "private-contents",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "sema::constants::contents::",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 0.07903861999511719,
+      "selected_tests": 1,
+      "qualified": true
+    },
+    {
+      "batch": "union-borrow-first",
+      "name": "source-native",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "direct_union_borrows",
+        "--",
+        "--include-ignored",
+        "--nocapture",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 60.5587522983551
+    },
+    {
+      "batch": "union-borrow-first",
+      "name": "regressions",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "union_references",
+        "--test",
+        "mutable_reconstruction",
+        "--test",
+        "reference_cells",
+        "--test",
+        "reference_reconstruction",
+        "--test",
+        "provenance_reads",
+        "--test",
+        "provenance_writes",
+        "--test",
+        "union_addresses",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 17.77920937538147
+    },
+    {
+      "batch": "union-borrow-final",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 8.225410223007202
+    },
+    {
+      "batch": "union-borrow-final",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 1.6452219486236572
+    },
+    {
+      "batch": "union-borrow-final",
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 29.66908621788025
+    },
+    {
+      "batch": "union-borrow-final",
+      "name": "source-native",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "direct_union_borrows",
+        "--",
+        "--include-ignored",
+        "--nocapture",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 3.0715816020965576
+    },
+    {
+      "batch": "union-borrow-final",
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--bin",
+        "rustgm"
+      ],
+      "status": 0,
+      "seconds": 0.07009720802307129
+    },
+    {
+      "batch": "union-borrow-final",
+      "name": "upstream",
+      "command": [
+        "python3",
+        "scripts/upstream.py",
+        "--verify"
+      ],
+      "status": 0,
+      "seconds": 0.13733196258544922
+    }
+  ],
+  "native": [
+    {
+      "name": "generic-call-copy",
+      "qualified_source_sha256": "487c2ea40ef7a9ba847f64e52f7402c153f4a68e532b65ad3e03089b13e1114e",
+      "lowir_sha256": "b167ab702c84683dcab46b6bb5329f048f304c5bb4acdf6aa28dfbef236507ae",
+      "validated_lowir_sha256": "ad84ebe45c03456dc50e62569e79ff06935d4fc06248c538c0321d5cd0673fe9",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "union-borrow-final/source-native.log: direct_union_borrows_values_execute passed; helper asserts successful execution with no output and deterministic repeated frontend bytes"
+    },
+    {
+      "name": "local-aliases",
+      "qualified_source_sha256": "7274a08915822ba5decf473da12a131d928dcd8db1dcd5ee0cad06d3f5ce1e63",
+      "lowir_sha256": "df729d1369bd0f8fb642b059aca059daaaabc013074a7a01d28e6e0b9d0161e3",
+      "validated_lowir_sha256": "ed9ce6919c338ecb4d9bebcebde644bdbafea08b4ffa4a1ec22ca90370e60570",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "union-borrow-final/source-native.log: direct_union_borrows_values_execute passed; helper asserts successful execution with no output and deterministic repeated frontend bytes"
+    },
+    {
+      "name": "scaled-values",
+      "qualified_source_sha256": "4abb37a771f97dc54f5d74f03d473124d83567ebe9e8b3b2c3b2505e0b7993a5",
+      "lowir_sha256": "60c8d368af08ffe3122e7e85eb35ad60d58efa348c761005e18a3f65d71f8441",
+      "validated_lowir_sha256": "9f6a1b303bde42519614bce1e15d99b2d8d693f25a2d5ad31fb1b15a62eb2cd2",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "union-borrow-final/source-native.log: direct_union_borrows_values_execute passed; helper asserts successful execution with no output and deterministic repeated frontend bytes"
+    },
+    {
+      "name": "static-scalars",
+      "qualified_source_sha256": "95ac9854423b74b8d4e37c85498c07e311980d05dafe141b5de680bc082dfcf2",
+      "lowir_sha256": "275f5f1cb4e0c7953b2421db906792015ca14f51705eb5c9633389d1bef13c28",
+      "validated_lowir_sha256": "4d6bc5bb0cfce30f68eea44e4dce058f29ba689838d5d15ecdfa84b0c88e3bad",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "union-borrow-final/source-native.log: direct_union_borrows_values_execute passed; helper asserts successful execution with no output and deterministic repeated frontend bytes"
+    }
+  ],
+  "scaling": {
+    "iterations": [
+      8,
+      32,
+      128
+    ],
+    "ordinary_steps": [
+      485,
+      1709,
+      6605
+    ],
+    "union_steps": [
+      947,
+      3443,
+      13427
+    ],
+    "ordinary_slots": [
+      44,
+      68,
+      164
+    ],
+    "union_slots": [
+      45,
+      69,
+      165
+    ],
+    "slot_overhead": [
+      1,
+      1,
+      1
+    ],
+    "bounds": "peak slots <= N+96; changed minus ordinary slot overhead constant; step ratio <5 for 4x input",
+    "claim": "bounded linear work/storage and constant +1 slot overhead; no throughput-neutrality claim"
+  },
+  "ordinary_equality": {
+    "path": "pa27/tests/spec/union-borrows/ordinary-scalar.rs",
+    "baseline": "9d4e1494",
+    "all_views_byte_identical": true,
+    "views": {
+      "--emit-types": {
+        "status": 0,
+        "stdout_sha256": "a580adc95a0a3f970ec4bf812c128164391e1c86ad5c8d0c1d0a138263a37269",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "--emit-lowir": {
+        "status": 0,
+        "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "--emit-constants": {
+        "status": 0,
+        "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      }
+    }
+  },
+  "interface": {
+    "public_enums_changed": false,
+    "cfg_changed": false,
+    "pointer_layout_changed": false,
+    "private_union_helper": "Machine::union_reference(Resolved,mutable:bool)->Result<Option<Constant>,Failure>",
+    "canonical_authority": "original UnionField selection passed to existing evaluator.union_address; existing raw base anchor preserved, none synthesized",
+    "common_validation": "checked_reference retains type/liveness/provenance/initialization/actual leaf alignment/permission and now explicit root bounds",
+    "raw_protocol": "raw_reference wrapper retains anchor requirement for shared_raw_reference/mutable_raw_reference",
+    "source_permissions": "unsafe, packed, mutability, ownership and lifetime checking unchanged and precede helper; no authority derived from projection creation",
+    "storage": "scalar Image/current-byte aliasing; no active-member or structural Reader reinterpretation"
+  },
+  "private_invariants": [
+    "four raw-reference and one contents test, all matched and passed",
+    "raw wrapper anchor, per-pointer authority, alignment/liveness/type and initialization checks remain intact",
+    "contents owner/type/ordinal/validity/budget and structural Reader boundary unchanged"
+  ],
+  "superseded_fixture": {
+    "path": "pa27/tests/spec/union-references/direct-borrow-boundary.rs",
+    "sha256": "2ca87f4b77f5053899e900df03fc38958a8114cf96bc6f96076b2c17f24ade53",
+    "old_frontend_status": 1,
+    "current_frontend_status": 0,
+    "bytes_changed": false
+  },
+  "validity_scope": "write-only partial initialization and bool repair accepted by Rust remain explicit eager-profile boundaries; pointer and unit/ZST union families remain unsupported",
+  "remaining": [
+    "deferred unused/shared-derived/read-only and write-only reference profiles",
+    "raw-derived mutable/foreign/cyclic-static reference formation",
+    "numeric nonnull ZST and unsized provenance",
+    "general raw type/byte reinterpretation and offsets",
+    "pointer/reference/function/aggregate and zero-sized union Images",
+    "shared-derived interior-mutable writes",
+    "runtime invalid_reference_casting default-lint enforcement",
+    "remaining packed/pattern and PA27/PA28 release contracts"
+  ],
+  "metadata": {
+    "upstream": "24 fixtures +126 Reference files verified",
+    "layout": "not repeated: inherited PA16 baseline gap already root-fixed014bfcde"
+  },
+  "evidence_root": "obj/parallel/pa27",
+  "notes": [
+    "all initial20 and two follow-up independent hypotheses matched; no failed gates or production corrections in this slice",
+    "packed-source physically aligned cases retain types0 and execution/constants1, including an original raw base",
+    "all new native tests ignored by default",
+    "no active oracle generation, assignment activation, backend change or full-release claim"
+  ]
+}

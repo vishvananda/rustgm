@@ -1,0 +1,1 @@
+union U{a:u32,b:u32}static S:U=U{a:37};const R:&u32=unsafe{&S.b};const X:u32=*R;union B{word:u32,flag:bool}const Y:bool={let u=B{word:1};unsafe{let r=&u.flag;*r}};union C{word:u32,letter:char}const Z:char={let u=C{word:0x1f980};unsafe{let r=&u.letter;*r}};fn main(){check(X==37);check(Y);check(Z=='🦀');}
