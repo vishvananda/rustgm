@@ -1,4 +1,7 @@
 //! Complete closure arguments and sparse environment lifetimes share one proof scope.
+#[cfg(test)]
+#[path = "../../../tests/invariants/interval_cursor.rs"]
+mod tests;
 use super::{Bound, Declarations, Inputs};
 use crate::{
     sema::closures::{Body, Execution},
@@ -215,19 +218,44 @@ pub(crate) fn normalize(
 pub(crate) fn retain_proof(
     facts: &mut Declarations,
     contract: &mut crate::body::regions::Contract,
-    mut proof: crate::types::lifetime_proof::Obligations,
+    proof: crate::types::lifetime_proof::Obligations,
     slots: impl Iterator<Item = (u16, crate::types::RegionId)>,
 ) -> Result<(), &'static str> {
-    let first = super::projections::first_region(contract)?;
-    let work = proof.rebase(&mut facts.types, first)?;
-    let mapping = slots
-        .map(|(slot, actual)| Ok((crate::types::RegionId::bound(0, slot)?, actual)))
-        .collect::<Result<std::collections::HashMap<_, _>, &'static str>>()?;
-    let mut fold = Bound::restore_owned_regions(mapping, proof.regions.clone());
-    proof.substitute(&mut facts.types, &mut fold)?;
-    facts.body_work.canonical_steps += work + fold.steps;
-    contract
-        .proofs
-        .push(crate::body::regions::Proof::new(contract.source, proof));
-    Ok(())
+    ProofCursor::default().retain(facts, contract, proof, slots)
+}
+
+/// One entry-selection pass appends debts and owns every new private interval.
+/// Initialize lazily so projection-free calls never scan the body contract.
+/// A cursor must not span another producer of contract variables or proofs.
+#[derive(Default)]
+pub(crate) struct ProofCursor {
+    next: Option<u32>,
+}
+impl ProofCursor {
+    pub(crate) fn retain(
+        &mut self,
+        facts: &mut Declarations,
+        contract: &mut crate::body::regions::Contract,
+        mut proof: crate::types::lifetime_proof::Obligations,
+        slots: impl Iterator<Item = (u16, crate::types::RegionId)>,
+    ) -> Result<(), &'static str> {
+        let first = if let Some(next) = self.next {
+            next
+        } else {
+            facts.body_work.canonical_steps += contract.obligations.len() + contract.proofs.len();
+            super::projections::first_region(contract)?
+        };
+        let work = proof.rebase(&mut facts.types, first)?;
+        let mapping = slots
+            .map(|(slot, actual)| Ok((crate::types::RegionId::bound(0, slot)?, actual)))
+            .collect::<Result<std::collections::HashMap<_, _>, &'static str>>()?;
+        let mut fold = Bound::restore_owned_regions(mapping, proof.regions.clone());
+        proof.substitute(&mut facts.types, &mut fold)?;
+        facts.body_work.canonical_steps += work + fold.steps;
+        self.next = Some(proof.regions.end);
+        contract
+            .proofs
+            .push(crate::body::regions::Proof::new(contract.source, proof));
+        Ok(())
+    }
 }

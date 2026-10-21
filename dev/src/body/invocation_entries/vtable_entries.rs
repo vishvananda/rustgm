@@ -14,6 +14,7 @@ pub(super) fn select(
     concrete: TypeId,
     object: TypeId,
     operand: TypeId,
+    proofs: &mut crate::body::instantiate::ProofCursor,
 ) -> Result<Option<[Option<Entry>; 2]>, &'static str> {
     let Some(Kind::Closure {
         signature,
@@ -59,8 +60,16 @@ pub(super) fn select(
         })?;
         let selected = call_signature(&mut facts.types, receiver, signature, result)?;
         entries[index] = Some(
-            select_execution(facts, contract, body.source, kind, receiver, selected)?
-                .ok_or("captured object target lost its environment entry")?,
+            select_execution(
+                facts,
+                contract,
+                body.source,
+                kind,
+                receiver,
+                selected,
+                proofs,
+            )?
+            .ok_or("captured object target lost its environment entry")?,
         );
     }
     Ok(Some(entries))

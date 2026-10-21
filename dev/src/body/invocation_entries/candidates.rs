@@ -48,6 +48,7 @@ impl Candidate {
         contract: &mut Contract,
         caller: NodeKey,
         selected: TypeId,
+        proofs: &mut crate::body::instantiate::ProofCursor,
     ) -> Result<Entry, &'static str> {
         validate_opened(&facts.types, contract, caller, self.receiver, selected)?;
         let Self {
@@ -64,12 +65,12 @@ impl Candidate {
         let super::shaping::Prepared {
             execution,
             mut equalities,
-            proofs,
+            proofs: retained,
             ..
         } = super::shaping::prepare(facts, source, instance, adapter)?;
         let bindings = matching::execution_bindings(&facts.types, execution, selected)?;
-        for proof in proofs {
-            crate::body::instantiate::retain_closure_proof(
+        for proof in retained {
+            proofs.retain(
                 facts,
                 contract,
                 proof,
@@ -103,9 +104,12 @@ pub(crate) fn select_execution(
     requested: CallTrait,
     receiver: TypeId,
     selected: TypeId,
+    proofs: &mut crate::body::instantiate::ProofCursor,
 ) -> Result<Option<Entry>, &'static str> {
     if let Some(candidate) = Candidate::select(facts, receiver, requested)? {
-        candidate.finish(facts, input, caller, selected).map(Some)
+        candidate
+            .finish(facts, input, caller, selected, proofs)
+            .map(Some)
     } else {
         validate_opened(&facts.types, input, caller, receiver, selected)?;
         Ok(None)

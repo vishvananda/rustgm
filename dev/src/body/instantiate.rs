@@ -4,7 +4,9 @@ mod initializers;
 pub(crate) use initializers::with_contract as selected_initializer;
 mod closures;
 mod contracts;
-pub(crate) use closures::{execution as closure_execution, retain_proof as retain_closure_proof};
+pub(crate) use closures::{
+    ProofCursor, execution as closure_execution, retain_proof as retain_closure_proof,
+};
 pub(crate) use closures::{
     normalize as normalize_closure_execution, self_type as closure_self_type,
     substitute as substitute_closure_execution,

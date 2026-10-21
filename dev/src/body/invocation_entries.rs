@@ -126,6 +126,7 @@ pub(crate) fn select(
     if body.closure_calls.is_some() {
         return Err("closure entries were selected twice");
     }
+    let mut proofs = crate::body::instantiate::ProofCursor::default();
     for (index, value) in body.values.iter().enumerate() {
         if let Rvalue::Unsize {
             value: operand,
@@ -137,9 +138,15 @@ pub(crate) fn select(
                 .get(operand.0 as usize)
                 .ok_or("captured conversion has an invalid input")?
                 .ty;
-            if let Some(selected) =
-                vtable_entries::select(facts, body, contract, concrete, target, operand)?
-            {
+            if let Some(selected) = vtable_entries::select(
+                facts,
+                body,
+                contract,
+                concrete,
+                target,
+                operand,
+                &mut proofs,
+            )? {
                 let index =
                     ValueId(u32::try_from(index).map_err(|_| "too many conversion values")?);
                 let entries = body.closure_calls.get_or_insert_with(Default::default);
@@ -173,8 +180,16 @@ pub(crate) fn select(
             continue;
         }
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;
-        let entry = select_execution(facts, contract, body.source, kind, receiver, selected)?
-            .ok_or("captured closure selection changed")?;
+        let entry = select_execution(
+            facts,
+            contract,
+            body.source,
+            kind,
+            receiver,
+            selected,
+            &mut proofs,
+        )?
+        .ok_or("captured closure selection changed")?;
         let index = ValueId(u32::try_from(index).map_err(|_| "too many closure call values")?);
         let entries = body
             .closure_calls

@@ -11,6 +11,7 @@ fn malformed_opened_headers_cannot_select_execution()
         .next()
         .ok_or("contract")?;
     let caller = input.source;
+    let mut proofs = crate::body::instantiate::ProofCursor::default();
     let selected = function(&mut facts.types, &[TypeId::UNIT], 0)?;
     assert!(
         select_execution(
@@ -19,7 +20,8 @@ fn malformed_opened_headers_cannot_select_execution()
             caller,
             CallTrait::FnOnce,
             TypeId::UNIT,
-            selected
+            selected,
+            &mut proofs,
         )?
         .is_none()
     );
@@ -34,7 +36,8 @@ fn malformed_opened_headers_cannot_select_execution()
             wrong,
             CallTrait::FnOnce,
             TypeId::UNIT,
-            selected
+            selected,
+            &mut proofs,
         )
         .is_err()
     );
@@ -46,7 +49,8 @@ fn malformed_opened_headers_cannot_select_execution()
             caller,
             CallTrait::FnOnce,
             different,
-            selected
+            selected,
+            &mut proofs,
         )
         .is_err()
     );
@@ -58,7 +62,8 @@ fn malformed_opened_headers_cannot_select_execution()
             caller,
             CallTrait::FnOnce,
             TypeId::UNIT,
-            bound
+            bound,
+            &mut proofs,
         )
         .is_err()
     );
@@ -83,7 +88,8 @@ fn malformed_opened_headers_cannot_select_execution()
                 caller,
                 CallTrait::FnOnce,
                 TypeId::UNIT,
-                invalid
+                invalid,
+                &mut proofs,
             )
             .is_err()
         );
