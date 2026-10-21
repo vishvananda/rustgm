@@ -306,3 +306,25 @@ fn owned_literal_bytes_do_not_invent_backing_storage() -> Result<(), Box<dyn std
     assert!(view.contains("origin=static:"));
     Ok(())
 }
+
+#[test]
+fn reified_closure_constants_keep_code_identity_and_aliases()
+-> Result<(), Box<dyn std::error::Error>> {
+    let text = fixture("closures")?;
+    rustc::qualify("parallel/pa25-constant-inspection/closures", &text, true)?;
+    let (view, counts) = inspect(&text, Limits::default())?;
+    let callables: Vec<_> = view
+        .lines()
+        .filter(|line| line.contains("function closure="))
+        .collect();
+    assert_eq!(callables.len(), 2, "{view}");
+    for callable in &callables {
+        assert!(callable.contains(" instance="), "{callable}");
+        assert!(callable.contains(" signature="), "{callable}");
+        assert!(callable.contains(" const=false"), "{callable}");
+    }
+    assert_eq!(view.matches("root initializer").count(), 3);
+    assert!(counts.contains("values=2 allocations=0"), "{counts}");
+    assert_eq!(inspect(&text, Limits::default())?.0, view);
+    Ok(())
+}

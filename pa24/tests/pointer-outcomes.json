@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/closure-pointers/array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "96d6fe58eec4a3bf655a9ff7bf7b3b737cfb69570150e6501750814a03c5b580",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/borrowed-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "37031f04ae1dd6921feb3e1dbca01a86e8cb038425d4db57c853d34216fbee7d",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/cast-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "458cfbd3e422f5052b6e45cf0c2ad17a1c835ce5ebae54545a4dd5e1e6472887",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "406fcdf3ca12aeea9d17698df0040265a842cdb566ae482aff41b24f8a29ff66",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/function-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "6bd1dc1ef0439165e32d48560eb99f645f417fe824108b0ddd50273430bac280",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/generic-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "774f28d640bb0b5573fd7cec27e40517d4bf1a6b172445a87e1b2172b5d63b50",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/named.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "cdc8c092afdeb76e92e8b52f45950c1914b78a6b89c94fc08ac66deaba794310",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "f8991e3eadfc10fb3ef4f638699b76cc9d77dddcef42293587c8f4dbbc41a519",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "3595c22c5632c6313df13418ade7804ad7fc4354d4167e21cc52e6835ac35f79",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/static-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "311a197221b1694dafbbcadbaa5cee518b32c05589d42a317797d9dffe77ec37",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closure-pointers/static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "source_sha256": "78185c0d33e858da459dc3f067000479559deeaa0fe8a3fa7c58b29ce4acf21c",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

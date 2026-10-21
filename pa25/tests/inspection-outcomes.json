@@ -56,6 +56,21 @@
         "default_lints": true,
         "emit": "obj"
       }
+    },
+    {
+      "path": "tests/spec/inspection/closures.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constant-inspection",
+        "pa24.non-capturing-closures"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "source_sha256": "b0dbd9860ed67614a235a0a8f7de10378d1e2f95745b34d9242ce740ced32166"
     }
   ]
 }

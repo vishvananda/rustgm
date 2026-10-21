@@ -13,8 +13,10 @@ callable instance reaches ordinary checked body discovery and symbol demand.
 Constant expression bodies use their selected coercion result type. Reification
 does not authorize calling a closure or function pointer during constant evaluation.
 
-The eighteen draft cases in `pa25/tests/closure-pointer-outcomes.json` contain
-fourteen accepted programs and four Rust language rejections. Native controls
+The eighteen draft cases contain fourteen accepted programs and four Rust
+language rejections. Eleven coercion cases belong to PA24
+(`pa24/tests/pointer-outcomes.json`); seven constant-function, statement and
+call-permission cases belong to PA25 (`pa25/tests/closure-pointer-outcomes.json`). Native controls
 exercise named/static pointers, arrays, repeats, const factories, independently
 specialized generic factories, borrowed signatures, casts and promotions. Both
 runtime-only call negatives require a non-const-call diagnostic. Captured and
