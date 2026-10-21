@@ -1,4 +1,5 @@
 //! Constant-backed patterns defer only value/coverage work until typed queries finish.
+mod ordering;
 use super::{Checker, Error, NodeId, matches::RangeWork};
 use crate::{
     resolve::{
@@ -135,6 +136,7 @@ impl Checker<'_> {
         let Some(pending) = &mut self.state.pending_patterns else {
             return Err(self.error(self.state.body.node, "missing constant pattern requests"));
         };
+        self.facts.patterns.pending_bodies.insert(self.state.body);
         pending.scopes.push(Scope {
             values: super::super::constants::PatternScope {
                 body: self.state.body,
@@ -168,31 +170,82 @@ impl Checker<'_> {
         let Some(pending) = self.state.pending_patterns.take() else {
             return Ok(());
         };
+        let mut scopes = pending.into_scopes();
+        let order = ordering::schedule(self.facts, &scopes)
+            .map_err(|message| self.error(self.state.body.node, message))?;
+        for index in order {
+            let prepared = scopes[index].take().ok_or_else(|| {
+                self.error(
+                    self.state.body.node,
+                    "constant pattern scope scheduled twice",
+                )
+            })?;
+            self.complete_pattern_scope(prepared)?;
+        }
+        Ok(())
+    }
+    fn complete_pattern_scope(&mut self, prepared: PreparedScope) -> Result<(), Error> {
+        let PreparedScope {
+            scope,
+            requests,
+            ranges,
+            roots,
+            matches,
+        } = prepared;
         super::super::constants::pattern_values(
             self.report,
             self.facts,
-            &pending.requests,
-            pending.scopes.iter().map(|scope| scope.values),
+            &requests,
+            std::iter::once(scope.values),
             &mut self.pattern_queries,
         )?;
-        let mut ranges = pending.ranges.into_iter();
-        let mut roots = pending.roots.into_iter();
-        let mut matches = pending.matches.into_iter();
-        for scope in pending.scopes {
-            self.state.body = scope.values.body;
-            self.state.file = scope.values.body.file;
-            self.state.module = scope.module;
-            self.state
-                .range_work
-                .extend(ranges.by_ref().take(scope.ranges));
-            self.state
-                .pattern_requirements
-                .extend(roots.by_ref().take(scope.roots));
-            self.state
-                .matches
-                .extend(matches.by_ref().take(scope.matches));
-            self.finish_patterns()?;
-        }
+        self.state.body = scope.values.body;
+        self.state.file = scope.values.body.file;
+        self.state.module = scope.module;
+        self.state.range_work.extend(ranges);
+        self.state.pattern_requirements.extend(roots);
+        self.state.matches.extend(matches);
+        self.finish_patterns()?;
+        self.facts
+            .patterns
+            .pending_bodies
+            .remove(&scope.values.body);
         Ok(())
+    }
+}
+
+struct PreparedScope {
+    scope: Scope,
+    requests: Vec<(
+        NodeKey,
+        super::super::constants::PatternValue,
+        Option<PatternId>,
+    )>,
+    ranges: Vec<RangeWork>,
+    roots: Vec<(PatternId, bool)>,
+    matches: Vec<u32>,
+}
+impl Pending {
+    fn into_scopes(self) -> Vec<Option<PreparedScope>> {
+        let mut requests = self.requests.into_iter();
+        let mut ranges = self.ranges.into_iter();
+        let mut roots = self.roots.into_iter();
+        let mut matches = self.matches.into_iter();
+        let mut start = 0;
+        self.scopes
+            .into_iter()
+            .map(|mut scope| {
+                let end = scope.values.end;
+                scope.values.end -= start;
+                start = end;
+                Some(PreparedScope {
+                    requests: requests.by_ref().take(scope.values.end).collect(),
+                    ranges: ranges.by_ref().take(scope.ranges).collect(),
+                    roots: roots.by_ref().take(scope.roots).collect(),
+                    matches: matches.by_ref().take(scope.matches).collect(),
+                    scope,
+                })
+            })
+            .collect()
     }
 }

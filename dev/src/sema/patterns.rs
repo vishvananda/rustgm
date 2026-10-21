@@ -119,6 +119,10 @@ pub struct Pattern {
 }
 #[derive(Default)]
 pub struct Patterns {
+    /// A checked body cannot become a CFG until its deferred pattern values publish.
+    pub pending_bodies: HashSet<NodeKey>,
+    /// Scope/request/edge visits, excluding heap comparisons and dependency sorting.
+    pub completion_work: usize,
     /// Each borrowed occurrence retains its own region, even when alternatives
     /// share a binding definition and require equal regions.
     pub borrow_types: HashMap<PatternId, TypeId>,
