@@ -12,6 +12,8 @@ use crate::{
         instance::Instance,
     },
 };
+mod domains;
+use domains::comparison_candidate;
 use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../tests/invariants/primitive_factories.rs"]
@@ -76,17 +78,22 @@ impl Descriptor {
             {
                 operator(hook)?
             }
-            Operation::Comparison(crate::support::comparisons::Comparison::PartialEq)
-                if facts.associated.comparison(owner)
-                    == Some(crate::support::comparisons::Comparison::PartialEq) =>
-            {
-                match facts
+            Operation::Comparison(kind) if facts.associated.comparison(owner) == Some(kind) => {
+                use crate::support::comparisons::Method;
+                let method = facts
                     .associated
                     .comparison_method(definition)
-                    .ok_or("comparison member is not canonical")?
-                {
-                    crate::support::comparisons::Method::Eq => Punctuation::EqualEqual,
-                    crate::support::comparisons::Method::Ne => Punctuation::BangEqual,
+                    .ok_or("comparison member is not canonical")?;
+                if method.owner() != kind {
+                    return Err("comparison member has different trait owner");
+                }
+                match method {
+                    Method::Eq | Method::PartialCmp | Method::Cmp => Punctuation::EqualEqual,
+                    Method::Ne => Punctuation::BangEqual,
+                    Method::Lt => Punctuation::Less,
+                    Method::Le => Punctuation::LessEqual,
+                    Method::Gt => Punctuation::Greater,
+                    Method::Ge => Punctuation::GreaterEqual,
                 }
             }
             _ => return Err("primitive descriptor differs from canonical method identity"),
@@ -116,10 +123,13 @@ impl Descriptor {
             Form::Comparison => {
                 matches!(
                     self.operation,
-                    Operation::Comparison(crate::support::comparisons::Comparison::PartialEq)
+                    Operation::Comparison(
+                        crate::support::comparisons::Comparison::PartialEq
+                            | crate::support::comparisons::Comparison::PartialOrd
+                            | crate::support::comparisons::Comparison::Ord
+                    )
                 ) && self.rhs == Rhs::Owned
                     && bound_regions == 2
-                    && result == TypeId::primitive(Primitive::Bool)
                     && matches!(facts.types.kind(receiver),Some(Kind::Reference{referent,mutable:false,region}) if referent==left && region==RegionId::bound(0,0)?)
             }
             Form::ValueBinary => {
@@ -298,74 +308,6 @@ pub(in crate::sema) fn candidate(
     })
 }
 
-fn comparison_candidate(
-    facts: &Declarations,
-    context: &mut Context,
-    goal: &Predicate,
-    kind: crate::support::comparisons::Comparison,
-    arguments: &[crate::types::infer::arguments::Argument],
-) -> Result<Candidate, infer::Error> {
-    use crate::support::comparisons::Comparison;
-    let right_term = match (kind, arguments) {
-        (Comparison::PartialEq, [crate::types::infer::arguments::Argument::Type(right)]) => *right,
-        (Comparison::Eq, []) => goal.subject(),
-        _ => return Err(infer::Error::InvalidIdentity),
-    };
-    let mut left = context.head(&facts.types, goal.subject())?;
-    let mut right = context.head(&facts.types, right_term)?;
-    if let (Some(Constructor::Primitive(primitive)), None) = (left, right) {
-        infer_numeric(facts, context, right_term, primitive)?;
-        right = context.head(&facts.types, right_term)?;
-    } else if let (None, Some(Constructor::Primitive(primitive))) = (left, right) {
-        infer_numeric(facts, context, goal.subject(), primitive)?;
-        left = context.head(&facts.types, goal.subject())?;
-    }
-    if left.is_some_and(|head| !matches!(head, Constructor::Primitive(_)))
-        || right.is_some_and(|head| !matches!(head, Constructor::Primitive(_)))
-    {
-        return Ok(Candidate::Unrelated);
-    }
-    let (Some(Constructor::Primitive(left)), Some(Constructor::Primitive(right))) = (left, right)
-    else {
-        return Ok(if left.is_none() || right.is_none() {
-            Candidate::Deferred
-        } else {
-            Candidate::Unrelated
-        });
-    };
-    Ok(
-        if left == right && left != Primitive::Str && (kind != Comparison::Eq || !left.is_float()) {
-            Candidate::Present(Descriptor {
-                operation: Operation::Comparison(kind),
-                form: Form::Comparison,
-                left,
-                right,
-                rhs: Rhs::Owned,
-            })
-        } else {
-            Candidate::Unrelated
-        },
-    )
-}
-// A numeric domain cannot denote a local nominal RHS. These equations belong
-// to this isolated candidate, and ordinary competing evidence still causes ambiguity.
-fn infer_numeric(
-    facts: &Declarations,
-    context: &mut Context,
-    term: crate::types::infer::TermId,
-    primitive: Primitive,
-) -> Result<(), infer::Error> {
-    let permitted = match context.unresolved_domain(term)? {
-        Some(infer::Domain::Integer) => primitive.integer().is_some(),
-        Some(infer::Domain::Float) => primitive.is_float(),
-        _ => false,
-    };
-    if permitted {
-        let known = context.known(&facts.types, TypeId::primitive(primitive))?;
-        context.equate(&facts.types, term, known)?;
-    }
-    Ok(())
-}
 #[derive(Clone, Copy)]
 pub(crate) struct Selected {
     instance: Instance,
@@ -379,6 +321,7 @@ pub(crate) struct Validated {
     pub right: TypeId,
     pub result: TypeId,
     pub operator: Punctuation,
+    pub comparison: Option<crate::support::comparisons::Method>,
 }
 impl Selected {
     pub(crate) const fn instance(self) -> Instance {
@@ -424,10 +367,18 @@ impl Selected {
             .arguments(arguments)
             .ok_or("missing primitive method arguments")?
             .collect::<Vec<_>>();
-        let [Argument::Type(subject), Argument::Type(right)] = arguments.as_slice() else {
-            return Err("primitive method has incorrect generic arguments");
+        let (subject, right) = match arguments.as_slice() {
+            [Argument::Type(subject), Argument::Type(right)] => (*subject, *right),
+            [Argument::Type(subject)]
+                if matches!(
+                    self.descriptor.operation,
+                    Operation::Comparison(crate::support::comparisons::Comparison::Ord)
+                ) =>
+            {
+                (*subject, *subject)
+            }
+            _ => return Err("primitive method has incorrect generic arguments"),
         };
-        let (subject, right) = (*subject, *right);
         let expected = TypeId::primitive(self.descriptor.right);
         if self.descriptor.form == Form::Comparison
             && !matches!(facts.types.kind(physical_right),Some(Kind::Reference{referent,mutable:false,region}) if referent==right && region==RegionId::bound(0,1)?)
@@ -456,6 +407,17 @@ impl Selected {
             return Err("primitive method arguments differ from selected descriptor");
         }
         validate_substitution(facts, self.descriptor, item, signature, &arguments)?;
+        let comparison = facts.associated.comparison_method(definition);
+        if comparison.is_some_and(|method| {
+            !matches!(
+                method,
+                crate::support::comparisons::Method::Cmp
+                    | crate::support::comparisons::Method::PartialCmp
+            )
+        }) && result != TypeId::primitive(Primitive::Bool)
+        {
+            return Err("primitive relation result is not bool");
+        }
         Ok(Validated {
             definition,
             source,
@@ -464,6 +426,7 @@ impl Selected {
             right: physical_right,
             result,
             operator,
+            comparison,
         })
     }
 }

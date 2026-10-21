@@ -1,4 +1,5 @@
 //! Provided library methods enter the ordinary original-template proof inventory.
+mod ordering;
 use super::{
     ir::{
         Action, Body, Local, LocalId, LocalKind, Owner, Place, Rvalue, Statement, Value, ValueId,
@@ -25,7 +26,7 @@ pub(crate) fn append(
 ) -> Result<(), Error> {
     let mut defaults = facts.associated.library_defaults().collect::<Vec<_>>();
     defaults.sort_unstable_by_key(|(definition, _)| definition.0);
-    for (definition, LibraryDefault::PartialEqNe { eq }) in defaults {
+    for (definition, default) in defaults {
         let function = facts
             .associated
             .language_functions()
@@ -40,13 +41,27 @@ pub(crate) fn append(
             })?;
         let source = function.node;
         let error = |message| Declarations::error(report, source, message);
-        if facts.associated.comparison_method(eq) != Some(crate::support::comparisons::Method::Eq)
-            || facts.associated.comparison_method(definition)
-                != Some(crate::support::comparisons::Method::Ne)
-            || facts.associated.trait_owner(eq) != facts.associated.trait_owner(definition)
+        let (callee, member, requirement) = match default {
+            LibraryDefault::PartialEqNe { eq } => (
+                eq,
+                crate::support::comparisons::Method::Ne,
+                crate::support::comparisons::Method::Eq,
+            ),
+            LibraryDefault::PartialOrdRelation {
+                partial_cmp,
+                relation,
+            } => (
+                partial_cmp,
+                relation,
+                crate::support::comparisons::Method::PartialCmp,
+            ),
+        };
+        if facts.associated.comparison_method(callee) != Some(requirement)
+            || facts.associated.comparison_method(definition) != Some(member)
+            || facts.associated.trait_owner(callee) != facts.associated.trait_owner(definition)
         {
             return Err(error(
-                "provided equality body has a different canonical owner",
+                "provided comparison body has a different canonical owner",
             ));
         }
         let environment = Arc::new(
@@ -55,7 +70,23 @@ pub(crate) fn append(
                 .parameter_environment(&facts.types, definition)
                 .map_err(error)?,
         );
-        let body = build(facts, definition, eq, function.signature, source).map_err(error)?;
+        let body = match default {
+            LibraryDefault::PartialEqNe { eq } => {
+                build(facts, definition, eq, function.signature, source)
+            }
+            LibraryDefault::PartialOrdRelation {
+                partial_cmp,
+                relation,
+            } => ordering::build(
+                facts,
+                definition,
+                partial_cmp,
+                relation,
+                function.signature,
+                source,
+            ),
+        }
+        .map_err(error)?;
         let query = crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
         );
@@ -74,7 +105,7 @@ pub(crate) fn append(
     }
     Ok(())
 }
-struct EqualityCall {
+struct ProvidedCall {
     parameters: [TypeId; 2],
     result: TypeId,
     callee: TypeId,
@@ -84,9 +115,21 @@ fn call(
     facts: &mut Declarations,
     eq: DefId,
     signature: TypeId,
-) -> Result<EqualityCall, &'static str> {
-    if !matches!(facts.definitions.get(eq.0 as usize).copied().flatten().and_then(|ty|facts.types.kind(ty)),Some(Kind::FunctionItem{item,signature:declared,..}) if item==crate::types::ItemId(eq.0) && declared==signature)
-    {
+) -> Result<ProvidedCall, &'static str> {
+    let Some(Kind::FunctionItem {
+        item,
+        signature: declared,
+        ..
+    }) = facts
+        .definitions
+        .get(eq.0 as usize)
+        .copied()
+        .flatten()
+        .and_then(|ty| facts.types.kind(ty))
+    else {
+        return Err("provided comparison has no declared callee");
+    };
+    if item != crate::types::ItemId(eq.0) {
         return Err("provided equality callee differs from its declared signature");
     }
     let Some(Kind::Function {
@@ -99,53 +142,49 @@ fn call(
     else {
         return Err("provided equality method has incorrect signature");
     };
-    let [left, right] = facts
-        .types
-        .list(parameters)
-        .ok_or("missing equality parameters")?
-    else {
-        return Err("provided equality method has incorrect arity");
-    };
-    let [left, right] = [*left, *right];
-    let mut arguments = Vec::new();
-    for (slot, ty) in [left, right].into_iter().enumerate() {
-        let Some(Kind::Reference {
-            referent,
-            mutable: false,
-            region,
-        }) = facts.types.kind(ty)
-        else {
-            return Err("provided equality operand requires a shared borrow");
-        };
-        if region
-            != crate::types::RegionId::bound(
-                0,
-                u16::try_from(slot).map_err(|_| "invalid equality slot")?,
-            )?
-        {
-            return Err("provided equality operands share a borrow slot");
-        }
-        arguments.push(crate::types::arguments::Argument::Type(referent));
-    }
+    let ([left, right], arguments) = operands(facts, parameters)?;
     if result != TypeId::primitive(crate::types::Primitive::Bool) {
         return Err("provided equality result is not bool");
+    }
+    let Some(Kind::Function {
+        parameters: callee_parameters,
+        result: called_result,
+        bound_regions: 2,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
+    }) = facts.types.kind(declared)
+    else {
+        return Err("provided comparison callee has incorrect signature");
+    };
+    if parameters != callee_parameters
+        || !matches!(
+            facts.associated.comparison_method(eq),
+            Some(
+                crate::support::comparisons::Method::Eq
+                    | crate::support::comparisons::Method::PartialCmp
+            )
+        )
+        || facts.associated.comparison_method(eq) == Some(crate::support::comparisons::Method::Eq)
+            && (called_result != result || declared != signature)
+    {
+        return Err("provided comparison callee differs from declared input/result contract");
     }
     let arguments = facts.types.intern_arguments(&arguments)?;
     let callable = facts.types.intern(Kind::FunctionItem {
         item: crate::types::ItemId(eq.0),
-        signature,
+        signature: declared,
         arguments,
     })?;
     let opened = facts.types.intern(Kind::Function {
         parameters,
-        result,
+        result: called_result,
         unsafe_: false,
         convention: crate::types::callable::Convention::RUST,
         bound_regions: 0,
     })?;
-    Ok(EqualityCall {
+    Ok(ProvidedCall {
         parameters: [left, right],
-        result,
+        result: called_result,
         callee: callable,
         signature: opened,
     })
@@ -157,7 +196,7 @@ fn build(
     signature: TypeId,
     source: crate::resolve::unit::NodeKey,
 ) -> Result<Body, &'static str> {
-    let EqualityCall {
+    let ProvidedCall {
         parameters: [left, right],
         result,
         callee: callable,
@@ -222,4 +261,39 @@ fn value(body: &mut Body, ty: TypeId, kind: Rvalue) -> Result<ValueId, &'static 
     body.values.push(Value { ty, kind });
     statement(body, Action::Evaluate(id));
     Ok(id)
+}
+
+fn operands(
+    facts: &Declarations,
+    parameters: crate::types::ListId,
+) -> Result<([TypeId; 2], Vec<crate::types::arguments::Argument>), &'static str> {
+    let [left, right] = facts
+        .types
+        .list(parameters)
+        .ok_or("missing equality parameters")?
+    else {
+        return Err("provided equality method has incorrect arity");
+    };
+    let [left, right] = [*left, *right];
+    let mut arguments = Vec::new();
+    for (slot, ty) in [left, right].into_iter().enumerate() {
+        let Some(Kind::Reference {
+            referent,
+            mutable: false,
+            region,
+        }) = facts.types.kind(ty)
+        else {
+            return Err("provided equality operand requires a shared borrow");
+        };
+        if region
+            != crate::types::RegionId::bound(
+                0,
+                u16::try_from(slot).map_err(|_| "invalid equality slot")?,
+            )?
+        {
+            return Err("provided equality operands share a borrow slot");
+        }
+        arguments.push(crate::types::arguments::Argument::Type(referent));
+    }
+    Ok(([left, right], arguments))
 }

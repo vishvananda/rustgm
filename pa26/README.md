@@ -200,10 +200,25 @@ NaN behavior; floats do not acquire Eq.
 
 `tests/comparison-outcomes.json` declares 52 independently qualified outcomes,
 including 31 native controls. Reference forwarding and derive execution remain
-explicit accepted boundaries; PartialOrd/Ord and the other required families
-remain unfinished. See `docs/pa26-comparisons.md`. This does not activate PA26.
+explicit accepted boundaries; the bounded ordering checkpoint below extends
+PartialOrd/Ord. See `docs/pa26-comparisons.md`. This does not activate PA26.
 
 The equality performance preparation also retains an independently accepted
 unsuffixed assignment-method gap: `let mut n=3u32; n.add_assign(4)` is rejected
 while `4u32` succeeds. Numeric-domain candidate inference for assignment methods
 remains required work; see `docs/pa26-comparison-performance.md`.
+
+## Maintainer ordering checkpoint
+
+Canonical `PartialOrd<Rhs: ?Sized = Self>` and `Ord` retain their equality
+prerequisites, exact member identities and independent shared borrow slots.
+Relational operators select their actual override. Default relations enter the
+ordinary original-template proof pipeline; primitive methods build checked
+comparisons and canonical Option/Ordering values, including unordered NaN.
+Comparison Ordering remains distinct from atomic Ordering.
+
+`tests/ordering-outcomes.json` declares 42 independently qualified outcomes with
+28 implemented native programs and an explicit accepted Ord-helper boundary.
+See `docs/pa26-ordering.md`. Ord helpers, structural/reference implementations,
+derive execution and the remaining hook families are still required; PA26 stays
+planned.

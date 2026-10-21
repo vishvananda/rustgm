@@ -86,36 +86,7 @@ impl Checker<'_> {
             results: Vec::new(),
             regions: Vec::new(),
         };
-        if kind == Comparison::Eq {
-            let parent = self
-                .report
-                .resolution
-                .builtin_traits
-                .comparison(Comparison::PartialEq)
-                .ok_or_else(|| self.error(origin, "missing PartialEq prerequisite"))?;
-            let arguments = self
-                .facts
-                .types
-                .intern_arguments(&[Argument::Type(subject)])
-                .map_err(|e| self.error(origin, e))?;
-            let app = self
-                .facts
-                .types
-                .intern_trait_application(Application {
-                    item: ItemId(parent.definition.0),
-                    arguments,
-                })
-                .map_err(|e| self.error(origin, e))?;
-            header.self_bounds.insert(origin);
-            header.predicates.push(Written {
-                source: origin,
-                value: Predicate {
-                    ty: subject,
-                    bound: Bound::Trait(app),
-                }
-                .into(),
-            });
-        }
+        self.comparison_parents(declaration, subject, &mut header)?;
         self.facts
             .generics
             .traits
@@ -181,15 +152,20 @@ impl Checker<'_> {
             ..
         } = declaration;
         if let Some(methods) = methods {
-            let Some(Argument::Type(right)) = self
-                .facts
-                .generics
-                .parameters
-                .get(&definition)
-                .and_then(|p| p.first())
-                .map(|p| p.argument)
-            else {
-                return Err(self.error(origin, "missing comparison RHS"));
+            let right = if declaration.kind.has_rhs() {
+                let Some(Argument::Type(right)) = self
+                    .facts
+                    .generics
+                    .parameters
+                    .get(&definition)
+                    .and_then(|p| p.first())
+                    .map(|p| p.argument)
+                else {
+                    return Err(self.error(origin, "missing comparison RHS"));
+                };
+                right
+            } else {
+                subject
             };
             let mut parameters = Vec::new();
             for (slot, referent) in [subject, right].into_iter().enumerate() {
@@ -213,31 +189,127 @@ impl Checker<'_> {
                 .types
                 .intern_list(&parameters)
                 .map_err(|e| self.error(origin, e))?;
-            let signature = self.intern(
-                origin,
-                Type::Function {
-                    parameters,
-                    result: TypeId::primitive(crate::types::Primitive::Bool),
-                    unsafe_: false,
-                    convention: crate::types::callable::Convention::RUST,
-                    bound_regions: 2,
-                },
-            )?;
-            for method in Method::ALL {
+            for (method, member) in methods.iter() {
+                let result = self.comparison_result(origin, method)?;
+                let signature = self.intern(
+                    origin,
+                    Type::Function {
+                        parameters,
+                        result,
+                        unsafe_: false,
+                        convention: crate::types::callable::Convention::RUST,
+                        bound_regions: 2,
+                    },
+                )?;
+                let arguments = if declaration.kind.has_rhs() {
+                    vec![Argument::Type(right)]
+                } else {
+                    Vec::new()
+                };
                 self.register_library_method(
                     super::comparison_methods::MethodContract {
                         origin,
                         owner: definition,
                         self_parameter,
-                        definition: methods[method as usize],
+                        definition: member,
                         signature,
                         output: None,
                     },
                     subject,
-                    &[Argument::Type(right)],
+                    &arguments,
                 )?;
             }
         }
         Ok(())
+    }
+    fn comparison_parents(
+        &mut self,
+        declaration: BuiltinEquality,
+        subject: TypeId,
+        header: &mut Header,
+    ) -> Result<(), Error> {
+        let origin = declaration.origin;
+        let kind = declaration.kind;
+        let right = header.parameters.first().map_or(subject, |parameter| {
+            if let Argument::Type(ty) = parameter.argument {
+                ty
+            } else {
+                subject
+            }
+        });
+        for &parent_kind in kind.parents() {
+            let parent = self
+                .report
+                .resolution
+                .builtin_traits
+                .comparison(parent_kind)
+                .ok_or_else(|| self.error(origin, "missing comparison prerequisite"))?;
+            let args = if parent_kind.has_rhs() {
+                vec![Argument::Type(right)]
+            } else {
+                Vec::new()
+            };
+            let arguments = self
+                .facts
+                .types
+                .intern_arguments(&args)
+                .map_err(|e| self.error(origin, e))?;
+            let app = self
+                .facts
+                .types
+                .intern_trait_application(Application {
+                    item: ItemId(parent.definition.0),
+                    arguments,
+                })
+                .map_err(|e| self.error(origin, e))?;
+            header.self_bounds.insert(origin);
+            header.predicates.push(Written {
+                source: origin,
+                value: Predicate {
+                    ty: subject,
+                    bound: Bound::Trait(app),
+                }
+                .into(),
+            });
+        }
+        Ok(())
+    }
+    fn comparison_result(
+        &mut self,
+        origin: crate::resolve::unit::NodeKey,
+        method: Method,
+    ) -> Result<TypeId, Error> {
+        let result = match method {
+            Method::PartialCmp | Method::Cmp => {
+                let nominal = self
+                    .report
+                    .resolution
+                    .library_types
+                    .get(crate::support::library_types::LibraryType::ComparisonOrdering)
+                    .ok_or_else(|| self.error(origin, "missing canonical comparison Ordering"))?;
+                let ordering =
+                    self.facts.definitions[nominal.definition.0 as usize].ok_or_else(|| {
+                        self.error(origin, "incomplete canonical comparison Ordering")
+                    })?;
+                if method == Method::Cmp {
+                    ordering
+                } else {
+                    let option = self
+                        .report
+                        .resolution
+                        .library_types
+                        .get(crate::support::library_types::LibraryType::Option)
+                        .ok_or_else(|| self.error(origin, "missing canonical comparison Option"))?;
+                    let arguments = self
+                        .facts
+                        .types
+                        .intern_arguments(&[Argument::Type(ordering)])
+                        .map_err(|e| self.error(origin, e))?;
+                    self.intern(origin, Type::Adt(ItemId(option.definition.0), arguments))?
+                }
+            }
+            _ => TypeId::primitive(crate::types::Primitive::Bool),
+        };
+        Ok(result)
     }
 }

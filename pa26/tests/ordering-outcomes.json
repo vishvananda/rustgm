@@ -1,0 +1,640 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/ordering/custom-relations.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "7ab07f2af427bde0cd2de1ced9385080ca581ee2b8e89a54016fc3d5095e4dc9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/generic-relations.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "436ccde369c0585be1d4db6869b255a365e5aa080e6f802386638d8b0bffe13a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/qualified-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "2527d9e035412c97e29bb8948110069a6a91759e8f67305406c8a9c7ff7d23e3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/dot-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "4008a5645cc48ea958e091574426bc48179a60f8669c6443a81d29ceec15a26d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/reified-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "a1603853311985b6b7997e5bc93a6e7502a5fd892180527b3ee5209170e026d2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/custom-ord.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "998f5c73449a98d0eb74cbbacd5cd062bd639698dc82745e20d119d90d28333d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/generic-ord.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "b31a349c95cb56e465fc6b463bfa4d9e3824695d9ddab0f8f335c4d8f5ad8390",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/reified-ord.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "3ff06b555598459366b08fea967f19e731112b2d021fd883f2f5c6c4624faad9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/override-lt.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "3f8b51f97d680a2c24ac17c5081da8ada0883542e82b3a7d26be6348f56ee024",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/partial-unordered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "4625c945a3a340e2f5fec48dc3d7a47a211f28a981f7addd08098afc09acf4dc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/primitive-signed-unsigned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "fc5aa3fff4ba239a4af020ece9df97331f1d5f749d57575c6ef65d2d00af230d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/primitive-nan.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "6eb9ef81d4d9cb5fba259c35ce0b57dc9501c31ba2191fe8acdb922a9e367e68",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/primitive-zero-infinity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "baf3fdee34a5905c407e84eb787a8663693e40988e1d0ed195ed737531e41a8c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/heterogeneous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "e7d9ea970c2015c600ecba8a92490057d41716ede61d13074acbface21323a90",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/unsized-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "56d21c8f77f73343b440b80b5665dedb86d15f43341c06e513d35382dd1886e1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/independent-borrows.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "c3bcda385f5c95cc006e602d796b19dac1ade7a819a837ed56e5a5a94a01bc88",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/ordering-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "47f63a2c63459e6b625dcd7789594a2036aa09f51a054f7c2b46a2523340f350",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/lookalike.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "acfa3972fe75573df22c0f757399552126372b9996b5d4afc23c2b8d9dad7ccd",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/missing-partial-eq.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "6a294de754b05106d102a6c694a4ba00055926f173c0301aabdeff797dfb4da8",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/missing-eq.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "e0f8fd8ee945132e897a2db1a28d13d8c881da162d11bb615f40a97d6f87fdea",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/float-ord.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "f57405fd1d5dfe3ad65559b80d3784ec706d7ab033b52de44e66e372337f3d1d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/wrong-partial-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "7e61d8b0daef512ce3cce55bc97574df31ae22a6b04edb204690db9f11458123",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/mutable-receiver.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "527c524524c356992c106decdb839557818a4e967135a721cb5b4eb3d386d33e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/atomic-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "bcd84c5b74c3bb83fc3cede895278821492ed6050f831c6abce2621490afc4c2",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/mismatched-primitives.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "f117ec9be550e84739ecdc9778dc2efe4db5ce6ff8ac0ddde17db167f3e977a0",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/ord-helpers.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "78f3d530d4282f06ecd17cbc3f436aa04550e2c99b1cb7039fbde9ba859759a6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": true
+    },
+    {
+      "path": "tests/spec/ordering/primitive-ord.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "bbe50d2219a885d089c22480d8fffea4890ac197702feb756f66ff285101476a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/primitive-relations-qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "031bc246dbf88d87b16da57b3ce900f325260a83b67b06d86876f01edc5aeeae",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/primitive-partial-reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "fa3040ba515f733bf656c2150f6bb027df72abb10be0adf434061c62386bfdac",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/primitive-self-local-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "0348e7176db569e6f2a49310a906b4764d919cd091a879348844fa4b99e2516d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/ordering-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "b05126dcffa26811a3a4b03c80b6e6cca813702ff084cffdc389b14f8bae5c1d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/ordering-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "ce3625195583589093692de6ba9f361e8c180e9add524a585fc1348f36ca4b07",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/ordering-type-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "0dbff68c982a5f195408c5ab2422132949a89675740d586cbe012d1e5f34c418",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/no-prelude-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "028ccebcbb33d59d73032d8de2a8e4175713df7e1ec4a7b2df036ff6cde8ab42",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/no-prelude-dot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "f67a4037f7112a4a454c54c7b259a8c441a181da80bf33cdb33eee48ccc9f3a2",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/named-trait-dot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "6e07ddc64d8359ed8bae598280de4bd95e1cc3199b9fd82d42290b84ec35df9f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/ambiguous-dot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "05c5b034467ebd266cf210200cd5859bc457f9c8731dd228bbb54e08c09ada8c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/override-relations.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "f76d8d3a6c01499da58efa696b2a3a6274501d2dca5046fda88df0e2147eab29",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/borrow-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "e7fde904be3b0712aa9bac6bc1380d60cb3703ea8eb61cf4387c6095241d3bca",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/captured-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "6bfc8ec152b7095ce5e65f9ed4f15e84ff9badcaed23324ecfebd0f0ca1cf737",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/explicit-slots.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "6360475b6ae739b4c1902bcf24e3242c25be47000574d707332c41891d01617e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/ordering/extra-slot-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-hooks"
+      ],
+      "source_sha256": "7e04ef3aa9259ffc7de05f0d9827462472b2c34a306d139c26578b09c0b88b9d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    }
+  ]
+}

@@ -18,11 +18,17 @@ pub enum LibraryType {
     ManuallyDrop,
     AtomicU32,
     Ordering,
+    ComparisonOrdering,
 }
 #[derive(Clone, Copy)]
 pub enum LibraryField {
     Parameter(u32),
     U32,
+}
+#[derive(Clone, Copy)]
+pub enum LibraryTag {
+    U8,
+    I8,
 }
 #[derive(Clone, Copy)]
 pub enum LibraryModule {
@@ -31,9 +37,10 @@ pub enum LibraryModule {
     Memory,
     Sync,
     Atomic,
+    Comparison,
 }
 impl LibraryModule {
-    pub const COUNT: usize = 5;
+    pub const COUNT: usize = 6;
     #[must_use]
     pub const fn index(self) -> usize {
         self as usize
@@ -46,16 +53,18 @@ impl LibraryModule {
             Self::Memory => "mem",
             Self::Sync => "sync",
             Self::Atomic => "atomic",
+            Self::Comparison => "cmp",
         }
     }
 }
 impl LibraryType {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::Option,
         Self::Result,
         Self::ManuallyDrop,
         Self::AtomicU32,
         Self::Ordering,
+        Self::ComparisonOrdering,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -64,7 +73,7 @@ impl LibraryType {
             Self::Result => "Result",
             Self::ManuallyDrop => "ManuallyDrop",
             Self::AtomicU32 => "AtomicU32",
-            Self::Ordering => "Ordering",
+            Self::Ordering | Self::ComparisonOrdering => "Ordering",
         }
     }
     /// Recognizes descriptor names for lazy preparation; lookup still proves identity.
@@ -86,6 +95,7 @@ impl LibraryType {
             Self::Result => "result",
             Self::ManuallyDrop => "mem",
             Self::AtomicU32 | Self::Ordering => "atomic",
+            Self::ComparisonOrdering => "cmp",
         }
     }
     #[must_use]
@@ -95,7 +105,30 @@ impl LibraryType {
             Self::Result => &[LibraryModule::Result],
             Self::ManuallyDrop => &[LibraryModule::Memory],
             Self::AtomicU32 | Self::Ordering => &[LibraryModule::Sync, LibraryModule::Atomic],
+            Self::ComparisonOrdering => &[LibraryModule::Comparison],
         }
+    }
+    #[must_use]
+    pub const fn tag(self) -> Option<LibraryTag> {
+        match self {
+            Self::Ordering => Some(LibraryTag::U8),
+            Self::ComparisonOrdering => Some(LibraryTag::I8),
+            _ => None,
+        }
+    }
+    /// Representation-width bits, not a source ordinal or host signed integer.
+    #[must_use]
+    pub fn discriminant(self, ordinal: u32) -> Option<u128> {
+        self.variants().get(usize::try_from(ordinal).ok()?)?;
+        Some(if matches!(self, Self::ComparisonOrdering) {
+            match ordinal {
+                0 => 255,
+                1 => 0,
+                _ => 1,
+            }
+        } else {
+            u128::from(ordinal)
+        })
     }
     #[must_use]
     pub const fn is_struct(self) -> bool {
@@ -110,7 +143,7 @@ impl LibraryType {
         match self {
             Self::Option | Self::ManuallyDrop => &["T"],
             Self::Result => &["T", "E"],
-            Self::AtomicU32 | Self::Ordering => &[],
+            Self::AtomicU32 | Self::Ordering | Self::ComparisonOrdering => &[],
         }
     }
     #[must_use]
@@ -123,6 +156,7 @@ impl LibraryType {
             ],
             Self::ManuallyDrop => &[("new", Some(LibraryField::Parameter(0)))],
             Self::AtomicU32 => &[("new", Some(LibraryField::U32))],
+            Self::ComparisonOrdering => &[("Less", None), ("Equal", None), ("Greater", None)],
             Self::Ordering => &[
                 ("Relaxed", None),
                 ("Release", None),

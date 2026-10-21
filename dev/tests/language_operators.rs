@@ -130,3 +130,6 @@ mod binary;
 
 #[path = "language_operators/comparison.rs"]
 mod comparison;
+
+#[path = "language_operators/ordering.rs"]
+mod ordering;

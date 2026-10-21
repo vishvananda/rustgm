@@ -9,7 +9,7 @@ use crate::{
         generics::Parameter,
         members::{Field, Name},
     },
-    support::library_types::{LibraryField, LibraryType},
+    support::library_types::{LibraryField, LibraryTag, LibraryType},
     syntax::item::Shape,
     types::{
         GenericArgs, TypeId,
@@ -100,7 +100,10 @@ impl Checker<'_> {
             } else {
                 Representation::Rust
             },
-            tag: (declaration.kind == LibraryType::Ordering).then_some(crate::types::Primitive::U8),
+            tag: declaration.kind.tag().map(|tag| match tag {
+                LibraryTag::U8 => crate::types::Primitive::U8,
+                LibraryTag::I8 => crate::types::Primitive::I8,
+            }),
             ..Repr::default()
         };
         let mut variants = Vec::new();
@@ -210,7 +213,10 @@ impl Checker<'_> {
             .map_err(|e| self.error(declaration.origin, e))?;
         let result = aggregate::Variant {
             fields: list,
-            discriminant: u128::from(ordinal),
+            discriminant: declaration
+                .kind
+                .discriminant(ordinal)
+                .ok_or_else(|| self.error(declaration.origin, "invalid library variant ordinal"))?,
         };
         let mut constructors = Vec::new();
         for definition in variant

@@ -40,15 +40,16 @@ impl Index {
                     .insert(definition.name, member);
             }
         }
-        if let Some(declaration) = report
-            .resolution
-            .builtin_traits
-            .comparison(crate::support::comparisons::Comparison::PartialEq)
-            && let Some(members) = index.members.get(&declaration.definition)
-        {
-            index.prelude.clone_from(members);
-            let count = members.len();
-            index.account(count)?;
+        for kind in crate::support::comparisons::Comparison::ALL {
+            if let Some(declaration) = report.resolution.builtin_traits.comparison(kind)
+                && let Some(members) = index.members.get(&declaration.definition)
+            {
+                index
+                    .prelude
+                    .extend(members.iter().map(|(name, member)| (*name, *member)));
+                let count = members.len();
+                index.account(count)?;
+            }
         }
         for (ordinal, scope) in report.resolution.scopes.iter().enumerate() {
             index.account(1)?;

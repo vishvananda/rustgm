@@ -12,7 +12,7 @@ use crate::{
     syntax::ast::NodeId,
 };
 pub use callables::Callable;
-pub use comparisons::Equality;
+pub use comparisons::{Equality, Members as ComparisonMembers};
 pub use language::{Language, Output as LanguageOutput};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -59,8 +59,7 @@ pub struct Traits {
     entries: [Option<DefId>; 11],
     callables: Option<Box<[Callable; 3]>>,
     language: std::collections::HashMap<Hook, Language>,
-    comparisons: Option<Box<[Option<Equality>; 2]>>,
-    cmp: Option<ScopeId>,
+    comparisons: Option<Box<[Option<Equality>; 4]>>,
 }
 impl Traits {
     fn insert_fixed(
@@ -144,8 +143,8 @@ impl Resolver<'_> {
         {
             return self.prepare_comparison(c, node, kind);
         }
-        if matches!(last, "eq" | "ne") {
-            return self.prepare_comparisons(c, node);
+        if let Some(method) = crate::support::comparisons::Method::from_name(last) {
+            return self.prepare_comparison_method(c, node, method);
         }
         if CallTrait::ALL.into_iter().any(|kind| kind.name() == last) {
             return self.prepare_call_traits(c, node);

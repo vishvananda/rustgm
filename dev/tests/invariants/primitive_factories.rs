@@ -435,3 +435,50 @@ fn primitive_comparison_infers_only_exact_numeric_domains_among_nominal_candidat
     assert!(context.head(&facts.types, right)?.is_none());
     Ok(())
 }
+
+#[test]
+fn primitive_ordering_factories_keep_exact_member_results_and_slots() -> Result {
+    let Factory {
+        report,
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "fn main(){let _=u8::partial_cmp(&1,&2);let _=u8::lt(&1,&2);let _=u8::le(&1,&2);let _=u8::gt(&1,&2);let _=u8::ge(&1,&2);let _=u8::cmp(&1,&2);}",
+    )?;
+    assert_eq!(selected.len(), 6);
+    let empty = crate::body::templates::Templates { bodies: Vec::new() };
+    let checked = originals(&mut facts, &empty)?;
+    let mut methods = std::collections::HashSet::new();
+    for selection in selected {
+        let source = selection.validate(&mut facts)?;
+        let method = source.comparison.ok_or("ordering member")?;
+        methods.insert(method);
+        let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selection)?;
+        assert_eq!(input.universals, 2);
+        for (slot, local) in body.locals.iter().enumerate() {
+            assert!(
+                matches!(facts.types.kind(local.ty),Some(Kind::Reference{mutable:false,region,..}) if region==RegionId::bound(0,u16::try_from(slot)?)?)
+            );
+        }
+        let permit =
+            crate::body::primitive_methods::validate(&mut facts, selection, &body, &input)?;
+        prove(&mut facts, &checked, body.clone(), &input, Some(permit))?;
+        let marker = Selected {
+            descriptor: Descriptor {
+                operation: Operation::Comparison(crate::support::comparisons::Comparison::Eq),
+                ..selection.descriptor
+            },
+            ..selection
+        };
+        assert!(marker.validate(&mut facts).is_err());
+        let mut wrong = body.clone();
+        wrong.result = TypeId::UNIT;
+        assert!(
+            crate::body::primitive_methods::validate(&mut facts, selection, &wrong, &input)
+                .is_err()
+        );
+    }
+    assert_eq!(methods.len(), 6);
+    Ok(())
+}

@@ -150,8 +150,10 @@ impl Resolver<'_> {
                 let [name] = names.as_slice() else {
                     return Err(self.error(c, node, "method requires one name segment"));
                 };
-                if matches!(self.package.names.get(*name), "eq" | "ne") {
-                    self.prepare_comparisons(c, node)?;
+                if let Some(method) =
+                    crate::support::comparisons::Method::from_name(self.package.names.get(*name))
+                {
+                    self.prepare_comparison_method(c, node, method)?;
                 }
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
@@ -173,8 +175,10 @@ impl Resolver<'_> {
                 arguments,
             } => {
                 let name = self.package.name(c.file, name)?;
-                if matches!(self.package.names.get(name), "eq" | "ne") {
-                    self.prepare_comparisons(c, node)?;
+                if let Some(method) =
+                    crate::support::comparisons::Method::from_name(self.package.names.get(name))
+                {
+                    self.prepare_comparison_method(c, node, method)?;
                 }
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
@@ -425,9 +429,10 @@ impl Resolver<'_> {
         if ns == Namespace::Type
             || ns == Namespace::Value
                 && path.len() > 1
-                && path
-                    .last()
-                    .is_some_and(|name| matches!(self.package.names.get(*name), "eq" | "ne"))
+                && path.last().is_some_and(|name| {
+                    crate::support::comparisons::Method::from_name(self.package.names.get(*name))
+                        .is_some()
+                })
             || ns == Namespace::Value
                 && path.iter().any(|name| {
                     let spelling = self.package.names.get(*name);

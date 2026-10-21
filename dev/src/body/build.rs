@@ -4,7 +4,7 @@ mod aggregates;
 mod closures;
 mod conditions;
 mod constructors;
-pub(super) use constructors::finish_factory;
+pub(super) use constructors::{finish_factory, finish_factory_block};
 mod adjusted;
 mod decisions;
 mod drops;

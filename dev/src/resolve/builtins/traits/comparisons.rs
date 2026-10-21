@@ -12,7 +12,45 @@ pub struct Equality {
     pub definition: DefId,
     pub self_parameter: DefId,
     pub argument: Option<DefId>,
-    pub methods: Option<[DefId; 2]>,
+    pub methods: Option<Members>,
+}
+/// Different canonical families retain their exact member schema.
+#[derive(Clone, Copy)]
+pub enum Members {
+    Equality([DefId; 2]),
+    PartialOrder([DefId; 5]),
+    TotalOrder { cmp: DefId },
+}
+impl Members {
+    #[must_use]
+    pub fn get(self, method: Method) -> Option<DefId> {
+        match (self, method) {
+            (Self::Equality([eq, _]), Method::Eq) => Some(eq),
+            (Self::Equality([_, ne]), Method::Ne) => Some(ne),
+            (Self::PartialOrder([partial, _, _, _, _]), Method::PartialCmp) => Some(partial),
+            (Self::PartialOrder([_, lt, _, _, _]), Method::Lt) => Some(lt),
+            (Self::PartialOrder([_, _, le, _, _]), Method::Le) => Some(le),
+            (Self::PartialOrder([_, _, _, gt, _]), Method::Gt) => Some(gt),
+            (Self::PartialOrder([_, _, _, _, ge]), Method::Ge) => Some(ge),
+            (Self::TotalOrder { cmp }, Method::Cmp) => Some(cmp),
+            _ => None,
+        }
+    }
+    pub fn iter(self) -> impl Iterator<Item = (Method, DefId)> {
+        Method::ALL
+            .into_iter()
+            .filter_map(move |method| self.get(method).map(|definition| (method, definition)))
+    }
+    fn new(kind: Comparison, members: &[DefId]) -> Option<Self> {
+        match (kind, members) {
+            (Comparison::PartialEq, [eq, ne]) => Some(Self::Equality([*eq, *ne])),
+            (Comparison::PartialOrd, [partial, lt, le, gt, ge]) => {
+                Some(Self::PartialOrder([*partial, *lt, *le, *gt, *ge]))
+            }
+            (Comparison::Ord, [cmp]) => Some(Self::TotalOrder { cmp: *cmp }),
+            _ => None,
+        }
+    }
 }
 impl Traits {
     #[must_use]
@@ -21,15 +59,16 @@ impl Traits {
     }
 }
 impl Resolver<'_> {
-    pub(in crate::resolve) fn prepare_comparisons(
+    pub(in crate::resolve) fn prepare_comparison_method(
         &mut self,
         c: Context,
         node: NodeId,
+        method: Method,
     ) -> Result<(), Error> {
         if self.facts.builtin_traits.library.is_none() {
             self.prepare_external_traits(c, node)?;
         }
-        self.prepare_comparison(c, node, Comparison::PartialEq)
+        self.prepare_comparison(c, node, method.owner())
     }
     pub(super) fn prepare_comparison(
         &mut self,
@@ -40,31 +79,28 @@ impl Resolver<'_> {
         if self.facts.builtin_traits.comparison(kind).is_some() {
             return Ok(());
         }
-        if kind == Comparison::Eq {
-            self.prepare_comparison(c, node, Comparison::PartialEq)?;
+        for &parent in kind.parents() {
+            self.prepare_comparison(c, node, parent)?;
         }
-        let cmp = if let Some(cmp) = self.facts.builtin_traits.cmp {
-            cmp
-        } else {
-            let cmp = self.new_scope(None, ModuleId(0), true)?;
-            let library = self
-                .facts
-                .builtin_traits
-                .library
-                .ok_or_else(|| self.error(c, node, "missing comparison library"))?;
-            self.builtin_definition(
-                Context {
-                    scope: library,
-                    ..c
-                },
+        if matches!(kind, Comparison::PartialOrd | Comparison::Ord) {
+            self.prepare_library_type(
+                c,
                 node,
-                "cmp",
-                DefKind::Module,
-                Some(cmp),
+                crate::support::library_types::LibraryType::ComparisonOrdering,
             )?;
-            self.facts.builtin_traits.cmp = Some(cmp);
-            cmp
-        };
+            self.prepare_library_type(c, node, crate::support::library_types::LibraryType::Option)?;
+        }
+        let library = self
+            .facts
+            .builtin_traits
+            .library
+            .ok_or_else(|| self.error(c, node, "missing comparison library"))?;
+        let cmp = self.library_module(
+            c,
+            node,
+            library,
+            crate::support::library_types::LibraryModule::Comparison,
+        )?;
         let members = self.new_scope(None, ModuleId(0), true)?;
         self.facts.scopes[members.0 as usize].associated = true;
         let definition = self.builtin_definition(
@@ -77,31 +113,31 @@ impl Resolver<'_> {
         let scope = self.new_scope(None, ModuleId(0), true)?;
         let self_parameter =
             self.builtin_definition(Context { scope, ..c }, node, "Self", DefKind::Generic, None)?;
-        let (argument, methods) = if kind == Comparison::PartialEq {
-            let argument = self.builtin_definition(
+        let argument = if kind.has_rhs() {
+            Some(self.builtin_definition(
                 Context { scope, ..c },
                 node,
                 "Rhs",
                 DefKind::Generic,
                 None,
-            )?;
-            let mut methods = [DefId(0); 2];
-            for method in Method::ALL {
-                methods[method as usize] = self.builtin_definition(
-                    Context {
-                        scope: members,
-                        ..c
-                    },
-                    node,
-                    method.name(),
-                    DefKind::Function,
-                    None,
-                )?;
-            }
-            (Some(argument), Some(methods))
+            )?)
         } else {
-            (None, None)
+            None
         };
+        let mut method_ids = Vec::new();
+        for method in kind.methods() {
+            method_ids.push(self.builtin_definition(
+                Context {
+                    scope: members,
+                    ..c
+                },
+                node,
+                method.name(),
+                DefKind::Function,
+                None,
+            )?);
+        }
+        let methods = Members::new(kind, &method_ids);
         self.facts
             .builtin_traits
             .comparisons

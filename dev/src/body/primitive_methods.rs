@@ -1,4 +1,5 @@
 //! Validated primitive selections materialize ordinary typed and independently proved CFGs.
+mod ordering;
 use super::{
     ir::{
         Action, Body, BodyKey, Local, LocalId, LocalKind, Owner, Place, Projection, ProjectionId,
@@ -35,6 +36,12 @@ pub(crate) fn build(
         .validate(facts)
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
     let error = |e| Declarations::error(report, source.source, e);
+    if matches!(facts.types.kind(source.result), Some(Kind::Adt(..))) {
+        facts
+            .aggregates
+            .instantiate(&mut facts.types, source.result)
+            .map_err(error)?;
+    }
     let (contract, right) =
         contract(facts, &source, selected.descriptor().form()).map_err(error)?;
     let mut body = Body::new(
@@ -62,18 +69,20 @@ pub(crate) fn build(
         });
         statement(&mut body, Action::StorageLive(LocalId(ordinal)));
     }
-    let result = operation(&mut body, &facts.types, selected, &source, right).map_err(error)?;
-    super::build::finish_factory(&mut body, result).map_err(error)?;
+    if let Some(result) = operation(&mut body, facts, selected, &source, right).map_err(error)? {
+        super::build::finish_factory(&mut body, result).map_err(error)?;
+    }
     validate(facts, selected, &body, &contract).map_err(error)?;
     Ok((body, contract))
 }
 fn operation(
     body: &mut Body,
-    types: &crate::types::Store,
+    facts: &Declarations,
     selected: Selected,
     source: &Validated,
     right: TypeId,
-) -> Result<ValueId, &'static str> {
+) -> Result<Option<ValueId>, &'static str> {
+    let types = &facts.types;
     let descriptor = selected.descriptor();
     let left = if descriptor.form() == Form::ValueBinary {
         Place::Local(LocalId(0))
@@ -96,6 +105,16 @@ fn operation(
         TypeId::primitive(descriptor.right()),
         Rvalue::Read(right),
     )?;
+    if matches!(
+        source.comparison,
+        Some(
+            crate::support::comparisons::Method::PartialCmp
+                | crate::support::comparisons::Method::Cmp
+        )
+    ) {
+        ordering::build(body, facts, source, a, b)?;
+        return Ok(None);
+    }
     let result = value(
         body,
         if descriptor.form() == Form::Comparison {
@@ -121,7 +140,7 @@ fn operation(
     } else {
         result
     };
-    Ok(result)
+    Ok(Some(result))
 }
 fn contract(
     facts: &mut Declarations,

@@ -42,3 +42,10 @@ qualifies all 52 outcomes and executes 31 accepted controls through both pinned
 compilers. Its CPPGM-dependent native test is explicitly ignored by default.
 Reference forwarding and derive execution are Rust-valid implementation
 boundaries, not language rejection controls. See `docs/pa26-comparisons.md`.
+
+`ordering-outcomes.json` declares 42 `spec/ordering` outcomes for canonical
+PartialOrd/Ord, including 28 implemented native programs and one Rust-valid
+Ord-helper boundary. `language_operators::ordering` independently qualifies the
+source matrix; its explicitly ignored CPPGM native test executes 27 controls.
+The no-prelude program also has retained standalone native qualification.
+See `docs/pa26-ordering.md` for contracts, evidence and remaining scope.

@@ -1,7 +1,7 @@
 //! Equality syntax retains canonical member selection and two independent shared borrows.
 use super::{Checker, Constructor, Error, NodeId, TermId, Type};
 use crate::{
-    support::comparisons::{Comparison, Method},
+    support::comparisons::Method,
     types::{
         ItemId,
         infer::{arguments::Argument, predicates::Predicate},
@@ -11,6 +11,7 @@ impl Checker<'_> {
     pub(super) fn uses_comparison(
         &mut self,
         node: NodeId,
+        method: Method,
         left: NodeId,
         right: NodeId,
     ) -> Result<bool, Error> {
@@ -18,7 +19,7 @@ impl Checker<'_> {
             .report
             .resolution
             .builtin_traits
-            .comparison(Comparison::PartialEq)
+            .comparison(method.owner())
             .is_none()
         {
             return Ok(false);
@@ -56,12 +57,14 @@ impl Checker<'_> {
             .report
             .resolution
             .builtin_traits
-            .comparison(Comparison::PartialEq)
+            .comparison(method.owner())
             .ok_or_else(|| self.error(node, "comparison requires PartialEq implementation"))?;
         let methods = declaration
             .methods
             .ok_or_else(|| self.error(node, "missing comparison methods"))?;
-        let method = methods[method as usize];
+        let method = methods
+            .get(method)
+            .ok_or_else(|| self.error(node, "comparison method is not in canonical owner"))?;
         let subject = self.term(left)?;
         let right_type = self.term(right)?;
         let rhs = declaration

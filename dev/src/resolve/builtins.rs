@@ -14,7 +14,9 @@ use crate::syntax::{
 };
 pub use intrinsics::{ComparisonResult, Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal};
-pub use traits::{BuiltinTrait, Callable, Equality, Language, LanguageOutput, Traits};
+pub use traits::{
+    BuiltinTrait, Callable, ComparisonMembers, Equality, Language, LanguageOutput, Traits,
+};
 
 impl Resolver<'_> {
     pub(super) fn prepare_library_value(
@@ -112,11 +114,11 @@ impl Resolver<'_> {
     ) -> Result<(), Error> {
         if self.facts.builtin_traits.library.is_none()
             && path.len() > 1
-            && path
-                .last()
-                .is_some_and(|name| matches!(self.package.names.get(*name), "eq" | "ne"))
+            && let Some(method) = path.last().and_then(|name| {
+                crate::support::comparisons::Method::from_name(self.package.names.get(*name))
+            })
         {
-            self.prepare_comparisons(c, node)?;
+            self.prepare_comparison_method(c, node, method)?;
         }
         let library_shadowed = !absolute
             && path.first().is_some_and(|&name| {
@@ -133,6 +135,8 @@ impl Resolver<'_> {
                     "Drop"
                         | "PartialEq"
                         | "Eq"
+                        | "PartialOrd"
+                        | "Ord"
                         | "core"
                         | "std"
                         | "Copy"
@@ -155,7 +159,7 @@ impl Resolver<'_> {
         }
         self.prepare_trait_metadata(c, node, absolute, path)?;
         if !library_shadowed {
-            self.prepare_library_metadata(c, node, path)?;
+            self.prepare_library_metadata(c, node, absolute, path)?;
             self.prepare_intrinsic_metadata(c, node, path)?;
         }
         Ok(())

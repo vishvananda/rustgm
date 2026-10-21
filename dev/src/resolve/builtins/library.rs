@@ -48,6 +48,7 @@ impl Resolver<'_> {
         &mut self,
         c: Context,
         node: NodeId,
+        absolute: bool,
         path: &[NameId],
     ) -> Result<(), Error> {
         if self.facts.builtin_traits.library.is_none() {
@@ -56,7 +57,17 @@ impl Resolver<'_> {
         let Some(last) = path.last().map(|name| self.package.names.get(*name)) else {
             return Ok(());
         };
+        let comparison = matches!(last, "Ordering" | "cmp" | "Less" | "Equal" | "Greater")
+            && self.comparison_library_path(c, node, absolute, path);
         let kind = LibraryType::ALL.into_iter().find(|kind| {
+            if matches!(
+                kind,
+                LibraryType::Ordering | LibraryType::ComparisonOrdering
+            ) && (*kind == LibraryType::ComparisonOrdering) != comparison
+            {
+                return false;
+            }
+
             kind.name() == last
                 || kind.module() == last
                 || kind.in_prelude() && kind.variants().iter().any(|(name, _)| *name == last)
@@ -68,6 +79,38 @@ impl Resolver<'_> {
             self.prepare_library_type(c, node, kind)?;
         }
         Ok(())
+    }
+    fn comparison_library_path(
+        &self,
+        c: Context,
+        node: NodeId,
+        absolute: bool,
+        path: &[NameId],
+    ) -> bool {
+        use crate::resolve::lookup::{Lookup, LookupMode};
+        let index = path
+            .iter()
+            .position(|name| matches!(self.package.names.get(*name), "cmp" | "Ordering"))
+            .unwrap_or_else(|| path.len().saturating_sub(1));
+        if index == 0 {
+            return matches!(self.lookup_path(c, node, absolute, path, LookupMode::Import(Namespace::Type), None),
+                Ok(Lookup::Found(binding)) if self.facts.library_types.identify(binding.target) == Some(LibraryType::ComparisonOrdering));
+        }
+        let Ok(Lookup::Found(binding)) = self.lookup_path(
+            c,
+            node,
+            absolute,
+            &path[..index],
+            LookupMode::Import(Namespace::Type),
+            None,
+        ) else {
+            return false;
+        };
+        let scope = self.facts.definitions[binding.target.0 as usize].members;
+        scope.is_some()
+            && (scope == self.facts.library_types.modules[LibraryModule::Comparison.index()]
+                || self.package.names.get(path[index]) == "cmp"
+                    && scope == self.facts.builtin_traits.library)
     }
     pub(super) fn prepare_library_type(
         &mut self,
@@ -85,20 +128,7 @@ impl Resolver<'_> {
             .ok_or_else(|| self.error(c, node, "missing library module"))?;
         let mut module = library;
         for &part in kind.modules() {
-            module = if let Some(scope) = self.facts.library_types.modules[part.index()] {
-                scope
-            } else {
-                let scope = self.new_scope(None, ModuleId(0), true)?;
-                self.builtin_definition(
-                    Context { scope: module, ..c },
-                    node,
-                    part.name(),
-                    DefKind::Module,
-                    Some(scope),
-                )?;
-                self.facts.library_types.modules[part.index()] = Some(scope);
-                scope
-            };
+            module = self.library_module(c, node, module, part)?;
         }
         let members = self.new_scope(None, ModuleId(0), true)?;
         let definition = self.builtin_definition(
@@ -149,6 +179,27 @@ impl Resolver<'_> {
             self.prepare_atomic_intrinsics(c, node, definition, members)?;
         }
         Ok(())
+    }
+    pub(super) fn library_module(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        parent: ScopeId,
+        part: LibraryModule,
+    ) -> Result<ScopeId, Error> {
+        if let Some(scope) = self.facts.library_types.modules[part.index()] {
+            return Ok(scope);
+        }
+        let scope = self.new_scope(None, ModuleId(0), true)?;
+        self.builtin_definition(
+            Context { scope: parent, ..c },
+            node,
+            part.name(),
+            DefKind::Module,
+            Some(scope),
+        )?;
+        self.facts.library_types.modules[part.index()] = Some(scope);
+        Ok(scope)
     }
     fn library_variants(
         &mut self,

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn order<T:Ord>(a:&T,b:&T)->core::cmp::Ordering{a.cmp(b)}fn main(){check(match order(&-9i64,&2){core::cmp::Ordering::Less=>true,_=>false});check(match order(&255u8,&0){core::cmp::Ordering::Greater=>true,_=>false});check(match order(&false,&true){core::cmp::Ordering::Less=>true,_=>false});check(match order(&'z',&'a'){core::cmp::Ordering::Greater=>true,_=>false});let f:fn(&i8,&i8)->core::cmp::Ordering=i8::cmp;check(match f(&3,&3){core::cmp::Ordering::Equal=>true,_=>false});}

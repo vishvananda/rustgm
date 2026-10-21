@@ -1769,14 +1769,18 @@ impl Checker<'_> {
         {
             return self.language_operator(node, kind, left, Some(right));
         }
-        if matches!(op, Op::EqualEqual | Op::BangEqual)
-            && self.uses_comparison(node, left, right)?
+        let comparison = match op {
+            Op::EqualEqual => Some(crate::support::comparisons::Method::Eq),
+            Op::BangEqual => Some(crate::support::comparisons::Method::Ne),
+            Op::Less => Some(crate::support::comparisons::Method::Lt),
+            Op::LessEqual => Some(crate::support::comparisons::Method::Le),
+            Op::Greater => Some(crate::support::comparisons::Method::Gt),
+            Op::GreaterEqual => Some(crate::support::comparisons::Method::Ge),
+            _ => None,
+        };
+        if let Some(method) = comparison
+            && self.uses_comparison(node, method, left, right)?
         {
-            let method = if op == Op::EqualEqual {
-                crate::support::comparisons::Method::Eq
-            } else {
-                crate::support::comparisons::Method::Ne
-            };
             return self.comparison(node, method, left, right);
         }
         let a = self.term(left)?;

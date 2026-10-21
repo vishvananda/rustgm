@@ -227,7 +227,17 @@ fn finish_constructor(
 }
 
 pub(in crate::body) fn finish_factory(body: &mut Body, value: ValueId) -> Result<(), &'static str> {
+    finish_factory_block(body, 0, value)
+}
+
+pub(in crate::body) fn finish_factory_block(
+    body: &mut Body,
+    start: u32,
+    value: ValueId,
+) -> Result<(), &'static str> {
     use super::{Block, LocalId, Statement, Terminator};
+    let block =
+        super::BlockId(u32::try_from(body.blocks.len()).map_err(|_| "too many factory blocks")?);
     let count = u32::try_from(body.locals.len()).map_err(|_| "too many factory parameters")?;
     let before =
         u32::try_from(body.statements.len()).map_err(|_| "too many constructor statements")?;
@@ -236,10 +246,7 @@ pub(in crate::body) fn finish_factory(body: &mut Body, value: ValueId) -> Result
         .ok_or("missing constructor storage")?
         .exits
         .push(crate::body::storage::Exit {
-            location: crate::body::storage::Location::At {
-                block: super::BlockId(0),
-                before,
-            },
+            location: crate::body::storage::Location::At { block, before },
             end: crate::body::storage::End::Scopes(crate::body::storage::Range {
                 inner: crate::body::scopes::Id(0),
                 outer: None,
@@ -254,7 +261,7 @@ pub(in crate::body) fn finish_factory(body: &mut Body, value: ValueId) -> Result
     let end =
         u32::try_from(body.statements.len()).map_err(|_| "too many constructor statements")?;
     body.blocks.push(Block {
-        start: 0,
+        start,
         end,
         source: body.source.node,
         terminator: Terminator::Return(value),
