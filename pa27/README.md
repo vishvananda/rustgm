@@ -68,6 +68,17 @@ rejects the invalid programs but does not establish scalar validity or byte
 initialization enforcement. Both demanded and unused variants must reject for
 the appropriate validity reason before release.
 
+Final constant storage follows logical aggregate reachability. A zero-length
+repeat stores no fill value, so a raw pointer computed for its operand does not
+escape through that array. The operand still executes and retains every const
+eligibility and validity check. Nonzero repeats retain their dangling-pointer
+checks, and discarded transient raw pointers do not become stored results.
+
+Packed by-value copies, primitive compound assignment and raw address formation
+remain distinct from creating a field reference. The qualified let-reference
+and match-reference controls reject in the executable pipeline. Earlier type
+inspection retains their alignment obligations under PA9's phase boundary.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

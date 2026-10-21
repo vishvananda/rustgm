@@ -1,0 +1,1 @@
+const LOCAL:[*const u8;0]={let local=1u8;[&raw const local;0]};const fn value()->[*const u8;0]{let local=2u8;[&raw const local;0]}const CALLED:[*const u8;0]=value();const NESTED:([*const u8;0],)={let local=3u8;([&raw const local;0],)};fn main(){let code=match(LOCAL,CALLED,NESTED){([],[],([],))=>37};check(code==37);}

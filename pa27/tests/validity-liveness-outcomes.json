@@ -1,0 +1,130 @@
+{
+  "stage": "draft",
+  "compiler_fix": "skip only zero-length Repeat elements during final reachable-result traversal",
+  "toolchain": "Rust 1.98 / edition 2024 / x86_64",
+  "qualification": "full independent object compilation; original hypotheses and pre-fix observations retained separately",
+  "cases": [
+    {
+      "name": "dangling-raw-repeat",
+      "path": "tests/spec/validity-liveness/dangling-raw-repeat.rs",
+      "sha256": "617e13858e0aef718b944f7400d05d76bf89719975554967472d06ced5a434ba",
+      "expected_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "name": "expired-raw-read",
+      "path": "tests/spec/validity-liveness/expired-raw-read.rs",
+      "sha256": "e5bdf31048ae6de3d4564c6df221cb5bce235511ac4f70126da236e091e271ed",
+      "purpose": "Zero-length repeat still evaluates its operand and must reject an expired-storage read.",
+      "expected_status": 1,
+      "frontend_types_status": 1,
+      "frontend_boundary": "raw pointer dereference in constant execution is not implemented; rejection does not prove expired-read validity"
+    },
+    {
+      "name": "integer-raw-address",
+      "path": "tests/spec/validity-liveness/integer-raw-address.rs",
+      "sha256": "40e48b1344b14e7dec15af6e9390c7ae459942806a638f4d439b78135df29dc3",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "packed-copy-compound",
+      "path": "tests/spec/validity-liveness/packed-copy-compound.rs",
+      "sha256": "63b6983433f5f7bfc0fefec11fd83098ff3fab84db94c5d2520e536ed69e3f3e",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "packed-match-reference",
+      "path": "tests/spec/validity-liveness/packed-match-reference.rs",
+      "sha256": "d357665133e36a5b2d7b1c613bdb2dd1c70376d764860eb4045309bfdcf15b56",
+      "expected_status": 1,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "packed-raw-address",
+      "path": "tests/spec/validity-liveness/packed-raw-address.rs",
+      "sha256": "ea17c02ccb5b73936d53a9f267f378d496975387c7ec2e1775c027eca3d96f17",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "packed-reference-pattern",
+      "path": "tests/spec/validity-liveness/packed-reference-pattern.rs",
+      "sha256": "e8861836547facae3ff23210bb074202c2e5cf066df8758ebaa4ec39accee106",
+      "expected_status": 1,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "packed-value-pattern",
+      "path": "tests/spec/validity-liveness/packed-value-pattern.rs",
+      "sha256": "d7937741da0fea7c276a0d34924f8c22d03a7e8d2bfb531c9f0f6b877eb5be3b",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "transient-local-raw",
+      "path": "tests/spec/validity-liveness/transient-local-raw.rs",
+      "sha256": "156b687b9a48bb2e42dcd7c8a4aac5f78d2c4a7ba924ec8d52a1c993a7dd2de3",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "transient-returned-raw",
+      "path": "tests/spec/validity-liveness/transient-returned-raw.rs",
+      "sha256": "866d7a26056c9461cf1903f7e8af1b42aa435bdb93745b87df39d3165a61007d",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "zero-raw-repeat-function",
+      "path": "tests/spec/validity-liveness/zero-raw-repeat-function.rs",
+      "sha256": "2b84379711020694166b429b2c8292812cd35b43477a6ba0472c599ad4c014d6",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "zero-raw-repeat-local",
+      "path": "tests/spec/validity-liveness/zero-raw-repeat-local.rs",
+      "sha256": "4ffc222e26cb2910e551cf81d22253a23803c5f18ba9f5a5f577a305654a76d9",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "name": "zero-raw-repeat-nested",
+      "path": "tests/spec/validity-liveness/zero-raw-repeat-nested.rs",
+      "sha256": "98da6b211e0a8bf73f9422314316bad3ee643f5f511f8578ddf0abde79c7b5d7",
+      "expected_status": 0,
+      "frontend_types_status": 0
+    }
+  ],
+  "native": [
+    {
+      "name": "empty-pointer-storage",
+      "path": "tests/spec/validity-native/empty-pointer-storage.rs",
+      "sha256": "a9aa9a4f3509c832b1fb9995e6e02f7ca41adfc7e6ceb6a64ce033b556b1c0be",
+      "expected_status": 0,
+      "runtime_status": 0,
+      "qualified_input_sha256": "bb351397901bdc76045a91289b6238ef549abce2d599d2fc27b991e942051132"
+    },
+    {
+      "name": "packed-copies",
+      "path": "tests/spec/validity-native/packed-copies.rs",
+      "sha256": "99a7af206a659b362fcb45d351a110d1d9806e149ac79d649106a985eb60ee39",
+      "expected_status": 0,
+      "runtime_status": 0,
+      "qualified_input_sha256": "9ebbc2e0eed15859f15131425fd90614fdea85785238d5d6d6c63c18df0fe9f1"
+    },
+    {
+      "name": "transient-pointer-values",
+      "path": "tests/spec/validity-native/transient-pointer-values.rs",
+      "sha256": "5d04e4a8fd10804cb84206a58c72ed7240a7c13c0e37fd2cefee37437caf3fe6",
+      "expected_status": 0,
+      "runtime_status": 0,
+      "qualified_input_sha256": "fca1ebe880b42df1c033ea46e8a84e0f66451f055f66c50493ddc6a285abe396"
+    }
+  ],
+  "native_prefix": "dev/tests/harness/native_references.rs::CHECK",
+  "native_profile": "same complete source under pinned rustc panic=abort and locked CPPGM backend; status0 and empty streams",
+  "native_support_source_sha256": "923dc56403b5a5be28614f24973ec9c3d32e7b39d1602f376970b6f98df5f81e"
+}

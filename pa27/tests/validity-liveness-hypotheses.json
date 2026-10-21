@@ -1,0 +1,86 @@
+{
+  "stage": "draft-hypotheses",
+  "toolchain": "Rust 1.98 / edition 2024 / x86_64",
+  "note": "Hypotheses precede independent object qualification. Disagreements are evidence, not passing cases. Compiler source remains frozen at 685183c9.",
+  "cases": [
+    {
+      "name": "dangling-raw-repeat",
+      "path": "tests/spec/validity-liveness/dangling-raw-repeat.rs",
+      "sha256": "617e13858e0aef718b944f7400d05d76bf89719975554967472d06ced5a434ba",
+      "hypothesis_status": 1
+    },
+    {
+      "name": "expired-raw-read",
+      "path": "tests/spec/validity-liveness/expired-raw-read.rs",
+      "sha256": "e5bdf31048ae6de3d4564c6df221cb5bce235511ac4f70126da236e091e271ed",
+      "hypothesis_status": 1,
+      "purpose": "Zero-length repeat still evaluates its operand and must reject an expired-storage read."
+    },
+    {
+      "name": "integer-raw-address",
+      "path": "tests/spec/validity-liveness/integer-raw-address.rs",
+      "sha256": "40e48b1344b14e7dec15af6e9390c7ae459942806a638f4d439b78135df29dc3",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "packed-copy-compound",
+      "path": "tests/spec/validity-liveness/packed-copy-compound.rs",
+      "sha256": "63b6983433f5f7bfc0fefec11fd83098ff3fab84db94c5d2520e536ed69e3f3e",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "packed-match-reference",
+      "path": "tests/spec/validity-liveness/packed-match-reference.rs",
+      "sha256": "d357665133e36a5b2d7b1c613bdb2dd1c70376d764860eb4045309bfdcf15b56",
+      "hypothesis_status": 1
+    },
+    {
+      "name": "packed-raw-address",
+      "path": "tests/spec/validity-liveness/packed-raw-address.rs",
+      "sha256": "ea17c02ccb5b73936d53a9f267f378d496975387c7ec2e1775c027eca3d96f17",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "packed-reference-pattern",
+      "path": "tests/spec/validity-liveness/packed-reference-pattern.rs",
+      "sha256": "e8861836547facae3ff23210bb074202c2e5cf066df8758ebaa4ec39accee106",
+      "hypothesis_status": 1
+    },
+    {
+      "name": "packed-value-pattern",
+      "path": "tests/spec/validity-liveness/packed-value-pattern.rs",
+      "sha256": "d7937741da0fea7c276a0d34924f8c22d03a7e8d2bfb531c9f0f6b877eb5be3b",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "transient-local-raw",
+      "path": "tests/spec/validity-liveness/transient-local-raw.rs",
+      "sha256": "156b687b9a48bb2e42dcd7c8a4aac5f78d2c4a7ba924ec8d52a1c993a7dd2de3",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "transient-returned-raw",
+      "path": "tests/spec/validity-liveness/transient-returned-raw.rs",
+      "sha256": "866d7a26056c9461cf1903f7e8af1b42aa435bdb93745b87df39d3165a61007d",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "zero-raw-repeat-function",
+      "path": "tests/spec/validity-liveness/zero-raw-repeat-function.rs",
+      "sha256": "2b84379711020694166b429b2c8292812cd35b43477a6ba0472c599ad4c014d6",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "zero-raw-repeat-local",
+      "path": "tests/spec/validity-liveness/zero-raw-repeat-local.rs",
+      "sha256": "4ffc222e26cb2910e551cf81d22253a23803c5f18ba9f5a5f577a305654a76d9",
+      "hypothesis_status": 0
+    },
+    {
+      "name": "zero-raw-repeat-nested",
+      "path": "tests/spec/validity-liveness/zero-raw-repeat-nested.rs",
+      "sha256": "98da6b211e0a8bf73f9422314316bad3ee643f5f511f8578ddf0abde79c7b5d7",
+      "hypothesis_status": 0
+    }
+  ]
+}

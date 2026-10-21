@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct Packed{prefix:u8,value:u32}fn main(){let mut packed=Packed{prefix:0,value:7};packed.value+=1;let Packed{value,..}=packed;check(value==8);let other=Packed{prefix:0,value:9};let address=&raw const other.value;let _=address;check(other.value==9);}

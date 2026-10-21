@@ -1,0 +1,1 @@
+const fn pointer()->*const u8{let local=1u8;&raw const local}const FIRST:u8={let _=pointer();7};const SECOND:u8={let local=2u8;let address=&raw const local;let _=address;9};const ADDRESS:*const u8=1usize as *const u8;fn main(){check(FIRST==7);check(SECOND==9);check(ADDRESS as usize==1);}

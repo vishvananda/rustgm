@@ -327,7 +327,7 @@ impl Machine<'_, '_> {
                         pending.push(self.evaluator.field(value, index)?);
                     }
                 }
-                View::Repeat { value, .. } => pending.push(value),
+                View::Repeat { value, length } if length != 0 => pending.push(value),
                 _ => {}
             }
         }
