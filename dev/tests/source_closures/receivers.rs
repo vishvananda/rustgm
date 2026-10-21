@@ -60,6 +60,37 @@ fn method_and_array_uses_retain_typed_capture_permissions() -> Result<(), Box<dy
 }
 
 #[test]
+fn captured_receiver_binding_mutability_is_separate_from_its_referent()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, mutable, accepted) in [
+        ("named-borrow", false, true),
+        ("elided-borrow", false, true),
+        ("owned-mut", true, true),
+        ("explicit-mut", true, true),
+        ("named-rebind", false, false),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa24/tests/spec/receiver-binding/{name}.rs"));
+        let source = std::fs::read_to_string(path)?;
+        super::rustc::qualify(&format!("capture-receiver-{name}"), &source, accepted)?;
+        let (_, facts) = semantic::analyze(&source).map_err(|error| format!("{name}: {error}"))?;
+        assert_eq!(facts.closures.all().len(), 1, "{name}");
+        let body = &facts.closures.all()[0];
+        let environment = facts
+            .closures
+            .environment(body.identity)
+            .ok_or("environment")?;
+        assert_eq!(environment.binding_mutability.len(), 1, "{name}");
+        assert_eq!(
+            environment.binding_mutability.values().copied().next(),
+            Some(mutable),
+            "{name}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the qualified CPPGM native backend"]
 fn method_and_index_captures_execute_their_retained_permissions()
 -> Result<(), Box<dyn std::error::Error>> {

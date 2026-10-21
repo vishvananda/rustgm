@@ -141,11 +141,12 @@ impl Checker<'_> {
             let key = self.report.resolution.definitions[definition.0 as usize]
                 .node
                 .ok_or_else(|| self.error(source, "capture binding lacks source identity"))?;
-            let (crate::syntax::ast::Kind::Binding { mutable, .. }
-            | crate::syntax::ast::Kind::Receiver { mutable, .. }) =
-                crate::sema::model::Declarations::kind(self.report, key)
-            else {
-                return Err(self.error(source, "capture binding lacks mutability fact"));
+            let mutable = match crate::sema::model::Declarations::kind(self.report, key) {
+                crate::syntax::ast::Kind::Binding { mutable, .. } => mutable,
+                // An explicit-lifetime receiver's `mut` qualifies its referent.
+                // Its binding is immutable, as in declaration completion.
+                crate::syntax::ast::Kind::Receiver { .. } => false,
+                _ => return Err(self.error(source, "capture binding lacks mutability fact")),
             };
             binding_mutability.insert(definition, mutable);
         }

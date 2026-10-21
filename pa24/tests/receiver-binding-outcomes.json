@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "named-borrow",
+      "path": "tests/spec/receiver-binding/named-borrow.rs",
+      "source_sha256": "4beecefafece3d19425fccd4bbd64e4b9cce10ca0fb4fe2a9c2dbfee1d2b0eeb",
+      "expected_status": 0,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "elided-borrow",
+      "path": "tests/spec/receiver-binding/elided-borrow.rs",
+      "source_sha256": "d6313f3b5d1e10f70ca43af7620fb1528e97684c1ecae2bf51bc125c104c3468",
+      "expected_status": 0,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "owned-mut",
+      "path": "tests/spec/receiver-binding/owned-mut.rs",
+      "source_sha256": "b4a5908af096d9927a97b8c27eecbda4b9296497b9d71e255e6d1a8bf972e62f",
+      "expected_status": 0,
+      "expected_binding_mutability": true,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "explicit-mut",
+      "path": "tests/spec/receiver-binding/explicit-mut.rs",
+      "source_sha256": "5de5425dea5359a5af1154ddc3761c6059d9488b63ad327aa99ceb425fe718d2",
+      "expected_status": 0,
+      "expected_binding_mutability": true,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "named-rebind",
+      "path": "tests/spec/receiver-binding/named-rebind.rs",
+      "source_sha256": "0be65ec50ed6b9629d7303a9e06d8e14b53d495224cc0f993024c0a705e02462",
+      "expected_status": 1,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}
