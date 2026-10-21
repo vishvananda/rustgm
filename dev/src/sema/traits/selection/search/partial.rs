@@ -40,6 +40,10 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<(), String> {
+        if frame.callable.is_some() || frame.equality_hint.is_some() {
+            // Callable equations already live in this frame's retained input graph.
+            return Ok(());
+        }
         let trial = frame
             .trial
             .as_mut()
@@ -61,6 +65,12 @@ impl Search<'_> {
         if parent.normalizing() {
             return Err("partial normalization child requires retained input evidence".into());
         }
+        if matches!(
+            parent.callable.as_deref(),
+            Some(super::callables::Pending::Forward(_))
+        ) {
+            return self.accept_partial_forwarding(facts, parent, child);
+        }
         let trial = parent
             .trial
             .as_mut()
@@ -71,25 +81,31 @@ impl Search<'_> {
             .ok_or("missing partial condition index")?;
         child.publish(facts, &mut trial.inputs.context)?;
         trial.end = trial.end.max(self.query.allocations.end());
+        let slot = self.query.retain_partial(child)?;
+        trial.wakeups.retain_child(index, slot);
+        trial.defer_condition(facts, index)?;
+        trial.cursor += 1;
+        self.charge(&mut trial.inputs.context)
+    }
+}
+
+impl super::Query {
+    pub(super) fn retain_partial(&mut self, mut child: Frame) -> Result<usize, String> {
         let slot = if let Some(slot) = child.suspended_slot {
             slot
         } else {
-            let slot = self.query.suspended.len();
+            let slot = self.suspended.len();
             child.suspended_slot = Some(slot);
-            self.query.suspended.push(None);
+            self.suspended.push(None);
             slot
         };
         let stored = self
-            .query
             .suspended
             .get_mut(slot)
             .ok_or("invalid partial child slot")?;
         if stored.replace(child).is_some() {
             return Err("partial child slot already occupied".into());
         }
-        trial.wakeups.retain_child(index, slot);
-        trial.defer_condition(facts, index)?;
-        trial.cursor += 1;
-        self.charge(&mut trial.inputs.context)
+        Ok(slot)
     }
 }

@@ -119,7 +119,11 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "trait region identity space exhausted"))
     }
 
-    fn retain_trait_evidence(&mut self, node: NodeId, evidence: Evidence) -> Result<Source, Error> {
+    pub(super) fn retain_trait_evidence(
+        &mut self,
+        node: NodeId,
+        evidence: Evidence,
+    ) -> Result<Source, Error> {
         self.retain_reserved_trait_evidence(node, evidence, Reservation::default())
     }
 

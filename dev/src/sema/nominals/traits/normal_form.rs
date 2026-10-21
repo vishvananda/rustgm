@@ -175,6 +175,18 @@ impl Query {
                     .obligations
                     .resume_at(self.frontier.max(self.state.obligations.regions.end))?;
             }
+            if let Some(source @ selection::Source::Callable { .. }) = selected {
+                self.source = Some(source);
+                let definition = crate::sema::projections::Definition::alias(
+                    facts,
+                    self.alias,
+                    self.alias.arguments(),
+                    source,
+                )?
+                .ok_or("callable evidence has no associated output")?;
+                let result = definition.result(facts)?.ok_or("missing callable output")?;
+                return self.finish(facts, Some(Resolution::Type(result)));
+            }
             if self.closed {
                 return if matches!(selected, Some(selection::Source::Implementation { .. })) {
                     self.source = selected;

@@ -4,10 +4,16 @@ use crate::types::{GenericArgs, opaque::OpaqueId, substitute::Alias};
 
 pub(in crate::sema) struct Definition {
     pub id: DefId,
-    owner: DefId,
-    arguments: GenericArgs,
-    family: GenericArgs,
-    result: Option<OpaqueId>,
+    value: Value,
+}
+enum Value {
+    Implementation {
+        owner: DefId,
+        arguments: GenericArgs,
+        family: GenericArgs,
+        result: Option<OpaqueId>,
+    },
+    Callable(TypeId),
 }
 impl Definition {
     pub fn select(
@@ -16,15 +22,28 @@ impl Definition {
         family: GenericArgs,
         source: Source,
     ) -> Result<Self, &'static str> {
+        if let Source::Callable { output } = source {
+            if facts.associated.callable_output() != Some(DefId(item.0))
+                || family != GenericArgs::EMPTY
+            {
+                return Err("callable evidence applies only to its Output member");
+            }
+            return Ok(Self {
+                id: DefId(item.0),
+                value: Value::Callable(output),
+            });
+        }
         let Source::Implementation { owner, arguments } = source else {
             return Err("associated type requires an unambiguous validated implementation");
         };
         Ok(Self {
             id: super::definition(facts, owner, item)?,
-            owner,
-            arguments,
-            family,
-            result: None,
+            value: Value::Implementation {
+                owner,
+                arguments,
+                family,
+                result: None,
+            },
         })
     }
 
@@ -63,32 +82,31 @@ impl Definition {
         }
         Ok(Some(Self {
             id: target,
-            owner,
-            arguments,
-            family,
-            result: Some(id),
+            value: Value::Implementation {
+                owner,
+                arguments,
+                family,
+                result: Some(id),
+            },
         }))
     }
 
     pub fn result(&self, facts: &mut Declarations) -> Result<Option<TypeId>, &'static str> {
-        if let Some(id) = self.result {
-            return crate::sema::opaque::overrides::result(
-                facts,
-                self.owner,
-                self.arguments,
-                id,
-                self.family,
-            );
+        let (owner, arguments, family, result) = match self.value {
+            Value::Callable(ty) => return Ok(Some(ty)),
+            Value::Implementation {
+                owner,
+                arguments,
+                family,
+                result,
+            } => (owner, arguments, family, result),
+        };
+        if let Some(id) = result {
+            return crate::sema::opaque::overrides::result(facts, owner, arguments, id, family);
         }
         facts.definitions[self.id.0 as usize]
             .map(|template| {
-                facts.instantiate_associated_definition(
-                    self.owner,
-                    self.arguments,
-                    self.id,
-                    self.family,
-                    template,
-                )
+                facts.instantiate_associated_definition(owner, arguments, self.id, family, template)
             })
             .transpose()
     }

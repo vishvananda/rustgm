@@ -1,6 +1,7 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
 mod cleanup;
+mod invocations;
 mod pointers;
 mod references;
 mod referents;
@@ -648,6 +649,11 @@ impl Lower<'_, '_> {
                 let value = self.value(operand)?.runtime()?;
                 casts::cast(&mut self.builder, kind, source, target, value, ty)?
             }
+            Rvalue::Invoke {
+                signature,
+                arguments,
+                ..
+            } => return self.invoke(signature, arguments, value.ty),
             Rvalue::Call {
                 signature,
                 callee,
@@ -663,9 +669,18 @@ impl Lower<'_, '_> {
         arguments: ir::ValueList,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
+        self.call_selected(signature, self.value(callee)?, arguments, result)
+    }
+    fn call_selected(
+        &mut self,
+        signature: TypeId,
+        callee: Selected,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
         let signature = self.context.signature(signature)?;
         let representation = self.context.representation(result)?;
-        let callee = match self.value(callee)? {
+        let callee = match callee {
             Selected::Item(definition) => Operand::Symbol(self.context.demand(definition)?),
             Selected::Runtime(value) => value.operand,
             Selected::Unit | Selected::Object(_) => return Err("non-function used as call target"),

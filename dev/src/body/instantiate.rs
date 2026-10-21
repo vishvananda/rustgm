@@ -356,7 +356,7 @@ fn substitute(
                     Ok::<_, &'static str>(ty)
                 })?;
             }
-            Rvalue::Call { signature, .. } => {
+            Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } => {
                 *signature = bound.apply(&mut facts.types, *signature)?;
                 projected |= facts.types.contains_projections(*signature) == Some(true);
             }

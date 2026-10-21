@@ -1,5 +1,7 @@
 //! Search frames keep alternatives isolated and delay builtin conditions until equations settle.
-use super::{Context, Decision, Declarations, Goal, Node, Predicate, Search, Source, inference};
+use super::{
+    Action, Context, Decision, Declarations, Goal, Node, Predicate, Search, Source, inference,
+};
 use crate::{
     resolve::model::DefId,
     sema::traits::selection::instantiation::{self, Instance},
@@ -7,6 +9,8 @@ use crate::{
 };
 
 pub(super) struct Frame {
+    pub callable: Option<Box<super::callables::Pending>>,
+    pub equality_hint: Option<Box<crate::sema::traits::callables::Matched>>,
     pub storage: Option<Box<super::sized_obligations::Pending>>,
     pub autos: Option<Box<super::auto_obligations::Pending>>,
     pub explicit_auto: bool,
@@ -69,6 +73,8 @@ impl Frame {
             .initialize_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
+            callable: None,
+            equality_hint: None,
             storage: None,
             autos: None,
             explicit_auto: false,
@@ -136,6 +142,65 @@ impl Trial {
     }
 }
 impl Search<'_> {
+    /// Resume one isolated candidate's pending proof frontier before considering alternatives.
+    pub(super) fn advance_trial(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Action, String> {
+        let trial = frame
+            .trial
+            .as_mut()
+            .ok_or("missing active implementation candidate")?;
+        if trial.cursor == trial.pending.len() {
+            trial.pending.clear();
+            trial.cursor = 0;
+        }
+        trial.poll_condition_changes(facts, None)?;
+        if let Some(&index) = trial.pending.get(trial.cursor) {
+            trial.wakeups.start(index);
+            return Ok(Action::Descend);
+        }
+        let result = if trial.wakeups.waiting() {
+            Decision::Deferred
+        } else {
+            let Some(result) = self.finish(facts, trial)? else {
+                return Ok(Action::Descend);
+            };
+            result
+        };
+        self.charge(&mut trial.inputs.context)?;
+        let retained = frame.trial.take();
+        if !matches!(result, Decision::Proven(_)) {
+            self.query.invalidate_auto(frame);
+        }
+        match result {
+            Decision::Absent => {}
+            Decision::Deferred
+                if self.query.refining
+                    && frame.inference != Inference::Disabled
+                    && frame.scope == self.query.input_scope()
+                    && !frame.normalizing() =>
+            {
+                if frame.inference == Inference::Committed {
+                    frame.trial = retained;
+                    return Ok(Action::Yield);
+                }
+                if frame.partial.is_some() {
+                    frame.deferred = true;
+                } else {
+                    frame.partial = retained.map(Box::new);
+                }
+            }
+            Decision::Deferred => frame.deferred = true,
+            Decision::Proven(node) => {
+                if frame.selected.replace(node).is_some() {
+                    return Ok(Action::Complete(Decision::Deferred));
+                }
+            }
+        }
+        Ok(Action::Continue)
+    }
     pub(super) fn finish(
         &mut self,
         facts: &mut Declarations,

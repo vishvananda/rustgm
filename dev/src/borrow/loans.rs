@@ -342,7 +342,9 @@ impl Flow<'_> {
         id: ValueId,
         inspect: bool,
     ) -> Result<(), &'static str> {
-        let Rvalue::Call { arguments, .. } = self.body.values[id.0 as usize].kind else {
+        let (Rvalue::Call { arguments, .. } | Rvalue::Invoke { arguments, .. }) =
+            self.body.values[id.0 as usize].kind
+        else {
             return Ok(());
         };
         for &argument in self.body.arguments(arguments) {

@@ -214,7 +214,8 @@ impl Engine<'_, '_> {
             Rvalue::Call {
                 callee, arguments, ..
             } => self.call(callee, arguments)?,
-            Rvalue::Address(_)
+            Rvalue::Invoke { .. }
+            | Rvalue::Address(_)
             | Rvalue::IsVariant { .. }
             | Rvalue::Length(_)
             | Rvalue::TextEquals { .. }

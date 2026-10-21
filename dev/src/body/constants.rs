@@ -79,7 +79,10 @@ pub(crate) fn eligibility(
     // unconditional transfer. Const permission is checked before value demand.
     for value in &body.values {
         let message = match value.kind {
-            Rvalue::Call { .. } if function_call(facts, body, value.kind) => {
+            Rvalue::Call { .. } | Rvalue::Invoke { .. }
+                if matches!(value.kind, Rvalue::Invoke { .. })
+                    || function_call(facts, body, value.kind) =>
+            {
                 if function {
                     Some("non-const calls are not allowed in const functions")
                 } else {

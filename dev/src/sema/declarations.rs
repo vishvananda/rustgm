@@ -126,6 +126,7 @@ struct Signature {
 }
 struct Checker<'a> {
     call_paths: std::collections::HashSet<NodeKey>,
+    target_feature_sources: std::collections::HashSet<NodeKey>,
     method_queries: std::collections::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
     inherent_headers: inherent_headers::Pending,
     impl_headers: impl_headers::Pending,
@@ -184,6 +185,7 @@ impl<'a> Checker<'a> {
         }
         Ok(Self {
             call_paths: std::collections::HashSet::new(),
+            target_feature_sources: call_traits::target_feature_sources(report)?,
             method_queries: std::collections::HashMap::new(),
             inherent_headers: inherent_headers::Pending::default(),
             impl_headers: impl_headers::Pending::default(),
@@ -1147,6 +1149,7 @@ impl Checker<'_> {
                     if flags.constant {
                         self.facts.constant_functions.insert(id);
                     }
+                    self.register_function_call_traits(key, id);
                     self.facts.functions.push(Function {
                         definition: id,
                         node: key,

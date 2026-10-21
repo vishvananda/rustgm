@@ -146,7 +146,7 @@ impl Predicate {
             requirement,
         })
     }
-    pub(super) fn trait_application(
+    pub(crate) fn trait_application(
         subject: TermId,
         item: ItemId,
         arguments: Vec<Argument>,

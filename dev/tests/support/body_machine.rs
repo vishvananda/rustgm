@@ -224,6 +224,9 @@ impl Machine<'_> {
                     mask,
                 )?)
             }
+            Rvalue::Invoke { .. } => {
+                return Err("call operators are outside the PA10 scalar executor".into());
+            }
             Rvalue::Call {
                 callee, arguments, ..
             } => {

@@ -141,6 +141,7 @@ impl Checker<'_> {
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
         self.publish_constant_uses(arguments)?;
         self.publish_methods(&solved);
+        self.publish_invocations(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;
         self.facts

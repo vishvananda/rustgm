@@ -14,6 +14,7 @@ pub(crate) mod dispatch;
 pub mod dyn_compat;
 pub mod entry;
 pub mod generics;
+pub(crate) mod invocations;
 pub mod layout_view;
 pub mod lifetimes;
 pub mod members;

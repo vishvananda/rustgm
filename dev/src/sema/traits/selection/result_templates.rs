@@ -64,6 +64,12 @@ pub(in crate::sema) fn symbolic_result(
     caller: &Caller<'_>,
 ) -> Result<Option<(TermId, Obligations)>, String> {
     let application = application(facts, source, root)?;
+    if let ResultId::Associated(item) = application.result
+        && facts.associated.callable_output() == Some(DefId(item.0))
+        && application.arguments.is_empty()
+    {
+        return crate::sema::traits::callables::symbolic(facts, source, root, caller.first_region);
+    }
     let goal = &application.predicate;
     let (item, _) = goal
         .trait_arguments()

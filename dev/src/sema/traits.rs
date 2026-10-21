@@ -1,5 +1,6 @@
 //! Trait contracts retain direct predicates; applications share one capture-safe fold.
 pub(super) mod assumptions;
+pub(in crate::sema) mod callables;
 pub(super) mod conformance;
 pub(in crate::sema) mod equalities;
 pub(super) mod formation;

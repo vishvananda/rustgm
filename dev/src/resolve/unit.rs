@@ -38,6 +38,26 @@ pub struct Unit {
 }
 
 impl Unit {
+    /// Configured attributes cross the resolution boundary as retained syntax.
+    pub(crate) fn retained_attributes(
+        &self,
+        attributes: std::ops::Range<usize>,
+    ) -> impl Iterator<
+        Item = (
+            crate::syntax::attribute::Attribute,
+            &crate::syntax::token_tree::Forest,
+        ),
+    > {
+        attributes.filter_map(|index| {
+            let effect = &self.configured.effects[index];
+            (effect.attribute.effect == crate::expand::configured::Effect::Keep).then(|| {
+                (
+                    effect.attribute.attribute,
+                    &self.configured.ast.attributes[effect.capture as usize].forest,
+                )
+            })
+        })
+    }
     pub(crate) fn word_attribute(
         &self,
         node: Option<NodeId>,
@@ -48,13 +68,8 @@ impl Unit {
         };
         let owner = &self.configured.owners[index.get() as usize - 1];
         let mut found = false;
-        for index in owner.attributes.clone() {
-            let effect = &self.configured.effects[index];
-            let attribute = effect.attribute.attribute;
-            let forest = &self.configured.ast.attributes[effect.capture as usize].forest;
-            if effect.attribute.effect == crate::expand::configured::Effect::Keep
-                && attribute.name(forest, self.source.text()) == Some(name)
-            {
+        for (attribute, forest) in self.retained_attributes(owner.attributes.clone()) {
+            if attribute.name(forest, self.source.text()) == Some(name) {
                 if attribute.input != crate::syntax::attribute::Input::Empty {
                     return Err(error(
                         attribute.span.start,

@@ -70,6 +70,7 @@ impl Checker<'_> {
                 if steps > 1_000_000 {
                     let key = self.report.resolution.definitions[child.0 as usize]
                         .node
+                        .or_else(|| self.facts.associated.language_origin(child))
                         .ok_or_else(|| {
                             Error::at(crate::resolve::unit::FileId(0), 0, "missing trait source")
                         })?;
@@ -167,6 +168,7 @@ impl Checker<'_> {
             let definition = DefId(item.0);
             let key = self.report.resolution.definitions[item.0 as usize]
                 .node
+                .or_else(|| self.facts.associated.language_origin(definition))
                 .ok_or_else(|| {
                     Error::at(
                         crate::resolve::unit::FileId(0),

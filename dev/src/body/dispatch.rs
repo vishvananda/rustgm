@@ -128,7 +128,7 @@ fn rewrite(
                 };
                 *id = DefId(item.0);
             }
-            Rvalue::Call { signature, .. } => {
+            Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } => {
                 *signature = fold.apply(&mut facts.types, *signature)?;
             }
             Rvalue::Unsize { conversion, .. } => {

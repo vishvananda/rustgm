@@ -6,6 +6,7 @@ mod auto_cycle_tests;
 mod auto_obligations;
 mod builtins;
 mod callable_queries;
+mod callables;
 mod coinduction;
 mod completed_proofs;
 #[cfg(test)]
@@ -27,6 +28,10 @@ mod equalities;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/equality_search.rs"]
 mod equality_tests;
+mod forwarding;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/forwarded_calls.rs"]
+mod forwarding_tests;
 mod frames;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/selection_headers.rs"]
@@ -232,58 +237,17 @@ impl Search<'_> {
         if frame.normalizing() {
             return self.advance_normalization(facts, frame);
         }
+        if frame.callable.is_some() {
+            return self.complete_callable(facts, frame);
+        }
+        if frame.equality_hint.is_some() {
+            return self.start_equality(facts, frame);
+        }
         if frame.goal.builtin_bound().is_some() && !frame.explicit_auto {
             return self.complete_builtin(facts, frame);
         }
-        if let Some(trial) = &mut frame.trial {
-            if trial.cursor == trial.pending.len() {
-                trial.pending.clear();
-                trial.cursor = 0;
-            }
-            trial.poll_condition_changes(facts, None)?;
-            if let Some(&index) = trial.pending.get(trial.cursor) {
-                trial.wakeups.start(index);
-                return Ok(Action::Descend);
-            }
-            let result = if trial.wakeups.waiting() {
-                Decision::Deferred
-            } else {
-                let Some(result) = self.finish(facts, trial)? else {
-                    return Ok(Action::Descend);
-                };
-                result
-            };
-            self.charge(&mut trial.inputs.context)?;
-            let retained = frame.trial.take();
-            if !matches!(result, Decision::Proven(_)) {
-                self.query.invalidate_auto(frame);
-            }
-            match result {
-                Decision::Absent => {}
-                Decision::Deferred
-                    if self.query.refining
-                        && frame.inference != frames::Inference::Disabled
-                        && frame.scope == self.query.input_scope()
-                        && !frame.normalizing() =>
-                {
-                    if frame.inference == frames::Inference::Committed {
-                        frame.trial = retained;
-                        return Ok(Action::Yield);
-                    }
-                    if frame.partial.is_some() {
-                        frame.deferred = true;
-                    } else {
-                        frame.partial = retained.map(Box::new);
-                    }
-                }
-                Decision::Deferred => frame.deferred = true,
-                Decision::Proven(node) => {
-                    if frame.selected.replace(node).is_some() {
-                        return Ok(Action::Complete(Decision::Deferred));
-                    }
-                }
-            }
-            return Ok(Action::Continue);
+        if frame.trial.is_some() {
+            return self.advance_trial(facts, frame);
         }
         if let Some(&owner) = frame.candidates.get(frame.cursor) {
             frame.cursor += 1;
@@ -420,6 +384,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if let Some(action) = self.start_callable(facts, frame)? {
+            return Ok(action);
+        }
         let Some(registry) = &mut facts.generics.implementations else {
             return Ok(Action::Complete(Decision::Absent));
         };
@@ -503,6 +470,12 @@ impl Search<'_> {
         }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
+        }
+        if matches!(
+            frame.callable.as_deref(),
+            Some(callables::Pending::Forward(_))
+        ) {
+            return self.accept_forwarding(facts, frame, decision);
         }
         if frame.storage.is_some() {
             return self.accept_storage(frame, decision);

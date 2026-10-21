@@ -317,6 +317,7 @@ pub struct StoredFieldWork {
 pub struct Declarations {
     /// Const permission belongs to a selected declaration, not its callable type.
     pub(crate) constant_functions: std::collections::HashSet<DefId>,
+    pub(super) target_feature_functions: std::collections::HashSet<DefId>,
     pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
@@ -338,6 +339,7 @@ pub struct Declarations {
     pub associated: super::associated::Inventory,
     pub(crate) stored_fields: Option<Box<super::stored_fields::Registry>>,
     pub methods: super::methods::Methods,
+    pub(crate) invocations: std::collections::HashMap<NodeKey, super::invocations::Invocation>,
     pub receivers: std::collections::HashMap<NodeKey, super::associated::Receiver>,
     pub destructors: super::destructors::Destructors,
     /// Packed source places remain checked even when their CFG is unreachable.
@@ -433,6 +435,7 @@ impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
             constant_functions: std::collections::HashSet::new(),
+            target_feature_functions: std::collections::HashSet::new(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             alias_requirements: super::alias_requirements::Requirements::default(),
@@ -450,6 +453,7 @@ impl Declarations {
             associated: super::associated::collect(report)?,
             stored_fields: None,
             methods: super::methods::Methods::default(),
+            invocations: std::collections::HashMap::new(),
             receivers: std::collections::HashMap::new(),
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),

@@ -61,6 +61,10 @@ pub(in crate::sema) enum Source {
     Equality,
     /// A language-provided bound, never a trait method or implementation target.
     Builtin,
+    /// A language callable implementation with its selected, scoped Output.
+    Callable {
+        output: TypeId,
+    },
     Assumption(Predicate),
     /// Original caller clause and this use's complete instantiated application.
     QuantifiedAssumption {
@@ -152,6 +156,9 @@ pub(in crate::sema) fn may_have_subject(
     subject: infer::TermId,
     assumptions: Option<&Assumptions>,
 ) -> Result<bool, infer::Error> {
+    if facts.associated.callable(DefId(item.0)).is_some() {
+        return Ok(true);
+    }
     let subject = match super::heads::Subject::query(&facts.types, context, subject) {
         Ok(subject) => subject,
         Err(infer::Error::Normalization) => return Ok(true),

@@ -77,6 +77,7 @@ impl Engine<'_, '_> {
                     kind: crate::sema::model::Cast::PointerToInteger,
                     ..
                 }
+                | Rvalue::Invoke { .. }
                 | Rvalue::Address(_)
                 | Rvalue::IsVariant { .. }
                 | Rvalue::Length(_)

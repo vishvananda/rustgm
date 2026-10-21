@@ -12,6 +12,7 @@ mod field_storage;
 mod finalization;
 mod generics;
 mod hidden_results;
+mod invocations;
 mod item_values;
 mod lifetimes;
 mod matches;
@@ -796,6 +797,11 @@ impl Checker<'_> {
             for ty in types {
                 self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
             }
+        }
+        for index in 0..self.state.call_types.invocations.len() {
+            let (node, pending) = &self.state.call_types.invocations[index];
+            let (node, ty) = (*node, solved.types[pending.receiver.0 as usize]);
+            self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
         }
         // Call inputs need their instantiated contracts even when an argument
         // diverges and therefore has no value node with the parameter's type.
@@ -1847,7 +1853,11 @@ impl Checker<'_> {
         ) {
             term = self.child(node, term, 0)?;
         }
-        term = self.call_signature(node, term)?;
+        term = if matches!(self.head(node, term)?, Some(Constructor::Function { .. })) {
+            self.call_signature(node, term)?
+        } else {
+            self.invocation_signature(node, callee, arguments)?
+        };
         self.state.call_types.active.insert(node, term);
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));

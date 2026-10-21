@@ -174,6 +174,12 @@ pub enum Rvalue {
         kind: Cast,
         operand: ValueId,
     },
+    /// A checked call operator; operand zero owns or borrows the selected receiver.
+    Invoke {
+        kind: crate::support::call_traits::CallTrait,
+        signature: TypeId,
+        arguments: ValueList,
+    },
     Call {
         signature: TypeId,
         callee: ValueId,

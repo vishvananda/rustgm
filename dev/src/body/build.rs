@@ -6,6 +6,7 @@ mod constructors;
 mod decisions;
 mod drops;
 mod guards;
+mod invocations;
 mod matches;
 mod methods;
 mod operators;
@@ -248,6 +249,7 @@ enum Work {
     EnterUnadjusted(NodeId),
     Reborrow(NodeId),
     MethodReceiver(NodeId),
+    InvocationReceiver(NodeId, NodeId),
     Finish(NodeId),
     EndBlock {
         node: NodeId,
@@ -284,7 +286,7 @@ enum Work {
     },
 }
 struct Scratch {
-    method_receivers: HashMap<NodeId, ValueId>,
+    receivers: HashMap<NodeId, ValueId>,
     unadjusted: Vec<NodeId>,
     scopes: scopes::Scratch,
     conditional_live: Vec<LocalId>,
@@ -316,7 +318,7 @@ struct Builder<'a> {
 impl Scratch {
     fn new(facts: &Declarations) -> Self {
         Self {
-            method_receivers: HashMap::new(),
+            receivers: HashMap::new(),
             scopes: scopes::Scratch::default(),
             unadjusted: Vec::new(),
             values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
@@ -685,7 +687,7 @@ impl<'a> Builder<'a> {
         for definition in self.scratch.bindings.drain(..) {
             self.scratch.definitions[definition.0 as usize] = None;
         }
-        self.scratch.method_receivers.clear();
+        self.scratch.receivers.clear();
         self.scratch.live.clear();
         self.scratch.controls.clear();
         self.scratch.reach.clear();
@@ -774,6 +776,7 @@ impl<'a> Builder<'a> {
             }
             Work::Reborrow(node) => self.finish_reborrow(node)?,
             Work::MethodReceiver(node) => self.method_receiver(node)?,
+            Work::InvocationReceiver(node, callee) => self.invocation_receiver(node, callee)?,
             Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
                 self.enter(node)?;
             }
@@ -1112,7 +1115,14 @@ impl<'a> Builder<'a> {
                     }
                     Kind::Call { callee, arguments } => {
                         self.children(arguments);
-                        self.scratch.work.push(Work::Enter(callee));
+                        if self.invocation(node).is_some() {
+                            self.scratch
+                                .work
+                                .push(Work::InvocationReceiver(node, callee));
+                            self.scratch.work.push(Work::Place(callee));
+                        } else {
+                            self.scratch.work.push(Work::Enter(callee));
+                        }
                     }
                     Kind::Tuple(elements) | Kind::Array(elements) => self.children(elements),
                     Kind::Repeat { value, .. } | Kind::FieldInit { value, .. } => {
@@ -1467,6 +1477,17 @@ impl<'a> Builder<'a> {
         }
     }
     fn call(&mut self, node: NodeId, callee: NodeId, arguments: List) -> Result<ValueId, Error> {
+        if let Some(selected) = self.invocation(node) {
+            let receiver = self
+                .scratch
+                .receivers
+                .remove(&node)
+                .ok_or_else(|| self.error(node, "missing call operator receiver"))?;
+            if let Some(kind) = selected.kind {
+                return self.invoke_operator(node, kind, receiver, arguments);
+            }
+            return self.invoke(node, receiver, arguments, None);
+        }
         self.invoke(node, self.value(callee)?, arguments, None)
     }
     fn invoke(
@@ -1479,28 +1500,14 @@ impl<'a> Builder<'a> {
         let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing call signature"));
         };
-        let start = self.index(node, self.body.arguments.len())?;
-        self.body.arguments.extend(receiver);
-        for &argument in self
-            .report
-            .package
-            .unit(self.body.source.file)
-            .configured
-            .ast
-            .list(arguments)
-        {
-            if self.active(argument) {
-                self.body.arguments.push(self.value(argument)?);
-            }
-        }
-        let end = self.index(node, self.body.arguments.len())?;
+        let arguments = self.call_inputs(node, arguments, receiver)?;
         self.evaluate(
             node,
             self.ty(node)?,
             Rvalue::Call {
                 signature,
                 callee,
-                arguments: ValueList { start, end },
+                arguments,
             },
         )
     }

@@ -102,6 +102,24 @@ impl Dependencies {
             {
                 result.upcasts.push((source, target));
             }
+            if let Rvalue::Invoke { arguments, .. } = value.kind {
+                let receiver = *body
+                    .arguments(arguments)
+                    .first()
+                    .ok_or("missing call operator receiver")?;
+                let mut ty = facts
+                    .types
+                    .storage_head(body.values[receiver.0 as usize].ty)?;
+                while let Some(Kind::Reference { referent, .. }) = facts.types.kind(ty) {
+                    self.charge(1)?;
+                    ty = facts.types.storage_head(referent)?;
+                }
+                if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
+                    result
+                        .calls
+                        .push(body.callable_target(Instance::new(&facts.types, ty)?));
+                }
+            }
             let operand = match value.kind {
                 Rvalue::Reify(id)
                 | Rvalue::Cast {

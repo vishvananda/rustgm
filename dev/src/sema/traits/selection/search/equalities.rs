@@ -1,4 +1,4 @@
-//! Associated equality premises compare normalized roots without inferring projection inputs.
+//! Associated equality premises retain normalization proof and explicit callable equations.
 use super::normalization::{Normalization, Purpose};
 use super::{Action, Decision, Declarations, Frame, Node, Search, Source, inference};
 use crate::types::{TypeId, infer};
@@ -13,7 +13,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
-        if let Some(decision) = self.cached_query(facts, frame)? {
+        if frame.equality_hint.is_none()
+            && let Some(decision) = self.cached_query(facts, frame)?
+        {
             return Ok(Action::Complete(decision));
         }
         let left = match frame
@@ -22,7 +24,7 @@ impl Search<'_> {
             .resolved(&mut facts.types, frame.goal.subject())
         {
             Ok(ty) => ty,
-            Err(infer::Error::Unresolved) => return Ok(Action::Complete(Decision::Deferred)),
+            Err(infer::Error::Unresolved) => return self.infer_callable_equality(facts, frame),
             Err(error) => return Err(inference(error)),
         };
         let result = frame
@@ -142,7 +144,10 @@ impl Search<'_> {
                 sized: Vec::new(),
             },
             frame.scope,
-            frame.first..frame.first,
+            frame
+                .equality_hint
+                .as_ref()
+                .map_or(frame.first..frame.first, |hint| hint.regions.clone()),
         );
         Ok(Decision::Proven(node))
     }

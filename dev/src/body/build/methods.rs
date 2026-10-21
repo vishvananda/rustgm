@@ -15,7 +15,7 @@ impl Builder<'_> {
             .get(&key)
             .ok_or_else(|| self.error(node, "missing method source operands"))?;
         let place = self.pop_place(site.receiver)?;
-        let Some(mut place) = place.filter(|_| self.current.is_some()) else {
+        let Some(place) = place.filter(|_| self.current.is_some()) else {
             return Ok(());
         };
         let selected = self
@@ -25,10 +25,29 @@ impl Builder<'_> {
             .get(&key)
             .copied()
             .ok_or_else(|| self.error(node, "missing selected receiver conversion"))?;
-        for _ in 0..selected.dereferences {
+        let value = self.receiver_value(
+            node,
+            place,
+            selected.dereferences,
+            selected.borrow,
+            selected.receiver,
+        )?;
+        self.scratch.receivers.insert(node, value);
+        Ok(())
+    }
+
+    pub(super) fn receiver_value(
+        &mut self,
+        node: NodeId,
+        mut place: crate::body::ir::Place,
+        dereferences: u32,
+        borrow: Option<crate::types::TypeId>,
+        receiver: crate::types::TypeId,
+    ) -> Result<ValueId, Error> {
+        for _ in 0..dereferences {
             place = self.dereference_place(node, place)?;
         }
-        let mut value = if let Some(ty) = selected.borrow {
+        let mut value = if let Some(ty) = borrow {
             let Some(Type::Reference {
                 referent, mutable, ..
             }) = self.facts.types.kind(ty)
@@ -48,11 +67,10 @@ impl Builder<'_> {
             let ty = self.place_type(node, place)?;
             self.evaluate(node, ty, Rvalue::Read(place))?
         };
-        if self.body.values[value.0 as usize].ty != selected.receiver {
-            value = self.evaluate(node, selected.receiver, Rvalue::Constrain(value))?;
+        if self.body.values[value.0 as usize].ty != receiver {
+            value = self.evaluate(node, receiver, Rvalue::Constrain(value))?;
         }
-        self.scratch.method_receivers.insert(node, value);
-        Ok(())
+        Ok(value)
     }
 
     pub(super) fn method_call(&mut self, node: NodeId, arguments: List) -> Result<ValueId, Error> {
@@ -69,7 +87,7 @@ impl Builder<'_> {
         let callee = self.evaluate(node, selected.callable, Rvalue::Function(selected.method))?;
         let receiver = self
             .scratch
-            .method_receivers
+            .receivers
             .remove(&node)
             .ok_or_else(|| self.error(node, "missing evaluated method receiver"))?;
         self.invoke(node, callee, arguments, Some(receiver))

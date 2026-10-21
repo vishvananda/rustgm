@@ -150,7 +150,7 @@ pub(super) fn normalize(
     }
     for value in &mut body.values {
         value.ty = ty(facts, &mut session, &mut storage, value.ty)?;
-        if let Rvalue::Call { signature, .. } = &mut value.kind {
+        if let Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } = &mut value.kind {
             *signature = ty(facts, &mut session, &mut storage, *signature)?;
         }
         if let Rvalue::Unsize { conversion, .. } = &mut value.kind {

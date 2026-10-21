@@ -219,14 +219,8 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             if let Some(variant) = variant {
                 write!(out, " variant={}", variant.0)?;
             }
-            write!(out, " [")?;
-            for (index, value) in body.arguments(fields).iter().enumerate() {
-                if index != 0 {
-                    write!(out, ",")?;
-                }
-                write!(out, "v{}", value.0)?;
-            }
-            write!(out, "]")
+            write!(out, " ")?;
+            value_list(body, fields, out)
         }
         Rvalue::Repeat { value, .. } => write!(out, "repeat v{}", value.0),
         Rvalue::Unit => write!(out, "unit"),
@@ -298,21 +292,34 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             right,
         } => write!(out, "binary {operator:?} v{} v{}", left.0, right.0),
         Rvalue::Cast { kind, operand } => write!(out, "cast {kind:?} v{}", operand.0),
+        Rvalue::Invoke {
+            kind,
+            signature,
+            arguments,
+        } => {
+            write!(out, "invoke {} signature={} ", kind.name(), signature.0)?;
+            value_list(body, arguments, out)
+        }
         Rvalue::Call {
             signature,
             callee,
             arguments,
         } => {
-            write!(out, "call signature={} v{} [", signature.0, callee.0)?;
-            for (index, value) in body.arguments(arguments).iter().enumerate() {
-                if index != 0 {
-                    write!(out, ",")?;
-                }
-                write!(out, "v{}", value.0)?;
-            }
-            write!(out, "]")
+            write!(out, "call signature={} v{} ", signature.0, callee.0)?;
+            value_list(body, arguments, out)
         }
     }
+}
+
+fn value_list(body: &Body, list: super::ir::ValueList, out: &mut impl Write) -> io::Result<()> {
+    write!(out, "[")?;
+    for (index, value) in body.arguments(list).iter().enumerate() {
+        if index != 0 {
+            write!(out, ",")?;
+        }
+        write!(out, "v{}", value.0)?;
+    }
+    write!(out, "]")
 }
 
 fn unsizing(

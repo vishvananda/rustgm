@@ -195,6 +195,9 @@ source checks plus 11 declared fragments, and 4,285 native source checks with
 2,364 executable and 314 codegen-only comparisons. Token, literal and layout
 independent checks also passed. This is a foundation checkpoint, not a PA24
 release: assignment status and existing references are unchanged.
+The checkpoint is published on `main` as `db0facbc`. Its successful storage
+guard removed 9,158 generated files (8.50 GiB of unshared blocks), retaining
+diagnostics and observations in cleanup receipt `1792539731917936882.jsonl`.
 
 ## Next executable integration boundary
 
@@ -222,3 +225,146 @@ Unique immutable capture needs an exclusive loan permission distinct from an
 ordinary shared borrow and from requiring a mutable source binding. Environment
 construction, captured-place access, call adapters and cleanup must all reach the
 normal ownership/lifetime proofs before native execution is claimed.
+
+The next independent controls are retained in `call-implementations-v1/`.
+Pinned rustc matched 24 of the first 25 predictions; the corrected
+`plan-v2.json` records that `&mut F` does not implement Fn even when F does.
+It can forward FnMut and FnOnce using the referent's FnMut permission. The
+original prediction and diagnostic remain in `plan.json` and `rustc-v1/`.
+Three additional object-qualified controls in `extra-plan-v1.json` cover a
+generic function return inferred solely from Output, a conflicting fixed return,
+and an unconstrained unused generic parameter. These are language expectations;
+their RustGM implementation is still under development.
+
+
+## Callable implementation checkpoint in progress
+
+The trait selector now has language callable evidence carrying the selected
+Output, separate from source impl owners. Safe function pointers/items retain
+complete tuple/input equations, including unresolved generic item arguments,
+output-driven inference and nested callable binders. Closure type models supply
+their declared call kind; source closures are still pending. Active configured
+`target_feature` functions cannot satisfy these safe call contracts. Attribute
+filtering crosses the existing resolved-unit interface, keeping expansion
+internals out of semantic analysis.
+
+Reference forwarding uses the normal scoped child proof. Shared references
+require Fn; mutable references require FnMut for FnMut/FnOnce and cannot supply
+Fn. A deterministic chain is walked in one inference context. The walk stops at
+an indexed possible caller premise on an intermediate reference, preserving
+ordinary full-predicate selection there. Partial child proofs retain their own
+continuations and publish input progress without becoming completed permission.
+A typed invariant at depths 8/32/128/512 checks a linear work bound, shared
+unresolved input/output inference, and published callable evidence.
+
+Evidence lives in `obj/pa24-pa25-work/call-implementations-v1/`. The 48 source
+controls in `tests-v9.log` passed with the related declaration, trait, binder and
+inference suites (179 groups). Three additional inferred-reference controls were
+independently qualified in `rustc-inferred-v1/`; their implementation test and
+work invariant are in `tests-v10.log` and `forwarding-work-v1.log`. Pinned rustc
+also qualified the added output/scoped/attribute controls in `rustc-extra-v1/`,
+`rustc-scoped-v1/` and `rustc-feature-v1/`. Strict Clippy `clippy-v4.log` passed;
+`audit-v4.log` reports 1,146 files and zero findings before the later invariant
+was added. All 7,784 earlier byte fixtures passed unchanged (`bytes-v1.json`).
+No assignment status or reference sidecars changed.
+
+The measured candidate is
+`b1b54d029f98d85ff2cba634ce2b741156c04c9fbb08bc52a5a8029c7d743537`;
+the pre-compression baseline is
+`cb4f97446088535d6d9e613ad71545350433bfa5eae3b2f1e0fb49383b6999a5`.
+Both studies retained immutable binaries, frozen input hashes, every A/A and
+ABBA observation, RSS samples and Callgrind counts, and verified identical
+outputs. `performance-v1/` measures the ordinary control and aliased reference
+depths 8/32/96. Instructions changed by -0.050% on the ordinary control and
+-23.0%/-46.4%/-57.4% on the reference inputs. Their paired wall medians changed
+by -2.1%/-18.0%/-33.7%; A/A spread reached 22%, so the small wall change is not
+established. Ordinary wall median changed by +1.41%. This resolved-type matrix
+does not demonstrate quadratic behavior in the original solver.
+
+`performance-v2/` measures the additional three chains whose referent function
+item shares an unresolved generic input/result. Instructions changed from
+5.899/40.698/450.778 million to 4.756/31.996/398.626 million; paired wall medians
+changed by -8.75%/-14.71%/-11.15%, with 1.50%/5.91%/2.26% A/A spread. Candidate
+medians were 5.72/8.49/59.09 ms. Full compilation remains superlinear on these
+inputs: at depth 96, borrow checking accounts for about 81% of instructions and
+region point propagation about 72% (inclusive profiles overlap). The solver
+invariant isolates the corrected traversal; these end-to-end observations do
+not claim that the separate region propagation algorithm has been fixed.
+
+The first raw depth-128 source exceeded RustGM's existing syntax cap. Using
+aliases removed that limitation but hit pinned rustc's default trait recursion
+cap at depth 128. Both diagnostics and original predictions remain in
+`rustc-forwarding-v1/`, `forwarding-before-v1/` and `rustc-forwarding-v2/`.
+`forwarding-plan-v3.json` explicitly selects depth 96 within both unchanged
+limits; all ten declared outcomes agree in `rustc-forwarding-v3/`.
+
+Generic invocation is the next executable integration. The separate
+`call-invocations-v1/plan-v2.json` contains 28 independently object-qualified
+expectations (`rustc-v2/`). The original prediction for competing Fn(u8) and
+FnMut(u16) was corrected: call syntax selects the stronger available Fn contract
+and rejects u16, rather than falling back to FnMut. Multiple inputs under the
+same Fn kind can be selected by typed arguments. These are expectations, not
+implemented invocation claims. PA24 remains planned; PA25 remains pending.
+
+
+## Callable invocation checkpoint
+
+Generic call expressions now retain the selected Fn/FnMut/FnOnce permission,
+implicit receiver dereferences and borrow, complete argument tuple and selected
+Output. The typed CFG has an Invoke operation whose first operand owns or borrows
+its receiver. Ownership, loan activation, liveness, instantiation, constant
+eligibility and lowering consume that operation. Function items and pointers use
+the existing native ABI, including aggregate returns and opaque representations.
+Callables still require a concrete executable adapter; source closure bodies and
+dynamic callable adapters remain unfinished.
+
+Call syntax follows builtin references before selecting the referent's strongest
+available call kind. A trait bound only on a reference is insufficient to call an
+otherwise unconstrained referent. Isolated probes choose the kind without leaking
+unconstrained argument variables into the body. Typed arguments can distinguish
+multiple inputs under that kind. Normalized opaque associated results use their
+caller/result promises; an unknown physical signature cannot keep a stronger
+unsupported kind pending. Owned opaque function items select their canonical
+instance even when the hidden runtime value occupies zero bytes.
+
+`call-invocations-v1/tests-v8.log` retains 52 independently qualified source
+controls, and `native-v7.log` retains 16 CPPGM/rustc executions. These include
+reference-only negative bounds, receiver mutability and consumption, higher-ranked
+input/output lifetimes, associated and opaque callers, all three call kinds,
+aggregate construction/returns and function-pointer arguments. Strict release
+Clippy passed in `clippy-v3.log`; `audit-v3.log` reports 1,152 files and zero
+findings. Earlier mistaken predictions and their correction receipts remain in
+the work directory; tests do not use planned-stage rejection as proof of a rule.
+
+The immutable candidate is
+`d91454bf7e1b975d3bff794447b4c359694abdc20262a26fc2ea58c8b956e58e`,
+pinned with compiler/test source hashes in `call-invocations-v1/binaries-v2/`.
+All 7,784 PA1–PA23 byte fixtures pass unchanged (`bytes-v2.json`). No assignment
+status or reference sidecar has changed. The following measurement and complete
+checkpoint gates qualify this candidate before publication.
+
+`call-invocations-v1/performance-v1/` compares the published contract binary
+with this candidate over all 38 frozen PA23-release inputs and three new
+8/32/128-invocation programs. Every shared output is identical. Shared instruction
+changes range from -0.047% to +0.577%; paired wall medians range
+from -6.66% to +15.76% (median +1.95%). A/A
+spread reaches 66.15%, so this study does
+not establish wall-time neutrality. RSS changes range from -460 to
++492 KiB. New invocation programs take
+4.02/5.04/9.25 ms and
+4.278/10.931/37.566 million instructions.
+Those are candidate-only observations, with baseline rejection retained; they
+are not speedup claims. All A/A, ABBA, RSS and Callgrind observations survive
+scoped cleanup.
+
+The exact candidate passed all 70 full checkpoint gates in
+1,028.70 seconds, with compiler/test sources
+and executable hashes unchanged. `call-invocations-v1/validation-v1/` retains
+1,850 release maintainer tests, 123 native maintainer groups, strict Clippy and
+format checks, file/harness/layout audits, upstream and backend qualification,
+all 7,784 byte oracles, 7,583 independent source checks plus
+11 declared fragments, and 4,285 native source checks with
+2,364 executable and 314 codegen-only comparisons. Independent token,
+literal and layout checks also passed. This publishes callable implementations
+and generic invocation as a development checkpoint. Source closure inference,
+captures and native adapters still remain; PA24 stays planned and PA25 pending.

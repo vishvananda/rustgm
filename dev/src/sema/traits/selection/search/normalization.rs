@@ -54,7 +54,7 @@ impl Normalization {
             step,
             purpose,
             opened: None,
-            end: frame.first,
+            end: frame.available_region(),
             proof: None,
             stopped: None,
             scope: frame.scope,
@@ -116,10 +116,14 @@ impl Frame {
         Ok(child)
     }
     pub(super) fn available_region(&self) -> u32 {
+        let start = self
+            .equality_hint
+            .as_ref()
+            .map_or(self.first, |hint| self.first.max(hint.regions.end));
         let first = self
             .normalization
             .as_ref()
-            .map_or(self.first, |normalization| normalization.end);
+            .map_or(start, |normalization| start.max(normalization.end));
         let first = self
             .storage
             .as_ref()
@@ -301,7 +305,7 @@ impl Search<'_> {
             .source
             .ok_or("missing equality premise evidence")?;
         let resolution = match source {
-            Source::Implementation { .. } => {
+            Source::Implementation { .. } | Source::Callable { .. } => {
                 if let Some(application) = opened.application.associated() {
                     Resolution::Type(crate::sema::projections::implementation_result(
                         facts,

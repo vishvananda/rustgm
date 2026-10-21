@@ -154,6 +154,8 @@ impl<'a> Search<'a> {
                         child
                     } else if let Some(child) = self.auto_child(facts, frame)? {
                         child
+                    } else if let Some(child) = self.callable_child(facts, frame)? {
+                        child
                     } else if let Some(child) = self.condition_child(facts, frame)? {
                         child
                     } else {

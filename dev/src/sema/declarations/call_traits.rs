@@ -23,6 +23,14 @@ use crate::{
 };
 
 impl Checker<'_> {
+    /// Attribute presence affects language call permission independently of the
+    /// function's safe signature. Consume configured ownership once per declaration.
+    pub(super) fn register_function_call_traits(&mut self, key: NodeKey, definition: DefId) {
+        if self.target_feature_sources.contains(&key) {
+            self.facts.target_feature_functions.insert(definition);
+        }
+    }
+
     pub(super) fn prepare_call_contracts(&mut self) -> Result<(), Error> {
         // Reverse hierarchy order registers Output before inherited applications.
         for kind in CallTrait::ALL.into_iter().rev() {
@@ -46,6 +54,9 @@ impl Checker<'_> {
             ..
         } = declaration;
         let (self_type, arguments) = self.declare_call_inputs(declaration)?;
+        self.facts
+            .associated
+            .declare_callable(definition, kind, output, origin);
         let mut header = Header {
             self_type,
             self_bounds: std::collections::HashSet::new(),
@@ -234,4 +245,50 @@ impl Checker<'_> {
         self.states[output.0 as usize] = State::Complete;
         Ok(projected)
     }
+}
+
+/// Index configured function attributes once. Declaration keys name the inner
+/// item, whereas configured owners retain the outer attributed syntax node.
+pub(super) fn target_feature_sources(
+    report: &crate::resolve::expansion::Report,
+) -> Result<std::collections::HashSet<NodeKey>, Error> {
+    use crate::{
+        resolve::unit::FileId,
+        syntax::{ast::Kind, item::ItemKind},
+    };
+    let mut result = std::collections::HashSet::new();
+    for (file, unit) in report.package.units.iter().enumerate() {
+        if unit.include_context.is_some() {
+            continue;
+        }
+        let file = FileId(
+            u32::try_from(file)
+                .map_err(|_| Error::at(FileId(0), 0, "too many function attribute sources"))?,
+        );
+        for owner in &unit.configured.owners {
+            if !owner.enabled || owner.attributes.is_empty() {
+                continue;
+            }
+            let mut node = owner.node;
+            while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
+                node = value;
+            }
+            let Kind::Item(item) = unit.configured.ast.node(node).kind else {
+                continue;
+            };
+            if !matches!(
+                unit.configured.ast.items[item as usize].kind,
+                ItemKind::Function { .. }
+            ) {
+                continue;
+            }
+            for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
+                if attribute.name(forest, unit.source.text()) == Some("target_feature") {
+                    result.insert(NodeKey { file, node });
+                    break;
+                }
+            }
+        }
+    }
+    Ok(result)
 }
