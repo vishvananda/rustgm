@@ -693,6 +693,17 @@ impl<'a> Builder<'a> {
     }
     fn run(mut self, parameters: Option<List>) -> Result<Body, Error> {
         let root = self.body.source.node;
+        if self
+            .facts
+            .patterns
+            .pending_bodies
+            .contains(&self.body.source)
+        {
+            return Err(self.error(
+                root,
+                "body patterns require completed constant dependencies",
+            ));
+        }
         let entry = self.new_block(root)?;
         self.scratch.reach[entry.0 as usize].incoming = true;
         self.switch(root, entry)?;
