@@ -168,6 +168,7 @@ pub(super) fn scalar_operation(
         Ok(())
     };
     match instruction.operation {
+        Operation::Address(value) => scalar_operand(value)?,
         Operation::Copy(value)
         | Operation::Unary { value, .. }
         | Operation::Convert { value, .. }

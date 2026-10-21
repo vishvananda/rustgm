@@ -194,3 +194,40 @@ fn object_identities_cannot_enter_scalar_addresses_calls_or_returns() -> TestRes
     assert!(crate::lowir::writer::write(&program, &mut Vec::new()).is_err());
     Ok(())
 }
+
+#[test]
+fn object_result_addresses_reject_even_with_valid_scalar_and_object_ids() -> TestResult {
+    let (mut program, signature) = identity()?;
+    let mut builder = Builder::default();
+    let block = builder.block()?;
+    builder.enter(block)?;
+    let ResultValue::Object(value) = builder.object_call(
+        &program,
+        signature,
+        Operand::Symbol(SymbolId(0)),
+        &[BoundaryValue::Object(ObjectValue {
+            operand: Operand::Parameter(0),
+            span: pair().span,
+        })],
+    )?
+    else {
+        return Err("object result".into());
+    };
+    assert!(builder.address(value.operand).is_err());
+    builder.return_object(&program, signature, value)?;
+    let symbol = program.declare("object_address_control".into(), signature, false)?;
+    program.define(symbol, builder.finish()?)?;
+    crate::lowir::writer::write(&program, &mut Vec::new())?;
+    let body = program.symbols[symbol.0 as usize]
+        .body
+        .as_mut()
+        .ok_or("body")?;
+    assert_eq!(body.temporaries, vec![Scalar::Ptr]);
+    body.instructions.push(Instruction {
+        result: Some(ResultId::Scalar(TempId(0))),
+        operation: Operation::Address(value.operand),
+    });
+    body.blocks[0].instructions.end += 1;
+    assert!(crate::lowir::writer::write(&program, &mut Vec::new()).is_err());
+    Ok(())
+}

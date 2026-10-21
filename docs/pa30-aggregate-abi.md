@@ -33,7 +33,7 @@ large MEMORY arguments/results, and padding-only eightbytes. Independent
 Rust 1.98.0/C execution and the pinned object backend match across three native
 programs. A C-returned function pointer is invoked by Rust through the selected
 object signature; thin reference and function-pointer fields retain their
-ordinary typed contracts. Four private controls and sixty affected source/native
+ordinary typed contracts. Five private controls and sixty affected source/native
 regression groups pass. Strict all-target/all-feature release Clippy,
 architecture audit (1390 files, zero findings), layout, upstream pins and both
 backend handshakes pass. Receipts, including earlier failed attempts, remain
@@ -51,6 +51,17 @@ This is not PA30 completion or activation. Rust-layout, packed, empty, union,
 enum, nested aggregate and array-field values remain explicit boundaries in
 this callable profile. Variadic calls, aggregate crate metadata transport and
 other target ABIs remain unfinished. Ordinary Rust aggregate calls preserve
-their existing internal ABI. Matching release pins and frozen shared/aggregate
-performance inputs will be prepared after functional qualification; exclusive
-measurement is reserved for the integrator window.
+their existing internal ABI. Default-release pins are prepared for baseline `84f6f84e` and candidate
+`07037425`. Five shared inputs have identical LowIR bytes/status/stderr, and
+all seven shared/aggregate inputs pass independent Rust and candidate native
+execution. The disposable baseline Cargo target was removed. Provenance,
+hashes and frozen outputs are under
+`obj/parallel/pa30/aggregate-performance/complete.json`; no measurements ran.
+Exclusive measurement remains reserved for the integrator window: at least
+four A/A observations and five ABBA paired blocks, three executions per
+observation, RSS and instruction observations, preserving every result.
+
+The separately qualified validator follow-up rejects `addr` on an object
+temporary even when its object and scalar IDs are otherwise valid. Production
+consumers already use typed `copyobj`, so the frozen valid-input comparison
+remains attributable to the aggregate checkpoint.
