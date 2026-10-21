@@ -22,6 +22,7 @@ struct Hidden {
 impl Checker<'_> {
     pub(super) fn prepare_opaque_results(&mut self, node: NodeId) -> Result<(), Error> {
         self.state.opaque_terms.clear();
+        self.state.opaque_callables = None;
         self.state.result_term = None;
         let ids = self
             .state
@@ -54,6 +55,23 @@ impl Checker<'_> {
                 .infer
                 .define_opaque(&self.facts.types, application, term)
                 .map_err(|e| self.error(node, e))?;
+            // Declared bounds constrain the hidden representation before nested
+            // closure bodies finalize their input/output variables. Reuse the
+            // same substitution and ordinary obligation solver; declaration
+            // bounds are requirements, never assumptions about the hidden type.
+            let bounds = self.facts.opaques.declarations[&id].bounds.clone();
+            let mut regions = crate::types::substitute::Bound::new(Vec::new());
+            for clause in bounds {
+                let clause = self.alias_clause(node, clause)?;
+                self.declared_closure_signature(node, id, term, clause)?;
+                self.instantiate_bound_obligation(
+                    node,
+                    clause,
+                    None,
+                    &mut regions,
+                    &mut substitution,
+                )?;
+            }
         }
         self.state.result_term = Some(result);
         Ok(())

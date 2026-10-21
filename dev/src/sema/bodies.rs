@@ -138,6 +138,7 @@ struct PendingAdjustment {
     reset: bool,
 }
 enum Work {
+    ClosureInputs(Box<closures::InputRefresh>),
     Conditional {
         node: NodeId,
         pattern: NodeId,
@@ -201,6 +202,11 @@ pub(super) struct State {
     result: TypeId,
     result_term: Option<TermId>,
     opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
+    #[expect(
+        clippy::box_collection,
+        reason = "keep every ordinary and parked body state compact; only defining callable opaque results allocate this index"
+    )]
+    opaque_callables: Option<Box<std::collections::HashMap<TermId, TypeId>>>,
     in_function: bool,
     safety: safety::Context,
     infer: Context,
@@ -312,6 +318,7 @@ impl<'a> Checker<'a> {
                 result: TypeId::UNIT,
                 result_term: None,
                 opaque_terms: Vec::new(),
+                opaque_callables: None,
                 in_function: true,
                 safety: safety::Context::default(),
                 infer: Context::default(),
@@ -428,6 +435,7 @@ impl<'a> Checker<'a> {
         self.state.result = ty;
         self.state.result_term = None;
         self.state.opaque_terms.clear();
+        self.state.opaque_callables = None;
         self.state.in_function = false;
         self.state.safety = safety::Context::default();
     }
@@ -695,6 +703,9 @@ impl Checker<'_> {
     }
     fn advance_current_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
+        if let Some(dependency) = self.resume_closure_inputs()? {
+            return Ok(Some(dependency));
+        }
         if let Some(finalization) = self.state.finalization.take() {
             return self.resume_finalization(*finalization);
         }
@@ -719,6 +730,11 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
+                Work::ClosureInputs(inputs) => {
+                    if let Some(dependency) = self.finish_closure_inputs(*inputs)? {
+                        return Ok(Some(dependency));
+                    }
+                }
                 Work::CollectClosure => self.collect_closure()?,
                 Work::Conditional {
                     node,

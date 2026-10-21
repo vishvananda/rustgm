@@ -1,15 +1,17 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
 mod contracts;
+mod inputs;
+use inputs::Inputs;
 mod projections;
 use super::{
     drops,
-    ir::{Body, Owner, ProjectionKind, Rvalue},
+    ir::{Body, ProjectionKind, Rvalue},
     templates::Template,
 };
 use crate::{
     sema::model::Declarations,
     types::{
-        Kind, arguments::Argument, destruction::NeedsDrop, instance::Instance, length::Length,
+        arguments::Argument, destruction::NeedsDrop, instance::Instance, length::Length,
         substitute::Bound,
     },
 };
@@ -51,7 +53,7 @@ pub fn body(
     template: &Template,
     instance: Instance,
 ) -> Result<(Body, drops::Requirements), &'static str> {
-    let inputs = parameters(facts, instance)?;
+    let inputs = inputs::select(facts, instance)?;
     if inputs.comparison.is_some() {
         return Err("projected instance requires its lifetime contract");
     }
@@ -131,7 +133,7 @@ fn with_premises(
     if original.key != template.body.key() || original.source != template.body.source {
         return Err("instance contract belongs to another template");
     }
-    let mut inputs = parameters(facts, instance)?;
+    let mut inputs = inputs::select(facts, instance)?;
     let (mut substitution, mut contract) = contracts::specialize(facts, original, &mut inputs)?;
     let (body, destruction) = materialize(
         facts,
@@ -160,18 +162,7 @@ fn materialize(
 ) -> Result<(Body, drops::Requirements), &'static str> {
     let Context { premises, cleanup } = context;
     let source = &template.body;
-    let Owner::Function { definition, .. } = source.owner else {
-        return Err("instance template is not a function");
-    };
-    let Some(Kind::FunctionItem {
-        item, signature, ..
-    }) = facts.types.kind(instance.ty())
-    else {
-        return Err("missing callable instance");
-    };
-    if item.0 != definition.0 || source.instance.is_some() {
-        return Err("instance does not select an original function template");
-    }
+    let (owner, definition) = inputs::owner(facts, source, instance)?;
     if facts.types.contains_parameters(instance.ty()) != Some(false) {
         return Err("executable instance has unresolved type or const parameters");
     }
@@ -180,10 +171,7 @@ fn materialize(
         static_types: source.static_types.clone(),
         const_context: source.const_context,
         instance: Some(instance),
-        owner: Owner::Function {
-            definition,
-            signature,
-        },
+        owner,
         source: source.source,
         result: source.result,
         owned: None,
@@ -251,74 +239,6 @@ fn materialize(
     }
     let requirements = drops::requirements(facts, &body, needed)?;
     Ok((body, requirements))
-}
-
-type Binding = (crate::types::parameters::ParameterId, Argument);
-struct Inputs {
-    instance: Instance,
-    bindings: Vec<Binding>,
-    comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
-}
-fn parameters(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'static str> {
-    let Some(Kind::FunctionItem {
-        item,
-        signature,
-        arguments,
-    }) = facts.types.kind(instance.ty())
-    else {
-        return Err("invalid callable instance");
-    };
-    let Some(callable) = facts.lifetimes.callables.get(item) else {
-        let owner = crate::resolve::model::DefId(item.0);
-        if arguments != crate::types::GenericArgs::EMPTY
-            || facts.generics.has_parameters(owner)
-            || facts.definitions.get(item.0 as usize).copied().flatten() != Some(instance.ty())
-        {
-            return Err("missing callable template");
-        }
-        return Ok(Inputs {
-            instance,
-            bindings: Vec::new(),
-            comparison: None,
-        });
-    };
-    let parameters = facts
-        .lifetimes
-        .callables
-        .generic_parameters(item)
-        .ok_or("missing callable parameters")?;
-    let arguments = facts
-        .types
-        .arguments(arguments)
-        .ok_or("invalid callable arguments")?
-        .collect::<Vec<_>>();
-    let early = callable.parameters as usize;
-    if arguments.len() != early.saturating_add(parameters.len()) {
-        return Err("callable instance argument count differs from its template");
-    }
-    let mut regions = Vec::with_capacity(early);
-    for argument in &arguments[..early] {
-        let Argument::Lifetime(region) = *argument else {
-            return Err("callable early argument is not a lifetime");
-        };
-        regions.push(region);
-    }
-    let bindings = parameters
-        .iter()
-        .copied()
-        .zip(arguments[early..].iter().copied())
-        .collect::<Vec<_>>();
-    let mut selected = Bound::parameters_captured(&facts.types, &bindings, regions)?;
-    let expected = selected.apply(&mut facts.types, callable.signature)?;
-    let projected = facts.types.contains_projections(expected) == Some(true);
-    if !projected && expected != signature {
-        return Err("instance signature differs from substituted template");
-    }
-    Ok(Inputs {
-        instance,
-        bindings,
-        comparison: projected.then_some((expected, signature)),
-    })
 }
 
 fn substitute(

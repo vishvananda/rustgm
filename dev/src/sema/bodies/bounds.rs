@@ -9,6 +9,19 @@ use crate::types::{
     substitute,
 };
 pub(super) use universal::Requirements;
+impl super::State {
+    pub(super) fn prepare_parameter_queries(&mut self) {
+        self.parameter_shapes = self
+            .method_environment
+            .as_ref()
+            .filter(|e| e.has_shape_assumptions())
+            .map(|e| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(e)));
+        self.parameter_copies = self
+            .method_environment
+            .as_ref()
+            .map(|e| crate::types::copy::Copies::in_environment(std::sync::Arc::clone(e)));
+    }
+}
 impl Checker<'_> {
     pub(super) fn body_is_sized(&mut self, node: NodeId, ty: TypeId) -> Result<bool, Error> {
         let sized = self.body_shape(node, ty)?.sized;
@@ -132,11 +145,7 @@ impl Checker<'_> {
             environment = Some(updated);
         }
         self.state.method_environment.clone_from(&environment);
-        self.state.parameter_shapes = environment
-            .as_ref()
-            .filter(|e| e.has_shape_assumptions())
-            .map(|e| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(e)));
-        self.state.parameter_copies = environment.map(crate::types::copy::Copies::in_environment);
+        self.state.prepare_parameter_queries();
         Ok(())
     }
     pub(super) fn body_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
@@ -398,7 +407,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn instantiate_bound_obligation(
+    pub(super) fn instantiate_bound_obligation(
         &mut self,
         node: NodeId,
         clause: crate::types::parameters::clauses::Clause,

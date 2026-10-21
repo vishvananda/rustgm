@@ -1,5 +1,5 @@
 //! Finalize nested bodies iteratively after caller constraints determine their inputs.
-use super::{Checker, Error, Scheduler};
+use super::{Argument, Checker, Error, InputRefresh, Scheduler, Work};
 use crate::{
     sema::{
         bodies::{Dependency, finalization::Finalization},
@@ -31,9 +31,9 @@ impl Checker<'_> {
             .take()
             .ok_or_else(|| self.error(body, "missing collected closure body"))?;
         std::mem::swap(&mut entry.inputs.context, &mut child.infer);
-        entry
+        let pairs = entry
             .inputs
-            .refresh_regions(
+            .incoming_regions(
                 &mut self.facts.types,
                 &mut self.state.infer,
                 &mut entry.lifetimes.opening,
@@ -44,11 +44,67 @@ impl Checker<'_> {
             .lifetimes
             .count()
             .map_err(|e| self.error(entry.source, e))?;
+        let source = entry.source;
+        let signature = entry.signature;
         self.state.finalization = Some(Box::new(Finalization::Closures(evidence)));
         let parent = std::mem::replace(&mut self.state, *child);
         scheduler.stack.push((scheduler.active, Box::new(parent)));
         scheduler.active = Some(index);
         self.state.closures = Some(scheduler);
+        self.defer_normalization(
+            source,
+            crate::types::lifetime_proof::ScopeId::ROOT,
+            signature,
+        )?;
+        self.state
+            .work
+            .push(Work::ClosureInputs(Box::new(InputRefresh {
+                source,
+                pairs,
+            })));
+        Ok(None)
+    }
+
+    /// Returned interface equations precede any paused finalization frontier.
+    pub(in crate::sema::bodies) fn resume_closure_inputs(
+        &mut self,
+    ) -> Result<Option<Dependency>, Error> {
+        while matches!(self.state.work.last(), Some(Work::ClosureInputs(_))) {
+            let Some(Work::ClosureInputs(inputs)) = self.state.work.pop() else {
+                return Err(self.error(self.state.body.node, "missing closure interface work"));
+            };
+            if let Some(dependency) = self.finish_closure_inputs(*inputs)? {
+                return Ok(Some(dependency));
+            }
+        }
+        Ok(None)
+    }
+
+    pub(in crate::sema::bodies) fn finish_closure_inputs(
+        &mut self,
+        inputs: InputRefresh,
+    ) -> Result<Option<Dependency>, Error> {
+        for &(left, right) in &inputs.pairs {
+            for argument in [left, right] {
+                if let Argument::Type(term) = argument {
+                    self.defer_normalization(
+                        inputs.source,
+                        crate::types::lifetime_proof::ScopeId::ROOT,
+                        term,
+                    )?;
+                }
+            }
+        }
+        if let super::super::projections::Advance::Definition(dependency) =
+            self.poll_projections(inputs.source)?
+        {
+            self.state.work.push(Work::ClosureInputs(Box::new(inputs)));
+            return Ok(Some(dependency));
+        }
+        self.state
+            .infer
+            .equate_input_pairs(&self.facts.types, &inputs.pairs)
+            .map_err(|e| self.error(inputs.source, e))?;
         Ok(None)
     }
 
@@ -60,11 +116,12 @@ impl Checker<'_> {
             self.state.closures = Some(scheduler);
             return Ok(true);
         }
-        if scheduler.active.is_none() {
+        let Some(index) = scheduler.active else {
             self.state.closure_children.clear();
             self.state.closure_cursor = 0;
             return Ok(false);
-        }
+        };
+        let source = scheduler.entries[index].source;
         let (active, parent) = scheduler
             .stack
             .pop()
@@ -72,6 +129,11 @@ impl Checker<'_> {
         self.state = *parent;
         scheduler.active = active;
         self.state.closures = Some(scheduler);
+        self.defer_normalization(
+            source,
+            crate::types::lifetime_proof::ScopeId::ROOT,
+            self.term(source)?,
+        )?;
         Ok(true)
     }
 
@@ -131,9 +193,13 @@ impl Checker<'_> {
             .lifetimes
             .closing(&self.state.call_types, false)
             .map_err(|e| self.error(body, e))?;
-        inputs
-            .publish(&mut self.facts.types, &mut parent.infer, &mut identity)
+        let pairs = inputs
+            .outgoing_regions(&mut self.facts.types, &mut parent.infer, &mut identity)
             .map_err(|e| self.error(body, e))?;
+        parent.work.push(Work::ClosureInputs(Box::new(InputRefresh {
+            source: entry.source,
+            pairs,
+        })));
         std::mem::swap(&mut inputs.context, &mut self.state.infer);
         Ok(())
     }
@@ -167,16 +233,9 @@ impl Checker<'_> {
             owner: self.state.environment_owner,
             universals: self.state.body_binders,
         };
-        if self
-            .facts
+        self.facts
             .closures
-            .sources
-            .insert(body.source, self.facts.closures.values.len())
-            .is_some()
-        {
-            return Err(self.error(body.source.node, "closure body published twice"));
-        }
-        self.facts.closures.values.push(body);
-        Ok(())
+            .insert(body)
+            .map_err(|e| self.error(source, e))
     }
 }

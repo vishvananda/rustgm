@@ -3,7 +3,7 @@ use super::{dependencies::Dependencies, diagnostic, proof};
 use crate::{
     body::{
         self,
-        ir::{Body, NodeKey, Owner},
+        ir::{Body, BodyKey, NodeKey, Owner},
         regions::Contract,
     },
     borrow::templates::Checked,
@@ -14,9 +14,8 @@ use crate::{
 use std::collections::{HashMap, HashSet};
 
 enum Work {
-    Body(usize),
     Enter(Instance, NodeKey),
-    Leave(ItemId),
+    Leave(BodyKey),
 }
 #[derive(Default)]
 struct Ordinary {
@@ -25,12 +24,12 @@ struct Ordinary {
 }
 #[derive(Default)]
 struct Budget {
-    active: HashMap<ItemId, usize>,
+    active: HashMap<BodyKey, usize>,
     bytes: usize,
     instances: usize,
 }
 impl Budget {
-    fn enter(&mut self, item: ItemId, body: &Body, input: &Contract) -> Result<(), &'static str> {
+    fn enter(&mut self, item: BodyKey, body: &Body, input: &Contract) -> Result<(), &'static str> {
         let active = self.active.entry(item).or_default();
         if *active >= 128 {
             return Err("recursive generic instantiation exceeds 128 active instances");
@@ -76,78 +75,90 @@ pub(super) fn prepare(
     let mut budget = Budget::default();
     let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {
-        let index = if let Work::Body(index) = action {
+        let (instance, source) = match action {
+            Work::Enter(instance, source) => (instance, source),
+            Work::Leave(item) => {
+                let active = budget.active.get_mut(&item).ok_or_else(|| {
+                    diagnostic(report, None, "invalid active instance stack".into())
+                })?;
+                *active = active
+                    .checked_sub(1)
+                    .ok_or_else(|| diagnostic(report, None, "unbalanced instance stack".into()))?;
+                continue;
+            }
+        };
+        let error = |e: &str| diagnostic(report, Some(source), e.into());
+        let (family, selected, ordinary_index) = match facts.types.kind(instance.ty()) {
+            Some(Kind::FunctionItem { item, .. }) => {
+                if facts
+                    .foreign
+                    .as_deref()
+                    .and_then(|r| r.function(DefId(item.0)))
+                    .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
+                {
+                    continue;
+                }
+                let selected = templates
+                    .get(item)
+                    .map(|template| {
+                        templates
+                            .input(item)
+                            .map(|input| (template, input))
+                            .ok_or_else(|| error("missing checked template input"))
+                    })
+                    .transpose()?;
+                (
+                    BodyKey::Declaration(DefId(item.0)),
+                    selected,
+                    ordinary.functions.get(&item).copied(),
+                )
+            }
+            Some(Kind::Closure { identity, .. }) => (
+                BodyKey::Closure(identity),
+                templates.closure(identity),
+                ordinary.closures.get(&identity).copied(),
+            ),
+            _ => return Err(error("invalid demanded instance")),
+        };
+        let index = if let Some((template, input)) = selected {
+            if !instances.insert(instance) {
+                continue;
+            }
+            budget.enter(family, &template.body, input).map_err(error)?;
+            let mut materialized =
+                // Entered dependencies come only from a body sealed by Builder::push.
+                body::instantiate::from_checked_caller(facts, template, instance, input, &mut cleanup)
+                    .map_err(error)?;
+            body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
+                .map_err(|e| error(&e))?;
+            facts.prepare_opaque_storage().map_err(error)?;
+            body::promote::instance(
+                report,
+                facts,
+                &mut materialized.body,
+                &materialized.destruction,
+            )?;
+            body::constants::instance(report, facts, &materialized.body)?;
+            work.push(Work::Leave(family));
+            program
+                .push(
+                    facts,
+                    templates,
+                    materialized.body,
+                    &materialized.contract,
+                    Some(materialized.destruction),
+                )
+                .map_err(|e| diagnostic(report, e.node, e.message))?
+        } else {
+            let index = ordinary_index.ok_or_else(|| {
+                error("demanded callable has no concrete body or checked template")
+            })?;
             if !visited.insert(index) {
                 continue;
             }
             index
-        } else {
-            let Work::Enter(instance, source) = action else {
-                if let Work::Leave(item) = action {
-                    let active = budget.active.get_mut(&item).ok_or_else(|| {
-                        diagnostic(report, None, "invalid active instance stack".into())
-                    })?;
-                    *active = active.checked_sub(1).ok_or_else(|| {
-                        diagnostic(report, None, "unbalanced instance stack".into())
-                    })?;
-                }
-                continue;
-            };
-            let error = |e: &str| diagnostic(report, Some(source), e.into());
-            let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty()) else {
-                return Err(error("invalid demanded instance"));
-            };
-            if facts
-                .foreign
-                .as_deref()
-                .and_then(|r| r.function(DefId(item.0)))
-                .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
-            {
-                continue;
-            }
-            if let Some(template) = templates.get(item) {
-                if !instances.insert(instance) {
-                    continue;
-                }
-                let input = templates
-                    .input(item)
-                    .ok_or_else(|| error("missing checked template input"))?;
-                budget.enter(item, &template.body, input).map_err(error)?;
-                let mut materialized =
-                // Entered dependencies come only from a body sealed by Builder::push.
-                body::instantiate::from_checked_caller(facts, template, instance, input, &mut cleanup)
-                    .map_err(error)?;
-                body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
-                    .map_err(|e| error(&e))?;
-                facts.prepare_opaque_storage().map_err(error)?;
-                body::promote::instance(
-                    report,
-                    facts,
-                    &mut materialized.body,
-                    &materialized.destruction,
-                )?;
-                body::constants::instance(report, facts, &materialized.body)?;
-                work.push(Work::Leave(item));
-                program
-                    .push(
-                        facts,
-                        templates,
-                        materialized.body,
-                        &materialized.contract,
-                        Some(materialized.destruction),
-                    )
-                    .map_err(|e| diagnostic(report, e.node, e.message))?
-            } else {
-                let &index = ordinary.functions.get(&item).ok_or_else(|| {
-                    error("demanded callable has no concrete body or checked template")
-                })?;
-                if !visited.insert(index) {
-                    continue;
-                }
-                index
-            }
         };
-        dependencies.schedule(report, facts, &mut program, index, &ordinary, &mut work)?;
+        dependencies.schedule(report, facts, &mut program, index, &mut work)?;
     }
     Ok(program)
 }
@@ -194,7 +205,6 @@ impl Dependencies {
         facts: &mut Declarations,
         program: &mut proof::Builder,
         index: usize,
-        ordinary: &Ordinary,
         work: &mut Vec<Work>,
     ) -> Result<(), Error> {
         let body = program
@@ -203,12 +213,9 @@ impl Dependencies {
         let source = body.source;
         let error = |e: &str| diagnostic(report, Some(source), e.into());
         let demands = self.collect(report, facts, body).map_err(|e| error(&e))?;
-        for identity in demands.closures {
-            let &index = ordinary
-                .closures
-                .get(&identity)
-                .ok_or_else(|| error("missing demanded closure body"))?;
-            work.push(Work::Body(index));
+        for ty in demands.closures {
+            let instance = Instance::closure(&facts.types, ty).map_err(error)?;
+            work.push(Work::Enter(instance, source));
         }
         let mut next = demands.calls;
         next.extend(

@@ -1,4 +1,5 @@
 //! Commit isolated input refinements after closing lifetimes and validating current inputs.
+mod interfaces;
 use super::{
     Constructor, Context, Error, RegionId, Store, TermId, Value,
     arguments::{Argument, Slot},
@@ -140,47 +141,6 @@ impl Refinement {
             &roots,
             &mut Import::default(),
         )?;
-        let pairs: Vec<_> = self.roots(true).into_iter().zip(incoming).collect();
-        self.context.equate_input_pairs(store, &pairs)
-    }
-
-    /// Reconcile an input interface in its own lifetime universe. The caller
-    /// owns that universe and must check its body independently of the source.
-    /// # Errors
-    /// Rejects invalid mappings, contradictory inputs and exhausted work.
-    pub fn refresh_regions(
-        &mut self,
-        store: &mut Store,
-        source: &mut Context,
-        opening: &mut Bound,
-    ) -> Result<(), Error> {
-        let roots = self.roots(false);
-        let incoming = import(
-            store,
-            source,
-            &mut self.context,
-            &roots,
-            &mut Import::default(),
-        )?;
-        let types: Vec<_> = incoming
-            .iter()
-            .filter_map(|argument| match argument {
-                Argument::Type(id) => Some(*id),
-                _ => None,
-            })
-            .collect();
-        let mapped = self.context.map_region_roots(store, &types, opening)?;
-        let mut mapped = mapped.into_iter();
-        let incoming = incoming
-            .into_iter()
-            .map(|argument| match argument {
-                Argument::Type(_) => mapped
-                    .next()
-                    .map(Argument::Type)
-                    .ok_or(Error::InvalidIdentity),
-                other => Ok(other),
-            })
-            .collect::<Result<Vec<_>, _>>()?;
         let pairs: Vec<_> = self.roots(true).into_iter().zip(incoming).collect();
         self.context.equate_input_pairs(store, &pairs)
     }

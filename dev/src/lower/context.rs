@@ -238,8 +238,13 @@ impl<'a> Context<'a> {
     fn index_bodies(&mut self) -> Result<(), &'static str> {
         for (index, body) in self.bodies.bodies.iter().enumerate() {
             if let Owner::Closure { identity, .. } = body.owner {
-                if body.instance.is_some() || self.closure_indices.insert(identity, index).is_some()
-                {
+                if let Some(instance) = body.instance {
+                    if !matches!(self.types.kind(instance.ty()), Some(Kind::Closure { identity: selected, .. }) if selected == identity)
+                        || self.instance_indices.insert(instance, index).is_some()
+                    {
+                        return Err("duplicate or inconsistent specialized closure body");
+                    }
+                } else if self.closure_indices.insert(identity, index).is_some() {
                     return Err("closure body requires a distinct source identity");
                 }
                 continue;
@@ -385,9 +390,11 @@ impl<'a> Context<'a> {
         else {
             return Err("closure requires a checked environment adapter");
         };
+        let instance = Instance::closure(self.types, ty)?;
         let &index = self
-            .closure_indices
-            .get(&identity)
+            .instance_indices
+            .get(&instance)
+            .or_else(|| self.closure_indices.get(&identity))
             .ok_or("missing checked closure body")?;
         if let Some(symbol) = self.symbols[index] {
             return Ok(symbol);
@@ -396,9 +403,12 @@ impl<'a> Context<'a> {
             return Err("closure body identity mismatch");
         };
         let signature = self.signature(signature)?;
-        let symbol = self
-            .output
-            .declare(format!("rg.closure.{}", identity.0), signature, false)?;
+        let name = if self.bodies.bodies[index].instance.is_some() {
+            format!("rg.closure.{}.i{index}", identity.0)
+        } else {
+            format!("rg.closure.{}", identity.0)
+        };
+        let symbol = self.output.declare(name, signature, false)?;
         self.symbols[index] = Some(symbol);
         self.queue.push(index);
         Ok(symbol)

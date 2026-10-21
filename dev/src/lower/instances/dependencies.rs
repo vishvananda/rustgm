@@ -24,13 +24,13 @@ enum Work {
     Location(LocationId),
 }
 pub(super) struct Demands {
-    pub closures: Vec<crate::types::closure::ClosureId>,
+    pub closures: Vec<TypeId>,
     pub calls: Vec<Instance>,
     pub object_types: Vec<TypeId>,
 }
 #[derive(Default)]
 struct Discovered {
-    closures: Vec<crate::types::closure::ClosureId>,
+    closures: Vec<TypeId>,
     calls: Vec<Instance>,
     tables: Vec<(TypeId, TypeId)>,
     upcasts: Vec<(TypeId, TypeId)>,
@@ -47,7 +47,7 @@ impl Discovered {
                 self.calls
                     .push(body.callable_target(Instance::new(types, ty)?));
             }
-            Some(Kind::Closure { identity, .. }) => self.closures.push(identity),
+            Some(Kind::Closure { .. }) => self.closures.push(ty),
             _ => {}
         }
         Ok(())

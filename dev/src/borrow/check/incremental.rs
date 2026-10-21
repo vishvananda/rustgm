@@ -72,16 +72,32 @@ impl Verifier {
             return Err(error("instance proof belongs to another body"));
         }
         if let Some(instance) = body.instance {
-            let Some(Kind::FunctionItem {
-                item, signature, ..
-            }) = environment.types.kind(instance.ty())
-            else {
-                return Err(error("instance proof requires a function item"));
+            let selected = match (body.owner, environment.types.kind(instance.ty())) {
+                (
+                    Owner::Function {
+                        definition,
+                        signature,
+                    },
+                    Some(Kind::FunctionItem {
+                        item,
+                        signature: actual,
+                        ..
+                    }),
+                ) => definition.0 == item.0 && signature == actual,
+                (
+                    Owner::Closure {
+                        identity,
+                        signature,
+                    },
+                    Some(Kind::Closure {
+                        identity: actual,
+                        signature: selected,
+                        ..
+                    }),
+                ) => identity == actual && signature == selected,
+                _ => false,
             };
-            if !matches!(body.owner, Owner::Function { definition, signature: actual }
-                if definition.0 == item.0 && actual == signature)
-                || environment.types.contains_parameters(instance.ty()) != Some(false)
-            {
+            if !selected || environment.types.contains_parameters(instance.ty()) != Some(false) {
                 return Err(error(
                     "instance proof has a different owner or unresolved parameters",
                 ));

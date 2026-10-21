@@ -128,6 +128,11 @@ fn early_identities(
     if regions.universal_count() == 0 {
         return Ok(());
     }
+    if matches!(facts.types.kind(instance.ty()), Some(Type::Closure { .. })) {
+        // This executable slice has no inherited lifetime arguments. Lifetimes
+        // inside selected type arguments become fresh instance universals above.
+        return Ok(());
+    }
     let Some(Type::FunctionItem {
         item, arguments, ..
     }) = facts.types.kind(instance.ty())

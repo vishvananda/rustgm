@@ -22,6 +22,10 @@ pub(super) struct Scheduler {
     stack: Vec<(Option<usize>, Box<State>)>,
     active: Option<usize>,
 }
+pub(super) struct InputRefresh {
+    source: NodeId,
+    pairs: Vec<(Argument, Argument)>,
+}
 struct Entry {
     source: NodeId,
     identity: ClosureId,
@@ -129,6 +133,8 @@ impl Checker<'_> {
             },
         )?;
         self.closure_parameters(node, signature, nodes, result)?;
+        self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
+        self.advance_projections(node)?;
         self.state.work.push(Work::CollectClosure);
         self.start_body(body)
     }
@@ -187,6 +193,7 @@ impl Checker<'_> {
         child
             .method_environment
             .clone_from(&self.state.method_environment);
+        child.prepare_parameter_queries();
         child
             .trait_environment
             .clone_from(&self.state.trait_environment);
@@ -234,14 +241,28 @@ impl Checker<'_> {
             .lifetimes
             .closing(&self.state.call_types, false)
             .map_err(|e| self.error(body, e))?;
-        entry
+        let pairs = entry
             .inputs
-            .publish(&mut self.facts.types, &mut parent.infer, &mut identity)
+            .outgoing_regions(&mut self.facts.types, &mut parent.infer, &mut identity)
             .map_err(|e| self.error(body, e))?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
+        let source = entry.source;
         entry.state = Some(Box::new(std::mem::replace(&mut self.state, *parent)));
         scheduler.active = active;
         self.state.closures = Some(scheduler);
+        self.state
+            .work
+            .push(Work::ClosureInputs(Box::new(InputRefresh {
+                source,
+                pairs,
+            })));
+        // Importing interface constraints grants no normalization proof in the
+        // receiving body. Register the new occurrences under this owner.
+        self.defer_normalization(
+            source,
+            crate::types::lifetime_proof::ScopeId::ROOT,
+            self.term(source)?,
+        )?;
         Ok(())
     }
 }
