@@ -3,6 +3,12 @@
 mod native;
 use std::{path::PathBuf, process::Command};
 const CASES: &[(&str, bool, bool)] = &[
+    ("packed-base-copy", true, true),
+    ("packed-base-field-pointer", false, false),
+    ("packed-nested-base-copy", true, true),
+    ("packed-nested-field-pointer", false, false),
+    ("packed-pointer-chain", true, true),
+    ("packed-pointer-chain-unaligned", false, false),
     ("packed-nested-offset", false, false),
     ("direct-static", true, true),
     ("direct-packed-static", false, false),
@@ -41,9 +47,12 @@ fn root() -> Result<PathBuf, Box<dyn std::error::Error>> {
 }
 fn rejection(name: &str) -> Result<&'static str, Box<dyn std::error::Error>> {
     Ok(match name {
-        "packed-unaligned" | "direct-packed-static" | "packed-nested-offset" => {
-            "constant raw pointer read is unaligned"
-        }
+        "packed-unaligned"
+        | "direct-packed-static"
+        | "packed-nested-offset"
+        | "packed-base-field-pointer"
+        | "packed-nested-field-pointer"
+        | "packed-pointer-chain-unaligned" => "constant raw pointer read is unaligned",
         "null" | "nonnull-numeric" => "constant pointer has no allocation provenance",
         "expired" | "cast-address-cancellation" => "constant pointer refers to expired storage",
         "array-bounds" => "constant index is out of bounds",
@@ -126,7 +135,12 @@ fn symbolic_raw_reads_match_independent_objects() -> Result<(), Box<dyn std::err
 #[test]
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn typed_raw_reads_execute() -> Result<(), Box<dyn std::error::Error>> {
-    for name in ["local-products", "function-static", "packed-physical"] {
+    for name in [
+        "local-products",
+        "function-static",
+        "packed-physical",
+        "packed-origin",
+    ] {
         let source = std::fs::read_to_string(
             root()?.join(format!("pa27/tests/spec/raw-read-native/{name}.rs")),
         )?;

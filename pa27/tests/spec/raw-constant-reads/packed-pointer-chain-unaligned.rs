@@ -1,0 +1,1 @@
+#[repr(C,packed)]struct I{prefix:u8,x:u32}#[repr(C,packed)]struct P{prefix:u8,p:*const u32}const X:u32={let x=I{prefix:0,x:37};let outer=P{prefix:0,p:&raw const x.x};let p=&raw const outer;unsafe{*((*p).p)}};fn main(){let _=X;}

@@ -1,5 +1,5 @@
 //! Checked symbolic cells independently enforce liveness, initialization and path bounds.
-use super::{Failure, Machine, Resolved, TypeId};
+use super::{Failure, Machine, RawAccess, Resolved, TypeId};
 use crate::{body, sema, sema::values::Constant, test_source, types::Primitive};
 #[test]
 fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
@@ -21,7 +21,10 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
     let place = Resolved {
         address,
         ty,
-        raw: true,
+        raw: Some(RawAccess {
+            location: address.location(),
+            ty,
+        }),
     };
     assert_eq!(
         machine.read(place).err().map(Failure::message),
@@ -63,7 +66,10 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
             .read(Resolved {
                 address: invalid,
                 ty,
-                raw: true
+                raw: Some(RawAccess {
+                    location: invalid.location(),
+                    ty
+                })
             })
             .err()
             .map(Failure::message),

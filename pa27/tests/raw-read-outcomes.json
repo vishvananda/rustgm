@@ -4,6 +4,202 @@
   "qualification": "full independent object compilation and both frontend modes through provenance_reads; native runs through unchanged qualified helper",
   "cases": [
     {
+      "path": "tests/spec/raw-constant-reads/address-cancellation.rs",
+      "source_sha256": "656e713992dde7bde08744b3054620f22c54f6dc3542abb1587ea2709a7a27a6",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "9fcdd7ae7a832ee7ef9f59416d2bddd198188bf267e99773068b754930df9fd0",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "37957ebd5bbd6308093c8e58741eb696d16f1f9e74d26f05202e89f6b7fa1020",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/array.rs",
+      "source_sha256": "6f32e274bfe0126a059d4654caa34bf978619736bb4cc1717f084aeb795f5fd9",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "2f76001e042db056d8da23cf4019808766faa4cf2dbbcf01dbbe29d7036f21b2",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/array-bounds.rs",
+      "source_sha256": "6f880468a3b1e29123590172426ecfef378754f12114585403f155c5fe7d5965",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "6e1c66681a31fa41ef9b5847950b01e227831792781e35c36a53663fa59015e2",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/cast-address-cancellation.rs",
+      "source_sha256": "9a47c52c983097df3d06758000db8610f4d3474d5430edca305f3a8009795ced",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "d7311a6e83fd2f620527e57a0a29311c0d747e1ef447bed6fca513eda45b7723",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 18: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 18: constant pointer refers to expired storage\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/direct-cancellation.rs",
+      "source_sha256": "efe024e7ba5dd1c5f36828500a84782a4a35ab593fc9ae84e93986525c75b423",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "9fbf23dde36a0ac2258a3ed2a10f7ab8d53b639997ddf6225fc3f5ea82230ff8",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "445292c828b323fd00b6e8bebe04cbe2aa4e5e56505483c3786a4887c7642bc8",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/direct-packed-static.rs",
+      "source_sha256": "d5bf5aac2d8d382bb493b667626283e746d261f865596a6c6f0fe2999026dde6",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "7e4837bfc0c153da9585b891920f8c31846406b35814c02428a8054bc95f9394",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 63: constant raw pointer read is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 63: constant raw pointer read is unaligned\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/direct-static.rs",
+      "source_sha256": "8607776adbc9c4f8522e24c5a8d189430eff0a0cdd59540eed925b506777a106",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f1826532a15c26ed2b3b0e1a12bbb3217925434b2bf4cbb6dbc62bdc6dc20444",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/expired.rs",
+      "source_sha256": "213264782b808780c4135c8269d5b3a94b4ba6d5df2bce38765e48adf7ecd1e2",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "ef747b6d5bd06a975cdcb72f041f47ea2123134bd9cc4bbd805dbee6dad5fb8f",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 65: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 65: constant pointer refers to expired storage\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/field.rs",
+      "source_sha256": "4e4e0d4dad2af0eef62cd67c085ce590e0d372fe45723a1f1c06160f150db62e",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c28cd6edb84480fa44f3cd960f0020002cd50ec5cdebffa49ff6edf2c7058957",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/function.rs",
+      "source_sha256": "d555511b575fee9d750b1d1fe1953b352da5665941b599f063ee54244aa1176a",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "d68ddc43577de32287de47f860a39de79f1b436777fd30ad16504d87b86f0a41",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
       "path": "tests/spec/raw-constant-reads/local.rs",
       "source_sha256": "57408bd7fbbd84cf4c29f6f5b2926363fcfb83c5fe568858f6e9fde000be6df8",
       "rustc_status": 0,
@@ -44,120 +240,97 @@
       "classification": "qualified acceptance"
     },
     {
-      "path": "tests/spec/raw-constant-reads/field.rs",
-      "source_sha256": "4e4e0d4dad2af0eef62cd67c085ce590e0d372fe45723a1f1c06160f150db62e",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 0,
-          "stdout_sha256": "c28cd6edb84480fa44f3cd960f0020002cd50ec5cdebffa49ff6edf2c7058957",
-          "stderr": ""
-        },
-        "--emit-lowir": {
-          "status": 0,
-          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
-          "stderr": ""
-        }
-      },
-      "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/array.rs",
-      "source_sha256": "6f32e274bfe0126a059d4654caa34bf978619736bb4cc1717f084aeb795f5fd9",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 0,
-          "stdout_sha256": "2f76001e042db056d8da23cf4019808766faa4cf2dbbcf01dbbe29d7036f21b2",
-          "stderr": ""
-        },
-        "--emit-lowir": {
-          "status": 0,
-          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
-          "stderr": ""
-        }
-      },
-      "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/function.rs",
-      "source_sha256": "d555511b575fee9d750b1d1fe1953b352da5665941b599f063ee54244aa1176a",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 0,
-          "stdout_sha256": "d68ddc43577de32287de47f860a39de79f1b436777fd30ad16504d87b86f0a41",
-          "stderr": ""
-        },
-        "--emit-lowir": {
-          "status": 0,
-          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
-          "stderr": ""
-        }
-      },
-      "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/static.rs",
-      "source_sha256": "c51c120c3413ace32f6da79533e4035bbb231c3df71aa9d054ba4419c7d6fca6",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2",
-      "frontend": {
-        "--emit-types": {
-          "status": 0,
-          "stdout_sha256": "95ddeaa4e434fece836510b05089ebdb50b33e914c4ae8c548688f544fece6fb",
-          "stderr": ""
-        },
-        "--emit-lowir": {
-          "status": 0,
-          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
-          "stderr": ""
-        }
-      },
-      "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/static-projected.rs",
-      "source_sha256": "14646fa59a4033d5ebf1c244c1254c9a3ff7b21c209a04f7df4c907cfc30b195",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "57893f9dceb76ab7e33d9a4d473e44340ac1e35a7d59c94ec59cfc6316a48324",
-      "frontend": {
-        "--emit-types": {
-          "status": 0,
-          "stdout_sha256": "23bee7380c86c15a178e1b13c21fd533a17298d0305cd188c4be5bc8711df6d2",
-          "stderr": ""
-        },
-        "--emit-lowir": {
-          "status": 0,
-          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
-          "stderr": ""
-        }
-      },
-      "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/packed-unaligned.rs",
-      "source_sha256": "146210253767aa26bed06794690a44d8b1953cee211c23a5c3f60d112e6557f0",
+      "path": "tests/spec/raw-constant-reads/mutable-static.rs",
+      "source_sha256": "0fc6fd45c93da860923d020d354e43dae5a9957828b68d55bfdc81c07bec3507",
       "rustc_status": 1,
-      "rustc_stderr_sha256": "ce8ffd0745c2b750d09d41c201abdeb5a3a917dd801831346c36dd9a396f1b21",
+      "rustc_stderr_sha256": "2a3f377773b957aa7bcc0efa8ab1680019904a4c92aee53138fc1300e9d1073d",
       "frontend": {
         "--emit-types": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 44: constant raw pointer read is unaligned\n"
+          "stderr": "ERROR: file 0: 32: constant execution cannot read mutable static storage\n"
         },
         "--emit-lowir": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 44: constant raw pointer read is unaligned\n"
+          "stderr": "ERROR: file 0: 32: constant execution cannot read mutable static storage\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/nonnull-numeric.rs",
+      "source_sha256": "b3794a6ecd196ab467b62677de04bdd746bd979aed97210491641fa49e361f4c",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "569994f2d85b29ae96753fdd39932c0f6cf59d97a3498665efe609bcff0620cc",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/null.rs",
+      "source_sha256": "2aa71a212cbf5d45c93bb1ad5474cdb996e8d392804c85e5ae139b1b8e6a588f",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "d3988d4c4905053225f10f39eede034ff22cf3f8e2c4b61c71bbb259b99fb4c5",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/packed-base-copy.rs",
+      "source_sha256": "1b5ca2923c774e06988f5e2faf1cd1bce6bfa169d76f7ac7e2d21e53a80fff74",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "235aae5ffcd3d9a5a49ceffdf48ca94a9e727b42e521f63d347f6e836d06ae2d",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/packed-base-field-pointer.rs",
+      "source_sha256": "fd8fa5ec5cfc2fc0d1bba8c40e7471ccc17ae02bb8c7e923ee167650e1cb2357",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "b4e578e1f1053587db458039204ba5c8bf498d563a43bc4b760ea0887be8ea79",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 54: constant raw pointer read is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 54: constant raw pointer read is unaligned\n"
         }
       },
       "classification": "qualified rejection"
@@ -183,179 +356,120 @@
       "classification": "qualified acceptance"
     },
     {
-      "path": "tests/spec/raw-constant-reads/null.rs",
-      "source_sha256": "2aa71a212cbf5d45c93bb1ad5474cdb996e8d392804c85e5ae139b1b8e6a588f",
-      "rustc_status": 1,
-      "rustc_stderr_sha256": "d3988d4c4905053225f10f39eede034ff22cf3f8e2c4b61c71bbb259b99fb4c5",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
-        }
-      },
-      "classification": "qualified rejection"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/expired.rs",
-      "source_sha256": "213264782b808780c4135c8269d5b3a94b4ba6d5df2bce38765e48adf7ecd1e2",
-      "rustc_status": 1,
-      "rustc_stderr_sha256": "ef747b6d5bd06a975cdcb72f041f47ea2123134bd9cc4bbd805dbee6dad5fb8f",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 65: constant pointer refers to expired storage\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 65: constant pointer refers to expired storage\n"
-        }
-      },
-      "classification": "qualified rejection"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/uninitialized.rs",
-      "source_sha256": "eed94dbbe8b69f19d6fe225873adfe7f3a896fad36c388e47972689aa524d7a0",
-      "rustc_status": 1,
-      "rustc_stderr_sha256": "88aa3a8e44bfbe9031aa3ab173b12bbbb4d0dc22c195f8862f6a125895a349b6",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
-        }
-      },
-      "classification": "source initialization rejection (E0381), not byte validity proof"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/address-cancellation.rs",
-      "source_sha256": "656e713992dde7bde08744b3054620f22c54f6dc3542abb1587ea2709a7a27a6",
+      "path": "tests/spec/raw-constant-reads/packed-nested-base-copy.rs",
+      "source_sha256": "516d03a970006a0028cb511ac2a9c42326a61f3c8bb71fcf9b51db1bbe3d4c32",
       "rustc_status": 0,
-      "rustc_stderr_sha256": "9fcdd7ae7a832ee7ef9f59416d2bddd198188bf267e99773068b754930df9fd0",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
       "frontend": {
         "--emit-types": {
           "status": 0,
-          "stdout_sha256": "37957ebd5bbd6308093c8e58741eb696d16f1f9e74d26f05202e89f6b7fa1020",
+          "stdout_sha256": "4ac11279d4fe90e34ea6dbf0aeaaab6bf9ab0d9d0e843414d0e5b66607e2a74f",
           "stderr": ""
         },
         "--emit-lowir": {
           "status": 0,
-          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
           "stderr": ""
         }
       },
       "classification": "qualified acceptance"
     },
     {
-      "path": "tests/spec/raw-constant-reads/cast-address-cancellation.rs",
-      "source_sha256": "9a47c52c983097df3d06758000db8610f4d3474d5430edca305f3a8009795ced",
+      "path": "tests/spec/raw-constant-reads/packed-nested-field-pointer.rs",
+      "source_sha256": "ffea7003a14b63c3efa2dcda495adf280ebe0baefb96af8815cc88434cf7a1e9",
       "rustc_status": 1,
-      "rustc_stderr_sha256": "d7311a6e83fd2f620527e57a0a29311c0d747e1ef447bed6fca513eda45b7723",
+      "rustc_stderr_sha256": "bbd2b13e150be5e7ea4270893ecb2829b86a6bd9e33bd3938400d86389af4bdb",
       "frontend": {
         "--emit-types": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 18: constant pointer refers to expired storage\n"
+          "stderr": "ERROR: file 0: 98: constant raw pointer read is unaligned\n"
         },
         "--emit-lowir": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 18: constant pointer refers to expired storage\n"
+          "stderr": "ERROR: file 0: 98: constant raw pointer read is unaligned\n"
         }
       },
       "classification": "qualified rejection"
     },
     {
-      "path": "tests/spec/raw-constant-reads/reinterpret-boundary.rs",
-      "source_sha256": "06e43b974c0b810e9184cfc13c59ce216af3c0d82dc5378edcf024bd3afddcf7",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 11: raw pointer type reinterpretation in constant execution is not implemented\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 11: raw pointer type reinterpretation in constant execution is not implemented\n"
-        }
-      },
-      "classification": "accepted Rust; explicit unsupported capability boundary"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/mutable-static.rs",
-      "source_sha256": "0fc6fd45c93da860923d020d354e43dae5a9957828b68d55bfdc81c07bec3507",
+      "path": "tests/spec/raw-constant-reads/packed-nested-offset.rs",
+      "source_sha256": "d85b8712726dc263c7ff2ba11be57580a7b4aea5a9479a38a75dba1a1fc0c31b",
       "rustc_status": 1,
-      "rustc_stderr_sha256": "2a3f377773b957aa7bcc0efa8ab1680019904a4c92aee53138fc1300e9d1073d",
+      "rustc_stderr_sha256": "84ae5af99f85bc688f97f7edfba1e02b1b725b9e1ea7342cd86b871a32fbf8f6",
       "frontend": {
         "--emit-types": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 32: constant execution cannot read mutable static storage\n"
+          "stderr": "ERROR: file 0: 83: constant raw pointer read is unaligned\n"
         },
         "--emit-lowir": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 32: constant execution cannot read mutable static storage\n"
+          "stderr": "ERROR: file 0: 83: constant raw pointer read is unaligned\n"
         }
       },
       "classification": "qualified rejection"
     },
     {
-      "path": "tests/spec/raw-constant-reads/raw-write-boundary.rs",
-      "source_sha256": "5e1b229cd14c6b73ec9d52648fd8db3a45ba1047d734a3f9016c5c08324c58f0",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
-        }
-      },
-      "classification": "accepted Rust; explicit unsupported capability boundary"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/raw-base-field.rs",
-      "source_sha256": "a0f5166c773cc90ea7a4c83f1f14b4de317ac85ab786ee694a10a466559c73aa",
+      "path": "tests/spec/raw-constant-reads/packed-pointer-chain.rs",
+      "source_sha256": "296c84e646938ab08321d3e17315135a611951e0a5ff3d4bb0d1d663001b7805",
       "rustc_status": 0,
       "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
       "frontend": {
         "--emit-types": {
           "status": 0,
-          "stdout_sha256": "7f29eb25a4471001a69c8c66f0e8e606f60093eacca650e66380a9c01ce513c0",
+          "stdout_sha256": "fdcd7d38930e4243a81b85d36ac6cf1bc1ad4aeecf018c3f5465f9a2f8c93ed9",
           "stderr": ""
         },
         "--emit-lowir": {
           "status": 0,
-          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
           "stderr": ""
         }
       },
       "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/packed-pointer-chain-unaligned.rs",
+      "source_sha256": "0602ed430752f77315ce153e3e6b59682ebf7623a30e05e1af01e81855263d32",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "9e7a93e86df5bc4e28dfcce9c540f7a776e5287dcd74f6757196c9c0be204e1b",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 103: constant raw pointer read is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 103: constant raw pointer read is unaligned\n"
+        }
+      },
+      "classification": "qualified rejection"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/packed-unaligned.rs",
+      "source_sha256": "146210253767aa26bed06794690a44d8b1953cee211c23a5c3f60d112e6557f0",
+      "rustc_status": 1,
+      "rustc_stderr_sha256": "ce8ffd0745c2b750d09d41c201abdeb5a3a917dd801831346c36dd9a396f1b21",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 44: constant raw pointer read is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 44: constant raw pointer read is unaligned\n"
+        }
+      },
+      "classification": "qualified rejection"
     },
     {
       "path": "tests/spec/raw-constant-reads/raw-base-array.rs",
@@ -378,20 +492,100 @@
       "classification": "qualified acceptance"
     },
     {
-      "path": "tests/spec/raw-constant-reads/static-indirect.rs",
-      "source_sha256": "6857c63590a3a4e762254337bf832f91a02a676e5c3257a7814425c102948bbf",
+      "path": "tests/spec/raw-constant-reads/raw-base-field.rs",
+      "source_sha256": "a0f5166c773cc90ea7a4c83f1f14b4de317ac85ab786ee694a10a466559c73aa",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "7f29eb25a4471001a69c8c66f0e8e606f60093eacca650e66380a9c01ce513c0",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/raw-borrow-boundary.rs",
+      "source_sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n"
+        }
+      },
+      "classification": "accepted Rust; explicit unsupported capability boundary"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/raw-write-boundary.rs",
+      "source_sha256": "5e1b229cd14c6b73ec9d52648fd8db3a45ba1047d734a3f9016c5c08324c58f0",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "classification": "accepted Rust; explicit unsupported capability boundary"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/reinterpret-boundary.rs",
+      "source_sha256": "06e43b974c0b810e9184cfc13c59ce216af3c0d82dc5378edcf024bd3afddcf7",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 11: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "ERROR: file 0: 11: raw pointer type reinterpretation in constant execution is not implemented\n"
+        }
+      },
+      "classification": "accepted Rust; explicit unsupported capability boundary"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/static.rs",
+      "source_sha256": "c51c120c3413ace32f6da79533e4035bbb231c3df71aa9d054ba4419c7d6fca6",
       "rustc_status": 0,
       "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "qualified_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2",
       "frontend": {
         "--emit-types": {
           "status": 0,
-          "stdout_sha256": "394a468404ba65d4fbf6bb52744c0f12d4ffad41e3afe244f2c0723075a36aed",
+          "stdout_sha256": "95ddeaa4e434fece836510b05089ebdb50b33e914c4ae8c548688f544fece6fb",
           "stderr": ""
         },
         "--emit-lowir": {
           "status": 0,
-          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
           "stderr": ""
         }
       },
@@ -417,121 +611,24 @@
       "classification": "qualified rejection"
     },
     {
-      "path": "tests/spec/raw-constant-reads/nonnull-numeric.rs",
-      "source_sha256": "b3794a6ecd196ab467b62677de04bdd746bd979aed97210491641fa49e361f4c",
-      "rustc_status": 1,
-      "rustc_stderr_sha256": "569994f2d85b29ae96753fdd39932c0f6cf59d97a3498665efe609bcff0620cc",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
-        }
-      },
-      "classification": "qualified rejection"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/raw-borrow-boundary.rs",
-      "source_sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n"
-        }
-      },
-      "classification": "accepted Rust; explicit unsupported capability boundary"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/direct-static.rs",
-      "source_sha256": "8607776adbc9c4f8522e24c5a8d189430eff0a0cdd59540eed925b506777a106",
+      "path": "tests/spec/raw-constant-reads/static-indirect.rs",
+      "source_sha256": "6857c63590a3a4e762254337bf832f91a02a676e5c3257a7814425c102948bbf",
       "rustc_status": 0,
       "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "qualified_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2",
       "frontend": {
         "--emit-types": {
           "status": 0,
-          "stdout_sha256": "f1826532a15c26ed2b3b0e1a12bbb3217925434b2bf4cbb6dbc62bdc6dc20444",
+          "stdout_sha256": "394a468404ba65d4fbf6bb52744c0f12d4ffad41e3afe244f2c0723075a36aed",
           "stderr": ""
         },
         "--emit-lowir": {
           "status": 0,
-          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
           "stderr": ""
         }
       },
       "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/direct-packed-static.rs",
-      "source_sha256": "d5bf5aac2d8d382bb493b667626283e746d261f865596a6c6f0fe2999026dde6",
-      "rustc_status": 1,
-      "rustc_stderr_sha256": "7e4837bfc0c153da9585b891920f8c31846406b35814c02428a8054bc95f9394",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 63: constant raw pointer read is unaligned\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 63: constant raw pointer read is unaligned\n"
-        }
-      },
-      "classification": "qualified rejection"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/direct-cancellation.rs",
-      "source_sha256": "efe024e7ba5dd1c5f36828500a84782a4a35ab593fc9ae84e93986525c75b423",
-      "rustc_status": 0,
-      "rustc_stderr_sha256": "9fbf23dde36a0ac2258a3ed2a10f7ab8d53b639997ddf6225fc3f5ea82230ff8",
-      "qualified_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
-      "frontend": {
-        "--emit-types": {
-          "status": 0,
-          "stdout_sha256": "445292c828b323fd00b6e8bebe04cbe2aa4e5e56505483c3786a4887c7642bc8",
-          "stderr": ""
-        },
-        "--emit-lowir": {
-          "status": 0,
-          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
-          "stderr": ""
-        }
-      },
-      "classification": "qualified acceptance"
-    },
-    {
-      "path": "tests/spec/raw-constant-reads/array-bounds.rs",
-      "source_sha256": "6f880468a3b1e29123590172426ecfef378754f12114585403f155c5fe7d5965",
-      "rustc_status": 1,
-      "rustc_stderr_sha256": "6e1c66681a31fa41ef9b5847950b01e227831792781e35c36a53663fa59015e2",
-      "frontend": {
-        "--emit-types": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
-        },
-        "--emit-lowir": {
-          "status": 1,
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
-        }
-      },
-      "classification": "qualified rejection"
     },
     {
       "path": "tests/spec/raw-constant-reads/static-mutable-indirect.rs",
@@ -553,23 +650,43 @@
       "classification": "qualified rejection"
     },
     {
-      "path": "tests/spec/raw-constant-reads/packed-nested-offset.rs",
-      "source_sha256": "d85b8712726dc263c7ff2ba11be57580a7b4aea5a9479a38a75dba1a1fc0c31b",
+      "path": "tests/spec/raw-constant-reads/static-projected.rs",
+      "source_sha256": "14646fa59a4033d5ebf1c244c1254c9a3ff7b21c209a04f7df4c907cfc30b195",
+      "rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualified_object_sha256": "57893f9dceb76ab7e33d9a4d473e44340ac1e35a7d59c94ec59cfc6316a48324",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "23bee7380c86c15a178e1b13c21fd533a17298d0305cd188c4be5bc8711df6d2",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr": ""
+        }
+      },
+      "classification": "qualified acceptance"
+    },
+    {
+      "path": "tests/spec/raw-constant-reads/uninitialized.rs",
+      "source_sha256": "eed94dbbe8b69f19d6fe225873adfe7f3a896fad36c388e47972689aa524d7a0",
       "rustc_status": 1,
-      "rustc_stderr_sha256": "84ae5af99f85bc688f97f7edfba1e02b1b725b9e1ea7342cd86b871a32fbf8f6",
+      "rustc_stderr_sha256": "88aa3a8e44bfbe9031aa3ab173b12bbbb4d0dc22c195f8862f6a125895a349b6",
       "frontend": {
         "--emit-types": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 83: constant raw pointer read is unaligned\n"
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
         },
         "--emit-lowir": {
           "status": 1,
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "stderr": "ERROR: file 0: 83: constant raw pointer read is unaligned\n"
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
         }
       },
-      "classification": "qualified rejection"
+      "classification": "source initialization rejection (E0381), not byte validity proof"
     }
   ],
   "native_prefix_file": "dev/tests/harness/native_references.rs",
@@ -579,7 +696,7 @@
       "path": "tests/spec/raw-read-native/function-static.rs",
       "source_sha256": "db75699fe6f62612f499f1e85f0e966bd6dd8e95ccba2c5922a15bb2560ebe77",
       "qualified_input_sha256": "a471b4374372d6b18c295f58a4c9528f630e270d7212088608231519c683a229",
-      "rustc_binary_sha256": "d095d5aac2074baa51b363e1521f3b7e283c4e83147f8cb75af1ebb3db3d8d27",
+      "rustc_binary_sha256": "bef0aa7eb96848e97a9b1d6714951be825f62109d4ef6ce45a718b5010b330b4",
       "backend_binary_sha256": "1873589c5af20c6cff7e16c92ba9e332a8785476f948f513e137f4c971bdb9f9",
       "rustc_status": 0,
       "backend_status": 0,
@@ -590,8 +707,19 @@
       "path": "tests/spec/raw-read-native/local-products.rs",
       "source_sha256": "e32005772bd1a99c406c41a13f381d05ca60d3207d86b48034a4a41e0ec2b04e",
       "qualified_input_sha256": "16f6bf6143a71943ac6c2155caccfa7ade66887ae345e8f8713f5b40acbdb836",
-      "rustc_binary_sha256": "7f89830ad836aefe1c8368d03557da8665063c08e6088f380ef47790c4947294",
+      "rustc_binary_sha256": "7e0949d780295504fb538b980f14a6f5946a501e63acf9f3d62ce15e24cd2bc2",
       "backend_binary_sha256": "ed913bc3c1f49d94d843a1f696068d0b41ac37bd2144ceb0288f6d9203c76914",
+      "rustc_status": 0,
+      "backend_status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "tests/spec/raw-read-native/packed-origin.rs",
+      "source_sha256": "311dc40fa912e95d298bc1b120a2c9b22c48530d094a8880ddd13743cabd80ff",
+      "qualified_input_sha256": "4ade66970df5c233dd5718e2b51e20e871a05e88ec0445a2a9e7120ff862abc2",
+      "rustc_binary_sha256": "005c60d30767faa27075ba520624b33e862f4af85363d79092a8af4762b27276",
+      "backend_binary_sha256": "e1f9e2a195adea3cd923a2e7e1024acb30b696ad4a0335b9f22d8d8f0e3bb9a4",
       "rustc_status": 0,
       "backend_status": 0,
       "stdout": "",
@@ -601,7 +729,7 @@
       "path": "tests/spec/raw-read-native/packed-physical.rs",
       "source_sha256": "819b547aef0f9b966bcdfcd6d4a8e43b5991ae6ea84544bc0a3e7007f1757f64",
       "qualified_input_sha256": "5ea460be4a6a2ae4098b984f15e076dace5e03548aff246ad6d5424e049b447d",
-      "rustc_binary_sha256": "fd02fe31e27c886606888be1722f76a27239f87fad829e85195957006790bc97",
+      "rustc_binary_sha256": "76aeb12dba8d916c295d10160372de3d924b667ea0ae3db35c51764e78368b45",
       "backend_binary_sha256": "9ccf5e335df7dd85e74d8681c42fe1ca7f00b3148476cc56161ccae814066e55",
       "rustc_status": 0,
       "backend_status": 0,

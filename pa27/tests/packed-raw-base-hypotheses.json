@@ -1,0 +1,39 @@
+{
+  "stage": "draft",
+  "compiler": "7087b2b4",
+  "rustc": "1.98.0 / edition2024 / x86_64",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-base-copy.rs",
+      "source_sha256": "1b5ca2923c774e06988f5e2faf1cd1bce6bfa169d76f7ac7e2d21e53a80fff74",
+      "rustc_status": 0,
+      "current_frontend_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-base-field-pointer.rs",
+      "source_sha256": "fd8fa5ec5cfc2fc0d1bba8c40e7471ccc17ae02bb8c7e923ee167650e1cb2357",
+      "rustc_status": 1,
+      "current_frontend_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-nested-base-copy.rs",
+      "source_sha256": "516d03a970006a0028cb511ac2a9c42326a61f3c8bb71fcf9b51db1bbe3d4c32",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-nested-field-pointer.rs",
+      "source_sha256": "ffea7003a14b63c3efa2dcda495adf280ebe0baefb96af8815cc88434cf7a1e9",
+      "rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-pointer-chain.rs",
+      "source_sha256": "296c84e646938ab08321d3e17315135a611951e0a5ff3d4bb0d1d663001b7805",
+      "rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-pointer-chain-unaligned.rs",
+      "source_sha256": "0602ed430752f77315ce153e3e6b59682ebf7623a30e05e1af01e81855263d32",
+      "rustc_status": 1
+    }
+  ]
+}

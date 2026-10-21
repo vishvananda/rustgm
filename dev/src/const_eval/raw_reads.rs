@@ -2,7 +2,10 @@
 #[cfg(test)]
 #[path = "../../tests/invariants/raw_access.rs"]
 mod tests;
-use super::{Failure, Machine, memory::Resolved};
+use super::{
+    Failure, Machine,
+    memory::{RawAccess, Resolved},
+};
 use crate::{
     resolve::model::DefId,
     sema::values::{LocationId, Reader},
@@ -40,7 +43,7 @@ impl Machine<'_, '_> {
         Ok(())
     }
     pub(super) fn project_raw_type(&mut self, place: Resolved) -> Result<(), Failure> {
-        if place.raw {
+        if place.raw.is_some() {
             self.path(place.address)?;
             let location = place
                 .address
@@ -62,14 +65,7 @@ impl Machine<'_, '_> {
         self.charge(work)?;
         Ok(layout)
     }
-    pub(super) fn check_raw_read(
-        &mut self,
-        place: Resolved,
-        root: LocationId,
-        path: &[u64],
-    ) -> Result<(), Failure> {
-        let mut ty = Reader::new(self.evaluator.facts()).location(root)?.ty;
-        let root_layout = self.footprint(ty)?;
+    fn storage_offset(&mut self, mut ty: TypeId, path: &[u64]) -> Result<(TypeId, u64), Failure> {
         let mut offset = 0u64;
         for &index in path {
             self.charge(1)?;
@@ -79,6 +75,18 @@ impl Machine<'_, '_> {
                 .ok_or("constant storage offset overflow")?;
             ty = field.ty;
         }
+        Ok((ty, offset))
+    }
+    pub(super) fn check_raw_read(
+        &mut self,
+        place: Resolved,
+        access: RawAccess,
+        root: LocationId,
+        path: &[u64],
+    ) -> Result<(), Failure> {
+        let root_ty = Reader::new(self.evaluator.facts()).location(root)?.ty;
+        let root_layout = self.footprint(root_ty)?;
+        let (ty, offset) = self.storage_offset(root_ty, path)?;
         if ty != place.ty {
             return Err(
                 "raw pointer type reinterpretation in constant execution is not implemented".into(),
@@ -90,6 +98,26 @@ impl Machine<'_, '_> {
             .is_none_or(|end| end > root_layout.size)
         {
             return Err("constant read is outside allocation bounds".into());
+        }
+        let location = access
+            .location
+            .ok_or("constant pointer has no allocation provenance")?;
+        let (base, path) = self.path(crate::sema::values::Constant::pointer(location))?;
+        if base != root {
+            return Err("constant raw target differs from selected allocation".into());
+        }
+        let (ty, offset) = self.storage_offset(root_ty, &path)?;
+        if ty != access.ty {
+            return Err(
+                "raw pointer type reinterpretation in constant execution is not implemented".into(),
+            );
+        }
+        let target = self.footprint(ty)?;
+        if offset
+            .checked_add(target.size)
+            .is_none_or(|end| end > root_layout.size)
+        {
+            return Err("constant raw target is outside allocation bounds".into());
         }
         if root_layout.align < target.align || !offset.is_multiple_of(u64::from(target.align)) {
             return Err("constant raw pointer read is unaligned".into());

@@ -146,7 +146,7 @@ impl Machine<'_, '_> {
                 let Some(place) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                if place.raw {
+                if place.raw.is_some() {
                     return Err(
                         "references through raw pointers in constant execution are not implemented"
                             .into(),

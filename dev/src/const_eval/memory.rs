@@ -16,10 +16,15 @@ enum Cell {
     Empty,
 }
 #[derive(Clone, Copy)]
+pub(super) struct RawAccess {
+    pub location: Option<LocationId>,
+    pub ty: TypeId,
+}
+#[derive(Clone, Copy)]
 pub(super) struct Resolved {
     pub address: Constant,
     pub ty: TypeId,
-    pub raw: bool,
+    pub raw: Option<RawAccess>,
 }
 #[derive(Default)]
 pub(super) struct Memory {
@@ -185,8 +190,8 @@ impl Machine<'_, '_> {
     }
     pub(super) fn read(&mut self, place: Resolved) -> Result<Option<Constant>, Failure> {
         let (root, path) = self.path(place.address)?;
-        if place.raw {
-            self.check_raw_read(place, root, &path)?;
+        if let Some(access) = place.raw {
+            self.check_raw_read(place, access, root, &path)?;
         }
         if self.memory.roots.contains_key(&root) {
             let cell = self.cell(root, &path)?;
@@ -253,7 +258,7 @@ impl Machine<'_, '_> {
                             .flatten()
                             .ok_or("constant local is outside its storage lifetime")?,
                         ty: body.locals[id.0 as usize].ty,
-                        raw: frame.raw_views.contains(&id),
+                        raw: frame.raw_views.get(&id).copied(),
                     };
                 }
                 Place::Static(id) => {
@@ -268,14 +273,14 @@ impl Machine<'_, '_> {
                     break Resolved {
                         address: self.evaluator.static_address(id, ty)?,
                         ty,
-                        raw: false,
+                        raw: None,
                     };
                 }
                 Place::Temporary(id) => {
                     break Resolved {
                         address: self.temporary(frame, id)?,
                         ty: body.values[id.0 as usize].ty,
-                        raw: false,
+                        raw: None,
                     };
                 }
                 Place::Projection(id) => {
@@ -317,7 +322,11 @@ impl Machine<'_, '_> {
                 return Ok(Some(Resolved {
                     address: value,
                     ty: projection.ty,
-                    raw: matches!(projection.kind, ProjectionKind::RawDereference { .. }),
+                    raw: matches!(projection.kind, ProjectionKind::RawDereference { .. })
+                        .then_some(RawAccess {
+                            location: value.location(),
+                            ty: projection.ty,
+                        }),
                 }));
             }
             ProjectionKind::Field(field) => {

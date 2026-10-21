@@ -51,7 +51,7 @@ struct Frame {
     values: Vec<Option<Constant>>,
     temporaries: HashMap<ValueId, Constant>,
     projections: HashMap<crate::body::ir::ProjectionId, memory::Resolved>,
-    raw_views: HashSet<crate::body::ir::LocalId>,
+    raw_views: HashMap<crate::body::ir::LocalId, memory::RawAccess>,
     allocations: Vec<crate::sema::values::LocationId>,
 }
 /// All CFGs are immutable and already checked by their defining-body pipeline.
@@ -273,7 +273,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             values: vec![None; body.values.len()],
             temporaries: HashMap::new(),
             projections: HashMap::new(),
-            raw_views: HashSet::new(),
+            raw_views: HashMap::new(),
             allocations: Vec::new(),
         };
         let mut parameters = 0;
@@ -403,7 +403,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                 let Some(location) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                if location.raw {
+                if location.raw.is_some() {
                     return Err(
                         "raw pointer writes in constant execution are not implemented".into(),
                     );
@@ -439,8 +439,8 @@ impl<'a, 'b> Machine<'a, 'b> {
                 let Some(location) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                if location.raw {
-                    frame.raw_views.insert(view);
+                if let Some(access) = location.raw {
+                    frame.raw_views.insert(view, access);
                 } else {
                     frame.raw_views.remove(&view);
                 }
