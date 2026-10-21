@@ -29,3 +29,9 @@ validation, const initializers and rejected syntax contexts. Provider snapshot
 and error checks are in `option_environment`; its ignored native test compares
 present, absent, shadowed and constant payload programs with pinned rustc and
 the external CPPGM backend. These declarations remain draft fixtures.
+
+`dot-method-outcomes.json` declares `spec/dot-methods` controls. The
+`language_operators::methods` tests independently qualify source outcomes,
+exercise full typed lowering and compare accepted native programs with rustc.
+The separate scaling invariant checks cached visibility work and receiver probes.
+These tests do not constitute an activated course manifest or text references.

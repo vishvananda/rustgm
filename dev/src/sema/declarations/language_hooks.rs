@@ -55,9 +55,43 @@ impl Checker<'_> {
             .intern_arguments(&inputs)
             .map_err(|e| self.error(declaration.origin, e))?;
         let projected = self.language_output(declaration, subject, arguments, parameters)?;
+        self.language_self_bound(declaration, subject, arguments)?;
         let (receiver, signature) =
             self.language_signature(declaration, subject, projected, &inputs)?;
         self.language_method(declaration, subject, receiver, signature, &inputs)
+    }
+    fn language_self_bound(
+        &mut self,
+        declaration: BuiltinLanguage,
+        subject: TypeId,
+        arguments: GenericArgs,
+    ) -> Result<(), Error> {
+        let application = self
+            .facts
+            .types
+            .intern_trait_application(Application {
+                item: ItemId(declaration.definition.0),
+                arguments,
+            })
+            .map_err(|e| self.error(declaration.origin, e))?;
+        let value = Predicate {
+            ty: subject,
+            bound: Bound::Trait(application),
+        };
+        self.facts
+            .generics
+            .trait_self_bounds
+            .insert(declaration.definition, value);
+        self.facts
+            .generics
+            .predicates
+            .entry(declaration.definition)
+            .or_default()
+            .push(crate::sema::generics::Predicate {
+                source: declaration.origin,
+                value: value.into(),
+            });
+        Ok(())
     }
     fn language_inputs(
         &mut self,
@@ -358,6 +392,10 @@ impl Checker<'_> {
                 &generic_parameters,
             )
             .map_err(|e| self.error(origin, e))?;
+        self.facts
+            .methods
+            .trait_names
+            .insert(self.report.resolution.definitions[method.0 as usize].name);
         self.facts.definitions[method.0 as usize] = Some(callable);
         self.states[method.0 as usize] = State::Complete;
         self.facts.generics.parameters.insert(method, Vec::new());

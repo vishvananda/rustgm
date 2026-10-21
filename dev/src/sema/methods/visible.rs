@@ -25,29 +25,33 @@ pub(super) struct Index {
 impl Index {
     pub(super) fn new(report: &Report, facts: &Declarations) -> Result<Self, &'static str> {
         let mut index = Self::default();
-        for member in facts.associated.members() {
-            let Some(owner) = facts.associated.trait_owner(member.definition) else {
+        for (member, _) in facts.associated.declaration_members() {
+            index.account(1)?;
+            let Some(owner) = facts.associated.trait_owner(member) else {
                 continue;
             };
-            let definition = &report.resolution.definitions[member.definition.0 as usize];
+            let definition = &report.resolution.definitions[member.0 as usize];
             if matches!(definition.kind, DefKind::Function | DefKind::Const) {
                 index
                     .members
                     .entry(owner)
                     .or_default()
-                    .insert(definition.name, member.definition);
+                    .insert(definition.name, member);
             }
         }
         for (ordinal, scope) in report.resolution.scopes.iter().enumerate() {
+            index.account(1)?;
             let scope_id = u32::try_from(ordinal)
                 .map(ScopeId)
                 .map_err(|_| "trait visibility scope space exhausted")?;
             for (&(_, namespace), binding) in &scope.bindings {
+                index.account(1)?;
                 // Method lookup uses the retained glob candidate even when naming
                 // the trait directly would be ambiguous. Direct bindings replace it.
                 if namespace == Namespace::Type
-                    && report.resolution.definitions[binding.target.0 as usize].kind
+                    && (report.resolution.definitions[binding.target.0 as usize].kind
                         == DefKind::Trait
+                        || facts.associated.operation(binding.target).is_some())
                 {
                     index
                         .scopes
@@ -58,7 +62,10 @@ impl Index {
             }
         }
         for (&import, binding) in &report.resolution.anonymous_types {
-            if report.resolution.definitions[binding.target.0 as usize].kind == DefKind::Trait {
+            index.account(1)?;
+            if report.resolution.definitions[binding.target.0 as usize].kind == DefKind::Trait
+                || facts.associated.operation(binding.target).is_some()
+            {
                 let scope = report.resolution.imports[import].scope;
                 index
                     .scopes
@@ -68,6 +75,9 @@ impl Index {
             }
         }
         Ok(index)
+    }
+    pub(super) const fn steps(&self) -> usize {
+        self.steps
     }
     pub(super) fn groups(
         &mut self,

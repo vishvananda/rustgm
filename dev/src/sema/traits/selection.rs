@@ -170,6 +170,18 @@ pub(in crate::sema) fn may_have_subject(
     let Some(subject) = subject else {
         return Ok(true);
     };
+    if facts
+        .associated
+        .operation(DefId(item.0))
+        .is_some_and(|(hook, _)| hook.assignment())
+        && subject
+            .heads()
+            .any(|head| matches!(head, super::heads::Head::Primitive(_)))
+    {
+        // Exclusion only: the RHS and exact primitive descriptor are still
+        // validated by ordinary complete trait selection.
+        return Ok(true);
+    }
     if let super::heads::Subject::Rigid(super::heads::Head::Opaque(id)) = subject {
         return Ok(super::results::may_have_opaque_trait(facts, id, item));
     }

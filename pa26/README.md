@@ -120,8 +120,8 @@ two-phase receiver reservation.
 
 Forty-four draft outcomes and twenty native programs are recorded in
 `tests/index-mut-outcomes.json` and `docs/pa26-index-mut-checkpoint.md`.
-Capturing closures and direct library-trait dot-method lookup remain explicitly
-qualified prerequisite/hook boundaries. Custom compound assignment through
+Capturing closures use PA24's separate execution contract. Direct library-trait
+dot-method lookup is extended by the later checkpoint below. Custom compound assignment through
 IndexMut is extended by the assignment checkpoint below.
 This checkpoint does not activate PA26.
 
@@ -149,5 +149,22 @@ reified calls. A private validated selection token demands an ordinary checked
 body through the existing region, ownership, loan and arithmetic pipeline.
 `tests/primitive-assignment-outcomes.json` declares the independent source
 controls; `docs/pa26-primitive-assignment.md` records the implementation and
-remaining boundaries. Implicit hook availability and direct library-trait
-method lookup remain unfinished. PA26 remains planned.
+remaining boundaries. Direct library-trait method lookup is extended below.
+Implicit hook availability remains unfinished. PA26 remains planned.
+
+## Maintainer canonical dot-method checkpoint
+
+Imported canonical operator and assignment traits participate in ordinary dot
+lookup through their exact registered identities. Aliases, anonymous imports,
+glob imports and parameter bounds retain their normal scope and priority rules;
+unimported canonical traits do not supply lexical candidates. Receiver matching,
+ambiguity, call inference and selected implementation proof use the existing
+method pipeline, including primitive assignment method factories.
+
+`tests/dot-method-outcomes.json` declares 26 independently qualified controls
+with 17 accepted native programs. They include shared/mutable indexing,
+evaluation order, two-phase reservation, moved operands and opposing user-trait
+candidates. The visibility index is built once and cached by scope and name;
+widths 8, 32 and 128 retain linear work. See `docs/pa26-dot-methods.md` for the
+typed contract and qualifications. This does not activate PA26 or supply the
+remaining comparison/Deref, iteration, question-mark, derive or formatting hooks.

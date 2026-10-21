@@ -444,7 +444,7 @@
     },
     {
       "path": "tests/spec/index-mut/trait-method-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.mutable-indexing"
       ],
@@ -452,10 +452,6 @@
         "kind": "program",
         "status": 0,
         "emit": "obj"
-      },
-      "native": {
-        "kind": "codegen",
-        "reason": "Direct library-trait dot-method lookup remains a required PA26 library-surface boundary; paired inherent-method receiver reservation is qualified separately."
       }
     },
     {

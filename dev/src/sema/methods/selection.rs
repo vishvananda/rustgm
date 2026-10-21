@@ -56,7 +56,9 @@ pub(super) fn trait_groups(
     caller: Caller<'_>,
 ) -> Result<[Vec<DefId>; 2], &'static str> {
     if facts.methods.visible.is_none() {
-        facts.methods.visible = Some(Box::new(super::visible::Index::new(report, facts)?));
+        let index = super::visible::Index::new(report, facts)?;
+        facts.methods.trait_visibility_steps = index.steps();
+        facts.methods.visible = Some(Box::new(index));
     }
     let head = source.head(&facts.types, prefix).map_err(inference)?;
     let object = if matches!(head, Some(infer::Constructor::Dynamic { .. })) {
@@ -83,12 +85,18 @@ pub(super) fn trait_groups(
         },
         |object| object.traits.as_slice(),
     );
-    facts
+    let index = facts
         .methods
         .visible
         .as_mut()
-        .ok_or("missing trait visibility index")?
-        .groups(report, site.0, site.1, bound_traits)
+        .ok_or("missing trait visibility index")?;
+    let before = index.steps();
+    let groups = index.groups(report, site.0, site.1, bound_traits)?;
+    facts.methods.trait_visibility_steps = facts
+        .methods
+        .trait_visibility_steps
+        .saturating_add(index.steps().saturating_sub(before));
+    Ok(groups)
 }
 
 pub(super) fn account_probe(facts: &mut Declarations, steps: usize) -> Result<(), &'static str> {

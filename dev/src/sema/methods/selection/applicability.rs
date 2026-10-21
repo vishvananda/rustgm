@@ -52,7 +52,9 @@ pub(super) fn prepare(
         .self_type;
     let subject = target;
     let target = receiver.as_ref().map_or(target, |r| r.ty);
-    let ids = if facts.associated.trait_owner(owner).is_some() {
+    let ids = if facts.associated.trait_owner(owner).is_some()
+        || facts.associated.operation(owner).is_some()
+    {
         facts.generics.callable_parameters(&facts.types, owner)?.1
     } else {
         facts.generics.parameter_ids(&facts.types, owner)?

@@ -36,6 +36,7 @@ pub struct Methods {
     pub selection_probes: usize,
     pub selection_steps: usize,
     pub selection_shape_steps: usize,
+    pub trait_visibility_steps: usize,
 }
 
 #[derive(Default)]

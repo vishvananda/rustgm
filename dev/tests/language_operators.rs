@@ -118,3 +118,6 @@ mod assignment;
 
 #[path = "language_operators/primitives.rs"]
 mod primitives;
+
+#[path = "language_operators/methods.rs"]
+mod methods;

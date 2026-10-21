@@ -1,0 +1,400 @@
+{
+  "schema": 1,
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "nominal",
+      "path": "tests/spec/dot-methods/nominal.rs",
+      "source_sha256": "722fab8d657e9c71d96e544f3cb7a6ed5729fb2bad4929adf33663356692b344",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "primitive",
+      "path": "tests/spec/dot-methods/primitive.rs",
+      "source_sha256": "a9ba9006a30344b8fee26133e36f1ce5e9de3613990cf45685a7da3e836a28e2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "forwarding",
+      "path": "tests/spec/dot-methods/forwarding.rs",
+      "source_sha256": "23d1ea3a965b462d5f93333aa0bdd8cfbc43bc81b942c5ce84d7c687052ef8c7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "generic",
+      "path": "tests/spec/dot-methods/generic.rs",
+      "source_sha256": "311db298633f735c2b0288b7664f1b4a2261042042297f88179eb865cbdd34d4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "alias",
+      "path": "tests/spec/dot-methods/alias.rs",
+      "source_sha256": "44f5e8087902523116f30736f6a57fdbc4272e77c9256eacd1f2310ee8ab4ab4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "anonymous",
+      "path": "tests/spec/dot-methods/anonymous.rs",
+      "source_sha256": "0929febfba82a7e642dbaed3c684fc7f699fe4408c86703cb22147258b2f947f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "glob",
+      "path": "tests/spec/dot-methods/glob.rs",
+      "source_sha256": "7e809b4501455741208178f6c6b711951bbed16d70afba8ce059e9a3b3deb137",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "nonimported",
+      "path": "tests/spec/dot-methods/nonimported.rs",
+      "source_sha256": "02efbd718a14f505e5d1ef0c9ff727514af4b578eabe21c9a35f390c5c520b03",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "outer-scope",
+      "path": "tests/spec/dot-methods/outer-scope.rs",
+      "source_sha256": "e00f03f7358dc557e8b24f0ec1bdf12a28dea6d6c57c8f2f12a8e5fd985cc0d4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "shadow",
+      "path": "tests/spec/dot-methods/shadow.rs",
+      "source_sha256": "d2fb28db6d8447e46eee3e0f9128cabaa7115f14b8c68d32256542a89fbbdeb9",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "user-trait",
+      "path": "tests/spec/dot-methods/user-trait.rs",
+      "source_sha256": "1999f69fec87622e3e2be1510e237af9486f3904756ab19e4716707cea07fc23",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "ambiguous",
+      "path": "tests/spec/dot-methods/ambiguous.rs",
+      "source_sha256": "7f61ab4cc2891f5acdd76ac023a1d72ca6a0e8d77c0db996bded9b50750108bb",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "inherent",
+      "path": "tests/spec/dot-methods/inherent.rs",
+      "source_sha256": "e4103b84e081b6e27bc333f0b9975a6fc9fb20f4f35294b4ecda986aa7d806b5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "index",
+      "path": "tests/spec/dot-methods/index.rs",
+      "source_sha256": "b3de66182bf25636216c4cdd06faa7b1c2fb8386f42335c234d50be3dbc15894",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "index-mut",
+      "path": "tests/spec/dot-methods/index-mut.rs",
+      "source_sha256": "747a23fd1d424cc7258dbef318d66cd5a57c4f5b82d1511e110f90504d431aaf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "index-loan",
+      "path": "tests/spec/dot-methods/index-loan.rs",
+      "source_sha256": "e9fbae22441bca3d781259d931bf2b60a2c514106d910d457667eed93908e20a",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "borrowed-immutable",
+      "path": "tests/spec/dot-methods/borrowed-immutable.rs",
+      "source_sha256": "bccc5f3e4c75bc0c107dc515e051502c175c5a117d1324e4a5fa8eb8c6e13bfb",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "owned-move",
+      "path": "tests/spec/dot-methods/owned-move.rs",
+      "source_sha256": "f34af2d7ad21fe039e2891bea9e19febcccc092fa33141b981c340a7adb8ece4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "owned-add",
+      "path": "tests/spec/dot-methods/owned-add.rs",
+      "source_sha256": "06a71ccd169daf980530f78237fc951242dd68b746f4710f7a37e7724ad17661",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "closure",
+      "path": "tests/spec/dot-methods/closure.rs",
+      "source_sha256": "6ca0b0429516608869446db45b45a10b2eba6a1afe6e481ae1dc2c62724d3246",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "order",
+      "path": "tests/spec/dot-methods/order.rs",
+      "source_sha256": "e0b7a0058710b45920841b4505170de80f452dd0b230c155bd2064c51e3a2b9c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "block-scope",
+      "path": "tests/spec/dot-methods/block-scope.rs",
+      "source_sha256": "55a5ea96bf1116f40b8c160b713f40ea50c9056b973f0adedbc6579511e3f778",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "two-phase",
+      "path": "tests/spec/dot-methods/two-phase.rs",
+      "source_sha256": "60727b0c3906b8764a06440cf4236a725155731d616ccbdce5634a95902579bb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "shadow-block",
+      "path": "tests/spec/dot-methods/shadow-block.rs",
+      "source_sha256": "3678b171c724fc6528f504aa34d4a3502ae010898ae4cf1965e1eb05c56f8dc5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 0
+    },
+    {
+      "name": "unsupported-pair",
+      "path": "tests/spec/dot-methods/unsupported-pair.rs",
+      "source_sha256": "02f6a67b12f548601e1f24b2eab25689192adab8225ec8e1b9c744479b7eb244",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    },
+    {
+      "name": "unrelated-receiver",
+      "path": "tests/spec/dot-methods/unrelated-receiver.rs",
+      "source_sha256": "4d77fa65b85b1712d66be583b85d96898364e8859e6f11906736d284a07b63c1",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa26.language-and-library-hooks"
+      ],
+      "exit_status": 1
+    }
+  ],
+  "status": "draft"
+}

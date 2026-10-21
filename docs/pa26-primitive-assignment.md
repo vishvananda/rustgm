@@ -38,7 +38,8 @@ The earlier assignment suite's unchanged generic primitive boundary now accepts.
 Implicit canonical hook availability remains unfinished: `x += &y` without any
 written canonical trait demand still follows the earlier scalar boundary. The
 paired explicit `use core::ops::AddAssign` control exercises the implemented
-route. Direct library-trait dot-call lookup, other primitive operators,
+route. Direct library-trait dot-call lookup is extended by the separate
+`docs/pa26-dot-methods.md` checkpoint. Other primitive operators,
 comparison/Deref, iteration, question-mark/residual flow, additional derives,
 formatting/runtime hooks and remaining library methods also remain. This is
 not assignment activation or full cumulative release qualification.
