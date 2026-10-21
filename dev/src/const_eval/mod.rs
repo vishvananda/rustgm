@@ -406,9 +406,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                     return Ok(None);
                 };
                 if location.raw.is_some() {
-                    return Err(
-                        "raw pointer writes in constant execution are not implemented".into(),
-                    );
+                    self.check_raw_write(location)?;
                 }
                 self.write_place(location, value)?;
             }

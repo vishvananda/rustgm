@@ -36,7 +36,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("static-cycle", false, false),
     ("nonnull-numeric", false, false),
     ("reinterpret-boundary", true, false),
-    ("raw-write-boundary", true, false),
+    ("raw-write-boundary", true, true),
     ("raw-borrow-boundary", true, false),
 ];
 fn root() -> Result<PathBuf, Box<dyn std::error::Error>> {
@@ -64,7 +64,6 @@ fn rejection(name: &str) -> Result<&'static str, Box<dyn std::error::Error>> {
         "reinterpret-boundary" => {
             "raw pointer type reinterpretation in constant execution is not implemented"
         }
-        "raw-write-boundary" => "raw pointer writes in constant execution are not implemented",
         "raw-borrow-boundary" => {
             "references through raw pointers in constant execution are not implemented"
         }

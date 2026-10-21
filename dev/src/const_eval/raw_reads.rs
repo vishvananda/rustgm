@@ -84,6 +84,53 @@ impl Machine<'_, '_> {
         root: LocationId,
         path: &[u64],
     ) -> Result<(), Failure> {
+        self.check_raw_access(place, access, root, path, false)
+    }
+    pub(super) fn check_raw_write(&mut self, place: Resolved) -> Result<(), Failure> {
+        let access = place
+            .raw
+            .ok_or("constant raw write lacks its access anchor")?;
+        let (root, path) = self.path(place.address)?;
+        let location = Reader::new(self.evaluator.facts()).location(root)?;
+        if matches!(location.origin, crate::sema::values::Origin::Static(_)) {
+            return Err("constant execution cannot write static storage".into());
+        }
+        if place.address.write_permission() != Some(crate::sema::values::WritePermission::Writable)
+        {
+            let (answer, work) = {
+                let facts = self.evaluator.facts();
+                let mut query =
+                    crate::types::interior_mutability::Query::new(&facts.types, &facts.aggregates);
+                let answer = query.contains(location.ty)?;
+                (answer, query.work().steps)
+            };
+            self.charge(work)?;
+            return Err(match answer {
+                crate::types::interior_mutability::Answer::Ordinary => {
+                    "constant raw pointer write is derived from a shared reference"
+                }
+                crate::types::interior_mutability::Answer::Interior => {
+                    "constant shared-derived interior-mutable raw writes are not implemented"
+                }
+                crate::types::interior_mutability::Answer::Unresolved => {
+                    "constant raw write requires completed interior-mutability facts"
+                }
+            }
+            .into());
+        }
+        if place.union.is_some() {
+            return Err("constant raw union field writes are not implemented".into());
+        }
+        self.check_raw_access(place, access, root, &path, true)
+    }
+    fn check_raw_access(
+        &mut self,
+        place: Resolved,
+        access: RawAccess,
+        root: LocationId,
+        path: &[u64],
+        write: bool,
+    ) -> Result<(), Failure> {
         let root_ty = Reader::new(self.evaluator.facts()).location(root)?.ty;
         let root_layout = self.footprint(root_ty)?;
         let (ty, offset) = self.storage_offset(root_ty, path)?;
@@ -97,7 +144,12 @@ impl Machine<'_, '_> {
             .checked_add(target.size)
             .is_none_or(|end| end > root_layout.size)
         {
-            return Err("constant read is outside allocation bounds".into());
+            return Err(if write {
+                "constant write is outside allocation bounds"
+            } else {
+                "constant read is outside allocation bounds"
+            }
+            .into());
         }
         let location = access
             .location
@@ -120,7 +172,12 @@ impl Machine<'_, '_> {
             return Err("constant raw target is outside allocation bounds".into());
         }
         if root_layout.align < target.align || !offset.is_multiple_of(u64::from(target.align)) {
-            return Err("constant raw pointer read is unaligned".into());
+            return Err(if write {
+                "constant raw pointer write is unaligned"
+            } else {
+                "constant raw pointer read is unaligned"
+            }
+            .into());
         }
         Ok(())
     }

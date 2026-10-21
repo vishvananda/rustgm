@@ -1,0 +1,2236 @@
+{
+  "stage": "planned-development-checkpoint",
+  "assignment_active": false,
+  "baseline": "a4f064ff837aa915d87f0190c2dbc60504a25f98",
+  "source_sha256": "efe8972226fcf9815e753f65296e7cd9f70caaa9e7d85f7538393395bdfa4cbe",
+  "source_fingerprint_format": "sha256(concatenated sorted dev/**/*.rs relative path UTF8, NUL, file bytes, NUL)",
+  "compiler_sha256": "202488b69221fe9b7dc523c9f457ce0b051816f4e8e307432e883c8ce0dc88ed",
+  "frontend_cases_replayed": 34,
+  "independent_pointer_view_object_sha256": "cb4a96ab3533600cc0216cd20ee30da0ede85f90bfc95636962166bfa840e4a5",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "backend": "unchanged backend.lock"
+  },
+  "summary": {
+    "rustc=0,frontend=0": 12,
+    "rustc=1,frontend=1": 17,
+    "rustc=0,frontend=1": 4,
+    "rustc=1,frontend=0": 1
+  },
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-store-validity/local-raw-mut.rs",
+      "sha256": "50be71f70b5e4851e1a00366317687cfccb49fb4632217b56298c42885b745bd",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "fe30f2b35856f392e6726b1d81c9cd4038739443de204d320d4500218aa3d3b8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1e69cd940dded1f5b02db75af2e21bedd2869ae62f479620bd83ee37e6fe5ea3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-reference.rs",
+      "sha256": "147b295817bed2d3875059d090cbb3caeb50443bdca08d83a46fad4ec1b16784",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a9f62079a081e24afaa5aa0771c0be4127d8ad4afc8e563eddae7f1a1d737ca0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1e69cd940dded1f5b02db75af2e21bedd2869ae62f479620bd83ee37e6fe5ea3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mut-to-const-to-mut.rs",
+      "sha256": "d1adb3588cd88468414c22e18e7710d695a67792d448a333bb513c94bc83de70",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "24fe1f9f487fbe10f0a99cc3ea032a9d70e6e0462911e5710921a4a7c1b03784",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1e69cd940dded1f5b02db75af2e21bedd2869ae62f479620bd83ee37e6fe5ea3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/raw-const-local-cast.rs",
+      "sha256": "37488090293153c7711b00d7a7ed3e9b921ae7f286fb1dae21dbb346b9de5e28",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "938e2355182d3480fa1219d562739f40737914630ff34affafc6ecde1e8744af",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1e69cd940dded1f5b02db75af2e21bedd2869ae62f479620bd83ee37e6fe5ea3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference.rs",
+      "sha256": "a7febef2c52c93f2aebf509464ba4553b97f4b3648be3b7d4d9e3bb64405e0fa",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: variable does not need to be mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference.rs:2:18\n  |\n2 | const X:u32={let mut x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                  ----^\n  |                  |\n  |                  help: remove this `mut`\n  |\n  = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference.rs:2:79\n  |\n2 | const X:u32={let mut x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                               ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference.rs:2:104\n  |\n2 | const X:u32={let mut x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                                                        ^\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "c02dc6d395f6e2361c22d7d164d3d81d615a3e7a8ed5f6fe6fd35e1567d509a8",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs",
+      "sha256": "5fc52202aadc926b08f1e96e6d3796a55f4d5df0909c4109e040711c2557461b",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs:2:93\n  |\n2 | const X:u32={let mut x=7u32;let m=&mut x;let r=&*m;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                                             ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs:2:118\n  |\n2 | const X:u32={let mut x=7u32;let m=&mut x;let r=&*m;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                                                                      ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "d7084c86ef38c476aa636e8b77af912eba4f43eeea6b7212d9578901d76a44d7",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs",
+      "sha256": "b183024c53696a08781946784176e0a27fff354c882eac6651c8693095cc2b5d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs:2:83\n  |\n2 | const X:u32={let x=7u32;let r=&x;let p=r as *const u32 as *mut u32;let q=p;unsafe{*q=9;}x};fn main(){let _=X;}\n  |                                                                                   ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs:2:108\n  |\n2 | const X:u32={let x=7u32;let r=&x;let p=r as *const u32 as *mut u32;let q=p;unsafe{*q=9;}x};fn main(){let _=X;}\n  |                                                                                                            ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "998ec61b5cc37cdbc950a2fa774a0534860d5d3ff320ef6c11d0247526b4c447",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/expired-local.rs",
+      "sha256": "742e31ac00ea6b8ea43c404fa51b1292e74c7ceebeb77ed1b6ebca3cb4b51080",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/expired-local.rs:1:55\n  |\n1 | const X:u32={let p={let mut x=7u32;&raw mut x};unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                       ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/expired-local.rs:1:80\n  |\n1 | const X:u32={let p={let mut x=7u32;&raw mut x};unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                                ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "e52f15e2d1279d115d84a4f409992049d1a39a4e3d9f295ce34c7e432fb64eee",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/null.rs",
+      "sha256": "16c6f3ffb48cdd499f5e1b65da24f058fee70014df9b07d9e77f09db1fa9eec5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: attempting to access 4 bytes, but got null pointer\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/null.rs:1:46\n  |\n1 | const X:u32={let p=0usize as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                              ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/null.rs:1:71\n  |\n1 | const X:u32={let p=0usize as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                       ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "06fb4fc3327c2218e32dfc77ff6b8c4bdf58b7e59d476286f553a957d88cc4e2",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-aligned.rs",
+      "sha256": "7c9704688fdc01fe40e939f678ff0fc6a605f7851ac9eca3794f1c52a9e95098",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-aligned.rs:1:30\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u8={let mut p=P{a:1,b:7};let r=&raw mut p.a;unsafe{*r=9;}p.a};fn main(){let _=X;}\n  |                       -      ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_stderr_sha256": "2c6af8d57ca317f89f16829ba6d33eb3b99de4cb0f00567c7019028c8f6144a2",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "bfe628e9c96da15b56e05c2af2eac70261d779735850b36ff2b079bf8603e9e8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7be02c01dfafd982b28161fb80022c9dd71034b4469c70e935eb69aac732eab4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-unaligned.rs",
+      "sha256": "db02087014ae339d8b78dd56903898a901d2aa00bf1c6d4e7ec462dc75fe3d7d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is unaligned",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-unaligned.rs:1:96\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:1,b:7};let r=&raw mut p.b;unsafe{*r=9;}p.b};fn main(){let _=X;}\n  |                                                                                                ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-unaligned.rs:1:123\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:1,b:7};let r=&raw mut p.b;unsafe{*r=9;}p.b};fn main(){let _=X;}\n  |                                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "29093e012553d526af27fcc407d6661a7c26cfb131e6752bc0de8e57ec62e40d",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "03b6c00bf3f5ae2edf8bbdefbeeb99c29f483a05d158525cc46ac27a24543d3b",
+          "stderr": "ERROR: file 0: 47: constant raw pointer write is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "03b6c00bf3f5ae2edf8bbdefbeeb99c29f483a05d158525cc46ac27a24543d3b",
+          "stderr": "ERROR: file 0: 47: constant raw pointer write is unaligned\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "03b6c00bf3f5ae2edf8bbdefbeeb99c29f483a05d158525cc46ac27a24543d3b",
+          "stderr": "ERROR: file 0: 47: constant raw pointer write is unaligned\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-raw-base-field.rs",
+      "sha256": "d9e62fb42806766f79145f275b7fbf0e5629659fb2ea973c4a6b76571d8d365a",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-raw-base-field.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:1,b:7};let r=&raw mut p;unsafe{(*r).b=9;}p.b};fn main(){let _=X;}\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_stderr_sha256": "4537885fe63c9193533f6610c4797a65e1350fcf33f852d78e84da87585f9947",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "ca9f69d5b2dc6b9674602c44731739015471bd3dfafec0f7d9c46a04870697de",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4af0d56775d5c19cd7146ff0fbdff7c6eaef991c7d6ddae3fe6083c08f398030",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs",
+      "sha256": "08d98dee96bd6562738a633f25c204c5b6a7bab060b3dfac604ddb2a02f85c9b",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type bool: encountered 0x02, but expected a boolean\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs:1:1\n  |\n1 | const X:bool={let mut x=false;let p=(&raw mut x) as *mut u8;unsafe{*p=2;}x};fn main(){let _=X;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 1, align: 1) {\n              02                                              \u2502 .\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs:1:93\n  |\n1 | const X:bool={let mut x=false;let p=(&raw mut x) as *mut u8;unsafe{*p=2;}x};fn main(){let _=X;}\n  |                                                                                             ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "be964a909a69787a8f13e4afafa239a74ab8857eacb02ae6dbe7c0b359431333",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00e0544c731e8b04a03885ef0573a4058ff9321d68e64c4523e6d8af97882867",
+          "stderr": "ERROR: file 0: 13: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00e0544c731e8b04a03885ef0573a4058ff9321d68e64c4523e6d8af97882867",
+          "stderr": "ERROR: file 0: 13: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00e0544c731e8b04a03885ef0573a4058ff9321d68e64c4523e6d8af97882867",
+          "stderr": "ERROR: file 0: 13: raw pointer type reinterpretation in constant execution is not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-valid.rs",
+      "sha256": "fe3c69d647c05e246ce915bf5519db5e61caf730ee4a318aae471bf75d9a36e3",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00e0544c731e8b04a03885ef0573a4058ff9321d68e64c4523e6d8af97882867",
+          "stderr": "ERROR: file 0: 13: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00e0544c731e8b04a03885ef0573a4058ff9321d68e64c4523e6d8af97882867",
+          "stderr": "ERROR: file 0: 13: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "00e0544c731e8b04a03885ef0573a4058ff9321d68e64c4523e6d8af97882867",
+          "stderr": "ERROR: file 0: 13: raw pointer type reinterpretation in constant execution is not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-width.rs",
+      "sha256": "042e31ba8d16285da26871ea677cb158e16fb09890cea0b5abf8a9511a0bfdfb",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa",
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa",
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa",
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/static-immutable.rs",
+      "sha256": "6bd04255af9acf2fb174c0698778d94f08715e9c91fd68becbaca20fc81b2d72",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant execution cannot write static storage",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing to alloc1 which is read-only\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/static-immutable.rs:2:69\n  |\n2 | static S:u32=7;const X:u32={let p=(&raw const S) as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                     ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/static-immutable.rs:2:94\n  |\n2 | static S:u32=7;const X:u32={let p=(&raw const S) as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                                              ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "88ef4b193d07a6e64a50559b50c9e5c920429740567c7c8b4ad929867900ae2c",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "295d10f05db540d6f5280e9f380c64733b3e09e2edf6e1623c9001c656a89e39",
+          "stderr": "ERROR: file 0: 64: constant execution cannot write static storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "295d10f05db540d6f5280e9f380c64733b3e09e2edf6e1623c9001c656a89e39",
+          "stderr": "ERROR: file 0: 64: constant execution cannot write static storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "295d10f05db540d6f5280e9f380c64733b3e09e2edf6e1623c9001c656a89e39",
+          "stderr": "ERROR: file 0: 64: constant execution cannot write static storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/const-pointer-write.rs",
+      "sha256": "c53d4baf41c8212574c3281309e6fae24ba74fa024f30ec10aa84ebda3fe7baf",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "cannot assign through a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: variable does not need to be mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/const-pointer-write.rs:1:18\n  |\n1 | const X:u32={let mut x=7u32;let p=&raw const x;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                  ----^\n  |                  |\n  |                  help: remove this `mut`\n  |\n  = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0594]: cannot assign to `*p`, which is behind a `*const` pointer\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/const-pointer-write.rs:1:55\n  |\n1 | const X:u32={let mut x=7u32;let p=&raw const x;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                       ^^^^ `p` is a `*const` pointer, so it cannot be written to\n  |\nhelp: consider changing this to be a mutable pointer\n  |\n1 - const X:u32={let mut x=7u32;let p=&raw const x;unsafe{*p=9;}x};fn main(){let _=X;}\n1 + const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{*p=9;}x};fn main(){let _=X;}\n  |\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0594`.\n",
+      "rustc_stderr_sha256": "f2fd96c567906ececfcb235ea01eaae9490541e71c424549c78ffcd714c1237b",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6baaf3b41315fd1b3b9eac6d558e9ccb5f0378536892bf815159b17d25d932b7",
+          "stderr": "ERROR: file 0: 54: cannot assign through a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6baaf3b41315fd1b3b9eac6d558e9ccb5f0378536892bf815159b17d25d932b7",
+          "stderr": "ERROR: file 0: 54: cannot assign through a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6baaf3b41315fd1b3b9eac6d558e9ccb5f0378536892bf815159b17d25d932b7",
+          "stderr": "ERROR: file 0: 54: cannot assign through a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-default-lint.rs",
+      "sha256": "120138f1b4a3c089dc4ef6d41648474aad93e55cae8619d8b62aaf0f1853dc8b",
+      "rustc_status": 1,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error: assigning to `&T` is undefined behavior, consider using an `UnsafeCell`\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-runtime-default-lint.rs:1:72\n  |\n1 | fn main(){let x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}}\n  |                                     ---------------------------        ^^^^\n  |                                     |\n  |                                     casting happened here\n  |\n  = note: for more information, visit <https://doc.rust-lang.org/book/ch15-05-interior-mutability.html>\n  = note: `#[deny(invalid_reference_casting)]` on by default\n\nerror: aborting due to 1 previous error\n\n",
+      "rustc_stderr_sha256": "e44e7081bcc398aa93f99b694b27b90c74eca2d77d7b58ce828944e00623f852",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "45b82de35ec3c7097ef8e2fd916f1edf2407f39220b027909ce934502414856f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8e8e949f845aa6c856c04e5115e8c3e4a3c013a8937de31dd59f60df8d58f431",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-allowed-lint.rs",
+      "sha256": "05c08721d41b23c5b32e5f03311f25004bc89c8076daa80632dbfdbb5eaeaa80",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "5c227253c6dc0e14cf05cb87713ab11e3c6be2a8ef85746c1876a6f8b4fcc3fd",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8e8e949f845aa6c856c04e5115e8c3e4a3c013a8937de31dd59f60df8d58f431",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "0e35d395e34afcbbd2765e8b33d9a2443c9542333708f86bbc031927d58c1670"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-before-shared.rs",
+      "sha256": "5cc3b1319644d9c0139e4605bf24b5e4ae435b57996ec7486ee704c837bfbd30",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f171b2dc311ed2855d8ef6126f421f824744e938c5c17f0a0862684c749e2e1c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1e69cd940dded1f5b02db75af2e21bedd2869ae62f479620bd83ee37e6fe5ea3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-before-writable.rs",
+      "sha256": "27859033ea6773b8587b43ee2a02b69198af948df47e946103ed50b46c85b17d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "access conflicts with a live reference loan",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0502]: cannot borrow `x` as mutable because it is also borrowed as immutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-before-writable.rs:1:44\n  |\n1 | const X:u32={let mut x=7u32;let r=&x;let p=&raw mut x;unsafe{*p=9;}let _=*r;x};fn main(){let _=X;}\n  |                                   --       ^^^^^^^^^^                    -- immutable borrow later used here\n  |                                   |        |\n  |                                   |        mutable borrow occurs here\n  |                                   immutable borrow occurs here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0502`.\n",
+      "rustc_stderr_sha256": "2b3ff3c509da274bc78072bac4c76e57900c19a652afafecb7ff387f77ea4f55",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "49049d7c068a6131cb3668b1faf765cc242c846fa4a90cb747f8cccb9da7f3f0",
+          "stderr": "ERROR: file 0: 43: access conflicts with a live reference loan\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "49049d7c068a6131cb3668b1faf765cc242c846fa4a90cb747f8cccb9da7f3f0",
+          "stderr": "ERROR: file 0: 43: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "49049d7c068a6131cb3668b1faf765cc242c846fa4a90cb747f8cccb9da7f3f0",
+          "stderr": "ERROR: file 0: 43: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-aggregate.rs",
+      "sha256": "914a7ae7240b4b8541f7f459e349006a1c0dd1670b83cf0cf63de1363c7d14b5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-aggregate.rs:2:80\n  |\n2 | const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;let t=(p,);unsafe{*t.0=9;}x};fn main(){let _=X;}\n  |                                                                                ^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-aggregate.rs:2:107\n  |\n2 | const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;let t=(p,);unsafe{*t.0=9;}x};fn main(){let _=X;}\n  |                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "05e379eddfffa293ae4921f8ded0831c167bd8875b1f10a5151b40b45bdfcb36",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-call.rs",
+      "sha256": "cc39a5515f588e8bf5707e6cb39596633e9c115f3ba76a7853e09e3fada250f1",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-call.rs:2:103\n  |\n2 | const fn write(p:*mut u32){unsafe{*p=9;}}const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;write(p);x};fn main(){let _=X;}\n  |                                                                                                       ^^^^^^^^ evaluation of `X` failed inside this call\n  |\nnote: inside `write`\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-call.rs:2:35\n  |\n2 | const fn write(p:*mut u32){unsafe{*p=9;}}const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;write(p);x};fn main(){let _=X;}\n  |                                   ^^^^ the failure occurred here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-call.rs:2:131\n  |\n2 | const fn write(p:*mut u32){unsafe{*p=9;}}const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;write(p);x};fn main(){let _=X;}\n  |                                                                                                                                   ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "cff8059531c2687de00b69f7144c07234bec7bb5ea4773ab01c854e4b5ab80d2",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1ebf9474bf49341acf2937082e64c23973327f2f50686de2f01533784b931352",
+          "stderr": "ERROR: file 0: 63: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1ebf9474bf49341acf2937082e64c23973327f2f50686de2f01533784b931352",
+          "stderr": "ERROR: file 0: 63: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1ebf9474bf49341acf2937082e64c23973327f2f50686de2f01533784b931352",
+          "stderr": "ERROR: file 0: 63: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-field-address.rs",
+      "sha256": "7b1150d37b39733316bd056cfea25cc0f017511135e38f970fc1e3c83cb8aef5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-field-address.rs:2:93\n  |\n2 | struct S{x:u32}const X:u32={let s=S{x:7};let r=&s;let p=(&raw const r.x) as *mut u32;unsafe{*p=9;}s.x};fn main(){let _=X;}\n  |                                                                                             ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-field-address.rs:2:120\n  |\n2 | struct S{x:u32}const X:u32={let s=S{x:7};let r=&s;let p=(&raw const r.x) as *mut u32;unsafe{*p=9;}s.x};fn main(){let _=X;}\n  |                                                                                                                        ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "d4db84af0e4f20ad10a1f3a55f2e009edb0a07697c1eafb57adeca7ce623bbf3",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e67936b7171e44dd8a787b8edb6bab92a49617060bb084368fb06c6549ff1d41",
+          "stderr": "ERROR: file 0: 64: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e67936b7171e44dd8a787b8edb6bab92a49617060bb084368fb06c6549ff1d41",
+          "stderr": "ERROR: file 0: 64: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e67936b7171e44dd8a787b8edb6bab92a49617060bb084368fb06c6549ff1d41",
+          "stderr": "ERROR: file 0: 64: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-field-address.rs",
+      "sha256": "99c8acca48f22bfc3a66bb270f82f1029b80bdd56b91fcdee2077aaec08d80f4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "8977db3f4741e855521bcf63b47ee3483888bdea6125d53ae2d604a85c5102b0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4af0d56775d5c19cd7146ff0fbdff7c6eaef991c7d6ddae3fe6083c08f398030",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-call.rs",
+      "sha256": "26433153b5361a510b5f5bd1cb55ab5123738ba93a5ee0787280f5ce88cf2260",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "03cb128ed1f407555602023fed2be6c5839ecb33764f92c63952e2259f8ee380",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8c858b34dcbb3ff3134ee4c3f4f733c69ee14b5be99049c01cffc82bef35a9a8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-aggregate.rs",
+      "sha256": "b1e954f270c02a3d39ff536a1e2af2bd63ac35acd0aec353a27fd063af584e41",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "6cf816c839f0ca0a5ccecaed6cbf2ea9806fccbe31644914f22b5f21aeacddb5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1e69cd940dded1f5b02db75af2e21bedd2869ae62f479620bd83ee37e6fe5ea3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-storage/shared-derived-raw-store.rs",
+      "sha256": "f1db01030e2436ea65d2f842c8245736bf3a0d105fe4feb85de12ce15a650f12",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant shared-derived interior-mutable raw writes are not implemented",
+      "original_investigation_path": "pa27/tests/spec/raw-store-validity/shared-interior.rs",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "158a1007bea840b777f579d8cf51c3fa3f6bc9142db28b23876e63fa8abe06ed",
+          "stderr": "ERROR: file 0: 84: constant shared-derived interior-mutable raw writes are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "158a1007bea840b777f579d8cf51c3fa3f6bc9142db28b23876e63fa8abe06ed",
+          "stderr": "ERROR: file 0: 84: constant shared-derived interior-mutable raw writes are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "158a1007bea840b777f579d8cf51c3fa3f6bc9142db28b23876e63fa8abe06ed",
+          "stderr": "ERROR: file 0: 84: constant shared-derived interior-mutable raw writes are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/promoted-shared.rs",
+      "sha256": "f88c8e8608ec07dd2ef643bf9d796638876a336a87934c7923a4d0359def9ba2",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing to alloc3 which is read-only\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/promoted-shared.rs:2:71\n  |\n2 | const R:&u32=&7;const X:u32={let p=R as *const u32 as *mut u32;unsafe{*p=9;}*R};fn main(){let _=X;}\n  |                                                                       ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/promoted-shared.rs:2:97\n  |\n2 | const R:&u32=&7;const X:u32={let p=R as *const u32 as *mut u32;unsafe{*p=9;}*R};fn main(){let _=X;}\n  |                                                                                                 ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "40c86e4cb7e9aa018c081cbd837fcd4bb49e5ea4e03cd51f5559efad8c68c164",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c20fde96ad8363252a8e2db80413cf33d1cc130fd20b94019704b72f9276920a",
+          "stderr": "ERROR: file 0: 65: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c20fde96ad8363252a8e2db80413cf33d1cc130fd20b94019704b72f9276920a",
+          "stderr": "ERROR: file 0: 65: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c20fde96ad8363252a8e2db80413cf33d1cc130fd20b94019704b72f9276920a",
+          "stderr": "ERROR: file 0: 65: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-to-shared-coercion.rs",
+      "sha256": "b5dc9769a0e6ba62e0298f1bf3bec88ea5df77fdf0b74a01fa3bee8a38be2f65",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "derived from a shared reference",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/mutable-to-shared-coercion.rs:2:112\n  |\n2 | ...st X:u32={let mut x=7;let p=addr(&mut x);unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                    ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/mutable-to-shared-coercion.rs:2:137\n  |\n2 | ...{let mut x=7;let p=addr(&mut x);unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "1448a5d18a84839b9b3b6031f59640034b0dc2e3ccea9bcddf6f34f14dd9c32e",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "062098f6b864cc8e901261e4e6f2720828b1bf06c0660c9a3e37f53c87d66917",
+          "stderr": "ERROR: file 0: 109: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "062098f6b864cc8e901261e4e6f2720828b1bf06c0660c9a3e37f53c87d66917",
+          "stderr": "ERROR: file 0: 109: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "062098f6b864cc8e901261e4e6f2720828b1bf06c0660c9a3e37f53c87d66917",
+          "stderr": "ERROR: file 0: 109: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/array-bounds.rs",
+      "sha256": "7c37add07a65d69936788b6c8da732451631c532c9acb4a8e5010fbec21ba127",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "out of bounds",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: index out of bounds: the length is 1 but the index is 1\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/array-bounds.rs:1:55\n  |\n1 | const X:u32={let mut a=[7u32];let p=&raw mut a;unsafe{(*p)[1]=9;}0};fn main(){let _=X;}\n  |                                                       ^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/array-bounds.rs:1:85\n  |\n1 | const X:u32={let mut a=[7u32];let p=&raw mut a;unsafe{(*p)[1]=9;}0};fn main(){let _=X;}\n  |                                                                                     ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "733ae4f93297e14c7deda68c0883b02efe6751572fed3bdd2051ba686f45d7de",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "10abb98e3e208f97138f94e5db551a5b88100ba36f7cec951a019cf1279490b8",
+          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "10abb98e3e208f97138f94e5db551a5b88100ba36f7cec951a019cf1279490b8",
+          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "10abb98e3e208f97138f94e5db551a5b88100ba36f7cec951a019cf1279490b8",
+          "stderr": "ERROR: file 0: 12: constant index is out of bounds\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/static-mutable.rs",
+      "sha256": "12eab6c61b01d99de946173a37d1ff5e0020f63f14112045a4fab51e9b0bd31e",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "cannot write static storage",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: modifying a static's initial value from another static's initializer\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/static-mutable.rs:1:57\n  |\n1 | static mut S:u32=7;const X:u32={let p=&raw mut S;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                         ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/static-mutable.rs:1:82\n  |\n1 | static mut S:u32=7;const X:u32={let p=&raw mut S;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                                  ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "b546a1c0f04dc18b5213f908b5b46ed44a74536138faf0638293136ff4121e9c",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bc712dde9de3bc6cc740eb674612dd7a696d126335986fdbf3db974db8e77318",
+          "stderr": "ERROR: file 0: 31: constant execution cannot write static storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bc712dde9de3bc6cc740eb674612dd7a696d126335986fdbf3db974db8e77318",
+          "stderr": "ERROR: file 0: 31: constant execution cannot write static storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bc712dde9de3bc6cc740eb674612dd7a696d126335986fdbf3db974db8e77318",
+          "stderr": "ERROR: file 0: 31: constant execution cannot write static storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/union-base-boundary.rs",
+      "sha256": "691f5be9f706fce0123dd6ac7e7b2ede65c0c8e5a652c9ea6417f3bb41264d27",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw union field writes are not implemented",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/union-base-boundary.rs:1:15\n  |\n1 | union U{a:u32,b:bool}const X:u32={let mut u=U{a:7};let p=&raw mut u;unsafe{(*p).a=9;u.a}};fn main(){let _=X;}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_stderr_sha256": "9e223643d1971e82293f7565b3105f66c6c6808d96bb71fc1ccaeff4e4947cb4",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "cd3f388ac83793d4ed0f85738d6f580ae4412f3154d7895b214946530f50bb42",
+          "stderr": "ERROR: file 0: 33: constant raw union field writes are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "cd3f388ac83793d4ed0f85738d6f580ae4412f3154d7895b214946530f50bb42",
+          "stderr": "ERROR: file 0: 33: constant raw union field writes are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "cd3f388ac83793d4ed0f85738d6f580ae4412f3154d7895b214946530f50bb42",
+          "stderr": "ERROR: file 0: 33: constant raw union field writes are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/typed-scalars.rs",
+      "sha256": "5d71303f32a43dbcdf2ab544af09f99913414bcbd2d39ec7f64de3e634fa3a37",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "61048be880238810ec98329cefcf9fac2d22b2e813e20f32a1f4afe7a6ce4bdc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "bdb354c8ec5a05fedeef0766f593dec64b9ee623a38bca6c1c8617d97b3bb469",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6a32da43cd473666180513bd61c666db084b0df91812e0796ebdacfd4bb2398b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    }
+  ],
+  "original_investigation": [
+    {
+      "path": "pa27/tests/spec/raw-store-validity/local-raw-mut.rs",
+      "sha256": "50be71f70b5e4851e1a00366317687cfccb49fb4632217b56298c42885b745bd",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-reference.rs",
+      "sha256": "147b295817bed2d3875059d090cbb3caeb50443bdca08d83a46fad4ec1b16784",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mut-to-const-to-mut.rs",
+      "sha256": "d1adb3588cd88468414c22e18e7710d695a67792d448a333bb513c94bc83de70",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/raw-const-local-cast.rs",
+      "sha256": "37488090293153c7711b00d7a7ed3e9b921ae7f286fb1dae21dbb346b9de5e28",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference.rs",
+      "sha256": "a7febef2c52c93f2aebf509464ba4553b97f4b3648be3b7d4d9e3bb64405e0fa",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: variable does not need to be mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference.rs:2:18\n  |\n2 | const X:u32={let mut x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                  ----^\n  |                  |\n  |                  help: remove this `mut`\n  |\n  = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference.rs:2:79\n  |\n2 | const X:u32={let mut x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                               ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference.rs:2:104\n  |\n2 | const X:u32={let mut x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                                                        ^\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "c02dc6d395f6e2361c22d7d164d3d81d615a3e7a8ed5f6fe6fd35e1567d509a8",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs",
+      "sha256": "5fc52202aadc926b08f1e96e6d3796a55f4d5df0909c4109e040711c2557461b",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs:2:93\n  |\n2 | const X:u32={let mut x=7u32;let m=&mut x;let r=&*m;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                                             ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs:2:118\n  |\n2 | const X:u32={let mut x=7u32;let m=&mut x;let r=&*m;let p=r as *const u32 as *mut u32;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                                                                                      ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "d7084c86ef38c476aa636e8b77af912eba4f43eeea6b7212d9578901d76a44d7",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs",
+      "sha256": "b183024c53696a08781946784176e0a27fff354c882eac6651c8693095cc2b5d",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs:2:83\n  |\n2 | const X:u32={let x=7u32;let r=&x;let p=r as *const u32 as *mut u32;let q=p;unsafe{*q=9;}x};fn main(){let _=X;}\n  |                                                                                   ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs:2:108\n  |\n2 | const X:u32={let x=7u32;let r=&x;let p=r as *const u32 as *mut u32;let q=p;unsafe{*q=9;}x};fn main(){let _=X;}\n  |                                                                                                            ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "998ec61b5cc37cdbc950a2fa774a0534860d5d3ff320ef6c11d0247526b4c447",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/expired-local.rs",
+      "sha256": "742e31ac00ea6b8ea43c404fa51b1292e74c7ceebeb77ed1b6ebca3cb4b51080",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/expired-local.rs:1:55\n  |\n1 | const X:u32={let p={let mut x=7u32;&raw mut x};unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                       ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/expired-local.rs:1:80\n  |\n1 | const X:u32={let p={let mut x=7u32;&raw mut x};unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                                ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "e52f15e2d1279d115d84a4f409992049d1a39a4e3d9f295ce34c7e432fb64eee",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/null.rs",
+      "sha256": "16c6f3ffb48cdd499f5e1b65da24f058fee70014df9b07d9e77f09db1fa9eec5",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: attempting to access 4 bytes, but got null pointer\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/null.rs:1:46\n  |\n1 | const X:u32={let p=0usize as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                              ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/null.rs:1:71\n  |\n1 | const X:u32={let p=0usize as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                       ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "06fb4fc3327c2218e32dfc77ff6b8c4bdf58b7e59d476286f553a957d88cc4e2",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-aligned.rs",
+      "sha256": "7c9704688fdc01fe40e939f678ff0fc6a605f7851ac9eca3794f1c52a9e95098",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-aligned.rs:1:30\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u8={let mut p=P{a:1,b:7};let r=&raw mut p.a;unsafe{*r=9;}p.a};fn main(){let _=X;}\n  |                       -      ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_stderr_sha256": "2c6af8d57ca317f89f16829ba6d33eb3b99de4cb0f00567c7019028c8f6144a2",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bd094841a8f6fa49d0100d0df21f8642df3c71d806806412ca16dac4511fe6d8",
+          "stderr": "ERROR: file 0: 46: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bd094841a8f6fa49d0100d0df21f8642df3c71d806806412ca16dac4511fe6d8",
+          "stderr": "ERROR: file 0: 46: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bd094841a8f6fa49d0100d0df21f8642df3c71d806806412ca16dac4511fe6d8",
+          "stderr": "ERROR: file 0: 46: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-unaligned.rs",
+      "sha256": "db02087014ae339d8b78dd56903898a901d2aa00bf1c6d4e7ec462dc75fe3d7d",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-unaligned.rs:1:96\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:1,b:7};let r=&raw mut p.b;unsafe{*r=9;}p.b};fn main(){let _=X;}\n  |                                                                                                ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-unaligned.rs:1:123\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:1,b:7};let r=&raw mut p.b;unsafe{*r=9;}p.b};fn main(){let _=X;}\n  |                                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "29093e012553d526af27fcc407d6661a7c26cfb131e6752bc0de8e57ec62e40d",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d2eade2e8fefe380dff1d97cb6476e45f1f7fbca7529666c16826a255b0302c",
+          "stderr": "ERROR: file 0: 47: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d2eade2e8fefe380dff1d97cb6476e45f1f7fbca7529666c16826a255b0302c",
+          "stderr": "ERROR: file 0: 47: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d2eade2e8fefe380dff1d97cb6476e45f1f7fbca7529666c16826a255b0302c",
+          "stderr": "ERROR: file 0: 47: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-raw-base-field.rs",
+      "sha256": "d9e62fb42806766f79145f275b7fbf0e5629659fb2ea973c4a6b76571d8d365a",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/packed-raw-base-field.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:1,b:7};let r=&raw mut p;unsafe{(*r).b=9;}p.b};fn main(){let _=X;}\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_stderr_sha256": "4537885fe63c9193533f6610c4797a65e1350fcf33f852d78e84da87585f9947",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d2eade2e8fefe380dff1d97cb6476e45f1f7fbca7529666c16826a255b0302c",
+          "stderr": "ERROR: file 0: 47: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d2eade2e8fefe380dff1d97cb6476e45f1f7fbca7529666c16826a255b0302c",
+          "stderr": "ERROR: file 0: 47: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d2eade2e8fefe380dff1d97cb6476e45f1f7fbca7529666c16826a255b0302c",
+          "stderr": "ERROR: file 0: 47: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs",
+      "sha256": "08d98dee96bd6562738a633f25c204c5b6a7bab060b3dfac604ddb2a02f85c9b",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type bool: encountered 0x02, but expected a boolean\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs:1:1\n  |\n1 | const X:bool={let mut x=false;let p=(&raw mut x) as *mut u8;unsafe{*p=2;}x};fn main(){let _=X;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 1, align: 1) {\n              02                                              \u2502 .\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs:1:93\n  |\n1 | const X:bool={let mut x=false;let p=(&raw mut x) as *mut u8;unsafe{*p=2;}x};fn main(){let _=X;}\n  |                                                                                             ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "be964a909a69787a8f13e4afafa239a74ab8857eacb02ae6dbe7c0b359431333",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "703a3b25fb227c32d4b2c4eedc52c4a9d7b76df5dada38affbff47178adcbffb",
+          "stderr": "ERROR: file 0: 13: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "703a3b25fb227c32d4b2c4eedc52c4a9d7b76df5dada38affbff47178adcbffb",
+          "stderr": "ERROR: file 0: 13: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "703a3b25fb227c32d4b2c4eedc52c4a9d7b76df5dada38affbff47178adcbffb",
+          "stderr": "ERROR: file 0: 13: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-valid.rs",
+      "sha256": "fe3c69d647c05e246ce915bf5519db5e61caf730ee4a318aae471bf75d9a36e3",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "703a3b25fb227c32d4b2c4eedc52c4a9d7b76df5dada38affbff47178adcbffb",
+          "stderr": "ERROR: file 0: 13: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "703a3b25fb227c32d4b2c4eedc52c4a9d7b76df5dada38affbff47178adcbffb",
+          "stderr": "ERROR: file 0: 13: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "703a3b25fb227c32d4b2c4eedc52c4a9d7b76df5dada38affbff47178adcbffb",
+          "stderr": "ERROR: file 0: 13: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-width.rs",
+      "sha256": "042e31ba8d16285da26871ea677cb158e16fb09890cea0b5abf8a9511a0bfdfb",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/static-immutable.rs",
+      "sha256": "6bd04255af9acf2fb174c0698778d94f08715e9c91fd68becbaca20fc81b2d72",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing to alloc1 which is read-only\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/static-immutable.rs:2:69\n  |\n2 | static S:u32=7;const X:u32={let p=(&raw const S) as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                     ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/static-immutable.rs:2:94\n  |\n2 | static S:u32=7;const X:u32={let p=(&raw const S) as *mut u32;unsafe{*p=9;}0};fn main(){let _=X;}\n  |                                                                                              ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "88ef4b193d07a6e64a50559b50c9e5c920429740567c7c8b4ad929867900ae2c",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ce277682e53fb27819d055faddd86b477c4cb89fa00ad9ef3b06e944939fc537",
+          "stderr": "ERROR: file 0: 64: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ce277682e53fb27819d055faddd86b477c4cb89fa00ad9ef3b06e944939fc537",
+          "stderr": "ERROR: file 0: 64: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ce277682e53fb27819d055faddd86b477c4cb89fa00ad9ef3b06e944939fc537",
+          "stderr": "ERROR: file 0: 64: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/const-pointer-write.rs",
+      "sha256": "c53d4baf41c8212574c3281309e6fae24ba74fa024f30ec10aa84ebda3fe7baf",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: variable does not need to be mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/const-pointer-write.rs:1:18\n  |\n1 | const X:u32={let mut x=7u32;let p=&raw const x;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                  ----^\n  |                  |\n  |                  help: remove this `mut`\n  |\n  = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0594]: cannot assign to `*p`, which is behind a `*const` pointer\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/const-pointer-write.rs:1:55\n  |\n1 | const X:u32={let mut x=7u32;let p=&raw const x;unsafe{*p=9;}x};fn main(){let _=X;}\n  |                                                       ^^^^ `p` is a `*const` pointer, so it cannot be written to\n  |\nhelp: consider changing this to be a mutable pointer\n  |\n1 - const X:u32={let mut x=7u32;let p=&raw const x;unsafe{*p=9;}x};fn main(){let _=X;}\n1 + const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{*p=9;}x};fn main(){let _=X;}\n  |\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0594`.\n",
+      "rustc_stderr_sha256": "f2fd96c567906ececfcb235ea01eaae9490541e71c424549c78ffcd714c1237b",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6baaf3b41315fd1b3b9eac6d558e9ccb5f0378536892bf815159b17d25d932b7",
+          "stderr": "ERROR: file 0: 54: cannot assign through a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6baaf3b41315fd1b3b9eac6d558e9ccb5f0378536892bf815159b17d25d932b7",
+          "stderr": "ERROR: file 0: 54: cannot assign through a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6baaf3b41315fd1b3b9eac6d558e9ccb5f0378536892bf815159b17d25d932b7",
+          "stderr": "ERROR: file 0: 54: cannot assign through a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-default-lint.rs",
+      "sha256": "120138f1b4a3c089dc4ef6d41648474aad93e55cae8619d8b62aaf0f1853dc8b",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error: assigning to `&T` is undefined behavior, consider using an `UnsafeCell`\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-runtime-default-lint.rs:1:72\n  |\n1 | fn main(){let x=7u32;let r=&x;let p=r as *const u32 as *mut u32;unsafe{*p=9;}}\n  |                                     ---------------------------        ^^^^\n  |                                     |\n  |                                     casting happened here\n  |\n  = note: for more information, visit <https://doc.rust-lang.org/book/ch15-05-interior-mutability.html>\n  = note: `#[deny(invalid_reference_casting)]` on by default\n\nerror: aborting due to 1 previous error\n\n",
+      "rustc_stderr_sha256": "e44e7081bcc398aa93f99b694b27b90c74eca2d77d7b58ce828944e00623f852",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "45b82de35ec3c7097ef8e2fd916f1edf2407f39220b027909ce934502414856f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8e8e949f845aa6c856c04e5115e8c3e4a3c013a8937de31dd59f60df8d58f431",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-allowed-lint.rs",
+      "sha256": "05c08721d41b23c5b32e5f03311f25004bc89c8076daa80632dbfdbb5eaeaa80",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "5c227253c6dc0e14cf05cb87713ab11e3c6be2a8ef85746c1876a6f8b4fcc3fd",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8e8e949f845aa6c856c04e5115e8c3e4a3c013a8937de31dd59f60df8d58f431",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "0e35d395e34afcbbd2765e8b33d9a2443c9542333708f86bbc031927d58c1670"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-before-shared.rs",
+      "sha256": "5cc3b1319644d9c0139e4605bf24b5e4ae435b57996ec7486ee704c837bfbd30",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-before-writable.rs",
+      "sha256": "27859033ea6773b8587b43ee2a02b69198af948df47e946103ed50b46c85b17d",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0502]: cannot borrow `x` as mutable because it is also borrowed as immutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-before-writable.rs:1:44\n  |\n1 | const X:u32={let mut x=7u32;let r=&x;let p=&raw mut x;unsafe{*p=9;}let _=*r;x};fn main(){let _=X;}\n  |                                   --       ^^^^^^^^^^                    -- immutable borrow later used here\n  |                                   |        |\n  |                                   |        mutable borrow occurs here\n  |                                   immutable borrow occurs here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0502`.\n",
+      "rustc_stderr_sha256": "2b3ff3c509da274bc78072bac4c76e57900c19a652afafecb7ff387f77ea4f55",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "49049d7c068a6131cb3668b1faf765cc242c846fa4a90cb747f8cccb9da7f3f0",
+          "stderr": "ERROR: file 0: 43: access conflicts with a live reference loan\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "49049d7c068a6131cb3668b1faf765cc242c846fa4a90cb747f8cccb9da7f3f0",
+          "stderr": "ERROR: file 0: 43: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "49049d7c068a6131cb3668b1faf765cc242c846fa4a90cb747f8cccb9da7f3f0",
+          "stderr": "ERROR: file 0: 43: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-aggregate.rs",
+      "sha256": "914a7ae7240b4b8541f7f459e349006a1c0dd1670b83cf0cf63de1363c7d14b5",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-aggregate.rs:2:80\n  |\n2 | const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;let t=(p,);unsafe{*t.0=9;}x};fn main(){let _=X;}\n  |                                                                                ^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-aggregate.rs:2:107\n  |\n2 | const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;let t=(p,);unsafe{*t.0=9;}x};fn main(){let _=X;}\n  |                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "05e379eddfffa293ae4921f8ded0831c167bd8875b1f10a5151b40b45bdfcb36",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d7624effd40c9f9ff7c524eebfd5246790f9a44b9d40b6b6b9452477278c46eb",
+          "stderr": "ERROR: file 0: 49: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-call.rs",
+      "sha256": "cc39a5515f588e8bf5707e6cb39596633e9c115f3ba76a7853e09e3fada250f1",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-call.rs:2:103\n  |\n2 | const fn write(p:*mut u32){unsafe{*p=9;}}const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;write(p);x};fn main(){let _=X;}\n  |                                                                                                       ^^^^^^^^ evaluation of `X` failed inside this call\n  |\nnote: inside `write`\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-call.rs:2:35\n  |\n2 | const fn write(p:*mut u32){unsafe{*p=9;}}const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;write(p);x};fn main(){let _=X;}\n  |                                   ^^^^ the failure occurred here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-call.rs:2:131\n  |\n2 | const fn write(p:*mut u32){unsafe{*p=9;}}const X:u32={let x=7u32;let p=(&x) as *const u32 as *mut u32;write(p);x};fn main(){let _=X;}\n  |                                                                                                                                   ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "cff8059531c2687de00b69f7144c07234bec7bb5ea4773ab01c854e4b5ab80d2",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ab30bca2798d9780529cb91a8a4c7a936723fde6a1dc33ff3e74e89dc22198fb",
+          "stderr": "ERROR: file 0: 63: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ab30bca2798d9780529cb91a8a4c7a936723fde6a1dc33ff3e74e89dc22198fb",
+          "stderr": "ERROR: file 0: 63: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ab30bca2798d9780529cb91a8a4c7a936723fde6a1dc33ff3e74e89dc22198fb",
+          "stderr": "ERROR: file 0: 63: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-field-address.rs",
+      "sha256": "7b1150d37b39733316bd056cfea25cc0f017511135e38f970fc1e3c83cb8aef5",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-field-address.rs:2:93\n  |\n2 | struct S{x:u32}const X:u32={let s=S{x:7};let r=&s;let p=(&raw const r.x) as *mut u32;unsafe{*p=9;}s.x};fn main(){let _=X;}\n  |                                                                                             ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-store-validity/shared-field-address.rs:2:120\n  |\n2 | struct S{x:u32}const X:u32={let s=S{x:7};let r=&s;let p=(&raw const r.x) as *mut u32;unsafe{*p=9;}s.x};fn main(){let _=X;}\n  |                                                                                                                        ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "rustc_stderr_sha256": "d4db84af0e4f20ad10a1f3a55f2e009edb0a07697c1eafb57adeca7ce623bbf3",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ce277682e53fb27819d055faddd86b477c4cb89fa00ad9ef3b06e944939fc537",
+          "stderr": "ERROR: file 0: 64: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ce277682e53fb27819d055faddd86b477c4cb89fa00ad9ef3b06e944939fc537",
+          "stderr": "ERROR: file 0: 64: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ce277682e53fb27819d055faddd86b477c4cb89fa00ad9ef3b06e944939fc537",
+          "stderr": "ERROR: file 0: 64: raw pointer writes in constant execution are not implemented\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-field-address.rs",
+      "sha256": "99c8acca48f22bfc3a66bb270f82f1029b80bdd56b91fcdee2077aaec08d80f4",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9441255811800ad0dd7e1f59905bdb27213e7172572f04715f9c8f85091cee26",
+          "stderr": "ERROR: file 0: 27: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9441255811800ad0dd7e1f59905bdb27213e7172572f04715f9c8f85091cee26",
+          "stderr": "ERROR: file 0: 27: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9441255811800ad0dd7e1f59905bdb27213e7172572f04715f9c8f85091cee26",
+          "stderr": "ERROR: file 0: 27: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-call.rs",
+      "sha256": "26433153b5361a510b5f5bd1cb55ab5123738ba93a5ee0787280f5ce88cf2260",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "157c03258e3d7ea57d6b4d5e7f574a23fb32f79891134eec5617f6f90962da6f",
+          "stderr": "ERROR: file 0: 26: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "157c03258e3d7ea57d6b4d5e7f574a23fb32f79891134eec5617f6f90962da6f",
+          "stderr": "ERROR: file 0: 26: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "157c03258e3d7ea57d6b4d5e7f574a23fb32f79891134eec5617f6f90962da6f",
+          "stderr": "ERROR: file 0: 26: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-aggregate.rs",
+      "sha256": "b1e954f270c02a3d39ff536a1e2af2bd63ac35acd0aec353a27fd063af584e41",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "653925c8a19ef2a38eb988fa9879078a218e3fb62c6ee6dd0c806e60f4fc01dd",
+          "stderr": "ERROR: file 0: 12: raw pointer writes in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    }
+  ],
+  "gates": [
+    {
+      "batch": "raw-store-first",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 5.913211822509766
+    },
+    {
+      "batch": "raw-store-first",
+      "command": [
+        "cargo",
+        "check",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets"
+      ],
+      "status": 0,
+      "seconds": 30.565518856048584
+    },
+    {
+      "batch": "raw-store-first",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "pointer_",
+        "--",
+        "--nocapture"
+      ],
+      "status": 0,
+      "seconds": 66.1546881198883
+    },
+    {
+      "batch": "raw-store-first",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "initialized_storage_is_required_before_a_raw_read"
+      ],
+      "status": 0,
+      "seconds": 0.08139514923095703
+    },
+    {
+      "batch": "raw-store-first",
+      "command": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--bin",
+        "rustgm"
+      ],
+      "status": 0,
+      "seconds": 57.57873845100403
+    },
+    {
+      "batch": "raw-store-second",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 5.06826114654541
+    },
+    {
+      "batch": "raw-store-second",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 33.10686445236206
+    },
+    {
+      "batch": "raw-store-second",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 23.014601707458496
+    },
+    {
+      "batch": "raw-store-second",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "provenance_writes",
+        "--",
+        "--include-ignored",
+        "--nocapture",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 3.5348682403564453
+    },
+    {
+      "batch": "raw-store-second",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "provenance_reads",
+        "--test",
+        "unsafe_unions",
+        "--test",
+        "evaluated_inspection",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 8.25601577758789
+    },
+    {
+      "batch": "raw-store-close",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 5.398813486099243
+    },
+    {
+      "batch": "raw-store-close",
+      "name": "private",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "pointer_",
+        "--",
+        "--nocapture"
+      ],
+      "status": 0,
+      "seconds": 64.25861644744873
+    },
+    {
+      "batch": "raw-store-close",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 47.09375500679016
+    },
+    {
+      "batch": "raw-store-close",
+      "name": "upstream",
+      "command": [
+        "python3",
+        "scripts/upstream.py",
+        "--verify"
+      ],
+      "status": 0,
+      "seconds": 0.1409006118774414
+    },
+    {
+      "batch": "raw-store-close",
+      "name": "layout",
+      "command": [
+        "python3",
+        "scripts/check_layout.py"
+      ],
+      "status": 1,
+      "seconds": 1.6560461521148682
+    },
+    {
+      "batch": "raw-store-final",
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--bin",
+        "rustgm"
+      ],
+      "status": 0,
+      "seconds": 55.778422832489014
+    },
+    {
+      "batch": "raw-store-final",
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 23.051433324813843
+    }
+  ],
+  "native": [
+    {
+      "name": "packed",
+      "source_sha256": "00e7bed51afc211300ff911a4d8641b23c4d5d178535b055746e8fcb8e2cb54a",
+      "lowir_sha256": "6307570b686d8ca03d314ee5e52d32527b57750ffd662fe57b1406e69e927f91",
+      "validated_lowir_sha256": "8572388664abd253cc913fee317dad7c7d62b9ed8184981eafda6c5b26ae5531",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "status_evidence": "raw-store-second/3.log: exact_raw_store_values_execute passed; helper asserts both executions successful"
+    },
+    {
+      "name": "products",
+      "source_sha256": "e484df46b693e2f99754c293dbfda278db0dadb0a74a2ef3e7819876ce26d02d",
+      "lowir_sha256": "d489f80e471e0e7bd4db9355358262527fc270a704313d736516d2b3624bb9f8",
+      "validated_lowir_sha256": "364614e00c920b2993e363389c8ab8ca287b1214501f9e00bb1da6bc03f9ba71",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "status_evidence": "raw-store-second/3.log: exact_raw_store_values_execute passed; helper asserts both executions successful"
+    },
+    {
+      "name": "values",
+      "source_sha256": "c9eba23649bc58853ec09a7dc88a53d60dca24b3ef6c4a67b1fce9150e35ea36",
+      "lowir_sha256": "57f4528dee86e3df2b4178e494338dd6f2eac32784d209e6d240480be72227c5",
+      "validated_lowir_sha256": "a75bc3a8da729388d2e1bd594210ea07143b1e95859a52bcef2df1d2ba0dcec5",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "status_evidence": "raw-store-second/3.log: exact_raw_store_values_execute passed; helper asserts both executions successful"
+    }
+  ],
+  "scaling": {
+    "iterations": [
+      8,
+      32,
+      128
+    ],
+    "raw_steps": [
+      526,
+      1846,
+      7126
+    ],
+    "raw_peak_slots": [
+      36,
+      36,
+      36
+    ],
+    "ordinary_steps": [
+      343,
+      1159,
+      4423
+    ],
+    "ordinary_peak_slots": [
+      30,
+      30,
+      30
+    ],
+    "claim": "linear changed-path work and fixed execution storage; no wall-time neutrality claim"
+  },
+  "pointer_storage": {
+    "before": {
+      "pointer": 24,
+      "constant": 32,
+      "value": 32,
+      "location": 64,
+      "place": 64
+    },
+    "after": {
+      "pointer": 24,
+      "constant": 32,
+      "value": 32,
+      "location": 64,
+      "place": 64
+    },
+    "unit": "bytes; pinned64bit host",
+    "invariants": [
+      "per-value monotonic shared restriction",
+      "same location retains distinct permission values in hash collection",
+      "projected pointers preserve permission",
+      "store can initialize an empty cell without reading old value",
+      "bounds and expired allocations reject writes"
+    ]
+  },
+  "view_review": {
+    "pointer_value_row": "value v1 type=19 pointer allocation=a0 write=shared-derived metadata=none",
+    "allocation_row": "allocation a0 type=13 origin=static:13 contents=v0",
+    "independent_object_sha256": "cb4a96ab3533600cc0216cd20ee30da0ede85f90bfc95636962166bfa840e4a5",
+    "output_sha256": "ff15b426278173b3f81caeabf367b287f9d4e4334984db487dc865d219deeb34",
+    "approved_fields": [
+      "write=writable",
+      "write=shared-derived"
+    ],
+    "native_serialization": "unchanged"
+  },
+  "supersedes_observation": {
+    "receipt": "pa27/tests/raw-read-outcomes.json",
+    "path": "tests/spec/raw-constant-reads/raw-write-boundary.rs",
+    "sha256": "5e1b229cd14c6b73ec9d52648fd8db3a45ba1047d734a3f9016c5c08324c58f0",
+    "old_frontend_status": 1,
+    "current_frontend_types_status": 0,
+    "current_frontend_lowir_status": 0,
+    "evidence": "provenance_reads::symbolic_raw_reads_match_independent_objects passed unchanged bytes"
+  },
+  "remaining": [
+    "runtime default invalid_reference_casting lint: independent rejection/frontend acceptance, allowed control is never executed",
+    "byte/type reinterpretation including valid and invalid bool-byte stores remains unsupported",
+    "raw union field stores and union-field addresses remain unsupported",
+    "references through raw places remain unsupported",
+    "shared-derived interior-mutable raw stores remain explicitly unsupported; valid RustAtomicU32 control is PA28",
+    "general offsets/provenance/pointer-bearing union storage and remaining PA27 release contracts"
+  ],
+  "known_inherited_layout_failure": {
+    "status": 1,
+    "message": "manifest changed since reference generation: pa16",
+    "ownership": "integrator fixed separately at validation014bfcde; no worker PA16 reference edits"
+  },
+  "prior_failures": [
+    {
+      "gate": "all-target check6421",
+      "reason": "one private invariant passed LocationId instead of full Pointer",
+      "resolution": "updated private evaluated_storage projection consumer"
+    },
+    {
+      "gate": "strictClippy47334",
+      "reason": "expanded raw_access invariant110lines",
+      "evidence": "obj/parallel/pa27/raw-store-second-initial-failure/clippy.log",
+      "resolution": "existing bounds subcase extracted into named helper"
+    }
+  ],
+  "evidence_root": "obj/parallel/pa27"
+}

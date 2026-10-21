@@ -10,18 +10,26 @@ pub enum Metadata {
     Length(u64),
     Object { concrete: TypeId, target: TypeId },
 }
+/// Write authority follows one pointer value, independently of its raw mutability.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum WritePermission {
+    Writable,
+    SharedDerived,
+}
 /// Metadata belongs to a pointer value, while its backing location keeps its
 /// original sized type and allocation identity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Pointer {
     pub place: Id,
     pub metadata: Option<Metadata>,
+    pub write: WritePermission,
 }
 impl Pointer {
     pub(super) const fn new(place: Id) -> Self {
         Self {
             place,
             metadata: None,
+            write: WritePermission::SharedDerived,
         }
     }
 }
@@ -92,15 +100,19 @@ impl References {
         }
         let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
         self.places.push(place);
-        Ok(Value::Reference(Pointer::new(id)))
+        let mut pointer = Pointer::new(id);
+        if matches!(place.access, Access::Owned) {
+            pointer.write = WritePermission::Writable;
+        }
+        Ok(Value::Reference(pointer))
     }
     pub(super) fn project(
         &mut self,
-        base: Id,
+        base: Pointer,
         index: u64,
         mut place: Place,
     ) -> Result<Value, &'static str> {
-        if base.0 as usize >= self.places.len() {
+        if base.place.0 as usize >= self.places.len() {
             return Err("constant projection lacks an earlier base location");
         }
         let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
@@ -108,9 +120,16 @@ impl References {
             u32::try_from(self.projections.len()).map_err(|_| "too many constant projections")?,
         );
         place.projection = Some(projection);
-        self.projections.push(Projection { base, index });
+        self.projections.push(Projection {
+            base: base.place,
+            index,
+        });
         self.places.push(place);
-        Ok(Value::Reference(Pointer::new(id)))
+        Ok(Value::Reference(Pointer {
+            place: id,
+            metadata: None,
+            write: base.write,
+        }))
     }
     pub(super) fn projection(&self, place: Place) -> Result<Option<(Id, u64)>, &'static str> {
         place
@@ -281,4 +300,56 @@ impl Queries<'_> {
             },
         )
     }
+}
+
+#[cfg(test)]
+#[test]
+fn pointer_value_storage_layout() {
+    // Keep the x86-64 host storage contract used by execution slot accounting.
+    #[cfg(target_pointer_width = "64")]
+    {
+        assert_eq!(std::mem::size_of::<Pointer>(), 24);
+        assert_eq!(std::mem::size_of::<super::values::Constant>(), 32);
+    }
+    eprintln!(
+        "pointer={} constant={} value={} location={} reference_place={}",
+        std::mem::size_of::<Pointer>(),
+        std::mem::size_of::<super::values::Constant>(),
+        std::mem::size_of::<Value>(),
+        std::mem::size_of::<super::values::Location>(),
+        std::mem::size_of::<Place>()
+    );
+}
+
+#[cfg(test)]
+#[test]
+fn pointer_write_permission_is_per_value_and_projection() -> Result<(), &'static str> {
+    use super::values::{Constant, WritePermission};
+    let mut arena = References::default();
+    let place = Place {
+        value: None,
+        ty: TypeId::primitive(crate::types::Primitive::U32),
+        access: Access::Owned,
+        packed: None,
+        projection: None,
+    };
+    let writable = Constant(arena.insert(place)?);
+    let shared = writable.restrict_shared();
+    assert_eq!(writable.location(), shared.location());
+    assert_eq!(writable.write_permission(), Some(WritePermission::Writable));
+    assert_eq!(
+        shared.write_permission(),
+        Some(WritePermission::SharedDerived)
+    );
+    assert!(shared == shared.restrict_shared());
+    let distinct = std::collections::HashSet::from([writable, shared]);
+    assert_eq!(distinct.len(), 2);
+    for value in [writable, shared] {
+        let Value::Reference(pointer) = value.0 else {
+            return Err("missing pointer");
+        };
+        let projected = Constant(arena.project(pointer, 0, place)?);
+        assert_eq!(projected.write_permission(), value.write_permission());
+    }
+    Ok(())
 }

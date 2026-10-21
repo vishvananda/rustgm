@@ -1,0 +1,121 @@
+{
+  "stage": "draft-predeclared-investigation",
+  "baseline": "a4f064ff",
+  "purpose": "Independently distinguish actual const raw-store validity from unsupported capabilities and source invalid_reference_casting lint; preserve every original diagnostic before implementation changes.",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-store-validity/local-raw-mut.rs",
+      "sha256": "50be71f70b5e4851e1a00366317687cfccb49fb4632217b56298c42885b745bd",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-reference.rs",
+      "sha256": "147b295817bed2d3875059d090cbb3caeb50443bdca08d83a46fad4ec1b16784",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mut-to-const-to-mut.rs",
+      "sha256": "d1adb3588cd88468414c22e18e7710d695a67792d448a333bb513c94bc83de70",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/raw-const-local-cast.rs",
+      "sha256": "37488090293153c7711b00d7a7ed3e9b921ae7f286fb1dae21dbb346b9de5e28",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference.rs",
+      "sha256": "a7febef2c52c93f2aebf509464ba4553b97f4b3648be3b7d4d9e3bb64405e0fa",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs",
+      "sha256": "5fc52202aadc926b08f1e96e6d3796a55f4d5df0909c4109e040711c2557461b",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs",
+      "sha256": "b183024c53696a08781946784176e0a27fff354c882eac6651c8693095cc2b5d",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/expired-local.rs",
+      "sha256": "742e31ac00ea6b8ea43c404fa51b1292e74c7ceebeb77ed1b6ebca3cb4b51080",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/null.rs",
+      "sha256": "16c6f3ffb48cdd499f5e1b65da24f058fee70014df9b07d9e77f09db1fa9eec5",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-aligned.rs",
+      "sha256": "7c9704688fdc01fe40e939f678ff0fc6a605f7851ac9eca3794f1c52a9e95098",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-unaligned.rs",
+      "sha256": "db02087014ae339d8b78dd56903898a901d2aa00bf1c6d4e7ec462dc75fe3d7d",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-raw-base-field.rs",
+      "sha256": "d9e62fb42806766f79145f275b7fbf0e5629659fb2ea973c4a6b76571d8d365a",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs",
+      "sha256": "08d98dee96bd6562738a633f25c204c5b6a7bab060b3dfac604ddb2a02f85c9b",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-valid.rs",
+      "sha256": "fe3c69d647c05e246ce915bf5519db5e61caf730ee4a318aae471bf75d9a36e3",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-width.rs",
+      "sha256": "042e31ba8d16285da26871ea677cb158e16fb09890cea0b5abf8a9511a0bfdfb",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/static-immutable.rs",
+      "sha256": "6bd04255af9acf2fb174c0698778d94f08715e9c91fd68becbaca20fc81b2d72",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/const-pointer-write.rs",
+      "sha256": "c53d4baf41c8212574c3281309e6fae24ba74fa024f30ec10aa84ebda3fe7baf",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-default-lint.rs",
+      "sha256": "120138f1b4a3c089dc4ef6d41648474aad93e55cae8619d8b62aaf0f1853dc8b",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-allowed-lint.rs",
+      "sha256": "05c08721d41b23c5b32e5f03311f25004bc89c8076daa80632dbfdbb5eaeaa80",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    }
+  ]
+}

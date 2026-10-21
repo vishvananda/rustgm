@@ -238,8 +238,10 @@ impl Queries<'_> {
         if matches!(place.access, Access::Owned) {
             place.access = Access::Shared;
             self.insert_place(key, place)
-        } else {
+        } else if raw {
             Ok(value)
+        } else {
+            Ok(super::values::Constant(value).restrict_shared().0)
         }
     }
     fn place_type(&mut self, key: NodeKey) -> Result<TypeId, Error> {
@@ -344,8 +346,12 @@ impl Queries<'_> {
         } else {
             None
         };
-        let base = super::references::References::id(location)
-            .map_err(|e| self.error(Query::Place(key), e))?;
+        let Value::Reference(base) = location else {
+            return Err(self.error(
+                Query::Place(key),
+                "constant projection base is not a pointer",
+            ));
+        };
         let mut value = self
             .typing
             .facts

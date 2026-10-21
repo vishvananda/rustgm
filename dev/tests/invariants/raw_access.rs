@@ -31,8 +31,19 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
         machine.read(place).err().map(Failure::message),
         Some("constant reads uninitialized storage")
     );
+    machine.check_raw_write(place).map_err(Failure::message)?;
+    assert_eq!(
+        machine
+            .check_raw_write(Resolved {
+                address: address.restrict_shared(),
+                ..place
+            })
+            .err()
+            .map(Failure::message),
+        Some("constant raw pointer write is derived from a shared reference")
+    );
     machine
-        .write(address, Constant::scalar(sema::model::Scalar::Integer(37)))
+        .write_place(place, Constant::scalar(sema::model::Scalar::Integer(37)))
         .map_err(Failure::message)?;
     assert_eq!(
         machine
@@ -51,12 +62,31 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
             .ok_or("missing cached read")?;
     }
     assert_eq!(machine.evaluator.facts().layouts.steps, layout_steps);
+    outside_allocation_bounds(&mut machine, &mut allocations, array_ty, ty)?;
+    machine.memory.expire(&allocations);
+    assert_eq!(
+        machine.read(place).err().map(Failure::message),
+        Some("constant pointer refers to expired storage")
+    );
+    assert_eq!(
+        machine.check_raw_write(place).err().map(Failure::message),
+        Some("constant pointer refers to expired storage")
+    );
+    Ok(())
+}
+
+fn outside_allocation_bounds(
+    machine: &mut Machine<'_, '_>,
+    allocations: &mut Vec<crate::sema::values::LocationId>,
+    array_ty: TypeId,
+    ty: TypeId,
+) -> Result<(), String> {
     let value = machine
         .evaluator
         .repeat(Constant::scalar(sema::model::Scalar::Integer(37)), 1)
         .map_err(Failure::message)?;
     let array = machine
-        .allocate(&mut allocations, Some(value), array_ty)
+        .allocate(allocations, Some(value), array_ty)
         .map_err(Failure::message)?;
     let invalid = machine
         .evaluator
@@ -77,10 +107,20 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
             .map(Failure::message),
         Some("constant index is out of bounds")
     );
-    machine.memory.expire(&allocations);
     assert_eq!(
-        machine.read(place).err().map(Failure::message),
-        Some("constant pointer refers to expired storage")
+        machine
+            .check_raw_write(Resolved {
+                address: invalid,
+                ty,
+                union: None,
+                raw: Some(RawAccess {
+                    location: invalid.location(),
+                    ty
+                })
+            })
+            .err()
+            .map(Failure::message),
+        Some("constant index is out of bounds")
     );
     Ok(())
 }

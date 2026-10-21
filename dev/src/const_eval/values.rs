@@ -163,7 +163,14 @@ impl Machine<'_, '_> {
                             .into(),
                     );
                 }
-                place.address
+                if matches!(
+                    self.evaluator.facts().types.kind(ty),
+                    Some(Kind::Reference { mutable: false, .. })
+                ) {
+                    place.address.restrict_shared()
+                } else {
+                    place.address
+                }
             }
             Rvalue::Unary {
                 operator,

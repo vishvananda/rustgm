@@ -1,0 +1,63 @@
+{
+  "stage": "draft-predeclared-investigation",
+  "baseline": "a4f064ff",
+  "purpose": "Distinguish per-pointer shared-derived restriction from global allocation freezing and preserve capability across copies, aggregates, calls and field address formation.",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-before-shared.rs",
+      "sha256": "5cc3b1319644d9c0139e4605bf24b5e4ae435b57996ec7486ee704c837bfbd30",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-before-writable.rs",
+      "sha256": "27859033ea6773b8587b43ee2a02b69198af948df47e946103ed50b46c85b17d",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-aggregate.rs",
+      "sha256": "914a7ae7240b4b8541f7f459e349006a1c0dd1670b83cf0cf63de1363c7d14b5",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-call.rs",
+      "sha256": "cc39a5515f588e8bf5707e6cb39596633e9c115f3ba76a7853e09e3fada250f1",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-field-address.rs",
+      "sha256": "7b1150d37b39733316bd056cfea25cc0f017511135e38f970fc1e3c83cb8aef5",
+      "hypothesis_rustc_status": 1,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-field-address.rs",
+      "sha256": "99c8acca48f22bfc3a66bb270f82f1029b80bdd56b91fcdee2077aaec08d80f4",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-call.rs",
+      "sha256": "26433153b5361a510b5f5bd1cb55ab5123738ba93a5ee0787280f5ce88cf2260",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-aggregate.rs",
+      "sha256": "b1e954f270c02a3d39ff536a1e2af2bd63ac35acd0aec353a27fd063af584e41",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-storage/shared-derived-raw-store.rs",
+      "sha256": "f1db01030e2436ea65d2f842c8245736bf3a0d105fe4feb85de12ce15a650f12",
+      "hypothesis_rustc_status": 0,
+      "frontend_acceptance_claim": false,
+      "note": "Independently test shared interior storage; initial frontend profile explicitly unsupported, not a claim that every shared-derived write is invalid.",
+      "original_investigation_path": "pa27/tests/spec/raw-store-validity/shared-interior.rs"
+    }
+  ]
+}

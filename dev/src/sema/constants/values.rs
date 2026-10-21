@@ -13,7 +13,7 @@ mod union_storage;
 mod validation;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
-pub use super::references::Metadata;
+pub use super::references::{Metadata, WritePermission};
 use super::{
     Declarations, DefId, Error, InitializerKind, Queries, Query, Report, Type, TypeId, Value,
     VariantId, Work, arithmetic, references,

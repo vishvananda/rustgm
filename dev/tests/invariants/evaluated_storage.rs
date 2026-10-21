@@ -309,7 +309,7 @@ fn references_to_empty_storage_refine_values_and_pending_backing_cannot_escape()
 #[test]
 fn ordinary_subobject_reference_does_not_inherit_its_allocation_siblings() -> Result<(), String> {
     use crate::{
-        sema::constants::references::{Access, Place, References},
+        sema::constants::references::{Access, Place},
         types::RegionId,
     };
     let mut facts = facts()?;
@@ -326,7 +326,9 @@ fn ordinary_subobject_reference_does_not_inherit_its_allocation_siblings() -> Re
         packed: None,
         projection: None,
     })?;
-    let base = References::id(root)?;
+    let crate::sema::constants::Value::Reference(base) = root else {
+        return Err("missing pointer".into());
+    };
     let selected = Constant(facts.constant_references.project(
         base,
         1,

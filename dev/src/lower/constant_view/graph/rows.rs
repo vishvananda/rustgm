@@ -4,7 +4,7 @@ use crate::{
     literal::value::FloatBits,
     sema::{
         model::Scalar,
-        values::{Constant, Metadata, Origin, View},
+        values::{Constant, Metadata, Origin, View, WritePermission},
     },
     types::{Kind, TypeId},
 };
@@ -23,7 +23,14 @@ impl Graph<'_> {
             View::Function(instance) => row.push_str(&callable_row(self.facts, instance)?),
             View::Reference(location) => {
                 let allocation = self.location(location)?;
-                write!(row, "pointer allocation=a{allocation}")
+                let write = match value
+                    .write_permission()
+                    .ok_or("pointer value lacks write permission")?
+                {
+                    WritePermission::Writable => "writable",
+                    WritePermission::SharedDerived => "shared-derived",
+                };
+                write!(row, "pointer allocation=a{allocation} write={write}")
                     .map_err(|_| "constant view formatting failed")?;
             }
             View::Address { bits } => write!(row, "address bits={bits:016x}")

@@ -1,7 +1,7 @@
 //! Symbolic location construction shared with checked CFG constant execution.
 use super::super::{
     Value,
-    references::{Access, Place, Pointer, References},
+    references::{Access, Place, Pointer},
 };
 use super::{Constant, Evaluator, Failure, LocationId};
 use crate::{resolve::model::DefId, types::TypeId};
@@ -14,6 +14,22 @@ impl Constant {
         } else {
             None
         }
+    }
+    #[must_use]
+    pub const fn write_permission(self) -> Option<super::WritePermission> {
+        if let Value::Reference(pointer) = self.0 {
+            Some(pointer.write)
+        } else {
+            None
+        }
+    }
+    /// Restriction never changes the backing allocation or restores write authority.
+    #[must_use]
+    pub const fn restrict_shared(mut self) -> Self {
+        if let Value::Reference(pointer) = &mut self.0 {
+            pointer.write = super::WritePermission::SharedDerived;
+        }
+        self
     }
     #[must_use]
     pub const fn pointer(location: LocationId) -> Self {
@@ -48,7 +64,11 @@ impl Evaluator<'_> {
         index: u64,
         ty: TypeId,
     ) -> Result<Constant, Failure> {
-        let base = References::id(base.0)?;
+        let Value::Reference(base) = base.0 else {
+            return Err(Failure::Invalid(
+                "constant projection base is not a pointer",
+            ));
+        };
         self.queries
             .typing
             .facts

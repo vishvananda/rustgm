@@ -65,7 +65,7 @@ bool bits=0|1
 char bits=HHHHHHHH
 function def=D instance=T signature=S const=BOOL
 function closure=C instance=T signature=S const=false
-pointer allocation=aA
+pointer allocation=aA write=writable|shared-derived
 address bits=HHHHHHHHHHHHHHHH
 text allocation=aA length=N
 bytes allocation=aA length=N
@@ -180,3 +180,13 @@ The small example counts are `declarations=5 roots=4 values=2 allocations=1`.
 No assignment activation, generated reference update or broad release matrix was
 performed in this worker checkpoint. The deferred PA29 timing study and earlier
 unexplained scalar RSS increase remain unresolved; this view adds no timing claim.
+
+Pointer write permission is a value fact, independent of the displayed backing
+allocation. `write=writable` retains owned/mutable provenance;
+`write=shared-derived` records a monotonic restriction introduced by a shared
+borrow or promotion. Copies, calls, casts and projections preserve that fact;
+casting to `*mut` cannot restore write permission. Allocation rows and native
+pointer bits do not include this field. The initial raw-store profile explicitly
+withholds shared-derived interior-mutable writes instead of treating the flag as
+a complete UnsafeCell model. These planned view spellings do not bless active
+references or expand scalar-only metadata export.

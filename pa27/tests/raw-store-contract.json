@@ -1,0 +1,245 @@
+{
+  "stage": "draft-predeclared-supported-and-boundary-contract",
+  "baseline": "a4f064ff",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-store-validity/local-raw-mut.rs",
+      "sha256": "50be71f70b5e4851e1a00366317687cfccb49fb4632217b56298c42885b745bd",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-reference.rs",
+      "sha256": "147b295817bed2d3875059d090cbb3caeb50443bdca08d83a46fad4ec1b16784",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mut-to-const-to-mut.rs",
+      "sha256": "d1adb3588cd88468414c22e18e7710d695a67792d448a333bb513c94bc83de70",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/raw-const-local-cast.rs",
+      "sha256": "37488090293153c7711b00d7a7ed3e9b921ae7f286fb1dae21dbb346b9de5e28",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference.rs",
+      "sha256": "a7febef2c52c93f2aebf509464ba4553b97f4b3648be3b7d4d9e3bb64405e0fa",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-reference-reborrow.rs",
+      "sha256": "5fc52202aadc926b08f1e96e6d3796a55f4d5df0909c4109e040711c2557461b",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-pointer-copy.rs",
+      "sha256": "b183024c53696a08781946784176e0a27fff354c882eac6651c8693095cc2b5d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/expired-local.rs",
+      "sha256": "742e31ac00ea6b8ea43c404fa51b1292e74c7ceebeb77ed1b6ebca3cb4b51080",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/null.rs",
+      "sha256": "16c6f3ffb48cdd499f5e1b65da24f058fee70014df9b07d9e77f09db1fa9eec5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-aligned.rs",
+      "sha256": "7c9704688fdc01fe40e939f678ff0fc6a605f7851ac9eca3794f1c52a9e95098",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-unaligned.rs",
+      "sha256": "db02087014ae339d8b78dd56903898a901d2aa00bf1c6d4e7ec462dc75fe3d7d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is unaligned"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/packed-raw-base-field.rs",
+      "sha256": "d9e62fb42806766f79145f275b7fbf0e5629659fb2ea973c4a6b76571d8d365a",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-invalid.rs",
+      "sha256": "08d98dee96bd6562738a633f25c204c5b6a7bab060b3dfac604ddb2a02f85c9b",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-bool-valid.rs",
+      "sha256": "fe3c69d647c05e246ce915bf5519db5e61caf730ee4a318aae471bf75d9a36e3",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/reinterpret-width.rs",
+      "sha256": "042e31ba8d16285da26871ea677cb158e16fb09890cea0b5abf8a9511a0bfdfb",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/static-immutable.rs",
+      "sha256": "6bd04255af9acf2fb174c0698778d94f08715e9c91fd68becbaca20fc81b2d72",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant execution cannot write static storage"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/const-pointer-write.rs",
+      "sha256": "c53d4baf41c8212574c3281309e6fae24ba74fa024f30ec10aa84ebda3fe7baf",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "cannot assign through a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-default-lint.rs",
+      "sha256": "120138f1b4a3c089dc4ef6d41648474aad93e55cae8619d8b62aaf0f1853dc8b",
+      "rustc_status": 1,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-runtime-allowed-lint.rs",
+      "sha256": "05c08721d41b23c5b32e5f03311f25004bc89c8076daa80632dbfdbb5eaeaa80",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-before-shared.rs",
+      "sha256": "5cc3b1319644d9c0139e4605bf24b5e4ae435b57996ec7486ee704c837bfbd30",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-before-writable.rs",
+      "sha256": "27859033ea6773b8587b43ee2a02b69198af948df47e946103ed50b46c85b17d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "access conflicts with a live reference loan"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-aggregate.rs",
+      "sha256": "914a7ae7240b4b8541f7f459e349006a1c0dd1670b83cf0cf63de1363c7d14b5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-call.rs",
+      "sha256": "cc39a5515f588e8bf5707e6cb39596633e9c115f3ba76a7853e09e3fada250f1",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/shared-field-address.rs",
+      "sha256": "7b1150d37b39733316bd056cfea25cc0f017511135e38f970fc1e3c83cb8aef5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-field-address.rs",
+      "sha256": "99c8acca48f22bfc3a66bb270f82f1029b80bdd56b91fcdee2077aaec08d80f4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-call.rs",
+      "sha256": "26433153b5361a510b5f5bd1cb55ab5123738ba93a5ee0787280f5ce88cf2260",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/writable-aggregate.rs",
+      "sha256": "b1e954f270c02a3d39ff536a1e2af2bd63ac35acd0aec353a27fd063af584e41",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-storage/shared-derived-raw-store.rs",
+      "sha256": "f1db01030e2436ea65d2f842c8245736bf3a0d105fe4feb85de12ce15a650f12",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant shared-derived interior-mutable raw writes are not implemented",
+      "original_investigation_path": "pa27/tests/spec/raw-store-validity/shared-interior.rs"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/promoted-shared.rs",
+      "sha256": "f88c8e8608ec07dd2ef643bf9d796638876a336a87934c7923a4d0359def9ba2",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/mutable-to-shared-coercion.rs",
+      "sha256": "b5dc9769a0e6ba62e0298f1bf3bec88ea5df77fdf0b74a01fa3bee8a38be2f65",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/array-bounds.rs",
+      "sha256": "7c37add07a65d69936788b6c8da732451631c532c9acb4a8e5010fbec21ba127",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "out of bounds"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/static-mutable.rs",
+      "sha256": "12eab6c61b01d99de946173a37d1ff5e0020f63f14112045a4fab51e9b0bd31e",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "cannot write static storage"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/union-base-boundary.rs",
+      "sha256": "691f5be9f706fce0123dd6ac7e7b2ede65c0c8e5a652c9ea6417f3bb41264d27",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw union field writes are not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/raw-store-validity/typed-scalars.rs",
+      "sha256": "5d71303f32a43dbcdf2ab544af09f99913414bcbd2d39ec7f64de3e634fa3a37",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    }
+  ]
+}
