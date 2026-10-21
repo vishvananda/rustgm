@@ -1,5 +1,6 @@
 //! Paired binder slots form a bijection; unused declared slots need no partner.
-use super::super::{Error, RegionId};
+use super::super::{Error, RegionId, signature_slots::Owner};
+use crate::types::closure::ClosureId;
 use std::collections::HashMap;
 
 struct Frame {
@@ -8,12 +9,14 @@ struct Frame {
     rigid: bool,
     forward: HashMap<u16, u16>,
     reverse: HashMap<u16, u16>,
+    owners: (Option<Owner>, Option<Owner>),
 }
 
 #[derive(Default)]
 pub(super) struct Binders {
     frames: Vec<Frame>,
     next: usize,
+    owners: HashMap<(ClosureId, bool), Vec<usize>>,
 }
 
 enum Region {
@@ -34,6 +37,32 @@ impl Binders {
     pub fn enter(&mut self, left: u32, right: u32) -> Result<(), Error> {
         self.push(left, right, false)
     }
+    pub fn enter_owned(
+        &mut self,
+        left: u32,
+        right: u32,
+        owners: (Option<Owner>, Option<Owner>),
+    ) -> Result<(), Error> {
+        self.push(left, right, false)?;
+        let index = self.frames.len() - 1;
+        self.frames[index].owners = owners;
+        for (owner, right) in [(owners.0, false), (owners.1, true)] {
+            if let Some(owner) = owner.filter(|owner| owner.closed) {
+                self.owners
+                    .entry((owner.origin, right))
+                    .or_default()
+                    .push(index);
+            }
+        }
+        Ok(())
+    }
+    pub fn owner_depth(&self, owner: Owner, right: bool) -> Result<Option<u16>, Error> {
+        self.owners
+            .get(&(owner.origin, right))
+            .and_then(|stack| stack.last())
+            .map(|index| u16::try_from(index + 1).map_err(|_| Error::Overflow))
+            .transpose()
+    }
     pub fn enter_rigid(&mut self, count: u32) -> Result<(), Error> {
         self.push(count, count, true)
     }
@@ -48,11 +77,21 @@ impl Binders {
             rigid,
             forward: HashMap::new(),
             reverse: HashMap::new(),
+            owners: (None, None),
         });
         Ok(())
     }
     pub fn exit(&mut self) -> Result<(), Error> {
-        self.frames.pop().ok_or(Error::InvalidIdentity)?;
+        let frame = self.frames.pop().ok_or(Error::InvalidIdentity)?;
+        for (owner, right) in [(frame.owners.0, false), (frame.owners.1, true)] {
+            if let Some(owner) = owner.filter(|owner| owner.closed) {
+                self.owners
+                    .get_mut(&(owner.origin, right))
+                    .ok_or(Error::InvalidIdentity)?
+                    .pop()
+                    .ok_or(Error::InvalidIdentity)?;
+            }
+        }
         Ok(())
     }
     fn region(&self, region: RegionId) -> Result<Region, Error> {

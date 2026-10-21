@@ -23,7 +23,9 @@ actual move/call-kind/lifetime rules; the non-Copy-pointee control stays accepte
 The earlier object-input quantified-output positive advances from the Copy gate
 to its separate inherited principal input-ownership boundary. Its expected
 outcome remains an explicit supported-by-Rust implementation boundary, with the
-precise diagnostic updated rather than promoted to a semantic negative.
+precise diagnostic updated rather than promoted to a semantic negative. The later
+[signature ownership repair](pa24-signature-slot-ownership.md) completes that
+positive; these earlier observations remain historical evidence.
 
 Evidence: `obj/parallel/pa24-copy-shape/` retains the predeclared hypotheses,
 original source hashes, baseline observations, first candidate observations and

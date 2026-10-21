@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "late-object-requirements",
+      "path": "tests/spec/signature-slot-ownership/late-object-requirements.rs",
+      "source_sha256": "bbd67a64606deac888e6755e529f1f3f9196dc8a40cda82d878923cc67b51af9",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "outer-result-cannot-be-local",
+      "path": "tests/spec/signature-slot-ownership/outer-result-cannot-be-local.rs",
+      "source_sha256": "41c879e0e35bac72e7577d8b420aad2c093a95eaeec09bd27cfcb4c1081e5b25",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "owned-local-escape",
+      "path": "tests/spec/signature-slot-ownership/owned-local-escape.rs",
+      "source_sha256": "287bff692db72babf03f533289213715b5d5f9582d1046984d33da7fc3e9a936",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "repeated-quantified-functions",
+      "path": "tests/spec/signature-slot-ownership/repeated-quantified-functions.rs",
+      "source_sha256": "6a64b533dd1a41e8058070ed390a5fe58fcd570e05e7004b316381954852b205",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "unowned-annotated-input",
+      "path": "tests/spec/signature-slot-ownership/unowned-annotated-input.rs",
+      "source_sha256": "a4a6d331dd282a1fbdbe69e56cfd3edb681a82d8bbd110c1c1fa5feebb3d52c0",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    }
+  ]
+}

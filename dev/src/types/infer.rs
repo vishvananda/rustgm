@@ -22,6 +22,7 @@ mod regions;
 pub(crate) use regions::RegionMapping;
 mod resolve;
 mod scoped;
+mod signature_slots;
 mod specialize;
 mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
@@ -83,6 +84,7 @@ enum Value {
 struct Term {
     parent: TermId,
     rank: u8,
+    was_variable: bool,
     value: Value,
     start: u32,
     end: u32,
@@ -114,6 +116,7 @@ impl std::error::Error for Error {}
 #[derive(Default)]
 pub struct Context {
     defining: Option<Box<defining::Definitions>>,
+    signature_slots: Option<Box<signature_slots::Slots>>,
     arguments: Option<Box<arguments::Storage>>,
     dependencies: Option<Box<dependencies::Storage>>,
     resolution: Option<Box<resolve::Resolution>>,
@@ -157,6 +160,7 @@ impl Context {
         self.terms.push(Term {
             parent: id,
             rank: 0,
+            was_variable: matches!(value, Value::Variable(_)),
             value,
             start,
             end,
@@ -422,6 +426,7 @@ impl Context {
     ) -> Result<(), Error> {
         while let Some((a, b)) = self.pairs.pop() {
             self.step()?;
+            self.join_slot_classes(a, b)?;
             let a = self.root(a)?;
             let b = self.root(b)?;
             if a == b {

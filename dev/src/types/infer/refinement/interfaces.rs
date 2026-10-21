@@ -14,6 +14,7 @@ impl Refinement {
         source: &mut Context,
         opening: &mut Bound,
     ) -> Result<Vec<(Argument, Argument)>, Error> {
+        self.refresh_slot_loss(source)?;
         let roots = self.roots(false);
         let incoming = import(
             store,
@@ -40,10 +41,35 @@ impl Refinement {
         let exported = map_types(&mut self.context, store, roots, closing)?;
         let mut reverse = self.unchanged_interface_holes(source)?;
         let incoming = import(store, &mut self.context, source, &exported, &mut reverse)?;
+        self.publish_slot_loss(source)?;
         source.account_work(self.context.steps)?;
         self.context.steps = 0;
         self.publish_stable(store, source)?;
         Ok(self.roots(false).into_iter().zip(incoming).collect())
+    }
+
+    pub(super) fn refresh_slot_loss(&mut self, source: &mut Context) -> Result<(), Error> {
+        if self.context.signature_slots.is_none() || source.signature_slots.is_none() {
+            return Ok(());
+        }
+        if let Some(inputs) = &self.inputs {
+            for &(original, copied) in &inputs.types {
+                self.context.receive_slot_loss(copied, source, original)?;
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn publish_slot_loss(&mut self, source: &mut Context) -> Result<(), Error> {
+        if self.context.signature_slots.is_none() || source.signature_slots.is_none() {
+            return Ok(());
+        }
+        if let Some(inputs) = &self.inputs {
+            for &(original, copied) in &inputs.types {
+                source.receive_slot_loss(original, &mut self.context, copied)?;
+            }
+        }
+        Ok(())
     }
 
     fn unchanged_interface_holes(&mut self, source: &mut Context) -> Result<Import, Error> {

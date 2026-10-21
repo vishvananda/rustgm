@@ -29,6 +29,8 @@ mod rustc;
 mod semantic;
 #[path = "environment_execution/signatures.rs"]
 mod signatures;
+#[path = "environment_execution/slot_ownership.rs"]
+mod slot_ownership;
 #[path = "environment_execution/specialization.rs"]
 mod specialization;
 

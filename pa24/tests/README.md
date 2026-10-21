@@ -17,7 +17,7 @@ features. Keep draft inputs in their outcome manifests. At assignment release,
 register every required input in `manifest.json`; no undiscovered fixtures.
 
 `object-input-outcomes.json` declares inherited callable-object inference controls
-and explicit quantified/unresolved-target boundaries. See
+including quantified input/output and the explicit unresolved-target boundary. See
 [the implementation contract](../../docs/pa24-object-input-inference.md) for the
 ordinary required-goal protocol, cache identity, independent/native evidence and
 remaining scope. It does not activate a grading suite or generated references.
@@ -41,3 +41,8 @@ references, generic and quantified calls, outer results and unused FnOnce views.
 Four opposing permission/loan/escape inputs retain rejection. This draft has no
 released manifest or generated oracle. See
 [the implementation review](../../docs/pa24-reference-objects.md).
+
+`signature-slot-outcomes.json` covers independent public frames and opposing
+outer/local lifetime ownership. The exact registration, import and scoped equality
+contract is in [signature ownership](../../docs/pa24-signature-slot-ownership.md).
+No generated references or assignment activation accompanies these draft cases.

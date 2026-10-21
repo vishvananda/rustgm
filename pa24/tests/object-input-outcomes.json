@@ -163,7 +163,7 @@
       "name": "quantified-input",
       "path": "tests/spec/object-input-context/quantified-input.rs",
       "source_sha256": "f1572439e328638e5759b4566a37a3f4a6344d2f7b63565540eb9512b8a3eade",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -171,21 +171,21 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "incompatible types"
+      "diagnostic": ""
     },
     {
       "name": "quantified-output",
       "path": "tests/spec/object-input-context/quantified-output.rs",
       "source_sha256": "7f2f15144df20f4770d0d4c9adf68185529b6dd623b7fee44b8e61c62410e2a9",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -193,15 +193,15 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "incompatible types"
+      "diagnostic": ""
     },
     {
       "name": "quantified-static-input",
@@ -237,7 +237,7 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
+        "--emit-types": 0,
         "--emit-lowir": 1,
         "--emit-constants": 1
       },
@@ -245,7 +245,7 @@
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "incompatible types"
+      "diagnostic": "required lifetime does not outlive its target"
     },
     {
       "name": "deep",

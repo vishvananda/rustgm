@@ -133,6 +133,7 @@ impl Refinement {
         {
             return Ok(());
         }
+        self.refresh_slot_loss(source)?;
         let roots = self.roots(false);
         let incoming = import(
             store,
@@ -246,6 +247,7 @@ impl Refinement {
         for &(original, selected) in &bindings {
             changed |= different(source, original, selected)?;
         }
+        self.publish_slot_loss(source)?;
         source.equate_input_pairs(store, &bindings)?;
         // These equations relate already-closed inputs in the actual caller.
         // The query's original equations instead remain in its selected scope.

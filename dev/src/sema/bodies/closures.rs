@@ -86,6 +86,7 @@ impl Checker<'_> {
             self_ty: closure,
             bindings,
         } = self.closure_identity(node, signature)?;
+        self.closure_slot_ownership(node, closure, signature, &terms, bound_regions)?;
         self.save(node, closure);
         self.state.work.push(Work::Exit(node));
         let imported_bindings: Vec<_> =

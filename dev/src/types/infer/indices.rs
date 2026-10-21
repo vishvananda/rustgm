@@ -32,6 +32,7 @@ impl Context {
     }
 
     pub(super) fn link_root(&mut self, source: TermId, target: TermId) -> Result<(), Error> {
+        self.link_slot_classes(source, target)?;
         self.terms[source.0 as usize].parent = target;
         if let Some(journal) = self
             .dependencies

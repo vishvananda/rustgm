@@ -183,6 +183,7 @@ impl RegionMapping {
                         .map_err(|_| Error::InvalidIdentity)?;
                     context.account_work(bound.steps.saturating_sub(before))?;
                     let value = context.known(store, ty)?;
+                    context.folded_slot_facts(id, value)?;
                     self.results.insert((id, depth), value);
                     continue;
                 }
@@ -231,6 +232,7 @@ impl RegionMapping {
                 },
             )?;
             context.account_work(bound.steps.saturating_sub(before))?;
+            context.folded_slot_facts(id, value)?;
             self.results.insert((id, depth), value);
         }
         let term = self

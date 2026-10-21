@@ -57,23 +57,29 @@ impl Context {
         while let Some((id, finish)) = work.pop() {
             self.step()?;
             let id = source.root(id)?;
-            if mappings.types.contains_key(&id) {
+            if let Some(&copied) = mappings.types.get(&id) {
+                self.import_slot_facts(source, id, copied, false)?;
                 continue;
             }
             if let Some(ty) = source.settled_type(id) {
-                mappings.types.insert(id, self.known(store, ty)?);
+                let copied = self.known(store, ty)?;
+                self.import_slot_facts(source, id, copied, false)?;
+                mappings.types.insert(id, copied);
                 continue;
             }
             let term = source.terms[id.0 as usize];
             let kind = match term.value {
                 Value::Variable(domain) => {
                     let copied = self.variable(domain)?;
+                    self.import_slot_facts(source, id, copied, true)?;
                     mappings.tracker.ty(id, copied);
                     mappings.types.insert(id, copied);
                     continue;
                 }
                 Value::Known(ty) => {
-                    mappings.types.insert(id, self.known(store, ty)?);
+                    let copied = self.known(store, ty)?;
+                    self.import_slot_facts(source, id, copied, false)?;
+                    mappings.types.insert(id, copied);
                     continue;
                 }
                 Value::Construct(kind) => kind,
@@ -95,6 +101,7 @@ impl Context {
                 children.push(*mappings.types.get(&id).ok_or(Error::InvalidIdentity)?);
             }
             let copied = mappings.construct(store, source, self, kind, &children)?;
+            self.import_slot_facts(source, id, copied, true)?;
             if let Some(facts) = source.remember_structure(store, id)? {
                 self.settled
                     .get_or_insert_with(Default::default)

@@ -16,6 +16,23 @@ pub(super) struct Imported {
     pub bindings: Vec<(DefId, TermId)>,
 }
 impl Checker<'_> {
+    pub(super) fn closure_slot_ownership(
+        &mut self,
+        node: NodeId,
+        closure: TermId,
+        signature: TermId,
+        slots: &[TermId],
+        bound_regions: u32,
+    ) -> Result<(), Error> {
+        if bound_regions != 0 {
+            self.state
+                .infer
+                .define_signature_slots(&self.facts.types, closure, signature, slots)
+                .map_err(|e| self.error(node, e))?;
+        }
+        Ok(())
+    }
+
     pub(super) fn closure_projection_environment(
         &mut self,
         node: NodeId,

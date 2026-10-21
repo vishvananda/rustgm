@@ -47,6 +47,7 @@ impl Context {
         right: TermId,
         ambient: &[u32],
     ) -> Result<(), Error> {
+        self.join_slot_classes(left, right)?;
         let left = self.root(left)?;
         let right = self.root(right)?;
         if left == right {
@@ -74,8 +75,11 @@ impl Context {
                 binders.exit()?;
                 continue;
             };
-            let a = self.scoped_root(store, a, binders.depth()?, &mut rebasing)?;
-            let b = self.scoped_root(store, b, binders.depth()?, &mut rebasing)?;
+            if binders.is_empty() {
+                self.join_slot_classes(a, b)?;
+            }
+            let a = self.scoped_root(store, a, &binders, false, &mut rebasing)?;
+            let b = self.scoped_root(store, b, &binders, true, &mut rebasing)?;
             if !seen.insert((a, b, binders.scope())) {
                 continue;
             }
@@ -107,7 +111,7 @@ impl Context {
             let right = self.materialize(store, b)?;
             self.pairs.clear();
             self.structural(store, a, b, false)?;
-            let entered = self.scoped_binder(left, right, &mut binders)?;
+            let entered = self.scoped_binder((a, b), left, right, &mut binders)?;
             self.scoped_regions(store, left, right, &mut binders)?;
             if entered {
                 work.push(Work::Exit);
@@ -120,6 +124,7 @@ impl Context {
 
     fn scoped_binder(
         &mut self,
+        roots: (TermId, TermId),
         left: Constructor,
         right: Constructor,
         binders: &mut Binders,
@@ -144,7 +149,15 @@ impl Context {
             }
             _ => return Ok(false),
         };
-        binders.enter(a, b)?;
+        if matches!(left, Constructor::Function { .. }) {
+            binders.enter_owned(
+                a,
+                b,
+                (self.signature_frame(roots.0), self.signature_frame(roots.1)),
+            )?;
+        } else {
+            binders.enter(a, b)?;
+        }
         Ok(true)
     }
 
@@ -180,7 +193,8 @@ impl Context {
         &mut self,
         store: &Store,
         term: TermId,
-        depth: u16,
+        binders: &Binders,
+        right: bool,
         rebasing: &mut Rebasing,
     ) -> Result<TermId, Error> {
         let variable = matches!(
@@ -191,8 +205,24 @@ impl Context {
             Value::Variable(_)
         );
         let root = self.root(term)?;
+        let depth = binders.depth()?;
         if variable && root != term && depth != 0 {
-            rebasing.apply(self, store, root, depth, true)
+            let amount = if let Some((owner, local_only)) = self.signature_definition(term, root)?
+                && owner.closed
+            {
+                if local_only {
+                    let defined = binders.owner_depth(owner, right)?.ok_or(Error::Mismatch)?;
+                    depth.checked_sub(defined).ok_or(Error::InvalidIdentity)?
+                } else {
+                    if self.contains_escaping_regions(store, root)? {
+                        return Err(Error::Mismatch);
+                    }
+                    depth
+                }
+            } else {
+                depth
+            };
+            rebasing.apply(self, store, root, amount, true)
         } else {
             Ok(root)
         }
