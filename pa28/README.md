@@ -76,7 +76,22 @@ It performs no extra memory read. Shared static storage, nested aggregates,
 ignored results, variable/aliased orders and integer wraparound retain their
 runtime effects. Constant calls, including retained skipped branches and
 function-item aliases, remain forbidden independently of unsafe permission.
-Compare-exchange and additional atomic families remain separate work.
+The CAS slice adds canonical safe runtime `compare_exchange` and
+`compare_exchange_weak` returning the exact `Result<u32,u32>` identity. Typed
+success/failure orders preserve all fifteen valid backend pairs: success accepts
+all five orders, while failure accepts only Relaxed, Acquire and SeqCst. Direct
+invalid failure variants obey the source-sensitive lint; dynamic, aliased, UFCS
+and reified invalid orders abort at runtime. Constant eligibility remains
+RuntimeOnly. The expected scratch slot supplies the old/observed Result payload
+without an extra atomic-object read. Weak currently uses the strong operation,
+which is permitted to avoid spurious failures. Ordinary variant layout and the
+hidden-result ABI determine Result storage, without assumed tags or offsets.
+
+The CAS source/native/scaling receipt also qualifies lazy preparation of fully
+qualified AtomicU32/Ordering expression paths, explicit core aliases, no implicit
+prelude and local shadowing. Existing canonical identity checks remain in force.
+See `tests/atomic-cas-outcomes.json` for exact outcomes and phase distinctions.
+Additional atomic widths and intrinsic families remain separate work.
 
 External-open coverage keeps an unknown case separate from real variant IDs and
 runtime discriminants. Matching every current Ordering variant still needs a
@@ -107,7 +122,7 @@ contract and example outputs before declaring this assignment active.
 
 ## Tests to develop with the reference
 
-orderings; compare-exchange; casts; u128; memory overlap.
+additional atomic widths and methods; casts; u128; memory overlap.
 
 Add spec fixtures, positive/negative controls and cross-feature regressions in
 the earliest owning assignment. Use the course reference for text oracles and

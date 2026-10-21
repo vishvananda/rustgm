@@ -218,6 +218,28 @@ impl Builder {
     }
     /// # Errors
     /// Rejects unsupported widths and invalid construction state.
+    pub fn atomic_compare_exchange(
+        &mut self,
+        value: Value,
+        address: Operand,
+        expected: Operand,
+        ordering: super::atomic::CompareOrder,
+    ) -> Result<Value, &'static str> {
+        if value.ty != Type::U32 {
+            return Err("atomic compare-exchange currently requires u32");
+        }
+        self.value(
+            Type::I64,
+            Operation::AtomicCompareExchange {
+                value,
+                address,
+                expected,
+                ordering,
+            },
+        )
+    }
+    /// # Errors
+    /// Rejects unsupported widths and invalid construction state.
     pub fn atomic_exchange(
         &mut self,
         value: Value,

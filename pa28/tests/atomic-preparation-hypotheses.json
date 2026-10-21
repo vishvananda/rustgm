@@ -1,0 +1,102 @@
+{
+  "stage": "draft-predeclared",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-preparation/qualified.rs",
+      "sha256": "8cb010ece36401980f497f04be3b371b5a4573708280119857a89ece985a1937",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/extern-qualified.rs",
+      "sha256": "7a8e823256f71c4cd1d940857a1fc766d88626767cdd8884ea85b38c517a20c7",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/no-prelude-qualified.rs",
+      "sha256": "1ccc8b0dfdef2951bd91397ede145d468be7ba740482ec4dbd3990d05f522c79",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/absolute.rs",
+      "sha256": "ca9baaded3caabd89712306b13c2c7cb289ab1cf71685e2cc8eb2484df8447b8",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/core-alias.rs",
+      "sha256": "2de32af768ad879f32c258668ded4d5bbf9b090c2517cb73453f74dbd057a768",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/new-only.rs",
+      "sha256": "f9bdb3e818c8f2a70574cafb181d2cac3b09c6bdc5d95de2f6f0346e7cf9d0e3",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/load-only.rs",
+      "sha256": "5da0fc7cc63cba165aa9594d7d050fb75346589bf0f4f016f399f2995470f359",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/ordering-only.rs",
+      "sha256": "80ecfb46ec4357b41731344b50b000253350c0e0c8870bcdcec69547afecb56b",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-core.rs",
+      "sha256": "9b752a1e820999741696cba7cb22108a42eeac766aa653c890c9541fd0528eb8",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-types.rs",
+      "sha256": "1f681aee964d674ee284af074fa2cbddb226f4b22285148d2229a60363ed627b",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/ordinary.rs",
+      "sha256": "49a9c9db947d5ba0e2af2b370a06ec28ec53659141a47b6c6cdc3fd1c2c8adc4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": false
+    }
+  ],
+  "retained_hypothesis_disagreements": [
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-core.rs",
+      "original_source": "mod core{pub mod sync{pub mod atomic{pub struct AtomicU32;impl AtomicU32{pub fn new(_:u32)->Self{Self}pub fn load(&self,_:Ordering)->u32{7}}pub enum Ordering{SeqCst}}}}fn main(){let a=core::sync::atomic::AtomicU32::new(7);let _=a.load(core::sync::atomic::Ordering::SeqCst);}\n",
+      "original_sha256": "094de8b0d69b814db6cec70e73138eae07418876c1caef2f393d4628e9413e63",
+      "rustc_status": 0,
+      "frontend_types_status": 1,
+      "reason": "Existing unit-struct Self value-constructor lookup fails independently of atomic preparation; explicit nominal constructor isolates approved shadowing contract.",
+      "evidence": "obj/parallel/pa28/cas-qualified/tests.log"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-types.rs",
+      "original_source": "pub struct AtomicU32;impl AtomicU32{pub fn new(_:u32)->Self{Self}pub fn load(&self,_:Ordering)->u32{7}}pub enum Ordering{SeqCst}fn main(){let a=AtomicU32::new(7);let _=a.load(Ordering::SeqCst);}\n",
+      "original_sha256": "c9103996923158a9783c88bb3b46eb6a050721a2a0f541d48b4919cdb35b6022",
+      "rustc_status": 0,
+      "frontend_types_status": 1,
+      "reason": "Existing unit-struct Self value-constructor lookup fails independently of atomic preparation; explicit nominal constructor isolates approved shadowing contract.",
+      "evidence": "obj/parallel/pa28/cas-qualified/tests.log"
+    }
+  ]
+}

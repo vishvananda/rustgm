@@ -35,10 +35,19 @@ impl Checker<'_> {
             },
         )?;
         let scalar = TypeId::primitive(crate::types::Primitive::U32);
-        let inputs = if kind == Intrinsic::AtomicLoad {
+        let inputs = if kind.is_compare_exchange() {
+            vec![receiver, scalar, scalar, ordering, ordering]
+        } else if kind == Intrinsic::AtomicLoad {
             vec![receiver, ordering]
         } else {
             vec![receiver, scalar, ordering]
+        };
+        let result = if kind.is_compare_exchange() {
+            self.atomic_comparison_result(origin, scalar)?
+        } else if kind == Intrinsic::AtomicStore {
+            TypeId::UNIT
+        } else {
+            scalar
         };
         let parameters = self
             .facts
@@ -50,16 +59,34 @@ impl Checker<'_> {
             Type::Function {
                 bound_regions: 1,
                 parameters,
-                result: if kind == Intrinsic::AtomicStore {
-                    TypeId::UNIT
-                } else {
-                    scalar
-                },
+                result,
                 unsafe_: false,
                 convention: Convention::RUST,
             },
         )?;
         self.atomic_method(declaration, owner, subject, receiver, signature)
+    }
+    fn atomic_comparison_result(
+        &mut self,
+        origin: crate::resolve::unit::NodeKey,
+        scalar: TypeId,
+    ) -> Result<TypeId, Error> {
+        let result = self
+            .facts
+            .intrinsics
+            .comparison_result()
+            .ok_or_else(|| self.error(origin, "missing canonical comparison Result"))?;
+        let arguments = self
+            .facts
+            .types
+            .intern_arguments(&[crate::types::arguments::Argument::Type(scalar); 2])
+            .map_err(|e| self.error(origin, e))?;
+        let ty = self.intern(origin, Type::Adt(ItemId(result.definition.0), arguments))?;
+        self.facts
+            .aggregates
+            .instantiate(&mut self.facts.types, ty)
+            .map_err(|e| self.error(origin, e))?;
+        Ok(ty)
     }
     fn atomic_method(
         &mut self,

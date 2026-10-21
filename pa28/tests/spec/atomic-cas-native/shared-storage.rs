@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};struct Pair{x:u32,a:A}static VALUE:Pair=Pair{x:3,a:A::new(7)};fn main(){match VALUE.a.compare_exchange(7,9,O::AcqRel,O::Acquire){Ok(x)=>check(x==7),Err(_)=>check(false)}match VALUE.a.compare_exchange_weak(0,13,O::SeqCst,O::SeqCst){Ok(_)=>check(false),Err(x)=>check(x==9)}check(VALUE.x==3);check(VALUE.a.load(O::Relaxed)==9);}

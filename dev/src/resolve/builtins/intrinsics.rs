@@ -2,7 +2,7 @@
 use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
 use crate::{
     resolve::{package::ModuleId, unit::NodeKey},
-    support::intrinsics::Intrinsic,
+    support::{intrinsics::Intrinsic, library_types::LibraryType},
     syntax::ast::NodeId,
 };
 
@@ -14,15 +14,26 @@ pub struct Definition {
     pub parameter: Option<DefId>,
     pub owner: Option<DefId>,
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct ComparisonResult {
+    pub definition: DefId,
+    pub ok: DefId,
+    pub err: DefId,
+}
 #[derive(Clone, Copy, Default)]
 pub struct Intrinsics {
     entries: [Option<Definition>; Intrinsic::ALL.len()],
     pointer_module: Option<ScopeId>,
+    comparison_result: Option<ComparisonResult>,
 }
 impl Intrinsics {
     #[must_use]
     pub fn get(&self, kind: Intrinsic) -> Option<&Definition> {
         self.entries[kind.index()].as_ref()
+    }
+    #[must_use]
+    pub const fn comparison_result(&self) -> Option<ComparisonResult> {
+        self.comparison_result
     }
     #[must_use]
     pub fn identify(&self, definition: DefId) -> Option<Intrinsic> {
@@ -130,6 +141,29 @@ impl Resolver<'_> {
         owner: DefId,
         scope: ScopeId,
     ) -> Result<(), Error> {
+        self.prepare_library_type(c, node, LibraryType::Result)?;
+        let result = self
+            .facts
+            .library_types
+            .get(LibraryType::Result)
+            .ok_or_else(|| self.error(c, node, "missing canonical comparison Result"))?;
+        let [ok, err] = result.variants.as_slice() else {
+            return Err(self.error(c, node, "comparison Result requires canonical Ok and Err"));
+        };
+        let identity = ComparisonResult {
+            definition: result.definition,
+            ok: ok.constructor,
+            err: err.constructor,
+        };
+        if self
+            .facts
+            .intrinsics
+            .comparison_result
+            .is_some_and(|prior| prior != identity)
+        {
+            return Err(self.error(c, node, "canonical comparison Result changed identity"));
+        }
+        self.facts.intrinsics.comparison_result = Some(identity);
         for kind in Intrinsic::ALL
             .into_iter()
             .filter(|kind| !kind.is_volatile())

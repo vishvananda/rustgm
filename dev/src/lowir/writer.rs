@@ -246,6 +246,25 @@ fn instruction(
             write!(out, ", ")?;
             destination
         }
+        Operation::AtomicCompareExchange {
+            value,
+            address,
+            expected,
+            ordering,
+        } => {
+            write!(out, "atomic_compare_exchange {} ", value.ty.name())?;
+            operand(program, function, address, out)?;
+            write!(out, ", ")?;
+            operand(program, function, expected, out)?;
+            write!(out, ", ")?;
+            operand(program, function, value.operand, out)?;
+            return write!(
+                out,
+                ", {}, {}",
+                ordering.success_encoding(),
+                ordering.failure_encoding()
+            );
+        }
         Operation::AtomicExchange {
             value,
             address,

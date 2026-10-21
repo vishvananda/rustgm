@@ -18,10 +18,10 @@ impl Lower<'_, '_> {
             else {
                 return Err("atomic intrinsic requires a selected callable");
             };
-            let result = if intrinsic == Intrinsic::AtomicStore {
-                crate::types::TypeId::UNIT
-            } else {
-                crate::types::TypeId::primitive(crate::types::Primitive::U32)
+            let Some(crate::types::Kind::Function { result, .. }) =
+                self.context.types.kind(signature)
+            else {
+                return Err("atomic intrinsic has no callable signature");
             };
             let symbol = self.context.demand_intrinsic(intrinsic, instance)?;
             return self.call_operand(

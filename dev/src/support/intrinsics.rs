@@ -7,6 +7,8 @@ pub enum Intrinsic {
     AtomicStore,
     AtomicSwap,
     AtomicFetchAdd,
+    AtomicCompareExchange,
+    AtomicCompareExchangeWeak,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -24,13 +26,15 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 8] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
         Self::AtomicStore,
         Self::AtomicSwap,
         Self::AtomicFetchAdd,
+        Self::AtomicCompareExchange,
+        Self::AtomicCompareExchangeWeak,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -41,6 +45,8 @@ impl Intrinsic {
             Self::AtomicStore => 3,
             Self::AtomicSwap => 4,
             Self::AtomicFetchAdd => 5,
+            Self::AtomicCompareExchange => 6,
+            Self::AtomicCompareExchangeWeak => 7,
         }
     }
     #[must_use]
@@ -52,6 +58,8 @@ impl Intrinsic {
             Self::AtomicStore => "store",
             Self::AtomicSwap => "swap",
             Self::AtomicFetchAdd => "fetch_add",
+            Self::AtomicCompareExchange => "compare_exchange",
+            Self::AtomicCompareExchangeWeak => "compare_exchange_weak",
         }
     }
     #[must_use]
@@ -61,11 +69,20 @@ impl Intrinsic {
     #[must_use]
     pub const fn atomic_order_valid(self, order: super::atomic_ordering::Ordering) -> bool {
         match self {
-            Self::AtomicLoad => order.load_valid(),
+            Self::AtomicLoad | Self::AtomicCompareExchange | Self::AtomicCompareExchangeWeak => {
+                order.load_valid()
+            }
             Self::AtomicStore => order.store_valid(),
             Self::AtomicSwap | Self::AtomicFetchAdd => true,
             Self::ReadVolatile | Self::WriteVolatile => false,
         }
+    }
+    #[must_use]
+    pub const fn is_compare_exchange(self) -> bool {
+        matches!(
+            self,
+            Self::AtomicCompareExchange | Self::AtomicCompareExchangeWeak
+        )
     }
     #[must_use]
     pub const fn descriptor(self) -> Descriptor {

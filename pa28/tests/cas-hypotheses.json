@@ -1,0 +1,176 @@
+{
+  "stage": "draft-predeclared",
+  "matrix": "cas-ordering-hypotheses.json",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-cas/ufcs-invalid-failure.rs",
+      "sha256": "b79e711c5a4a94e860bfaaf0feed3016f2c7a8882efc390d7bb1baac686a9c2f",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/alias-invalid-failure.rs",
+      "sha256": "8d68931af0300eea28d17b5e2437d4ffb2dd3f917c590b755447f6d9785a8b9e",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/variable-order.rs",
+      "sha256": "13b2fb7c82be9aa099d10c31c31cfb6039cb10605f64d58164fd7a24f886ddc4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/reified.rs",
+      "sha256": "1e14724f26c200b10d56f6c7422f670c7a77e81a8540c868450b231134fd1ca6",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/result-alias.rs",
+      "sha256": "9cdf5d49c26ab81f97c6bea883436bf24a0401d0bcc44565690659f1d804877c",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/local-result.rs",
+      "sha256": "5bf75a9e1950ca15797760e31165c961c2227790b8b61a548cc9cb9f92ae4838",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-direct.rs",
+      "sha256": "2889bebd4bf0874dd3d8101e51fef3da372758c0d18624aac6711e85588bc53c",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-skipped.rs",
+      "sha256": "a42f362b31de4cc7a0c1ad735e26f482fef68298b58f24af4cc4932ab6a2f395",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 0,
+      "phase_boundary": "Earlier type inspection retains the unused const-function eligibility obligation; executable and constant inspection require the RuntimeOnly rejection."
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-alias.rs",
+      "sha256": "2fd29c5d23529597cb3c3be44efe404f7101f1cae61dd13d548b3d91f7359da9",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-reified.rs",
+      "sha256": "87412fee8a71a6ec25a5bc1bfe23e0ae8a11daa95c60ed0177b6beb3f42753f8",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-current.rs",
+      "sha256": "94067cb083df6e5ab0376bb45f27f7f65c4302e0aadfd39aab828bc0e68cddf4",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-new.rs",
+      "sha256": "ce8d37951440ca18ccedf5bcdab202cc7727db5e7678343eb2a99c1e9d7d7263",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-success.rs",
+      "sha256": "b818a468a7c9e59c6f29c946ce1fb82de70b69f5e03803c8e7ed303002062981",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-failure.rs",
+      "sha256": "36d46afd4ef0ae2dfc7371a46cd8454b314af12d45a9508b0fbcca9772df8e2d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/packed-receiver.rs",
+      "sha256": "3d4aada102d3c6c4b5127bec09eadd441fe97d5dfcddb3ab45d334ce49a8f1e5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/unsafe-narrowing.rs",
+      "sha256": "842f9ce6f9737583711be3216e469368b84b96fb3d2b09167538d928dda16590",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/no-prelude.rs",
+      "sha256": "9961d436b20dd2139c7e0b4d82ffc1a4747e570768626620e1b257cd39c62fe9",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/strong-matrix.rs",
+      "sha256": "dcbd9738a04f2de8001797fa74a28bd42ae99b95f3e82e320d244b5b1d9fc663",
+      "qualified_input_sha256": "7fdbb78fcdbe95dbd9f2df3f5321ad54d99ee4730698b6a8e6e30540dcc5aa18",
+      "panic": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/weak-matrix.rs",
+      "sha256": "929612839088d045cd7eeedb0e810c9bbce435136f326913b24d8abd3a586866",
+      "qualified_input_sha256": "112739ae2019ba25dedb64e92a532bab85abd8107c38d8a68b39d3ce098a134f",
+      "panic": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/reified.rs",
+      "sha256": "f910ca62cef6e9b2856a696046ff80456f66d8d9fb678bfc1acda5e96d5f5c67",
+      "qualified_input_sha256": "c1dc4f0426e16aeb26f5ce93799ff6882671bea94454f9edb141f9ff66aff9f0",
+      "panic": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/shared-storage.rs",
+      "sha256": "147a10dc0ad47c9bf9d8d3f3786e6d0107e9150658fa63767daa2e32b8e36b86",
+      "qualified_input_sha256": "e11a2a26178b632133cf151d636b491f51b0a1adf04a1c4587e508de5e314d83",
+      "panic": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/dynamic-invalid.rs",
+      "sha256": "f19c590dbd63e99d86ee6a6136beac192b718699e91186e1524ce59cedc91821",
+      "qualified_input_sha256": "589ca6089614924c2a626568d2209dfeba031db87c71199f92fe4190e5eafc10",
+      "panic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/weak-invalid.rs",
+      "sha256": "d2a714cf478f41ed417c50957e8169c482b8183be2c0a5e3e2a7f9304d097771",
+      "qualified_input_sha256": "7f1f8d6340c2bdeec5e812508c473c95aad59bdca0ee738c61396fa1e4ed9d11",
+      "panic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/reified-invalid.rs",
+      "sha256": "70bae36b7d1237f82697894bf64b3db14187ff2129e7b1cd0681b933e0552486",
+      "qualified_input_sha256": "e5edc0a2ace8226af94bf003748c6f31fc89c8bff0e0387217b5aa9bc7f0ae83",
+      "panic": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/ufcs-invalid.rs",
+      "sha256": "8190af0729c413e6bd0670665e0d75bb8fd2a9daf2b951b857dc28f6a7bb39dc",
+      "qualified_input_sha256": "5a0a206e7479b05e6e5719e4c5fc9429a963298a2d24c62262b6ea03bb65839b",
+      "panic": true
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 //! A bounded ordering switch translates Rust tags and aborts invalid dynamic orders.
+mod comparison;
 use crate::{
     lower::context::Context,
     lowir::{
@@ -34,13 +35,24 @@ impl Context<'_> {
         let storing = intrinsic == Intrinsic::AtomicStore;
         let loading = intrinsic == Intrinsic::AtomicLoad;
         let scalar = TypeId::primitive(Primitive::U32);
-        if inputs.len() != if loading { 2 } else { 3 }
+        if inputs.len()
+            != if loading {
+                2
+            } else if intrinsic.is_compare_exchange() {
+                5
+            } else {
+                3
+            }
             || !loading && inputs[1] != scalar
             || storing && result != TypeId::UNIT
-            || !storing && result != scalar
+            || !storing && !intrinsic.is_compare_exchange() && result != scalar
+            || intrinsic.is_compare_exchange() && (inputs[2] != scalar || inputs[3] != inputs[4])
             || !matches!(self.types.kind(inputs[0]), Some(Kind::Reference { mutable: false, referent, .. }) if referent == subject)
         {
             return Err("atomic intrinsic parameter or result type mismatch");
+        }
+        if intrinsic.is_compare_exchange() {
+            self.comparison_result_type(result)?;
         }
         let canonical = self.definitions[declaration.definition.0 as usize]
             .ok_or("missing atomic callable definition")?;
@@ -63,7 +75,14 @@ impl Context<'_> {
         }
         Ok(Type::U32)
     }
-    pub(super) fn atomic_body(&mut self, intrinsic: Intrinsic) -> Result<Function, &'static str> {
+    pub(super) fn atomic_body(
+        &mut self,
+        intrinsic: Intrinsic,
+        instance: crate::types::instance::Instance,
+    ) -> Result<Function, &'static str> {
+        if intrinsic.is_compare_exchange() {
+            return self.comparison_body(instance);
+        }
         let mut builder = Builder::default();
         let entry = builder.block()?;
         let invalid = builder.block()?;

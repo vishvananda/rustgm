@@ -6,6 +6,7 @@ use super::{
     package::{Error, ModuleId},
     unit::NodeKey,
 };
+use crate::support::library_types::LibraryType;
 use crate::syntax::{
     ast::{Kind, List, NodeId, TypeFlavor},
     item::{GenericFlavor, ItemKind},
@@ -418,19 +419,18 @@ impl Resolver<'_> {
         if ns == Namespace::Type
             || ns == Namespace::Value
                 && path.iter().any(|name| {
-                    matches!(
-                        self.package.names.get(*name),
-                        "Option"
-                            | "Some"
-                            | "None"
-                            | "Result"
-                            | "Ok"
-                            | "Err"
-                            | "ManuallyDrop"
-                            | "ptr"
-                            | "read_volatile"
-                            | "write_volatile"
-                    )
+                    let spelling = self.package.names.get(*name);
+                    LibraryType::from_name(spelling).is_some()
+                        || matches!(
+                            spelling,
+                            "Some"
+                                | "None"
+                                | "Ok"
+                                | "Err"
+                                | "ptr"
+                                | "read_volatile"
+                                | "write_volatile"
+                        )
                 })
         {
             self.prepare_builtin_path(c, node, absolute, ns, &path)?;

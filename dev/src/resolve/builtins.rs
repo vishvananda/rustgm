@@ -12,7 +12,7 @@ use crate::syntax::{
     ast::NodeId,
     item::{Item, ItemKind},
 };
-pub use intrinsics::{Definition as BuiltinIntrinsic, Intrinsics};
+pub use intrinsics::{ComparisonResult, Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal};
 pub use traits::{BuiltinTrait, Callable, Language, LanguageOutput, Traits};
 

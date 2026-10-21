@@ -1,0 +1,579 @@
+{
+  "stage": "draft-predeclared",
+  "baseline": "41b3149b",
+  "purpose": "Qualify exact strong/weak success/failure ordering matrix and pinned expected-slot behavior before any CAS enum edits.",
+  "source_cases": [
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs",
+      "sha256": "efe7dfdef6563ad144588172d55981c461acb1b20f234c02e76c6cf0b748a277",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-release.rs",
+      "sha256": "ba7511518857bc20b505a343eab758a343117327b7e59227f4ce5b835fab05f8",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-acquire.rs",
+      "sha256": "587b9faffa8d71335ebf0ccd6dd39debc3a87c3f6cb9d3a4bfc01870e95fd35d",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-acqrel.rs",
+      "sha256": "adec0050089d8990cd7ac566939a7b61ea0a65ec562d268e72d4fd8bc8272098",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-seqcst.rs",
+      "sha256": "8eba77dc98a69975096352195956a279faf6650d6b37e0d0c050022e82ea338f",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-relaxed.rs",
+      "sha256": "b5e5ba2275323002519c4c4b22ae106b1d4d9bd6cd8dbce599c5af8e04e73020",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-release.rs",
+      "sha256": "84c0ea2fc8ec0913b064be4575df27e8eb893a207841a1415113f5fc10c0522e",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-acquire.rs",
+      "sha256": "d6fbf2681f4ee0c49478d28b5068adc37caa28accc458cae0d5214be45f75393",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-acqrel.rs",
+      "sha256": "ce43d06a9e41b16741c737556580da119effdca52891bd6369e4dbe829400fa6",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-seqcst.rs",
+      "sha256": "d7181f78ce10cb0058ebf1562dcc745ac082bc3bcd3842d95c7471e584fe0345",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-relaxed.rs",
+      "sha256": "6dfd222d2c1646f17d3376682f52888996687dc47eed19329edd21cc44da0974",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-release.rs",
+      "sha256": "c0dda2b0df949f14aae7ae72e575f2ac225c0a62d6a0f35eda1f6e229f5d7857",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-acquire.rs",
+      "sha256": "32c07792d27a5cd763bc17f71eb05a97c922323960f849480949e343a63e3176",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-acqrel.rs",
+      "sha256": "d84e2ddb09a083d938137eed9d1a5ace8c57301e04b8e2f7c688e8e82cad94b9",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-seqcst.rs",
+      "sha256": "70df81c7257a36549fb83ef916dcf2c6415baa842db903496475a2bdc2687d76",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-relaxed.rs",
+      "sha256": "b8b8c6860476a0fc790892df743e5e703a800de4e5a4c12ce80743f82786a07f",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-release.rs",
+      "sha256": "0bd6a73e6a1bd57690b45ec573b5a98fafa02462d1971f38113c3167e35f8460",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-acquire.rs",
+      "sha256": "9f1eec8b70389ced6776a23809947af32bc4d24e9760dbb69d2433e13e929ebf",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-acqrel.rs",
+      "sha256": "62e790800ef97ae64b86624ab557b375dcbb6bbbc7f54c907b2f9792fc05bdf8",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-seqcst.rs",
+      "sha256": "f991717892fac20f7cc57343d0adf4218dccdf6aa9229d25c2f848451d906061",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-relaxed.rs",
+      "sha256": "d0572a3166e4bdec046a31b15b564826db571af91c2552888185b49d36220f2a",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-release.rs",
+      "sha256": "b4d2ae43ef9468538f6531d74a64d70ecb04f2d9be20cd33bbc76f99b8d64784",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-acquire.rs",
+      "sha256": "aff3271740c6459161e3ab19e7a5e5c9191586d0b78864eea580953f31b2b0d1",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-acqrel.rs",
+      "sha256": "6bbbef047f679ff381b9c1656f9924a26daeb99804548557f76fe39caa6b2560",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-seqcst.rs",
+      "sha256": "6683bbf0cc8c59ed4c255454fcaa422873458095b424a1969186bd350a91495e",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-relaxed.rs",
+      "sha256": "d97cb71a7d96249423bb7e31ab0fa66566bd1398c45d0f2e9d617592877c79c3",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-release.rs",
+      "sha256": "292b8b6cf878e7c74eb2cc1ed10954a841250fd548a5841d56d5a94acbb1e926",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-acquire.rs",
+      "sha256": "5cc73abe080d2dc8b91d4653f0abd02928cefb13a7e8a470bdbcd35c55b61f9f",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-acqrel.rs",
+      "sha256": "10c9ebf6b5576ef86f4ca245b2fd66318d9638d70f5c241ea5b1d6fe68428132",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-seqcst.rs",
+      "sha256": "9c671589688c12acc6f1acb85a0c3397ab44cbb817ec8cf9c97fc0e4dc66ac2d",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-relaxed.rs",
+      "sha256": "37f7b8c48574272670d5b1735c8d1d59679cf71ffac30f481b8f5228b39eeaec",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-release.rs",
+      "sha256": "057a4d189f6186b31070653fab9c5dd181c7ecea77e171a8f4af466da2a8e1be",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-acquire.rs",
+      "sha256": "7539ff1f8d35ab1118f156625f3971809cc40f17f79ef5b07daa279550658c1a",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-acqrel.rs",
+      "sha256": "e53d04dcccc1589a3940a5430cc46378c91ac646a524362d19a812caef2de3db",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-seqcst.rs",
+      "sha256": "d6f466cdf7f99620bb90f18c2c11017a8b5a1595f780f5da13292f3b2b941b80",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-relaxed.rs",
+      "sha256": "f11a3308ad2cfdba2c959a9d774799ceae569ae9aac7da3c05674add1e6eb0b9",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-release.rs",
+      "sha256": "88ea751e702d01bddd1042c625da49f0c36439fa5004e7622b27588456f53f83",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-acquire.rs",
+      "sha256": "252bff57b4917ce12a8992a0339ac51fa97591a8ec16140578fadb7a0839f754",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-acqrel.rs",
+      "sha256": "04a4966974f78329abaa2f98e2ccea5b16513ddcee40ebf6adc5727470e20539",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-seqcst.rs",
+      "sha256": "07bc750e6032aab7c2ba973cf1f9878737dd66b145ef00e62264d50649796c62",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-relaxed.rs",
+      "sha256": "27bc5fb4a2e04f06877ac200dee4941d48be901116786477f1d0d0c9b8262a9e",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-release.rs",
+      "sha256": "d9afca831dfb7d3c9aad958c019bbfa7ee5e2458bbd68421826280a42d17f04c",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-acquire.rs",
+      "sha256": "9ba40137cabad7c8007d4739cfd31cc53b652ec8101267756435703605fb7124",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-acqrel.rs",
+      "sha256": "5057fcc627dd3c980cfd2628e9bb486a7129f10a2ca9a80cbbe65c3eef4e5aeb",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-seqcst.rs",
+      "sha256": "ae7945ae7385a65053c05f25a5e14f97ee86e62fc164847b8bf98caae21fcca2",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-relaxed.rs",
+      "sha256": "481304d4270732f33abad6c9fed8dffb51b0448c09cb0b00dca0692fc2c45b9a",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-release.rs",
+      "sha256": "dffdee4bae62ed7cad954677362e3285393ae163eeb9c6740c4c85448722eb07",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-acquire.rs",
+      "sha256": "b7baca38ea4f3593ca7f2437346b962942c0b5183a7d1c27b5dd26991772c4e3",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-acqrel.rs",
+      "sha256": "c8c81a4b53f9f2181659b684abef12cf0ceac1af7dfedffd017fa56581ccbde5",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-seqcst.rs",
+      "sha256": "b07fdb1018fb4f77c2097fc3fc2d0aa1408a086836539adb0b6469d3728b3948",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false
+    }
+  ],
+  "backend_pairs": [
+    {
+      "success": "relaxed",
+      "failure": "relaxed",
+      "success_code": 0,
+      "failure_code": 0,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "relaxed",
+      "failure": "acquire",
+      "success_code": 0,
+      "failure_code": 2,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "relaxed",
+      "failure": "seqcst",
+      "success_code": 0,
+      "failure_code": 5,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "release",
+      "failure": "relaxed",
+      "success_code": 3,
+      "failure_code": 0,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "release",
+      "failure": "acquire",
+      "success_code": 3,
+      "failure_code": 2,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "release",
+      "failure": "seqcst",
+      "success_code": 3,
+      "failure_code": 5,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "acquire",
+      "failure": "relaxed",
+      "success_code": 2,
+      "failure_code": 0,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "acquire",
+      "failure": "acquire",
+      "success_code": 2,
+      "failure_code": 2,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "acquire",
+      "failure": "seqcst",
+      "success_code": 2,
+      "failure_code": 5,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "acqrel",
+      "failure": "relaxed",
+      "success_code": 4,
+      "failure_code": 0,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "acqrel",
+      "failure": "acquire",
+      "success_code": 4,
+      "failure_code": 2,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "acqrel",
+      "failure": "seqcst",
+      "success_code": 4,
+      "failure_code": 5,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "seqcst",
+      "failure": "relaxed",
+      "success_code": 5,
+      "failure_code": 0,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "seqcst",
+      "failure": "acquire",
+      "success_code": 5,
+      "failure_code": 2,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    },
+    {
+      "success": "seqcst",
+      "failure": "seqcst",
+      "success_code": 5,
+      "failure_code": 5,
+      "hypothesis_backend_build_status": 0,
+      "hypothesis_backend_run_status": 42
+    }
+  ]
+}

@@ -1,0 +1,3524 @@
+{
+  "stage": "draft-qualified-checkpoint",
+  "baseline": "41b3149b",
+  "profile": "canonical AtomicU32 compare_exchange/compare_exchange_weak; strong lowering for both; safe RuntimeOnly; exact Result identities and typed 15-pair ordering",
+  "rustc": "1.98.0 / edition2024 / x86_64 / full objects and native execution",
+  "compiler_source_sha256": "e685bb7e7680fac0a471b79927e3a763907cc92ca0950982307f996ba516347e",
+  "source_hash_encoding": "SHA256 of compact sorted JSON mapping every dev/**/*.rs path to its SHA256",
+  "source_manifest": "obj/parallel/pa28/cas-strict-final/source-manifest.json",
+  "source_manifest_file_sha256": "a3fecd851a1b20e68551b5db6686a0d58b499e9969d2d3439967c993953ad2e8",
+  "frontend_binary_sha256": "02395ec3ebfdc0af4e4b3589fd393a22a90c28699d378d29e9eaa964c8d6c8cf",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs",
+      "sha256": "efe7dfdef6563ad144588172d55981c461acb1b20f234c02e76c6cf0b748a277",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5c68a79b1a222b2ead9c1536ef4a526bcf7536f896067c801d879eed4369b034",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "9fd4e49f779a8aecc7caa41a3d16a2d548f06dd29d25d102cee38314c8ef496e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "c69b8e9c3bdc5af751ea14429329b4331344d9f40a616a196c86aba5a0c62ee7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-release.rs",
+      "sha256": "ba7511518857bc20b505a343eab758a343117327b7e59227f4ce5b835fab05f8",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "61ab636e894077fd0ae81116581fe7820f2c087fa0affafa2ad99c9c49d7ec4b",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-acquire.rs",
+      "sha256": "587b9faffa8d71335ebf0ccd6dd39debc3a87c3f6cb9d3a4bfc01870e95fd35d",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "fe2502006ea97c9cd93fbf2e06c926b4f218be964324e182c68073c059560152",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e1dbf131926045094a4c3d9945d80697932ce384d4a2e1265dec052d219e889e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "79f5eaad2521134baa3b5d33f9df39ef14ca7e88cdb6734738aa0f8e8597008b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-acqrel.rs",
+      "sha256": "adec0050089d8990cd7ac566939a7b61ea0a65ec562d268e72d4fd8bc8272098",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "87d4250173747316e6ef38d736594074ce29a06b372770edb9cac1b58ce49352",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-relaxed-seqcst.rs",
+      "sha256": "8eba77dc98a69975096352195956a279faf6650d6b37e0d0c050022e82ea338f",
+      "method": "compare_exchange",
+      "success": "relaxed",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "a758ecb8eba1db75e8c85d9fe16aa7296370134f2d6023e5181850d0e025b910",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "6c2397993a802c55b127a74e6f301ee02dcd0f501bca3b75b1bc7c0b3d6804af",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "0dd56aaca07bdd20ae9f72291b78d0d6500fc34a56cf07684e32d2485d37db13",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-relaxed.rs",
+      "sha256": "b5e5ba2275323002519c4c4b22ae106b1d4d9bd6cd8dbce599c5af8e04e73020",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "26779bf9b7f200f8fbaf16555a1eeb4f9595ef57715630d29b34606a50817b09",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "d90450020184d865ae7938e4752709861018b980a51eee3aa7416312520444ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "ffa4c1457a69dd0819e878bff7594c138c57d55805f0c65080acd6ebc7a1694d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-release.rs",
+      "sha256": "84c0ea2fc8ec0913b064be4575df27e8eb893a207841a1415113f5fc10c0522e",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "b15cd53aed301c38778b0ac260a675c5f2b345e8278dee487872e48914b0e591",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-acquire.rs",
+      "sha256": "d6fbf2681f4ee0c49478d28b5068adc37caa28accc458cae0d5214be45f75393",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "1cfea586ffac2514391dd66d358347c2f6fabe1efa0c622006ed73b6d3205afa",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7199494e444d91832ea7a49d0960c02b8e83b5bafe5042fb1729b7a1df16a809",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "41e6aeb797c0d784405651bd522f822a453ef91ac3fffef052db5075c5eda4c9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-acqrel.rs",
+      "sha256": "ce43d06a9e41b16741c737556580da119effdca52891bd6369e4dbe829400fa6",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "ace32a68ffa2ed818f6ba31090f25bbeccee182eec1e01528355c363c02127aa",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-release-seqcst.rs",
+      "sha256": "d7181f78ce10cb0058ebf1562dcc745ac082bc3bcd3842d95c7471e584fe0345",
+      "method": "compare_exchange",
+      "success": "release",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "fcd05b28783c988f09a425888d6ec2112a215dab9701d472f1f3ddf4754c027a",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "2acc857ebb282832986bfba782f990a80a34cb26c99710054c4dcb27384c149b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "169e97177281b801408fed36995c094e1958dec6dd17dfa977692d963a194321",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-relaxed.rs",
+      "sha256": "6dfd222d2c1646f17d3376682f52888996687dc47eed19329edd21cc44da0974",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "8728c25aa6e6b008d54ae251075ba5452d551f2bcc971f579bc1e02afa9ddb5b",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "1cdae8cbc577794a3e8077c95398bc8bf1787ca207d6b23e4c5514d6c30c79cb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "25392ab85ea8dc33533525f73f2a33f152c9d35963672dd8f85afdfb87eaac7c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-release.rs",
+      "sha256": "c0dda2b0df949f14aae7ae72e575f2ac225c0a62d6a0f35eda1f6e229f5d7857",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "56541971f9a0b00952d3b84c0d89b8f9174d43c8f9b52f5d68b225f31e6c2e33",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-acquire.rs",
+      "sha256": "32c07792d27a5cd763bc17f71eb05a97c922323960f849480949e343a63e3176",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "965b38e40f67d2a0df62fed725ae15a6012f640acdbd843624505849a0299801",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "238d19ce9c472f4fa6c88ab255236a8a4da4a5c372cd7d699f077cca3d23b37a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7de9d34ae48009470186a5bdad1ae53436cddbc5ece3f94d5ff2f459ea24f234",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-acqrel.rs",
+      "sha256": "d84e2ddb09a083d938137eed9d1a5ace8c57301e04b8e2f7c688e8e82cad94b9",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "cc2106db082176bf1b26c1a4aa5eca37ad3c08beb8cb7acd9a579688dfee8803",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "43e6dd6a13d213d4f43423fb989d2880a9f3359b0e169989c9a601dfb8bd008a",
+          "stderr": "ERROR: file 0: 121: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acquire-seqcst.rs",
+      "sha256": "70df81c7257a36549fb83ef916dcf2c6415baa842db903496475a2bdc2687d76",
+      "method": "compare_exchange",
+      "success": "acquire",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "a32bbe169c158015bb20ff7ec680447db7180e39ea2ebb9e1388b73cfcd79958",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e0cadb29d376c67a109a3debcc3c7f67fd9915512c2f02f96c80fda2fb74671c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "129f1465ba6ba5472311c6d34f2d28f2045d2994d7247d4bbefec9193045fd31",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-relaxed.rs",
+      "sha256": "b8b8c6860476a0fc790892df743e5e703a800de4e5a4c12ce80743f82786a07f",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "e5e6dd430cb9fe7a517115624ebdb24d3c106bcfd52f6b6758d6c39d8d325821",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7cdee2ad9fbd4275d5119913a19891f3d5534446672789199b5859899969e75c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fe38796893f25365aa5aced7ba9a3f7e64c7693fbec17f3a74babfeae381423e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-release.rs",
+      "sha256": "0bd6a73e6a1bd57690b45ec573b5a98fafa02462d1971f38113c3167e35f8460",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "835a30b6cc1fbb2e5e3724dadff1d5abf10e50b5900bec34b8b66d6b662797d9",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-acquire.rs",
+      "sha256": "9f1eec8b70389ced6776a23809947af32bc4d24e9760dbb69d2433e13e929ebf",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "c4d85945ace3db080b382a37fcf6aad2c50b052757cfdcd83a7d536b5c545584",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "be2c0e3e93ac6e676b981c03db6886baf75eb4a5e54632dab3ed2187b4f15699",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "806be0cf6a8626f1a27d5d3aec4b2ff8fec01a01b7fc65c39843bd4953c353cb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-acqrel.rs",
+      "sha256": "62e790800ef97ae64b86624ab557b375dcbb6bbbc7f54c907b2f9792fc05bdf8",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "ab5cc95ba018d9ef19769a336ef4ca24e0c424ab0b0772f64e37866012d7e354",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-acqrel-seqcst.rs",
+      "sha256": "f991717892fac20f7cc57343d0adf4218dccdf6aa9229d25c2f848451d906061",
+      "method": "compare_exchange",
+      "success": "acqrel",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "276fc9525f016be6dee8f457d62bd565a7db1f0433312d745dbed4c3fac516f7",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "43ef395c785af0f5800b6d7c865926460fbcce1fa9d9fcebf0d2ddc8f5f733b6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fbe394c5fbc153166b052d6098f02d1ae4f52e0e8d8834a28f41b89827a5d014",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-relaxed.rs",
+      "sha256": "d0572a3166e4bdec046a31b15b564826db571af91c2552888185b49d36220f2a",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "c70908e34a20c6eb2a1d72b32e445110f37c967114f69be3ad931426212be680",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "ceffb69a4129850ddae9fe14cfbaeb3030b8e45003f9bd323a8ba143ceb6a1e7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "cb368ecbe6912c03133fc86921f61c4d66f74ec86101efefcbaa47e7b1f2a8a7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-release.rs",
+      "sha256": "b4d2ae43ef9468538f6531d74a64d70ecb04f2d9be20cd33bbc76f99b8d64784",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "554de3763e06b3497c66e7feae9b8fa7c69c132df1aec6a2e475ab936973c5bb",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-acquire.rs",
+      "sha256": "aff3271740c6459161e3ab19e7a5e5c9191586d0b78864eea580953f31b2b0d1",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "cac574285fc1ffe1543da45971596edc5e1c636c7fbab4cbefc7b96103b63f17",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "4f76a5f467b283e7fff2f1dcd9afc36b799508f756acf9b3a7f12aa89819bc8a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "d8f8c2fbdbd6a60fa4247081904d15ce8afecf8035294f432ad0170076b2ad14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-acqrel.rs",
+      "sha256": "6bbbef047f679ff381b9c1656f9924a26daeb99804548557f76fe39caa6b2560",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "120a1d0e3c6e7793a1a3d3cb0e74de8a5b6ced51eb896598535c79cce57dbda8",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7fb9164e9fe6d1ee77840ccb4fb791be88119c29c2c92c39b23c14d3ae8fd705",
+          "stderr": "ERROR: file 0: 120: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange-seqcst-seqcst.rs",
+      "sha256": "6683bbf0cc8c59ed4c255454fcaa422873458095b424a1969186bd350a91495e",
+      "method": "compare_exchange",
+      "success": "seqcst",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "545c93dd31dbe228efb308fd68cf42ccf63c473124fb14a6f6e8b770c96e49df",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "a813f1f855cf962a30363f8c2503a4ef822ddc3e847a71e9755a83ded423413d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "51525e2d621a39e68aac3a915ebee5a078aec478c4d4276f0e7477a314387058",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-relaxed.rs",
+      "sha256": "d97cb71a7d96249423bb7e31ab0fa66566bd1398c45d0f2e9d617592877c79c3",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "f7d7024979b5fdc0eaae5eb177c73da05e090935e827ddac96ea55d2da84111f",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "6948a283d5bd9b190b88d9d5f63afeb1f4783d21d0b0991c2605d31ce3fd2360",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "182668f3918bd123c4695994d6a9e02b1255e3942330c518a798ec7991a015d3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-release.rs",
+      "sha256": "292b8b6cf878e7c74eb2cc1ed10954a841250fd548a5841d56d5a94acbb1e926",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "0d660759313839c3bb2a9f356afe88b08627b1dd5b53fa39be71dd4af04c0134",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-acquire.rs",
+      "sha256": "5cc73abe080d2dc8b91d4653f0abd02928cefb13a7e8a470bdbcd35c55b61f9f",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5b1ecd6850ff2a095329f86de89ca3e80153b35316cf9e03230653af1fa91ca1",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "31b1b5eff485857f8530b5f972821b28ca521ce00de0d775fc60914cc1f44f1a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "4d4028c52ffaa0eb3273c5ad16b4b7e6363501ee87b61cc51f4869bbd220b3b4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-acqrel.rs",
+      "sha256": "10c9ebf6b5576ef86f4ca245b2fd66318d9638d70f5c241ea5b1d6fe68428132",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "b6cbe38a65fbb72e7ae46cfda2abd1eadbb6a1eb671fe6481f47d3a3801caffe",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-seqcst.rs",
+      "sha256": "9c671589688c12acc6f1acb85a0c3397ab44cbb817ec8cf9c97fc0e4dc66ac2d",
+      "method": "compare_exchange_weak",
+      "success": "relaxed",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "1b803937aa6ba533d369a784c181d0e31b742c2b9d1db59ba099977def327c5c",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "9ab2fe3146248c17770c2dab14c5db1f2f34bd3aa75b1df0629477396673dd6e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "0e7ef266aaf07a54cb35cb1c7b74ef99c7afbcad04a224d86722c3d83572f521",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-relaxed.rs",
+      "sha256": "37f7b8c48574272670d5b1735c8d1d59679cf71ffac30f481b8f5228b39eeaec",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "301f1fea7d0dfbd7b78e5c23d4ddbaeed464b3d1299211d480a43b79698811aa",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "39bfadf70aa66ab0990eeeae8f193346f9ce258ba018521b1cc45d6763c7f7e6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "2994e2fbaff0b9dafb5099dadb194dfd66f2b402a81edf8df6fab47c8bd636c8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-release.rs",
+      "sha256": "057a4d189f6186b31070653fab9c5dd181c7ecea77e171a8f4af466da2a8e1be",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "15343f9158c423f831de4384798f3e81ad8ee271cfcf42e47cec79473418805a",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-acquire.rs",
+      "sha256": "7539ff1f8d35ab1118f156625f3971809cc40f17f79ef5b07daa279550658c1a",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "f990d32d7f674f78352f5ba0f7d7556ae4d4be36d352480a548e89b6aef3ff3e",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "99f70dfb1d226ddc3955f1f115a8aa8d9713e5e3c4d1961f210d85af41637a51",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "c7a1101b359974f89dc1ebda8efcb70de3346a527b356bc2a82a05e9ea40e50d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-acqrel.rs",
+      "sha256": "e53d04dcccc1589a3940a5430cc46378c91ac646a524362d19a812caef2de3db",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "1e96dc0c9e57a46ed9dc6c6de12112981e4fed19ab11edb9b8863382b801773e",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-release-seqcst.rs",
+      "sha256": "d6f466cdf7f99620bb90f18c2c11017a8b5a1595f780f5da13292f3b2b941b80",
+      "method": "compare_exchange_weak",
+      "success": "release",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "37b4b1eacf78d0d8761468f283b988a99c0a9d4347718d63cb93b434dbbca797",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "4ece849b901e7c3661d4327e1ea8c2257160c320c81543f38179b4d86d0d095e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7fa0ce6a4ee139cec3781ae03e7562086a53f0e802a1b764c3575a6fc240d9ca",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-relaxed.rs",
+      "sha256": "f11a3308ad2cfdba2c959a9d774799ceae569ae9aac7da3c05674add1e6eb0b9",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "701ee418786202270208114586a82a7ac3cbb7b701c1b764851bf00142cd2e52",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fbc3f848d49394768da6100b0ab51ac965b48f6f11bba348e2086179e6349666",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "87a4a64097ba6d34a3ad8a337a259b089a3043d416cec5cec319ed48da4e803e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-release.rs",
+      "sha256": "88ea751e702d01bddd1042c625da49f0c36439fa5004e7622b27588456f53f83",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "f278d85373d25ea112aca00b89bfc9244475c240f8792e87873234cff916de36",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-acquire.rs",
+      "sha256": "252bff57b4917ce12a8992a0339ac51fa97591a8ec16140578fadb7a0839f754",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "12b138ca875513275aa094718ebec76d6b6cbad834924289d3b6821c4a581bb8",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "b72ccd3ebb25b8fa019866c4b30f5ec1ddc824eeda01b2a5ee7c88746d0c7369",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "dfc40cdce1c7a61aff9c4015b7287917a39c2b23d744b3998881b3262e28dee8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-acqrel.rs",
+      "sha256": "04a4966974f78329abaa2f98e2ccea5b16513ddcee40ebf6adc5727470e20539",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "7c34796b50f40893a13afbe8c179ce6d1082394d761026454423d3d656c5c7e0",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "673d79bc545c9c9c6f98fa225786ac6ada33133a95639b18ff1d5fb251405ed8",
+          "stderr": "ERROR: file 0: 126: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-seqcst.rs",
+      "sha256": "07bc750e6032aab7c2ba973cf1f9878737dd66b145ef00e62264d50649796c62",
+      "method": "compare_exchange_weak",
+      "success": "acquire",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "7fd5ec00b0819f9b65bad50ec3ba043caa042334c340a24cf9b5f44e7b94b708",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e0dc9c7984966c48455c202ffe1c78248d3511880d969ebcecfbbb622cc350ff",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "4db942249b8d6a0cf9e0c6eb870c38549fdb991edff0f8f2b8f43b52edee7e1f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-relaxed.rs",
+      "sha256": "27bc5fb4a2e04f06877ac200dee4941d48be901116786477f1d0d0c9b8262a9e",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "3e530afef9fe97f1b56df7a59351691a446f63f93f0f765182409ea797f4ca77",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "0d9d57130c5508171039347bdd340d6f40ec8b463858b2f5672124fa0dc007f8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "2e0102fa906686a313906e20bc04ef03dd462fb7e6564ab2f3a20e71853545d8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-release.rs",
+      "sha256": "d9afca831dfb7d3c9aad958c019bbfa7ee5e2458bbd68421826280a42d17f04c",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "fcc3f9f1247d41e4f1a688a4b6102b24099039df65b9265adb9ec413ed8924af",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-acquire.rs",
+      "sha256": "9ba40137cabad7c8007d4739cfd31cc53b652ec8101267756435703605fb7124",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "8f1640d859ded517274b055e809d9a905e415ea40e8c121d0f5976ee0318fd4b",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "21b5f89784a7bafdff2bdcb7f96cc97723e47bf8616b06b28f0624ce04ea6977",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "213cd0d69f7bc6424f19a8f3a6efbed4198eeefff63516aea65b90549cb8e033",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-acqrel.rs",
+      "sha256": "5057fcc627dd3c980cfd2628e9bb486a7129f10a2ca9a80cbbe65c3eef4e5aeb",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "87b75d87ee030d4b5e438f5e427976ee2c078ee627956464cef54856761874b2",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-seqcst.rs",
+      "sha256": "ae7945ae7385a65053c05f25a5e14f97ee86e62fc164847b8bf98caae21fcca2",
+      "method": "compare_exchange_weak",
+      "success": "acqrel",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "0489814a6651d6d2e80b50160687b1345361f28c410ddd09703e89311aacfecf",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e6109d1df1b57583fbc02ef81984d4dfba046b2cefdca481c18fa6fad3964100",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "f14058ec140ee400d15112456eea6261c2bf8c275bc2f86e3aaf7e21f0e3a1e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-relaxed.rs",
+      "sha256": "481304d4270732f33abad6c9fed8dffb51b0448c09cb0b00dca0692fc2c45b9a",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "relaxed",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "d9f340539a8bdfa97704e30286200c413aa7f9f6761de057488b20479a9cb52e",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "5ae9ecae4a7a243b5d57c5aa5e47c4d1d5a38a4e11114d33e6107e8f7eb2c813",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "941b0f15d622844f12b4d912ec988acc6e5a9466aafd8638b8e9707293cf01d0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-release.rs",
+      "sha256": "dffdee4bae62ed7cad954677362e3285393ae163eeb9c6740c4c85448722eb07",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "release",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "46ade448e0f25bf4123acd790d8f197d7616cc46fc8a7368bdaeec3f750d429c",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-acquire.rs",
+      "sha256": "b7baca38ea4f3593ca7f2437346b962942c0b5183a7d1c27b5dd26991772c4e3",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "acquire",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "ef944270cd3479ebcee204509484193f006ab95d04020702bf529894cc7a653e",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "febc04e733a3777aa6d37b60873ab79debc165b62fe1f722fb5817e5cf2c5374",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "240146c88f2fb5b061c5141119d8cacd05a197d87b0271b4550833c84094c359",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-acqrel.rs",
+      "sha256": "c8c81a4b53f9f2181659b684abef12cf0ceac1af7dfedffd017fa56581ccbde5",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "acqrel",
+      "rustc_status": 1,
+      "dynamic_rustc_abort": true,
+      "rustc_stderr_sha256": "a4eb8bcdda29aa1e8506e91b987ae022f0556affd70f0d96ea0fbd9b13a63ada",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8fd66c603e8c669d18b80532b1f94a68f1cb5a02cef4ad7953471980b492f552",
+          "stderr": "ERROR: file 0: 125: invalid atomic ordering for this operation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-seqcst.rs",
+      "sha256": "b07fdb1018fb4f77c2097fc3fc2d0aa1408a086836539adb0b6469d3728b3948",
+      "method": "compare_exchange_weak",
+      "success": "seqcst",
+      "failure": "seqcst",
+      "rustc_status": 0,
+      "dynamic_rustc_abort": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "a7f2b279e7e04efb5d20c45f346bbf082647347f4b08f8a2efa985cbf749cd93",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "cabb009c47f8d7acb771250c297d1ee1f1c42bc67d06ea8b263e009e9da14122",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3cf9aaacb5ba0cd9bb7ac6c9635964fe9b567b0d73430f93e8a3d9c8e9b7030",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/ufcs-invalid-failure.rs",
+      "sha256": "b79e711c5a4a94e860bfaaf0feed3016f2c7a8882efc390d7bb1baac686a9c2f",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "bee0d077e4e276e2eeeac33515c6a97771411c12435640da2226b480ee43417f",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7eb48ab86191c9d05edef261b9bedcf1075019f33caa5ca44c3d347e2de7e9f2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e9899b3d79ed90b5e255eee21775dda219fce1440b27d047b5f0a514c18d7e3c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/alias-invalid-failure.rs",
+      "sha256": "8d68931af0300eea28d17b5e2437d4ffb2dd3f917c590b755447f6d9785a8b9e",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "d19f37db839222599cd922e75e9606fd118f06a1467f18e6481447336474c06c",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "6227c3bdbf491873ca5d38e05929fea74383259ea5741019254cb9350c19f6e8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "1bb3dfd75e86a06314e2506d358d6ebf1edff8ddcb421fd4f2db67985c0fb667",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "2eba4ecbaf43e099379317fba7c6fc9193ae03ebe1fec36a6ba18985c98cbbd2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/variable-order.rs",
+      "sha256": "13b2fb7c82be9aa099d10c31c31cfb6039cb10605f64d58164fd7a24f886ddc4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "d023c162eea24f13727384b554af7d2850a8beb7183d5cd7db42da25ba0da0c0",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "9606c68291eabe61d20cd71a04b1e16f225bb9a159b6fe2a4b079ec0520c72a7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "8ac54cd5a81ae102da2357c71033c8be910dff0447bdaa536313c69c065f1bf0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "b703e025f515b5e81193c2912da37b147e38de402a3052db87eb55875b1d819e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/reified.rs",
+      "sha256": "1e14724f26c200b10d56f6c7422f670c7a77e81a8540c868450b231134fd1ca6",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "a758ecb8eba1db75e8c85d9fe16aa7296370134f2d6023e5181850d0e025b910",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "592e074be59b969d207ecf3db0e09142a05144f51a80586c8e72d232c83b54c8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "37790906a6687c04118afeaf1d1946fc750980499173ec8749970ffab58a7557",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "c40dec652467e4ae465385276d4e1fc108039fe4aa4a36f8cb566a73c32853c9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/result-alias.rs",
+      "sha256": "9cdf5d49c26ab81f97c6bea883436bf24a0401d0bcc44565690659f1d804877c",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "7b9af2018c86661a5dbb2c8c2bba257769a6a9da221a3b3154a68632b41c905d",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "af2695bcfa3242c76ad5185e7025af4ff51a78dbbf5200b17f60c765a51754e5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "535e3a9eb0291c6f24d4ca100ce9c91a1e69f85965db049eeed74b4635e78999",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "b703e025f515b5e81193c2912da37b147e38de402a3052db87eb55875b1d819e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/local-result.rs",
+      "sha256": "5bf75a9e1950ca15797760e31165c961c2227790b8b61a548cc9cb9f92ae4838",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "19bd412ef42e527bbb112aed15d6ddba8cabe10638ef6ad5abc73c90cc3e8103",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "63395226a405de9dca863fb268ac762527ded444357d92b2317a9bf2ce887a4f",
+          "stderr": "ERROR: file 0: 112: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "63395226a405de9dca863fb268ac762527ded444357d92b2317a9bf2ce887a4f",
+          "stderr": "ERROR: file 0: 112: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "63395226a405de9dca863fb268ac762527ded444357d92b2317a9bf2ce887a4f",
+          "stderr": "ERROR: file 0: 112: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-direct.rs",
+      "sha256": "2889bebd4bf0874dd3d8101e51fef3da372758c0d18624aac6711e85588bc53c",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "d01ee8b1c18f90fae9dfd222b964e7edce668763f98f1c510fb5e73c59371304",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bda01e499dd6f3cadd4e655fa73eaa86424cd322a2d20ab4057f10d3d816de8b",
+          "stderr": "ERROR: file 0: 79: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bda01e499dd6f3cadd4e655fa73eaa86424cd322a2d20ab4057f10d3d816de8b",
+          "stderr": "ERROR: file 0: 79: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bda01e499dd6f3cadd4e655fa73eaa86424cd322a2d20ab4057f10d3d816de8b",
+          "stderr": "ERROR: file 0: 79: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-skipped.rs",
+      "sha256": "a42f362b31de4cc7a0c1ad735e26f482fef68298b58f24af4cc4932ab6a2f395",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 0,
+      "phase_boundary": "Earlier type inspection retains the unused const-function eligibility obligation; executable and constant inspection require the RuntimeOnly rejection.",
+      "rustc_stderr_sha256": "86dec8ce9f1d17d4006476ebdd8832dfd728a11447549846874432e44e7f1acd",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "393d8803c5735d1d224633c1dac0f9c68f2cd1e190763c747c92f6a161d89075",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0d63821576599d1cdcc13158e48cc89f76f7277a362fdfa24b5395eb674ffe86",
+          "stderr": "ERROR: file 0: 76: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0d63821576599d1cdcc13158e48cc89f76f7277a362fdfa24b5395eb674ffe86",
+          "stderr": "ERROR: file 0: 76: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-alias.rs",
+      "sha256": "2fd29c5d23529597cb3c3be44efe404f7101f1cae61dd13d548b3d91f7359da9",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "2da20b62a747824c76b694a9a4c6ee5f8170dc224e923b0d8b616701f45fe151",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bda01e499dd6f3cadd4e655fa73eaa86424cd322a2d20ab4057f10d3d816de8b",
+          "stderr": "ERROR: file 0: 79: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bda01e499dd6f3cadd4e655fa73eaa86424cd322a2d20ab4057f10d3d816de8b",
+          "stderr": "ERROR: file 0: 79: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bda01e499dd6f3cadd4e655fa73eaa86424cd322a2d20ab4057f10d3d816de8b",
+          "stderr": "ERROR: file 0: 79: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/const-reified.rs",
+      "sha256": "87412fee8a71a6ec25a5bc1bfe23e0ae8a11daa95c60ed0177b6beb3f42753f8",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "ffc510f36f0a52943325f8d5edaacd37f2e389352b488bc518c58c2d71dc71ea",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41b5c42a5a65ea079e3930553bf48368ad32ac6ca996d41ef33f7b226f1eab5a",
+          "stderr": "ERROR: file 0: 143: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41b5c42a5a65ea079e3930553bf48368ad32ac6ca996d41ef33f7b226f1eab5a",
+          "stderr": "ERROR: file 0: 143: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41b5c42a5a65ea079e3930553bf48368ad32ac6ca996d41ef33f7b226f1eab5a",
+          "stderr": "ERROR: file 0: 143: non-const calls are not allowed in constant initializers\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-current.rs",
+      "sha256": "94067cb083df6e5ab0376bb45f27f7f65c4302e0aadfd39aab828bc0e68cddf4",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "62e8c6dd6a961797473ce5efee8c6ee0cd8365892448db70e59d63b7f198a688",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0228ac67e274f8db441b5d5d536f36322940e1c9118de4d12d4d99e439c18739",
+          "stderr": "ERROR: file 0: 106: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0228ac67e274f8db441b5d5d536f36322940e1c9118de4d12d4d99e439c18739",
+          "stderr": "ERROR: file 0: 106: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0228ac67e274f8db441b5d5d536f36322940e1c9118de4d12d4d99e439c18739",
+          "stderr": "ERROR: file 0: 106: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-new.rs",
+      "sha256": "ce8d37951440ca18ccedf5bcdab202cc7727db5e7678343eb2a99c1e9d7d7263",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "ac75b2959af5dba2fe60eb76c34625d2c30b7c1582902f6f69f678a726f2788f",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8471093ccaff463665c491669745aae3e9eca9a75c8135d147d128571b3eb89d",
+          "stderr": "ERROR: file 0: 113: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8471093ccaff463665c491669745aae3e9eca9a75c8135d147d128571b3eb89d",
+          "stderr": "ERROR: file 0: 113: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8471093ccaff463665c491669745aae3e9eca9a75c8135d147d128571b3eb89d",
+          "stderr": "ERROR: file 0: 113: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-success.rs",
+      "sha256": "b818a468a7c9e59c6f29c946ce1fb82de70b69f5e03803c8e7ed303002062981",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "3c8d7cc08299dcce92d68889464830960bb24e3613ce4c91a52d2afd88ab66e5",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d40d36e0bb8cd7f922f9152fb2a137c73c4fb83a9ff71813849e7373ccf56c6a",
+          "stderr": "ERROR: file 0: 110: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d40d36e0bb8cd7f922f9152fb2a137c73c4fb83a9ff71813849e7373ccf56c6a",
+          "stderr": "ERROR: file 0: 110: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d40d36e0bb8cd7f922f9152fb2a137c73c4fb83a9ff71813849e7373ccf56c6a",
+          "stderr": "ERROR: file 0: 110: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/wrong-failure.rs",
+      "sha256": "36d46afd4ef0ae2dfc7371a46cd8454b314af12d45a9508b0fbcca9772df8e2d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "rustc_stderr_sha256": "6014f8dde63a81cb1989022cd218c9e3c499bb8cd88b2d5875832d5a76aaea45",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b73e6c08440d1ca676cd0a56693682973ec7beac38bd2b050c8c604328ce0277",
+          "stderr": "ERROR: file 0: 126: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b73e6c08440d1ca676cd0a56693682973ec7beac38bd2b050c8c604328ce0277",
+          "stderr": "ERROR: file 0: 126: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b73e6c08440d1ca676cd0a56693682973ec7beac38bd2b050c8c604328ce0277",
+          "stderr": "ERROR: file 0: 126: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/packed-receiver.rs",
+      "sha256": "3d4aada102d3c6c4b5127bec09eadd441fe97d5dfcddb3ab45d334ce49a8f1e5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e30b77c642ed9169272aa53ae949993723bdd9c195376a6f5511ba7aa4bfef68",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "cd791ce67958846eca7200762c3a0e90b9f5b926368b787d88df675131a769e1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d",
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d",
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/unsafe-narrowing.rs",
+      "sha256": "842f9ce6f9737583711be3216e469368b84b96fb3d2b09167538d928dda16590",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "fe2502006ea97c9cd93fbf2e06c926b4f218be964324e182c68073c059560152",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7d974355b18a4c6488dfbdb1b6d3403ba5f6cb9bf88b45e9965f9a43a971456a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "c96f8bbba6b9d28d38b5943bcb8deac6ce5dad00516f99ddade673ca10b97eaf",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas/no-prelude.rs",
+      "sha256": "9961d436b20dd2139c7e0b4d82ffc1a4747e570768626620e1b257cd39c62fe9",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5c68a79b1a222b2ead9c1536ef4a526bcf7536f896067c801d879eed4369b034",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "f803d59e1e474f9f2c61b3b86ab2a1c15aec635df743c80e972aff6955623b9b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "1636fabedde1424e5a922d44944a4c568413fd06962826066160d6d4381d2aa4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "05805174ebd2a1e80afe2c61e3753b04114445c8fa3d5789928c23d1df75441a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/qualified.rs",
+      "sha256": "8cb010ece36401980f497f04be3b371b5a4573708280119857a89ece985a1937",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5ae8b758027af85204d4ab067c417e3cac1294cde7a282c7ddc4ee54aa60eacd",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "401fe94037454b2bb777316e6ededda555d9a5df62d44386aa4e5fbf34a58924",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "9afb84f0d43f8be11ee21c2225059c9286bef096583090629b87f04c920783b4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "296e0849cccc5c3cb8a698aed9fa3c3a0e9b110930c08654d6dfab3fdceca7d1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/extern-qualified.rs",
+      "sha256": "7a8e823256f71c4cd1d940857a1fc766d88626767cdd8884ea85b38c517a20c7",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5ae8b758027af85204d4ab067c417e3cac1294cde7a282c7ddc4ee54aa60eacd",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "58a1e3b7f544c443e3a978a85b04e2f05941fd1bdfc7e64ee8ac725424e299eb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "bc8fe0662d67ff14a8370b7edef62c01ab1dc153aaf26d3fb80a3bd61d734a77",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "05805174ebd2a1e80afe2c61e3753b04114445c8fa3d5789928c23d1df75441a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/no-prelude-qualified.rs",
+      "sha256": "1ccc8b0dfdef2951bd91397ede145d468be7ba740482ec4dbd3990d05f522c79",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5ae8b758027af85204d4ab067c417e3cac1294cde7a282c7ddc4ee54aa60eacd",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "5064fc66ec24d5732e5daf948f7a93bfdbcbc6d9e9d2510d31a9753680945eb6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "bc8fe0662d67ff14a8370b7edef62c01ab1dc153aaf26d3fb80a3bd61d734a77",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "05805174ebd2a1e80afe2c61e3753b04114445c8fa3d5789928c23d1df75441a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/absolute.rs",
+      "sha256": "ca9baaded3caabd89712306b13c2c7cb289ab1cf71685e2cc8eb2484df8447b8",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5ae8b758027af85204d4ab067c417e3cac1294cde7a282c7ddc4ee54aa60eacd",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "dcd3c35878cca07a7ab76c1482135c89dce720bae0905c7f04cb93c11a009c6f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "bc8fe0662d67ff14a8370b7edef62c01ab1dc153aaf26d3fb80a3bd61d734a77",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "05805174ebd2a1e80afe2c61e3753b04114445c8fa3d5789928c23d1df75441a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/core-alias.rs",
+      "sha256": "2de32af768ad879f32c258668ded4d5bbf9b090c2517cb73453f74dbd057a768",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5ae8b758027af85204d4ab067c417e3cac1294cde7a282c7ddc4ee54aa60eacd",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "f4eade959e214146177123c322e2a613d621261d59819c370b6ddb7a3bc6fb82",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "bc8fe0662d67ff14a8370b7edef62c01ab1dc153aaf26d3fb80a3bd61d734a77",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "05805174ebd2a1e80afe2c61e3753b04114445c8fa3d5789928c23d1df75441a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/new-only.rs",
+      "sha256": "f9bdb3e818c8f2a70574cafb181d2cac3b09c6bdc5d95de2f6f0346e7cf9d0e3",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "577e347e5a9358694ec3443b8a37cfe63d9749842299e5b5049fa6c5f1380c06",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "eb911c358a661db4e1a6c922c6e059bbd10486f347043e6872fe54fde75ed6a8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "01d64e13a116d42867e77e90d02cdf2221340fe6db45590c72f78abc37a68484",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "296e0849cccc5c3cb8a698aed9fa3c3a0e9b110930c08654d6dfab3fdceca7d1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/load-only.rs",
+      "sha256": "5da0fc7cc63cba165aa9594d7d050fb75346589bf0f4f016f399f2995470f359",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "2c42ba792cc641a9208110adbf36103e9f54ba0c7df6e38c3c1aa580c379dde6",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "e0c2d8fd63f91d6d92d549653df91e6c4dbd38746e038cc6444e91ee7208cfd6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "ce84eece17b1d4a4a064e1f2361c8fbf1a62166cfcf430ae26bfbafe66c2d1bf",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "7eea78174bc619a734b5a70ea33fc4be3aea80fed1677508b7a5a543de8c4c99",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/ordering-only.rs",
+      "sha256": "80ecfb46ec4357b41731344b50b000253350c0e0c8870bcdcec69547afecb56b",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": true,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "a5e4744c0e5bf3d0f3c52c41c4243e8fa71c4089c56a2d27efc2be707b60d6d1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "d4eec5ba1b08e76e581d491bfa316c7e5b6decf354f3cd9921d8ec01f92e1d4a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "48763959db34202b7ff6bbb0c953c0ac95ca56767ca497abfaac267a9a2da231",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-core.rs",
+      "sha256": "9b752a1e820999741696cba7cb22108a42eeac766aa653c890c9541fd0528eb8",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "74049d12afe9ac41fb50e84b2a5f0b6e58b6c1e300c295de0e863c462bd436df",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "77142980ae880ca799113c7e11aed4fae96fc7130a422df08adcd292ffa6e119",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "075f641189e64f274bb7fd708f567646a56f3ccc51f9872234fd291a54d5fba3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "5acbf7d2f5bf87ed57d1a9dd2ec9aa8c91b7f5d017ead6d0dece3448e9d31232",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-types.rs",
+      "sha256": "1f681aee964d674ee284af074fa2cbddb226f4b22285148d2229a60363ed627b",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "ba5dc4edbd78eef159dbf05b6f556069eb973f9b839354e647de7e36311a139f",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "672f917a89b1db3b251ede3e6415d3f12642ae97d6d50979ffa56f6fbf9efa33",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "15e58cf22d2be57a4cfd4b0ba8a2b1a09bea5375992539d8c525f1b4dfedb332",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "c7267fd7f9a0f6b5798dd0009a7d4e0d60c6a825c30fd981c0ebd05b3f5c3881",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/ordinary.rs",
+      "sha256": "49a9c9db947d5ba0e2af2b370a06ec28ec53659141a47b6c6cdc3fd1c2c8adc4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "canonical_atomic": false,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "fea101d86752a913026b22b1a7306946fce6e76db56fa4e1cd1db396d2016480",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "844f2075302eaacbffc04d16e737dbf3f2921a013a51bdac2ca52b13e9d3b64f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "status_evidence": "asserted in passing focused test",
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/strong-matrix.rs",
+      "sha256": "dcbd9738a04f2de8001797fa74a28bd42ae99b95f3e82e320d244b5b1d9fc663",
+      "qualified_input_sha256": "7fdbb78fcdbe95dbd9f2df3f5321ad54d99ee4730698b6a8e6e30540dcc5aa18",
+      "panic": false,
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "473ea53bf588d4fcf676f119b77de66f630c9f381636747361788a300eaf1b69",
+      "native_binary_sha256": "38768e744eb92b00a12f63bb7889b0aeda174ef4b4eca31f5b5eeaec053008b9",
+      "lowir_sha256": "e0ae58d62cdd361165ec01d9ed26ce6cfd30d7f63e3e91eb93b8ac4c0fac5b9c",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/weak-matrix.rs",
+      "sha256": "929612839088d045cd7eeedb0e810c9bbce435136f326913b24d8abd3a586866",
+      "qualified_input_sha256": "112739ae2019ba25dedb64e92a532bab85abd8107c38d8a68b39d3ce098a134f",
+      "panic": false,
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "c97b5c0b21170cfb5f30d1daf5f78f3a5e3758d07175f0822713889874c7ad2b",
+      "native_binary_sha256": "317927deb43197907f7594866e272e520cbdc5d8242d37e9326ce8edb0da9b2c",
+      "lowir_sha256": "9f254cc56c4c5e290345e6855b1a72c3b669c8492ba8607f9884991696e9f635",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/reified.rs",
+      "sha256": "f910ca62cef6e9b2856a696046ff80456f66d8d9fb678bfc1acda5e96d5f5c67",
+      "qualified_input_sha256": "c1dc4f0426e16aeb26f5ce93799ff6882671bea94454f9edb141f9ff66aff9f0",
+      "panic": false,
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "d051c7e2f50a9d727ee061dab6a53214cdac52e8c0cc42d52707d608e83c1977",
+      "native_binary_sha256": "996adfffb8879136180175714ddf0b66f5494fd49ee7115eef7fab119e264231",
+      "lowir_sha256": "f1491410dbc343891cbf3abd3851e61db80e7948563058fac2d03ea3fdc0dda3",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/shared-storage.rs",
+      "sha256": "147a10dc0ad47c9bf9d8d3f3786e6d0107e9150658fa63767daa2e32b8e36b86",
+      "qualified_input_sha256": "e11a2a26178b632133cf151d636b491f51b0a1adf04a1c4587e508de5e314d83",
+      "panic": false,
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "5250cae170247da0e23d74cbcc232063ca6108d435a93f96cb46261191c8e5ee",
+      "native_binary_sha256": "55925918c9b941148aaf10c63c04bc775bc99898ea2c22781976d9229ef8a771",
+      "lowir_sha256": "94eafabc6a09c1ef488e421ade44a1720f1f69d2cbad069f5ac214c008aabc85",
+      "rustc_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/dynamic-invalid.rs",
+      "sha256": "f19c590dbd63e99d86ee6a6136beac192b718699e91186e1524ce59cedc91821",
+      "qualified_input_sha256": "589ca6089614924c2a626568d2209dfeba031db87c71199f92fe4190e5eafc10",
+      "panic": true,
+      "rustc_run_status": -6,
+      "frontend_run_status": 134,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "4a2c9c5ab804035c084ba2c63477186f9ee8e0937d7a0251962bd9b9480686b9",
+      "native_binary_sha256": "ffe5f6d2b78925b9aa2c87a7e6aad8db0c4026b525deeb81108a1945d3e334d7",
+      "lowir_sha256": "156019c2fbebf59f636de26a60f22de476636ef7224adf17276801ed96daf75d",
+      "rustc_run_stderr_sha256": "d94db36d8eae38be6648efeeb277c4b0f0e993852ed36d96ff2e773605cfd651",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/weak-invalid.rs",
+      "sha256": "d2a714cf478f41ed417c50957e8169c482b8183be2c0a5e3e2a7f9304d097771",
+      "qualified_input_sha256": "7f1f8d6340c2bdeec5e812508c473c95aad59bdca0ee738c61396fa1e4ed9d11",
+      "panic": true,
+      "rustc_run_status": -6,
+      "frontend_run_status": 134,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "c858cb3769b50c03215a426139d42585a82aca7e67833768f3f0d6f2261b2cb6",
+      "native_binary_sha256": "b17c4eda84b1a4af086892d695b6ab1ecc2f7fad44c641f75666c7573469fbfa",
+      "lowir_sha256": "56f614edb2ff657a39ee7546bebb77bcc05633b52264883a1864525a71ec752d",
+      "rustc_run_stderr_sha256": "068f8f304993ed4aadd3f08f45f5a249e952501f488ffeb6180bd03e1d49d47e",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/reified-invalid.rs",
+      "sha256": "70bae36b7d1237f82697894bf64b3db14187ff2129e7b1cd0681b933e0552486",
+      "qualified_input_sha256": "e5edc0a2ace8226af94bf003748c6f31fc89c8bff0e0387217b5aa9bc7f0ae83",
+      "panic": true,
+      "rustc_run_status": -6,
+      "frontend_run_status": 134,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "f800778a838b65aa12d57ae09d51f1bfd164bcad4ad9bc89cf7f13d2800802b8",
+      "native_binary_sha256": "7236f50f5056d7643bed01ee6c44ae4cb11b0679ce57e03b04c4c923871d0a7d",
+      "lowir_sha256": "34e037ff6724977dfc0b9927a9b5d59e608b84c363f78fad0893326b493df130",
+      "rustc_run_stderr_sha256": "173a97552c9c29a676d4d5d2fea5c799d101b569b18a08eeee59e79f1093b012",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-cas-native/ufcs-invalid.rs",
+      "sha256": "8190af0729c413e6bd0670665e0d75bb8fd2a9daf2b951b857dc28f6a7bb39dc",
+      "qualified_input_sha256": "5a0a206e7479b05e6e5719e4c5fc9429a963298a2d24c62262b6ea03bb65839b",
+      "panic": true,
+      "rustc_run_status": -6,
+      "frontend_run_status": 134,
+      "status_evidence": "asserted in passing focused native test",
+      "rustc_binary_sha256": "f800778a838b65aa12d57ae09d51f1bfd164bcad4ad9bc89cf7f13d2800802b8",
+      "native_binary_sha256": "47171f1f6ae979e7250c89dac6c664d63453102c705d69a4160280a5f896d981",
+      "lowir_sha256": "9fdc52bffc08fbae6207317e1e80a77f9e7d95ba686254b397c613a2461a50d2",
+      "rustc_run_stderr_sha256": "5383606cc56856d08050bcc0232b6dbb3dcf896f371e4cf958445e028378a3b4",
+      "native_run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_evidence": "obj/parallel/pa28/cas-source-1227878",
+  "preparation_evidence": "obj/parallel/pa28/atomic-preparation-1227878",
+  "native_evidence": "obj/parallel/pa28/cas-native-1227878",
+  "independent_matrix": {
+    "evidence": "obj/parallel/pa28/cas-ordering",
+    "results_sha256": "da9e0dce96e44eabde54496c298c32a09868179e2ba7ea74bbd271532632b559",
+    "dynamic_source_sha256": "9ba270fda50230d79aa2d69f11a151e4fb2aaa0776714f9eeab62eb40ae4e6cc",
+    "dynamic_binary_sha256": "05f727325b23f3a75a6959e58f64618921390a35e1a32b0008948a9e186c7d3a",
+    "runtime": [
+      {
+        "method": "strong",
+        "success_tag": 0,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 0,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "e078fed1f166e5a95b10c133dd61be5fc6350eb5d591896ed305f06a9c872b36"
+      },
+      {
+        "method": "strong",
+        "success_tag": 0,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 0,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "9d5aec8c0d7939ff878de8a39d988723b53fb73b32d95cfc39b77e63c335eb46"
+      },
+      {
+        "method": "strong",
+        "success_tag": 0,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 1,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 1,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "2a13d40cfa3fb3475f7c9dc7245b33a767cb92b4acd5611c2f7da592e54f0e06"
+      },
+      {
+        "method": "strong",
+        "success_tag": 1,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 1,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "b70a5f9c9b2890fba303305046984fe6db7b2a5062629d6a18597757f10e1a0f"
+      },
+      {
+        "method": "strong",
+        "success_tag": 1,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 2,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 2,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "57e04f22d040337a57c765b20313a70aa124148023083767210c0cf8832874eb"
+      },
+      {
+        "method": "strong",
+        "success_tag": 2,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 2,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "d6474c218ed8d7427f50709a4766c88d990965bc4d546a98d7cf2d471db69af3"
+      },
+      {
+        "method": "strong",
+        "success_tag": 2,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 3,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 3,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "51ac171d7b7e05b427de2b80097d74f46d9d7076ac981a4ebb916edb544fb6c8"
+      },
+      {
+        "method": "strong",
+        "success_tag": 3,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 3,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "010ea73d95b5d003bf06a56d1d7058451d57c6a7f5f6b612861f36db046d36be"
+      },
+      {
+        "method": "strong",
+        "success_tag": 3,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 4,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 4,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "dcc697cc671240f8a5be9beee56062dd723dae1171f00e8345e146c60e7180e8"
+      },
+      {
+        "method": "strong",
+        "success_tag": 4,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "strong",
+        "success_tag": 4,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "1e83dc76067ecc8b660603299e863da98c046021041de7c3310e3b9036040c0f"
+      },
+      {
+        "method": "strong",
+        "success_tag": 4,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 0,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 0,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "60902a81dd4d0dd37b20bed42ba50dc90e8344c9fd8ac87d9d9a856935d823b7"
+      },
+      {
+        "method": "weak",
+        "success_tag": 0,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 0,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "ca671bc8aebbecde6abacf90974b759f4470e9200158ede49a328fb80dcf2226"
+      },
+      {
+        "method": "weak",
+        "success_tag": 0,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 1,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 1,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "d641f1190d6eabf65c676824581b8ef2c054d4ecc6398dd101e426b9d99fa671"
+      },
+      {
+        "method": "weak",
+        "success_tag": 1,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 1,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "1d3921568376f48f359b53c60b78414b1b04de8a4f7aaba09560d892a9c7ab3b"
+      },
+      {
+        "method": "weak",
+        "success_tag": 1,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 2,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 2,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "8fd06ea6d0f3af5b2f6486c08cd98458e5784c5343becfeb0327fd171e4ebf87"
+      },
+      {
+        "method": "weak",
+        "success_tag": 2,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 2,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "190e1491fd2752640e42f3c9bd7728d083ddaebe389cdb9b58fda61bd1b853ad"
+      },
+      {
+        "method": "weak",
+        "success_tag": 2,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 3,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 3,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "7774beb2f06cf9b3b35fa51de8f24ee8e576948da25333b4ed780f07131f3081"
+      },
+      {
+        "method": "weak",
+        "success_tag": 3,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 3,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "7ddb00388a2a9f346fb03b969e54ef67e15114668641441e9ca4ddfa0639d4c7"
+      },
+      {
+        "method": "weak",
+        "success_tag": 3,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 4,
+        "failure_tag": 0,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 4,
+        "failure_tag": 1,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "4fdcb6724d1d031c75d11a52a63f0e1849792fb898d46ffc281f90d613801db9"
+      },
+      {
+        "method": "weak",
+        "success_tag": 4,
+        "failure_tag": 2,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "method": "weak",
+        "success_tag": 4,
+        "failure_tag": 3,
+        "status": -6,
+        "expected": -6,
+        "stderr_sha256": "f9dc285276314d5e7e22dd562e6d57659735bc4fb6801d08af0ced3aadd18812"
+      },
+      {
+        "method": "weak",
+        "success_tag": 4,
+        "failure_tag": 4,
+        "status": 0,
+        "expected": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "backend": [
+      {
+        "success": "relaxed",
+        "failure": "relaxed",
+        "success_code": 0,
+        "failure_code": 0,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "8fe6b8a425b2b422a78030910fb3435f69ef68ecf29556ea6f4c0f21f7269635",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "relaxed",
+        "failure": "acquire",
+        "success_code": 0,
+        "failure_code": 2,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "a8ceeef5816e25f311d9f8145d0d392b00e97fac57113c7b582ff5482e5fd756",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "relaxed",
+        "failure": "seqcst",
+        "success_code": 0,
+        "failure_code": 5,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "852ca1286d763a87f2708e2cb60dade58f92b455c53ce85595d99752f0330f57",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "release",
+        "failure": "relaxed",
+        "success_code": 3,
+        "failure_code": 0,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "3c90af693ca93084162b7d421b950218cbc0c32f632d34ac9a7258a21c451667",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "release",
+        "failure": "acquire",
+        "success_code": 3,
+        "failure_code": 2,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "6f9b3772ae7d825492459dfe5a43ccad08d35cd539568326985ba22b472766d5",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "release",
+        "failure": "seqcst",
+        "success_code": 3,
+        "failure_code": 5,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "1ce9fdd9c0bdcd6a66309c99a5f3c26fd4812a4ee91002f45dafac4e0adcd718",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "acquire",
+        "failure": "relaxed",
+        "success_code": 2,
+        "failure_code": 0,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "01e20d4db7804c8cf5fe09cd5a7b1386341f5ae0053c3343177d5bd43ee31b33",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "acquire",
+        "failure": "acquire",
+        "success_code": 2,
+        "failure_code": 2,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "bf4cc3a0dae794c6e2077edd9e15d981efcfdc74739bb75131213a34fce55d86",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "acquire",
+        "failure": "seqcst",
+        "success_code": 2,
+        "failure_code": 5,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "f74ca49ed5a3e9515bffa29499216b97fd6224e084efc346e8248e9d55a04731",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "acqrel",
+        "failure": "relaxed",
+        "success_code": 4,
+        "failure_code": 0,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "0c08c976807401f0721f1e197d3c13fa35c5b4b3c2347fdc28e0499eaa9532af",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "acqrel",
+        "failure": "acquire",
+        "success_code": 4,
+        "failure_code": 2,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "8e80796a164ce1c48374ba9258bb7ddba4ae608e7767aec7f683d38b43f77f8c",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "acqrel",
+        "failure": "seqcst",
+        "success_code": 4,
+        "failure_code": 5,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "cf737a3abf710a06d93008324258473dff1b295134e6d9198778e90703a8f807",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "seqcst",
+        "failure": "relaxed",
+        "success_code": 5,
+        "failure_code": 0,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "589a850d39f93a34ca8a0aea63f5365ccbb06321467d62597a38cbdae5b3637b",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "seqcst",
+        "failure": "acquire",
+        "success_code": 5,
+        "failure_code": 2,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "06c48993e96b7ec90b81fe984a6b86f4833663a5d5bd36c61cccdcaf36da867d",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "success": "seqcst",
+        "failure": "seqcst",
+        "success_code": 5,
+        "failure_code": 5,
+        "hypothesis_backend_build_status": 0,
+        "hypothesis_backend_run_status": 42,
+        "build_status": 0,
+        "build_stderr": "",
+        "run_status": 42,
+        "input_sha256": "22672ccb379bc8caaaa1eeb1ef5edbd3b729d212230edb7f122590128758e5e0",
+        "native_sha256": "c98b1db6d491b25f48cd9a90a6ec5405dff6a6f6fe884c4653d5e0991f44a77c",
+        "build_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "run_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "backend_tools": {
+    "lowir": "2acc7cefeecc3752c4a15da4ddb1e65c9cb2b88e0032a23d1eca7ff36a005882",
+    "lowir2native": "57f2c1156168eac7e653a4a193f27f124b635413e07de29940daf34a0b831fec"
+  },
+  "scaling": {
+    "callers": [
+      8,
+      32,
+      128
+    ],
+    "canonical_atomic_methods": 6,
+    "demanded_cas_shims": 2,
+    "operations_per_shim": 15,
+    "unique_order_pairs_per_shim": 15,
+    "ordering_argument_reads_per_shim": 2,
+    "expected_scratch_reads_per_shim": 15,
+    "extra_atomic_object_reads": 0,
+    "body_work_bound": "steps < 2048*(callers+1)"
+  },
+  "gates": [
+    "obj/parallel/pa28/cas-qualified-final/gates.json",
+    "obj/parallel/pa28/cas-strict-final/gates.json",
+    "obj/parallel/pa28/cas-metadata/gates.json"
+  ],
+  "retained_failed_gates": [
+    "obj/parallel/pa28/cas-gates/gates.json",
+    "obj/parallel/pa28/cas-final/gates.json",
+    "obj/parallel/pa28/cas-close/gates.json",
+    "obj/parallel/pa28/cas-qualified/gates.json",
+    "obj/parallel/pa28/cas-qualified-final/gates.json"
+  ],
+  "retained_preparation_disagreements": [
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-core.rs",
+      "original_source": "mod core{pub mod sync{pub mod atomic{pub struct AtomicU32;impl AtomicU32{pub fn new(_:u32)->Self{Self}pub fn load(&self,_:Ordering)->u32{7}}pub enum Ordering{SeqCst}}}}fn main(){let a=core::sync::atomic::AtomicU32::new(7);let _=a.load(core::sync::atomic::Ordering::SeqCst);}\n",
+      "original_sha256": "094de8b0d69b814db6cec70e73138eae07418876c1caef2f393d4628e9413e63",
+      "rustc_status": 0,
+      "frontend_types_status": 1,
+      "reason": "Existing unit-struct Self value-constructor lookup fails independently of atomic preparation; explicit nominal constructor isolates approved shadowing contract.",
+      "evidence": "obj/parallel/pa28/cas-qualified/tests.log"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-preparation/local-types.rs",
+      "original_source": "pub struct AtomicU32;impl AtomicU32{pub fn new(_:u32)->Self{Self}pub fn load(&self,_:Ordering)->u32{7}}pub enum Ordering{SeqCst}fn main(){let a=AtomicU32::new(7);let _=a.load(Ordering::SeqCst);}\n",
+      "original_sha256": "c9103996923158a9783c88bb3b46eb6a050721a2a0f541d48b4919cdb35b6022",
+      "rustc_status": 0,
+      "frontend_types_status": 1,
+      "reason": "Existing unit-struct Self value-constructor lookup fails independently of atomic preparation; explicit nominal constructor isolates approved shadowing contract.",
+      "evidence": "obj/parallel/pa28/cas-qualified/tests.log"
+    }
+  ],
+  "limitations": [
+    "Weak uses strong CAS and never spuriously fails; this is permitted, not a guarantee required of other implementations.",
+    "No concurrency stress, full matrix or performance study in this focused checkpoint.",
+    "Packed borrow and unused const-function type inspection may retain an obligation; executable and constant inspection enforce rejection.",
+    "The Self unit-value constructor lookup example is a separate retained preexisting unsupported boundary.",
+    "No backend changes, assignment activation or generated reference updates."
+  ],
+  "retained_preparation_qualification": {
+    "evidence": "obj/parallel/pa28/cas-metadata/retained-controls.json",
+    "results_sha256": "f64334284ef68c13d9ac97395379d47007f8582c7af35a504e12718700573f14",
+    "cases": [
+      {
+        "name": "local-core",
+        "input_sha256": "094de8b0d69b814db6cec70e73138eae07418876c1caef2f393d4628e9413e63",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "5e072e5fb6e0a3000c1b91a1af8adeca2c13b095275c586e5fb7faba4ae4de4f",
+            "stderr": "ERROR: file 0: 97: unresolved value name\n"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "5e072e5fb6e0a3000c1b91a1af8adeca2c13b095275c586e5fb7faba4ae4de4f",
+            "stderr": "ERROR: file 0: 97: unresolved value name\n"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "5e072e5fb6e0a3000c1b91a1af8adeca2c13b095275c586e5fb7faba4ae4de4f",
+            "stderr": "ERROR: file 0: 97: unresolved value name\n"
+          }
+        },
+        "rustc_status": 0
+      },
+      {
+        "name": "local-types",
+        "input_sha256": "c9103996923158a9783c88bb3b46eb6a050721a2a0f541d48b4919cdb35b6022",
+        "frontend": {
+          "--emit-types": {
+            "status": 1,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "d7b5f091a7f61cdb0c15bc5cebb7a5e5ab151fe43a981b2c4f10808e4eb09ae6",
+            "stderr": "ERROR: file 0: 60: unresolved value name\n"
+          },
+          "--emit-lowir": {
+            "status": 1,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "d7b5f091a7f61cdb0c15bc5cebb7a5e5ab151fe43a981b2c4f10808e4eb09ae6",
+            "stderr": "ERROR: file 0: 60: unresolved value name\n"
+          },
+          "--emit-constants": {
+            "status": 1,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "d7b5f091a7f61cdb0c15bc5cebb7a5e5ab151fe43a981b2c4f10808e4eb09ae6",
+            "stderr": "ERROR: file 0: 60: unresolved value name\n"
+          }
+        },
+        "rustc_status": 0
+      }
+    ]
+  }
+}

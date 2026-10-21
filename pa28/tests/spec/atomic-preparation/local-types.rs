@@ -1,0 +1,1 @@
+pub struct AtomicU32;impl AtomicU32{pub fn new(_:u32)->Self{AtomicU32}pub fn load(&self,_:Ordering)->u32{7}}pub enum Ordering{SeqCst}fn main(){let a=AtomicU32::new(7);let _=a.load(Ordering::SeqCst);}

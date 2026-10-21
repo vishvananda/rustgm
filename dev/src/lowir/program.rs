@@ -68,6 +68,12 @@ pub enum Operation {
         address: Operand,
         ordering: super::atomic::StoreOrder,
     },
+    AtomicCompareExchange {
+        value: Value,
+        address: Operand,
+        expected: Operand,
+        ordering: super::atomic::CompareOrder,
+    },
     AtomicExchange {
         value: Value,
         address: Operand,

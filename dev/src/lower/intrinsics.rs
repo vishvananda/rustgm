@@ -99,7 +99,7 @@ impl Context<'_> {
         let body = if intrinsic.is_volatile() {
             Self::volatile_body(intrinsic, ty)?
         } else {
-            self.atomic_body(intrinsic)?
+            self.atomic_body(intrinsic, instance)?
         };
         let symbol = self.output.declare(
             self.internal_name(format!(

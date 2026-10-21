@@ -67,6 +67,18 @@ impl LibraryType {
             Self::Ordering => "Ordering",
         }
     }
+    /// Recognizes descriptor names for lazy preparation; lookup still proves identity.
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "Option" => Some(Self::Option),
+            "Result" => Some(Self::Result),
+            "ManuallyDrop" => Some(Self::ManuallyDrop),
+            "AtomicU32" => Some(Self::AtomicU32),
+            "Ordering" => Some(Self::Ordering),
+            _ => None,
+        }
+    }
     #[must_use]
     pub const fn module(self) -> &'static str {
         match self {

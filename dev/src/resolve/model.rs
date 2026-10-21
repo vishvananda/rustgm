@@ -1,6 +1,6 @@
 //! Stable name-resolution facts; lexical bindings point directly at definitions.
 pub use super::builtins::{
-    BuiltinIntrinsic, BuiltinTrait, Callable as BuiltinCallable, Intrinsics,
+    BuiltinIntrinsic, BuiltinTrait, Callable as BuiltinCallable, ComparisonResult, Intrinsics,
     Language as BuiltinLanguage, LanguageOutput as BuiltinLanguageOutput, LibraryNominal,
     LibraryTypes, Traits as BuiltinTraits,
 };

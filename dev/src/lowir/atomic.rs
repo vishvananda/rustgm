@@ -52,3 +52,23 @@ impl RmwOrder {
         }
     }
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CompareOrder {
+    success: RmwOrder,
+    failure: LoadOrder,
+}
+impl CompareOrder {
+    #[must_use]
+    pub const fn new(success: RmwOrder, failure: LoadOrder) -> Self {
+        Self { success, failure }
+    }
+    #[must_use]
+    pub const fn success_encoding(self) -> u8 {
+        self.success.encoding()
+    }
+    #[must_use]
+    pub const fn failure_encoding(self) -> u8 {
+        self.failure.encoding()
+    }
+}
