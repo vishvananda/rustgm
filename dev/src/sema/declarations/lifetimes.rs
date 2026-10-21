@@ -8,7 +8,14 @@ impl Checker<'_> {
         key: NodeKey,
         inherited: regions::Context,
     ) -> regions::Context {
-        if let super::Kind::Closure { .. } = self.kind(key) {
+        if matches!(
+            self.kind(key),
+            super::Kind::Closure { .. }
+                | super::Kind::Block {
+                    flavor: crate::syntax::ast::BlockFlavor::Const,
+                    ..
+                }
+        ) {
             return regions::Context {
                 position: regions::Position::Local(key.node),
                 ..inherited

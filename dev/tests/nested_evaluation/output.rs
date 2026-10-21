@@ -1,8 +1,6 @@
 //! Conditional child proofs retain exact owner identity and all return obligations.
-use super::{analyze, inspect, native};
+use super::{analyze, inspect, native, rustc};
 use std::fmt::Write as _;
-#[path = "../helpers/qualify.rs"]
-mod rustc;
 const CASES: &[(&str, bool)] = &[
     ("borrowed-outer", true),
     ("owned-outer", false),

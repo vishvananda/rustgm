@@ -1,0 +1,1 @@
+fn value()->u8{7}pub fn run()->u8{const{let local=value();let r:&u8=&local;*r}}

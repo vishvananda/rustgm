@@ -1,0 +1,1 @@
+pub fn run()->u8{const{let mut value=6u8;let r:&mut u8=&mut value;*r+=1;value}}

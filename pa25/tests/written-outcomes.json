@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "mode": "--emit-constants",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/inline/inline-local-annotation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fbf1f961f74665bb8ad9205e2df4dfba81c84b172c620b9db9cf20bb74d9eae2",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "4335838a054ad4bb88145796d20ec0f2e1e193bde6ce9fe36c9c29a8bcd3f7fe",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "5fdebf7f35e463277ed3b22ac47b1a00c6713e59e03f0c9f385eb2dc87999cd9",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "ee60f9fadee1e4900d96d9403b8674bfc6a749b0120833428a5ed0b631241fed",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "c9cdbc3beaef9f66fa6cc6d7bae6470c8a691a31bee488487cd369d7f4d6bdc2",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/closure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fa28f033483cf2850b128e97d0bb540a29c6086fff1bd593a818b099b89642d5",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "4692692ea33f4c8d14a12331dc64b99177b806d37ed809b95deab22de1e3d32d",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "ac1aac25694b33d70ddace73dc556219f876ca655e0223ae24aa92188b196402",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "51bc0cf7d748a73d0d6364b431ab0e82dcb064b100464e8393ccbfe099d12c09",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/dangling.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "c87139d3f18c0667672b05ff7953dc26ed42016a492c3f481f025c40f73d2648",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/static-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "9c6e73c8c94da93ca122d824ede935e10978ebbc6b8f4d68be68bfa824d8a1be",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/outer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "0b3934e5f5ed0e56e35b2f76c6b1a1a7e3064a33fe6858484ae69c90d1819dca",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline-written/non-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "9d2f9855f79a0b2cb94dd0061044b3c7b00a9a99d0d73da4b05ee43966c0ff1d",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    }
+  ]
+}

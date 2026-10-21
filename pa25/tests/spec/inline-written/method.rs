@@ -1,0 +1,1 @@
+struct S(u8);impl S{const fn get(&self)->u8{self.0}}pub fn run()->u8{const{let value=S(7);let r:&S=&value;r.get()}}

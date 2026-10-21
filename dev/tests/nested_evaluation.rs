@@ -3,8 +3,12 @@
 mod native;
 #[path = "nested_evaluation/output.rs"]
 mod output;
+#[path = "helpers/qualify.rs"]
+mod rustc;
 #[path = "helpers/resolve.rs"]
 mod source;
+#[path = "nested_evaluation/written.rs"]
+mod written;
 use rustgm::{
     lower::{constant_view, instances},
     pipeline,

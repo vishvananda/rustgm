@@ -1,0 +1,1 @@
+pub fn run()->u8{const{unsafe{let value=7u8;let r:&u8=&value;*r}}}

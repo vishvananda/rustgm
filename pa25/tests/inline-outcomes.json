@@ -612,7 +612,7 @@
     },
     {
       "path": "tests/spec/inline/inline-local-annotation.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa25.inline-const"
       ],
@@ -622,9 +622,7 @@
         "status": 0,
         "default_lints": true,
         "emit": "obj"
-      },
-      "boundary": "uncovered inline written-lifetime annotation ownership; valid Rust, never a stable language-negative oracle",
-      "coverage": "uncovered"
+      }
     },
     {
       "path": "tests/spec/inline/inferred-return-context.rs",

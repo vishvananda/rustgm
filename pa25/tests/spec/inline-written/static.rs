@@ -1,0 +1,1 @@
+static VALUE:u8=7;pub fn run()->u8{const{let r:&u8=&VALUE;*r}}

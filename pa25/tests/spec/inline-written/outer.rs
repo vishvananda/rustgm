@@ -1,0 +1,1 @@
+pub fn run(value:u8)->u8{const{let r:&u8=&value;*r}}
