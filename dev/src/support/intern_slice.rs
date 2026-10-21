@@ -37,6 +37,14 @@ impl<T: Hash> Default for Slices<T> {
 }
 
 impl<T: Copy + Eq + Hash> Slices<T> {
+    pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.values);
+        total.vector(&self.entries);
+        total.map(&self.index);
+        total
+    }
+
     pub fn get(&self, id: u32) -> Option<&[T]> {
         let entry = self.entries.get(id as usize)?;
         self.values.get(entry.start as usize..entry.end as usize)

@@ -39,6 +39,26 @@ pub(super) struct Storage {
     changed: VecDeque<WatchId>,
 }
 impl Storage {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        if let Some(changes) = &self.root_changes {
+            total.vector(changes);
+        }
+        total.include(self.equations.allocation());
+        total.vector(&self.watches);
+        for watch in &self.watches {
+            total.set(&watch.seen);
+        }
+        total.map(&self.waiting);
+        for waiting in self.waiting.values() {
+            total.vector(waiting);
+        }
+        total.deque(&self.work);
+        total.deque(&self.ready);
+        total.deque(&self.changed);
+        total
+    }
+
     fn notify(&mut self, id: WatchId) {
         let watch = &mut self.watches[id.0 as usize];
         if matches!(watch.state, State::Initial | State::Observing) {

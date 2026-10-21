@@ -42,6 +42,18 @@ impl Evidence {
 }
 
 impl Assumptions {
+    pub(in crate::sema) fn retain_allocation(
+        &self,
+        observer: &mut crate::types::parameters::premise_index::Retained,
+    ) -> crate::support::retained::Allocation {
+        self.index
+            .as_ref()
+            .map_or_else(crate::support::retained::Allocation::default, |index| {
+                index.retain_allocation(observer)
+            })
+    }
+}
+impl Assumptions {
     /// A sole identical canonical clause needs no inference or lifetime mapping.
     /// Additional coarse candidates require ordinary complete-goal equations.
     pub(super) fn exact(

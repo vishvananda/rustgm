@@ -12,6 +12,12 @@ pub(super) struct Classes {
     nodes: HashMap<TermId, Node>,
 }
 impl Classes {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.nodes);
+        total
+    }
+
     pub fn len(&self) -> usize {
         self.nodes.len()
     }

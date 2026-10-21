@@ -31,6 +31,20 @@ struct Subject {
     bound: Bound,
 }
 impl Index {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.entries);
+        total.set(&self.unique);
+        total.set(&self.subjects);
+        total.map(&self.candidates);
+        for values in self.candidates.values() {
+            total.vector(values);
+        }
+        total.include(self.shapes.allocation());
+        total
+    }
+}
+impl Index {
     pub fn clauses(&self) -> impl Iterator<Item = Clause> + '_ {
         self.entries.iter().copied()
     }

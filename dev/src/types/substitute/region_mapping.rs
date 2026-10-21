@@ -299,6 +299,34 @@ impl Bound {
     }
 }
 
+impl Mapping {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.replacements);
+        match &self.mode {
+            Mode::Scopes(values)
+            | Mode::Restore {
+                retained: Retained::Stream(values),
+            } => total.vector(values),
+            Mode::Close(value) => {
+                total.boxed(value.as_ref());
+                total.include(value.allocation());
+            }
+            Mode::Export(value) => {
+                total.boxed(value.as_ref());
+                total.include(value.allocation());
+            }
+            Mode::Observe
+            | Mode::Open { .. }
+            | Mode::Rebase { .. }
+            | Mode::Restore {
+                retained: Retained::Interval(_),
+            } => {}
+        }
+        total
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

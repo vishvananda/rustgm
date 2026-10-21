@@ -163,3 +163,12 @@ impl Context {
         Ok(())
     }
 }
+
+impl Definitions {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.entries);
+        total.map(&self.uses);
+        total
+    }
+}

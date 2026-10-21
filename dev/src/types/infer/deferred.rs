@@ -49,6 +49,22 @@ pub(super) struct Storage {
     pending: usize,
 }
 impl Storage {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.opaque);
+        total.vector(&self.equations);
+        total.vector(&self.leaves);
+        for equation in &self.equations {
+            total.vector(&equation.ready);
+        }
+        total.map(&self.waiting);
+        for waiting in self.waiting.values() {
+            total.vector(waiting);
+        }
+        total.deque(&self.ready);
+        total
+    }
+
     fn normalized(&mut self, term: TermId) -> usize {
         let Some(waiting) = self.waiting.remove(&term) else {
             return 0;

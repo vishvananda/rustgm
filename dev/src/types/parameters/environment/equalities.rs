@@ -29,6 +29,27 @@ fn member(types: &Store, predicate: Predicate) -> Result<ItemId, &'static str> {
 }
 
 impl Equalities {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.predicates);
+        total.set(&self.unique);
+        total.map(&self.items);
+        for values in self.items.values() {
+            total.vector(values);
+        }
+        if let Some(q) = &self.quantified {
+            total.boxed(q.as_ref());
+            total.vector(&q.entries);
+            total.set(&q.unique);
+            total.map(&q.items);
+            for values in q.items.values() {
+                total.vector(values);
+            }
+        }
+        total
+    }
+}
+impl Equalities {
     pub fn insert(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
         self.region_mapping |= clause.has_free_regions(types)?;
         let count = self.unique.len() + self.quantified.as_ref().map_or(0, |q| q.unique.len());

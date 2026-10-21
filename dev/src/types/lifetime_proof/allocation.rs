@@ -1,23 +1,34 @@
 //! Logical retained proof payload excludes immutable shared binder tables.
 use super::Obligations;
+use crate::support::retained::Allocation;
 impl Obligations {
-    pub(crate) fn allocation_bytes(&self) -> usize {
+    pub(crate) fn shallow_allocation(&self) -> Allocation {
+        let mut total = Allocation::default();
+        total.vector(&self.equalities);
+        total.vector(&self.outlives);
+        total.vector(&self.types);
+        if let Some(q) = &self.quantified {
+            total.boxed(q.as_ref());
+            total.vector(&q.blocks);
+            total.vector(&q.gaps);
+            if let Some(origins) = &q.origins {
+                total.add(origins.allocation_bytes());
+            }
+        }
+        total
+    }
+    pub(crate) fn retained_allocation(&self) -> Allocation {
+        let mut total = Allocation::default();
         let mut work = vec![self];
-        let mut bytes = 0usize;
         while let Some(proof) = work.pop() {
-            bytes = bytes
-                .saturating_add(crate::support::retained::vector(&proof.equalities))
-                .saturating_add(crate::support::retained::vector(&proof.outlives))
-                .saturating_add(crate::support::retained::vector(&proof.types));
+            total.include(proof.shallow_allocation());
             if let Some(q) = &proof.quantified {
-                bytes = bytes
-                    .saturating_add(size_of_val(q.as_ref()))
-                    .saturating_add(crate::support::retained::vector(&q.blocks))
-                    .saturating_add(crate::support::retained::vector(&q.gaps))
-                    .saturating_add(q.origins.as_ref().map_or(0, |o| o.allocation_bytes()));
                 work.extend(q.blocks.iter().map(|block| &block.proof));
             }
         }
-        bytes
+        total
+    }
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        self.retained_allocation().bytes
     }
 }

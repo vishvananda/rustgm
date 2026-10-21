@@ -295,3 +295,15 @@ impl Context {
         store.intern(kind).map_err(|_| Error::InvalidIdentity)
     }
 }
+
+impl Storage {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = self.slots.allocation();
+        total.include(self.constants.allocation());
+        if let Some(objects) = &self.objects {
+            total.boxed(objects.as_ref());
+            total.include(objects.allocation());
+        }
+        total
+    }
+}

@@ -141,7 +141,7 @@ pub(in crate::sema) fn advance(
                 .origin
                 .require_diagnostic()
                 .map_err(|e| queries.error(query, e))?;
-            let (saved, continuation) = queries.suspend();
+            let (saved, continuation) = queries.suspend()?;
             *scratch = saved;
             return Ok(Progress::Prepare {
                 source,

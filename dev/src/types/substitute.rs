@@ -1,4 +1,5 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
+mod allocation;
 mod equation_closure;
 pub(crate) use equation_closure::RegionEquations;
 mod export;

@@ -390,3 +390,21 @@ impl<Q: Query> Occurrences<Q> {
         Ok(())
     }
 }
+
+impl<Q: Query> Occurrences<Q> {
+    pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.completed);
+        total.map(&self.applications);
+        total.vector(&self.work);
+        if let Some(value) = &self.scoped_applications {
+            total.boxed(value.as_ref());
+            total.map(value);
+        }
+        if let Some(value) = &self.groups {
+            total.boxed(value.as_ref());
+            total.map(value);
+        }
+        total
+    }
+}

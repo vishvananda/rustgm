@@ -17,6 +17,13 @@ pub(super) struct Constants {
     known: HashMap<ConstKind, ConstTermId>,
 }
 impl Constants {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.terms);
+        total.map(&self.known);
+        total
+    }
+
     fn push(&mut self, ty: TypeId, value: Option<ConstKind>) -> Result<ConstTermId, Error> {
         let id = ConstTermId(u32::try_from(self.terms.len()).map_err(|_| Error::Overflow)?);
         self.terms.push(Term {

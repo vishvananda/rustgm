@@ -7,6 +7,13 @@ use std::collections::HashMap;
 pub(crate) struct RegionEqualities {
     representatives: HashMap<RegionId, RegionId>,
 }
+impl RegionEqualities {
+    pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.representatives);
+        total
+    }
+}
 impl Constraints<'_> {
     pub(crate) fn assumed_equalities(&self) -> Result<RegionEqualities, Error> {
         let binder = self.binders.first().ok_or(Error::Identity)?;

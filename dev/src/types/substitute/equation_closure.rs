@@ -90,6 +90,13 @@ pub(super) struct Closing {
     equations: RegionEquations,
 }
 impl Closing {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.equations.indices);
+        total.vector(&self.equations.vertices);
+        total
+    }
+
     pub(super) fn region(
         &mut self,
         region: RegionId,

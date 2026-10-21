@@ -122,3 +122,19 @@ impl Replacements {
         Ok((result, after - before))
     }
 }
+
+impl Replacements {
+    pub(super) fn allocation<'a>(
+        &'a self,
+        total: &mut crate::support::retained::Allocation,
+        work: &mut Vec<&'a Bound>,
+    ) {
+        total.map(&self.values);
+        total.map(&self.scopes);
+        for scope in self.scopes.values() {
+            total.include(scope.captures.allocation());
+            work.push(&scope.lower);
+            work.push(&scope.raise);
+        }
+    }
+}

@@ -105,3 +105,11 @@ impl Bound {
         }
     }
 }
+
+impl Mapping {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.replacements);
+        total
+    }
+}

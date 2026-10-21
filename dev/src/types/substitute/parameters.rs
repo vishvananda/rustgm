@@ -299,3 +299,15 @@ impl Bound {
         Ok(Some(argument))
     }
 }
+
+impl Bindings {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        match &self.arguments {
+            Arguments::All { values, .. } => total.vector(values),
+            Arguments::Mapped(values) => total.map(values),
+            Arguments::Single(..) => {}
+        }
+        total
+    }
+}

@@ -1,4 +1,5 @@
 //! Concrete trait callables select checked overrides while retaining their lifetime proof.
+mod allocation;
 mod arguments;
 mod dependencies;
 mod implementation;
@@ -23,6 +24,7 @@ use std::sync::Arc;
 pub(crate) use tables::table_method;
 
 struct Caller {
+    shared_environment: Option<Arc<Environment>>,
     environment: Option<Arc<Environment>>,
     assumptions: Assumptions,
 }
@@ -43,6 +45,7 @@ pub(crate) struct Dispatcher {
     constants: HashMap<super::values::Instance, super::values::Instance>,
     expanded: HashMap<super::values::Instance, Expansion>,
     caller: Option<Box<Caller>>,
+    retained: Option<Box<allocation::Retained>>,
 }
 impl Dispatcher {
     pub(crate) fn new(universals: u32, first: u32) -> Result<Self, &'static str> {
@@ -73,6 +76,7 @@ impl Dispatcher {
             constants: HashMap::new(),
             expanded: HashMap::new(),
             caller: None,
+            retained: None,
         })
     }
     pub(in crate::sema) fn declaration(first: u32) -> Result<Self, &'static str> {
@@ -92,7 +96,7 @@ impl Dispatcher {
         };
         let predicate = arguments::Arguments::constant(facts, instance)?.goal(facts, owner)?;
         let (owner, _, evidence) = self.implementation(facts, predicate)?;
-        self.obligations.extend(evidence)?;
+        self.extend_evidence(evidence)?;
         Ok(Some(owner))
     }
     /// Patterns must select a definition before monomorphization. Rigid caller
@@ -104,9 +108,11 @@ impl Dispatcher {
         owner: Option<DefId>,
     ) -> Result<Self, String> {
         let mut result = Self::new(universals, first)?;
-        let environment = owner
+        let shared_environment = owner
             .and_then(|owner| facts.generics.environments.get(&owner))
-            .cloned()
+            .cloned();
+        let environment = shared_environment
+            .as_ref()
             .map(|environment| {
                 environment
                     .substitute_regions(&mut facts.types, &mut result.normalize)
@@ -137,6 +143,7 @@ impl Dispatcher {
             }
         }
         result.caller = Some(Box::new(Caller {
+            shared_environment,
             environment,
             assumptions,
         }));
@@ -180,13 +187,13 @@ impl Dispatcher {
                     proof,
                 } => (owner, arguments, proof),
                 objects::Method::Object { proof } => {
-                    self.obligations.extend(proof)?;
+                    self.extend_evidence(proof)?;
                     self.selected.insert(ty, ty);
                     return Ok(ty);
                 }
                 objects::Method::Language { descriptor, proof } => {
                     objects::retain_language(facts, method, ty, descriptor)?;
-                    self.obligations.extend(proof)?;
+                    self.extend_evidence(proof)?;
                     self.selected.insert(ty, ty);
                     return Ok(ty);
                 }
@@ -202,20 +209,12 @@ impl Dispatcher {
         } else {
             arguments.target(facts, owner, implementation, target)?
         };
-        self.obligations.extend(evidence)?;
+        self.extend_evidence(evidence)?;
         if facts.types.contains_projections(result) == Some(true) {
             // Selecting an override can introduce its written projections after
             // the original operand was normalized. Keep their formation debts
             // in this dispatch proof, including nested callable scopes.
-            let (normalized, steps) = super::projections::concrete(
-                &mut self.obligations,
-                crate::types::lifetime_proof::ScopeId::ROOT,
-            )?
-            .normalize(facts, result)?;
-            self.context
-                .account_work(steps)
-                .map_err(|e| e.to_string())?;
-            result = normalized;
+            result = self.normalize_override(facts, result)?;
         }
         self.selected.insert(ty, result);
         Ok(result)
@@ -352,7 +351,7 @@ impl Dispatcher {
                 arguments,
             }
         };
-        self.obligations.extend(evidence)?;
+        self.extend_evidence(evidence)?;
         self.constants.insert(instance, result);
         Ok(result)
     }

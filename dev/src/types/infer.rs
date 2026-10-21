@@ -1,5 +1,6 @@
 //! Per-body constraints over flat terms, with path-compressed variable identities.
 //! A failed constraint may retain prior progress; callers discard that body context.
+mod allocation;
 pub mod arguments;
 mod batch;
 mod compare;

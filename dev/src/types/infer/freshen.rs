@@ -405,3 +405,14 @@ fn fresh(region: RegionId, depth: u16, next: &mut u32) -> Result<RegionId, Error
     *next = next.checked_add(1).ok_or(Error::Overflow)?;
     Ok(id)
 }
+
+impl Scratch {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.work);
+        total.vector(&self.values);
+        total.vector(&self.arguments);
+        total.set(&self.closed);
+        total
+    }
+}

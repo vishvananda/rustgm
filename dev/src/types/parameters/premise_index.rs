@@ -22,6 +22,48 @@ pub(crate) struct QuantifiedIndex {
     pub candidates: HashMap<(ItemId, Head), Vec<QuantifiedId>>,
     pub seen: HashSet<QuantifiedId>,
 }
+/// The immutable index can gain its parameter lookup cache once.
+#[derive(Default)]
+pub(crate) struct Retained {
+    base: bool,
+    parameters: bool,
+}
+impl ClauseIndex {
+    pub(crate) fn retain_allocation(
+        &self,
+        observer: &mut Retained,
+    ) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        if !observer.base {
+            observer.base = true;
+            total.boxed(self);
+            total.map(&self.candidates);
+            total.set(&self.seen);
+            for values in self.candidates.values() {
+                total.vector(values);
+            }
+            if let Some(q) = &self.quantified {
+                total.boxed(q.as_ref());
+                total.map(&q.candidates);
+                total.set(&q.seen);
+                for values in q.candidates.values() {
+                    total.vector(values);
+                }
+            }
+        }
+        total.visits = total.visits.saturating_add(1);
+        if !observer.parameters
+            && let Some(index) = self.parameter_traits.get()
+        {
+            observer.parameters = true;
+            total.map(index);
+            for values in index.values() {
+                total.vector(values);
+            }
+        }
+        total
+    }
+}
 impl ClauseIndex {
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
         self.parameter_traits

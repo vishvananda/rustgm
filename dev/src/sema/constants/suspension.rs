@@ -11,6 +11,9 @@ pub(in crate::sema) enum Dependency {
 
 pub(in crate::sema) struct Continuation {
     typing: Option<Box<crate::sema::bodies::State>>,
+    pattern_scope: Option<super::PatternScope>,
+    pattern_dispatch: Option<crate::sema::dispatch::Dispatcher>,
+    value_scope: Option<instances::ValueScope>,
     expressions: HashMap<(instances::Context, NodeKey), Expression>,
     instances: instances::Instances,
     states: HashMap<(instances::Context, Query), State>,
@@ -22,9 +25,13 @@ pub(in crate::sema) struct Continuation {
 
 impl Queries<'_> {
     /// Retain unfinished inference as well as the enclosing value query graph.
-    pub(super) fn suspend(mut self) -> (Scratch, Box<Continuation>) {
+    pub(super) fn suspend(mut self) -> Result<(Scratch, Box<Continuation>), Error> {
+        self.retain_pattern_dispatcher(64 * 1024 * 1024)?;
         let mut continuation = Continuation {
             typing: None,
+            pattern_scope: self.pattern_scope.take(),
+            pattern_dispatch: self.pattern_dispatch.take(),
+            value_scope: self.value_scope.take(),
             expressions: std::mem::take(&mut self.expressions),
             instances: std::mem::take(&mut self.instances),
             states: std::mem::take(&mut self.states),
@@ -35,13 +42,32 @@ impl Queries<'_> {
         };
         let (scratch, typing) = self.into_storage();
         continuation.typing = typing;
-        (scratch, Box::new(continuation))
+        Ok((scratch, Box::new(continuation)))
+    }
+
+    fn retain_pattern_dispatcher(&mut self, limit: usize) -> Result<(), Error> {
+        if let Some(dispatch) = &mut self.pattern_dispatch {
+            let (bytes, visits) = dispatch.retained_allocation();
+            if bytes > limit {
+                return Err(Error::at(
+                    super::FileId(0),
+                    0,
+                    "suspended pattern dispatcher exceeds retained storage budget",
+                ));
+            }
+            self.steps = self.steps.saturating_add(visits);
+            self.budget()?;
+        }
+        Ok(())
     }
 
     pub(super) fn resume(&mut self, continuation: Continuation) {
         if let Some(typing) = continuation.typing {
             self.typing.restore_body(*typing);
         }
+        self.pattern_scope = continuation.pattern_scope;
+        self.pattern_dispatch = continuation.pattern_dispatch;
+        self.value_scope = continuation.value_scope;
         self.expressions = continuation.expressions;
         self.instances = continuation.instances;
         self.states = continuation.states;
@@ -70,3 +96,7 @@ impl Queries<'_> {
         Ok((!initializer.type_checked()).then_some(initializer.definition))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/pattern_continuations.rs"]
+mod tests;

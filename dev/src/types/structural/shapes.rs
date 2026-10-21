@@ -22,6 +22,14 @@ pub(crate) struct Shapes {
     pub steps: usize,
 }
 impl Shapes {
+    pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.completed);
+        total.vector(&self.work);
+        total
+    }
+}
+impl Shapes {
     fn charge(&mut self, count: usize) -> Result<(), Error> {
         self.steps = self.steps.saturating_add(count);
         if self.steps.saturating_add(self.work.len()) > 1_000_000 {

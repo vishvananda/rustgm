@@ -22,3 +22,35 @@ pub(crate) const fn new_map<K, V>(entries: usize) -> usize {
 pub(crate) fn sum(parts: impl IntoIterator<Item = usize>) -> usize {
     parts.into_iter().fold(0, usize::saturating_add)
 }
+
+/// Capacity accounting visits collections, not their elements or allocator metadata.
+#[derive(Clone, Copy, Default)]
+pub(crate) struct Allocation {
+    pub bytes: usize,
+    pub visits: usize,
+}
+impl Allocation {
+    pub fn add(&mut self, bytes: usize) {
+        self.bytes = self.bytes.saturating_add(bytes);
+        self.visits = self.visits.saturating_add(1);
+    }
+    pub fn include(&mut self, other: Self) {
+        self.bytes = self.bytes.saturating_add(other.bytes);
+        self.visits = self.visits.saturating_add(other.visits);
+    }
+    pub fn vector<T>(&mut self, values: &Vec<T>) {
+        self.add(vector(values));
+    }
+    pub fn map<K, V, S>(&mut self, values: &HashMap<K, V, S>) {
+        self.add(map(values));
+    }
+    pub fn set<T, S>(&mut self, values: &std::collections::HashSet<T, S>) {
+        self.add(values.capacity().saturating_mul(size_of::<T>()));
+    }
+    pub fn deque<T>(&mut self, values: &std::collections::VecDeque<T>) {
+        self.add(values.capacity().saturating_mul(size_of::<T>()));
+    }
+    pub fn boxed<T>(&mut self, value: &T) {
+        self.add(size_of_val(value));
+    }
+}

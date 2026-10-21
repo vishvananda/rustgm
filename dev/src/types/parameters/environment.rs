@@ -1,6 +1,8 @@
 //! Immutable assumptions for one symbolic body. Absence of a bound is not proof
 //! that a concrete instantiation lacks it; it only withholds that operation here.
 mod equalities;
+mod owned_payload;
+pub(crate) use owned_payload::Retained;
 mod instantiation;
 mod permissions;
 mod premises;

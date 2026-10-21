@@ -14,6 +14,15 @@ pub(super) struct Resolution {
     children: Vec<TypeId>,
 }
 impl Resolution {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.results);
+        total.set(&self.active);
+        total.vector(&self.work);
+        total.vector(&self.children);
+        total
+    }
+
     fn clear(&mut self) {
         // Clearing a hash table visits its capacity. A wide query must not make
         // every later tiny request clear that same wide allocation. Both sets

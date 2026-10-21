@@ -20,6 +20,16 @@ pub(super) struct Applications {
     scoped: Option<Box<HashMap<(ApplicationId, u16), ApplicationId>>>,
 }
 impl Applications {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.root);
+        if let Some(scoped) = &self.scoped {
+            total.boxed(scoped.as_ref());
+            total.map(scoped);
+        }
+        total
+    }
+
     fn get(&self, id: ApplicationId, depth: u16) -> Option<ApplicationId> {
         if depth == 0 {
             self.root.get(&id).copied()

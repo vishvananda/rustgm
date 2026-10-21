@@ -45,7 +45,7 @@ pub(in crate::sema) fn advance(
             queries.typing.start_anonymous_constant(key, ty, module)?
         };
         if let Some(dependency) = dependency {
-            let (saved, continuation) = queries.suspend();
+            let (saved, continuation) = queries.suspend()?;
             *scratch = saved;
             return Ok(Progress::Prepare(
                 super::suspension::Dependency::Body(dependency),
@@ -58,7 +58,7 @@ pub(in crate::sema) fn advance(
         let instances = queries.typing.constant_instances()?;
         let members = queries.demand_members(instances, None)?;
         if !members.is_empty() {
-            let (saved, continuation) = queries.suspend();
+            let (saved, continuation) = queries.suspend()?;
             *scratch = saved;
             return Ok(Progress::Prepare(
                 super::suspension::Dependency::Members(members),
@@ -67,7 +67,7 @@ pub(in crate::sema) fn advance(
         }
     }
     if let Some(definition) = queries.drain_until(Some(ready))? {
-        let (saved, continuation) = queries.suspend();
+        let (saved, continuation) = queries.suspend()?;
         *scratch = saved;
         return Ok(Progress::Prepare(definition, continuation));
     }

@@ -25,6 +25,13 @@ pub(super) struct Export {
     witnesses: Vec<(RegionId, RegionId)>,
 }
 impl Export {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.sources);
+        total.vector(&self.witnesses);
+        total
+    }
+
     fn resume(&mut self, sources: &[ExportSource], first: u32) -> Result<(), &'static str> {
         if first < self.next || first >= 0x8000_0000 {
             return Err("invalid witness export allocation frontier");

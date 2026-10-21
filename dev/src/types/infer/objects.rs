@@ -214,6 +214,15 @@ impl Context {
     }
 }
 
+impl Storage {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.values);
+        total.map(&self.index);
+        total
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

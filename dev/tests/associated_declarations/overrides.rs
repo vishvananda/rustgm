@@ -23,6 +23,11 @@ const CASES: &[(&str, &str, bool)] = &[
         true,
     ),
     (
+        "retained-projected-lifetime",
+        "trait Pick{type Out;fn pick(&self)->Self::Out;}struct Wrap<'a>{value:&'a u8}impl<'a>Pick for Wrap<'a>{type Out=&'a u8;fn pick(&self)->Self::Out{self.value}}fn projected<T:Pick>(x:&T)->T::Out{x.pick()}fn main(){let n=7;let s=Wrap{value:&n};check(*projected(&s)==7);}",
+        true,
+    ),
+    (
         "direct-result",
         "trait A{type Out;}impl A for u8{type Out=u16;}trait Use<T:A>{fn take(x:T::Out)->T::Out;}impl<T:A>Use<T>for u32{fn take(x:T::Out)->T::Out{x}}fn main(){check(<u32 as Use<u8>>::take(7)==7);}",
         true,

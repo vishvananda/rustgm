@@ -35,6 +35,14 @@ pub(super) struct Slots {
 const MAX_RECORDS: usize = (64 * 1024 * 1024) / 128;
 
 impl Slots {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.map(&self.definitions);
+        total.map(&self.frames);
+        total.include(self.classes.allocation());
+        total
+    }
+
     fn new() -> Self {
         Self {
             definitions: HashMap::new(),

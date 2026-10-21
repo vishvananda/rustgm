@@ -43,6 +43,41 @@ fn projection(types: &Store, predicate: Predicate) -> Result<Option<ProjectionKe
 }
 
 impl TraitAssumptions {
+    pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.predicates);
+        total.set(&self.unique);
+        total.set(&self.constants);
+        total.map(&self.projected);
+        for values in self.projected.values() {
+            total.vector(values);
+        }
+        if let Some(q) = &self.quantified {
+            total.boxed(q.as_ref());
+            total.vector(&q.entries);
+            total.set(&q.unique);
+            total.map(&q.projected);
+            for values in q.projected.values() {
+                total.vector(values);
+            }
+        }
+        total
+    }
+}
+impl TraitAssumptions {
+    pub(super) fn retain_index(
+        &self,
+        observer: &mut super::super::premise_index::Retained,
+    ) -> crate::support::retained::Allocation {
+        self.index
+            .get()
+            .and_then(|result| result.as_ref().ok())
+            .map_or_else(crate::support::retained::Allocation::default, |index| {
+                index.retain_allocation(observer)
+            })
+    }
+}
+impl TraitAssumptions {
     pub fn index(&self, types: &Store) -> Result<(Arc<ClauseIndex>, usize), &'static str> {
         let mut work = 1;
         let index = self
