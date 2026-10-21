@@ -1,11 +1,13 @@
 //! Exact-type writes preserve per-pointer authority and physical storage checks.
+#[path = "harness/checked_sources.rs"]
+mod checked;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "helpers/resolve.rs"]
 mod source;
-use std::{path::PathBuf, process::Command};
+use std::path::PathBuf;
 const CASES: &[(&str, i32, i32, &str)] = &[
     ("local-raw-mut", 0, 0, ""),
     ("mutable-reference", 0, 0, ""),
@@ -124,12 +126,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
     ),
     ("array-bounds", 1, 1, "out of bounds"),
     ("static-mutable", 1, 1, "cannot write static storage"),
-    (
-        "union-base-boundary",
-        0,
-        1,
-        "constant raw union field writes are not implemented",
-    ),
+    ("union-base-boundary", 0, 0, ""),
     ("typed-scalars", 0, 0, ""),
 ];
 fn root() -> Result<PathBuf, Box<dyn std::error::Error>> {
@@ -153,59 +150,7 @@ fn exact_raw_stores_match_declared_objects_and_boundaries() -> Result<(), Box<dy
         } else {
             root.join(format!("pa27/tests/spec/raw-store-validity/{name}.rs"))
         };
-        let independent = Command::new("rustc")
-            .args([
-                "+1.98.0",
-                "--edition=2024",
-                "--crate-name=probe",
-                "--emit=obj",
-                "-C",
-                "panic=abort",
-                "-o",
-            ])
-            .arg(evidence.join(format!("{name}.o")))
-            .arg(&source)
-            .output()?;
-        std::fs::write(
-            evidence.join(format!("{name}.rustc.stderr")),
-            &independent.stderr,
-        )?;
-        assert_eq!(
-            independent.status.code(),
-            Some(rust),
-            "{name}: {}",
-            String::from_utf8_lossy(&independent.stderr)
-        );
-        for mode in ["--emit-types", "--emit-lowir", "--emit-constants"] {
-            let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .arg(mode)
-                .arg(&source)
-                .output()?;
-            std::fs::write(
-                evidence.join(format!("{name}.{mode}.stdout")),
-                &output.stdout,
-            )?;
-            std::fs::write(
-                evidence.join(format!("{name}.{mode}.stderr")),
-                &output.stderr,
-            )?;
-            assert_eq!(
-                output.status.code(),
-                Some(frontend),
-                "{name}/{mode}: {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            if frontend == 0 {
-                assert!(output.stderr.is_empty(), "{name}/{mode}");
-            } else {
-                assert!(output.stdout.is_empty(), "{name}/{mode}");
-                assert!(
-                    String::from_utf8_lossy(&output.stderr).contains(reason),
-                    "{name}/{mode}: {}",
-                    String::from_utf8_lossy(&output.stderr)
-                );
-            }
-        }
+        checked::check(&source, &evidence, name, (rust, frontend, reason))?;
     }
     Ok(())
 }

@@ -67,8 +67,12 @@ unread alternative field need not contain a valid representation. Native output
 may choose zero for unspecified padding without marking those bytes initialized
 for constant evaluation. The constants view prints explicit bytes and mask bits.
 
-Pointer, reference, function and aggregate field families, and union-field
-address formation, remain explicit constant-execution boundaries. This first
+Pointer, reference, function and aggregate field families remain explicit
+constant-execution boundaries. Scalar union-field raw addresses retain canonical
+field ordinals over the same parent Image. Different field pointers alias its
+current bytes, with initialization and scalar validity checked on every read.
+Field stores publish a new parent Image while copied union values retain their
+prior snapshots. Static field-pointer relocations retain byte offset zero. This first
 image profile contains no pointer bits or relocations. Images are limited to
 64 KiB each and a bounded 64 MiB arena; operations also consume the existing
 execution work budget. These controls do not activate the assignment or create
@@ -94,8 +98,8 @@ through a separately formed unaligned field pointer. Static stores remain
 forbidden independently of pointer mutability. No old value is read merely to
 store a replacement; source initialization rules remain separate.
 
-Byte reinterpretation, raw union field stores, shared-derived interior-mutable
-writes and reference creation through raw places remain explicit unsupported
+Byte reinterpretation, shared-derived interior-mutable writes and reference
+creation through raw places remain explicit unsupported
 boundaries; unsafe permission grants none of those constant capabilities. Foreign and mutable static contents remain forbidden.
 
 Packed by-value copies, primitive compound assignment and raw address formation

@@ -15,3 +15,10 @@ The original PA28 zero-array-repeat-return fixture is unchanged and now supporte
 Qualification passes six focused source/native test binaries (33 tests), four private invariants, strict all-target/all-feature Clippy, the file audit (1,323 files, zero findings), assignment layout and pinned upstream verification. The first Clippy pass identified dispatcher length and the first audit identified fixture include policy; both were corrected and the affected tests/lint/audit rerun. Evidence and exact hashes are in `pa27/tests/scalar-union-outcomes.json` and `obj/parallel/pa27/scalar-union-final/`. The all-dev-Rust source-map SHA256 is `ab82dbc507689a6245dbce1649d3702fb18fb9f365141f84515143009012a1c2`.
 
 There are no backend changes, activation or generated references. Pointer-word provenance, general reinterpretation/raw writes, remaining packed/pattern controls and broader combined/performance validation remain separate work. PA28 RMW expansion follows this isolated checkpoint at the integrator's direction.
+
+The later scalar union-address checkpoint supersedes the historical raw-field
+address/store boundary for all-fields primitive scalar Images only. It preserves
+canonical typed projection aliases, current-byte overlap and immutable copied
+snapshots; pointer-bearing Images, general reinterpretation and raw-reference
+reconstruction remain outside that profile. See
+[the union-address review](pa27-union-address-review.md) and its separate receipt.

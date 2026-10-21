@@ -145,10 +145,19 @@ impl Machine<'_, '_> {
                 let Some(place) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                if place.union.is_some() {
-                    return Err("constant union field address formation requires byte-offset provenance and is not implemented".into());
+                if let Some(union) = place.union {
+                    self.path(place.address)?;
+                    let (value, work) = self.evaluator.union_address(
+                        place.address,
+                        union.owner,
+                        union.field,
+                        self.limits.steps.saturating_sub(self.work.steps),
+                    )?;
+                    self.charge(work)?;
+                    value
+                } else {
+                    place.address
                 }
-                place.address
             }
             Rvalue::Borrow { place, .. } => {
                 let Some(place) = self.place(frame, place)? else {

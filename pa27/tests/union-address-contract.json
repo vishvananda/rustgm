@@ -1,0 +1,230 @@
+{
+  "stage": "draft-supported-and-boundary-contract",
+  "baseline": "dff51dc7",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-addresses/read-wide.rs",
+      "sha256": "1f95ede3419cd34ee2770a9d42658da9b4871d7dd5ceebb8b3799673de2d0673",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/read-small.rs",
+      "sha256": "cebef8103a01d8eec3cf17610da94ed801c1e6d4ff7890f63fa125e86553e0b2",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/cross-field-small-write.rs",
+      "sha256": "06d0bb0cbb72e027c8e97d796287e48a1774788a8d0b123172ae81665f8aa715",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/cross-field-wide-write.rs",
+      "sha256": "f500ba03cfa26031174dc3e308b6d14ad0e277a68ab7c6c9da157b823286166c",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/write-initializes-wide.rs",
+      "sha256": "ce4e551e39010f7344630a1489cae865e9504c30f24ff16ef662b4b638927121",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/wide-read-uninitialized.rs",
+      "sha256": "b61055bf8d983d73ae898e8e8af8e9095e98ff78d8debc075d941e13af009118",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/small-write-still-uninitialized.rs",
+      "sha256": "08f14d4c42dba64a78091efa7456d5f1964122aaa2e67027a1d16a8e5e0ff1af",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/bool-valid.rs",
+      "sha256": "ad9d1d908e6b3a0b4da181a98802f6297f90f88d3d5d658436666c809c240555",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/bool-invalid.rs",
+      "sha256": "fca983a19c529c046cbdf898fad2cfee519ba172f4b554c2071a0759cfd7f4a0",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant union scalar read has invalid bool representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/bool-address-no-read.rs",
+      "sha256": "402caa75995e9f44f39c956eb0cadc6765571c5630bde3b9d51af55c1fb18488",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/char-valid.rs",
+      "sha256": "32ef5a30b2fad9d786723599e3ccb89330a0907e693c2dc58fb00d4db33e6312",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/char-invalid.rs",
+      "sha256": "8fd1d89f9cbd443fcdb9e0e732189fb335975d3cb0fd002e70a945b86aba4ac1",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant union scalar read has invalid char representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/static-projected.rs",
+      "sha256": "aa4b4450b48e483e73b3cd3704275c8ef9558b46f1c099f3d59c9850ff96ffa1",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/mutable-static.rs",
+      "sha256": "7e80d59a0edc6a8d496f2fc913a4382df72a74ef18bd1865c7bc4e96d86410de",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "mutable static access requires an unsafe context"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/packed-base-store.rs",
+      "sha256": "194be5cced5c14097536e8ea30592453dc4eb7ccd7411fac546f17a7046f2065",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/packed-field-store.rs",
+      "sha256": "65d1b1f3fcadf0784ebc05b4f2bd806e16b8cffab6e1e8ca6947ae7e084a1314",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is unaligned"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/packed-field-read.rs",
+      "sha256": "47a889c99298afdfd2c035e75ee37b44a6c614ae6ae875c16d570a4361998c7d",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer read is unaligned"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/shared-derived.rs",
+      "sha256": "0a76a8d0a235fcbb933d21f17445d0a8e055a77aff8758599012e48cd02869f7",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/raw-const-local-cast.rs",
+      "sha256": "8b726c608caba59247d6e4e2d2dacc31a8ae18d947121b69bc4e2e4640466e2e",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/expired.rs",
+      "sha256": "3a33d40fbc58d4f02a60c9025a38e8954ef1d4038a65d04566abc168b3a96562",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/null.rs",
+      "sha256": "2168a5903693d334d96ddd471e4226540c08497b67bc73d83803ec921f18dc4f",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/cast-reinterpret-boundary.rs",
+      "sha256": "e5ebff68f69f5d870d433c282de5e206ce81118eb525d5c12be2769c37a3611c",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/reference-reconstruction-boundary.rs",
+      "sha256": "f4f61f6e101fcbc8189c81e97b1177837ea0d494b4e1f327b2b8e48cc57c251b",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "references through raw pointers in constant execution are not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/pointer-family-boundary.rs",
+      "sha256": "bce2dfaba4927fcae05d6bf6d1db26ad9f0e337c5657e2c7b49126fb28310169",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/mutable-static-unsafe.rs",
+      "sha256": "754dedddedd0dcc47fb6123f74b8ae6092823c83dd7f38841c7e1f419c40437a",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant execution cannot read mutable static storage"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/nested-product.rs",
+      "sha256": "49657b862ac4d19384cf64946ad494276954cf82363131fd797f9c9d8ce35f33",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/copy-snapshot.rs",
+      "sha256": "d8daf108745e54b2c42ffd789fea4cd5827b4d12ca9952099ca658b1b9c76f85",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/cross-field-bool-invalid.rs",
+      "sha256": "8a415ba0faf4d0c4033e96beb30547b7a3fcf3e141a426fc2b0c5ee84c8fc6f5",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant union scalar read has invalid bool representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/cross-field-bool-valid.rs",
+      "sha256": "fe8e1a704c1a0b115cd0c87914dfd7eb8495bf42dff1c278dfb4db7373f58e0f",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/generic-address.rs",
+      "sha256": "770c897dd77989a96dd092740e3cf162e91e573bd9cf5fc4aeb5363012ba1990",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/generic-shared-write.rs",
+      "sha256": "e994fc2c4a856af9d98c3ce87ddafab4ad435b873fd183ddcd662d1e6b467f2e",
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "derived from a shared reference"
+    },
+    {
+      "path": "pa27/tests/spec/union-addresses/mutable-static-address-only.rs",
+      "sha256": "c93b7767a636660565775c3b1263b5e87b76575c9069cdd2c5b55b4b637fa4e6",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": ""
+    }
+  ]
+}

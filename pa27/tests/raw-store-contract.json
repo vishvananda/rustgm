@@ -231,8 +231,9 @@
       "path": "pa27/tests/spec/raw-store-validity/union-base-boundary.rs",
       "sha256": "691f5be9f706fce0123dd6ac7e7b2ede65c0c8e5a652c9ea6417f3bb41264d27",
       "rustc_status": 0,
-      "frontend_status": 1,
-      "reason": "constant raw union field writes are not implemented"
+      "frontend_status": 0,
+      "reason": "",
+      "supersedes": "raw-store-outcomes.json baseline explicit unsupported observation"
     },
     {
       "path": "pa27/tests/spec/raw-store-validity/typed-scalars.rs",

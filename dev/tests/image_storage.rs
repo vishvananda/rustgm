@@ -29,7 +29,7 @@ const CASES: &[(&str, i32, i32, i32)] = &[
     ("unions/unused-uninitialized-byte-const", 1, 1, 1),
     ("unions/valid-bool-const-unsupported", 0, 0, 0),
     ("unions/uninit-field-write", 1, 0, 1),
-    ("scalar-union/static-field-address", 0, 1, 1),
+    ("scalar-union/static-field-address", 0, 0, 0),
     ("scalar-union/reference-field", 0, 0, 0),
     ("scalar-union/reference-function", 0, 0, 0),
     ("scalar-union/atomic-context", 0, 0, 0),

@@ -160,6 +160,35 @@ impl Evaluator<'_> {
             .ok_or("union field has a different owner")?;
         Ok((primitive, family.size, work))
     }
+    pub(crate) fn union_address(
+        &mut self,
+        base: Constant,
+        owner: TypeId,
+        field: Selection,
+        limit: usize,
+    ) -> Result<(Constant, usize), Failure> {
+        let location = base
+            .location()
+            .ok_or("constant union address lacks allocation provenance")?;
+        if Reader::new(self.facts()).location(location)?.ty != owner {
+            return Err("constant union address differs from its canonical owner".into());
+        }
+        let (primitive, _, work) = self.union_field(owner, field, limit)?;
+        let Selection::Nominal(field) = field else {
+            return Err("union address requires a nominal field".into());
+        };
+        let index = self
+            .facts()
+            .members
+            .ordinal(field)
+            .ok_or("missing union address field ordinal")?;
+        let work = work
+            .checked_add(1)
+            .filter(|&work| work <= limit)
+            .ok_or("constant union address work budget exceeded")?;
+        let value = self.projection(base, u64::from(index), TypeId::primitive(primitive))?;
+        Ok((value, work))
+    }
     pub(crate) fn union_value(
         &mut self,
         ty: TypeId,

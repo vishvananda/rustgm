@@ -70,3 +70,10 @@ The focused raw-read, scalar-union and constants-view regressions also pass.
 No assignment activation, active reference regeneration or CPPGM/backend change
 is part of this checkpoint. Exact final source hashes and gate outcomes are in
 `pa27/tests/raw-store-outcomes.json`.
+
+The later scalar union-address checkpoint supersedes the historical raw-field
+address/store boundary for all-fields primitive scalar Images only. It preserves
+canonical typed projection aliases, current-byte overlap and immutable copied
+snapshots; pointer-bearing Images, general reinterpretation and raw-reference
+reconstruction remain outside that profile. See
+[the union-address review](pa27-union-address-review.md) and its separate receipt.

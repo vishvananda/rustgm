@@ -1,4 +1,5 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
+mod image_paths;
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
     body::ir::{LocalId, Place, ProjectionKind, ValueId},
@@ -209,8 +210,10 @@ impl Machine<'_, '_> {
                 &path,
             )?;
         }
+        let target = self.storage_target(place)?;
+        let path = &path[..target.path_len(path.len())?];
         let value = if self.memory.roots.contains_key(&root) {
-            let cell = self.cell(root, &path)?;
+            let cell = self.cell(root, path)?;
             self.freeze(cell)?
         } else {
             let reader = Reader::new(self.evaluator.facts());
@@ -227,13 +230,13 @@ impl Machine<'_, '_> {
                     .value
                     .ok_or("constant allocation has no completed contents")?
             };
-            for index in path {
+            for &index in path {
                 self.charge(1)?;
                 value = self.evaluator.field(value, index)?;
             }
             value
         };
-        if let Some(union) = place.union {
+        if let Some(union) = target.field() {
             let (value, work) = self.evaluator.union_read(
                 value,
                 union.owner,
@@ -246,9 +249,10 @@ impl Machine<'_, '_> {
         Ok(Some(value))
     }
     pub(super) fn write_place(&mut self, place: Resolved, value: Constant) -> Result<(), Failure> {
-        if let Some(union) = place.union {
+        let target = self.storage_target(place)?;
+        if let Some(union) = target.field() {
             let (root, path) = self.path(place.address)?;
-            let cell = self.cell(root, &path)?;
+            let cell = self.cell(root, &path[..target.path_len(path.len())?])?;
             let image = self.freeze(cell)?;
             let (image, work) = self.evaluator.union_write(
                 image,

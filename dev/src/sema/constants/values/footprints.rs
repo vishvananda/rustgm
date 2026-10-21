@@ -12,9 +12,17 @@ pub(crate) struct StorageLayout {
     pub align: u32,
 }
 #[derive(Clone, Copy)]
+pub(crate) enum ProjectionStorage {
+    Product,
+    UnionScalar {
+        field: crate::sema::members::Selection,
+    },
+}
+#[derive(Clone, Copy)]
 pub(crate) struct ProjectionLayout {
     pub ty: TypeId,
     pub offset: u64,
+    pub storage: ProjectionStorage,
 }
 impl Evaluator<'_> {
     fn storage_readiness(&self, ty: TypeId, limit: usize) -> Result<usize, Failure> {
@@ -155,21 +163,33 @@ impl Reader<'_> {
                 }
                 Ok(ProjectionLayout {
                     ty: element,
+                    storage: ProjectionStorage::Product,
                     offset: stride
                         .checked_mul(index)
                         .ok_or("constant storage offset overflow")?,
                 })
             }
             Shape::Aggregate { .. } => {
-                if matches!(self.facts.types.kind(ty), Some(Kind::Adt(item, _)) if self.facts.aggregates.get(item).is_none_or(|d| d.kind != crate::types::aggregate::Kind::Struct))
-                {
-                    return Err("raw constant enum or union field access is not implemented");
-                }
+                let union = match self.facts.types.kind(ty) {
+                    Some(Kind::Adt(item, _)) => {
+                        match self.facts.aggregates.get(item).map(|d| d.kind) {
+                            Some(crate::types::aggregate::Kind::Struct) => None,
+                            Some(crate::types::aggregate::Kind::Union) => Some(item),
+                            _ => {
+                                return Err(
+                                    "raw constant enum or union field access is not implemented",
+                                );
+                            }
+                        }
+                    }
+                    _ => None,
+                };
                 let [variant] = self.facts.layouts.variants(layout) else {
                     return Err("constant storage requires one product variant");
                 };
                 let index =
                     usize::try_from(index).map_err(|_| "constant field index exceeds host size")?;
+                let owner = ty;
                 let ty = self
                     .facts
                     .types
@@ -183,7 +203,45 @@ impl Reader<'_> {
                     .offsets(variant)
                     .get(index)
                     .ok_or("missing prepared field offset")?;
-                Ok(ProjectionLayout { ty, offset })
+                let storage = if let Some(item) = union {
+                    if offset != 0
+                        || !self
+                            .facts
+                            .constant_images
+                            .as_ref()
+                            .is_some_and(|arena| arena.families.contains_key(&owner))
+                    {
+                        return Err(
+                            "raw union field access requires a prepared scalar image family",
+                        );
+                    }
+                    let [member] = self.facts.members.variants(item) else {
+                        return Err("union projection requires one declaration field group");
+                    };
+                    let member = self
+                        .facts
+                        .members
+                        .variants
+                        .get(member.0 as usize)
+                        .ok_or("missing union projection field group")?;
+                    let field = u32::try_from(index)
+                        .ok()
+                        .and_then(|index| member.start.checked_add(index))
+                        .filter(|&field| member.owner == item && field < member.end)
+                        .ok_or("union projection field has a different owner")?;
+                    ProjectionStorage::UnionScalar {
+                        field: crate::sema::members::Selection::Nominal(
+                            crate::sema::members::FieldId(field),
+                        ),
+                    }
+                } else {
+                    ProjectionStorage::Product
+                };
+                Ok(ProjectionLayout {
+                    ty,
+                    offset,
+                    storage,
+                })
             }
             _ => Err("constant projection requires aggregate storage"),
         }

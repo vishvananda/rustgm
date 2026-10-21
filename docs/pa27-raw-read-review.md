@@ -45,3 +45,10 @@ No assignment activation, oracle regeneration or completion claim is part of thi
 The earlier partial gate passed atomic_storage and constant_locations before stopping at a diagnostic expectation changed by direct raw-read routing; later gates completed the remaining suites. Strict lint and filename-stem failures were corrected and their original logs retained under `obj/parallel/pa27/raw-read-final-gates`.
 
 Integration must preserve the no-destination static-initializer return path when adopting PA25's `returns.rs` extraction. The initializer frame publishes only after validation, then resumes the parent's unchanged value slots at its decremented statement cursor.
+
+The later scalar union-address checkpoint supersedes the historical raw-field
+address/store boundary for all-fields primitive scalar Images only. It preserves
+canonical typed projection aliases, current-byte overlap and immutable copied
+snapshots; pointer-bearing Images, general reinterpretation and raw-reference
+reconstruction remain outside that profile. See
+[the union-address review](pa27-union-address-review.md) and its separate receipt.

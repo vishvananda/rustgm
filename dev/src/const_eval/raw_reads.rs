@@ -70,6 +70,14 @@ impl Machine<'_, '_> {
         for &index in path {
             self.charge(1)?;
             let field = Reader::new(self.evaluator.facts()).projection_layout(ty, index)?;
+            match field.storage {
+                crate::sema::values::ProjectionStorage::Product => {}
+                crate::sema::values::ProjectionStorage::UnionScalar { .. } => {
+                    if field.offset != 0 {
+                        return Err("constant union projection has a nonzero offset".into());
+                    }
+                }
+            }
             offset = offset
                 .checked_add(field.offset)
                 .ok_or("constant storage offset overflow")?;
@@ -118,10 +126,17 @@ impl Machine<'_, '_> {
             }
             .into());
         }
-        if place.union.is_some() {
-            return Err("constant raw union field writes are not implemented".into());
-        }
-        self.check_raw_access(place, access, root, &path, true)
+        self.check_raw_access(
+            Resolved {
+                ty: place.union.map_or(place.ty, |union| union.owner),
+                union: None,
+                ..place
+            },
+            access,
+            root,
+            &path,
+            true,
+        )
     }
     fn check_raw_access(
         &mut self,
