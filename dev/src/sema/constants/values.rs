@@ -311,6 +311,24 @@ impl<'a> Evaluator<'a> {
     /// # Errors
     /// Preserves required-constant diagnostics; runtime faults are not ignored here.
     pub fn definition(&mut self, id: DefId) -> Result<Constant, Error> {
+        if self
+            .queries
+            .typing
+            .facts
+            .crates
+            .as_deref()
+            .is_some_and(|linkage| linkage.imported_constant(id))
+        {
+            return Reader::new(self.queries.typing.facts)
+                .definition(id)
+                .ok_or_else(|| {
+                    Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "imported constant is missing its validated value",
+                    )
+                });
+        }
         self.named(id, false)
     }
     /// Evaluate one selected associated initializer in its complete argument context.

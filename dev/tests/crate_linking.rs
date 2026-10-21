@@ -4,6 +4,8 @@ mod artifacts;
 mod exports;
 #[path = "crate_linking/imports.rs"]
 mod imports;
+#[path = "crate_linking/named_values.rs"]
+mod named_values;
 use rustgm::support::crates;
 use std::process::Command;
 

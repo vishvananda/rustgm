@@ -5,13 +5,14 @@ use super::{
     package::{Error, ModuleId},
     unit::FileId,
 };
-use crate::support::crates::{Dependencies, ExternalDef, ExternalKind, Function};
+use crate::support::crates::{Constant, Dependencies, ExternalDef, ExternalKind, Function};
 use std::{collections::HashMap, sync::Arc};
 
 pub struct Imported {
     dependencies: Arc<Dependencies>,
     definitions: HashMap<ExternalDef, DefId>,
     functions: Vec<(DefId, usize, usize)>,
+    constants: Vec<(DefId, usize, usize)>,
 }
 impl Imported {
     #[must_use]
@@ -32,6 +33,16 @@ impl Imported {
                 )
             })
     }
+    pub fn constants(&self) -> impl Iterator<Item = (DefId, &Constant)> {
+        self.constants
+            .iter()
+            .map(|&(definition, artifact, constant)| {
+                (
+                    definition,
+                    &self.dependencies.artifacts()[artifact].constants()[constant],
+                )
+            })
+    }
 }
 fn error(message: &'static str) -> Error {
     Error::at(FileId(0), 0, message)
@@ -43,6 +54,7 @@ impl Resolver<'_> {
             dependencies,
             definitions: HashMap::new(),
             functions: Vec::new(),
+            constants: Vec::new(),
         };
         for (artifact_index, artifact) in imported.dependencies.artifacts().iter().enumerate() {
             let scope = self.new_scope(None, ModuleId(0), true)?;
@@ -74,11 +86,26 @@ impl Resolver<'_> {
                 root,
             );
             for (function_index, function) in artifact.functions().iter().enumerate() {
-                let definition =
-                    self.import_function(scope, function, &mut imported.definitions)?;
+                let definition = self.import_item(
+                    scope,
+                    function.definition(),
+                    DefKind::Function,
+                    &mut imported.definitions,
+                )?;
                 imported
                     .functions
                     .push((definition, artifact_index, function_index));
+            }
+            for (constant_index, constant) in artifact.constants().iter().enumerate() {
+                let definition = self.import_item(
+                    scope,
+                    constant.definition(),
+                    DefKind::Const,
+                    &mut imported.definitions,
+                )?;
+                imported
+                    .constants
+                    .push((definition, artifact_index, constant_index));
             }
         }
         for alias in imported.dependencies.aliases() {
@@ -108,13 +135,14 @@ impl Resolver<'_> {
         self.facts.crates = Some(Box::new(imported));
         Ok(())
     }
-    fn import_function(
+    fn import_item(
         &mut self,
         mut scope: ScopeId,
-        function: &Function,
+        external: &ExternalDef,
+        kind: DefKind,
         definitions: &mut HashMap<ExternalDef, DefId>,
     ) -> Result<DefId, Error> {
-        let path = function.definition().path();
+        let path = external.path();
         for (index, component) in path.iter().enumerate() {
             let name = self.package.names.intern(component).map_err(error)?;
             let last = index + 1 == path.len();
@@ -141,11 +169,7 @@ impl Resolver<'_> {
                 Definition {
                     name,
                     namespace,
-                    kind: if last {
-                        DefKind::Function
-                    } else {
-                        DefKind::Module
-                    },
+                    kind: if last { kind } else { DefKind::Module },
                     scope,
                     node: None,
                     access: Access::Public,
@@ -154,10 +178,10 @@ impl Resolver<'_> {
                 false,
             )?;
             let identity = if last {
-                function.definition().clone()
+                external.clone()
             } else {
                 ExternalDef::new(
-                    function.definition().owner().clone(),
+                    external.owner().clone(),
                     path[..=index].to_vec(),
                     ExternalKind::Module,
                 )
@@ -169,6 +193,6 @@ impl Resolver<'_> {
             }
             scope = members.ok_or_else(|| error("missing imported module scope"))?;
         }
-        Err(error("missing imported function path"))
+        Err(error("missing imported value path"))
     }
 }

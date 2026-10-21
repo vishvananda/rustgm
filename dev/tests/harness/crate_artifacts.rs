@@ -8,6 +8,8 @@ pub struct Build {
     pub folder: PathBuf,
     pub first: PathBuf,
     pub second: PathBuf,
+    family: &'static str,
+    crate_name: &'static str,
 }
 pub fn checked(
     label: &str,
@@ -27,6 +29,16 @@ pub fn checked(
     Ok(output)
 }
 pub fn build(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
+    build_sources(tag, "scalar", "shared")
+}
+pub fn build_values(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
+    build_sources(tag, "values", "values")
+}
+fn build_sources(
+    tag: &str,
+    family: &'static str,
+    crate_name: &'static str,
+) -> Result<Build, Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("missing root")?
@@ -43,6 +55,8 @@ pub fn build(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
         folder,
         first,
         second,
+        family,
+        crate_name,
     };
     for name in ["first", "second"] {
         let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
@@ -51,7 +65,7 @@ pub fn build(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
                 "--emit-lowir",
                 "--crate-type=lib",
                 "--crate-name",
-                "shared",
+                crate_name,
                 "--crate-disambiguator",
                 name,
                 "--metadata-output",
@@ -71,7 +85,8 @@ pub fn build(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
 }
 impl Build {
     pub fn fixture(&self, name: &str) -> PathBuf {
-        self.root.join(format!("pa29/tests/spec/scalar/{name}.rs"))
+        self.root
+            .join(format!("pa29/tests/spec/{}/{name}.rs", self.family))
     }
     pub fn client(&self, name: &str, reverse: bool) -> Command {
         let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
@@ -92,7 +107,9 @@ impl Build {
         for name in ["first", "second"] {
             let mut command = rustc();
             command
-                .args(["--crate-type=rlib", "--crate-name=shared", "-C"])
+                .args(["--crate-type=rlib", "--crate-name"])
+                .arg(self.crate_name)
+                .arg("-C")
                 .arg(format!("metadata={name}"))
                 .arg(self.fixture(name))
                 .arg("-o")

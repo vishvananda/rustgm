@@ -59,7 +59,7 @@ fn dependencies(reverse: bool) -> Result<Arc<Dependencies>, &'static str> {
     }
     Ok(Arc::new(Dependencies::new(artifacts, aliases)?))
 }
-fn resolve(text: &str, dependencies: Arc<Dependencies>) -> Result<Report, String> {
+pub(super) fn resolve(text: &str, dependencies: Arc<Dependencies>) -> Result<Report, String> {
     resolve::expansion::analyze_with_crates(
         InputFile {
             identity: "client.rs".into(),

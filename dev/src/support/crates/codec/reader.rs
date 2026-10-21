@@ -49,6 +49,35 @@ impl<'a> Reader<'a> {
         );
         usize::try_from(value).map_err(|_| "metadata count exceeds host index")
     }
+    pub(super) fn u128(&mut self) -> Result<u128, &'static str> {
+        Ok(u128::from_le_bytes(
+            self.bytes(16)?
+                .try_into()
+                .map_err(|_| "truncated metadata u128")?,
+        ))
+    }
+    pub(super) fn owner(&mut self, dependencies: usize) -> Result<(), &'static str> {
+        let ordinal = self.u32()?;
+        if ordinal > dependencies {
+            return Err("unknown metadata owner ID");
+        }
+        if ordinal != 0 {
+            return Err("foreign definition in metadata export table");
+        }
+        Ok(())
+    }
+    pub(super) fn path(&mut self) -> Result<Vec<String>, &'static str> {
+        let count = usize::from(self.u16()?);
+        if count == 0 || count > 64 || count > self.remaining() / 5 {
+            return Err("invalid metadata path table length");
+        }
+        self.atoms(count)?;
+        let mut path = Vec::with_capacity(count);
+        for _ in 0..count {
+            path.push(self.string(256)?);
+        }
+        Ok(path)
+    }
     pub(super) fn count(
         &mut self,
         limit: usize,

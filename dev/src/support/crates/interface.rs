@@ -1,7 +1,7 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 use super::{
-    CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES, MAX_FUNCTIONS,
-    MAX_NAME_BYTES,
+    Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
+    MAX_FUNCTIONS, MAX_NAME_BYTES,
 };
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
@@ -120,6 +120,7 @@ pub struct Interface {
     identity: CrateIdentity,
     dependencies: Vec<CrateIdentity>,
     functions: Vec<Function>,
+    constants: Vec<Constant>,
     atoms: usize,
     names: usize,
 }
@@ -129,10 +130,23 @@ impl Interface {
     /// Rejects duplicates, foreign definitions and profile storage bounds.
     pub fn new(
         identity: CrateIdentity,
+        dependencies: Vec<CrateIdentity>,
+        functions: Vec<Function>,
+    ) -> Result<Self, &'static str> {
+        Self::with_constants(identity, dependencies, functions, Vec::new())
+    }
+    /// Add only fully validated closed values; function-only interfaces retain profile zero.
+    /// # Errors
+    /// Rejects duplicate value names, foreign identities and bounded table exhaustion.
+    pub fn with_constants(
+        identity: CrateIdentity,
         mut dependencies: Vec<CrateIdentity>,
         mut functions: Vec<Function>,
+        mut constants: Vec<Constant>,
     ) -> Result<Self, &'static str> {
-        if dependencies.len() > MAX_DEPENDENCIES || functions.len() > MAX_FUNCTIONS {
+        if dependencies.len() > MAX_DEPENDENCIES
+            || functions.len().saturating_add(constants.len()) > MAX_FUNCTIONS
+        {
             return Err("metadata table exceeds profile budget");
         }
         dependencies.sort_unstable();
@@ -183,10 +197,14 @@ impl Interface {
         {
             return Err("duplicate metadata definition");
         }
+        constants.sort_unstable_by(|left, right| left.definition().cmp(right.definition()));
+        let (components, bytes) =
+            constant_budget(&identity, &functions, &constants, components, bytes)?;
         Ok(Self {
             identity,
             dependencies,
             functions,
+            constants,
             atoms: components,
             names: bytes,
         })
@@ -206,4 +224,43 @@ impl Interface {
     pub fn functions(&self) -> &[Function] {
         &self.functions
     }
+    #[must_use]
+    pub fn constants(&self) -> &[Constant] {
+        &self.constants
+    }
+}
+
+fn constant_budget(
+    identity: &CrateIdentity,
+    functions: &[Function],
+    constants: &[Constant],
+    mut atoms: usize,
+    mut bytes: usize,
+) -> Result<(usize, usize), &'static str> {
+    if constants.is_empty() {
+        return Ok((atoms, bytes));
+    }
+    // Both kinds occupy the value namespace. Check cross-kind collisions before
+    // a resolver allocates local definitions; the old function-only path allocates nothing.
+    let mut names: Vec<_> = functions
+        .iter()
+        .map(|item| item.definition().path())
+        .collect();
+    for constant in constants {
+        if constant.definition().owner() != identity {
+            return Err("foreign definition in metadata export table");
+        }
+        let path = constant.definition().path();
+        names.push(path);
+        atoms = atoms.saturating_add(path.len()).saturating_add(1);
+        bytes = bytes.saturating_add(path.iter().map(String::len).sum::<usize>());
+        if atoms > MAX_COMPONENTS || bytes > MAX_NAME_BYTES {
+            return Err("metadata contents exceed profile budget");
+        }
+    }
+    names.sort_unstable();
+    if names.windows(2).any(|pair| pair[0] == pair[1]) {
+        return Err("duplicate metadata value name");
+    }
+    Ok((atoms, bytes))
 }

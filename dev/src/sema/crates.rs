@@ -1,5 +1,6 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 mod export;
+mod imported_values;
 use super::{foreign, model::Declarations};
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
@@ -11,13 +12,14 @@ use crate::{
     types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId, callable::Convention},
 };
 pub use export::{Exports, export};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub struct Linkage {
     identity: Option<CrateIdentity>,
     prefix: Option<String>,
     symbols: HashMap<DefId, String>,
+    imported_constants: HashSet<DefId>,
 }
 impl Linkage {
     /// Install one explicit local identity without changing imported contracts.
@@ -44,6 +46,10 @@ impl Linkage {
     #[must_use]
     pub const fn identity(&self) -> Option<&CrateIdentity> {
         self.identity.as_ref()
+    }
+    #[must_use]
+    pub fn imported_constant(&self, definition: DefId) -> bool {
+        self.imported_constants.contains(&definition)
     }
 }
 fn error(message: &'static str) -> Error {
@@ -108,7 +114,7 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
             )
             .map_err(error)?;
     }
-    Ok(())
+    imported_values::seed(report, facts)
 }
 pub(super) const fn scalar(value: Scalar) -> TypeId {
     TypeId::primitive(match value {

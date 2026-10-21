@@ -157,3 +157,66 @@ fn every_scalar_tag_exports_through_checked_signatures_and_roundtrips()
     assert_eq!(interface.functions().len(), 17);
     Ok(())
 }
+
+#[test]
+fn named_scalar_values_export_completed_bits_without_runtime_symbols()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crates::Scalar;
+    let text = "const PRIVATE:u8=3;const fn value()->u8{PRIVATE+4}pub const UNIT:()=();pub const BOOL:bool=true;pub const CHAR:char='🦀';pub const U8:u8=value();pub const U16:u16=65535;pub const U32:u32=4294967295;pub const U64:u64=18446744073709551615;pub const U128:u128=340282366920938463463374607431768211455;pub const USIZE:usize=7;pub const I8:i8=-1;pub const I16:i16=-1;pub const I32:i32=-1;pub const I64:i64=-1;pub const I128:i128=-170141183460469231731687303715884105728;pub const ISIZE:isize=-1;pub const F32:f32=-0.0;pub const F64:f64=-0.0;pub const ZERO:f32=0.0;pub const NAN:f64=0.0/0.0;";
+    let (program, interface) = compile(text, "values")?;
+    assert!(interface.functions().is_empty());
+    assert_eq!(interface.constants().len(), 19);
+    assert!(program.symbols.iter().all(|symbol| symbol.body.is_none()));
+    let find = |name: &str| {
+        interface
+            .constants()
+            .iter()
+            .find(|value| value.definition().path() == [name])
+            .map(crates::Constant::value)
+            .ok_or("missing named value")
+    };
+    assert_eq!(find("U8")?.bits(), 7);
+    assert_eq!(find("I8")?.bits(), 255);
+    assert_eq!(find("I16")?.bits(), 65535);
+    assert_eq!(find("I32")?.bits(), u32::MAX.into());
+    assert_eq!(find("I64")?.bits(), u64::MAX.into());
+    assert_eq!(find("ISIZE")?.bits(), u64::MAX.into());
+    assert_eq!(find("I128")?.bits(), 1 << 127);
+    assert_eq!(find("F32")?.bits(), 0x8000_0000);
+    assert_eq!(find("F64")?.bits(), 0x8000_0000_0000_0000);
+    assert_eq!(find("ZERO")?.bits(), 0);
+    assert_eq!(find("UNIT")?.ty(), Scalar::Unit);
+    let nan = find("NAN")?.bits();
+    assert_eq!(nan & 0x7ff0_0000_0000_0000, 0x7ff0_0000_0000_0000);
+    assert_ne!(nan & 0x000f_ffff_ffff_ffff, 0);
+    let bytes = crates::encode(&interface)?;
+    assert_eq!(crates::decode(&bytes)?, interface);
+    let (_, reordered) = compile("pub const B:u8=2;pub const A:i8=-1;", "order")?;
+    let (_, ordered) = compile("pub const A:i8=-1;pub const B:u8=2;", "order")?;
+    assert_eq!(crates::encode(&reordered)?, crates::encode(&ordered)?);
+    Ok(())
+}
+
+#[test]
+fn non_scalar_constant_exports_are_explicit_boundaries() -> Result<(), Box<dyn std::error::Error>> {
+    for text in [
+        "pub const C:&u8=&7;",
+        "pub const C:[u8;2]=[1,2];",
+        "fn f()->u8{7}pub const C:fn()->u8=f;",
+    ] {
+        let report = source::resolve(text, true)?;
+        let mut analysis = rustgm::pipeline::analyze_source(&report)?;
+        let result = rustgm::sema::crates::export(
+            &report,
+            &mut analysis.facts,
+            CrateIdentity::new("library", "boundary")?,
+        );
+        assert!(
+            result.is_err_and(|error| error
+                .to_string()
+                .contains("outside the scalar metadata profile")),
+            "{text}"
+        );
+    }
+    Ok(())
+}

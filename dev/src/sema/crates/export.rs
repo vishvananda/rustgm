@@ -1,4 +1,5 @@
 //! Public scalar exports consume resolved bindings and completed signature facts.
+mod named_values;
 use super::error;
 use crate::{
     resolve::{
@@ -43,6 +44,7 @@ pub fn export(
         return Err(error("conflicting local crate linkage identity"));
     }
     let mut functions = Vec::new();
+    let mut constants = Vec::new();
     let mut roots = Vec::new();
     let mut work = vec![(report.resolution.module_scopes[0], Vec::<String>::new())];
     let mut visits = 0usize;
@@ -78,6 +80,9 @@ pub fn export(
                     functions.push(function(report, facts, definition, &identity, child)?);
                     roots.push(definition);
                 }
+                DefKind::Const => {
+                    constants.push(named_values::export(facts, definition, &identity, child)?);
+                }
                 _ => {
                     return Err(error(
                         "exposed declaration is outside the scalar metadata profile",
@@ -101,7 +106,8 @@ pub fn export(
             identities.dedup();
             identities
         });
-    let interface = Interface::new(identity.clone(), dependencies, functions).map_err(error)?;
+    let interface = Interface::with_constants(identity.clone(), dependencies, functions, constants)
+        .map_err(error)?;
     let linkage = facts.crates.get_or_insert_default();
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);

@@ -6,10 +6,91 @@
   "overflow_checks": true,
   "panic": "abort",
   "crates": [
-    {"source": "spec/scalar/first.rs", "kind": "lib", "name": "shared", "disambiguator": "first", "externs": {}, "rustc": "accept"},
-    {"source": "spec/scalar/second.rs", "kind": "lib", "name": "shared", "disambiguator": "second", "externs": {"one": "first"}, "rustc": "accept"},
-    {"source": "spec/scalar/client.rs", "kind": "bin", "externs": {"one": "first", "two": "second"}, "rustc": "accept", "native_exit": 0},
-    {"source": "spec/scalar/imported-main.rs", "kind": "bin", "externs": {"one": "first", "two": "second"}, "rustc": "accept", "native_exit": 0}
+    {
+      "source": "spec/scalar/first.rs",
+      "kind": "lib",
+      "name": "shared",
+      "disambiguator": "first",
+      "externs": {},
+      "rustc": "accept"
+    },
+    {
+      "source": "spec/scalar/second.rs",
+      "kind": "lib",
+      "name": "shared",
+      "disambiguator": "second",
+      "externs": {
+        "one": "first"
+      },
+      "rustc": "accept"
+    },
+    {
+      "source": "spec/scalar/client.rs",
+      "kind": "bin",
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": "accept",
+      "native_exit": 0
+    },
+    {
+      "source": "spec/scalar/imported-main.rs",
+      "kind": "bin",
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": "accept",
+      "native_exit": 0
+    },
+    {
+      "source": "spec/values/first.rs",
+      "kind": "lib",
+      "name": "values",
+      "disambiguator": "first",
+      "externs": {},
+      "rustc": "accept",
+      "id": "values-first"
+    },
+    {
+      "source": "spec/values/second.rs",
+      "kind": "lib",
+      "name": "values",
+      "disambiguator": "second",
+      "externs": {
+        "one": "values-first"
+      },
+      "rustc": "accept",
+      "id": "values-second"
+    },
+    {
+      "source": "spec/values/client.rs",
+      "kind": "bin",
+      "externs": {
+        "one": "values-first",
+        "two": "values-second"
+      },
+      "rustc": "accept",
+      "native_exit": 0
+    }
   ],
-  "checks": ["complete dependency graph", "duplicate crate and private helper names", "distinct disambiguators", "two private generic instances", "private data symbols", "nested public paths", "imported Rust main", "reordered extern arguments", "reproducible metadata and LowIR"]
+  "checks": [
+    "complete dependency graph",
+    "duplicate crate and private helper names",
+    "distinct disambiguators",
+    "two private generic instances",
+    "private data symbols",
+    "nested public paths",
+    "imported Rust main",
+    "reordered extern arguments",
+    "reproducible metadata and LowIR",
+    "closed scalar named constant values",
+    "all signed integer widths",
+    "unit/bool/Unicode char",
+    "signed zero and NaN",
+    "imported constant patterns and discriminants",
+    "consumer const generic bounds",
+    "no imported initializer or runtime storage"
+  ]
 }

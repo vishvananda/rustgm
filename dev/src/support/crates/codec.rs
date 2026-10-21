@@ -1,5 +1,6 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
 mod reader;
+mod scalars;
 mod writer;
 use super::{
     CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES, MAX_DEPENDENCIES,
@@ -14,6 +15,7 @@ const MAGIC: &[u8; 8] = b"RGMETA\r\n";
 const TARGET_LINUX_X86_64: u8 = 0;
 const LANGUAGE_RUST_1_98_EDITION_2024: u8 = 0;
 const PROFILE_SCALAR_RUST_FUNCTIONS: u8 = 0;
+const PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES: u8 = 1;
 const PROFILE: [u8; 3] = [
     TARGET_LINUX_X86_64,
     LANGUAGE_RUST_1_98_EDITION_2024,
@@ -27,7 +29,12 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let mut out = Writer::default();
     out.bytes(MAGIC)?;
     out.u16(SCHEMA)?;
-    out.bytes(&PROFILE)?;
+    out.bytes(&PROFILE[..2])?;
+    out.u8(if interface.constants().is_empty() {
+        PROFILE_SCALAR_RUST_FUNCTIONS
+    } else {
+        PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES
+    })?;
     out.identity(interface.identity())?;
     out.u32(interface.dependencies().len())?;
     for dependency in interface.dependencies() {
@@ -37,6 +44,9 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     for function in interface.functions() {
         encode_function(&mut out, function)?;
     }
+    if !interface.constants().is_empty() {
+        scalars::encode(&mut out, interface.constants())?;
+    }
     Ok(out.finish())
 }
 fn encode_function(out: &mut Writer, function: &Function) -> Result<(), &'static str> {
@@ -44,13 +54,7 @@ fn encode_function(out: &mut Writer, function: &Function) -> Result<(), &'static
     out.bytes(&[1, 1, 1])?; // Value namespace, Function kind, Export linkage.
     out.u8(u8::from(function.signature().unsafe_()))?;
     out.bytes(&[0, 0])?; // Rust ABI, nonvariadic. No const-body permission bit.
-    out.u16(
-        u16::try_from(function.definition().path().len())
-            .map_err(|_| "metadata path exceeds 16 bits")?,
-    )?;
-    for name in function.definition().path() {
-        out.string(name)?;
-    }
+    out.path(function.definition().path())?;
     match function.symbol() {
         Symbol::Rust => out.u8(0)?,
         Symbol::Exact(name) => {
@@ -78,7 +82,8 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     if input.bytes(MAGIC.len())? != MAGIC || input.u16()? != SCHEMA {
         return Err("metadata magic or schema mismatch");
     }
-    if input.bytes(3)? != PROFILE {
+    let profile = input.bytes(3)?;
+    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES {
         return Err("metadata target, language or profile mismatch");
     }
     let identity = input.identity()?;
@@ -101,23 +106,22 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     {
         return Err("metadata definitions are duplicate or noncanonical");
     }
+    let constants = if profile[2] == PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES {
+        scalars::decode(&mut input, &identity, functions.len())?
+    } else {
+        Vec::new()
+    };
     if !input.done() {
         return Err("trailing metadata bytes");
     }
-    Interface::new(identity, dependencies, functions)
+    Interface::with_constants(identity, dependencies, functions, constants)
 }
 fn decode_function(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
     dependencies: usize,
 ) -> Result<Function, &'static str> {
-    let ordinal = input.u32()?;
-    if ordinal > dependencies {
-        return Err("unknown metadata owner ID");
-    }
-    if ordinal != 0 {
-        return Err("foreign definition in metadata export table");
-    }
+    input.owner(dependencies)?;
     if input.bytes(3)? != [1, 1, 1] {
         return Err("unsupported metadata definition identity or linkage");
     }
@@ -131,15 +135,7 @@ fn decode_function(
     if input.bytes(2)? != [0, 0] {
         return Err("unsupported metadata calling convention");
     }
-    let count = usize::from(input.u16()?);
-    if count == 0 || count > 64 || count > input.remaining() / 5 {
-        return Err("invalid metadata path table length");
-    }
-    input.atoms(count)?;
-    let mut path = Vec::with_capacity(count);
-    for _ in 0..count {
-        path.push(input.string(256)?);
-    }
+    let path = input.path()?;
     let symbol = match input.u8()? {
         0 => Symbol::Rust,
         1 => Symbol::Exact(input.string(4096)?.into()),

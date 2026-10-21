@@ -62,6 +62,7 @@ pub enum Namespace {
 pub enum ExternalKind {
     Module,
     Function,
+    Constant,
 }
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ExternalDef {
@@ -78,7 +79,7 @@ impl ExternalDef {
         path: Vec<String>,
         kind: ExternalKind,
     ) -> Result<Self, &'static str> {
-        if path.len() > 64 || (path.is_empty() && kind == ExternalKind::Function) {
+        if path.len() > 64 || (path.is_empty() && kind != ExternalKind::Module) {
             return Err("invalid metadata definition path length");
         }
         for name in &path {
@@ -106,7 +107,7 @@ impl ExternalDef {
     pub const fn namespace(&self) -> Namespace {
         match self.kind {
             ExternalKind::Module => Namespace::Type,
-            ExternalKind::Function => Namespace::Value,
+            ExternalKind::Function | ExternalKind::Constant => Namespace::Value,
         }
     }
     #[must_use]
@@ -115,6 +116,7 @@ impl ExternalDef {
         out.push(match self.kind {
             ExternalKind::Module => 'm',
             ExternalKind::Function => 'f',
+            ExternalKind::Constant => 'c',
         });
         out.push('$');
         for name in self.path.iter() {

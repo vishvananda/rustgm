@@ -31,6 +31,13 @@ impl Writer {
         self.u32(value.len())?;
         self.bytes(value.as_bytes())
     }
+    pub(super) fn path(&mut self, path: &[String]) -> Result<(), &'static str> {
+        self.u16(u16::try_from(path.len()).map_err(|_| "metadata path exceeds 16 bits")?)?;
+        for name in path {
+            self.string(name)?;
+        }
+        Ok(())
+    }
     pub(super) fn identity(&mut self, identity: &CrateIdentity) -> Result<(), &'static str> {
         self.string(identity.name())?;
         self.string(identity.disambiguator())

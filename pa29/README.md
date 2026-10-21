@@ -31,13 +31,15 @@ the complete graph. Metadata is written only after the ordinary semantic, body,
 ownership and lowering gates succeed. `--crate-name` alone retains legacy names.
 
 This profile exports public nongeneric, nonconst Rust functions with scalar
-parameters/results, nested public module paths and explicit unsafe permission.
+parameters/results, nested public module paths and explicit unsafe permission,
+and completed closed scalar named constants. Constant values retain exact integer
+and floating bits, without imported initializer bodies or runtime global storage.
 Private checked generic instances remain local to each crate. Exposed nominals,
 references, generic/const/async functions, target-feature contracts, other ABIs,
 public reexports and empty public modules diagnose profile boundaries. Generic
-body exports, constants/allocation graphs and the full assignment contract remain
+body exports, aggregate/reference values and allocation graphs, and the full assignment contract remain
 unfinished. See `docs/pa29-scalar-metadata.md`, `docs/pa29-import-remapping.md` and
-`docs/pa29-scalar-linking.md`. The assignment remains planned.
+`docs/pa29-scalar-linking.md` and `docs/pa29-scalar-values.md`. The assignment remains planned.
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error

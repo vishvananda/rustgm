@@ -7,6 +7,9 @@ identities, dependency aliases and independent outcomes. The explicit Cargo
 `crate_linking` target checks these inputs, including backend-dependent native
 controls when run with `--include-ignored`. This inventory is not an activated
 course manifest: the layout check rejects `manifest.json` for planned stages.
+The `spec/values/` family adds scalar named constants, exact bit preservation,
+imported patterns/discriminants and consumer const-generic bounds. Its producer
+identities and dependency edges are distinct from the function-only family.
 
 Required families: multi-crate dependencies; symbol identity; visibility; deterministic exports.
 

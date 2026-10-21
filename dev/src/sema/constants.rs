@@ -122,6 +122,7 @@ enum Expression {
     Forward(NodeKey),
     Constant(usize),
     Instance(crate::sema::values::Instance),
+    ImportedConstant(DefId),
     ForeignStatic(DefId),
     Unary {
         op: Unary,
@@ -258,6 +259,16 @@ impl Queries<'_> {
             PatternValue::Definition(_) if self.typing.facts.constant_uses.contains_key(&key) => {
                 let instance = self.typing.facts.constant_uses[&key];
                 Query::Instance(self.selected_constant(key, instance)?)
+            }
+            PatternValue::Definition(definition)
+                if self
+                    .typing
+                    .facts
+                    .crates
+                    .as_deref()
+                    .is_some_and(|linkage| linkage.imported_constant(definition)) =>
+            {
+                Query::Node(key)
             }
             PatternValue::Definition(definition) => {
                 let index = self
@@ -567,54 +578,71 @@ impl Queries<'_> {
             }
             Query::Place(key) => self.enter_place(key)?,
             Query::Contents(key, id) => self.enter_contents(key, id)?,
-            Query::Node(key) => match self.expression(key)? {
-                Expression::Execute => self.work.push(Work::Execute(key)),
-                Expression::Reference(expression) => self.enter_reference(key, expression),
-                Expression::Value(value) => {
-                    self.complete_query(query, value)?;
-                }
-                Expression::Product(expression) => {
-                    self.work.push(Work::Finish(key));
-                    expression.dependencies(self.report, key, |child| {
-                        self.work.push(Work::Enter(Query::Node(child)));
-                    });
-                }
-                Expression::Constructor(expression) => {
-                    self.work.push(Work::Finish(key));
-                    expression.dependencies(self.report, key, |child| {
-                        self.work.push(Work::Enter(Query::Node(child)));
-                    });
-                }
-                Expression::Forward(child) => self.forward(query, Query::Node(child)),
-                Expression::Constant(index) => self.forward(query, Query::Constant(index)),
-                Expression::ForeignStatic(_) => {
-                    return Err(self.error(
-                        query,
-                        "foreign static value is unavailable during constant evaluation",
-                    ));
-                }
-                Expression::Instance(instance) => self.forward(query, Query::Instance(instance)),
-                Expression::Unary { operand, .. }
-                | Expression::Cast { operand, .. }
-                | Expression::PointerCast { operand, .. } => {
-                    self.work.push(Work::Finish(key));
-                    self.work.push(Work::Enter(Query::Node(operand)));
-                }
-                Expression::Binary {
-                    op: Op::AndAnd | Op::OrOr,
-                    left: condition,
-                    ..
-                }
-                | Expression::If { condition, .. } => {
-                    self.work.push(Work::Select(key));
-                    self.work.push(Work::Enter(Query::Node(condition)));
-                }
-                Expression::Binary { left, right, .. } => {
-                    self.work.push(Work::Finish(key));
-                    self.work.push(Work::Enter(Query::Node(right)));
-                    self.work.push(Work::Enter(Query::Node(left)));
-                }
-            },
+            Query::Node(key) => self.enter_node(key)?,
+        }
+        Ok(())
+    }
+    fn enter_node(&mut self, key: NodeKey) -> Result<(), Error> {
+        let query = Query::Node(key);
+        match self.expression(key)? {
+            Expression::Execute => self.work.push(Work::Execute(key)),
+            Expression::Reference(expression) => self.enter_reference(key, expression),
+            Expression::Value(value) => {
+                self.complete_query(query, value)?;
+            }
+            Expression::Product(expression) => {
+                self.work.push(Work::Finish(key));
+                expression.dependencies(self.report, key, |child| {
+                    self.work.push(Work::Enter(Query::Node(child)));
+                });
+            }
+            Expression::Constructor(expression) => {
+                self.work.push(Work::Finish(key));
+                expression.dependencies(self.report, key, |child| {
+                    self.work.push(Work::Enter(Query::Node(child)));
+                });
+            }
+            Expression::Forward(child) => self.forward(query, Query::Node(child)),
+            Expression::Constant(index) => self.forward(query, Query::Constant(index)),
+            Expression::ImportedConstant(id) => {
+                let value = self
+                    .typing
+                    .facts
+                    .constant_values
+                    .get(&id)
+                    .copied()
+                    .ok_or_else(|| {
+                        self.error(query, "imported constant is missing its validated value")
+                    })?;
+                self.complete_query(query, value)?;
+            }
+            Expression::ForeignStatic(_) => {
+                return Err(self.error(
+                    query,
+                    "foreign static value is unavailable during constant evaluation",
+                ));
+            }
+            Expression::Instance(instance) => self.forward(query, Query::Instance(instance)),
+            Expression::Unary { operand, .. }
+            | Expression::Cast { operand, .. }
+            | Expression::PointerCast { operand, .. } => {
+                self.work.push(Work::Finish(key));
+                self.work.push(Work::Enter(Query::Node(operand)));
+            }
+            Expression::Binary {
+                op: Op::AndAnd | Op::OrOr,
+                left: condition,
+                ..
+            }
+            | Expression::If { condition, .. } => {
+                self.work.push(Work::Select(key));
+                self.work.push(Work::Enter(Query::Node(condition)));
+            }
+            Expression::Binary { left, right, .. } => {
+                self.work.push(Work::Finish(key));
+                self.work.push(Work::Enter(Query::Node(right)));
+                self.work.push(Work::Enter(Query::Node(left)));
+            }
         }
         Ok(())
     }
@@ -801,6 +829,7 @@ impl Queries<'_> {
                 Expression::Value(_)
                 | Expression::Constant(_)
                 | Expression::Instance(_)
+                | Expression::ImportedConstant(_)
                 | Expression::ForeignStatic(_) => {}
                 Expression::Execute => execution = true,
                 Expression::Reference(expression) => {
@@ -959,6 +988,15 @@ impl Queries<'_> {
                                 .as_scalar()
                                 .map_err(|e| self.error(query, e.message()))?,
                         )));
+                    }
+                    if self
+                        .typing
+                        .facts
+                        .crates
+                        .as_deref()
+                        .is_some_and(|linkage| linkage.imported_constant(id))
+                    {
+                        return Ok(Expression::ImportedConstant(id));
                     }
                     if self
                         .typing

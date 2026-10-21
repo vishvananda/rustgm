@@ -15,6 +15,9 @@ IDs fail before inference. Scalar tags are explicit values 0 through 16 for
 unit, bool, char, u8/u16/u32/u64/u128/usize, i8/i16/i32/i64/i128/isize, f32/f64.
 Unit is allowed only as a result. Unsafe permission is explicit; const-body
 permission, other calling conventions and variadic signatures are rejected.
+This describes profile zero. Profile one additionally transports closed scalar
+named values, including unit; see [the value contract](pa29-scalar-values.md).
+The original function-only encoding is unchanged.
 
 Dependency identities and function paths have canonical sorted order. Owner
 ordinal zero identifies this artifact's crate; no foreign owner may appear in
@@ -26,7 +29,7 @@ encoding. Rust symbols encode complete crate and path identity into ASCII;
 Exact symbols retain their original UTF-8 bytes and never enter that encoder.
 The pinned backend's stricter exact-name vocabulary remains a lowering check.
 
-Limits are 16,000,000 artifact bytes, 1024 dependencies, 100,000 function rows,
+Limits are 16,000,000 artifact bytes, 1024 dependencies, 100,000 combined function/value rows,
 1,000,000 path/type atoms and 8,000,000 name bytes. A path has at most 64
 components of at most 256 bytes; a signature has at most 256 parameters. Each
 untrusted table count is checked against its limit and remaining input before
