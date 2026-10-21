@@ -136,6 +136,20 @@ pub(crate) fn function_with_scratch(
         .ok_or_else(|| Error::at(function.node.file, 0, "scope analysis requires a body"))?;
     analyze(report, facts, source, Some(function.parameters), scratch)
 }
+pub(crate) fn closure_with_scratch(
+    report: &Report,
+    facts: &Declarations,
+    closure: &crate::sema::closures::Body,
+    scratch: Scratch,
+) -> Result<Facts, Error> {
+    analyze(
+        report,
+        facts,
+        closure.body,
+        Some(closure.parameters),
+        scratch,
+    )
+}
 /// Compute a const/static initializer's endpoints, including static extension.
 ///
 /// # Errors

@@ -8,6 +8,12 @@ impl Checker<'_> {
         key: NodeKey,
         inherited: regions::Context,
     ) -> regions::Context {
+        if let super::Kind::Closure { body, .. } = self.kind(key) {
+            return regions::Context {
+                position: regions::Position::Local(body),
+                ..inherited
+            };
+        }
         let super::Kind::Item(index) = self.kind(key) else {
             return inherited;
         };

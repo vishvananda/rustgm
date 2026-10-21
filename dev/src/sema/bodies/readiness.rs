@@ -156,7 +156,7 @@ impl Checker<'_> {
 }
 
 impl State {
-    fn retain_sparse(&mut self) {
+    pub(super) fn retain_sparse(&mut self) {
         self.terms
             .retain_sparse(self.touched.iter().map(|&node| NodeKey {
                 file: self.file,

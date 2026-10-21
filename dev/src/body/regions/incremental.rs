@@ -75,6 +75,14 @@ impl Collector {
                 bodies.push(contract);
             }
         }
+        for closure in facts.closures.all() {
+            let mut contract = super::closure_contract(facts, closure)?;
+            self.populate(facts, &mut contract);
+            if index.insert(closure.body, bodies.len()).is_some() {
+                return Err("duplicate closure lifetime owner");
+            }
+            bodies.push(contract);
+        }
         for initializer in &facts.initializers {
             let mut contract = super::initializer_contract(facts, initializer)?;
             self.populate(facts, &mut contract);

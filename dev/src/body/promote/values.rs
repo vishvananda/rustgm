@@ -122,7 +122,8 @@ impl Engine<'_, '_> {
                                 .is_some()
                                 || self.evaluator.facts().generics.has_parameters(definition)
                         }
-                        crate::body::ir::Owner::AnonymousConstant => false,
+                        crate::body::ir::Owner::AnonymousConstant
+                        | crate::body::ir::Owner::Closure { .. } => false,
                     }
                 {
                     return Ok(Some(Evaluated::Deferred));

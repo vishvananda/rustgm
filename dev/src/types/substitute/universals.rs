@@ -87,6 +87,16 @@ impl Bound {
         mapping.replacements.get(&original).copied()
     }
 
+    /// Source lifetimes and the universal slots assigned by this abstraction.
+    /// The order is unspecified; callers must preserve the assigned slot numbers.
+    pub fn universal_pairs(&self) -> impl Iterator<Item = (RegionId, RegionId)> + '_ {
+        let replacements = match &self.action {
+            Action::Universals(mapping) => Some(&mapping.replacements),
+            _ => None,
+        };
+        replacements.into_iter().flatten().map(|(&a, &b)| (a, b))
+    }
+
     #[must_use]
     pub fn universal_count(&self) -> usize {
         match &self.action {

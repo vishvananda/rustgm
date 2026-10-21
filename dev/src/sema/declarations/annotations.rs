@@ -4,6 +4,48 @@ use super::{
 };
 
 impl Checker<'_> {
+    pub(super) fn closure_annotation_inputs(
+        &mut self,
+        key: NodeKey,
+        parameters: List,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        let first = self.facts.body_regions.len();
+        for index in parameters.start..parameters.end {
+            let unit = self.report.package.unit(key.file);
+            let mut node = unit.configured.ast.edges[index as usize];
+            if !unit.configured.active[node.0 as usize] {
+                continue;
+            }
+            while let Kind::Attributed { value, .. } = self.kind(NodeKey { node, ..key }) {
+                node = value;
+            }
+            let Kind::Parameter { ty: Some(ty), .. } = self.kind(NodeKey { node, ..key }) else {
+                continue;
+            };
+            self.annotation_holes(NodeKey { node: ty, ..key }, steps, limit, scan)?;
+            self.node_work(key.file, ty, context);
+            self.drain(steps, limit)?;
+        }
+        let mut regions = Vec::new();
+        for (index, region) in self.facts.body_regions.iter().enumerate().skip(first) {
+            if matches!(
+                region.origin,
+                crate::sema::model::BodyRegionOrigin::Annotation
+            ) {
+                regions.push(crate::types::RegionId(u32::try_from(index + 1).map_err(
+                    |_| self.error(key, "closure input lifetime limit exceeded"),
+                )?));
+            }
+        }
+        if !regions.is_empty() {
+            self.facts.closures.inputs.insert(key, regions);
+        }
+        Ok(())
+    }
     pub(super) fn schedule_annotation(
         &mut self,
         key: NodeKey,

@@ -147,9 +147,25 @@ impl Search<'_> {
         if matches!(frame.callable.as_deref(), Some(Pending::Forward(_))) {
             return self.complete_forwarding(facts, frame);
         }
-        let Some(Pending::Direct(Matched { output, regions })) = frame.callable.as_deref() else {
+        let Some(Pending::Direct(matched)) = frame.callable.as_deref() else {
             return Err("missing callable equations".into());
         };
+        match matched.permitted(&facts.types).map_err(inference)? {
+            Some(true) => {}
+            Some(false) => return Ok(Action::Complete(Decision::Absent)),
+            None => {
+                return Ok(
+                    if self.query.refining && frame.scope == self.query.input_scope() {
+                        Action::Yield
+                    } else {
+                        Action::Complete(Decision::Deferred)
+                    },
+                );
+            }
+        }
+        let Matched {
+            output, regions, ..
+        } = matched;
         let resolved = frame
             .inputs
             .context

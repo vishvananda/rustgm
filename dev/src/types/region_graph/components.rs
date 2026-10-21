@@ -2,6 +2,24 @@
 use super::{Edge, Error, Graph, Region, Solution};
 
 impl Solution {
+    /// Runtime propagation follows only requirements, excluding the abstract LOCAL
+    /// sentinel. Component ranks decrease along every inter-component edge.
+    pub(crate) fn runtime_classes(
+        &self,
+        limit: usize,
+    ) -> Result<(Vec<Region>, Vec<usize>, usize), Error> {
+        let mut search = Search::new(
+            &self.graph,
+            &self.graph.incoming,
+            &self.graph.obligations,
+            false,
+            true,
+        );
+        search.limit = search.limit.min(limit);
+        search.exclude_local = true;
+        search.run()
+    }
+
     /// Only a completed proof may add required edges to the equality relation.
     /// Their mutual reachability is evidence, not a choice of inference values.
     pub(crate) fn established_classes(&self) -> Result<Vec<Region>, Error> {
@@ -55,6 +73,7 @@ struct Search<'a> {
     next: usize,
     static_target: Option<usize>,
     steps: usize,
+    exclude_local: bool,
 }
 impl Graph {
     /// Compute mutual entailment from declared/implied bounds only. Static
@@ -76,18 +95,30 @@ impl Graph {
         static_reaches_all: bool,
         ranked: bool,
     ) -> Result<(Vec<Region>, Vec<usize>, usize), Error> {
-        Search {
+        Search::new(self, heads, edges, static_reaches_all, ranked).run()
+    }
+}
+
+impl<'a> Search<'a> {
+    fn new(
+        graph: &Graph,
+        heads: &'a [Option<usize>],
+        edges: &'a [Edge],
+        static_reaches_all: bool,
+        ranked: bool,
+    ) -> Self {
+        Self {
             heads,
             edges,
-            limit: self.limit,
-            numbers: vec![0; self.kinds.len()],
-            low: vec![0; self.kinds.len()],
-            active: vec![false; self.kinds.len()],
+            limit: graph.limit,
+            numbers: vec![0; graph.kinds.len()],
+            low: vec![0; graph.kinds.len()],
+            active: vec![false; graph.kinds.len()],
             stack: Vec::new(),
             frames: Vec::new(),
-            classes: vec![Region::STATIC; self.kinds.len()],
+            classes: vec![Region::STATIC; graph.kinds.len()],
             ranks: if ranked {
-                vec![0; self.kinds.len()]
+                vec![0; graph.kinds.len()]
             } else {
                 Vec::new()
             },
@@ -96,12 +127,9 @@ impl Graph {
             next: 0,
             static_target: static_reaches_all.then_some(1),
             steps: 0,
+            exclude_local: false,
         }
-        .run()
     }
-}
-
-impl Search<'_> {
     fn enter(&mut self, node: usize) {
         self.next += 1;
         self.numbers[node] = self.next;
@@ -110,7 +138,11 @@ impl Search<'_> {
         self.stack.push(node);
         self.frames.push(Frame {
             node,
-            edge: self.heads[node],
+            edge: if self.exclude_local && node == Region::LOCAL.0 as usize {
+                None
+            } else {
+                self.heads[node]
+            },
         });
     }
     fn run(mut self) -> Result<(Vec<Region>, Vec<usize>, usize), Error> {
@@ -146,6 +178,9 @@ impl Search<'_> {
                 None
             };
             if let Some(target) = target {
+                if self.exclude_local && target == Region::LOCAL.0 as usize {
+                    continue;
+                }
                 if self.numbers[target] == 0 {
                     self.enter(target);
                 } else if self.active[target] {

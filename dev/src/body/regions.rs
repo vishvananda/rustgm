@@ -111,6 +111,12 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             bodies.push(function_contract(facts, function, source)?);
         }
     }
+    for closure in facts.closures.all() {
+        if index.insert(closure.body, bodies.len()).is_some() {
+            return Err("duplicate closure lifetime owner");
+        }
+        bodies.push(closure_contract(facts, closure)?);
+    }
     for initializer in &facts.initializers {
         index.insert(initializer.value, bodies.len());
         bodies.push(initializer_contract(facts, initializer)?);
@@ -237,6 +243,25 @@ fn function_contract(
     let mut contract = parameter_contract(facts, owner, source, Some(function.signature))?;
     contract.universals = scheme.map_or(0, |s| s.total);
     contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
+    Ok(contract)
+}
+fn closure_contract(
+    facts: &Declarations,
+    closure: &crate::sema::closures::Body,
+) -> Result<Contract, &'static str> {
+    let mut contract = if let Some(owner) = closure.owner {
+        parameter_contract(facts, owner, closure.body, Some(closure.signature))?
+    } else {
+        Contract::constant(closure.body)
+    };
+    contract.signature = Some(closure.signature);
+    contract.universals = closure.universals;
+    if let Some(scheme) = closure
+        .owner
+        .and_then(|owner| facts.lifetimes.functions.get(&owner))
+    {
+        contract.assumptions.clone_from(&scheme.bounds);
+    }
     Ok(contract)
 }
 fn initializer_contract(

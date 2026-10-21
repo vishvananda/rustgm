@@ -148,7 +148,8 @@ impl Walker<'_> {
                 }
                 self.expressions(fields, context)?;
             }
-            Syntax::Literal(_)
+            Syntax::Closure { .. }
+            | Syntax::Literal(_)
             | Syntax::Name(_)
             | Syntax::Path { .. }
             | Syntax::Qualified { .. }

@@ -1,6 +1,7 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod addresses;
 mod aggregates;
+mod closures;
 mod conditions;
 mod constructors;
 mod decisions;
@@ -121,6 +122,13 @@ pub(crate) fn concrete_except(
             .map_err(|e| report.diagnostic(e))?,
         );
     }
+    closures::concrete(
+        report,
+        facts,
+        &mut scratch,
+        &mut program,
+        drop_query.as_mut(),
+    )?;
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
@@ -1338,6 +1346,7 @@ impl<'a> Builder<'a> {
     fn finish(&mut self, node: NodeId) -> Result<(), Error> {
         let ty = self.ty(node)?;
         let value = match self.kind(node) {
+            Kind::Closure { .. } => self.closure_value(node, ty)?,
             Kind::Tuple(elements) if elements.start != elements.end => {
                 self.aggregate_elements(node, elements)?
             }

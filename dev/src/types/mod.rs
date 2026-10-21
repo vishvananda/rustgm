@@ -239,7 +239,7 @@ pub struct Store {
     storage_heads: Option<HashMap<TypeId, TypeId>>,
     shifts: Option<Box<binder_shift::Shifts>>,
     dynamics: Option<Box<dynamic::Storage>>,
-    closures: Option<Vec<closure::CallKind>>,
+    closures: Option<Vec<closure::Declaration>>,
     nominal_sizes: Option<std::sync::Arc<sizedness::Rules>>,
     has_nominals: bool,
 }

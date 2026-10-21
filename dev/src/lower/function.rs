@@ -678,13 +678,22 @@ impl Lower<'_, '_> {
         arguments: ir::ValueList,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
-        let signature = self.context.signature(signature)?;
-        let representation = self.context.representation(result)?;
         let callee = match callee {
             Selected::Item(definition) => Operand::Symbol(self.context.demand(definition)?),
             Selected::Runtime(value) => value.operand,
             Selected::Unit | Selected::Object(_) => return Err("non-function used as call target"),
         };
+        self.call_operand(signature, callee, arguments, result)
+    }
+    fn call_operand(
+        &mut self,
+        signature: TypeId,
+        callee: Operand,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let signature = self.context.signature(signature)?;
+        let representation = self.context.representation(result)?;
         self.arguments.clear();
         let destination = if matches!(representation, Representation::Object(_)) {
             let address = self.allocate(result)?.ok_or("missing result allocation")?;

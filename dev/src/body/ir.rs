@@ -282,6 +282,10 @@ pub struct Block {
 }
 #[derive(Clone, Copy)]
 pub enum Owner {
+    Closure {
+        identity: crate::types::closure::ClosureId,
+        signature: TypeId,
+    },
     /// A declaration-time constant requiring lifetime/loan proof, never a native function.
     AnonymousConstant,
     Function {

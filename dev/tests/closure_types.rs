@@ -96,3 +96,32 @@ fn malformed_environments_and_unpublished_identities_are_rejected() -> Result<()
     store.intern(valid)?;
     Ok(())
 }
+
+#[test]
+fn pending_bodies_cannot_publish_types_or_revise_completed_permissions() -> Result<(), &'static str>
+{
+    use rustgm::types::closure::Declaration;
+    let mut store = Store::default();
+    let id = store.reserve_closure()?;
+    let signature = signature(&mut store, TypeId::UNIT)?;
+    assert_eq!(store.closure_declaration(id), Some(Declaration::Pending));
+    assert_eq!(store.closure_kind(id), None);
+    assert!(closure(&mut store, id, signature, GenericArgs::EMPTY, &[]).is_err());
+    store.complete_closure(id, CallKind::Mutable)?;
+    assert_eq!(store.closure_kind(id), Some(CallKind::Mutable));
+    let ty = closure(&mut store, id, signature, GenericArgs::EMPTY, &[])?;
+    for revised in [CallKind::Shared, CallKind::Mutable, CallKind::Once] {
+        assert!(store.complete_closure(id, revised).is_err());
+        assert_eq!(store.closure_kind(id), Some(CallKind::Mutable));
+        assert_eq!(
+            closure(&mut store, id, signature, GenericArgs::EMPTY, &[])?,
+            ty
+        );
+    }
+    assert!(
+        store
+            .complete_closure(ClosureId(u32::MAX), CallKind::Shared)
+            .is_err()
+    );
+    Ok(())
+}

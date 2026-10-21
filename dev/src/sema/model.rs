@@ -318,6 +318,7 @@ pub struct Declarations {
     /// Const permission belongs to a selected declaration, not its callable type.
     pub(crate) constant_functions: std::collections::HashSet<DefId>,
     pub(super) target_feature_functions: std::collections::HashSet<DefId>,
+    pub closures: super::closures::Bodies,
     pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
@@ -436,6 +437,7 @@ impl Declarations {
         let mut value = Self {
             constant_functions: std::collections::HashSet::new(),
             target_feature_functions: std::collections::HashSet::new(),
+            closures: super::closures::Bodies::default(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             alias_requirements: super::alias_requirements::Requirements::default(),

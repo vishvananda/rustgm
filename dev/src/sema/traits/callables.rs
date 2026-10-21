@@ -6,7 +6,7 @@ use crate::{
     support::call_traits::CallTrait,
     types::{
         RegionId,
-        closure::CallKind,
+        closure::{CallKind, ClosureId, Declaration},
         infer::{self, Constructor, Context, TermId, arguments::Argument, predicates::Predicate},
     },
 };
@@ -16,6 +16,26 @@ use std::ops::Range;
 pub(in crate::sema) struct Matched {
     pub output: TermId,
     pub regions: Range<u32>,
+    permission: Permission,
+}
+
+enum Permission {
+    Complete,
+    Pending(ClosureId, CallKind),
+}
+impl Matched {
+    /// Signature equations can precede capture analysis, but implementation
+    /// evidence must wait for the body's immutable call permission.
+    pub fn permitted(&self, types: &crate::types::Store) -> Result<Option<bool>, infer::Error> {
+        let Permission::Pending(id, required) = self.permission else {
+            return Ok(Some(true));
+        };
+        Ok(match types.closure_declaration(id) {
+            Some(Declaration::Pending) => None,
+            Some(Declaration::Complete(actual)) => Some(actual.implements(required)),
+            None => return Err(infer::Error::InvalidIdentity),
+        })
+    }
 }
 
 /// Run only in an isolated query. These equations do not grant trait permission
@@ -36,7 +56,7 @@ pub(in crate::sema) fn match_signature(
     let [Argument::Type(arguments)] = arguments else {
         return Err(infer::Error::InvalidIdentity);
     };
-    let signature = signature(facts, context, goal.subject(), kind)?;
+    let (signature, permission) = signature(facts, context, goal.subject(), kind)?;
     let Some(Constructor::Function {
         bound_regions,
         parameters,
@@ -68,6 +88,7 @@ pub(in crate::sema) fn match_signature(
     Ok(Matched {
         output: context.child(&facts.types, tuple, parameters as usize)?,
         regions: first..end,
+        permission,
     })
 }
 
@@ -76,14 +97,17 @@ fn signature(
     context: &mut Context,
     subject: TermId,
     required: CallTrait,
-) -> Result<TermId, infer::Error> {
+) -> Result<(TermId, Permission), infer::Error> {
     match context.head(&facts.types, subject)? {
-        Some(Constructor::Function { .. }) => Ok(subject),
+        Some(Constructor::Function { .. }) => Ok((subject, Permission::Complete)),
         Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _)) => {
             if facts.target_feature_functions.contains(&DefId(item.0)) {
                 return Err(infer::Error::Mismatch);
             }
-            context.child(&facts.types, subject, 0)
+            Ok((
+                context.child(&facts.types, subject, 0)?,
+                Permission::Complete,
+            ))
         }
         Some(Constructor::Closure(id, _)) => {
             let required = match required {
@@ -91,15 +115,15 @@ fn signature(
                 CallTrait::FnMut => CallKind::Mutable,
                 CallTrait::FnOnce => CallKind::Once,
             };
-            if !facts
-                .types
-                .closure_kind(id)
-                .ok_or(infer::Error::InvalidIdentity)?
-                .implements(required)
-            {
-                return Err(infer::Error::Mismatch);
-            }
-            context.child(&facts.types, subject, 0)
+            let permission = match facts.types.closure_declaration(id) {
+                Some(Declaration::Pending) => Permission::Pending(id, required),
+                Some(Declaration::Complete(actual)) if actual.implements(required) => {
+                    Permission::Complete
+                }
+                Some(Declaration::Complete(_)) => return Err(infer::Error::Mismatch),
+                None => return Err(infer::Error::InvalidIdentity),
+            };
+            Ok((context.child(&facts.types, subject, 0)?, permission))
         }
         None | Some(Constructor::Reference { .. }) => Err(infer::Error::Unresolved),
         Some(_) => Err(infer::Error::Mismatch),

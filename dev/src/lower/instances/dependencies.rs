@@ -24,11 +24,13 @@ enum Work {
     Location(LocationId),
 }
 pub(super) struct Demands {
+    pub closures: Vec<crate::types::closure::ClosureId>,
     pub calls: Vec<Instance>,
     pub object_types: Vec<TypeId>,
 }
 #[derive(Default)]
 struct Discovered {
+    closures: Vec<crate::types::closure::ClosureId>,
     calls: Vec<Instance>,
     tables: Vec<(TypeId, TypeId)>,
     upcasts: Vec<(TypeId, TypeId)>,
@@ -66,6 +68,7 @@ impl Dependencies {
             object_types.push(table.concrete);
         }
         Ok(Demands {
+            closures: result.closures,
             calls: concrete,
             object_types,
         })
@@ -118,6 +121,9 @@ impl Dependencies {
                     result
                         .calls
                         .push(body.callable_target(Instance::new(&facts.types, ty)?));
+                }
+                if let Some(Kind::Closure { identity, .. }) = facts.types.kind(ty) {
+                    result.closures.push(identity);
                 }
             }
             let operand = match value.kind {

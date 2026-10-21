@@ -4,6 +4,7 @@ mod alignment;
 mod annotations;
 mod bounds;
 mod calls;
+mod closures;
 mod conditions;
 mod defining_bodies;
 mod divergence;
@@ -162,6 +163,7 @@ enum Work {
     CallArguments(NodeId, Option<TermId>),
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
+    CollectClosure,
 }
 /// Cleared storage can be reused between short declaration-time constants.
 /// Successful checks clear touched slots; caller evidence is cleared before reuse.
@@ -183,6 +185,9 @@ pub(super) struct Checker<'a> {
     state: State,
 }
 pub(super) struct State {
+    closures: Option<Box<closures::Scheduler>>,
+    closure_children: Vec<usize>,
+    closure_cursor: usize,
     steps: usize,
     completion: readiness::Completion,
     alignment: alignment::Pending,
@@ -281,6 +286,9 @@ impl<'a> Checker<'a> {
             facts,
             pattern_queries: None,
             state: State {
+                closures: None,
+                closure_children: Vec::new(),
+                closure_cursor: 0,
                 steps: 0,
                 completion: readiness::Completion::Inactive,
                 alignment: alignment::Pending::default(),
@@ -635,6 +643,16 @@ impl Checker<'_> {
         self.advance_body()
     }
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
+        loop {
+            if let Some(dependency) = self.advance_current_body()? {
+                return Ok(Some(dependency));
+            }
+            if !self.continue_closure_bodies()? {
+                return Ok(None);
+            }
+        }
+    }
+    fn advance_current_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         if let Some(finalization) = self.state.finalization.take() {
             return self.resume_finalization(*finalization);
@@ -643,6 +661,7 @@ impl Checker<'_> {
             return self.finish(body);
         }
         loop {
+            let body = self.state.body.node;
             if matches!(
                 self.availability,
                 super::traits::implementations::Availability::Declarations
@@ -659,6 +678,7 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
+                Work::CollectClosure => self.collect_closure()?,
                 Work::Conditional {
                     node,
                     pattern,
@@ -716,7 +736,7 @@ impl Checker<'_> {
                 Work::CompleteExpression(node, term) => self.exit_expression(node, term)?,
             }
         }
-        self.finish(body)
+        self.finish(self.state.body.node)
     }
     fn schedule_expression_completion(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         if matches!(
@@ -950,6 +970,9 @@ impl Checker<'_> {
         {
             frame.in_condition = false;
         }
+        if matches!(self.kind(node), Kind::Closure { .. }) {
+            return self.enter_closure(node, expected);
+        }
         self.enter_control(node, expected)?;
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
@@ -1124,6 +1147,7 @@ impl Checker<'_> {
                 }
                 self.term(value)
             }
+            Kind::Closure { .. } => self.term(node),
             Kind::Literal(index) => self.literal(node, index),
             Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =

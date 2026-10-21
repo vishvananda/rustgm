@@ -71,7 +71,7 @@ pub fn verify<'a, S: BuildHasher>(
         let definition = match body.owner {
             crate::body::ir::Owner::Function { definition, .. }
             | crate::body::ir::Owner::Initializer { definition, .. } => definition,
-            crate::body::ir::Owner::AnonymousConstant => {
+            crate::body::ir::Owner::AnonymousConstant | crate::body::ir::Owner::Closure { .. } => {
                 return Err(error("template requires a declared owner"));
             }
         };

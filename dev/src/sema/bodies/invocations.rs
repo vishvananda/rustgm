@@ -44,6 +44,18 @@ impl Checker<'_> {
                 continue;
             }
 
+            if let Some(Constructor::Closure(identity, _)) = head {
+                let kind = match self.facts.types.closure_kind(identity) {
+                    Some(crate::types::closure::CallKind::Shared) => CallTrait::Fn,
+                    Some(crate::types::closure::CallKind::Mutable) => CallTrait::FnMut,
+                    Some(crate::types::closure::CallKind::Once) => CallTrait::FnOnce,
+                    None => return Err(self.error(node, "closure call permission is unresolved")),
+                };
+                let signature = self.child(node, subject, 0)?;
+                self.retain_invocation(node, callee, subject, dereferences, Some(kind))?;
+                return self.call_signature(node, signature);
+            }
+
             let signature = match head {
                 Some(Constructor::Function { .. }) => Some(subject),
                 Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..)) => {
