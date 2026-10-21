@@ -1,6 +1,8 @@
 //! Typed closure captures and callable contracts; source inference supplies place uses.
 pub mod captures;
 pub mod imports;
+mod source_roots;
+pub use source_roots::FormationInput;
 
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
