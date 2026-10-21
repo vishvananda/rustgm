@@ -10,6 +10,12 @@ use crate::{
 };
 use std::{collections::HashMap, ops::Index};
 
+#[derive(Clone, Copy)]
+pub(crate) enum Inline {
+    Closed(NodeKey),
+    Instance(crate::sema::inline_constants::InlineInstance),
+}
+
 pub(crate) struct Code {
     pub source: NodeKey,
     pub result: crate::types::TypeId,
@@ -23,7 +29,7 @@ pub(crate) struct Code {
     pub projections: Vec<Projection>,
     pub blocks: Vec<Block>,
     pub promotions: HashMap<ValueId, Constant>,
-    pub inline: Vec<(ValueId, NodeKey, crate::types::TypeId)>,
+    pub inline: Vec<(ValueId, Inline, crate::types::TypeId)>,
     callables: HashMap<Instance, Instance>,
 }
 
@@ -44,9 +50,14 @@ impl Code {
             body.callable_allocation_bytes(),
             body.values
                 .iter()
-                .filter(|value| matches!(value.kind, Rvalue::InlineConstant(_)))
+                .filter(|value| {
+                    matches!(
+                        value.kind,
+                        Rvalue::InlineConstant(_) | Rvalue::InlineInstance(_)
+                    )
+                })
                 .count()
-                .saturating_mul(size_of::<(ValueId, NodeKey, crate::types::TypeId)>()),
+                .saturating_mul(size_of::<(ValueId, Inline, crate::types::TypeId)>()),
         ]
         .into_iter()
         .fold(0, usize::saturating_add)
@@ -55,12 +66,28 @@ impl Code {
         let count = body
             .values
             .iter()
-            .filter(|value| matches!(value.kind, Rvalue::InlineConstant(_)))
+            .filter(|value| {
+                matches!(
+                    value.kind,
+                    Rvalue::InlineConstant(_) | Rvalue::InlineInstance(_)
+                )
+            })
             .count();
         let mut inline = Vec::with_capacity(count);
-        for (index, value) in (0u32..).zip(&body.values) {
-            if let Rvalue::InlineConstant(source) = value.kind {
-                inline.push((ValueId(index), source, value.ty));
+        for statement in &body.statements {
+            let crate::body::ir::Action::Evaluate(id) = statement.action else {
+                continue;
+            };
+            let Some(value) = body.values.get(id.0 as usize) else {
+                continue;
+            };
+            let selected = match value.kind {
+                Rvalue::InlineConstant(source) => Some(Inline::Closed(source)),
+                Rvalue::InlineInstance(instance) => Some(Inline::Instance(instance)),
+                _ => None,
+            };
+            if let Some(selected) = selected {
+                inline.push((id, selected, value.ty));
             }
         }
         Self {
@@ -95,6 +122,13 @@ impl Code {
     }
 }
 
+type AnonymousIndex = HashMap<
+    (
+        crate::sema::inline_constants::InlineInstance,
+        crate::types::TypeId,
+    ),
+    usize,
+>;
 #[derive(Default)]
 pub(crate) struct Catalog {
     pub bytes: usize,
@@ -102,6 +136,7 @@ pub(crate) struct Catalog {
     pub functions: HashMap<Instance, usize>,
     pub definitions: HashMap<DefId, usize>,
     pub expressions: HashMap<NodeKey, usize>,
+    pub anonymous: Option<Box<AnonymousIndex>>,
 }
 impl Catalog {
     pub(crate) fn initializer(
@@ -126,6 +161,19 @@ impl Catalog {
             .and_then(|bytes| {
                 bytes.checked_add(if matches!(body.owner, Owner::AnonymousConstant) {
                     crate::support::retained::new_map::<NodeKey, usize>(1)
+                } else if matches!(body.owner, Owner::AnonymousInstance(_)) {
+                    crate::support::retained::new_map::<
+                        (
+                            crate::sema::inline_constants::InlineInstance,
+                            crate::types::TypeId,
+                        ),
+                        usize,
+                    >(1)
+                    .saturating_add(if self.anonymous.is_none() {
+                        size_of::<AnonymousIndex>()
+                    } else {
+                        0
+                    })
                 } else {
                     0
                 })
@@ -153,6 +201,15 @@ impl Catalog {
                 return Err("duplicate anonymous constant body");
             }
             self.expressions.insert(body.source, index);
+        }
+        if let Owner::AnonymousInstance(instance) = body.owner
+            && self
+                .anonymous
+                .get_or_insert_with(Default::default)
+                .insert((instance, body.result), index)
+                .is_some()
+        {
+            return Err("duplicate anonymous constant instance body");
         }
         self.bodies.push(std::rc::Rc::new(Code::snapshot(body)));
         self.bytes = bytes;

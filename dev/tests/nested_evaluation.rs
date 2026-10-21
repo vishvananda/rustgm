@@ -7,6 +7,8 @@ mod output;
 mod rustc;
 #[path = "helpers/resolve.rs"]
 mod source;
+#[path = "nested_evaluation/specialized.rs"]
+mod specialized;
 #[path = "nested_evaluation/written.rs"]
 mod written;
 use rustgm::{

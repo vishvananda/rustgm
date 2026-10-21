@@ -41,6 +41,7 @@ pub struct Prepared {
     scratch: Option<Box<Scratch>>,
     query: Option<NeedsDrop>,
     bodies: std::collections::HashMap<crate::resolve::model::DefId, Template>,
+    anonymous: std::collections::HashMap<crate::resolve::unit::NodeKey, Template>,
     built: usize,
     reused: usize,
 }
@@ -111,6 +112,61 @@ impl Prepared {
             environment,
         })
     }
+    pub(crate) fn anonymous(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        source: crate::resolve::unit::NodeKey,
+    ) -> Result<Template, Error> {
+        if let Some(template) = self.anonymous.remove(&source) {
+            self.reused += 1;
+            return Ok(template);
+        }
+        let inline = facts
+            .inline_constants
+            .as_deref()
+            .and_then(|r| r.get(source))
+            .ok_or_else(|| Declarations::error(report, source, "missing anonymous template"))?;
+        let owner = inline.declaration.ok_or_else(|| {
+            Declarations::error(report, source, "anonymous template has no declaration")
+        })?;
+        let result = inline.result.ok_or_else(|| {
+            Declarations::error(report, source, "anonymous template result is not ready")
+        })?;
+        let environment = environment(report, facts, owner, source)?;
+        let query = self.query.get_or_insert_with(|| {
+            NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
+        });
+        let mut scoped = query.scoped(Arc::clone(&environment));
+        let scratch = self
+            .scratch
+            .get_or_insert_with(|| Box::new(Scratch::new(facts)));
+        let scope_plan = crate::body::scopes::constant_with_scratch(
+            report,
+            facts,
+            source,
+            std::mem::take(&mut scratch.scopes),
+        )?;
+        let body = super::Builder::new(
+            report,
+            facts,
+            scratch,
+            Body::new(crate::body::ir::Owner::AnonymousConstant, source, result),
+            scope_plan,
+            Some(&mut scoped),
+        )
+        .run(None)
+        .map_err(|e| report.diagnostic(e))?;
+        crate::body::constants::eligibility(report, facts, &body)?;
+        let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        self.built += 1;
+        Ok(Template {
+            body,
+            destruction,
+            environment,
+        })
+    }
     /// Actual CFG construction and subsequent reuse counts.
     #[must_use]
     pub const fn work(&self) -> (usize, usize) {
@@ -154,6 +210,19 @@ impl Prepared {
     /// # Errors
     /// Rejects duplicate retained owners and non-function bodies.
     pub fn retain(&mut self, template: Template) -> Result<(), &'static str> {
+        if matches!(
+            template.body.owner,
+            crate::body::ir::Owner::AnonymousConstant
+        ) {
+            if self
+                .anonymous
+                .insert(template.body.source, template)
+                .is_some()
+            {
+                return Err("anonymous template was retained twice");
+            }
+            return Ok(());
+        }
         let crate::body::ir::Owner::Function { definition, .. } = template.body.owner else {
             return Err("retained defining template requires a function owner");
         };
@@ -213,6 +282,31 @@ impl Prepared {
             {
                 bodies.push(self.closure(report, facts, closure, owner)?);
             }
+        }
+        for (source, _) in facts.constant_bodies() {
+            if facts
+                .inline_constants
+                .as_deref()
+                .and_then(|r| r.get(source))
+                .is_some_and(|b| {
+                    b.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
+                })
+            {
+                bodies.push(self.anonymous(report, facts, source)?);
+            }
+        }
+        if !self.anonymous.is_empty() {
+            return Err(Declarations::error(
+                report,
+                *self.anonymous.keys().next().ok_or_else(|| {
+                    Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "lost anonymous template",
+                    )
+                })?,
+                "anonymous template has no program owner",
+            ));
         }
         if let Some(template) = self.bodies.values().next() {
             return Err(Declarations::error(

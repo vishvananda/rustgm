@@ -1,5 +1,8 @@
 //! Required inline values use their already typed anonymous body and the checked service.
-use super::{Constant, Error, Evaluator, Query, Reader, Work};
+use super::{
+    Constant, Error, Evaluator, Query, Reader, Work,
+    execution::{Progress, Request, Target},
+};
 use crate::{resolve::unit::NodeKey, sema::constants::instances::ValueScope};
 
 impl Evaluator<'_> {
@@ -79,5 +82,63 @@ impl Evaluator<'_> {
             .as_mut()
             .ok_or("missing completed inline registry")?
             .publish(source, value)
+    }
+}
+
+impl Evaluator<'_> {
+    pub(crate) fn complete_inline_instance(
+        &mut self,
+        instance: crate::sema::inline_constants::InlineInstance,
+        result: crate::types::TypeId,
+        value: Constant,
+    ) -> Result<(), &'static str> {
+        self.queries
+            .typing
+            .facts
+            .inline_constants
+            .as_mut()
+            .ok_or("missing anonymous instance registry")?
+            .publish_instance(instance, result, value)
+    }
+    pub(crate) fn inline_instance(
+        &mut self,
+        instance: crate::sema::inline_constants::InlineInstance,
+        result: crate::types::TypeId,
+    ) -> Result<Constant, Error> {
+        if let Some(value) =
+            Reader::new(self.queries.typing.facts).inline_instance(instance, result)
+        {
+            return Ok(value);
+        }
+        let query = Query::Node(instance.source());
+        let mut executor = self
+            .queries
+            .typing
+            .facts
+            .constant_executor
+            .take()
+            .ok_or_else(|| {
+                self.queries
+                    .error(query, "missing anonymous constant execution service")
+            })?;
+        let progress = executor.advance(
+            self.queries.report,
+            self.queries.typing.facts,
+            &Request {
+                target: Target::Anonymous { instance, result },
+                arguments: Vec::new(),
+            },
+        );
+        self.queries.typing.facts.constant_executor = Some(executor);
+        let Progress::Complete(value) = progress? else {
+            return Err(self.queries.error(
+                query,
+                "anonymous instance has an unresolved declaration dependency",
+            ));
+        };
+        let value = self.checked_reference_result(query, result, value)?;
+        self.complete_inline_instance(instance, result, value)
+            .map_err(|e| self.queries.error(query, e))?;
+        Ok(value)
     }
 }

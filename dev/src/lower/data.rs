@@ -25,6 +25,7 @@ pub(super) enum Key {
     Definition(DefId),
     Associated(crate::sema::values::Instance),
     Inline(crate::resolve::unit::NodeKey),
+    InlineInstance(crate::sema::inline_constants::InlineInstance, TypeId),
     Location(LocationId),
     Temporary(usize, ValueId),
     Bytes(crate::sema::text::Id),

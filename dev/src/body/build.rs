@@ -114,41 +114,14 @@ pub(crate) fn concrete_prepared(
         &mut prepared,
         drop_query.as_mut(),
     )?;
-    for (source, ty) in facts.constant_bodies() {
-        if let Some(body) = prepared.remove(&super::ir::BodyKey::Anonymous(source)) {
-            if body.source != source
-                || body.result != ty
-                || !matches!(body.owner, Owner::AnonymousConstant)
-            {
-                return Err(Declarations::error(
-                    report,
-                    source,
-                    "retained inline CFG identity or result changed",
-                ));
-            }
-            program.bodies.push(body);
-            continue;
-        }
-        let scope_plan = scopes::constant_with_scratch(
-            report,
-            facts,
-            source,
-            std::mem::take(&mut scratch.scopes),
-        )?;
-        let body = Body::new(Owner::AnonymousConstant, source, ty);
-        program.bodies.push(
-            Builder::new(
-                report,
-                facts,
-                &mut scratch,
-                body,
-                scope_plan,
-                drop_query.as_mut(),
-            )
-            .run(None)
-            .map_err(|e| report.diagnostic(e))?,
-        );
-    }
+    inline_roots::concrete(
+        report,
+        facts,
+        &mut scratch,
+        &mut program,
+        &mut prepared,
+        drop_query.as_mut(),
+    )?;
     closures::concrete(
         report,
         facts,
@@ -201,9 +174,11 @@ fn function_body(
         function,
         std::mem::take(&mut scratch.scopes),
     )?;
-    let body = Builder::new(report, facts, scratch, body, scope_plan, query)
+    let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)
         .run(Some(function.parameters))
         .map_err(|e| report.diagnostic(e))?;
+    crate::body::instantiate::close_inline_operands(facts, &mut body)
+        .map_err(|e| Declarations::error(report, source, e))?;
     facts
         .body_work
         .cfg_functions

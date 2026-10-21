@@ -1,4 +1,5 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
+mod anonymous;
 mod expressions;
 mod initializers;
 mod inputs;
@@ -72,6 +73,7 @@ pub(super) struct Engine {
     contracts: Collector,
     promotions: body::promote::Scratch,
     originals: HashMap<DefId, Template>,
+    anonymous: HashMap<crate::resolve::unit::NodeKey, (Template, Contract)>,
     concrete: HashMap<BodyKey, Body>,
     loans: Option<(usize, borrow::loans::templates::Verifier)>,
     inputs: Rc<RefCell<HashMap<BodyKey, Body>>>,
@@ -95,6 +97,12 @@ impl Engine {
                 ));
             }
             prepared.concrete.insert(key, body);
+        }
+        for (template, _) in self.anonymous.values() {
+            prepared
+                .templates
+                .retain(template.clone())
+                .map_err(|e| Declarations::error(report, template.body.source, e))?;
         }
         for (&definition, template) in &self.originals {
             if matches!(template.body.owner, Owner::Function { .. }) {
@@ -241,6 +249,10 @@ impl Engine {
     ) -> Result<bool, Error> {
         match requirement {
             Requirement::FunctionBody(instance) => self.function(report, facts, instance),
+            Requirement::AnonymousBody { instance, result } => {
+                self.root(report, facts, Target::Anonymous { instance, result })?;
+                Ok(true)
+            }
             Requirement::InlineBody { source, result } => {
                 facts
                     .inline_constants

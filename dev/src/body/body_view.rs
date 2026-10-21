@@ -41,6 +41,7 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
                 }
             }
             Owner::AnonymousConstant => write!(out, "anonymous-const")?,
+            Owner::AnonymousInstance(instance) => write!(out, "anonymous-instance {instance}")?,
             Owner::Function {
                 definition,
                 signature,
@@ -296,6 +297,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         }
         Rvalue::Function(id) => write!(out, "function def={}", id.0),
         Rvalue::Constant(id) => write!(out, "constant def={}", id.0),
+        Rvalue::InlineInstance(instance) => write!(out, "inline-instance {instance}"),
         Rvalue::InlineConstant(source) => write!(
             out,
             "inline-constant source={}:{}",

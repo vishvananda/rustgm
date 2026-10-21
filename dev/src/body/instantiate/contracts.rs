@@ -21,14 +21,7 @@ pub(super) fn specialize(
             facts.aggregates.prepare(&mut facts.types, predicate.ty)?;
         }
     }
-    early_identities(facts, inputs.instance, &regions, &mut contract)?;
-    for (index, &actual) in inputs.captures.iter().enumerate() {
-        connect(
-            &mut contract,
-            u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?,
-            actual,
-        )?;
-    }
+    connect_inputs(facts, inputs, &regions, &mut contract)?;
     contract.universals = original
         .universals
         .checked_add(
@@ -262,6 +255,25 @@ fn connect(contract: &mut Contract, slot: u16, actual: RegionId) -> Result<(), &
         contract
             .assumptions
             .extend([(formal, actual), (actual, formal)]);
+    }
+    Ok(())
+}
+
+fn connect_inputs(
+    facts: &Declarations,
+    inputs: &Inputs,
+    regions: &Bound,
+    contract: &mut Contract,
+) -> Result<(), &'static str> {
+    if let Some(instance) = inputs.instance {
+        early_identities(facts, instance, regions, contract)?;
+    }
+    for (index, &actual) in inputs.captures.iter().enumerate() {
+        connect(
+            contract,
+            u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?,
+            actual,
+        )?;
     }
     Ok(())
 }

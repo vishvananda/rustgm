@@ -175,6 +175,8 @@ pub enum Rvalue {
     AssociatedConstant(crate::sema::values::Instance),
     /// A typed anonymous body, evaluated independently of runtime branch selection.
     InlineConstant(NodeKey),
+    /// A generic inline body retains its complete enclosing specialization.
+    InlineInstance(crate::sema::inline_constants::InlineInstance),
     /// A canonical scalar const argument; rigid parameters remain unevaluated.
     ConstArgument(crate::types::arguments::ConstId),
     Reify(ValueId),
@@ -328,6 +330,7 @@ pub enum Owner {
     },
     /// A declaration-time constant requiring lifetime/loan proof, never a native function.
     AnonymousConstant,
+    AnonymousInstance(crate::sema::inline_constants::InlineInstance),
     Function {
         definition: DefId,
         signature: TypeId,
@@ -344,6 +347,7 @@ pub enum BodyKey {
     Declaration(DefId),
     Closure(crate::types::closure::ClosureId),
     Anonymous(NodeKey),
+    AnonymousInstance(crate::sema::inline_constants::InlineInstance),
 }
 #[derive(Clone)]
 pub struct Body {
@@ -453,6 +457,7 @@ impl Body {
                 BodyKey::Declaration(definition)
             }
             Owner::AnonymousConstant => BodyKey::Anonymous(self.source),
+            Owner::AnonymousInstance(instance) => BodyKey::AnonymousInstance(instance),
             Owner::Closure { identity, .. } => BodyKey::Closure(identity),
         }
     }

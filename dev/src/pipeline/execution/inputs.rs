@@ -61,6 +61,17 @@ impl Context {
             if let Some(registry) = facts.inline_constants.as_mut() {
                 registry.preparation_visits += 1;
             }
+            if facts
+                .inline_constants
+                .as_deref()
+                .and_then(|r| r.get(source))
+                .is_some_and(|b| {
+                    b.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
+                })
+            {
+                engine.retain_anonymous(report, facts, source)?;
+                continue;
+            }
             engine.root(
                 report,
                 facts,
@@ -138,7 +149,8 @@ impl Context {
                         .is_some_and(|registry| registry.get(body.source).is_some()),
                     Owner::Initializer { .. }
                     | Owner::Closure { .. }
-                    | Owner::ClosureAdapter { .. } => false,
+                    | Owner::ClosureAdapter { .. }
+                    | Owner::AnonymousInstance(_) => false,
                 };
                 if shared {
                     let key = body.key();

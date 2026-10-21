@@ -49,6 +49,11 @@ impl Machine<'_, '_> {
             .ok_or("missing constant rvalue")?;
         let ty = value.ty;
         let result = match value.kind {
+            Rvalue::InlineInstance(instance) => {
+                crate::sema::values::Reader::new(self.evaluator.facts())
+                    .inline_instance(instance, value.ty)
+                    .ok_or("anonymous instance value is not prepared")?
+            }
             Rvalue::Intrinsic { intrinsic, .. } => {
                 return Err(match intrinsic.descriptor().constant {
                     crate::support::intrinsics::ConstPermission::RuntimeOnly => {

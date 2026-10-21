@@ -125,7 +125,7 @@ impl Checker<'_> {
                     "missing inline registry",
                 )
             })?
-            .complete(metadata.id, result)
+            .complete(metadata.id, result, self.state.body_binders)
             .map_err(|e| super::super::Declarations::error(self.report, self.state.body, e))?;
         self.facts
             .anonymous_constants

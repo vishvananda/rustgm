@@ -26,6 +26,14 @@ impl Machine<'_, '_> {
             self.validate_result(result, result_ty)?;
             self.evaluator.complete_inline(body.source, result)?;
         }
+        if let Owner::AnonymousInstance(instance) = body.owner {
+            if !self.active_anonymous.remove(&(instance, body.result)) {
+                return Err("anonymous return lost its active identity".into());
+            }
+            self.validate_result(result, result_ty)?;
+            self.evaluator
+                .complete_inline_instance(instance, body.result, result)?;
+        }
         if let Some(parent) = self.frames.last_mut() {
             // Storage-read preparation publishes its initializer without a value destination.
             if frame.return_to.is_none() && matches!(body.owner, Owner::Initializer { .. }) {

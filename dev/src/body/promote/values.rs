@@ -116,6 +116,11 @@ impl Engine<'_, '_> {
                     .inline(source)
                     .ok_or("inline promotion value is not complete")?
             }
+            Rvalue::InlineInstance(instance) => {
+                crate::sema::values::Reader::new(self.evaluator.facts())
+                    .inline_instance(instance, ty)
+                    .ok_or("anonymous instance promotion value is not complete")?
+            }
             Rvalue::AssociatedConstant(instance) => {
                 if self.body.instance.is_none()
                     && match self.body.owner {
@@ -132,6 +137,7 @@ impl Engine<'_, '_> {
                         }
                         crate::body::ir::Owner::AnonymousConstant
                         | crate::body::ir::Owner::ClosureAdapter { .. }
+                        | crate::body::ir::Owner::AnonymousInstance(_)
                         | crate::body::ir::Owner::Closure { .. } => false,
                     }
                 {
@@ -249,6 +255,7 @@ impl Engine<'_, '_> {
             | Rvalue::Constant(_)
             | Rvalue::AssociatedConstant(_)
             | Rvalue::InlineConstant(_)
+            | Rvalue::InlineInstance(_)
             | Rvalue::ConstArgument(_)
             | Rvalue::Function(_) => return Err("missing immediate promotion value".into()),
         };

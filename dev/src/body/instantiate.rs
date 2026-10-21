@@ -1,6 +1,8 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
+mod anonymous;
 mod contracts;
 mod inputs;
+pub(crate) use anonymous::{close_operands as close_inline_operands, with_contract as anonymous};
 use inputs::Inputs;
 mod projections;
 use super::{
@@ -65,7 +67,7 @@ pub fn body(
     materialize(
         facts,
         template,
-        instance,
+        anonymous::Selection::Callable(instance),
         &mut substitution,
         None,
         None,
@@ -141,7 +143,7 @@ fn with_premises(
     let (body, destruction) = materialize(
         facts,
         template,
-        instance,
+        anonymous::Selection::Callable(instance),
         &mut substitution,
         Some(&mut contract),
         inputs.comparison,
@@ -157,7 +159,7 @@ fn with_premises(
 fn materialize(
     facts: &mut Declarations,
     template: &Template,
-    instance: Instance,
+    selection: anonymous::Selection,
     substitution: &mut Bound,
     mut contract: Option<&mut super::regions::Contract>,
     comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
@@ -165,15 +167,17 @@ fn materialize(
 ) -> Result<(Body, drops::Requirements), &'static str> {
     let Context { premises, cleanup } = context;
     let source = &template.body;
-    let (owner, definition) = inputs::owner(facts, source, instance)?;
-    if facts.types.contains_parameters(instance.ty()) != Some(false) {
+    let (owner, definition, instance) = selection.owner(facts, source)?;
+    if instance
+        .is_some_and(|instance| facts.types.contains_parameters(instance.ty()) != Some(false))
+    {
         return Err("executable instance has unresolved type or const parameters");
     }
     let mut body = Body {
         mutable_statics: source.mutable_statics.clone(),
         static_types: source.static_types.clone(),
         const_context: source.const_context,
-        instance: Some(instance),
+        instance,
         owner,
         source: source.source,
         result: source.result,
@@ -207,6 +211,7 @@ fn materialize(
         contract.assumptions.extend(assumptions.regions);
         contract.type_assumptions.extend(assumptions.types);
     }
+    anonymous::operands(facts, &mut body, selection)?;
     if projected
         || comparison.is_some()
         || contract

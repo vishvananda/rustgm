@@ -8,14 +8,14 @@ use crate::{
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
 pub(super) struct Inputs {
-    pub(super) instance: Instance,
+    pub(super) instance: Option<Instance>,
     pub(super) bindings: Vec<Binding>,
     pub(super) captures: Vec<crate::types::RegionId>,
     pub(super) comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
 }
 pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'static str> {
     if let Some(Kind::Closure { .. }) = facts.types.kind(instance.ty()) {
-        return closure(facts, instance);
+        return closure(facts, instance, false);
     }
     let Some(Kind::FunctionItem {
         item,
@@ -34,7 +34,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
             return Err("missing callable template");
         }
         return Ok(Inputs {
-            instance,
+            instance: Some(instance),
             bindings: Vec::new(),
             captures: Vec::new(),
             comparison: None,
@@ -73,33 +73,44 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
         return Err("instance signature differs from substituted template");
     }
     Ok(Inputs {
-        instance,
+        instance: Some(instance),
         bindings,
         captures: Vec::new(),
         comparison: projected.then_some((expected, signature)),
     })
 }
 
-fn closure(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'static str> {
+pub(super) fn closure(
+    facts: &mut Declarations,
+    instance: Instance,
+    anonymous: bool,
+) -> Result<Inputs, &'static str> {
     let Some(Kind::Closure {
         identity,
         signature,
         arguments,
-        environment: TypeId::UNIT,
+        environment,
     }) = facts.types.kind(instance.ty())
     else {
         return Err("closure instance requires an implemented environment adapter");
     };
+    if !anonymous && environment != TypeId::UNIT {
+        return Err("closure instance requires an implemented environment adapter");
+    }
     let body = *facts
         .closures
         .identity(identity)
         .ok_or("missing original closure body")?;
     let owner = body.owner.ok_or("generic closure has no enclosing owner")?;
-    let parameters = facts
+    let parameters = match facts
         .lifetimes
         .callables
         .generic_parameters(ItemId(owner.0))
-        .ok_or("missing enclosing closure parameters")?;
+    {
+        Some(parameters) => parameters,
+        None if !facts.generics.has_parameters(owner) => &[],
+        None => return Err("missing enclosing closure parameters"),
+    };
     let arguments = facts
         .types
         .arguments(arguments)
@@ -129,7 +140,7 @@ fn closure(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'sta
         return Err("closure signature differs from substituted body template");
     }
     Ok(Inputs {
-        instance,
+        instance: Some(instance),
         bindings,
         captures,
         comparison: projected.then_some((expected, signature)),

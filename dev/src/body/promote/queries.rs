@@ -117,6 +117,11 @@ impl Engine<'_, '_> {
                     Ok(true)
                 }
 
+                Rvalue::InlineInstance(instance) => {
+                    Ok(crate::sema::values::Reader::new(self.evaluator.facts())
+                        .inline_instance(instance, self.value(id)?.ty)
+                        .is_some())
+                }
                 Rvalue::InlineConstant(source) => {
                     Ok(crate::sema::values::Reader::new(self.evaluator.facts())
                         .inline(source)

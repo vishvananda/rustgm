@@ -32,7 +32,7 @@ fn declaration(owner: Owner) -> Option<DefId> {
         Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
             Some(definition)
         }
-        Owner::AnonymousConstant | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => None,
+        Owner::AnonymousConstant | Owner::AnonymousInstance(_) | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => None,
     }
 }
 impl Machine<'_> {
@@ -239,7 +239,7 @@ impl Machine<'_> {
             Rvalue::Invoke { .. } => {
                 return Err("call operators are outside the PA10 scalar executor".into());
             }
-            Rvalue::InlineConstant(_) => {
+            Rvalue::InlineConstant(_) | Rvalue::InlineInstance(_) => {
                 return Err("inline constants are outside the PA10 scalar executor".into());
             }
             Rvalue::Call {

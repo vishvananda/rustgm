@@ -52,9 +52,12 @@ pub(super) fn body(
         closure.semantic_source(),
         closure.internal_result.unwrap_or(result),
     );
-    Builder::new(report, facts, scratch, body, scope_plan, query)
+    let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)
         .run_root(closure.body.node, Some(closure.parameters))
-        .map_err(|e| report.diagnostic(e))
+        .map_err(|e| report.diagnostic(e))?;
+    crate::body::instantiate::close_inline_operands(facts, &mut body)
+        .map_err(|e| Declarations::error(report, closure.source, e))?;
+    Ok(body)
 }
 impl Builder<'_> {
     pub(super) fn closure_value(&mut self, node: NodeId, ty: TypeId) -> Result<ValueId, Error> {

@@ -55,3 +55,22 @@ pub(super) fn roots(graph: &mut Graph<'_>, bodies: Vec<&Body>) -> Result<(), &'s
     }
     Ok(())
 }
+
+pub(super) fn instances(graph: &mut super::graph::Graph<'_>) -> Result<(), &'static str> {
+    let Some(registry) = graph.facts.inline_constants.as_deref() else {
+        return Ok(());
+    };
+    let count = registry.instance_values().count();
+    graph.charge(count)?;
+    graph.storage(count.saturating_mul(96))?;
+    let mut values = registry.instance_values().collect::<Vec<_>>();
+    values.sort_unstable_by_key(|(instance, result, _)| (instance.order(), result.0));
+    for (instance, result, value) in values {
+        let value = graph.value(result, value)?;
+        graph.root(format!(
+            "root inline-instance instance={instance} type={} value=v{value}",
+            result.0
+        ))?;
+    }
+    Ok(())
+}

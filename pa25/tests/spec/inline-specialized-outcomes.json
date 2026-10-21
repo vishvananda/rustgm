@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "pinned Rust object qualification; runtime value checks",
+  "cases": [
+    {
+      "source": "inline-specialized/const-arguments.rs",
+      "accepted": true,
+      "source_sha256": "9dafe7ff00b87ffbe7d2df128d45ca1ed27cfe0f1eb26523689824e17c202527"
+    },
+    {
+      "source": "inline-specialized/early-late.rs",
+      "accepted": true,
+      "source_sha256": "ef8a20c44fe4b96e7a492c88f2b4bd777013b01b80a698f080a5a40681ff7e5b"
+    },
+    {
+      "source": "inline-specialized/nested.rs",
+      "accepted": true,
+      "source_sha256": "80dd9acac3825ab1619c142654bbfb7100514f4097d373253fb05cde689ac7cf"
+    },
+    {
+      "source": "inline-specialized/erased-type.rs",
+      "accepted": true,
+      "source_sha256": "2ae6ae13b77dd4f9226c3d4598509f8b20ea4b95b99b14539afb5730e7138767"
+    },
+    {
+      "source": "inline-specialized/array-result.rs",
+      "accepted": true,
+      "source_sha256": "61a3b39ae829f24955aa233e9c4620ba8d0c6641ba429dd04e68b97f174e3e2d"
+    },
+    {
+      "source": "inline-specialized/generic-closure.rs",
+      "accepted": true,
+      "source_sha256": "1b1198da264b80c742a917b8d8e9045e2e83aecfeb82ae8acbab6cd545474a0e"
+    },
+    {
+      "source": "inline-specialized/captured-context.rs",
+      "accepted": true,
+      "supported": false,
+      "boundary": "generic captured closure execution requires environment lifetime substitution",
+      "source_sha256": "6cf17fa187ae75450df3b308a5333c5d7f49b9ecb13e5bb40950009bd01ca923"
+    },
+    {
+      "source": "inline-specialized/zero-repeat.rs",
+      "accepted": false,
+      "source_sha256": "79cb44ed8703f3d757543ef1843191cafafa0bb40bf9d3025127e2a81018e7e0"
+    },
+    {
+      "source": "inline-specialized/const-loop.rs",
+      "accepted": true,
+      "source_sha256": "98e368aad884814529fc205537fa9fd571be0814a343e43522cb7e598cbd5b6a"
+    },
+    {
+      "source": "inline-specialized/non-const.rs",
+      "accepted": false,
+      "source_sha256": "8a5aa36149302acfdfa5a1b1ad957e26488e3d4d73593158b5a64ecb06a3f05e"
+    },
+    {
+      "source": "inline-specialized/division.rs",
+      "accepted": false,
+      "source_sha256": "f4d88f396344e49154080122348be667dd921140fb63b59fe971361cd25f5f07"
+    },
+    {
+      "source": "inline-specialized/local-capture.rs",
+      "accepted": false,
+      "source_sha256": "21cd1fe073a0107c9f5192bd331ff815e438094323705dec124fa53ca89098d8"
+    },
+    {
+      "source": "inline-specialized/zero-erased.rs",
+      "accepted": false,
+      "source_sha256": "710ecb377a7e635033d83074ff9c79d7ccf7638c3e70b7fb9060993582eadd28"
+    },
+    {
+      "source": "inline-specialized/nonzero-erased.rs",
+      "accepted": false,
+      "source_sha256": "a6d367bd0ad8b1b9bc401691c16307cc0a65538b539901429236fd7650df99ea"
+    },
+    {
+      "source": "inline-specialized/runtime-zero.rs",
+      "accepted": true,
+      "source_sha256": "395dca597d395531de2bc7e44c8424c42d79467e9a1685f77393058750695ef6"
+    },
+    {
+      "source": "inline-specialized/zero-eligibility.rs",
+      "accepted": false,
+      "source_sha256": "2ecf2e57a3b80d9c6121ec40b99a2b506ccc032e09a2968a86a1e6011b1067a9"
+    },
+    {
+      "source": "inline-specialized/known-zero.rs",
+      "accepted": true,
+      "source_sha256": "0b439ac67103c259474a4e94a6a3e589f612e5e71c3e60f7a39e923c68b21583"
+    },
+    {
+      "source": "inline-specialized/zero-value.rs",
+      "accepted": true,
+      "source_sha256": "55bf5b8bdc7ceec1bee0dc9c64acf3477d1cf0d479eb4eb616ef0708a7f3a082"
+    },
+    {
+      "source": "inline-specialized/associated.rs",
+      "accepted": true,
+      "supported": false,
+      "boundary": "associated constant execution needs a specialized body",
+      "source_sha256": "5e6625c18999ce41549912d2878ff758ff1045a3266092bf7114e725cefd2962"
+    },
+    {
+      "source": "inline-specialized/generic-type-check.rs",
+      "accepted": true,
+      "source_sha256": "380b74bee70624feb3e3a2d98b0994906b7be9397d3b6b7c94bd1333d38bb918"
+    },
+    {
+      "source": "inline-specialized/lifetime-owner.rs",
+      "accepted": true,
+      "source_sha256": "c91b1c1af1264b50878e6abfeca612efd058c83381554a7d86bdb060e8454418"
+    },
+    {
+      "source": "inline-specialized/lifetime-closure.rs",
+      "accepted": true,
+      "source_sha256": "677f2fa0b1a30cc559d47ade19610089c694717e3494c7c0bc890fbbcfb20228"
+    },
+    {
+      "source": "inline-specialized/distinct-recursion.rs",
+      "accepted": true,
+      "source_sha256": "ca7025818f53aa12fcbea791c3dbe3178a9c0a5d055ea24c443055a15d9f4d98"
+    },
+    {
+      "source": "inline-specialized/cycle.rs",
+      "accepted": false,
+      "source_sha256": "52bcd6752e4b6a0a60ea0b41117e3fc120a6a4706fc2bc7ada3dfd0a5b176387"
+    },
+    {
+      "source": "inline-specialized/unused-nonconst.rs",
+      "accepted": false,
+      "source_sha256": "a5ee9f7027f545a7ba1fb649ea33c1a31a5f55aca0339973b605e6a56fa8a36c"
+    }
+  ]
+}

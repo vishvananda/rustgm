@@ -106,9 +106,7 @@ impl<'a> Context<'a> {
             .bodies
             .iter()
             .map(|body| match body.owner {
-                Owner::AnonymousConstant | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => {
-                    0
-                }
+                Owner::AnonymousConstant | Owner::AnonymousInstance(_) | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => 0,
                 Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                     definition.0 as usize + 1
                 }

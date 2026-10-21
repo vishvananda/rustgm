@@ -87,6 +87,17 @@ impl<'a> Reader<'a> {
         self.facts.constant_values.get(&id).copied().map(Constant)
     }
     #[must_use]
+    pub fn inline_instance(
+        self,
+        instance: crate::sema::inline_constants::InlineInstance,
+        result: TypeId,
+    ) -> Option<Constant> {
+        self.facts
+            .inline_constants
+            .as_deref()?
+            .instance_value(instance, result)
+    }
+    #[must_use]
     pub fn inline(self, source: crate::resolve::unit::NodeKey) -> Option<Constant> {
         self.facts.inline_constants.as_deref()?.get(source)?.value
     }

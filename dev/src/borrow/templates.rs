@@ -14,6 +14,7 @@ pub struct Checked<'a> {
     templates: &'a Templates,
     index: HashMap<ItemId, usize>,
     closures: HashMap<ClosureId, usize>,
+    anonymous: HashMap<BodyKey, usize>,
     regions: regions::Analysis,
     loans: Vec<loans::Analysis>,
     contracts: Vec<Contract>,
@@ -49,7 +50,8 @@ impl Checked<'_> {
         let &index = match body.key() {
             BodyKey::Declaration(definition) => self.index.get(&ItemId(definition.0)),
             BodyKey::Closure(identity) => self.closures.get(&identity),
-            BodyKey::Anonymous(_) | BodyKey::ClosureAdapter(_) => None,
+            key @ BodyKey::Anonymous(_) => self.anonymous.get(&key),
+            BodyKey::AnonymousInstance(_) | BodyKey::ClosureAdapter(_) => None,
         }?;
         (self.templates.bodies[index].body.key() == body.key()).then(|| &self.regions.bodies[index])
     }
@@ -69,6 +71,7 @@ pub fn verify<'a, S: BuildHasher>(
 ) -> Result<Checked<'a>, Error> {
     let mut index = HashMap::with_capacity(templates.bodies.len());
     let mut closures = HashMap::new();
+    let mut anonymous = HashMap::new();
     for (ordinal, template) in templates.bodies.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {
@@ -80,7 +83,8 @@ pub fn verify<'a, S: BuildHasher>(
                 index.insert(ItemId(definition.0), ordinal).is_some()
             }
             Owner::Closure { identity, .. } => closures.insert(identity, ordinal).is_some(),
-            Owner::AnonymousConstant | Owner::ClosureAdapter { .. } => {
+            Owner::AnonymousConstant => anonymous.insert(body.key(), ordinal).is_some(),
+            Owner::AnonymousInstance(_) | Owner::ClosureAdapter { .. } => {
                 return Err(error("template requires a declared owner"));
             }
         };
@@ -122,6 +126,7 @@ pub fn verify<'a, S: BuildHasher>(
         templates,
         index,
         closures,
+        anonymous,
         regions,
         loans,
         contracts,

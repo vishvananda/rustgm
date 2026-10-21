@@ -66,6 +66,10 @@ pub struct Machine<'a, 'b> {
     slots: usize,
     active_initializers: HashSet<DefId>,
     active_inline: HashSet<NodeKey>,
+    active_anonymous: HashSet<(
+        crate::sema::inline_constants::InlineInstance,
+        crate::types::TypeId,
+    )>,
     waiting: Option<Requirement>,
 }
 pub(crate) struct State {
@@ -75,6 +79,10 @@ pub(crate) struct State {
     slots: usize,
     active_initializers: HashSet<DefId>,
     active_inline: HashSet<NodeKey>,
+    active_anonymous: HashSet<(
+        crate::sema::inline_constants::InlineInstance,
+        crate::types::TypeId,
+    )>,
 }
 impl State {
     pub(crate) fn retained_slots(&self) -> usize {
@@ -121,6 +129,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             slots: 0,
             active_initializers: HashSet::new(),
             active_inline: HashSet::new(),
+            active_anonymous: HashSet::new(),
             waiting: None,
         }
     }
@@ -170,6 +179,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         self.slots = state.slots;
         self.active_initializers = state.active_initializers;
         self.active_inline = state.active_inline;
+        self.active_anonymous = state.active_anonymous;
     }
     pub(crate) fn suspend(self) -> (State, crate::sema::values::Scratch) {
         let state = State {
@@ -179,6 +189,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             slots: self.slots,
             active_initializers: self.active_initializers,
             active_inline: self.active_inline,
+            active_anonymous: self.active_anonymous,
         };
         (state, self.evaluator.into_scratch())
     }
@@ -237,6 +248,13 @@ impl<'a, 'b> Machine<'a, 'b> {
             if !self.active_inline.insert(body.source) {
                 return Err(Failure::Fault("cycle in inline constant values"));
             }
+        }
+        if let Owner::AnonymousInstance(instance) = body.owner
+            && !self.active_anonymous.insert((instance, body.result))
+        {
+            return Err(Failure::Fault(
+                "cycle in anonymous constant instance values",
+            ));
         }
         let slots = body
             .locals

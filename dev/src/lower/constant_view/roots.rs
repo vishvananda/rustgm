@@ -11,6 +11,7 @@ pub(super) fn collect(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<()
     let inline = super::inline::declarations(graph)?;
     initializers(graph)?;
     super::inline::roots(graph, inline)?;
+    super::inline::instances(graph)?;
     promotions(graph, checked)
 }
 fn declarations(graph: &mut Graph<'_>) -> Result<(), &'static str> {
@@ -128,6 +129,7 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
                 format!("def:{}", definition.0)
             }
             Owner::Closure { identity, .. } => format!("closure:{}", identity.0),
+            Owner::AnonymousInstance(instance) => format!("anonymous-instance:{instance}"),
             Owner::AnonymousConstant => {
                 format!("anonymous:{}:{}", body.source.file.0, body.source.node.0)
             }
@@ -151,13 +153,15 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
     Ok(())
 }
 
-fn owner_key(key: BodyKey) -> (u8, u32, u32) {
+fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
     match key {
-        BodyKey::ClosureAdapter(adapter) => {
-            (3, adapter.instance().ty().0, adapter.requested() as u32)
+        BodyKey::ClosureAdapter(adapter) => (3, adapter.instance().ty().0, adapter.requested() as u32, 0, 0, 0),
+        BodyKey::Declaration(id) => (0, id.0, 0, 0, 0, 0),
+        BodyKey::Closure(id) => (1, id.0, 0, 0, 0, 0),
+        BodyKey::Anonymous(node) => (2, node.file.0, node.node.0, 0, 0, 0),
+        BodyKey::AnonymousInstance(instance) => {
+            let (file, node, kind, owner, args) = instance.order();
+            (4, file, node, kind, owner, args)
         }
-        BodyKey::Declaration(id) => (0, id.0, 0),
-        BodyKey::Closure(id) => (1, id.0, 0),
-        BodyKey::Anonymous(node) => (2, node.file.0, node.node.0),
     }
 }

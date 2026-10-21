@@ -17,6 +17,9 @@ impl Engine {
         if let Target::Initializer(definition) = target {
             return self.initializer_root(report, facts, definition);
         }
+        if let Target::Anonymous { instance, result } = target {
+            return self.anonymous_root(report, facts, instance, result);
+        }
         let Target::Expression {
             source,
             result,

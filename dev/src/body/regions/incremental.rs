@@ -29,6 +29,7 @@ impl Collector {
         self.update(facts)?;
         let mut contract = Contract::constant(source);
         self.populate(facts, &mut contract);
+        super::anonymous_header(facts, &mut contract)?;
         Ok(contract)
     }
     pub(crate) fn initializer(
@@ -118,6 +119,7 @@ impl Collector {
             }
             let mut contract = Contract::constant(source);
             self.populate(facts, &mut contract);
+            super::anonymous_header(facts, &mut contract)?;
             bodies.push(contract);
         }
         let start = bodies.len();

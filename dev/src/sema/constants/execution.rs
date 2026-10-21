@@ -3,20 +3,42 @@ use super::values::execution::{Progress, Request, Requirement, Target};
 use super::{Error, NodeKey, Queries, Query};
 
 impl Queries<'_> {
-    fn execution_target(&self, source: NodeKey, result: crate::types::TypeId) -> Target {
-        if self.execution_context().is_none()
+    fn execution_target(
+        &self,
+        source: NodeKey,
+        result: crate::types::TypeId,
+    ) -> Result<Target, Error> {
+        let context = self.execution_context();
+        if let Some(initializer) = context
+            && self
+                .typing
+                .facts
+                .inline_constants
+                .as_deref()
+                .and_then(|r| r.get(source))
+                .is_some()
+        {
+            let instance = crate::sema::inline_constants::InlineInstance::select(
+                self.typing.facts,
+                source,
+                crate::sema::inline_constants::Context::Initializer(initializer),
+            )
+            .map_err(|e| self.error(Query::Node(source), e))?;
+            return Ok(Target::Anonymous { instance, result });
+        }
+        if context.is_none()
             && let Some(super::instances::ValueScope::Initializer { index, .. }) = self.value_scope
         {
             let initializer = self.typing.facts.initializers[index];
             if initializer.value == source && initializer.semantic_source() != source {
-                return Target::Initializer(initializer.definition);
+                return Ok(Target::Initializer(initializer.definition));
             }
         }
-        Target::Expression {
+        Ok(Target::Expression {
             source,
             result,
-            context: self.execution_context(),
-        }
+            context,
+        })
     }
     pub(super) fn check_execution(&mut self, source: NodeKey) -> Result<(), Error> {
         let result = self
@@ -34,7 +56,7 @@ impl Queries<'_> {
             })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant eligibility type"))?;
         let result = self.specialized_type(source, result)?;
-        let target = self.execution_target(source, result);
+        let target = self.execution_target(source, result)?;
         let mut executor = self.typing.facts.constant_executor.take().ok_or_else(|| {
             self.error(
                 Query::Node(source),
@@ -62,7 +84,7 @@ impl Queries<'_> {
             .ok_or_else(|| self.error(Query::Node(source), "missing constant execution type"))?;
         let result = self.specialized_type(source, result)?;
         let request = Request {
-            target: self.execution_target(source, result),
+            target: self.execution_target(source, result)?,
             arguments: Vec::new(),
         };
         let mut executor = self.typing.facts.constant_executor.take().ok_or_else(|| {

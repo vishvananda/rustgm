@@ -14,6 +14,10 @@ pub enum Target {
         result: TypeId,
         context: Option<Instance>,
     },
+    Anonymous {
+        instance: crate::sema::inline_constants::InlineInstance,
+        result: TypeId,
+    },
     Function(instance::Instance),
     Initializer(DefId),
     Associated(Instance),
@@ -31,7 +35,14 @@ pub struct Request {
 pub enum Requirement {
     FunctionBody(instance::Instance),
     InitializerBody(DefId),
-    InlineBody { source: NodeKey, result: TypeId },
+    InlineBody {
+        source: NodeKey,
+        result: TypeId,
+    },
+    AnonymousBody {
+        instance: crate::sema::inline_constants::InlineInstance,
+        result: TypeId,
+    },
     AssociatedBody(Instance),
 }
 
@@ -66,6 +77,8 @@ pub struct Work {
     pub template_bytes: usize,
     /// Owned checked constant bodies retained before ordinary CFG handoff.
     pub expression_bytes: usize,
+    pub anonymous_templates: usize,
+    pub anonymous_instances: usize,
 }
 
 /// The orchestrator supplies checked CFG execution without a semantic dependency

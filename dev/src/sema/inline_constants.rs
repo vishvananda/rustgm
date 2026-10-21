@@ -1,9 +1,11 @@
 //! Inline constants retain semantic body identity independently of runtime storage.
+mod instances;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::values::Constant,
     types::TypeId,
 };
+pub use instances::{Context, InlineInstance};
 use std::{
     cell::Cell,
     collections::{HashMap, HashSet},
@@ -23,8 +25,11 @@ pub enum Evaluation {
 pub struct Body {
     pub source: NodeKey,
     pub parent_body: NodeKey,
+    /// Nearest enclosing non-inline body, retained once without ancestor rescans.
+    context_owner: NodeKey,
     pub declaration: Option<DefId>,
     pub result: Option<TypeId>,
+    pub universals: u32,
     pub evaluation: Evaluation,
     pub value: Option<Constant>,
     pub root: Option<Box<RootFacts>>,
@@ -53,7 +58,10 @@ pub struct Registry {
     pub preparation_visits: usize,
     pub publications: usize,
     pub value_publications: usize,
+    pub instance_publications: usize,
+    pub instance_lookups: Cell<usize>,
     pub suppression_visits: usize,
+    instances: Option<Box<instances::Values>>,
 }
 
 impl Registry {
@@ -97,8 +105,11 @@ impl Registry {
         self.bodies.push(Body {
             source,
             parent_body,
+            context_owner: parent
+                .map_or(parent_body, |id| self.bodies[id.0 as usize].context_owner),
             declaration,
             result: None,
+            universals: 0,
             evaluation,
             value: None,
             root: None,
@@ -122,7 +133,12 @@ impl Registry {
         Ok(id)
     }
 
-    pub(crate) fn complete(&mut self, id: Id, result: TypeId) -> Result<(), &'static str> {
+    pub(crate) fn complete(
+        &mut self,
+        id: Id,
+        result: TypeId,
+        universals: u32,
+    ) -> Result<(), &'static str> {
         let body = self
             .bodies
             .get_mut(id.0 as usize)
@@ -131,6 +147,7 @@ impl Registry {
             return Err("inline constant result was published more than once");
         }
         body.result = Some(result);
+        body.universals = universals;
         self.publications += 1;
         Ok(())
     }

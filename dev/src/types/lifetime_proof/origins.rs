@@ -18,6 +18,10 @@ pub(super) struct Origins {
     maximum: u32,
 }
 impl Origins {
+    pub(super) fn allocation_bytes(&self) -> usize {
+        size_of::<Self>().saturating_add(crate::support::retained::vector(&self.labels))
+    }
+
     pub(super) fn get(&self, block: usize) -> u32 {
         self.labels.get(block).copied().unwrap_or(0)
     }

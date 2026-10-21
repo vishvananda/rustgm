@@ -45,6 +45,10 @@ impl ValueScope {
         Ok(())
     }
 }
+pub(crate) struct InstanceArguments {
+    pub bindings: Vec<(crate::types::parameters::ParameterId, Argument)>,
+    pub regions: Vec<crate::types::RegionId>,
+}
 impl Instance {
     /// Substitute captured arguments without rewriting the shared declaration.
     /// # Errors
@@ -70,9 +74,26 @@ impl Instance {
     /// # Errors
     /// Rejects missing or mismatched captured parameter identities.
     pub(crate) fn substitution(self, facts: &Declarations) -> Result<Bound, &'static str> {
-        let Some(schema) = facts.associated.schema(self.definition) else {
+        if facts.associated.schema(self.definition).is_none() {
             return if self.arguments == GenericArgs::EMPTY {
                 Ok(Bound::new(Vec::new()))
+            } else {
+                Err("ordinary constant has captured arguments")
+            };
+        }
+        let selected = self.selected_arguments(facts)?;
+        Bound::parameters_captured(&facts.types, &selected.bindings, selected.regions)
+    }
+    pub(crate) fn selected_arguments(
+        self,
+        facts: &Declarations,
+    ) -> Result<InstanceArguments, &'static str> {
+        let Some(schema) = facts.associated.schema(self.definition) else {
+            return if self.arguments == GenericArgs::EMPTY {
+                Ok(InstanceArguments {
+                    bindings: Vec::new(),
+                    regions: Vec::new(),
+                })
             } else {
                 Err("ordinary constant has captured arguments")
             };
@@ -100,7 +121,7 @@ impl Instance {
             .into_iter()
             .zip(arguments[captures..].iter().copied())
             .collect::<Vec<_>>();
-        Bound::parameters_captured(&facts.types, &bindings, regions)
+        Ok(InstanceArguments { bindings, regions })
     }
 }
 

@@ -79,6 +79,12 @@ impl Checker<'_> {
         resume: bool,
     ) -> Result<Option<(DefId, Option<usize>)>, Error> {
         let owner = match requirement {
+            Requirement::AnonymousBody { instance, .. } => {
+                return Err(self.error(
+                    instance.source(),
+                    "anonymous template must complete with its enclosing declaration",
+                ));
+            }
             Requirement::InlineBody { source, .. } => {
                 return Err(self.error(
                     source,

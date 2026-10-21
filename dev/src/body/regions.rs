@@ -1,5 +1,7 @@
 //! Group typed lifetime facts by body without repeating resolution or inference.
 pub use crate::sema::nested_outputs::Link as OutputLink;
+mod allocation;
+mod anonymous;
 mod clause_terms;
 mod incremental;
 use super::ir::NodeKey;
@@ -9,6 +11,7 @@ use crate::{
     sema::model::Declarations,
     types::{RegionId, TypeId, outlives::Pair},
 };
+use anonymous::header as anonymous_header;
 pub use incremental::Collector;
 use std::collections::HashMap;
 
@@ -133,7 +136,9 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         if index.insert(source, bodies.len()).is_some() {
             return Err("duplicate anonymous constant lifetime owner");
         }
-        bodies.push(Contract::constant(source));
+        let mut contract = Contract::constant(source);
+        anonymous_header(facts, &mut contract)?;
+        bodies.push(contract);
     }
     constructors(facts, &mut bodies, &mut index)?;
     for contract in &mut bodies {

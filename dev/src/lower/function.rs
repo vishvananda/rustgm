@@ -565,6 +565,19 @@ impl Lower<'_, '_> {
                     representation,
                 );
             }
+            Rvalue::InlineInstance(instance) => {
+                let constant = self
+                    .context
+                    .constants
+                    .inline_instance(instance, value.ty)
+                    .ok_or("anonymous instance was not evaluated")?;
+                return self.constant_value(
+                    super::data::Key::InlineInstance(instance, value.ty),
+                    constant,
+                    value.ty,
+                    representation,
+                );
+            }
             Rvalue::AssociatedConstant(instance) => {
                 let constant = self
                     .context

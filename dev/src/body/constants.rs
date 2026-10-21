@@ -40,6 +40,8 @@ fn prepare<'a>(
     let mut demands = Vec::new();
     let mut inline_seen = HashSet::new();
     let mut inline = Vec::new();
+    let mut instances = Vec::new();
+    let mut instance_seen = HashSet::new();
     let mut associated_seen = HashSet::new();
     let mut associated = Vec::new();
     let mut demand = |id, static_| {
@@ -59,6 +61,15 @@ fn prepare<'a>(
                 .is_some_and(|registry| registry.get(body.source).is_some())
         {
             continue;
+        }
+        for statement in &body.statements {
+            if let super::ir::Action::Evaluate(id) = statement.action
+                && let Some(value) = body.values.get(id.0 as usize)
+                && let Rvalue::InlineInstance(instance) = value.kind
+                && instance_seen.insert((instance, value.ty))
+            {
+                instances.push((instance, value.ty));
+            }
         }
         for value in &body.values {
             if let Rvalue::InlineConstant(source) = value.kind
@@ -84,7 +95,7 @@ fn prepare<'a>(
             demand(id, static_);
         }
     }
-    if demands.is_empty() && associated.is_empty() && inline.is_empty() {
+    if demands.is_empty() && associated.is_empty() && inline.is_empty() && instances.is_empty() {
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
@@ -97,6 +108,9 @@ fn prepare<'a>(
     }
     for source in inline {
         evaluator.inline(source)?;
+    }
+    for (instance, result) in instances {
+        evaluator.inline_instance(instance, result)?;
     }
     for instance in associated {
         evaluator.associated(instance)?;
@@ -112,22 +126,6 @@ pub(crate) fn eligibility(
     if !body.const_context {
         return Ok(());
     }
-    if matches!(body.owner, super::ir::Owner::AnonymousConstant)
-        && facts
-            .inline_constants
-            .as_deref()
-            .and_then(|registry| registry.get(body.source))
-            .is_some_and(|inline| {
-                inline.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
-            })
-    {
-        return Err(crate::sema::model::Declarations::error(
-            report,
-            body.source,
-            "generic inline constant execution requires anonymous specialization",
-        ));
-    }
-
     let function = matches!(body.owner, super::ir::Owner::Function { .. });
     // The CFG retains both sides of a conditional, but not source after an
     // unconditional transfer. Const permission is checked before value demand.
