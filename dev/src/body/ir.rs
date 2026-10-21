@@ -48,6 +48,10 @@ pub enum ProjectionKind {
         region: crate::types::RegionId,
         mutable: bool,
     },
+    /// Raw access has no reference region, loan ancestry or owned move path.
+    RawDereference {
+        mutable: bool,
+    },
     Field(crate::sema::members::Selection),
     Index {
         index: ValueId,
@@ -78,6 +82,13 @@ pub enum ProjectionKind {
         start: u64,
         end: u64,
     },
+}
+impl ProjectionKind {
+    /// Both forms evaluate pointer storage before selecting a referent place.
+    #[must_use]
+    pub const fn is_dereference(self) -> bool {
+        matches!(self, Self::Dereference { .. } | Self::RawDereference { .. })
+    }
 }
 #[derive(Clone, Copy)]
 pub struct Projection {

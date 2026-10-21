@@ -18,10 +18,7 @@ use super::{
 };
 use crate::{
     body::{
-        ir::{
-            Action, BlockId, Body, BorrowKind, NodeKey, Place, ProjectionKind, Rvalue, Terminator,
-            ValueId,
-        },
+        ir::{Action, BlockId, Body, BorrowKind, NodeKey, Place, Rvalue, Terminator, ValueId},
         scopes::Lifetime,
         storage::End,
     },
@@ -325,7 +322,7 @@ impl Flow<'_> {
             }
             Action::Project(id) | Action::Select { projection: id, .. } => {
                 let projection = &self.body.projections[id.0 as usize];
-                if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+                if projection.kind.is_dereference() {
                     self.access(state, projection.base, Mode::Shared, Depth::Shallow, None)?;
                 }
             }

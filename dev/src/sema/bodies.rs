@@ -31,6 +31,7 @@ mod addresses;
 mod pointer_casts;
 mod pointers;
 mod references;
+mod safety;
 mod selected_arguments;
 mod slots;
 mod text;
@@ -200,6 +201,7 @@ pub(super) struct State {
     result_term: Option<TermId>,
     opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
     in_function: bool,
+    safety: safety::Context,
     infer: Context,
     terms: slots::Terms,
     diverges: slots::Slots<bool>,
@@ -227,6 +229,7 @@ pub(super) struct State {
     pointer_casts: Vec<NodeId>,
     reference_expected: HashSet<NodeId>,
     address_dereferences: HashSet<NodeId>,
+    raw_address_places: HashSet<NodeId>,
     unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
@@ -307,6 +310,7 @@ impl<'a> Checker<'a> {
                 result_term: None,
                 opaque_terms: Vec::new(),
                 in_function: true,
+                safety: safety::Context::default(),
                 infer: Context::default(),
                 touched: scratch.touched,
                 bindings: Vec::new(),
@@ -330,6 +334,7 @@ impl<'a> Checker<'a> {
                 pointer_casts: Vec::new(),
                 reference_expected: HashSet::new(),
                 address_dereferences: HashSet::new(),
+                raw_address_places: HashSet::new(),
                 unsizing_contexts: std::collections::HashMap::new(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
@@ -419,6 +424,7 @@ impl<'a> Checker<'a> {
         self.state.result_term = None;
         self.state.opaque_terms.clear();
         self.state.in_function = false;
+        self.state.safety = safety::Context::default();
     }
     pub(super) fn anonymous_constant(
         &mut self,
@@ -596,9 +602,14 @@ impl Checker<'_> {
         self.prepare_bound_environment(body.node, function.definition, Some(function.signature))?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
-        let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {
+        let Some(Type::Function {
+            result, unsafe_, ..
+        }) = self.facts.types.kind(function.signature)
+        else {
             return Err(self.error(body.node, "missing function signature"));
         };
+        self.state.safety = safety::Context::default();
+        self.state.safety.function = unsafe_;
         self.state.result = result;
         self.prepare_opaque_results(body.node)?;
         let unit = self.report.package.unit(self.state.file);
@@ -752,6 +763,7 @@ impl Checker<'_> {
         }
     }
     fn exit_expression(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
+        self.leave_safety(node)?;
         self.state.type_annotations.remove(&node);
         self.save(node, term);
         let mut local_exit = false;
@@ -974,6 +986,7 @@ impl Checker<'_> {
         if matches!(self.kind(node), Kind::Closure { .. }) {
             return self.enter_closure(node, expected);
         }
+        self.enter_safety(node)?;
         self.enter_control(node, expected)?;
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
@@ -1181,6 +1194,9 @@ impl Checker<'_> {
                 {
                     return self.generic_constructor(node, ty, variant);
                 }
+                if definition.kind == DefKind::Static {
+                    self.check_static_access(node, id)?;
+                }
                 if definition.kind == DefKind::Const && self.facts.associated.owner(id).is_some() {
                     return self.associated_constant(node, id, ty);
                 }
@@ -1212,7 +1228,7 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 statements,
                 tail,
             }
@@ -1668,11 +1684,11 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        if unsafe_ || bound_regions != 0 {
-            return Err(self.error(
-                node,
-                "unsafe or lifetime-polymorphic calls require later implementation",
-            ));
+        if unsafe_ {
+            self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
+        }
+        if bound_regions != 0 {
+            return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));
         }
         let unit = self.report.package.unit(self.state.file);
         let mut count = usize::from(matches!(

@@ -1,6 +1,5 @@
 //! Raw place addresses require neither alignment promises nor a persistent loan.
 use super::{Builder, Error, NodeId, Place, Rvalue, Type, ValueId};
-use crate::body::ir::ProjectionKind;
 
 impl Builder<'_> {
     pub(super) fn finish_address(&mut self, node: NodeId) -> Result<ValueId, Error> {
@@ -26,7 +25,7 @@ impl Builder<'_> {
                 Place::Local(_) | Place::Static(_) => return Ok(()),
                 Place::Projection(id) => {
                     let projection = &self.body.projections[id.0 as usize];
-                    if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+                    if projection.kind.is_dereference() {
                         return Ok(());
                     }
                     place = projection.base;

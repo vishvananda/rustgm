@@ -41,6 +41,8 @@ pub(super) enum Access {
     Owned,
     Shared,
     Mutable,
+    RawShared,
+    RawMutable,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct PlaceInfo {
@@ -51,6 +53,21 @@ pub(super) struct PlaceInfo {
     pub access: Access,
     /// An empty subarray is not a read or move of its containing array.
     pub empty: bool,
+}
+impl PlaceInfo {
+    /// A raw referent is external memory, independent of its pointer's move path.
+    fn raw(mutable: bool) -> Self {
+        Self {
+            path: None,
+            indexed: false,
+            access: if mutable {
+                Access::RawMutable
+            } else {
+                Access::RawShared
+            },
+            empty: false,
+        }
+    }
 }
 pub struct Paths {
     partitions: Option<Box<arrays::Partitions>>,
@@ -96,6 +113,10 @@ impl Paths {
                         Access::Shared
                     };
                     info.empty = false;
+                    None
+                }
+                ProjectionKind::RawDereference { mutable } => {
+                    info = PlaceInfo::raw(mutable);
                     None
                 }
                 ProjectionKind::Field(field) => Some(Component::Field(field)),

@@ -112,6 +112,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             ProjectionKind::Dereference { region, mutable } => {
                 write!(out, " dereference region={} mutable={mutable}", region.0)?;
             }
+            ProjectionKind::RawDereference { mutable } => {
+                write!(out, " raw-dereference mutable={mutable}")?;
+            }
             ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
             ProjectionKind::Index { index, length } => {
                 write!(out, " index=v{} length={length}", index.0)?;

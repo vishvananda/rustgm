@@ -8,7 +8,7 @@ impl Engine<'_, '_> {
     pub(super) fn index_roots(&mut self) -> Result<(), Error> {
         for projection in &self.body.projections {
             self.charge(1)?;
-            let root = if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            let root = if projection.kind.is_dereference() {
                 None
             } else {
                 self.root(projection.base)?
@@ -47,7 +47,7 @@ impl Engine<'_, '_> {
     pub(super) fn reborrow_base(&self, place: Place) -> Result<Place, Error> {
         if let Place::Projection(id) = place {
             let projection = self.projection(id)?;
-            if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            if projection.kind.is_dereference() {
                 return Ok(projection.base);
             }
         }
@@ -112,6 +112,7 @@ impl Engine<'_, '_> {
             }
             ProjectionKind::IndexParameter { .. }
             | ProjectionKind::Dereference { .. }
+            | ProjectionKind::RawDereference { .. }
             | ProjectionKind::Subarray { .. }
             | ProjectionKind::Subslice { .. }
             | ProjectionKind::FromEnd { .. }

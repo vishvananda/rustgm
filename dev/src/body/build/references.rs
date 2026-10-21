@@ -117,20 +117,18 @@ impl Builder<'_> {
         base: Place,
     ) -> Result<crate::body::ir::ProjectionId, Error> {
         let ty = self.place_type(node, base)?;
-        let Some(Type::Reference {
-            region,
-            mutable,
-            referent,
-        }) = self.facts.types.kind(ty)
-        else {
-            return Err(self.error(node, "selected dereference requires a reference place"));
+        let (referent, kind) = match self.facts.types.kind(ty) {
+            Some(Type::Reference {
+                region,
+                mutable,
+                referent,
+            }) => (referent, ProjectionKind::Dereference { region, mutable }),
+            Some(Type::Pointer { mutable, pointee }) => {
+                (pointee, ProjectionKind::RawDereference { mutable })
+            }
+            _ => return Err(self.error(node, "selected dereference requires a pointer place")),
         };
-        self.projection(
-            node,
-            referent,
-            base,
-            ProjectionKind::Dereference { region, mutable },
-        )
+        self.projection(node, referent, base, kind)
     }
     pub(super) fn automatic_dereferences(
         &mut self,

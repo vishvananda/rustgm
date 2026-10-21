@@ -955,7 +955,7 @@ impl<'a> Builder<'a> {
                 self.scratch.work.push(Work::Place(value));
             }
             Kind::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 statements,
                 tail,
             }

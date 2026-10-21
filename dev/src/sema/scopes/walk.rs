@@ -7,7 +7,7 @@ impl Walker<'_> {
         self.record(node, context)?;
         match self.kind(node) {
             Syntax::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 statements,
                 tail,
             } => {

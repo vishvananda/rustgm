@@ -474,6 +474,12 @@ impl Queries<'_> {
     }
     pub(super) fn check_static_read(&mut self, index: usize) -> Result<(), Error> {
         let initializer = self.typing.facts.initializers[index];
+        if matches!(initializer.kind, InitializerKind::Static { mutable: true }) {
+            return Err(self.error(
+                Query::Constant(index),
+                "constant evaluation cannot read mutable static storage",
+            ));
+        }
         if matches!(initializer.kind, InitializerKind::Static { .. }) {
             self.check_copy_read(Query::Constant(index), initializer.ty)?;
         }

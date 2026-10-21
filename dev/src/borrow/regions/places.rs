@@ -12,6 +12,7 @@ const LIMIT: usize = 1_000_000;
 enum Origin {
     Local,
     Static,
+    Raw,
     Temporary(ValueId),
     Reference(usize),
 }
@@ -52,6 +53,8 @@ impl<'a> Places<'a> {
                 let id = this.links.len();
                 this.links.push(Link { region, parent });
                 Origin::Reference(id)
+            } else if matches!(projection.kind, ProjectionKind::RawDereference { .. }) {
+                Origin::Raw
             } else {
                 base
             };
@@ -88,7 +91,7 @@ impl<'a> Places<'a> {
         self.step()?;
         let mut link = match self.origin(place)? {
             Origin::Reference(id) => Some(id),
-            Origin::Static => None,
+            Origin::Static | Origin::Raw => None,
             Origin::Local => {
                 output.push(Obligation {
                     source,

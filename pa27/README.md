@@ -8,6 +8,30 @@ Prerequisite: PA26. The common source profile is Rust 1.98.0, initially edition
 
 Unsafe operations, raw pointers, unions, packed access and validity.
 
+Track unsafe permission lexically in the typed body checker. An `unsafe` block
+permits its descendant expressions and closures; a nested item starts its own
+context. An unsafe function requires unsafe permission at every call site,
+including calls through a function pointer and selected methods. Its body follows
+the pinned `unsafe_op_in_unsafe_fn` policy. Unsafe permission does not bypass
+ordinary typing, initialization, ownership, packed-reference alignment or constant
+evaluation rules.
+
+Keep raw pointer dereferences distinct from reference dereferences in the typed
+place representation. Raw accesses have no reference lifetime or inherited loan
+promise. Evaluate and check the pointer storage before selecting its referent;
+reject writes through `*const T` and moves of non-`Copy` referents. Forming a raw
+address does not itself create a reference or its alignment promise. The direct
+`&raw const *pointer` cancellation does not read its referent, while accessing a
+field through the pointer still requires unsafe permission.
+
+Union fields share storage and therefore overlap during borrow checking. Exactly
+one field initializes a union; reading or borrowing a union field requires unsafe
+permission, while assigning a field does not. Enforce the pinned allowed-field
+contract and represent union layout directly, without a discriminant or a fake
+struct sequence. Validate demanded constant results using symbolic allocations,
+initialization, alignment and scalar validity; never obtain host addresses or
+execute input-language unsafe operations in the compiler implementation.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

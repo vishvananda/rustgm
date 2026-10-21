@@ -246,14 +246,11 @@ impl<'a> Context<'a> {
             bound_regions: _,
             parameters,
             result,
-            unsafe_,
+            unsafe_: _,
         }) = self.types.kind(ty)
         else {
             return Err("missing selected function signature");
         };
-        if unsafe_ {
-            return Err("unsafe calls require later checking");
-        }
         let mut native = Vec::new();
         let result_type = self.representation(result)?;
         if matches!(result_type, Representation::Object(_)) {
