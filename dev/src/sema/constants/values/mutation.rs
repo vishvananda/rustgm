@@ -1,5 +1,5 @@
 //! Evaluated storage refines the conservative type fact without following pointer slots.
-use super::{Constant, Reader, View};
+use super::{Constant, Error, Evaluator, Origin, Reader, View};
 use crate::types::{
     Kind, TypeId,
     aggregate::{ShapeReadiness, SharedMutation},
@@ -13,6 +13,7 @@ struct Inspection<'a> {
     pending: Vec<(TypeId, Constant)>,
     seen: HashSet<(TypeId, Constant)>,
     steps: usize,
+    references: bool,
 }
 impl Reader<'_> {
     /// Refine owned storage using its actual array length and active variant.
@@ -29,6 +30,35 @@ impl Reader<'_> {
         ty: TypeId,
         value: Constant,
     ) -> Result<(Answer, usize), &'static str> {
+        self.inspect_storage(ty, value, false)
+    }
+    /// Check escaped references independently of owned storage and raw addresses.
+    /// Named static backing is permitted by its actual symbolic origin. An owned
+    /// value may contain interior storage, but a reference to a fresh allocation
+    /// containing that storage cannot escape constant evaluation.
+    /// # Errors
+    /// Rejects malformed references, unfinished backing and exhausted graph work.
+    pub fn shared_reference_storage(
+        self,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<Answer, &'static str> {
+        self.shared_reference_work(ty, value)
+            .map(|(answer, _)| answer)
+    }
+    pub(crate) fn shared_reference_work(
+        self,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<(Answer, usize), &'static str> {
+        self.inspect_storage(ty, value, true)
+    }
+    fn inspect_storage(
+        self,
+        ty: TypeId,
+        value: Constant,
+        references: bool,
+    ) -> Result<(Answer, usize), &'static str> {
         if !self.facts.aggregates.has_shared_mutation() {
             return Ok((Answer::Ordinary, 0));
         }
@@ -38,9 +68,45 @@ impl Reader<'_> {
             pending: vec![(ty, value)],
             seen: HashSet::new(),
             steps: 0,
+            references,
         };
         let answer = inspection.inspect()?;
         Ok((answer, inspection.steps + inspection.types.work().steps))
+    }
+}
+impl Evaluator<'_> {
+    pub(super) fn checked_reference_result(
+        &mut self,
+        query: super::Query,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<Constant, Error> {
+        if !self.facts().aggregates.has_shared_mutation() {
+            return Ok(value);
+        }
+        let (answer, work) = Reader::new(self.facts())
+            .shared_reference_work(ty, value)
+            .map_err(|e| self.queries.error(query, e))?;
+        self.queries.steps = self
+            .queries
+            .steps
+            .checked_add(work)
+            .filter(|steps| *steps <= self.queries.limit)
+            .ok_or_else(|| {
+                self.queries
+                    .error(query, "constant reference storage work budget exceeded")
+            })?;
+        match answer {
+            Answer::Ordinary => Ok(value),
+            Answer::Interior => Err(self.queries.error(
+                query,
+                "constant reference cannot escape with interior mutable allocation backing",
+            )),
+            Answer::Unresolved => Err(self.queries.error(
+                query,
+                "constant reference storage requires completed type and value facts",
+            )),
+        }
     }
 }
 impl Inspection<'_> {
@@ -51,7 +117,7 @@ impl Inspection<'_> {
             if !self.seen.insert((ty, value)) {
                 continue;
             }
-            if self.types.contains(ty)? == Answer::Ordinary {
+            if !self.references && self.types.contains(ty)? == Answer::Ordinary {
                 continue;
             }
             match self
@@ -61,51 +127,19 @@ impl Inspection<'_> {
                 .kind(ty)
                 .ok_or("invalid stored value type")?
             {
-                Kind::Adt(item, _) => {
-                    if self.reader.facts.aggregates.shared_mutation(item)
-                        == Some(SharedMutation::Interior)
-                    {
-                        return Ok(Answer::Interior);
-                    }
-                    let ShapeReadiness::Ready(shape) = self
-                        .reader
-                        .facts
-                        .aggregates
-                        .try_shape(&self.reader.facts.types, ty)?
-                    else {
-                        unresolved = true;
-                        continue;
-                    };
-                    let View::Product { variant, .. } = self.reader.view(value)? else {
-                        return Err("nominal storage lacks a product value");
-                    };
-                    let ordinal = if let Some(variant) = variant {
-                        let variant = self
-                            .reader
-                            .facts
-                            .members
-                            .variants
-                            .get(variant.0 as usize)
-                            .ok_or("invalid stored value variant")?;
-                        if variant.owner != item {
-                            return Err("stored value variant differs from its nominal owner");
-                        }
-                        variant.ordinal as usize
-                    } else if shape.variants().len() == 1 {
-                        0
-                    } else {
-                        return Err("enum storage lacks an active variant");
-                    };
-                    let fields = shape
-                        .variants()
-                        .nth(ordinal)
-                        .ok_or("stored value variant exceeds its shape")?
-                        .fields;
-                    self.fields(fields, value)?;
-                }
+                Kind::Adt(item, _) => match self.nominal(item, ty, value)? {
+                    Answer::Interior => return Ok(Answer::Interior),
+                    Answer::Unresolved => unresolved = true,
+                    Answer::Ordinary => {}
+                },
                 Kind::Array { element, length } => self.array(element, length, value)?,
                 Kind::Tuple(fields) => self.fields(fields, value)?,
                 Kind::Closure { environment, .. } => self.push(environment, value)?,
+                Kind::Reference { .. } if self.references => match self.reference(value)? {
+                    Answer::Interior => return Ok(Answer::Interior),
+                    Answer::Unresolved => unresolved = true,
+                    Answer::Ordinary => {}
+                },
                 Kind::ArrayTerm { .. }
                 | Kind::Slice(_)
                 | Kind::Parameter(_)
@@ -125,6 +159,78 @@ impl Inspection<'_> {
         } else {
             Answer::Ordinary
         })
+    }
+    fn nominal(
+        &mut self,
+        item: crate::types::ItemId,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<Answer, &'static str> {
+        if !self.references
+            && self.reader.facts.aggregates.shared_mutation(item) == Some(SharedMutation::Interior)
+        {
+            return Ok(Answer::Interior);
+        }
+        let ShapeReadiness::Ready(shape) = self
+            .reader
+            .facts
+            .aggregates
+            .try_shape(&self.reader.facts.types, ty)?
+        else {
+            return Ok(Answer::Unresolved);
+        };
+        let View::Product { variant, .. } = self.reader.view(value)? else {
+            return Err("nominal storage lacks a product value");
+        };
+        let ordinal = if let Some(variant) = variant {
+            let variant = self
+                .reader
+                .facts
+                .members
+                .variants
+                .get(variant.0 as usize)
+                .ok_or("invalid stored value variant")?;
+            if variant.owner != item {
+                return Err("stored value variant differs from its nominal owner");
+            }
+            variant.ordinal as usize
+        } else if shape.variants().len() == 1 {
+            0
+        } else {
+            return Err("enum storage lacks an active variant");
+        };
+        let fields = shape
+            .variants()
+            .nth(ordinal)
+            .ok_or("stored value variant exceeds its shape")?
+            .fields;
+        self.fields(fields, value)?;
+        Ok(Answer::Ordinary)
+    }
+    fn reference(&mut self, value: Constant) -> Result<Answer, &'static str> {
+        let mut location = match self.reader.view(value)? {
+            View::Reference(id) => id,
+            View::Text(_) | View::Bytes(_) => return Ok(Answer::Ordinary),
+            _ => return Err("constant reference lacks symbolic backing"),
+        };
+        let pointed = self.reader.location(location)?;
+        loop {
+            self.charge(1)?;
+            match self.reader.location(location)?.origin {
+                Origin::Projection { base, .. } => location = base,
+                Origin::Static(_) => return Ok(Answer::Ordinary),
+                Origin::Allocation => break,
+            }
+        }
+        let value = pointed
+            .value
+            .ok_or("constant reference backing is unfinished")?;
+        let (answer, work) = self.reader.shared_mutation_work(pointed.ty, value)?;
+        self.charge(work)?;
+        if answer == Answer::Ordinary {
+            self.push(pointed.ty, value)?;
+        }
+        Ok(answer)
     }
     fn fields(
         &mut self,

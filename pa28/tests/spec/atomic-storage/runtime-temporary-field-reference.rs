@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;fn f()-> &'static u32{&(AtomicU32::new(0),7).1}

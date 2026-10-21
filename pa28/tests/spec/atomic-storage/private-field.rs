@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;fn f(){let value=AtomicU32::new(0);let _=value.value;}

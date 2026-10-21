@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;struct S{a:[AtomicU32;2],b:u32}static A:S=S{a:[AtomicU32::new(1),AtomicU32::new(2)],b:7};fn main(){unsafe{let p=&raw const A.a[1] as *mut u32;core::ptr::write_volatile(p,42);check(core::ptr::read_volatile(p)==42);check(A.b==7);}}

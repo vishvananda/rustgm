@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;fn f(_:AtomicU32<u8>){}

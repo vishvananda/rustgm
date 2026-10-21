@@ -38,6 +38,25 @@ volatile accesses or padding. Atomic library methods and the remaining intrinsic
 families are later slices. The independent `u32` atomic capability controls do
 not claim source-language atomic support.
 
+A separate constructor/storage slice introduces the exact canonical
+`core::sync::atomic::AtomicU32` and `std::sync::atomic::AtomicU32` identity and
+its const `new(u32)` factory. Its private storage has natural `u32` layout;
+the type is neither Copy nor Clone. The factory remains an ordinary const
+function for promotion eligibility. Shared mutation is a typed storage fact,
+independent of destruction, auto traits, unsafe permission and const writes.
+Promotion refines actual empty arrays and inactive variants, while constant
+reference escape checks inspect the selected referent and its symbolic origin.
+Each emitted allocation determines its own readonly placement, so an immutable
+reference slot can point to writable atomic storage.
+
+The draft `tests/atomic-storage-outcomes.json` records 27 independent source
+outcomes and five native storage comparisons using the already qualified
+volatile operations. Body-local inline const remains an explicit PA25 boundary.
+Initializer-local borrow controls consume PA25's actual body regions, while
+escaping local references remain invalid. Atomic load/store methods and
+`Ordering` are subsequent source slices. These storage
+comparisons establish no atomic-operation or concurrent-execution claim.
+
 The draft `tests/manifest.draft.json` declares 53 independently qualified source
 outcomes, including nine native comparisons and five valid Rust inputs that
 exercise the explicit unsupported boundary. The maintainer tests

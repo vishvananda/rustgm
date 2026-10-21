@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;fn f(){let _=AtomicU32::new(7u8);}

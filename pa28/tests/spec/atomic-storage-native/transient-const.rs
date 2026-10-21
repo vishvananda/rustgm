@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;const fn make()->AtomicU32{let value=AtomicU32::new(7);{let _r=&value;}value}static A:AtomicU32=make();fn main(){unsafe{check(core::ptr::read_volatile(&raw const A as *const u32)==7);}}

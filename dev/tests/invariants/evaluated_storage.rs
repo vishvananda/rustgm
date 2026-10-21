@@ -204,3 +204,152 @@ fn shared_value_graphs_and_repeats_do_not_expand_exponentially() -> Result<(), S
     );
     Ok(())
 }
+
+#[test]
+fn references_require_actual_static_backing_and_raw_slots_stay_terminal() -> Result<(), String> {
+    use crate::{
+        resolve::model::DefId,
+        sema::constants::references::{Access, Place},
+        types::RegionId,
+    };
+    let mut facts = facts()?;
+    let (atomic, value) = atomic(&mut facts)?;
+    let reference = facts.types.intern(Kind::Reference {
+        referent: atomic,
+        region: RegionId::STATIC,
+        mutable: false,
+    })?;
+    let raw = facts.types.intern(Kind::Pointer {
+        pointee: atomic,
+        mutable: false,
+    })?;
+    let owned = Constant(facts.constant_references.insert(Place {
+        value: Some(value.0),
+        ty: atomic,
+        access: Access::Shared,
+        packed: None,
+        projection: None,
+    })?);
+    assert_eq!(
+        Reader::new(&facts).shared_mutation(reference, owned)?,
+        Answer::Ordinary
+    );
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(reference, owned)?,
+        Answer::Interior
+    );
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(raw, owned)?,
+        Answer::Ordinary
+    );
+    let static_address = Constant(facts.constant_references.static_place(DefId(17), atomic)?);
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(reference, static_address)?,
+        Answer::Ordinary
+    );
+    let slot = facts.types.intern_list(&[reference])?;
+    let wrapped = facts.types.intern(Kind::Tuple(slot))?;
+    let stored = product(&mut facts, &[owned], None)?;
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(wrapped, stored)?,
+        Answer::Interior
+    );
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(atomic, value)?,
+        Answer::Ordinary
+    );
+    Ok(())
+}
+
+#[test]
+fn references_to_empty_storage_refine_values_and_pending_backing_cannot_escape()
+-> Result<(), String> {
+    use crate::{
+        sema::constants::references::{Access, Place},
+        types::RegionId,
+    };
+    let mut facts = facts()?;
+    let (atomic, _) = atomic(&mut facts)?;
+    let array = facts.types.intern(Kind::Array {
+        element: atomic,
+        length: 0,
+    })?;
+    let reference = facts.types.intern(Kind::Reference {
+        referent: array,
+        region: RegionId::STATIC,
+        mutable: false,
+    })?;
+    let value = product(&mut facts, &[], None)?;
+    let address = Constant(facts.constant_references.insert(Place {
+        value: Some(value.0),
+        ty: array,
+        access: Access::Shared,
+        packed: None,
+        projection: None,
+    })?);
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(reference, address)?,
+        Answer::Ordinary
+    );
+    let pending = Constant(facts.constant_references.insert(Place {
+        value: None,
+        ty: array,
+        access: Access::Shared,
+        packed: None,
+        projection: None,
+    })?);
+    assert!(
+        Reader::new(&facts)
+            .shared_reference_storage(reference, pending)
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn ordinary_subobject_reference_does_not_inherit_its_allocation_siblings() -> Result<(), String> {
+    use crate::{
+        sema::constants::references::{Access, Place, References},
+        types::RegionId,
+    };
+    let mut facts = facts()?;
+    let (atomic, atomic_value) = atomic(&mut facts)?;
+    let integer = TypeId::primitive(Primitive::U32);
+    let fields = facts.types.intern_list(&[atomic, integer])?;
+    let pair = facts.types.intern(Kind::Tuple(fields))?;
+    let scalar = Constant::scalar(Scalar::Integer(7));
+    let value = product(&mut facts, &[atomic_value, scalar], None)?;
+    let root = facts.constant_references.insert(Place {
+        value: Some(value.0),
+        ty: pair,
+        access: Access::Shared,
+        packed: None,
+        projection: None,
+    })?;
+    let base = References::id(root)?;
+    let selected = Constant(facts.constant_references.project(
+        base,
+        1,
+        Place {
+            value: Some(scalar.0),
+            ty: integer,
+            access: Access::Shared,
+            packed: None,
+            projection: None,
+        },
+    )?);
+    let reference = facts.types.intern(Kind::Reference {
+        referent: integer,
+        region: RegionId::STATIC,
+        mutable: false,
+    })?;
+    assert_eq!(
+        Reader::new(&facts).shared_mutation(pair, value)?,
+        Answer::Interior
+    );
+    assert_eq!(
+        Reader::new(&facts).shared_reference_storage(reference, selected)?,
+        Answer::Ordinary
+    );
+    Ok(())
+}

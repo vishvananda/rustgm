@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;static A:AtomicU32=AtomicU32::new(0);fn main(){unsafe{let p=&raw const A as *mut u32;core::ptr::write_volatile(p,42);check(core::ptr::read_volatile(p)==42);}}

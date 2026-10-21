@@ -323,7 +323,27 @@ impl<'a> Evaluator<'a> {
         let query = Query::Instance(instance);
         self.queries.work.push(Work::Enter(query));
         self.queries.drain()?;
-        self.queries.value(query).map(Constant)
+        let value = Constant(self.queries.value(query)?);
+        if !self.facts().aggregates.has_shared_mutation() {
+            return Ok(value);
+        }
+        let ty = self
+            .facts()
+            .definitions
+            .get(instance.definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| {
+                self.queries
+                    .error(query, "missing associated constant result type")
+            })?;
+        let mut substitution = instance
+            .substitution(self.facts())
+            .map_err(|e| self.queries.error(query, e))?;
+        let ty = substitution
+            .apply(&mut self.queries.typing.facts.types, ty)
+            .map_err(|e| self.queries.error(query, e))?;
+        self.checked_reference_result(query, ty, value)
     }
     /// Demand a static's initializer without reading or moving its storage.
     /// # Errors
@@ -402,7 +422,8 @@ impl<'a> Evaluator<'a> {
             .drain()
             .and_then(|()| self.queries.value(query).map(Constant));
         self.queries.value_scope = scope;
-        result
+        let ty = self.queries.typing.facts.initializers[index].ty;
+        self.checked_reference_result(query, ty, result?)
     }
     /// # Errors
     /// Diagnoses exhausted constant storage.

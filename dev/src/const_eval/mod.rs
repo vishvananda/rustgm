@@ -313,12 +313,21 @@ impl<'a, 'b> Machine<'a, 'b> {
                     }
                 }
                 Terminator::Return(value) => {
+                    let result_ty = body
+                        .values
+                        .get(value.0 as usize)
+                        .ok_or((
+                            index,
+                            Failure::Invalid("constant return lacks a typed value"),
+                        ))?
+                        .ty;
                     let result = Self::value(&frame, value).map_err(|e| (index, e))?;
                     self.slots -= frame.locals.len() + frame.values.len();
                     self.memory.expire(&frame.allocations);
                     if let Owner::Initializer { definition, .. } = body.owner {
                         self.active_initializers.remove(&definition);
-                        self.validate_result(result).map_err(|e| (index, e))?;
+                        self.validate_result(result, result_ty)
+                            .map_err(|e| (index, e))?;
                         self.evaluator.complete_definition(definition, result);
                     }
                     if let Some(parent) = self.frames.last_mut() {
@@ -329,7 +338,8 @@ impl<'a, 'b> Machine<'a, 'b> {
                         parent.values[target.0 as usize] = Some(result);
                         continue;
                     }
-                    self.validate_result(result).map_err(|e| (index, e))?;
+                    self.validate_result(result, result_ty)
+                        .map_err(|e| (index, e))?;
                     return Ok(Progress::Complete(result));
                 }
                 Terminator::Unreachable => {

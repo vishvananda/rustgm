@@ -1,0 +1,1 @@
+fn f(){let _=AtomicU32::new(0);}

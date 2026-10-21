@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;const PAIR:(AtomicU32,u32)=(AtomicU32::new(0),7);fn f()-> &'static u32{&PAIR.1}

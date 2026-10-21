@@ -2,7 +2,7 @@
 use super::{Context, DefId, DefKind, Error, NameId, Namespace, Resolver, ScopeId};
 use crate::{
     resolve::{package::ModuleId, unit::NodeKey},
-    support::library_types::LibraryType,
+    support::library_types::{LibraryField, LibraryModule, LibraryType},
     syntax::ast::NodeId,
 };
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ use std::collections::HashMap;
 pub struct Variant {
     pub type_definition: Option<DefId>,
     pub constructor: DefId,
-    pub field: Option<u32>,
+    pub field: Option<LibraryField>,
 }
 #[derive(Clone)]
 pub struct Nominal {
@@ -25,6 +25,7 @@ pub struct Nominal {
 pub struct LibraryTypes {
     entries: HashMap<LibraryType, Nominal>,
     prelude: HashMap<(NameId, Namespace), DefId>,
+    modules: [Option<ScopeId>; LibraryModule::COUNT],
 }
 impl LibraryTypes {
     #[must_use]
@@ -58,8 +59,7 @@ impl Resolver<'_> {
         let kind = LibraryType::ALL.into_iter().find(|kind| {
             kind.name() == last
                 || kind.module() == last
-                || kind != &LibraryType::ManuallyDrop
-                    && kind.variants().iter().any(|(name, _)| *name == last)
+                || kind.in_prelude() && kind.variants().iter().any(|(name, _)| *name == last)
                 || path
                     .iter()
                     .any(|name| self.package.names.get(*name) == kind.name())
@@ -83,23 +83,29 @@ impl Resolver<'_> {
             .builtin_traits
             .library
             .ok_or_else(|| self.error(c, node, "missing library module"))?;
-        let module = self.new_scope(None, ModuleId(0), true)?;
-        self.builtin_definition(
-            Context {
-                scope: library,
-                ..c
-            },
-            node,
-            kind.module(),
-            DefKind::Module,
-            Some(module),
-        )?;
+        let mut module = library;
+        for &part in kind.modules() {
+            module = if let Some(scope) = self.facts.library_types.modules[part.index()] {
+                scope
+            } else {
+                let scope = self.new_scope(None, ModuleId(0), true)?;
+                self.builtin_definition(
+                    Context { scope: module, ..c },
+                    node,
+                    part.name(),
+                    DefKind::Module,
+                    Some(scope),
+                )?;
+                self.facts.library_types.modules[part.index()] = Some(scope);
+                scope
+            };
+        }
         let members = self.new_scope(None, ModuleId(0), true)?;
         let definition = self.builtin_definition(
             Context { scope: module, ..c },
             node,
             kind.name(),
-            if kind == LibraryType::ManuallyDrop {
+            if kind.is_struct() {
                 DefKind::Struct
             } else {
                 DefKind::Enum
@@ -121,7 +127,7 @@ impl Resolver<'_> {
             )?);
         }
         let variants = self.library_variants(c, node, kind, members)?;
-        if kind != LibraryType::ManuallyDrop {
+        if kind.in_prelude() {
             let name = self.facts.definitions[definition.0 as usize].name;
             self.facts
                 .library_types
@@ -156,13 +162,13 @@ impl Resolver<'_> {
                 },
                 node,
                 name,
-                if kind == LibraryType::ManuallyDrop {
+                if kind.is_struct() {
                     DefKind::Constructor
                 } else {
                     DefKind::Variant
                 },
             )?;
-            let type_definition = if kind == LibraryType::ManuallyDrop {
+            let type_definition = if kind.is_struct() {
                 None
             } else {
                 Some(self.builtin_definition(
@@ -176,7 +182,7 @@ impl Resolver<'_> {
                     None,
                 )?)
             };
-            if kind != LibraryType::ManuallyDrop {
+            if kind.in_prelude() {
                 let name = self.facts.definitions[constructor.0 as usize].name;
                 self.facts
                     .library_types

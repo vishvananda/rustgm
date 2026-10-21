@@ -1,0 +1,181 @@
+{
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "status": "draft; no assignment activation or text references",
+  "scope": "AtomicU32 constructor/storage only; atomic load/store and Ordering not exposed yet",
+  "cases": [
+    {
+      "path": "tests/spec/atomic-storage/new.rs",
+      "expected_status": 0,
+      "sha256": "d894f1a81c05070261c4aa7b3ce14fa12b8bc564cf282b819b3de01e9bf1fc88"
+    },
+    {
+      "path": "tests/spec/atomic-storage/alias-new.rs",
+      "expected_status": 0,
+      "sha256": "b08b0055542b5147d9cf82b9eae26e682904084204da817bed735edc3a95a84f"
+    },
+    {
+      "path": "tests/spec/atomic-storage/no-prelude.rs",
+      "expected_status": 1,
+      "sha256": "a6ad3f77935229f1894274e290bc82fa6cfc70b748a7854dc2387be3c4d7ae27"
+    },
+    {
+      "path": "tests/spec/atomic-storage/no-type-parameter.rs",
+      "expected_status": 1,
+      "sha256": "9aa7f160e596fd5340ca67ca7c6de32f739a34f9bc1296e228fd67e574526692"
+    },
+    {
+      "path": "tests/spec/atomic-storage/wrong-input.rs",
+      "expected_status": 1,
+      "sha256": "e5ddddb1e4633899bb8bccdbfa7028de23a1041c9bea1533f742983f5ecaa71b"
+    },
+    {
+      "path": "tests/spec/atomic-storage/private-field.rs",
+      "expected_status": 1,
+      "sha256": "a257b45eb91fe1f28315dfd773f8295a20cec67b93a1e20a160715f6ea60d8af"
+    },
+    {
+      "path": "tests/spec/atomic-storage/private-rest.rs",
+      "expected_status": 0,
+      "sha256": "14d9614e9f04cb59f16a89a3a818624e7f97666c0b69abdc57e5dbc23fcdaa19"
+    },
+    {
+      "path": "tests/spec/atomic-storage/zero-array-not-copy.rs",
+      "expected_status": 1,
+      "sha256": "fe4fe7ee9f12c1b049f199d95ec7bb9625906bcdeb4f16ab2f9528e685028469"
+    },
+    {
+      "path": "tests/spec/atomic-storage/atomic-markers.rs",
+      "expected_status": 0,
+      "sha256": "c56e0d691e0a80b69660a2189c538305084611ab4449e63860e9c2c38e5f30b8"
+    },
+    {
+      "path": "tests/spec/atomic-storage/atomic-not-copy.rs",
+      "expected_status": 1,
+      "sha256": "ee12dff7465d1409558031a000a3ceb35a6f78858cb6f34ce9350d6811a48fcc"
+    },
+    {
+      "path": "tests/spec/atomic-storage/atomic-not-clone.rs",
+      "expected_status": 1,
+      "sha256": "22108703ca2e3b465b30d14fdda283dcee06606f4559d873460fd2114b0c10cc"
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-new.rs",
+      "expected_status": 0,
+      "sha256": "db74a8d635d7c9cbf6b35e7e5f96f9ba7be8017005fb35ded7fd2f28803e6203"
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-reference-static.rs",
+      "expected_status": 0,
+      "sha256": "e99b41f1871ce0a9cc2d4b53c874d60e9ae1e4db5f774de8f3b01367125228b7"
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-reference-const.rs",
+      "expected_status": 1,
+      "sha256": "868c5979162375970bac6a290dc97081641345adb54243f47b43d91e75046abd"
+    },
+    {
+      "path": "tests/spec/atomic-storage/packed-atomic.rs",
+      "expected_status": 0,
+      "sha256": "0536ccf6528a4e5e7c8a079a7654a4506d8f166219002c398c547eb1596ae198"
+    },
+    {
+      "path": "tests/spec/atomic-storage/zero-array-return.rs",
+      "expected_status": 0,
+      "sha256": "adfb661bfd6e5377411347aee9fe1db24d8dde49e12f27544088a745bdbaef4a"
+    },
+    {
+      "path": "tests/spec/atomic-storage/zero-array-repeat-return.rs",
+      "expected_status": 0,
+      "sha256": "de32d2569a89bd1bc9aec5c795c87bb35236f10a9161a6d4fb15f39bae03e2ac",
+      "frontend_status": 1,
+      "supported": false,
+      "boundary": "PA25 body-local inline const is not implemented; pinned Rust acceptance remains required."
+    },
+    {
+      "path": "tests/spec/atomic-storage/inactive-option-return.rs",
+      "expected_status": 0,
+      "sha256": "95fd4f83271b379cb7a880659f9af57d2f2337685f83b403ad547895987fdde0"
+    },
+    {
+      "path": "tests/spec/atomic-storage/active-option-return.rs",
+      "expected_status": 1,
+      "sha256": "efb2e70058144b08fcd6ba32cd118b6af554b183744cb90117eb234fa3dbe5c8"
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-temporary-reference.rs",
+      "expected_status": 1,
+      "sha256": "295d895dab3752eafca92a0476780dcf36b84d2b11791137b9cf97b393c5ee6d"
+    },
+    {
+      "path": "tests/spec/atomic-storage/static-temporary-reference.rs",
+      "expected_status": 1,
+      "sha256": "e83987fdceb55a37b649df864b26e2d995adb9a90a82f35abce4057fb70d59c8"
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-fn-local.rs",
+      "expected_status": 0,
+      "sha256": "e6125d28caf2af5eafbd0de134eec0183e32558c734157b78bcbf48586d5568d"
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-unit-local.rs",
+      "expected_status": 0,
+      "sha256": "68de63a84c3243840da6191a6f743e9c097d7dfdaf3ea7aec74cb5d9895c5b38",
+      "qualification_note": "Initializer-local body regions corrected by independently qualified PA25 checkpoint86b967e0."
+    },
+    {
+      "path": "tests/spec/atomic-storage/const-field-reference.rs",
+      "expected_status": 0,
+      "sha256": "91efbc0d91a9c65132499a361976c9d3cfef74a36e27756f27cd6ba587688ed2"
+    },
+    {
+      "path": "tests/spec/atomic-storage/temporary-field-reference.rs",
+      "expected_status": 0,
+      "sha256": "bd2d4d8936f261840df74bf662e0c7caf50584468b1a404614198e178fd10bfa"
+    },
+    {
+      "path": "tests/spec/atomic-storage/runtime-named-field-reference.rs",
+      "expected_status": 1,
+      "sha256": "284a935a4871eab16755398495562650e37a2a8a825d84bbd4d581888180cb11",
+      "qualification_note": "Pinned rustc1.98 rejects with E0515; original acceptance hypothesis retained in immutable predeclared study receipt."
+    },
+    {
+      "path": "tests/spec/atomic-storage/runtime-temporary-field-reference.rs",
+      "expected_status": 1,
+      "sha256": "9189389079cfb65ed8e3f12fba266e4e72d32d1c4a17010e9c524aef96212556"
+    }
+  ],
+  "native_cases": [
+    {
+      "path": "tests/spec/atomic-storage-native/shared-static.rs",
+      "expected_compile_status": 0,
+      "expected_runtime_status": 0,
+      "sha256": "e342f37bd8cc1635af83ccb6b248965f137df4ad425b04b4910f260b41bd3ff8"
+    },
+    {
+      "path": "tests/spec/atomic-storage-native/nested-static.rs",
+      "expected_compile_status": 0,
+      "expected_runtime_status": 0,
+      "sha256": "4a55ca90b4f4aa5b55032cd12ed4639df82e97bfc119fc8a29ee7e669399f601"
+    },
+    {
+      "path": "tests/spec/atomic-storage-native/readonly-slot.rs",
+      "expected_compile_status": 0,
+      "expected_runtime_status": 0,
+      "sha256": "50a1c5ad278be9f5e5324706fc162c53d05395116b1d3c97e75e87878aa4a381"
+    },
+    {
+      "path": "tests/spec/atomic-storage-native/projected-constant.rs",
+      "expected_compile_status": 0,
+      "expected_runtime_status": 0,
+      "sha256": "743fdddb963c4c8188b05af2e0cf083f79c7daaeb6e3cc635c93f1e42d64d88d"
+    },
+    {
+      "path": "tests/spec/atomic-storage-native/transient-const.rs",
+      "expected_compile_status": 0,
+      "expected_runtime_status": 0,
+      "sha256": "b782d546faf2a1309d4148017674bb30e80cdd689cb071429a90a69af88547e6"
+    }
+  ]
+}

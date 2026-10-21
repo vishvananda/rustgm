@@ -75,13 +75,14 @@ impl Context<'_> {
         {
             let layout = self.layout(record.ty)?;
             let name = self.data_name(Key::Definition(id))?;
+            let readonly = self.storage_readonly(record.ty, !record.mutable)?;
             let global = self.output.declare_global(
                 name,
                 MemorySpan {
                     bytes: layout.size.max(u64::from(layout.align)),
                     align: layout.align,
                 },
-                !record.mutable,
+                readonly,
             )?;
             self.data.globals.insert(Key::Definition(id), global);
             return Ok(global);
@@ -120,6 +121,7 @@ impl Context<'_> {
             return Ok(global);
         }
         let layout = self.layout(ty)?;
+        let readonly = self.storage_readonly(ty, readonly)?;
         self.data.charge(1)?;
         let name = self.data_name(key)?;
         let global = self.output.global(
@@ -146,6 +148,30 @@ impl Context<'_> {
             );
         }
         Ok(self.internal_name(format!("rg.data.{}", self.output.globals.len())))
+    }
+    // Placement belongs to this allocation's own stored type. A readonly
+    // reference slot may point to independently writable interior storage.
+    pub(super) fn storage_readonly(
+        &mut self,
+        ty: TypeId,
+        readonly: bool,
+    ) -> Result<bool, &'static str> {
+        Ok(if readonly && self.aggregates.has_shared_mutation() {
+            use crate::types::interior_mutability::{Answer, Query};
+            match self
+                .storage_mutation
+                .get_or_insert_with(|| Query::new(self.types, self.aggregates))
+                .contains(ty)?
+            {
+                Answer::Ordinary => true,
+                Answer::Interior => false,
+                Answer::Unresolved => {
+                    return Err("persistent allocation storage requires completed mutation facts");
+                }
+            }
+        } else {
+            readonly
+        })
     }
     fn constant_pointer(&mut self, mut id: LocationId) -> Result<Pointer, &'static str> {
         let mut path = Vec::new();

@@ -9,7 +9,7 @@ use crate::{
         generics::Parameter,
         members::{Field, Name},
     },
-    support::library_types::LibraryType,
+    support::library_types::{LibraryField, LibraryType},
     syntax::item::Shape,
     types::{
         GenericArgs, TypeId,
@@ -84,7 +84,7 @@ impl Checker<'_> {
         )?;
         self.facts.definitions[declaration.definition.0 as usize] = Some(owner);
         self.states[declaration.definition.0 as usize] = State::Complete;
-        let kind = if declaration.kind == LibraryType::ManuallyDrop {
+        let kind = if declaration.kind.is_struct() {
             aggregate::Kind::Struct
         } else {
             aggregate::Kind::Enum
@@ -108,7 +108,17 @@ impl Checker<'_> {
         let item = ItemId(declaration.definition.0);
         self.facts
             .aggregates
-            .insert(item, kind, repr, &variants)
+            .insert_with_mutation(
+                item,
+                kind,
+                repr,
+                &variants,
+                if declaration.kind == LibraryType::AtomicU32 {
+                    aggregate::SharedMutation::Interior
+                } else {
+                    aggregate::SharedMutation::Ordinary
+                },
+            )
             .map_err(|e| self.error(declaration.origin, e))?;
         if declaration.kind == LibraryType::ManuallyDrop {
             self.facts
@@ -119,8 +129,8 @@ impl Checker<'_> {
         self.facts.derives.insert(
             item,
             crate::types::copy::Properties {
-                copy: true,
-                clone_: true,
+                copy: declaration.kind != LibraryType::AtomicU32,
+                clone_: declaration.kind != LibraryType::AtomicU32,
             },
         );
         self.register_library_nominal(item, declaration.origin, kind, repr, &constructors)
@@ -135,16 +145,9 @@ impl Checker<'_> {
         let variant = declaration.variants[ordinal];
         let ordinal = u32::try_from(ordinal)
             .map_err(|_| self.error(declaration.origin, "too many library variants"))?;
-        let fields = variant
-            .field
-            .map(|index| {
-                types.get(index as usize).copied().ok_or_else(|| {
-                    self.error(declaration.origin, "invalid library field parameter")
-                })
-            })
-            .transpose()?;
+        let fields = self.library_field(declaration, types, variant.field)?;
         let field_types = fields.into_iter().collect::<Vec<_>>();
-        let name = if declaration.kind == LibraryType::ManuallyDrop {
+        let name = if declaration.kind.is_struct() {
             self.facts
                 .members
                 .names
@@ -161,14 +164,14 @@ impl Checker<'_> {
                 node: declaration.origin,
                 name,
                 ty,
-                access: if declaration.kind == LibraryType::ManuallyDrop {
+                access: if declaration.kind.is_struct() {
                     Access::ExternalPrivate
                 } else {
                     Access::Public
                 },
             })
             .collect::<Vec<_>>();
-        let shape = if declaration.kind == LibraryType::ManuallyDrop {
+        let shape = if declaration.kind.is_struct() {
             Shape::Record
         } else if fields.is_empty() {
             Shape::Unit
@@ -205,7 +208,7 @@ impl Checker<'_> {
                 definition,
                 crate::sema::members::Constructor {
                     variant: id,
-                    kind: if declaration.kind == LibraryType::ManuallyDrop {
+                    kind: if declaration.kind.is_struct() {
                         crate::sema::members::ConstructorKind::ConstFunction
                     } else {
                         crate::sema::members::ConstructorKind::Variant
@@ -232,6 +235,23 @@ impl Checker<'_> {
             self.facts.definitions[definition.0 as usize] = Some(ty);
         }
         Ok((result, constructors))
+    }
+    fn library_field(
+        &self,
+        declaration: &LibraryNominal,
+        types: &[TypeId],
+        field: Option<LibraryField>,
+    ) -> Result<Option<TypeId>, Error> {
+        field
+            .map(|field| match field {
+                LibraryField::U32 => Ok(TypeId::primitive(crate::types::Primitive::U32)),
+                LibraryField::Parameter(index) => {
+                    types.get(index as usize).copied().ok_or_else(|| {
+                        self.error(declaration.origin, "invalid library field parameter")
+                    })
+                }
+            })
+            .transpose()
     }
     fn library_constructor(
         &mut self,

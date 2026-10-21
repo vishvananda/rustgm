@@ -1,0 +1,1 @@
+use std::sync::atomic::AtomicU32 as A;fn f()->A{A::new(7)}

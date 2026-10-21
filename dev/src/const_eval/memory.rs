@@ -307,7 +307,7 @@ impl Machine<'_, '_> {
         }
         Ok(address)
     }
-    pub(super) fn validate_result(&mut self, root: Constant) -> Result<(), Failure> {
+    pub(super) fn validate_result(&mut self, root: Constant, ty: TypeId) -> Result<(), Failure> {
         let mut pending = vec![root];
         let mut seen = HashSet::new();
         while let Some(value) = pending.pop() {
@@ -329,6 +329,21 @@ impl Machine<'_, '_> {
                 }
                 View::Repeat { value, .. } => pending.push(value),
                 _ => {}
+            }
+        }
+        let (answer, work) = Reader::new(self.evaluator.facts()).shared_reference_work(ty, root)?;
+        self.charge(work)?;
+        match answer {
+            crate::types::interior_mutability::Answer::Ordinary => {}
+            crate::types::interior_mutability::Answer::Interior => {
+                return Err(Failure::Fault(
+                    "constant reference cannot escape with interior mutable allocation backing",
+                ));
+            }
+            crate::types::interior_mutability::Answer::Unresolved => {
+                return Err(
+                    "constant reference storage requires completed type and value facts".into(),
+                );
             }
         }
         Ok(())
