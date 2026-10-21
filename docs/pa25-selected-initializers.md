@@ -143,3 +143,7 @@ but LowIR reports a closure/template signature mismatch. Its obsolete expected
 boundary assertion is retained as a failing test pending the separate captured
 execution repair; no expected Rust outcome or generated reference was changed.
 Evidence is under `obj/parallel/pa25-symbolic-selection/`.
+
+The subsequent [captured anonymous-context correction](pa25-anonymous-specialization.md#captured-enclosing-contexts)
+restores the original captured-context positive and removes its obsolete boundary
+assertion; the cache-correction failure evidence above remains historical.

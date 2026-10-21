@@ -96,3 +96,40 @@ allocation validity families and released view/oracle coverage remain pending.
 No full matrix, benchmark, oracle regeneration or assignment activation occurred
 in this worker checkpoint. The earlier unexplained scalar RSS increase remains
 unresolved; new wall/RSS qualification is pending integrator scheduling.
+
+
+## Captured enclosing contexts
+
+The original unchanged `inline-specialized/captured-context.rs` now passes types,
+LowIR, inspection and native value checks. The retained closure body's proof
+signature includes capture universals; it cannot be compared directly with the
+selected public call signature. Captured anonymous contexts instead substitute
+the complete enclosing arguments, normalize only canonical Self, and validate
+that full Self against the selected closure instance using existing source-slot
+matching. Runtime captured calls still perform full execution normalization;
+empty-environment behavior remains unchanged.
+
+The anonymous body retains its independent source/template, exact complete
+context key and original/instantiated checks. This validation grants no callable
+permission and imports no receiver universals or conditional source assumptions.
+Nonempty Self-normalization proofs or repeated-slot equality debts reject with
+an explicit lifetime-proof-transport boundary; this slice does not discard them
+or claim their anonymous rebasing is implemented.
+
+The implementation uses the shared helper split `cfaa63b6` (worker cherry-pick
+`959dbbab`). Five private anonymous-context invariants pass, including malformed
+public result/binder signatures, missing erased owner slots and distinct values
+under complete unused type/const arguments. All 26 nested-evaluation tests pass:
+27 independently qualified specialized inputs, including 18 accepted native
+programs. The two new inputs cover erased type/const arguments and nested public
+callable lifetime binders. Direct-path qualification also passes all 32
+`environment_execution` and 30 `source_closures` tests, including native controls
+and their existing scaling invariants. Strict all-target/all-feature release
+Clippy, audit 1410/0, layout 38 and upstream 24+126 pass.
+
+Evidence is under `obj/parallel/pa25-captured-inline/`. Full Self validation runs
+on each anonymous materialization cache miss; no mixed many-capture/many-inline
+performance claim or wall/RSS measurement is made for this correction. Nonempty
+context-debt rebasing, specialized conditional output interfaces and the other
+recorded PA25 completeness frontiers remain open. No references, assignment
+activation or public refs changed.

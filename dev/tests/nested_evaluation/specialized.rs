@@ -16,6 +16,8 @@ const CASES: &[(&str, bool)] = &[
     ("array-result", true),
     ("generic-closure", true),
     ("captured-context", true),
+    ("captured-erased", true),
+    ("captured-late", true),
     ("zero-repeat", false),
     ("zero-erased", false),
     ("nonzero-erased", false),
@@ -45,12 +47,6 @@ fn complete_inline_instances_reach_checked_execution() -> Result<(), Box<dyn std
     for &(name, accepted) in CASES {
         let text = format!("{}fn main(){{let _=run();}}", fixture(name)?);
         let result = checked(&text);
-        if name == "captured-context" {
-            assert!(result.err().is_some_and(|e| e.contains(
-                "generic captured closure execution requires environment lifetime substitution"
-            )));
-            continue;
-        }
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
     Ok(())
@@ -59,7 +55,7 @@ fn complete_inline_instances_reach_checked_execution() -> Result<(), Box<dyn std
 #[ignore = "requires qualified CPPGM native backend"]
 fn specialized_inline_values_execute() -> Result<(), Box<dyn std::error::Error>> {
     for &(name, accepted) in CASES {
-        if accepted && name != "captured-context" {
+        if accepted {
             let text = format!("{}fn main(){{check(run());}}", fixture(name)?);
             native::check_cases(
                 "parallel/pa25-inline-specialized/native",

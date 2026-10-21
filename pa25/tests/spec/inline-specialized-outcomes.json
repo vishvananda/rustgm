@@ -132,6 +132,16 @@
       "source": "inline-specialized/unused-nonconst.rs",
       "accepted": false,
       "source_sha256": "a5ee9f7027f545a7ba1fb649ea33c1a31a5f55aca0339973b605e6a56fa8a36c"
+    },
+    {
+      "source": "inline-specialized/captured-erased.rs",
+      "accepted": true,
+      "source_sha256": "4c8533d02de73b2c54d9e13eabf969ea8f91cb98bbb4928ffa2bd1d711b66710"
+    },
+    {
+      "source": "inline-specialized/captured-late.rs",
+      "accepted": true,
+      "source_sha256": "839cac53fc367071a7e4a0f540a54cd8086d07e73a7a0c8d8e6048e55b5c1883"
     }
   ]
 }

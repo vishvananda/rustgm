@@ -1,0 +1,1 @@
+fn id<'a>(x:&'a u8)->&'a u8{x}fn f<const N:u8>(g:for<'a>fn(&'a u8)->&'a u8,x:&u8)->u8{let c=||*g(x)+const{N};c()}pub fn run()->bool{let x=5;f::<2>(id,&x)==7&&f::<3>(id,&x)==8}

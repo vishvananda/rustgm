@@ -134,3 +134,161 @@ fn distinct_closures_in_one_declaration_cannot_exchange_inline_templates()
     assert!(InlineInstance::select(&facts, second.source(), first.enclosing()).is_err());
     Ok(())
 }
+
+struct Captured {
+    report: crate::resolve::expansion::Report,
+    facts: crate::sema::model::Declarations,
+    values: Vec<(InlineInstance, TypeId, Constant)>,
+}
+fn captured() -> Result<Captured, Box<dyn std::error::Error>> {
+    let text = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa25/tests/spec/inline-specialized/captured-erased.rs"),
+    )?;
+    let mut report = test_source::resolve(&format!("{text}fn main(){{let _=run();}}"), true)?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
+    let values = facts
+        .inline_constants
+        .as_deref()
+        .ok_or("registry")?
+        .instance_values()
+        .collect();
+    Ok(Captured {
+        report,
+        facts,
+        values,
+    })
+}
+#[test]
+fn captured_unused_arguments_retain_complete_value_contexts()
+-> Result<(), Box<dyn std::error::Error>> {
+    let Captured { facts, values, .. } = captured()?;
+    assert_eq!(values.len(), 3);
+    assert_eq!(facts.constant_work.anonymous_instances, 3);
+    let mut arguments = std::collections::HashSet::new();
+    for (instance, _, _) in &values {
+        let Context::Callable(callable) = instance.enclosing() else {
+            return Err("callable".into());
+        };
+        let Some(crate::types::Kind::Closure {
+            arguments: args,
+            environment,
+            ..
+        }) = facts.types.kind(callable.ty())
+        else {
+            return Err("closure".into());
+        };
+        assert_ne!(environment, TypeId::UNIT);
+        assert_eq!(facts.types.arguments(args).ok_or("arguments")?.len(), 3);
+        arguments.insert(args);
+    }
+    assert_eq!(arguments.len(), 3);
+    assert_eq!(
+        values
+            .iter()
+            .filter(|(_, _, value)| *value == Constant::scalar(Scalar::Integer(2)))
+            .count(),
+        2
+    );
+    Ok(())
+}
+#[test]
+fn captured_context_identity_cannot_replace_public_signature_or_erased_slots()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::{GenericArgs, Kind};
+    let Captured {
+        report,
+        mut facts,
+        values,
+    } = captured()?;
+    let (inline, result, _) = values[0];
+    let Context::Callable(callable) = inline.enclosing() else {
+        return Err("callable".into());
+    };
+    let Some(Kind::Closure {
+        identity,
+        signature,
+        environment,
+        arguments,
+    }) = facts.types.kind(callable.ty())
+    else {
+        return Err("closure".into());
+    };
+    let Some(Kind::Function {
+        parameters,
+        unsafe_,
+        convention,
+        ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("signature".into());
+    };
+    let wrong_result = facts.types.intern(Kind::Function {
+        parameters,
+        result: TypeId::primitive(Primitive::U16),
+        bound_regions: 0,
+        unsafe_,
+        convention,
+    })?;
+    let wrong_binder = facts.types.intern(Kind::Function {
+        parameters,
+        result,
+        bound_regions: 1,
+        unsafe_,
+        convention,
+    })?;
+    let args = facts
+        .types
+        .arguments(arguments)
+        .ok_or("arguments")?
+        .collect::<Vec<_>>();
+    let missing_erased = facts.types.intern_arguments(&args[..2])?;
+    let mut executor = facts.constant_executor.take().ok_or("provider")?;
+    for (signature, arguments) in [
+        (wrong_result, arguments),
+        (wrong_binder, arguments),
+        (signature, missing_erased),
+        (signature, GenericArgs::EMPTY),
+    ] {
+        let ty = facts.types.intern(Kind::Closure {
+            identity,
+            signature,
+            environment,
+            arguments,
+        })?;
+        let instance = InlineInstance::select(
+            &facts,
+            inline.source(),
+            Context::Callable(Instance::closure(&facts.types, ty)?),
+        )?;
+        assert!(
+            executor
+                .check(&report, &mut facts, Target::Anonymous { instance, result })
+                .is_err()
+        );
+        assert!(
+            facts
+                .inline_constants
+                .as_deref()
+                .ok_or("registry")?
+                .instance_value(instance, result)
+                .is_none()
+        );
+    }
+    facts.constant_executor = Some(executor);
+    assert_eq!(
+        facts
+            .inline_constants
+            .as_deref()
+            .ok_or("registry")?
+            .instance_values()
+            .count(),
+        3
+    );
+    Ok(())
+}

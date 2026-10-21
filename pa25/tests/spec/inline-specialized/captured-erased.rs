@@ -1,0 +1,1 @@
+fn f<T,const N:u8,const M:u8>(x:u8)->u8{let c=||x+const{N};c()}pub fn run()->bool{f::<u8,2,4>(5)==7&&f::<u16,2,5>(5)==7&&f::<u8,3,4>(5)==8}

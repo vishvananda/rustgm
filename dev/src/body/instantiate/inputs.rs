@@ -102,17 +102,34 @@ pub(super) fn closure(
         .identity(identity)
         .ok_or("missing original closure body")?;
     let mut inputs = super::closures::arguments(facts, instance, body)?;
-    if !anonymous && environment != TypeId::UNIT {
+    if environment != TypeId::UNIT {
         let original = crate::body::invocation_entries::validate_execution(&facts.types, body)?;
-        let formal = super::closures::execution(facts, instance, original)?;
+        let substituted = super::substitute_closure_execution(facts, instance, original)?;
+        let formal = if anonymous {
+            super::closure_self_type(facts, substituted)?
+        } else {
+            super::normalize_closure_execution(facts, substituted)?
+        };
         let mut connections = crate::body::invocation_entries::source_bindings(
             &facts.types,
             formal.execution,
             instance,
             body.universals,
         )?;
-        connections.proof = formal.proof;
-        inputs.connections = Some(connections);
+        if anonymous {
+            // The anonymous contract owns no receiver slots. No enclosing
+            // conditional fact or undischarged Self debt becomes its permission.
+            if !connections.equalities.is_empty()
+                || formal.proof.as_ref().is_some_and(|proof| !proof.is_empty())
+            {
+                return Err(
+                    "anonymous captured context validation requires lifetime proof transport",
+                );
+            }
+        } else {
+            connections.proof = formal.proof;
+            inputs.connections = Some(connections);
+        }
         return Ok(inputs);
     }
     let expected = inherited_signature(&mut facts.types, body, &inputs.captures, signature)?;
