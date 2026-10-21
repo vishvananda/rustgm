@@ -61,6 +61,7 @@ fn options() -> Result<Options, String> {
                     | "ownership"
                     | "regions"
                     | "loans"
+                    | "constants"
                     | "lowir"
             )
         {
@@ -147,6 +148,7 @@ fn compile(options: &Options) -> Result<(), String> {
             | "--emit-ownership"
             | "--emit-regions"
             | "--emit-loans"
+            | "--emit-constants"
             | "--emit-lowir"
     ) {
         modules::run(
@@ -177,6 +179,8 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Regions
             } else if options.mode == "--emit-loans" {
                 modules::Mode::Loans
+            } else if options.mode == "--emit-constants" {
+                modules::Mode::Constants
             } else if options.mode == "--emit-lowir" {
                 modules::Mode::Lowir
             } else {

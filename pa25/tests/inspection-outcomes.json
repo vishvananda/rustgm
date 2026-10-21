@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "mode": "--emit-constants",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/inspection/library.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inspection/repeats.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inspection/unused-division.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inspection/unused-uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    }
+  ]
+}

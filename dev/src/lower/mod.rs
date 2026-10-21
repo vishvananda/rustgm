@@ -4,6 +4,7 @@ pub mod alignment;
 mod arithmetic;
 mod casts;
 mod cleanup;
+pub mod constant_view;
 mod context;
 mod data;
 mod function;

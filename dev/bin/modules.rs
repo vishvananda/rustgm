@@ -58,6 +58,7 @@ pub enum Mode {
     Regions,
     Loans,
     Lowir,
+    Constants,
 }
 pub fn run(
     source: SourceFile,
@@ -90,6 +91,7 @@ pub fn run(
             | Mode::Ownership
             | Mode::Regions
             | Mode::Loans
+            | Mode::Constants
             | Mode::Lowir
     ) {
         let report = resolve::expansion::analyze_with_crates(
@@ -113,6 +115,7 @@ pub fn run(
                 | Mode::Ownership
                 | Mode::Regions
                 | Mode::Loans
+                | Mode::Constants
                 | Mode::Lowir
         ) {
             return semantic(report, count, mode, crates, out);
@@ -286,6 +289,9 @@ fn semantic(
         }
         .map_err(|e| e.to_string());
     }
+    if matches!(mode, Mode::Constants) {
+        return emit_constants(&report, &mut facts, prepared, count, out);
+    }
     if matches!(mode, Mode::Lowir) {
         return emit_lowir(report, facts, prepared, crates, count, out);
     }
@@ -324,6 +330,29 @@ fn semantic(
         rustgm::sema::type_view::count(&facts, out)
     } else {
         rustgm::sema::type_view::write(&report, &facts, out)
+    }
+    .map_err(|e| e.to_string())
+}
+
+fn emit_constants(
+    report: &resolve::expansion::Report,
+    facts: &mut rustgm::sema::model::Declarations,
+    prepared: rustgm::pipeline::Prepared,
+    count: bool,
+    out: &mut impl Write,
+) -> Result<(), String> {
+    let inventory = rustgm::lower::instances::inspect_prepared(
+        report,
+        facts,
+        prepared,
+        rustgm::lower::constant_view::inspect,
+    )
+    .map_err(|e| e.to_string())?
+    .map_err(str::to_owned)?;
+    if count {
+        inventory.count(out)
+    } else {
+        inventory.write(out)
     }
     .map_err(|e| e.to_string())
 }

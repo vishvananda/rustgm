@@ -41,8 +41,55 @@ pub fn build_roots_prepared(
     report: &Report,
     facts: &mut Declarations,
     roots: super::Roots<'_>,
-    mut prepared: crate::pipeline::Prepared,
+    prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
+    inspect_roots(report, facts, roots, prepared, |facts, checked, roots| {
+        super::build_exact_roots(facts, checked, roots)
+    })?
+    .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
+}
+
+/// Inspect the complete checked source program without requiring an executable entry.
+/// The observer cannot retain the borrowed proof or start mutable semantic queries.
+/// # Errors
+/// Requires source-prepared initializer validation and applies the ordinary unused
+/// body, template, instance, storage, ownership, loan and alignment checks.
+pub fn inspect_prepared<R>(
+    report: &Report,
+    facts: &mut Declarations,
+    prepared: crate::pipeline::Prepared,
+    inspect: impl FnOnce(&Declarations, &borrow::Checked<'_>) -> R,
+) -> Result<R, Error> {
+    if prepared.constants.is_none() {
+        return Err(diagnostic(
+            report,
+            None,
+            "constant inspection requires source preparation".into(),
+        ));
+    }
+    inspect_roots(
+        report,
+        facts,
+        super::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+        |facts, checked, _| {
+            super::alignment::check(facts, checked.program())?;
+            Ok(inspect(facts, checked))
+        },
+    )?
+    .map_err(|e: super::Error| diagnostic(report, Some(e.node), e.message.into()))
+}
+
+fn inspect_roots<R>(
+    report: &Report,
+    facts: &mut Declarations,
+    roots: super::Roots<'_>,
+    mut prepared: crate::pipeline::Prepared,
+    inspect: impl FnOnce(&mut Declarations, &borrow::Checked<'_>, super::roots::Selected<'_>) -> R,
+) -> Result<R, Error> {
     let exports = super::roots::exports(facts, roots.exports)
         .map_err(|e| diagnostic(report, None, e.into()))?;
     let roots = exports.selected(roots.entry);
@@ -128,9 +175,8 @@ pub fn build_roots_prepared(
         prepared.constants,
     )?;
     program
-        .with_checked(|checked| super::build_exact_roots(facts, checked, roots))
-        .map_err(|e| diagnostic(report, e.node, e.message))?
-        .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
+        .with_checked(|checked| inspect(facts, checked, roots))
+        .map_err(|e| diagnostic(report, e.node, e.message))
 }
 
 fn diagnostic(report: &Report, node: Option<NodeKey>, message: String) -> Error {

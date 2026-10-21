@@ -89,7 +89,7 @@ See [dependency review](docs/dependencies.md).
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
 `dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`, or `dev/rustgm --emit-names crate.rs`,
 or `dev/rustgm --emit-types crate.rs`, `--emit-layouts`, `--emit-body-ir`, `--emit-ownership`,
-`--emit-regions`, `--emit-loans` or `--emit-lowir`,
+`--emit-regions`, `--emit-loans`, `--emit-constants` or `--emit-lowir`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation

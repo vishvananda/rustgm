@@ -4,6 +4,8 @@ pub mod execution;
 mod memory;
 mod mutation;
 mod session;
+mod structure;
+pub use structure::FieldTypes;
 mod validation;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;

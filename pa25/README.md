@@ -15,9 +15,12 @@ Do not introduce rendered text as transport between compiler phases.
 
 ## Tool surface
 
-Extend `dev/rustgm --emit-constants -o OUTPUT SOURCE`. Earlier stage views remain
-available. Freeze the exact text vocabulary, deterministic ordering, error
-contract and example outputs before declaring this assignment active.
+`dev/rustgm --emit-constants -o OUTPUT SOURCE` and `--count-constants` inspect
+completed values through the entry-free checked pipeline. Earlier stage views
+remain available. The implemented draft vocabulary, graph identities, ordering,
+resource/error contract and independently checked example are documented in
+[the constants view draft](../docs/pa25-constants-view.md). Review its complete
+fixtures and generated oracles before declaring this assignment active.
 
 ## Tests to develop with the reference
 

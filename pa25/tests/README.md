@@ -18,3 +18,10 @@ Required families: const restrictions; pointers; recursive calls; limits; const 
 Put required regressions here, in the earliest assignment owning all their
 features. Keep draft inputs in explicit outcome files until release; then register
 every input in `manifest.json`. No undiscovered fixtures may enter the graded suite.
+
+`inspection-outcomes.json` declares the entry-free library, compressed-repeat,
+unused-invalid-initializer and unused-invalid-body inspection controls. The exact
+proposed row grammar and ordering are in
+[the constants view draft](../../docs/pa25-constants-view.md). Emit and count modes
+consume the same complete checked pipeline and graph inventory. These draft
+fixtures have no generated oracles and do not activate PA25.
