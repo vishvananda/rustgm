@@ -1,4 +1,5 @@
 //! Declaration and node facts shared by type checking and later body construction.
+pub use super::safety::Work as SafetyWork;
 use crate::{
     lex::token::Punctuation,
     literal::value::FloatBits,
@@ -317,6 +318,7 @@ pub struct StoredFieldWork {
     pub retained_bytes: usize,
 }
 pub struct Declarations {
+    pub(super) safety_policies: super::safety::Policies,
     /// Immutable declaration permissions, shared by checked bodies and instances.
     pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
     pub constant_work: super::values::execution::Work,
@@ -398,6 +400,10 @@ impl Declarations {
         self.constant_executor = Some(executor);
     }
     #[must_use]
+    pub fn safety_work(&self) -> SafetyWork {
+        self.safety_policies.work()
+    }
+    #[must_use]
     pub fn is_const_function(&self, definition: DefId) -> bool {
         self.constant_functions.contains(&definition)
     }
@@ -448,6 +454,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            safety_policies: super::safety::Policies::analyze(report)?,
             mutable_statics: None,
             constant_functions: std::collections::HashSet::new(),
             target_feature_functions: std::collections::HashSet::new(),

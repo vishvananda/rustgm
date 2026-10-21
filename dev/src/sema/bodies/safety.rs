@@ -74,7 +74,12 @@ impl Checker<'_> {
         source: NodeId,
         mut place: NodeId,
     ) -> Result<(), Error> {
-        if self.facts.mutable_statics.is_none() {
+        if self.facts.mutable_statics.is_none()
+            || !self
+                .facts
+                .safety_policies
+                .denies_reference(self.key(source))
+        {
             return Ok(());
         }
         for _ in 0..1_000_000 {
@@ -111,8 +116,17 @@ impl Checker<'_> {
         node: NodeId,
         operation: &'static str,
     ) -> Result<(), Error> {
-        if self.state.safety.function || self.state.safety.blocks != 0 {
+        if self.state.safety.blocks != 0 {
             Ok(())
+        } else if self.state.safety.function {
+            if self.facts.safety_policies.denies_operation(self.key(node)) {
+                Err(self.error(
+                    node,
+                    "unsafe operation in unsafe function requires an explicit unsafe block",
+                ))
+            } else {
+                Ok(())
+            }
         } else {
             Err(self.error(node, operation))
         }

@@ -16,6 +16,13 @@ the pinned `unsafe_op_in_unsafe_fn` policy. Unsafe permission does not bypass
 ordinary typing, initialization, ownership, packed-reference alignment or constant
 evaluation rules.
 
+Interpret retained `allow`, `warn`, `deny` and `forbid` attributes for
+`unsafe_op_in_unsafe_fn` and `static_mut_refs`. Their lexical inheritance crosses
+closure and nested item boundaries independently of unsafe permission. An
+explicit unsafe block satisfies a denied unsafe-operation lint. Descendant
+`allow` or `warn` cannot weaken `forbid`; `deny` retains its prohibition. Keep
+the ordinary no-policy path free of allocated per-node policy tables.
+
 Keep raw pointer dereferences distinct from reference dereferences in the typed
 place representation. Raw accesses have no reference lifetime or inherited loan
 promise. Evaluate and check the pointer storage before selecting its referent;
