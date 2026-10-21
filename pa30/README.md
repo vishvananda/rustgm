@@ -16,10 +16,18 @@ coercions retain a checked lifetime proof view; nested callable equality and
 calling-convention identity remain strict. Draft source outcomes are in
 `tests/convention-outcomes.json`; this does not activate the assignment.
 
-Foreign-block ownership and inherited ABI/safety, imported declarations,
-linkage attributes, C aggregate classification and variadic calls remain
-unfinished. The optional pinned object bridge has passed a read-only C
-handshake and requires separate implementation review. See
+The maintainer scalar-import checkpoint retains actual foreign-block ownership
+through macro expansion, inherits ABI and default unsafe permission, and emits
+real declarations for selected imports. Five C-linked native controls cover
+scalar imports, callbacks and ordinary/generic/constant pointer demand paths.
+Draft outcomes are in `tests/import-outcomes.json`.
+
+Foreign statics, linkage attributes and export roots, C aggregate classification
+and variadic calls remain unfinished. The reviewed optional object backend
+profile is selected explicitly; its native tests use the test-only
+`object-interop-tests` Cargo feature and fail if the profile is missing. PA30's
+release target and CI must configure that profile and run those tests before
+activation. See `docs/pa30-import-checkpoint.md` and
 `docs/pa30-callable-checkpoint.md` for qualification and remaining boundaries.
 
 The maintainer implements this responsibility in `dev/src/` and introduces its

@@ -87,6 +87,7 @@ struct Visit {
     path_scope: ScopeId,
     eager: Option<usize>,
     include: Option<FileId>,
+    foreign: Option<NodeKey>,
 }
 enum Work {
     Visit(Visit),
@@ -196,6 +197,7 @@ pub fn analyze_with_crate_name(
             path_scope: ScopeId(0),
             eager: None,
             include: None,
+            foreign: None,
         })],
         children: Vec::new(),
         recursion_limit,
@@ -483,6 +485,7 @@ impl<S: Sources> Engine<'_, S> {
                         module: visit.module,
                         file,
                         scope: visit.path_scope,
+                        foreign: visit.foreign,
                     },
                     tree,
                     item.visibility,
@@ -499,12 +502,23 @@ impl<S: Sources> Engine<'_, S> {
                         module: visit.module,
                         file,
                         scope: visit.path_scope,
+                        foreign: visit.foreign,
                     },
                     visit.node,
                     item,
                     visit.introduction,
                 )?);
             }
+        }
+        if let Kind::Item(index) = kind {
+            let item = self.loader.package.unit(file).configured.ast.items[index as usize];
+            visit.foreign = Context {
+                module: visit.module,
+                file,
+                scope: visit.path_scope,
+                foreign: visit.foreign,
+            }
+            .foreign_children(visit.node, item.kind);
         }
         if let Kind::Macro {
             path,
@@ -581,6 +595,7 @@ impl<S: Sources> Engine<'_, S> {
                 module: visit.module,
                 file,
                 scope: visit.path_scope,
+                foreign: visit.foreign,
             },
             child,
             visit.node,
@@ -596,6 +611,7 @@ impl<S: Sources> Engine<'_, S> {
             owner: None,
             in_block: false,
             include: None,
+            foreign: None,
             path_scope,
             ..visit
         }));
@@ -663,6 +679,7 @@ impl<S: Sources> Engine<'_, S> {
                 module: visit.module,
                 file,
                 scope: visit.path_scope,
+                foreign: visit.foreign,
             },
             visit.node,
             name,

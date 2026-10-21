@@ -18,6 +18,19 @@ pub(crate) struct Context {
     pub module: ModuleId,
     pub file: FileId,
     pub scope: ScopeId,
+    pub foreign: Option<NodeKey>,
+}
+impl Context {
+    pub fn foreign_children(self, node: NodeId, kind: ItemKind) -> Option<NodeKey> {
+        match kind {
+            ItemKind::ExternBlock { .. } => Some(NodeKey {
+                file: self.file,
+                node,
+            }),
+            ItemKind::MacroInvocation(_) => self.foreign,
+            _ => None,
+        }
+    }
 }
 #[derive(Default)]
 pub(crate) struct State {
@@ -90,6 +103,7 @@ impl Resolver<'_> {
             module,
             scope,
             file: self.package.modules[module.0 as usize].file,
+            foreign: None,
         }
     }
     pub fn error(&self, context: Context, node: NodeId, message: impl Into<String>) -> Error {
@@ -349,7 +363,11 @@ impl Resolver<'_> {
         let body_context = if self.hygiene.is_some()
             && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
         {
-            Context { scope, ..c }
+            Context {
+                scope,
+                foreign: c.foreign_children(node, item.kind),
+                ..c
+            }
         } else {
             self.declare_item(c, node, item, access)?
         };
@@ -380,6 +398,11 @@ impl Resolver<'_> {
         item: Item,
         access: Access,
     ) -> Result<Context, Error> {
+        if matches!(item.kind, ItemKind::ExternBlock { .. }) {
+            self.facts
+                .foreign_blocks
+                .insert(NodeKey { file: c.file, node });
+        }
         let access = self.facts.scopes[c.scope.0 as usize]
             .trait_access
             .unwrap_or(access);
@@ -436,6 +459,9 @@ impl Resolver<'_> {
                 access,
                 external.or_else(|| member.then_some(body)),
             )?;
+            if let Some(owner) = c.foreign {
+                self.facts.foreign_owners.insert(definition, owner);
+            }
             if external.is_some() {
                 self.expose_external(c, definition);
             }
@@ -458,7 +484,11 @@ impl Resolver<'_> {
                 None,
             )?;
         }
-        let body_context = Context { scope: body, ..c };
+        let body_context = Context {
+            scope: body,
+            foreign: c.foreign_children(node, item.kind),
+            ..c
+        };
         if matches!(item.kind, ItemKind::Trait { .. } | ItemKind::Impl { .. }) {
             let name = self
                 .package

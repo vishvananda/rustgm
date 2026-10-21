@@ -325,6 +325,7 @@ pub struct UnionWork {
     pub unique_types: usize,
 }
 pub struct Declarations {
+    pub foreign: Option<Box<super::foreign::Registry>>,
     pub union_work: UnionWork,
     pub(super) safety_policies: super::safety::Policies,
     /// Immutable declaration permissions, shared by checked bodies and instances.
@@ -503,6 +504,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            foreign: None,
             union_work: UnionWork::default(),
             safety_policies: super::safety::Policies::analyze(report)?,
             mutable_statics: None,

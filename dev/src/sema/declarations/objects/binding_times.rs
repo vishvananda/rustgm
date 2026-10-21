@@ -37,7 +37,7 @@ impl Checker<'_> {
                     "missing callable source",
                 )
             })?;
-            let parameters = self.signature_syntax(key)?.parameters;
+            let parameters = self.signature_syntax(key, Some(owner))?.parameters;
             let ast = &self.report.package.unit(key.file).configured.ast;
             let mut work = ast.list(parameters).to_vec();
             let mut seen = HashSet::new();
@@ -106,7 +106,7 @@ impl Checker<'_> {
             .ok_or_else(|| {
                 Error::at(crate::resolve::unit::FileId(0), 0, "missing lifetime owner")
             })?;
-        let signature = self.signature_syntax(key)?;
+        let signature = self.signature_syntax(key, Some(owner))?;
         let item = self.item(key)?;
         let ast = &self.report.package.unit(key.file).configured.ast;
         let parameters = ast.list(signature.parameters).to_vec();

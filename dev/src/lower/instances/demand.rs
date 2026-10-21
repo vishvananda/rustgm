@@ -110,6 +110,14 @@ pub(super) fn prepare(
             let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty()) else {
                 return Err(error("invalid demanded instance"));
             };
+            if facts
+                .foreign
+                .as_deref()
+                .and_then(|r| r.function(DefId(item.0)))
+                .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
+            {
+                continue;
+            }
             if let Some(template) = templates.get(item) {
                 if !instances.insert(instance) {
                     continue;

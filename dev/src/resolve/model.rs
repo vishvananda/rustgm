@@ -247,6 +247,9 @@ pub struct AssociatedBinding {
 
 #[derive(Default)]
 pub struct Resolution {
+    /// Actual external-block ownership, retained through expansion by declaration identity.
+    pub foreign_owners: HashMap<DefId, NodeKey>,
+    pub foreign_blocks: std::collections::HashSet<NodeKey>,
     /// Unnameable `impl Trait` input parameters, grouped by their owning function.
     pub anonymous_parameters: HashMap<NodeKey, Vec<NodeKey>>,
     pub builtin_traits: BuiltinTraits,

@@ -1,0 +1,252 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "path": "tests/spec/imports/default.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/safe.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/unsafe-pointer.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/rust-abi.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/expanded-item.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/expanded-block.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/default-unsafe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/rust-unsafe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/safety-narrowing.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/abi-identity.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/constant-call.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/type-parameter.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/const-function.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/missing-unsafe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/ordinary-safe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/foreign-body.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/scalars.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ],
+      "auxiliary": [
+        "tests/spec/imports/provider.c"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/callback.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ],
+      "auxiliary": [
+        "tests/spec/imports/provider.c"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/pointer.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ],
+      "auxiliary": [
+        "tests/spec/imports/provider.c"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/generic-caller.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ],
+      "auxiliary": [
+        "tests/spec/imports/provider.c"
+      ]
+    },
+    {
+      "path": "tests/spec/imports/constant-pointer.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-functions"
+      ],
+      "auxiliary": [
+        "tests/spec/imports/provider.c"
+      ]
+    }
+  ]
+}

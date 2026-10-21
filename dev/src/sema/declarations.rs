@@ -14,6 +14,7 @@ mod deferred_arguments;
 mod destructors;
 mod evaluation;
 mod execution;
+mod foreign;
 mod generics;
 mod heads;
 mod impl_headers;
@@ -259,6 +260,7 @@ impl<'a> Checker<'a> {
 }
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
+        self.validate_foreign_blocks()?;
         self.reserve_member_parents();
         self.prepare_library_types()?;
         self.reserve_nominals()?;
@@ -859,7 +861,7 @@ impl Checker<'_> {
         self.node_work(key.file, referent, context);
         Ok(())
     }
-    fn signature_syntax(&self, key: NodeKey) -> Result<Signature, Error> {
+    fn signature_syntax(&self, key: NodeKey, owner: Option<DefId>) -> Result<Signature, Error> {
         if let Kind::FunctionType(index) = self.kind(key) {
             let function = self
                 .report
@@ -879,7 +881,6 @@ impl Checker<'_> {
         let item = self.item(key)?;
         let ItemKind::Function {
             flags,
-            abi,
             parameters,
             result,
             ..
@@ -893,12 +894,13 @@ impl Checker<'_> {
                 "async or bounded signatures require later semantic assignments",
             ));
         }
+        let (unsafe_, convention) = self.foreign_signature(key, owner, item)?;
         Ok(Signature {
             parameters,
             result,
             binders: item.generics,
-            unsafe_: flags.safety == Safety::Unsafe,
-            convention: callable_convention(self.report, key, abi)?,
+            unsafe_,
+            convention,
         })
     }
     fn declared_regions(&self, key: NodeKey, list: List) -> Result<Vec<DefId>, Error> {
@@ -1000,7 +1002,7 @@ impl Checker<'_> {
         owner: Option<DefId>,
         phase: SignaturePhase,
     ) -> Result<(), Error> {
-        let signature = self.signature_syntax(key)?;
+        let signature = self.signature_syntax(key, owner)?;
         match phase {
             SignaturePhase::Begin(parent) => {
                 let declared = self.declared_regions(key, signature.binders)?;
@@ -1181,6 +1183,7 @@ impl Checker<'_> {
                     if flags.constant {
                         self.facts.constant_functions.insert(id);
                     }
+                    self.register_foreign_function(id, key, ty, flags.safety)?;
                     self.register_function_call_traits(key, id);
                     self.facts
                         .function_indices

@@ -13,6 +13,7 @@ pub mod destructors;
 pub(crate) mod dispatch;
 pub mod dyn_compat;
 pub mod entry;
+pub mod foreign;
 pub mod generics;
 pub(crate) mod invocations;
 pub mod layout_view;

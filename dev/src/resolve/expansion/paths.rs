@@ -404,6 +404,7 @@ impl Paths {
             module: call.visit.module,
             file: call.file,
             scope: call.visit.path_scope,
+            foreign: call.visit.foreign,
         };
         let node = call.visit.node;
         if call

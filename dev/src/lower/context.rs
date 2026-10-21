@@ -29,6 +29,8 @@ pub(super) struct Context<'a> {
     pub constants: Reader<'a>,
     pub definitions: &'a [Option<TypeId>],
     pub initializers: &'a [Initializer],
+    foreign: Option<&'a crate::sema::foreign::Registry>,
+    imported_symbols: HashMap<DefId, SymbolId>,
     pub layouts: &'a mut Layouts,
     pub bodies: &'a ir::Program,
     pub destruction: Option<&'a crate::borrow::destruction::Proof>,
@@ -112,6 +114,8 @@ impl<'a> Context<'a> {
             constants: Reader::new(facts),
             definitions: &facts.definitions,
             initializers: &facts.initializers,
+            foreign: facts.foreign.as_deref(),
+            imported_symbols: HashMap::new(),
             layouts,
             bodies,
             destruction,
@@ -387,6 +391,23 @@ impl<'a> Context<'a> {
             return Err("invalid demanded callable instance");
         };
         let definition = DefId(item.0);
+        if let Some(function) = self.foreign.and_then(|r| r.function(definition))
+            && function.linkage == crate::support::linkage::Linkage::Import
+        {
+            if let Some(&symbol) = self.imported_symbols.get(&definition) {
+                return Ok(symbol);
+            }
+            let signature = self.signature(function.signature)?;
+            let name = super::linkage::select(
+                self.foreign.map(crate::sema::foreign::Registry::names),
+                function.naming,
+                super::linkage::Identity::Callable(instance),
+                |_| Err("foreign import is missing exact symbol spelling"),
+            )?;
+            let symbol = self.output.declare(name, signature, false)?;
+            self.imported_symbols.insert(definition, symbol);
+            return Ok(symbol);
+        }
         let index = if let Some(&index) = self.instance_indices.get(&instance) {
             index
         } else {
