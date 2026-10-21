@@ -40,9 +40,6 @@ impl Machine<'_, '_> {
                 projected: false,
             });
         }
-        if place.raw.is_none() {
-            return Ok(StorageTarget::Product);
-        }
         let reader = Reader::new(self.evaluator.facts());
         let location = reader.location(
             place

@@ -1,0 +1,19 @@
+{
+  "stage": "independent-followup-hypotheses-before-consumer-fix",
+  "baseline": "05e6de0b",
+  "reason": "initial live initialized profile must distinguish write-only reference use from invalid demanded reads; first candidate observations retained",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-references/initialize-through-mutable-boundary.rs",
+      "sha256": "5b2c65c4313bb8967aad075508438717816c02c884f99fb379e0a98b708e40ae",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/union-references/repair-bool-through-mutable-boundary.rs",
+      "sha256": "28424804adf6d70e822693726cda34f7768d95ef9d83d9551d274ed6486af061",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 1
+    }
+  ]
+}

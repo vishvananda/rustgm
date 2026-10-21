@@ -77,13 +77,7 @@ const CASES: &[(&str, i32, i32, i32, &str)] = &[
         "borrowed place may be uninitialized or moved",
     ),
     ("mutable-reference", 0, 0, 0, ""),
-    (
-        "union-field",
-        0,
-        1,
-        1,
-        "references into constant union images are not implemented",
-    ),
+    ("union-field", 0, 0, 0, ""),
     (
         "reinterpret",
         0,

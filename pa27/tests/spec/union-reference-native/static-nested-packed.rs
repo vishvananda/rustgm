@@ -1,0 +1,1 @@
+union U{a:u32,b:u32}static S:U=U{a:37};const R:&u32={let p=&raw const S.b;unsafe{&*p}};#[repr(C,packed)]union P{a:u32,b:u32}#[repr(C)]struct W{prefix:u64,u:P}const X:u32={let w=W{prefix:0,u:P{a:41}};let p=&raw const w.u.b;unsafe{let r=&*p;*r}};fn main(){check(*R==37);check(X==41);}

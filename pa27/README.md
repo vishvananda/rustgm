@@ -115,9 +115,17 @@ function calls and a separate shared reborrow preserve an original writable alia
 This initial profile checks initialized storage even for unused references. Pinned
 Rust accepts some unused null/expired/unaligned mutable borrows and read-only uses
 of shared-derived mutable borrows; those forms remain explicit unsupported cases,
-not qualified language rejections. Union-field references, numeric nonnull ZST
-pointers, and raw-derived references to mutable/foreign or cyclic static storage
+not qualified language rejections. Direct source union-field borrows, numeric
+nonnull ZST pointers, and raw-derived references to mutable/foreign or cyclic static storage
 also remain boundaries; forming a reference is not itself a contents read.
+
+Raw-derived references into scalar union Images retain the canonical typed
+field projection. Reads and stores through them use the same current Image bytes
+as other field pointers, with no active-member tracking or product-field cells.
+Selected reads still check initialized masks and bool/char validity. Mutable
+reconstruction retains its writable, initialized nonstatic profile; write-only
+repair of uninitialized or invalid selected bytes remains unsupported. Direct
+source `&u.field`/`&mut u.field` and pointer-bearing Images remain boundaries.
 
 Byte reinterpretation and shared-derived interior-mutable writes remain explicit
 unsupported boundaries. Unsafe permission grants none of these missing constant

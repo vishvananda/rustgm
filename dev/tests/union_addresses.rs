@@ -86,12 +86,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         1,
         "raw pointer type reinterpretation in constant execution is not implemented",
     ),
-    (
-        "reference-reconstruction-boundary",
-        0,
-        1,
-        "references into constant union images are not implemented",
-    ),
+    ("reference-reconstruction-boundary", 0, 0, ""),
     (
         "pointer-family-boundary",
         0,

@@ -1,0 +1,277 @@
+{
+  "stage": "predeclared-development-contract",
+  "baseline": "05e6de0b",
+  "scope": "raw-derived scalar-Image union references reuse current-byte projection, exact type and reference-validity checks; direct source Borrow and pointer families excluded",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-references/shared-local.rs",
+      "sha256": "849d5ae9614c224fad2330b59144cba738b53919fbebd6b69c48791c50ef90a2",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/mutable-local.rs",
+      "sha256": "b040ee2eebf23d1e249db2492e2c05790bf7731c91bf1aa02ac7442222b7138c",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/alternate-aliases.rs",
+      "sha256": "c3619ee3571c4f8ba3b3e2a3009c47cfe99d0e0f9c3687d5a54d150e10756c27",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/nested-product.rs",
+      "sha256": "5301e41305fc4d5f6553b463f29db46ac9e672906fa11158535e81d6de4dee7f",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/valid-bool.rs",
+      "sha256": "8a0d3cf3ad33cca50585031b7057bad71793d7471a7ee75699e8a37aadaa2a7e",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/invalid-bool.rs",
+      "sha256": "f3bef0b34daebd5befff1f2f98eca239893ad3ea3abc28ec80babd0cb14105c8",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read has invalid bool representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/valid-char.rs",
+      "sha256": "07b2e0375e2b965d22fefa8f58917f3dcd936f614abfec77b7ab87c7130a2989",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/invalid-char.rs",
+      "sha256": "665021fc80339568180d2d2e37955da4b8e9900e8f0996ca89973e0f391939c7",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read has invalid char representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/uninitialized-wide.rs",
+      "sha256": "af8ddceb602b16d4a3d8e5ff1cc803ba374c395b563e9a6aebf4e03cc797788f",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/initialized-small.rs",
+      "sha256": "330ae3b90261ea144839300ac8e6abf0fd3f258b961f7224a679c8abda5d2470",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/cross-field-init.rs",
+      "sha256": "9a744d096155addc49598c9d72e58a5ee9a2b111c5a2d6c7111a255273439c13",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/expired-demanded.rs",
+      "sha256": "0fbd3984f049b852dbb4ac0befba8a1e390fc92ae0ac00ea8eea2a838e05e23d",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/escape.rs",
+      "sha256": "a0150b28635dab57c371d80ff510a95c973a2af051014d6582bf992a921cb9ba",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/transient-call.rs",
+      "sha256": "c9459bb7ea4d5395b32a38e931c6ef28723440cf198b1d4e4d2cb14eea49d77e",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/packed-unaligned.rs",
+      "sha256": "e8508584d388975e3d57b8b0ce687f930ef98a4deb71363d5d0adf3995c6a969",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant raw shared reference is unaligned"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/packed-aligned.rs",
+      "sha256": "df5693d91b7c68461a5007cc0ef347d0aafe9443692916f0fd1885922b67f409",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-shared.rs",
+      "sha256": "947412ac8b3f94c7defa1ed8f45ac26c9c903829e86c72a7a543828c2ff2e797",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/shared-derived-mutable-boundary.rs",
+      "sha256": "badf66483a8d9c7b8ecbe7e6783e6630ec30b023a95c48e2b37cddb4906eb95b",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant mutable raw references from shared-derived pointers are not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/direct-borrow-boundary.rs",
+      "sha256": "2ca87f4b77f5053899e900df03fc38958a8114cf96bc6f96076b2c17f24ade53",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union field address formation requires byte-offset provenance and is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/pointer-family-boundary.rs",
+      "sha256": "d08e587d3f2c716fdbac267c98adf33638ea80fb6e3df007ad8a74425ff45533",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/ordinary-scalar.rs",
+      "sha256": "9c042f42383269b717ed9362c6c3c1521a55ddadcc1e14f49715a1166ac9893a",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/initialize-through-mutable-boundary.rs",
+      "sha256": "5b2c65c4313bb8967aad075508438717816c02c884f99fb379e0a98b708e40ae",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/repair-bool-through-mutable-boundary.rs",
+      "sha256": "28424804adf6d70e822693726cda34f7768d95ef9d83d9551d274ed6486af061",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": true,
+      "reason": "constant union scalar read has invalid bool representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-demanded.rs",
+      "sha256": "57ac573b1a40c5df1deacc7cdb38135d3eef7d22deef93fbdc4a10c199601bd2",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-invalid-bool.rs",
+      "sha256": "535c1ca34735f2fa1088e80d11dc8849ec90243cf7eb5c76b238d4bd10dc54d4",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read has invalid bool representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-uninitialized-wide.rs",
+      "sha256": "80f2daf5cf93d6873dc420df2f31fc3ee3c2f641ebc2a86220d13baece230fd3",
+      "rustc_hypothesis": 1,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "accepted_rust_boundary": false,
+      "reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-ordinal-aliases.rs",
+      "sha256": "0cd8ed9681f230347b73e98400d91e0c12e2873de8988edda50db09fec3233a6",
+      "rustc_hypothesis": 0,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "accepted_rust_boundary": false,
+      "reason": ""
+    }
+  ]
+}

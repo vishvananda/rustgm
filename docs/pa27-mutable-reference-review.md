@@ -62,3 +62,7 @@ shared-derived interior-mutable writes, the default runtime invalid-reference-
 casting lint and full packed/pattern/release closure. PA28's unimplemented families
 and release requirements remain as recorded in its reviews. No active references,
 assignment activation or full-release claim is made here.
+
+The later [union-reference review](pa27-union-reference-review.md) supersedes
+its raw-derived scalar-Image union-field boundary. Direct source union borrows
+and other deferred profiles remain explicit. Historical receipts are unchanged.

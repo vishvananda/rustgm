@@ -1,0 +1,27 @@
+{
+  "stage": "independent-contents-consumer-controls",
+  "baseline": "pre-contents-consumer",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-references/static-invalid-bool.rs",
+      "sha256": "535c1ca34735f2fa1088e80d11dc8849ec90243cf7eb5c76b238d4bd10dc54d4",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1,
+      "reason": "constant union scalar read has invalid bool representation"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-uninitialized-wide.rs",
+      "sha256": "80f2daf5cf93d6873dc420df2f31fc3ee3c2f641ebc2a86220d13baece230fd3",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1,
+      "reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa27/tests/spec/union-references/static-ordinal-aliases.rs",
+      "sha256": "0cd8ed9681f230347b73e98400d91e0c12e2873de8988edda50db09fec3233a6",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0,
+      "reason": ""
+    }
+  ]
+}

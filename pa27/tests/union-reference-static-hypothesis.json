@@ -1,0 +1,13 @@
+{
+  "stage": "independent-followup-hypothesis",
+  "baseline": "first-candidate",
+  "reason": "force const dereference after static-backed reconstructed reference, independently of runtime emission",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/union-references/static-demanded.rs",
+      "sha256": "57ac573b1a40c5df1deacc7cdb38135d3eef7d22deef93fbdc4a10c199601bd2",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    }
+  ]
+}

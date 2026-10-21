@@ -157,9 +157,6 @@ impl Machine<'_, '_> {
             // static-reference profiles need a separate deferred validity path.
             return Err("constant raw shared references to mutable or external static storage are not implemented".into());
         }
-        if self.projects_union_field(place)? {
-            return Err("references into constant union images are not implemented".into());
-        }
         if let crate::sema::values::Origin::Static(id) = location.origin
             && self.active_initializers.contains(&id)
         {

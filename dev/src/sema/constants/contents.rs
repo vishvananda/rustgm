@@ -54,7 +54,13 @@ impl Queries<'_> {
             index,
         } = work;
         let query = Query::Contents(key, id);
-        let value = self.field_value(key, self.value(Query::Contents(key, base))?, index)?;
+        let value = self.projected_contents(
+            key,
+            id,
+            base,
+            index,
+            self.value(Query::Contents(key, base))?,
+        )?;
         self.typing
             .facts
             .constant_references
@@ -63,6 +69,95 @@ impl Queries<'_> {
         self.states
             .insert(self.state_key(query), State::Ready(value));
         Ok(())
+    }
+    fn projected_contents(
+        &mut self,
+        key: NodeKey,
+        id: Id,
+        base: Id,
+        index: u64,
+        value: Value,
+    ) -> Result<Value, Error> {
+        if !matches!(value, Value::Image(_)) {
+            return self.field_value(key, value, index);
+        }
+        self.budget()?;
+        let query = Query::Contents(key, id);
+        let (owner, primitive, size) = self.image_projection(key, id, base, index)?;
+        let width = super::images::scalars::width(primitive).map_err(|e| self.error(query, e))?;
+        for _ in 0..width * 2 {
+            self.budget()?;
+        }
+        let image = super::values::Reader::new(self.typing.facts)
+            .image(super::values::Constant(value))
+            .map_err(|e| self.error(query, e))?;
+        if image.ty != owner || image.bytes.len() != size {
+            return Err(self.error(
+                query,
+                "constant image contents differ from their canonical owner",
+            ));
+        }
+        super::images::scalars::decode(primitive, image.bytes, image.initialized)
+            .map(Value::Scalar)
+            .map_err(|e| self.error(query, e))
+    }
+    fn image_projection(
+        &self,
+        key: NodeKey,
+        id: Id,
+        base: Id,
+        index: u64,
+    ) -> Result<(crate::types::TypeId, crate::types::Primitive, usize), Error> {
+        let query = Query::Contents(key, id);
+        let base = self.place(key, Value::Reference(super::references::Pointer::new(base)))?;
+        let child = self.place(key, Value::Reference(super::references::Pointer::new(id)))?;
+        let projection = super::values::Reader::new(self.typing.facts)
+            .projection_layout(base.ty, index)
+            .map_err(|e| self.error(query, e))?;
+        let super::values::ProjectionStorage::UnionScalar {
+            field: crate::sema::members::Selection::Nominal(field),
+        } = projection.storage
+        else {
+            return Err(self.error(
+                query,
+                "constant image contents lack a union field capability",
+            ));
+        };
+        let (primitive, size) = {
+            let family = self
+                .typing
+                .facts
+                .constant_images
+                .as_ref()
+                .and_then(|images| images.families.get(&base.ty))
+                .ok_or_else(|| self.error(query, "missing constant image family"))?;
+            let ordinal = field
+                .0
+                .checked_sub(family.start)
+                .filter(|&ordinal| u64::from(ordinal) == index)
+                .ok_or_else(|| {
+                    self.error(
+                        query,
+                        "constant image field has a different owner or ordinal",
+                    )
+                })?;
+            let primitive = family
+                .fields
+                .get(ordinal as usize)
+                .copied()
+                .ok_or_else(|| self.error(query, "constant image field is out of bounds"))?;
+            if projection.ty != child.ty
+                || projection.ty != crate::types::TypeId::primitive(primitive)
+                || projection.offset != 0
+            {
+                return Err(self.error(
+                    query,
+                    "constant image projection differs from its declared type",
+                ));
+            }
+            (primitive, family.size)
+        };
+        Ok((base.ty, primitive, size))
     }
     pub(super) fn field_value(
         &self,
@@ -165,3 +260,7 @@ impl Queries<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/resolved_contents.rs"]
+mod tests;

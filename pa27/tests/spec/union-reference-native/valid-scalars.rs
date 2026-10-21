@@ -1,0 +1,1 @@
+union B{bits:u32,value:bool}union C{bits:u32,value:char}union U{small:u8,wide:u64}const X:bool={let u=B{bits:1};let p=&raw const u.value;unsafe{let r=&*p;*r}};const Y:char={let u=C{bits:0x1f980};let p=&raw const u.value;unsafe{let r=&*p;*r}};const Z:u8={let u=U{small:37};let p=&raw const u.small;unsafe{let r=&*p;*r}};fn main(){check(X);check(Y=='🦀');check(Z==37);}
