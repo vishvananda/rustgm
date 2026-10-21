@@ -693,17 +693,19 @@ impl Checker<'_> {
         }
         let value =
             value.ok_or_else(|| self.error(key, "constant or static requires an initializer"))?;
-        self.facts.initializers.push(Initializer {
-            typing: super::model::InitializerTyping::Unseen,
-            definition: id,
-            node: key,
-            value: NodeKey {
-                file: key.file,
-                node: value,
-            },
-            ty,
-            kind,
-        });
+        self.facts
+            .push_initializer(Initializer {
+                typing: super::model::InitializerTyping::Unseen,
+                definition: id,
+                node: key,
+                value: NodeKey {
+                    file: key.file,
+                    node: value,
+                },
+                ty,
+                kind,
+            })
+            .map_err(|e| self.error(key, e))?;
         Ok(())
     }
     fn primitive_definition(&mut self, id: DefId) -> Result<(), Error> {

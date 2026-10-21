@@ -35,7 +35,10 @@ impl Queries<'_> {
             }));
             self.work.push(Pending::Enter(Query::Contents(key, base)));
         } else if let Access::Static(definition) = place.access {
-            let index = self.constants[definition.0 as usize]
+            let index = self
+                .typing
+                .facts
+                .initializer_index(definition)
                 .ok_or_else(|| self.error(query, "missing constant static initializer"))?;
             self.forward(query, Query::Static(index));
         } else {

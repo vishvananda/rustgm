@@ -293,12 +293,10 @@ impl Engine {
         match requirement {
             Requirement::FunctionBody(instance) => self.function(report, facts, instance),
             Requirement::InitializerBody(definition) => {
-                let initializer = facts
-                    .initializers
-                    .iter()
-                    .find(|value| value.definition == definition)
-                    .copied()
+                let index = facts
+                    .initializer_index(definition)
                     .ok_or_else(|| Error::at(FileId(0), 0, "missing required initializer"))?;
+                let initializer = facts.initializers[index];
                 if !initializer.type_checked() {
                     return Ok(false);
                 }

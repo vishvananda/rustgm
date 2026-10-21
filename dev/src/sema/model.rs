@@ -396,6 +396,7 @@ pub struct Declarations {
     pub layouts: crate::abi::layout::Layouts,
     pub region_equalities: Vec<RegionEquality>,
     pub body_regions: Vec<BodyRegion>,
+    initializer_indices: Option<Box<[Option<std::num::NonZeroU32>]>>,
     pub initializers: Vec<Initializer>,
     pub types: Store,
     pub definitions: Vec<Option<TypeId>>,
@@ -403,6 +404,46 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    pub(super) fn push_initializer(
+        &mut self,
+        initializer: Initializer,
+    ) -> Result<(), &'static str> {
+        let count = self.definitions.len();
+        let owner = initializer.definition.0 as usize;
+        if owner >= count || count > 1_000_000 {
+            return Err("initializer index exceeds declaration budget");
+        }
+        let index = u32::try_from(self.initializers.len())
+            .ok()
+            .and_then(|index| index.checked_add(1))
+            .and_then(std::num::NonZeroU32::new)
+            .ok_or("initializer index exceeds 32 bits")?;
+        let indices = self
+            .initializer_indices
+            .get_or_insert_with(|| vec![None; count].into_boxed_slice());
+        if indices[owner].is_some() {
+            return Err("initializer is already indexed");
+        }
+        indices[owner] = Some(index);
+        self.initializers.push(initializer);
+        self.constant_work.initializer_indexed += 1;
+        Ok(())
+    }
+    pub(crate) fn initializer_index(&self, definition: DefId) -> Option<usize> {
+        let lookups = &self.constant_work.initializer_lookups;
+        lookups.set(lookups.get().saturating_add(1));
+        self.initializer_indices
+            .as_ref()?
+            .get(definition.0 as usize)?
+            .map(|index| (index.get() - 1) as usize)
+    }
+    /// Owned dense index payload; ordinary crates without initializers allocate none.
+    #[must_use]
+    pub fn initializer_index_bytes(&self) -> usize {
+        self.initializer_indices
+            .as_ref()
+            .map_or(0, |indices| std::mem::size_of_val(indices.as_ref()))
+    }
     /// Install the outer checked-body execution service for demanded constants.
     pub fn set_constant_executor(&mut self, executor: Box<dyn super::values::execution::Executor>) {
         self.constant_executor = Some(executor);
@@ -522,6 +563,7 @@ impl Declarations {
             layouts: crate::abi::layout::Layouts::default(),
             region_equalities: Vec::new(),
             body_regions: Vec::new(),
+            initializer_indices: None,
             initializers: Vec::new(),
             types: Store::default(),
             definitions: vec![None; report.resolution.definitions.len()],

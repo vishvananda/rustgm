@@ -307,10 +307,9 @@ impl Queries<'_> {
         // Instantiations may revisit a large template with distinct arguments.
         self.limit = self.limit.max(16_000_000);
         let index = self
-            .constants
-            .get(instance.definition.0 as usize)
-            .copied()
-            .flatten()
+            .typing
+            .facts
+            .initializer_index(instance.definition)
             .ok_or_else(|| self.error(query, "selected constant has no initializer"))?;
         if !matches!(
             self.typing.facts.initializers[index].kind,

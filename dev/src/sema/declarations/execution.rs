@@ -104,14 +104,9 @@ impl Checker<'_> {
                     self.require_initializer_readiness(source, definition)?;
                     return Ok(None);
                 }
-                let index = self
-                    .facts
-                    .initializers
-                    .iter()
-                    .position(|value| value.definition == definition)
-                    .ok_or_else(|| {
-                        self.error(source, "missing required initializer declaration")
-                    })?;
+                let index = self.facts.initializer_index(definition).ok_or_else(|| {
+                    self.error(source, "missing required initializer declaration")
+                })?;
                 (definition, Some(index))
             }
             Requirement::AssociatedBody(instance) => {

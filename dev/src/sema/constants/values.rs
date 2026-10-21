@@ -350,10 +350,9 @@ impl<'a> Evaluator<'a> {
     fn named(&mut self, id: DefId, static_: bool) -> Result<Constant, Error> {
         let index = self
             .queries
-            .constants
-            .get(id.0 as usize)
-            .copied()
-            .flatten()
+            .typing
+            .facts
+            .initializer_index(id)
             .ok_or_else(|| {
                 Error::at(
                     crate::resolve::unit::FileId(0),

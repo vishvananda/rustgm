@@ -45,8 +45,12 @@ pub struct Work {
     pub frames_started: usize,
     pub steps: usize,
     pub resumes: usize,
-    /// Actual append-only definition-index and source-budget preparation visits.
+    /// Actual source-budget preparation visits retained across required queries.
     pub value_preparation: usize,
+    /// Append-time initializer-index publications, never repeated by value queries.
+    pub initializer_indexed: usize,
+    /// Every shared initializer-index hit or miss, including cached value demands.
+    pub initializer_lookups: std::cell::Cell<usize>,
     /// Discriminant finish entry visits, including every suspended entry resume.
     pub discriminant_visits: usize,
     /// Combined frame/value/cell slots retained by all suspended requests.

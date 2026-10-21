@@ -170,7 +170,6 @@ struct Queries<'a> {
     report: &'a Report,
     typing: bodies::Checker<'a>,
     discriminants: Option<&'a mut Discriminants>,
-    constants: Vec<Option<usize>>,
     expressions: HashMap<(instances::Context, NodeKey), Expression>,
     instances: instances::Instances,
     states: HashMap<(instances::Context, Query), State>,
@@ -192,8 +191,6 @@ struct Queries<'a> {
 #[derive(Default)]
 pub(super) struct Scratch {
     typing: bodies::Scratch,
-    constants: Vec<Option<usize>>,
-    indexed: usize,
     source_work: Option<usize>,
     preparation_steps: usize,
     scan: Vec<NodeKey>,
@@ -263,10 +260,9 @@ impl Queries<'_> {
             }
             PatternValue::Definition(definition) => {
                 let index = self
-                    .constants
-                    .get(definition.0 as usize)
-                    .copied()
-                    .flatten()
+                    .typing
+                    .facts
+                    .initializer_index(definition)
                     .ok_or_else(|| {
                         Declarations::error(
                             self.report,
@@ -320,12 +316,6 @@ impl<'a> Queries<'a> {
         discriminants: Option<&'a mut Discriminants>,
         mut scratch: Scratch,
     ) -> Self {
-        scratch.preparation_steps += facts.definitions.len() - scratch.constants.len();
-        scratch.constants.resize(facts.definitions.len(), None);
-        for (index, initializer) in facts.initializers.iter().enumerate().skip(scratch.indexed) {
-            scratch.preparation_steps += 1;
-            scratch.constants[initializer.definition.0 as usize] = Some(index);
-        }
         // Scratch belongs to one immutable report. Resuming a body must not
         // rescan every source unit merely to reconstruct its work budget.
         let source_work = *scratch.source_work.get_or_insert_with(|| {
@@ -342,7 +332,6 @@ impl<'a> Queries<'a> {
             report,
             typing: bodies::Checker::with_scratch(report, facts, scratch.typing),
             discriminants,
-            constants: scratch.constants,
             expressions: HashMap::new(),
             states: HashMap::new(),
             work: instances::Worklist::default(),
@@ -365,14 +354,11 @@ impl<'a> Queries<'a> {
         self.into_storage().0
     }
     fn into_storage(self) -> (Scratch, Option<Box<bodies::State>>) {
-        let indexed = self.typing.facts.initializers.len();
         let (typing, body) = self.typing.into_storage();
         (
             Scratch {
-                indexed,
                 source_work: Some(self.source_work),
                 preparation_steps: self.preparation_steps,
-                constants: self.constants,
                 scan: self.scan,
                 typing,
                 drops: self.drop_scratch,
@@ -964,7 +950,7 @@ impl Queries<'_> {
                                 .map_err(|e| self.error(query, e.message()))?,
                         )));
                     }
-                    let index = self.constants[id.0 as usize].ok_or_else(|| {
+                    let index = self.typing.facts.initializer_index(id).ok_or_else(|| {
                         self.error(query, "constant expression cannot read this declaration")
                     })?;
                     Expression::Constant(index)

@@ -427,7 +427,7 @@ impl Queries<'_> {
     }
     fn check_reference_alignment(&mut self, key: NodeKey, place: Place) -> Result<(), Error> {
         if let Access::Static(id) = place.access {
-            let index = self.constants[id.0 as usize].ok_or_else(|| {
+            let index = self.typing.facts.initializer_index(id).ok_or_else(|| {
                 self.error(
                     Query::Place(key),
                     "constant reference has unsupported static provenance",
