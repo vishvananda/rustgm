@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Independent source-to-LowIR execution against pinned rustc and explicit outcomes."""
 import argparse
+import os
 from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
@@ -175,7 +176,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", nargs="?", default="pa11")
     parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
-    parser.add_argument("--jobs", type=int, choices=range(1, 9), default=4)
+    parser.add_argument("--jobs", type=int, choices=range(1, 9),
+                        default=int(os.environ.get("RUSTGM_TEST_JOBS", "4")))
     args = parser.parse_args()
     try:
         check(args.app.resolve(), args.jobs, args.stage)

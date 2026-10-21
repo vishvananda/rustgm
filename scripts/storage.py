@@ -8,9 +8,10 @@ import os
 from pathlib import Path
 import shutil
 import stat
-import subprocess
 import sys
 import time
+
+from resource_runner import run as run_guarded
 
 ROOT = Path(__file__).resolve().parents[1]
 GIB = 1024 ** 3
@@ -204,12 +205,12 @@ def main():
             environment = dict(os.environ)
             environment.setdefault("CARGO_INCREMENTAL", "0")
             started = time.time()
-            result = subprocess.run(command, cwd=ROOT, env=environment, check=False)
+            returncode = run_guarded(ROOT, command, environment)
             # Failed runs retain their executable artifacts for diagnosis. An explicit
             # prune can remove them once the failure has been investigated.
-            if result.returncode == 0 and not args.no_prune:
+            if returncode == 0 and not args.no_prune:
                 prune(ROOT, apply=True, since=started, paths=args.prune_under)
-            return result.returncode if result.returncode >= 0 else 128 - result.returncode
+            return returncode if returncode >= 0 else 128 - returncode
     except (OSError, ValueError) as error:
         print(f"storage: {error}", file=sys.stderr)
         return 1
