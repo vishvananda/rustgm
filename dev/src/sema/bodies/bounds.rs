@@ -439,6 +439,7 @@ impl Checker<'_> {
             .infer
             .instantiate_predicate(&mut self.facts.types, value, inference)
             .map_err(|e| self.error(node, e))?;
+        self.record_closure_expectation(node, &predicate, bound_regions)?;
         if let Some(count) = bound_regions {
             self.state.call_types.quantify(index, count);
         } else {

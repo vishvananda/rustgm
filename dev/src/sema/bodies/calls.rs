@@ -1,5 +1,7 @@
 //! Callable instantiation separates item arguments, late binders and caller universals.
-use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
+use super::{
+    Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId, closures::expectations::Hints,
+};
 use crate::{
     sema::model::{BodyRegionOrigin, Outlives},
     types::{GenericArgs, RegionId, infer, substitute::Bound},
@@ -8,6 +10,7 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct CallTypes {
+    pub closure_expectations: Hints,
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub assumed_obligations: HashSet<usize>,
     #[expect(
@@ -71,6 +74,7 @@ impl CallTypes {
         self.universal_regions.clone()
     }
     pub fn clear(&mut self) {
+        self.closure_expectations = Hints::default();
         self.obligations.clear();
         self.assumed_obligations.clear();
         self.constraints = None;

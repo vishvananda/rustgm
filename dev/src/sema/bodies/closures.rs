@@ -3,6 +3,7 @@ mod bindings;
 mod completion;
 mod contextual;
 mod environment;
+pub(super) mod expectations;
 mod interface;
 mod places;
 pub(super) mod universes;

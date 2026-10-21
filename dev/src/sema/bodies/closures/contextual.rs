@@ -33,6 +33,9 @@ impl Checker<'_> {
         } else {
             term
         };
+        let term = self
+            .generic_closure_expectation(node, term)?
+            .unwrap_or(term);
         let Some(Constructor::Function {
             bound_regions,
             parameters,
