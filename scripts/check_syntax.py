@@ -2,6 +2,7 @@
 """Independent stable-rustc checks for explicitly classified syntax fixtures."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+import os
 from pathlib import Path
 import re
 import shutil
@@ -24,8 +25,8 @@ def rustc_emission(metadata):
     emit = metadata.get("emit", "metadata")
     if emit not in ("metadata", "obj"):
         raise ValueError("independent emission must be metadata or obj")
-    if emit == "obj" and metadata["kind"] != "program":
-        raise ValueError("object generation requires a complete program")
+    if emit == "obj" and metadata["kind"] not in ("program", "library"):
+        raise ValueError("object generation requires a complete program or library")
     return "--emit=" + emit
 
 
@@ -37,7 +38,7 @@ def expression_source(data, metadata):
 def rustc_arguments(case, default_name):
     """Preserve cfg arguments and the CLI's last explicit crate-name choice."""
     arguments = case.get("args", [])
-    name = default_name
+    name = case.get("library", {}).get("crate_name", default_name)
     extra = []
     for index in range(0, len(arguments), 2):
         if arguments[index] == "--crate-name":
@@ -54,7 +55,10 @@ def check_configured_owners(metadata, output):
             raise ValueError(f"configured owner facts disagree: {actual}, wanted {metadata['configured']}")
 
 
-def check(stage, app):
+def check(stage, app, jobs=None):
+    jobs = int(os.environ.get("RUSTGM_TEST_JOBS", "4")) if jobs is None else jobs
+    if not 1 <= jobs <= 8:
+        raise ValueError("independent check jobs must be between 1 and 8")
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected rustc 1.98.0, got {version.strip()}")
@@ -68,7 +72,7 @@ def check(stage, app):
         kind = metadata["kind"]
         if kind == "fragment":
             return False
-        if kind not in ("program", "predicate", "expression"):
+        if kind not in ("program", "library", "predicate", "expression"):
             raise ValueError(f"unknown independent check kind: {kind}")
         fixture = ROOT / stage / case["path"]
         data = fixture.read_bytes()
@@ -97,7 +101,7 @@ def check(stage, app):
             command += ["--cap-lints", "allow"]
         if kind != "predicate":
             mode = case.get("mode", manifest["mode"])
-            command += ["--crate-type=bin" if mode == "--emit-lowir" else "--crate-type=lib",
+            command += ["--crate-type=bin" if mode == "--emit-lowir" and kind != "library" else "--crate-type=lib",
                         rustc_emission(metadata)]
         result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
         (case_directory / "rustc.stderr").write_bytes(result.stderr)
@@ -122,7 +126,7 @@ def check(stage, app):
                 raise ValueError(f"configuration fact disagrees with declared ownership case: {fixture}")
         return True
 
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
         count = sum(pool.map(worker, cases))
     if count == 0:
         raise ValueError("empty independent syntax check suite")
@@ -137,9 +141,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage")
     parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
+    parser.add_argument("--jobs", type=int, choices=range(1, 9))
     args = parser.parse_args()
     try:
-        check(args.stage, args.app.resolve())
+        check(args.stage, args.app.resolve(), args.jobs)
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

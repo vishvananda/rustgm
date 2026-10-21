@@ -10,15 +10,17 @@ import signal
 import subprocess
 import sys
 
-from backend import digest, load_tools
-from course import ROOT, case_environment, load_cases, run_case
+from backend import digest, emit_object, load_tools, verify_object
+from course import ROOT, case_environment, library_arguments, load_cases, run_case
 from check_syntax import rustc_arguments
 
 
 def classification(case):
     metadata = case["rustc"]
-    if metadata["kind"] != "program" or metadata["status"] not in (0, 1):
-        raise ValueError("native fixtures must declare full-program rustc outcomes")
+    library = metadata["kind"] == "library"
+    if metadata["kind"] not in ("program", "library") or metadata["status"] not in (0, 1):
+        raise ValueError("native fixtures must declare complete program or library rustc outcomes")
+    library_arguments(case, "--emit-lowir")
     if metadata["status"] != case["exit_status"] and not metadata.get("reason"):
         raise ValueError("acceptance differences require a phase-boundary reason")
     if case["exit_status"] == 0:
@@ -26,10 +28,12 @@ def classification(case):
         if metadata["status"] != 0:
             raise ValueError("accepted native fixtures require successful rustc code generation")
         kind = native.get("kind", "execute")
-        if kind == "codegen":
+        if library != (kind == "object"):
+            raise ValueError("library native checks require object emission; programs require executables")
+        if kind in ("codegen", "object"):
             if (not isinstance(native.get("reason"), str) or not native["reason"].strip()
                     or "outcome" in native or "rustc_outcome" in native):
-                raise ValueError("codegen-only fixtures require a reason and cannot declare runtime outcomes")
+                raise ValueError("compile-only fixtures require a reason and cannot declare runtime outcomes")
         elif kind == "execute":
             if native.get("outcome") not in ("pass", "panic"):
                 raise ValueError("every executed native fixture needs a declared outcome")
@@ -63,7 +67,7 @@ def execution(result, outcome, compiler):
 
 def run_executables(metadata, rustexe, native, run):
     """Compilation-only controls can diverge; never execute either produced binary."""
-    if metadata.get("kind", "execute") == "codegen":
+    if metadata.get("kind", "execute") in ("codegen", "object"):
         return
     outcome = metadata["outcome"]
     independent = metadata.get("rustc_outcome", outcome)
@@ -84,10 +88,13 @@ def check(app, jobs, stage="pa11"):
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
-    tools = load_tools()  # Hash the immutable backend tools once for this run.
     candidate_hash = digest(app)
     manifest, cases = load_cases(ROOT, stage)
     cases = native_cases(manifest, cases)
+    required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
+    if any(c.get("native", {}).get("kind") == "object" for c in cases):
+        required.add("cppgm++")
+    tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
     directory = ROOT / "obj/native" / stage
     directory.mkdir(parents=True, exist_ok=True)
 
@@ -125,26 +132,38 @@ def check(app, jobs, stage="pa11"):
                 raise ValueError("successful LowIR emission requires nonempty stdout and empty stderr")
             if case["exit_status"] and (actual[0] or not actual[1]):
                 raise ValueError("rejections require empty stdout and a diagnostic")
-            rustexe = folder / "rustc-output"
+            library = case["rustc"]["kind"] == "library"
+            rustexe = folder / ("rustc-output.o" if library else "rustc-output")
             command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
                        *rustc_arguments(case, "native_check"), "-C", "panic=abort", "-C", "overflow-checks=yes",
                        "-C", "debug-assertions=off", str(source), "-o", str(rustexe)]
+            if library:
+                command += ["--crate-type=lib", "--emit=obj"]
             rust = run(command, "rustc")
             if rust.returncode != case["rustc"]["status"]:
                 raise ValueError(f"rustc outcome differs: {rust.returncode}: {rust.stderr.decode(errors='replace')}")
             if case["exit_status"] == 0:
                 text = folder / "output.lowir"
                 text.write_bytes(actual[0])
-                validated = folder / "validated.lowir"
-                native = folder / "native-output"
-                for command, label in [([tools["lowir"], "-o", str(validated), str(text)], "validate"),
-                                       ([tools["lowir2native"], "-O0", "-o", str(native), str(validated)], "backend")]:
-                    result = run(command, label)
-                    if result.returncode:
-                        raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+                native = folder / ("native-output.o" if library else "native-output")
+                if library:
+                    verify_object(rustexe)
+                    def object_run(command):
+                        result = run(command, "backend-object")
+                        if result.returncode:
+                            raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+                    emit_object(text, native, tools, run=object_run)
+                    evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
+                else:
+                    validated = folder / "validated.lowir"
+                    for command, label in [([tools["lowir"], "-o", str(validated), str(text)], "validate"),
+                                           ([tools["lowir2native"], "-O0", "-o", str(native), str(validated)], "backend")]:
+                        result = run(command, label)
+                        if result.returncode:
+                            raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
                 evidence["native"] = case["native"]
                 run_executables(case["native"], rustexe, native, run)
-            for executable in (rustexe, folder / "native-output"):
+            for executable in (rustexe, folder / "native-output", folder / "native-output.o"):
                 executable.unlink(missing_ok=True)
             evidence["passed"] = True
         except (ValueError, OSError, subprocess.SubprocessError) as error:
@@ -165,7 +184,8 @@ def check(app, jobs, stage="pa11"):
         raise ValueError(f"{len(failures)}/{len(cases)} independent native checks failed")
     accepted = [c["native"] for c in cases if "native" in c]
     compiled = sum(n.get("kind", "execute") == "codegen" for n in accepted)
-    print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {len(accepted) - compiled} executable comparisons; {compiled} codegen-only comparisons")
+    objects = sum(n.get("kind") == "object" for n in accepted)
+    print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {len(accepted) - compiled - objects} executable comparisons; {compiled} codegen-only comparisons; {objects} object comparisons")
     differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
                       != c.get("native", {}).get("outcome") for c in cases)
     if differences:

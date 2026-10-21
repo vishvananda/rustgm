@@ -24,6 +24,25 @@ def check_relative_path(value, stage):
         raise ValueError(f"{stage}: fixture identities must be normalized relative paths")
 
 
+def library_arguments(case, mode):
+    """A library's identity is explicit and cannot be overridden by case arguments."""
+    library = case.get("library")
+    required = case.get("rustc", {}).get("kind") == "library" and mode == "--emit-lowir"
+    if library is None and not required:
+        return []
+    if (not required or not isinstance(library, dict)
+            or set(library) != {"crate_name", "disambiguator"}):
+        raise ValueError("LowIR libraries require an explicit crate_name and disambiguator")
+    name, disambiguator = library["crate_name"], library["disambiguator"]
+    if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]{0,63}", name)
+            or name == "_" or not isinstance(disambiguator, str)
+            or not re.fullmatch(r"[A-Za-z_0-9]{1,64}", disambiguator)):
+        raise ValueError("invalid library identity")
+    if "--crate-name" in case.get("args", [])[::2]:
+        raise ValueError("library identity cannot have a competing crate-name argument")
+    return ["--crate-type=lib", "--crate-name", name, "--crate-disambiguator", disambiguator]
+
+
 def load_cases(root, stage):
     assignment = root / stage
     manifest_path = assignment / "tests/manifest.json"
@@ -79,6 +98,7 @@ def load_cases(root, stage):
         if (not isinstance(args, list) or any(not isinstance(arg, str) for arg in args)
                 or len(args) % 2 or any(args[i] not in ("--cfg", "--crate-name") for i in range(0, len(args), 2))):
             raise ValueError(f"{stage}: case args must be --cfg/value or --crate-name/value pairs")
+        library_arguments(case, case.get("mode", manifest["mode"]))
     discovered = {p.relative_to(assignment).as_posix() for p in (assignment / "tests").rglob("*.rs")}
     declared_rs = {p for p in set(paths) | auxiliary if p.endswith(".rs")}
     if discovered != declared_rs:
@@ -110,7 +130,8 @@ def execute(command, data, timeout, *, cwd=None, env=None):
 
 def run_case(root, stage, mode, case, app, timeout):
     fixture = root / stage / case["path"]
-    command = [*app, case.get("mode", mode), "--edition=2024", *case.get("args", [])]
+    mode = case.get("mode", mode)
+    command = [*app, mode, "--edition=2024", *case.get("args", []), *library_arguments(case, mode)]
     data = fixture.read_bytes()
     if case.get("input") == "file":
         command.append(str(Path(stage) / case["path"]))

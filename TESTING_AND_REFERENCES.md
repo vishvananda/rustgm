@@ -106,6 +106,20 @@ predicates with the pinned target/profile. Cases may declare `args` as explicit
 in evidence. Reference receipts hash the manifest as well as source fixtures,
 so changing configuration or expected outcomes requires an explicit review.
 
+Complete entry-free sources use `rustc.kind = "library"`; object qualification
+is supported without adding a synthetic `main` or rewriting fixture bytes.
+A LowIR library case additionally declares
+`library: {"crate_name": "example", "disambiguator": "fixture_1"}`. These are
+bounded ASCII crate identities; a competing `--crate-name` argument is rejected.
+The frontend receives the explicit library identity and rustc receives the same
+crate name with its library object mode. An accepted native library case requires
+`native.kind = "object"` and a nonempty reason, with no runtime outcomes. The
+runner requires the separately pinned CPPGM object capability, verifies both
+outputs are x86-64 ELF relocatable objects, records their hashes and removes them.
+Object qualification makes no runtime equivalence claim. Programs retain their
+existing executable and explicitly justified code-generation-only contracts.
+The syntax runner honors `RUSTGM_TEST_JOBS`, or an explicit `--jobs` from 1 to 8.
+
 PA4's `check_syntax.py pa4` checks expression fragments in explicit wrappers.
 A mismatch between parser acceptance and rustc acceptance requires a manifest
 reason (for example, type checking deferred to a later stage). Structural tests

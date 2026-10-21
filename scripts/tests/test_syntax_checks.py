@@ -1,12 +1,30 @@
 import sys
 from pathlib import Path
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_syntax import check_classification, expression_source, check_configured_owners, rustc_arguments, rustc_emission
+from check_syntax import check, check_classification, expression_source, check_configured_owners, rustc_arguments, rustc_emission
 
 
 class IndependentSyntaxTests(unittest.TestCase):
+    def test_library_emission_uses_declared_crate_name(self):
+        case = {"library": {"crate_name": "explicit", "disambiguator": "batch"},
+                "args": ["--cfg", "selected"]}
+        self.assertEqual(rustc_arguments(case, "default"),
+                         ["--crate-name", "explicit", "--cfg", "selected"])
+        self.assertEqual(rustc_emission({"kind": "library", "emit": "obj"}), "--emit=obj")
+
+    def test_invalid_worker_limits_fail_before_starting_compilers(self):
+        with mock.patch("check_syntax.subprocess.check_output") as command:
+            for jobs in (0, -1, 9):
+                with self.assertRaises(ValueError):
+                    check("pa1", Path("unused"), jobs)
+            with mock.patch.dict("os.environ", {"RUSTGM_TEST_JOBS": "0"}):
+                with self.assertRaises(ValueError):
+                    check("pa1", Path("unused"))
+            command.assert_not_called()
+
     def test_independent_compilers_keep_cfg_and_one_effective_crate_name(self):
         case = {"args": ["--crate-name", "first", "--cfg", 'feature="two words"',
                          "--crate-name", "last", "--cfg", "selected"]}

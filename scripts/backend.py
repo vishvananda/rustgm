@@ -140,17 +140,22 @@ def build_object(source, output):
     emit_object(source, output, tools)
 
 
-def emit_object(source, output, tools):
+def emit_object(source, output, tools, *, run=None):
     output.parent.mkdir(parents=True, exist_ok=True)
     # This mode validates serialized LowIR with the host-object ABI facts enabled.
     # The suffix gate prevents the multi-input driver from selecting a frontend.
-    invoke([tools["cppgm++"], "-O0", "-c", str(source), "-o", str(output)])
+    (invoke if run is None else run)([tools["cppgm++"], "-O0", "-c", str(source), "-o", str(output)])
+    verify_object(output)
+
+
+def verify_object(output):
+    """Validate the shared object contract independently of the producing compiler."""
     with output.open("rb") as stream:
         header = stream.read(20)
     # ELF64, little-endian, current ELF version; ET_REL and EM_X86_64.
     if (header[:7] != b"\x7fELF\x02\x01\x01" or
             header[16:20] != b"\x01\x00\x3e\x00"):
-        raise ValueError("object backend did not produce an x86-64 ELF64 relocatable object")
+        raise ValueError("compiler did not produce an x86-64 ELF64 relocatable object")
 
 
 def test():

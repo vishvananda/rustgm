@@ -10,6 +10,28 @@ from check_native import classification, execution, native_cases, run_executable
 
 
 class NativeContract(unittest.TestCase):
+    def test_libraries_require_objects_and_never_execute(self):
+        case = {"exit_status": 0, "rustc": {"kind": "library", "status": 0},
+                "library": {"crate_name": "values", "disambiguator": "test"},
+                "native": {"kind": "object", "reason": "Public source has no main"}}
+        classification(case)
+        def forbidden(*args):
+            self.fail("relocatable objects cannot execute")
+        run_executables(case["native"], Path("rust.o"), Path("cppgm.o"), forbidden)
+        for native in ({"outcome": "pass"}, {"kind": "codegen", "reason": "library"},
+                       {"kind": "object"}, {"kind": "object", "reason": " "},
+                       case["native"] | {"outcome": "pass"},
+                       case["native"] | {"rustc_outcome": "pass"}):
+            with self.subTest(native=native), self.assertRaises(ValueError):
+                classification(case | {"native": native})
+        with self.assertRaises(ValueError):
+            classification(case | {"rustc": {"kind": "program", "status": 0}})
+        with self.assertRaises(ValueError):
+            classification(case | {"exit_status": 1})
+        rejected = {k: v for k, v in case.items() if k != "native"}
+        rejected.update(exit_status=1, rustc={"kind": "library", "status": 1})
+        classification(rejected)
+
     def test_supplemental_views_do_not_weaken_native_requirements(self):
         manifest = {"mode": "--emit-lowir", "additional_modes": ["--emit-layouts"]}
         layout = {"mode": "--emit-layouts", "exit_status": 0}

@@ -13,6 +13,19 @@ SPEC.loader.exec_module(backend)
 
 
 class ObjectBridge(unittest.TestCase):
+    def test_both_compilers_must_produce_relocatable_x86_64_objects(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "output.o"
+            header = b"\x7fELF\x02\x01\x01" + b"\0" * 9 + b"\x01\x00\x3e\x00"
+            path.write_bytes(header)
+            backend.verify_object(path)
+            for invalid in (b"", header[:19], b"other" + header[5:],
+                            header[:16] + b"\x02\x00\x3e\x00",
+                            header[:18] + b"\xb7\x00"):
+                path.write_bytes(invalid)
+                with self.assertRaises(ValueError):
+                    backend.verify_object(path)
+
     def test_rust_input_never_reaches_the_multi_frontend_driver(self):
         with mock.patch.object(backend, "invoke") as invoke:
             with self.assertRaisesRegex(ValueError, "only serialized .lowir"):

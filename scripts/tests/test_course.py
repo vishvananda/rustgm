@@ -11,6 +11,37 @@ from course import compare, execute, load_cases, run_stage, run_case
 
 
 class HarnessTests(unittest.TestCase):
+    def test_library_contract_preserves_source_and_separates_identity_arguments(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/x.rs", "exit_status": 0,
+                    "rustc": {"kind": "library", "status": 0},
+                    "library": {"crate_name": "chosen", "disambiguator": "batch_1"},
+                    "args": ["--cfg", 'feature="two words"']}
+            root, tests = self.fixture_root(name, [case])
+            source = b"pub fn answer()->u8{42}\r\n"
+            (tests / "x.rs").write_bytes(source)
+            manifest = {"mode": "--emit-lowir", "cases": [case]}
+            (tests / "manifest.json").write_text(json.dumps(manifest))
+            load_cases(root, "pa1")
+            app = [sys.executable, "-c", "import json,sys; print(json.dumps([sys.argv[1:],list(sys.stdin.buffer.read())]))"]
+            _, actual = run_case(root, "pa1", "--emit-lowir", case, app, 2)
+            arguments, data = json.loads(actual[0])
+            self.assertEqual(bytes(data), source)
+            self.assertEqual(arguments, ["--emit-lowir", "--edition=2024", *case["args"],
+                                         "--crate-type=lib", "--crate-name", "chosen",
+                                         "--crate-disambiguator", "batch_1"])
+            for changes in ({"library": None}, {"library": {}},
+                            {"library": {"crate_name": "_", "disambiguator": "x"}},
+                            {"library": {"crate_name": "ok", "disambiguator": "a-b"}},
+                            {"library": {"crate_name": "a" * 65, "disambiguator": "x"}},
+                            {"args": ["--crate-name", "competing"]},
+                            {"rustc": {"kind": "program", "status": 0}}):
+                manifest["cases"] = [case | changes]
+                (tests / "manifest.json").write_text(json.dumps(manifest))
+                with self.subTest(changes=changes), self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+            self.assertEqual((tests / "x.rs").read_bytes(), source)
+
     def test_scoped_evidence_preserves_comparison_bytes_and_failure_receipts(self):
         with tempfile.TemporaryDirectory() as name:
             root, tests = self.fixture_root(name, [{"path": "tests/x.rs", "exit_status": 0}])
