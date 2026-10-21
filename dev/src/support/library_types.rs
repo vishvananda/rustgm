@@ -1,4 +1,16 @@
 //! Nominal library identities are independent of user declaration spellings.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LibraryValue {
+    EnvironmentOption,
+}
+impl LibraryValue {
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::EnvironmentOption => "option-environment",
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum LibraryType {
     Option,

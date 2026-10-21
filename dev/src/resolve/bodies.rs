@@ -63,6 +63,10 @@ impl Resolver<'_> {
             c.scope = *scope;
         }
         match self.kind(c, node) {
+            Kind::LibraryValue { kind, value } => {
+                self.prepare_library_value(c, node, kind)?;
+                self.optional(c, value, Namespace::Value)
+            }
             Kind::Item(index) => self.item_body(c, node, index),
             Kind::Path { .. } | Kind::Name(_) | Kind::CrateRoot(_) => self.reference(c, node, ns),
             Kind::Let {

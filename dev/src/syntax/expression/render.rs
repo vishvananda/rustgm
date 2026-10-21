@@ -90,6 +90,12 @@ fn operator(op: P) -> &'static str {
 )]
 fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write) -> io::Result<()> {
     match kind {
+        Kind::LibraryValue { kind, value } => write!(
+            output,
+            "library-value {} value={}",
+            kind.name(),
+            Optional(value)
+        ),
         Kind::Expansion { children, tail } => write!(
             output,
             "expansion {} tail={}",

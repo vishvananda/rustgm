@@ -22,3 +22,10 @@ aliases and namespace shadowing, private fields, conditional Copy and destructor
 lifetime obligations. Native controls execute both enum variants and compare
 nested `ManuallyDrop` cleanup suppression with ordinary field destruction.
 These draft declarations do not activate PA26 or publish text references.
+
+`environment-outcomes.json` declares `spec/environment` controls for option_env's
+canonical Option result, macro aliases/shadowing, prelude controls, eager argument
+validation, const initializers and rejected syntax contexts. Provider snapshot
+and error checks are in `option_environment`; its ignored native test compares
+present, absent, shadowed and constant payload programs with pinned rustc and
+the external CPPGM backend. These declarations remain draft fixtures.

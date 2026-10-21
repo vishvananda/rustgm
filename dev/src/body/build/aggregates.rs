@@ -9,6 +9,36 @@ use crate::{
 };
 
 impl Builder<'_> {
+    pub(super) fn library_value(
+        &mut self,
+        node: NodeId,
+        value: Option<NodeId>,
+    ) -> Result<ValueId, Error> {
+        let Some(Operation::Construct { variant }) = self.fact(node)?.operation else {
+            return Err(self.error(node, "missing library aggregate selection"));
+        };
+        let start = self.index(node, self.body.arguments.len())?;
+        if let Some(value) = value {
+            let value = self.value(value)?;
+            self.body.arguments.push(value);
+        }
+        let end = self.index(node, self.body.arguments.len())?;
+        let declaration = self.facts.members.variants[variant.0 as usize];
+        if end - start != declaration.end - declaration.start {
+            return Err(self.error(
+                node,
+                "library aggregate fields do not match its declaration",
+            ));
+        }
+        self.evaluate(
+            node,
+            self.ty(node)?,
+            Rvalue::Aggregate {
+                variant: Some(variant),
+                fields: ValueList { start, end },
+            },
+        )
+    }
     pub(super) fn projected_syntax(&self, mut node: NodeId) -> bool {
         while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(node) {
             node = value;

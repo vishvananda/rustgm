@@ -7,6 +7,10 @@ use crate::syntax::ast::List;
 
 #[derive(Clone, Copy)]
 pub(super) enum Expression {
+    Direct {
+        variant: VariantId,
+        field: Option<NodeKey>,
+    },
     Positional {
         variant: VariantId,
         callee: NodeKey,
@@ -26,6 +30,12 @@ impl Expression {
         mut visit: impl FnMut(NodeKey),
     ) {
         let fields = match self {
+            Self::Direct { field, .. } => {
+                if let Some(field) = field {
+                    visit(field);
+                }
+                return;
+            }
             Self::Positional { arguments, .. } => arguments,
             Self::Record { fields, base, .. } => {
                 if let Some(base) = base {
@@ -44,6 +54,19 @@ impl Queries<'_> {
     pub(super) fn constructor_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let child = |node| NodeKey { node, ..key };
         Ok(match Declarations::kind(self.report, key) {
+            Kind::LibraryValue { value, .. } => {
+                let Some(Operation::Construct { variant }) =
+                    self.typing.facts.node(key).and_then(|f| f.operation)
+                else {
+                    return Err(
+                        self.error(Query::Node(key), "missing constant aggregate selection")
+                    );
+                };
+                Some(Expression::Direct {
+                    variant,
+                    field: value.map(child),
+                })
+            }
             Kind::Struct { fields, base, .. } => {
                 let Some(Operation::Construct { variant }) =
                     self.typing.facts.node(key).and_then(|f| f.operation)
@@ -89,6 +112,9 @@ impl Queries<'_> {
         expression: Expression,
     ) -> Result<Value, Error> {
         let (variant, fields, base, positional) = match expression {
+            Expression::Direct { variant, field } => {
+                return self.direct_constructor_value(key, variant, field);
+            }
             Expression::Positional {
                 variant,
                 callee,
@@ -184,6 +210,32 @@ impl Queries<'_> {
             .facts
             .constant_products
             .fields(&complete, Some(variant))
+            .map_err(|e| self.error(Query::Node(key), e))
+    }
+    fn direct_constructor_value(
+        &mut self,
+        key: NodeKey,
+        variant: VariantId,
+        field: Option<NodeKey>,
+    ) -> Result<Value, Error> {
+        self.budget()?;
+        let value = field
+            .map(|field| self.value(Query::Node(field)))
+            .transpose()?;
+        let member = self.typing.facts.members.variants[variant.0 as usize];
+        if member.end - member.start != u32::from(value.is_some()) {
+            return Err(self.error(
+                Query::Node(key),
+                "constant aggregate fields differ from its declaration",
+            ));
+        }
+        if value.is_none() {
+            return Ok(Value::Variant(variant));
+        }
+        self.typing
+            .facts
+            .constant_products
+            .fields(value.as_slice(), Some(variant))
             .map_err(|e| self.error(Query::Node(key), e))
     }
     fn constructor_field(&self, mut key: NodeKey, variant: VariantId) -> Result<usize, Error> {

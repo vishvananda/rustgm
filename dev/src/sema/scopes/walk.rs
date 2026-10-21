@@ -111,7 +111,9 @@ impl Walker<'_> {
             | Syntax::FieldInit { value, .. } => {
                 self.push(Work::Expression(value, context))?;
             }
-            Syntax::Return(value) | Syntax::Break { value, .. } => {
+            Syntax::LibraryValue { value, .. }
+            | Syntax::Return(value)
+            | Syntax::Break { value, .. } => {
                 if let Some(value) = value {
                     self.push(Work::Expression(value, context))?;
                 }

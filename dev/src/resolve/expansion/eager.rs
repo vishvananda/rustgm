@@ -206,7 +206,8 @@ impl<S: Sources> Engine<'_, S> {
                 },
             ),
             Body::Builtin(
-                builtin @ (builtin::Builtin::Env
+                builtin @ (builtin::Builtin::OptionEnv
+                | builtin::Builtin::Env
                 | builtin::Builtin::IncludeStr
                 | builtin::Builtin::IncludeBytes),
             ) => self.resource_builtin(file, visit.node, root, grammar, builtin),

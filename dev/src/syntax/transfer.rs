@@ -259,6 +259,7 @@ impl Bases {
                 *name = span(*name)?;
                 *lifetime = span(*lifetime)?;
             }
+            Kind::LibraryValue { value, .. } => self.optional(value),
             Kind::Name(name) => *name = span(*name)?,
             Kind::GenericMethodCall {
                 receiver,

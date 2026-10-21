@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/environment/absent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/present.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/no-prelude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/nominal-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/macro-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/no-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/non-literal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/extra-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/type-position.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/statement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/constant-present.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/constant-absent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    },
+    {
+      "path": "tests/spec/environment/pattern-position.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.option-environment"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal library result, hygiene, syntax context and explicit environment contract."
+      }
+    }
+  ]
+}

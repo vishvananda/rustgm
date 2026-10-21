@@ -97,7 +97,10 @@ impl Walker<'_> {
             Syntax::Array(elements) | Syntax::Tuple(elements) => {
                 self.extend_list(elements, lifetime)?;
             }
-            Syntax::Group(value)
+            Syntax::LibraryValue {
+                value: Some(value), ..
+            }
+            | Syntax::Group(value)
             | Syntax::Attributed { value, .. }
             | Syntax::Cast { value, .. }
             | Syntax::FieldInit { value, .. }

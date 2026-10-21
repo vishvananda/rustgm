@@ -85,6 +85,10 @@ pub enum MacroContext {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    LibraryValue {
+        kind: crate::support::library_types::LibraryValue,
+        value: Option<NodeId>,
+    },
     Receiver {
         name: Span,
         lifetime: Span,

@@ -44,7 +44,10 @@ impl Paths {
             members: Some(scope),
         });
         let mut macro_targets = HashMap::new();
-        for builtin in Builtin::ALL {
+        for builtin in Builtin::ALL
+            .into_iter()
+            .filter(|builtin| *builtin != Builtin::OptionEnv)
+        {
             let name = package
                 .names
                 .intern(builtin.name())
@@ -275,6 +278,12 @@ impl Paths {
             self.work
                 .declared((definition.scope, definition.name, definition.namespace));
         }
+        let library_builtin = resolver.facts.imports[first..].iter().any(|import| {
+            import
+                .path
+                .last()
+                .is_some_and(|name| resolver.package.names.get(*name) == Builtin::OptionEnv.name())
+        });
         for index in first..resolver.facts.imports.len() {
             if textual.1.0 != 0 {
                 resolver
@@ -291,6 +300,9 @@ impl Paths {
             if text.is_some() {
                 self.text_ready.push_back(index);
             }
+        }
+        if library_builtin {
+            self.library_builtin(package, context, node)?;
         }
         Ok(())
     }
@@ -394,6 +406,13 @@ impl Paths {
             scope: call.visit.path_scope,
         };
         let node = call.visit.node;
+        if call
+            .path
+            .last()
+            .is_some_and(|name| package.names.get(*name) == Builtin::OptionEnv.name())
+        {
+            self.library_builtin(package, context, node)?;
+        }
         let resolver = self.state.bind(package);
         let mut observed = Observations {
             selected: Some(Vec::new()),
@@ -428,6 +447,44 @@ impl Paths {
                 Err(resolver.error(context, node, "associated items are not macro paths"))
             }
         }
+    }
+    fn library_builtin(
+        &mut self,
+        package: &mut Package,
+        context: Context,
+        node: NodeId,
+    ) -> Result<(), Error> {
+        let name = package
+            .names
+            .intern(Builtin::OptionEnv.name())
+            .map_err(|e| Error::at(context.file, 0, e))?;
+        if self.state.facts.macro_prelude.contains_key(&name) {
+            return Ok(());
+        }
+        let mut resolver = self.state.bind(package);
+        let scope = resolver.prepare_library_value(
+            context,
+            node,
+            crate::support::library_types::LibraryValue::EnvironmentOption,
+        )?;
+        let target = resolver.define(
+            Definition {
+                name,
+                namespace: Namespace::Macro,
+                kind: DefKind::BuiltinMacro,
+                scope,
+                node: None,
+                access: Access::Public,
+                members: None,
+            },
+            false,
+        )?;
+        resolver.facts.macro_prelude.insert(name, target);
+        self.macro_targets
+            .insert(target, MacroTarget::Builtin(Builtin::OptionEnv));
+        self.work.extend(resolver.facts);
+        self.work.declared((scope, name, Namespace::Macro));
+        Ok(())
     }
     pub fn take_error(&mut self) -> Option<Error> {
         self.work.take_error()
