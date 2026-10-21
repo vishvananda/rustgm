@@ -202,3 +202,8 @@ NaN behavior; floats do not acquire Eq.
 including 31 native controls. Reference forwarding and derive execution remain
 explicit accepted boundaries; PartialOrd/Ord and the other required families
 remain unfinished. See `docs/pa26-comparisons.md`. This does not activate PA26.
+
+The equality performance preparation also retains an independently accepted
+unsuffixed assignment-method gap: `let mut n=3u32; n.add_assign(4)` is rejected
+while `4u32` succeeds. Numeric-domain candidate inference for assignment methods
+remains required work; see `docs/pa26-comparison-performance.md`.

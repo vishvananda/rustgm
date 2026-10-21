@@ -93,6 +93,13 @@ surface. The two accepted boundary fixtures keep reference forwarding and derive
 execution explicit. Mathematical equality laws are promises, not compiler proofs;
 the deliberately nonreflexive manual Eq control remains accepted.
 
+Primitive AddAssign dot lookup also still rejects an unsuffixed RHS such as
+`let mut n=3u32; n.add_assign(4)`, although Rust 1.98 accepts it. Both matched
+performance pins reproduce this gap; an explicitly typed `4u32` succeeds. Its
+future correction should reuse isolated numeric-domain candidate inference and
+retain ordinary competing-implementation ambiguity. The original performance
+input and failed receipt are preserved alongside the separately frozen control.
+
 PA26 still needs the remaining primitive/unary/reference and Deref hooks,
 PartialOrd/Ord, iteration, question-mark, required derives and formatting/runtime
 hooks. PA30's accepted scalar/foreign-static and bounded repr(C) aggregate ABI
