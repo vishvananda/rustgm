@@ -1,4 +1,5 @@
 //! Namespace-resolved associated declarations; this inventory is not a type or impl proof.
+mod comparisons;
 mod language;
 use crate::{
     resolve::{
@@ -10,6 +11,7 @@ use crate::{
     syntax::{ast::Kind, item::ItemKind},
     types::TypeId,
 };
+pub(crate) use comparisons::LibraryDefault;
 use std::collections::HashMap;
 
 /// Requirements on a projected result, distinct from assumptions about its inputs.

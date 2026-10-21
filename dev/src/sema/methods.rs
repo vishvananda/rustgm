@@ -20,6 +20,7 @@ pub struct Qualified {
 #[derive(Default)]
 pub struct Methods {
     visible: Option<Box<visible::Index>>,
+    comparison_borrows: Option<Box<ComparisonBorrows>>,
     pub(super) trait_names: HashSet<NameId>,
     /// Published owner members; frozen in resolver order after header preparation.
     pub(super) inherent: HashMap<(ItemId, NameId), Vec<DefId>>,
@@ -53,4 +54,24 @@ pub struct Call {
     pub dereferences: u32,
     pub borrow: Option<TypeId>,
     pub receiver: TypeId,
+}
+
+#[derive(Default)]
+struct ComparisonBorrows {
+    right: HashMap<NodeKey, TypeId>,
+}
+impl Methods {
+    pub(super) fn retain_comparison_borrow(&mut self, node: NodeKey, ty: TypeId) {
+        self.comparison_borrows
+            .get_or_insert_default()
+            .right
+            .insert(node, ty);
+    }
+    pub(crate) fn comparison_borrow(&self, node: NodeKey) -> Option<TypeId> {
+        self.comparison_borrows
+            .as_deref()?
+            .right
+            .get(&node)
+            .copied()
+    }
 }

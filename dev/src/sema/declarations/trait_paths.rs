@@ -178,7 +178,10 @@ impl Checker<'_> {
                 return if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Trait
                     || matches!(
                         self.report.resolution.builtin_traits.identify(id),
-                        Some(crate::resolve::model::BuiltinTrait::Language(_))
+                        Some(
+                            crate::resolve::model::BuiltinTrait::Language(_)
+                                | crate::resolve::model::BuiltinTrait::Comparison(_)
+                        )
                     )
                     || auto
                         && matches!(

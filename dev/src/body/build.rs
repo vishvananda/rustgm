@@ -261,6 +261,7 @@ enum Work {
     Reborrow(NodeId),
     MethodReceiver(NodeId),
     LanguageReceiver(NodeId),
+    ComparisonArgument(NodeId),
     InvocationReceiver(NodeId, NodeId),
     Finish(NodeId),
     EndBlock {
@@ -299,6 +300,11 @@ enum Work {
 }
 struct Scratch {
     receivers: HashMap<NodeId, ValueId>,
+    #[expect(
+        clippy::box_collection,
+        reason = "comparison-only scratch stays pointer-sized and unallocated for ordinary CFG construction"
+    )]
+    comparison_arguments: Option<Box<HashMap<NodeId, ValueId>>>,
     unadjusted: Vec<NodeId>,
     scopes: scopes::Scratch,
     conditional_live: Vec<LocalId>,
@@ -332,6 +338,7 @@ impl Scratch {
     fn new(facts: &Declarations) -> Self {
         Self {
             receivers: HashMap::new(),
+            comparison_arguments: None,
             scopes: scopes::Scratch::default(),
             unadjusted: Vec::new(),
             values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
@@ -727,6 +734,9 @@ impl<'a> Builder<'a> {
             self.scratch.definitions[definition.0 as usize] = None;
         }
         self.scratch.receivers.clear();
+        if let Some(arguments) = self.scratch.comparison_arguments.as_deref_mut() {
+            arguments.clear();
+        }
         self.scratch.live.clear();
         self.scratch.controls.clear();
         self.scratch.reach.clear();
@@ -831,6 +841,7 @@ impl<'a> Builder<'a> {
             Work::Reborrow(node) => self.finish_reborrow(node)?,
             Work::MethodReceiver(node) => self.method_receiver(node)?,
             Work::LanguageReceiver(node) => self.language_receiver(node)?,
+            Work::ComparisonArgument(node) => self.comparison_argument(node)?,
             Work::InvocationReceiver(node, callee) => self.invocation_receiver(node, callee)?,
             Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
                 self.enter(node)?;
@@ -1186,7 +1197,12 @@ impl<'a> Builder<'a> {
                     }
                     Kind::Binary { left, right, .. } => {
                         if self.borrowed_language_operator(node) {
-                            self.scratch.work.push(Work::Enter(right));
+                            if self.comparison_operator(node) {
+                                self.scratch.work.push(Work::ComparisonArgument(node));
+                                self.scratch.work.push(Work::Place(right));
+                            } else {
+                                self.scratch.work.push(Work::Enter(right));
+                            }
                             self.scratch.work.push(Work::LanguageReceiver(node));
                             self.scratch.work.push(Work::Place(left));
                             return Ok(());

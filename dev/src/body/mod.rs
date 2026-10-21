@@ -10,6 +10,7 @@ pub mod invocation_entries;
 pub mod ir;
 pub(crate) mod primitive_methods;
 pub mod promote;
+pub(crate) mod provided;
 pub mod regions;
 pub use crate::sema::scopes;
 pub mod storage;

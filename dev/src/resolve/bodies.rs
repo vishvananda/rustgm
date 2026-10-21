@@ -150,6 +150,9 @@ impl Resolver<'_> {
                 let [name] = names.as_slice() else {
                     return Err(self.error(c, node, "method requires one name segment"));
                 };
+                if matches!(self.package.names.get(*name), "eq" | "ne") {
+                    self.prepare_comparisons(c, node)?;
+                }
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
                     super::model::MethodCall {
@@ -170,6 +173,9 @@ impl Resolver<'_> {
                 arguments,
             } => {
                 let name = self.package.name(c.file, name)?;
+                if matches!(self.package.names.get(name), "eq" | "ne") {
+                    self.prepare_comparisons(c, node)?;
+                }
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
                     super::model::MethodCall {
@@ -417,6 +423,11 @@ impl Resolver<'_> {
         }
         let (absolute, path) = self.path_names(c, node)?;
         if ns == Namespace::Type
+            || ns == Namespace::Value
+                && path.len() > 1
+                && path
+                    .last()
+                    .is_some_and(|name| matches!(self.package.names.get(*name), "eq" | "ne"))
             || ns == Namespace::Value
                 && path.iter().any(|name| {
                     let spelling = self.package.names.get(*name);

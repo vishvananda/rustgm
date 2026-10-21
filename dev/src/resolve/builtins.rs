@@ -14,7 +14,7 @@ use crate::syntax::{
 };
 pub use intrinsics::{ComparisonResult, Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal};
-pub use traits::{BuiltinTrait, Callable, Language, LanguageOutput, Traits};
+pub use traits::{BuiltinTrait, Callable, Equality, Language, LanguageOutput, Traits};
 
 impl Resolver<'_> {
     pub(super) fn prepare_library_value(
@@ -110,6 +110,14 @@ impl Resolver<'_> {
         namespace: Namespace,
         path: &[NameId],
     ) -> Result<(), Error> {
+        if self.facts.builtin_traits.library.is_none()
+            && path.len() > 1
+            && path
+                .last()
+                .is_some_and(|name| matches!(self.package.names.get(*name), "eq" | "ne"))
+        {
+            self.prepare_comparisons(c, node)?;
+        }
         let library_shadowed = !absolute
             && path.first().is_some_and(|&name| {
                 let namespace = if path.len() > 1 { Namespace::Type } else { namespace };
@@ -123,6 +131,8 @@ impl Resolver<'_> {
                 matches!(
                     self.package.names.get(*name),
                     "Drop"
+                        | "PartialEq"
+                        | "Eq"
                         | "core"
                         | "std"
                         | "Copy"

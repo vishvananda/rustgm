@@ -8,6 +8,8 @@ mod calling_conventions;
 pub(super) use calling_conventions::callable_convention;
 use calling_conventions::rust_abi;
 mod capture_bounds;
+mod comparison_methods;
+mod comparisons;
 mod constants;
 mod contracts;
 mod deferred_arguments;
@@ -297,6 +299,7 @@ impl Checker<'_> {
             .saturating_mul(16);
         self.prepare_call_contracts()?;
         self.prepare_language_contracts()?;
+        self.prepare_comparison_contracts()?;
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;

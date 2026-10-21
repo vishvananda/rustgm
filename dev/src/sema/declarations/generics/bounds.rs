@@ -313,7 +313,10 @@ impl Checker<'_> {
                         definition: id,
                     });
                 }
-                if matches!(builtin, Some(BuiltinTrait::Language(_))) {
+                if matches!(
+                    builtin,
+                    Some(BuiltinTrait::Language(_) | BuiltinTrait::Comparison(_))
+                ) {
                     return Ok(Written::User {
                         path: key,
                         definition: id,
@@ -330,10 +333,12 @@ impl Checker<'_> {
                     Some(BuiltinTrait::Clone) => Ok(Written::Trait(Bound::Clone)),
                     Some(BuiltinTrait::Sized) => Ok(Written::Trait(Bound::Sized)),
                     Some(BuiltinTrait::Auto(marker)) => Ok(Written::Trait(Bound::Auto(marker))),
-                    Some(BuiltinTrait::Language(_)) => Ok(Written::User {
-                        path: key,
-                        definition: id,
-                    }),
+                    Some(BuiltinTrait::Language(_) | BuiltinTrait::Comparison(_)) => {
+                        Ok(Written::User {
+                            path: key,
+                            definition: id,
+                        })
+                    }
                     Some(BuiltinTrait::Callable(_)) => {
                         Err(self.error(key, "missing call-trait syntax"))
                     }

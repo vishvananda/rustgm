@@ -1,5 +1,6 @@
 //! Small demand-loaded trait modules retain identity through aliases and globs.
 mod callables;
+mod comparisons;
 mod language;
 use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
 use crate::support::language_hooks::Hook;
@@ -11,6 +12,7 @@ use crate::{
     syntax::ast::NodeId,
 };
 pub use callables::Callable;
+pub use comparisons::Equality;
 pub use language::{Language, Output as LanguageOutput};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -21,6 +23,7 @@ pub enum BuiltinTrait {
     Auto(AutoTrait),
     Callable(CallTrait),
     Language(Hook),
+    Comparison(crate::support::comparisons::Comparison),
 }
 impl BuiltinTrait {
     fn index(self) -> Option<usize> {
@@ -30,7 +33,7 @@ impl BuiltinTrait {
             Self::Sized => 2,
             Self::Auto(marker) => 3 + marker as usize,
             Self::Callable(kind) => 8 + kind as usize,
-            Self::Language(_) => return None,
+            Self::Language(_) | Self::Comparison(_) => return None,
         })
     }
     #[must_use]
@@ -42,6 +45,7 @@ impl BuiltinTrait {
             Self::Auto(marker) => marker.name(),
             Self::Callable(kind) => kind.name(),
             Self::Language(kind) => kind.name(),
+            Self::Comparison(kind) => kind.name(),
         }
     }
 }
@@ -55,6 +59,8 @@ pub struct Traits {
     entries: [Option<DefId>; 11],
     callables: Option<Box<[Callable; 3]>>,
     language: std::collections::HashMap<Hook, Language>,
+    comparisons: Option<Box<[Option<Equality>; 2]>>,
+    cmp: Option<ScopeId>,
 }
 impl Traits {
     fn insert_fixed(
@@ -73,6 +79,9 @@ impl Traits {
         if let BuiltinTrait::Language(kind) = trait_ {
             return self.language(kind).map(|entry| entry.definition);
         }
+        if let BuiltinTrait::Comparison(kind) = trait_ {
+            return self.comparison(kind).map(|entry| entry.definition);
+        }
         self.entries[trait_.index()?]
     }
     #[must_use]
@@ -81,6 +90,11 @@ impl Traits {
             .into_iter()
             .chain(AutoTrait::ALL.into_iter().map(BuiltinTrait::Auto))
             .chain(CallTrait::ALL.into_iter().map(BuiltinTrait::Callable))
+            .chain(
+                crate::support::comparisons::Comparison::ALL
+                    .into_iter()
+                    .map(BuiltinTrait::Comparison),
+            )
             .find(|t| self.get(*t) == Some(id))
             .or_else(|| {
                 self.language
@@ -95,6 +109,12 @@ impl Traits {
             .chain(&self.entries[8..])
             .copied()
             .flatten()
+            .chain(
+                self.comparisons
+                    .iter()
+                    .flat_map(|entries| entries.iter().flatten())
+                    .map(|entry| entry.definition),
+            )
     }
 }
 impl Resolver<'_> {
@@ -117,6 +137,15 @@ impl Resolver<'_> {
         // existing ops glob does not eagerly create unrelated declarations.
         if let Some(kind) = Hook::ALL.into_iter().find(|kind| kind.name() == last) {
             return self.prepare_language_trait(c, node, kind);
+        }
+        if let Some(kind) = crate::support::comparisons::Comparison::ALL
+            .into_iter()
+            .find(|kind| kind.name() == last)
+        {
+            return self.prepare_comparison(c, node, kind);
+        }
+        if matches!(last, "eq" | "ne") {
+            return self.prepare_comparisons(c, node);
         }
         if CallTrait::ALL.into_iter().any(|kind| kind.name() == last) {
             return self.prepare_call_traits(c, node);

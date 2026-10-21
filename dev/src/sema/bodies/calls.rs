@@ -25,6 +25,7 @@ pub(super) struct CallTypes {
     pub active: HashMap<NodeId, TermId>,
     pub method_owners: HashMap<NodeId, (DefId, TermId)>,
     pub methods: Vec<(NodeId, super::dot_calls::Pending)>,
+    pub comparison_borrows: Vec<(NodeId, TermId, TermId)>,
     pub invocations: Vec<(NodeId, super::invocations::Pending)>,
     pub nominal_receivers: HashMap<TermId, super::nominals::Fields>,
     pub field_receivers: Vec<TermId>,
@@ -85,6 +86,7 @@ impl CallTypes {
         self.active.clear();
         self.method_owners.clear();
         self.methods.clear();
+        self.comparison_borrows.clear();
         self.invocations.clear();
         self.nominal_receivers.clear();
         self.field_receivers.clear();

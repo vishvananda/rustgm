@@ -102,6 +102,7 @@ fn inspect_roots<R>(
     .map_err(|e| diagnostic(report, None, e.into()))?
     .bodies;
     body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
+    body::provided::append(report, facts, &mut templates, &mut inputs)?;
     body::promote::analyze_templates_reusing(
         report,
         facts,

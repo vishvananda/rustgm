@@ -149,7 +149,7 @@ fn primitive_factory_requires_matching_selection_and_preserves_ordinary_template
     let invalid = Selected {
         instance: selected[0].instance,
         descriptor: Descriptor {
-            hook: Hook::SubAssign,
+            operation: Operation::Arithmetic(Hook::SubAssign),
             ..selected[0].descriptor
         },
     };
@@ -285,18 +285,153 @@ fn every_owned_binary_family_retains_nonempty_exact_primitive_selection() -> Res
         } = fixture_for(&source)?;
         assert_eq!(selected.len(), 1, "{name}");
         let selected = selected[0];
-        assert_eq!(selected.descriptor.hook, hook);
+        assert_eq!(selected.descriptor.operation, Operation::Arithmetic(hook));
         assert_eq!(selected.descriptor.form, Form::ValueBinary);
         let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selected)?;
         crate::body::primitive_methods::validate(&mut facts, selected, &body, &input)?;
         let forged = Selected {
             descriptor: Descriptor {
-                hook: Hook::Add,
+                operation: Operation::Arithmetic(Hook::Add),
                 ..selected.descriptor
             },
             ..selected
         };
         assert!(forged.validate(&mut facts).is_err());
     }
+    Ok(())
+}
+
+#[test]
+fn primitive_comparison_factory_preserves_both_borrow_slots_and_exact_member() -> Result {
+    let Factory {
+        report,
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "fn main(){let a=3u8;let _=<u8 as PartialEq>::eq(&a,&a);let _=<u8 as PartialEq>::ne(&a,&a);}",
+    )?;
+    assert_eq!(selected.len(), 2);
+    let empty = crate::body::templates::Templates { bodies: Vec::new() };
+    let checked = originals(&mut facts, &empty)?;
+    let mut operators = Vec::new();
+    for selection in selected {
+        assert_eq!(selection.descriptor.form(), Form::Comparison);
+        let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selection)?;
+        let source = selection.validate(&mut facts)?;
+        operators.push(source.operator);
+        assert_eq!(input.universals, 2);
+        let signature = input.signature.ok_or("comparison contract signature")?;
+        let Some(Kind::Function {
+            parameters,
+            bound_regions,
+            ..
+        }) = facts.types.kind(signature)
+        else {
+            return Err("comparison signature".into());
+        };
+        assert_eq!(bound_regions, 2);
+        for (slot, &parameter) in facts
+            .types
+            .list(parameters)
+            .ok_or("parameters")?
+            .iter()
+            .enumerate()
+        {
+            let Some(Kind::Reference {
+                mutable: false,
+                region,
+                ..
+            }) = facts.types.kind(parameter)
+            else {
+                return Err("comparison shared reference".into());
+            };
+            assert_eq!(region, RegionId::bound(0, u16::try_from(slot)?)?);
+        }
+        let permit =
+            crate::body::primitive_methods::validate(&mut facts, selection, &body, &input)?;
+        prove(&mut facts, &checked, body.clone(), &input, Some(permit))?;
+        let marker = Selected {
+            descriptor: Descriptor {
+                operation: Operation::Comparison(crate::support::comparisons::Comparison::Eq),
+                ..selection.descriptor
+            },
+            ..selection
+        };
+        assert!(marker.validate(&mut facts).is_err());
+        let forwarding = Selected {
+            descriptor: Descriptor {
+                rhs: Rhs::SharedReference,
+                ..selection.descriptor
+            },
+            ..selection
+        };
+        assert!(forwarding.validate(&mut facts).is_err());
+        let mut collapsed = input;
+        collapsed.universals = 1;
+        assert!(
+            crate::body::primitive_methods::validate(&mut facts, selection, &body, &collapsed)
+                .is_err()
+        );
+    }
+    assert!(operators.contains(&Punctuation::EqualEqual));
+    assert!(operators.contains(&Punctuation::BangEqual));
+    Ok(())
+}
+
+#[test]
+fn primitive_comparison_infers_only_exact_numeric_domains_among_nominal_candidates() -> Result {
+    let Factory {
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "struct S(u8);impl PartialEq<S> for u8{fn eq(&self,r:&S)->bool{*self==r.0}}fn main(){let _=7u8.eq(&7);let _=7u8.ne(&8);let _=7u8.eq(&S(7));}",
+    )?;
+    assert_eq!(
+        selected.len(),
+        2,
+        "only primitive/primitive entries use factories"
+    );
+    let member = selected[0].validate(&mut facts)?.definition;
+    let owner = facts
+        .associated
+        .trait_owner(member)
+        .ok_or("comparison owner")?;
+    for domain in [infer::Domain::Integer, infer::Domain::Any] {
+        let mut context = Context::default();
+        let left = context.known(&facts.types, TypeId::primitive(Primitive::U8))?;
+        let right = context.variable(domain)?;
+        let goal = Predicate::trait_application(
+            left,
+            crate::types::ItemId(owner.0),
+            vec![crate::types::infer::arguments::Argument::Type(right)],
+        );
+        let candidate = candidate(&facts, &mut context, &goal)?;
+        if domain == infer::Domain::Integer {
+            assert!(matches!(candidate, Candidate::Present(_)));
+            assert!(matches!(
+                context.head(&facts.types, right)?,
+                Some(Constructor::Primitive(Primitive::U8))
+            ));
+        } else {
+            assert!(matches!(candidate, Candidate::Deferred));
+            assert!(context.head(&facts.types, right)?.is_none());
+        }
+    }
+    let mut context = Context::default();
+    let left = context.variable(infer::Domain::Integer)?;
+    let right = context.variable(infer::Domain::Integer)?;
+    let goal = Predicate::trait_application(
+        left,
+        crate::types::ItemId(owner.0),
+        vec![crate::types::infer::arguments::Argument::Type(right)],
+    );
+    assert!(matches!(
+        candidate(&facts, &mut context, &goal)?,
+        Candidate::Deferred
+    ));
+    assert!(context.head(&facts.types, left)?.is_none());
+    assert!(context.head(&facts.types, right)?.is_none());
     Ok(())
 }

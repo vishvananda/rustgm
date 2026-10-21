@@ -127,3 +127,6 @@ mod addition;
 
 #[path = "language_operators/binary.rs"]
 mod binary;
+
+#[path = "language_operators/comparison.rs"]
+mod comparison;

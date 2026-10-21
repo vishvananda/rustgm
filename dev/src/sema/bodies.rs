@@ -6,6 +6,7 @@ mod atomic_ordering;
 mod bounds;
 mod calls;
 mod closures;
+mod comparisons;
 mod conditions;
 mod defining_bodies;
 mod divergence;
@@ -1767,6 +1768,16 @@ impl Checker<'_> {
             && self.uses_language_operator(node, kind, left)?
         {
             return self.language_operator(node, kind, left, Some(right));
+        }
+        if matches!(op, Op::EqualEqual | Op::BangEqual)
+            && self.uses_comparison(node, left, right)?
+        {
+            let method = if op == Op::EqualEqual {
+                crate::support::comparisons::Method::Eq
+            } else {
+                crate::support::comparisons::Method::Ne
+            };
+            return self.comparison(node, method, left, right);
         }
         let a = self.term(left)?;
         let b = self.term(right)?;

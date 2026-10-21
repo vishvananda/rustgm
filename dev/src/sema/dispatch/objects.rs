@@ -49,11 +49,17 @@ impl Dispatcher {
         predicate: Predicate,
     ) -> Result<Method, String> {
         let language = match predicate.bound {
-            crate::types::parameters::predicates::Bound::Trait(id) => facts
-                .types
-                .trait_application(id)
-                .and_then(|application| facts.associated.operation(DefId(application.item.0)))
-                .is_some_and(|(kind, _)| crate::sema::primitive_methods::supported(kind)),
+            crate::types::parameters::predicates::Bound::Trait(id) => {
+                facts
+                    .types
+                    .trait_application(id)
+                    .and_then(|application| facts.associated.operation(DefId(application.item.0)))
+                    .is_some_and(|(kind, _)| crate::sema::primitive_methods::supported(kind))
+                    || facts
+                        .types
+                        .trait_application(id)
+                        .is_some_and(|a| facts.associated.comparison(DefId(a.item.0)).is_some())
+            }
             _ => false,
         };
         if !language && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. })) {

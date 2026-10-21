@@ -2,9 +2,8 @@
 use super::{Checker, DefId, Error, ItemId, NodeKey, State, Type};
 use crate::{
     resolve::model::{BuiltinLanguage, BuiltinLanguageOutput},
-    sema::{associated::Schema, generics::Parameter, model::Function, traits::Header},
+    sema::{associated::Schema, generics::Parameter, traits::Header},
     support::language_hooks::Hook,
-    syntax::ast::List,
     types::{
         GenericArgs, TypeId,
         arguments::Argument,
@@ -25,7 +24,7 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn language_parameter(
+    pub(super) fn language_parameter(
         &mut self,
         source: NodeKey,
         binding: DefId,
@@ -344,94 +343,29 @@ impl Checker<'_> {
         &mut self,
         declaration: BuiltinLanguage,
         subject: TypeId,
-        receiver: TypeId,
+        _receiver: TypeId,
         signature: TypeId,
         inputs: &[Argument],
     ) -> Result<(), Error> {
         let BuiltinLanguage {
             origin,
-            kind,
             definition,
             self_parameter,
             output,
             method,
             ..
         } = declaration;
-        let callable = self.intern(
-            origin,
-            Type::FunctionItem {
-                item: ItemId(method.0),
-                signature,
-                arguments: GenericArgs::EMPTY,
-            },
-        )?;
-        let generic_parameters = std::iter::once(subject)
-            .chain(inputs.iter().filter_map(|argument| {
-                if let Argument::Type(ty) = argument {
-                    Some(*ty)
-                } else {
-                    None
-                }
-            }))
-            .map(|ty| crate::sema::generics::parameter_id(&self.facts.types, Argument::Type(ty)))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| self.error(origin, e))?;
-        self.facts
-            .lifetimes
-            .callables
-            .insert_scoped(
-                &self.facts.types,
-                &[
-                    ItemId(self_parameter.0),
-                    ItemId(definition.0),
-                    ItemId(method.0),
-                ],
-                signature,
-                0,
-                &[],
-                &generic_parameters,
-            )
-            .map_err(|e| self.error(origin, e))?;
-        self.facts
-            .methods
-            .trait_names
-            .insert(self.report.resolution.definitions[method.0 as usize].name);
-        self.facts.definitions[method.0 as usize] = Some(callable);
-        self.states[method.0 as usize] = State::Complete;
-        self.facts.generics.parameters.insert(method, Vec::new());
-        self.facts.generics.parents.insert(method, definition);
-        self.facts
-            .methods
-            .receivers
-            .insert(method, (receiver, u32::from(kind.borrowed())));
-        self.facts.lifetimes.functions.insert(
-            method,
-            crate::sema::lifetimes::FunctionRegions {
-                total: u32::from(kind.borrowed()),
-                captures: 0,
-                early: Vec::new(),
-                late: if kind.borrowed() { vec![0] } else { Vec::new() },
-                has_declared_late: false,
-                bounds: Vec::new(),
-            },
-        );
-        self.facts.associated.register_language_members(
-            definition,
-            origin,
-            Function {
+        self.register_library_method(
+            super::comparison_methods::MethodContract {
+                origin,
+                owner: definition,
+                self_parameter,
                 definition: method,
-                node: origin,
                 signature,
-                parameters: List { start: 0, end: 0 },
-                body: None,
+                output: output.declared(),
             },
-            output.declared().map(|output| {
-                (
-                    output,
-                    self.report.resolution.definitions[output.0 as usize].name,
-                )
-            }),
-        );
-        Ok(())
+            subject,
+            inputs,
+        )
     }
 }

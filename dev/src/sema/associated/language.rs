@@ -16,6 +16,7 @@ pub(super) struct Declarations {
     pub origins: HashMap<DefId, crate::resolve::unit::NodeKey>,
     callable_definitions: [Option<DefId>; 3],
     operations: HashMap<DefId, (Hook, DefId)>,
+    pub(super) comparisons: Option<Box<super::comparisons::Comparisons>>,
 }
 impl Inventory {
     pub(in crate::sema) fn declare_operation(
@@ -114,7 +115,7 @@ impl Inventory {
             self.type_names.insert(output, name);
         }
     }
-    pub(in crate::sema) fn language_functions(
+    pub(crate) fn language_functions(
         &self,
     ) -> impl Iterator<Item = &super::super::model::Function> {
         self.language

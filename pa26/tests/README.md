@@ -35,3 +35,10 @@ the external CPPGM backend. These declarations remain draft fixtures.
 exercise full typed lowering and compare accepted native programs with rustc.
 The separate scaling invariant checks cached visibility work and receiver probes.
 These tests do not constitute an activated course manifest or text references.
+
+`comparison-outcomes.json` declares the canonical equality family in
+`spec/comparison`. The comparison module of `language_operators` independently
+qualifies all 52 outcomes and executes 31 accepted controls through both pinned
+compilers. Its CPPGM-dependent native test is explicitly ignored by default.
+Reference forwarding and derive execution are Rust-valid implementation
+boundaries, not language rejection controls. See `docs/pa26-comparisons.md`.

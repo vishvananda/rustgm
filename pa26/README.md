@@ -187,3 +187,18 @@ cover mixed shift RHS types, Boolean/float domains, same-named user traits and
 checked traps. See `tests/primitive-binary-outcomes.json` and
 `docs/pa26-primitive-binary.md`. Primitive reference/unary forms and the other
 required hook families remain separate work; PA26 stays planned.
+
+## Maintainer equality checkpoint
+
+Canonical `PartialEq<Rhs: ?Sized = Self>` and `Eq` declarations now participate in
+ordinary trait selection, operators and qualified/dot/reified calls. Equality
+borrows both operands independently in source order. Default `ne` enters the
+ordinary original-template proof pipeline; overrides retain their source bodies.
+Primitive method evidence uses the existing validated factory and checked CFG
+route, with Boolean result and distinct borrow slots. Float PartialEq preserves
+NaN behavior; floats do not acquire Eq.
+
+`tests/comparison-outcomes.json` declares 52 independently qualified outcomes,
+including 31 native controls. Reference forwarding and derive execution remain
+explicit accepted boundaries; PartialOrd/Ord and the other required families
+remain unfinished. See `docs/pa26-comparisons.md`. This does not activate PA26.

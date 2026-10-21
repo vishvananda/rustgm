@@ -1,0 +1,790 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/comparison/manual-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "d2cedde82feeb74b2ddc01c7764c3707b2b8deacc54087d09a823b185e497ec6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/default-ne.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "a8ef1816f29efc62f5b48a65dd7a6132f266d139549ae92f3cb46d2953750fc5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/override-ne.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "d4c9e46881988e370c1b8af73d3f2758ba25b6a059f2de54785805b64731d5c7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/heterogeneous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "07628953508556c35b7f98bcd8efc4c8fa14c95aa7c59ce8853154117e240c3e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/primitive-local-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "d58f9346163516da5c4470481d228134326a480c4226b49ead64d6b8161cdab0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "17cadde3e8b2e1c88cbd63ac17f36355eff62e964cbdd23df2916edd0d822667",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/generic-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "8890f1b940cce06a54ba61a4599cb212bb6f533ac0315184125d30fa8cf84c71",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/eq-supertrait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "9b9628d1dfbe74b70fed01777a2013a3f6c3e504903f550bdbde02f8e328561e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "c1efa32eb7dd47bc0c4b4538e8082dfa234a75b57526fbe23eb455a3eada87b5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/dot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "02679199127b5a80faef7baf4c3b9202c2edc721b06f21b4ad3f04db1e4e109a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "600c605dd38ceda98766c36f3a982f5de0feef437d5be23584800c5b29e326d1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/signed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "2555e0ab1d255ce281b486660b4a11efb06056c323a70c26c97dfc911c51a23e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/unsigned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "a2c8dcf1fed9dd066885f395f2f38070f1466d0c1048931f92dcf22ff96dd65b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/float-nan.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "3d99bdb302014d72433da795614950279af28bbd86b70119c9321213f7041c15",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/bool-char.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "ba38b67d91d03684c627e5cc37bc01fa86117144a3802a21571685728290d2ee",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "9f8c21ff722129dd304c26519618405ff71331a9dbd59864c311025c6f8f8bf4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/captured-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "dd51aa84063037f4966a8331773ee5d9402bf019951f9fc7f5df5a6719823738",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/unsized-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "077709aeec52c30228905d6a7e74b71431e3ae136104c6bc91239883d1cd12d1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/canonical-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "726bd7877dcb9a09eb9e78928b06cc04c4478e92aa74a15878f5a835477047f7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "725c5e1a0ee7113520a2f0beab25d8d9d6292d8c29864e27c87bdafe0d237912",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/nonreflexive-eq.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "a5aa35a111be26423840305f574ced7ebcde1fe7091b6e315c2ce89e0a22cb5f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/explicit-borrow-slots.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "b38f37b852147bf23314887205b3b88dbe9cecf3dbc1e86df5d9bc75da56cd83",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/local-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "0449abc57b2d5d1bb74b405e5f5ae76e720524d63c39f3da6f0e0bb05e232e1e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/missing-eq.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "a04e88ff2fecdaf6232e0cbf27dfd21ec5eb471be2fbf4fb70ef929319cbd0f1",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/wrong-receiver.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "fe02eed4a2d9d8165ebc200bc7ffe0fb9da3dff538bea4649de2bd9426c16f46",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/wrong-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "e7f79f0aa6721de5866b4268c918d69d6e55473e7ab6220b8dd4f53253ae9afb",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/eq-without-partial.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "7dec820b87d9fccd56bf6184b42ca57665ab37233a88d29623fbeda875c02570",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/float-eq.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "150084c460f6f00cae40aea1d92b7b46d2da5788f12dca28079f425c6fc70a70",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/mixed-domain.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "e875230e5cb50359040aae233993f36fb93cd7d38c3be622573b3aebcecc9c4a",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/moved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "e37672a1cd337fec44e7c461b49587ee55038f0bc5fd2ce6a3e796567abe2db2",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/right-mutation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "7030efa8cd112841198e7a3b3b286c819c9c893094cc2d1e6c218ec88cf4a7db",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/const-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "13db7786df44638081bb91fc7a4706f30098ffcf21554b15020128776a833feb",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/orphan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "2569a43e22f7d8aa4701fbdb350307f01af5e8cc481b135e28ce8a24c95707aa",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/lookalike-operator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "23c9aeef2fe4609175f40a83d1118b4911706322a2f6d81fe4940fe05c97fb6d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/pattern-structural.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "3108ded46beac60c443efb97b4ef01d3ed09ac14834b4a86567bec71c403af8f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/reference-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "b1a89b2df2417aa76af1c156f09536d537069de1261d59abdc0a65934498c0b0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": true
+    },
+    {
+      "path": "tests/spec/comparison/derive-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "2c55aa5f67f04e88592b066fd1d8ab451b0d4dbfdf473118f9ae8cd7d24df60c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": true
+    },
+    {
+      "path": "tests/spec/comparison/no-prelude-operator.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "3b94725b8205e52596f0228f2fcf28e789525fee681c5756aec0d77d0899d35b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/no-prelude-dot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "60e2e7e5dc3bbbf2d37a8d4057d820030b137ab0c60e1aded8ad6318cb21bf97",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/shadow-dot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "0cc9dfe029aec3b86dd88bcaccfac3683728006d27f05ffe90522d0d185800ff",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/ambiguous-dot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "617ce3f0b3fa4f5f27e490a44669bae487031739c5b03dfb9be21250371619f6",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/projected-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "da3f0003410e4cea809d0ea769c00229374f9b79ebda438fcfae0994e9c72c27",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/independent-input-regions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "9127f34c3907ce8dbc75e951cecf521e0cb68c650cc6556347bbffc06b4e0310",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/numeric-competing-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "55c865785c3d9ae838e7a88db0c31a4bc7310f06ab20559cf2154ecc70c23a47",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/numeric-suffixed-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "d5712090984a17dacae483fdcfada64b844390843e5a372c9074dbd4a57a48c5",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/unknown-competing-nominal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "f7a9604c7cde5c195a41ef2c897e892cadd05753123f788816e974471331ec0b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/override-no-eq.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "8c700091e985500711ebe736d0aa6d2a8b0f4a03f871b853b329f663288b2766",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/expired-heterogeneous.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "a789f89edc3639d2a4c854a81cfb69e361aa6ed355df85ade32f312337330a37",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/implicit-qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "fafdfad5ecf583b660f44ca74302c24e65d03056c79c2304839bf839d97cf6bd",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/implicit-reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "a82c2fa401a2ba1baeff4d0aa71c0156a8f9a5592bc566de57d18e44654c910c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/qualified-lookalike.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "c2bf2ed14a9d724cbf5a9b2239bc4348529e2d040546cd94f3b294b2f5bf57ca",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    },
+    {
+      "path": "tests/spec/comparison/independent-default-ne.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.comparison-hooks"
+      ],
+      "source_sha256": "b5c30af04ed85b3f17c02c1be5d765aa1895a3c11e6b2af369690bd3cff2499b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "boundary": false
+    }
+  ]
+}

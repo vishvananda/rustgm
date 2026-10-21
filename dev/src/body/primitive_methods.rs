@@ -35,7 +35,8 @@ pub(crate) fn build(
         .validate(facts)
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
     let error = |e| Declarations::error(report, source.source, e);
-    let (contract, right) = contract(facts, &source).map_err(error)?;
+    let (contract, right) =
+        contract(facts, &source, selected.descriptor().form()).map_err(error)?;
     let mut body = Body::new(
         Owner::Function {
             definition: source.definition,
@@ -74,17 +75,18 @@ fn operation(
     right: TypeId,
 ) -> Result<ValueId, &'static str> {
     let descriptor = selected.descriptor();
-    let left = if descriptor.form() == Form::Assignment {
-        dereference(body, Place::Local(LocalId(0)), source.receiver, types)?
-    } else {
+    let left = if descriptor.form() == Form::ValueBinary {
         Place::Local(LocalId(0))
+    } else {
+        dereference(body, Place::Local(LocalId(0)), source.receiver, types)?
     };
     let a = value(
         body,
         TypeId::primitive(descriptor.left()),
         Rvalue::Read(left),
     )?;
-    let right = if descriptor.rhs() == Rhs::SharedReference {
+    let right = if descriptor.rhs() == Rhs::SharedReference || descriptor.form() == Form::Comparison
+    {
         dereference(body, Place::Local(LocalId(1)), right, types)?
     } else {
         Place::Local(LocalId(1))
@@ -96,9 +98,13 @@ fn operation(
     )?;
     let result = value(
         body,
-        TypeId::primitive(descriptor.left()),
+        if descriptor.form() == Form::Comparison {
+            source.result
+        } else {
+            TypeId::primitive(descriptor.left())
+        },
         Rvalue::Binary {
-            operator: descriptor.operator()?,
+            operator: source.operator,
             left: a,
             right: b,
         },
@@ -120,6 +126,7 @@ fn operation(
 fn contract(
     facts: &mut Declarations,
     source: &Validated,
+    form: Form,
 ) -> Result<(Contract, TypeId), &'static str> {
     // The receiver keeps its own late slot. RHS argument lifetimes belong to
     // the caller and become distinct universals in this factory's body proof.
@@ -131,7 +138,11 @@ fn contract(
         return Err("primitive method has no callable signature");
     };
     let mut regions = Bound::universals(base);
-    let right = regions.apply(&mut facts.types, source.right)?;
+    let right = if form == Form::Comparison {
+        source.right
+    } else {
+        regions.apply(&mut facts.types, source.right)?
+    };
     let universals = base
         .checked_add(
             u32::try_from(regions.universal_count()).map_err(|_| "too many factory lifetimes")?,
@@ -236,7 +247,11 @@ pub(crate) fn validate(
     {
         return Err("primitive factory parameters differ from lifetime contract");
     }
-    let base = u32::from(selected.descriptor().form() == Form::Assignment);
+    let base = match selected.descriptor().form() {
+        Form::Assignment => 1,
+        Form::ValueBinary => 0,
+        Form::Comparison => 2,
+    };
     let (right, count) = match selected.descriptor().rhs() {
         Rhs::Owned => (source.right, base),
         Rhs::SharedReference => {

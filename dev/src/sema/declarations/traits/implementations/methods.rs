@@ -107,7 +107,13 @@ impl Checker<'_> {
                 )
                 .map_err(|e| self.error(actual.node, e))?;
                 result.push((expected.definition, Some(actual.definition)));
-            } else if expected.body.is_some() {
+            } else if expected.body.is_some()
+                || self
+                    .facts
+                    .associated
+                    .library_default(expected.definition)
+                    .is_some()
+            {
                 result.push((expected.definition, None));
             } else {
                 return Err(self.error(source, "implementation is missing a required trait method"));

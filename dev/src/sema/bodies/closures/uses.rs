@@ -50,6 +50,7 @@ struct Collector<'a> {
     pending: Vec<Work>,
     calls: HashMap<NodeId, (Option<CallTrait>, u32)>,
     methods: HashMap<NodeId, (u32, Option<TermId>)>,
+    comparisons: HashSet<NodeId>,
     references: HashMap<NodeId, (ReferenceConversion, TermId)>,
     adjusted: HashSet<NodeId>,
     adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
@@ -88,6 +89,18 @@ impl Checker<'_> {
                 .methods
                 .iter()
                 .map(|(node, pending)| (*node, pending.capture_receiver()))
+                .collect(),
+            comparisons: self
+                .state
+                .call_types
+                .methods
+                .iter()
+                .filter_map(|(node, pending)| {
+                    self.facts
+                        .associated
+                        .comparison_method(pending.method())
+                        .map(|_| *node)
+                })
                 .collect(),
             references: self
                 .state
@@ -339,6 +352,11 @@ impl Collector<'_> {
                 },
             ),
             Kind::Binary { op, left, right } => {
+                if self.comparisons.contains(&node) {
+                    self.push(right, Use::Shared);
+                    self.push(left, Use::Shared);
+                    return Ok(());
+                }
                 self.push(right, Use::Value);
                 self.push(
                     left,

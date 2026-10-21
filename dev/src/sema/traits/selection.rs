@@ -170,10 +170,11 @@ pub(in crate::sema) fn may_have_subject(
     let Some(subject) = subject else {
         return Ok(true);
     };
-    if facts
+    if (facts
         .associated
         .operation(DefId(item.0))
         .is_some_and(|(hook, _)| crate::sema::primitive_methods::supported(hook))
+        || facts.associated.comparison(DefId(item.0)).is_some())
         && subject
             .heads()
             .any(|head| matches!(head, super::heads::Head::Primitive(_)))

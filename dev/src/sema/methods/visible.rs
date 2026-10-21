@@ -21,6 +21,7 @@ pub(super) struct Index {
     lexical: HashMap<(ScopeId, NameId), Arc<[DefId]>>,
     work: Vec<ScopeId>,
     steps: usize,
+    prelude: HashMap<NameId, DefId>,
 }
 impl Index {
     pub(super) fn new(report: &Report, facts: &Declarations) -> Result<Self, &'static str> {
@@ -39,6 +40,16 @@ impl Index {
                     .insert(definition.name, member);
             }
         }
+        if let Some(declaration) = report
+            .resolution
+            .builtin_traits
+            .comparison(crate::support::comparisons::Comparison::PartialEq)
+            && let Some(members) = index.members.get(&declaration.definition)
+        {
+            index.prelude.clone_from(members);
+            let count = members.len();
+            index.account(count)?;
+        }
         for (ordinal, scope) in report.resolution.scopes.iter().enumerate() {
             index.account(1)?;
             let scope_id = u32::try_from(ordinal)
@@ -51,7 +62,8 @@ impl Index {
                 if namespace == Namespace::Type
                     && (report.resolution.definitions[binding.target.0 as usize].kind
                         == DefKind::Trait
-                        || facts.associated.operation(binding.target).is_some())
+                        || (facts.associated.operation(binding.target).is_some()
+                            || facts.associated.comparison(binding.target).is_some()))
                 {
                     index
                         .scopes
@@ -64,7 +76,8 @@ impl Index {
         for (&import, binding) in &report.resolution.anonymous_types {
             index.account(1)?;
             if report.resolution.definitions[binding.target.0 as usize].kind == DefKind::Trait
-                || facts.associated.operation(binding.target).is_some()
+                || (facts.associated.operation(binding.target).is_some()
+                    || facts.associated.comparison(binding.target).is_some())
             {
                 let scope = report.resolution.imports[import].scope;
                 index
@@ -97,7 +110,18 @@ impl Index {
         self.account(inherited.len())?;
         // A bound method can also be a lexical candidate with a different Self,
         // such as an implementation for a reference to the bounded parameter.
-        let lexical = inherited.to_vec();
+        let mut lexical = inherited.to_vec();
+        if !self.prelude.is_empty() {
+            self.account(1)?;
+            if report.package.modules[report.resolution.scopes[scope.0 as usize].module.0 as usize]
+                .implicit_prelude
+                && let Some(&method) = self.prelude.get(&name)
+                && let Err(index) = lexical.binary_search_by_key(&method.0, |id| id.0)
+            {
+                self.account(lexical.len().saturating_add(1))?;
+                lexical.insert(index, method);
+            }
+        }
         Ok([bound, lexical])
     }
     fn visible(

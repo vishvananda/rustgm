@@ -54,8 +54,18 @@ impl Builder<'_> {
                 .ok_or_else(|| self.error(node, "missing evaluated operator receiver"))?;
             self.body.arguments.push(receiver);
         }
-        for &operand in &operands[usize::from(borrowed)..] {
-            self.body.arguments.push(self.value(operand)?);
+        if self.comparison_operator(node) {
+            let right = self
+                .scratch
+                .comparison_arguments
+                .as_deref_mut()
+                .and_then(|arguments| arguments.remove(&node))
+                .ok_or_else(|| self.error(node, "missing comparison RHS borrow"))?;
+            self.body.arguments.push(right);
+        } else {
+            for &operand in &operands[usize::from(borrowed)..] {
+                self.body.arguments.push(self.value(operand)?);
+            }
         }
         let end = self.index(node, self.body.arguments.len())?;
         let arguments = crate::body::ir::ValueList { start, end };
@@ -73,6 +83,65 @@ impl Builder<'_> {
 }
 
 impl Builder<'_> {
+    pub(super) fn comparison_operator(&self, node: NodeId) -> bool {
+        self.facts
+            .methods
+            .calls
+            .get(&crate::resolve::unit::NodeKey {
+                node,
+                ..self.body.source
+            })
+            .is_some_and(|selected| {
+                self.facts
+                    .associated
+                    .comparison_method(selected.method)
+                    .is_some()
+            })
+    }
+    pub(super) fn comparison_argument(&mut self, node: NodeId) -> Result<(), Error> {
+        let super::Kind::Binary { right, .. } = self.kind(node) else {
+            return Err(self.error(node, "comparison requires binary syntax"));
+        };
+        let place = self.pop_place(right)?;
+        let Some(place) = place.filter(|_| self.current.is_some()) else {
+            return Ok(());
+        };
+        let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
+            return Err(self.error(node, "comparison requires selected call"));
+        };
+        let Some(crate::types::Kind::Function { parameters, .. }) =
+            self.facts.types.kind(signature)
+        else {
+            return Err(self.error(node, "comparison signature is not callable"));
+        };
+        let expected = *self
+            .facts
+            .types
+            .list(parameters)
+            .and_then(|p| p.get(1))
+            .ok_or_else(|| self.error(node, "comparison has no RHS parameter"))?;
+        let actual = self
+            .facts
+            .methods
+            .comparison_borrow(crate::resolve::unit::NodeKey {
+                node,
+                ..self.body.source
+            })
+            .ok_or_else(|| self.error(node, "comparison RHS lacks physical shared-borrow type"))?;
+        let value = self.receiver_value(
+            node,
+            place,
+            0,
+            Some(actual),
+            expected,
+            crate::body::ir::BorrowKind::Immediate,
+        )?;
+        self.scratch
+            .comparison_arguments
+            .get_or_insert_default()
+            .insert(node, value);
+        Ok(())
+    }
     pub(super) fn borrowed_language_operator(&self, node: NodeId) -> bool {
         self.facts
             .methods
@@ -106,7 +175,11 @@ impl Builder<'_> {
                 selected.dereferences,
                 selected.borrow,
                 selected.receiver,
-                crate::body::ir::BorrowKind::TwoPhase,
+                if self.comparison_operator(node) {
+                    crate::body::ir::BorrowKind::Immediate
+                } else {
+                    crate::body::ir::BorrowKind::TwoPhase
+                },
             )?;
             self.scratch.receivers.insert(node, receiver);
             Ok(())

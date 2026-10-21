@@ -54,6 +54,7 @@ pub(super) fn prepare(
     let target = receiver.as_ref().map_or(target, |r| r.ty);
     let ids = if facts.associated.trait_owner(owner).is_some()
         || facts.associated.operation(owner).is_some()
+        || facts.associated.comparison(owner).is_some()
     {
         facts.generics.callable_parameters(&facts.types, owner)?.1
     } else {

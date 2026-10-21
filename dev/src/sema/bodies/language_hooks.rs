@@ -93,7 +93,7 @@ impl Checker<'_> {
             Ok(result)
         }
     }
-    fn operator_parameter(
+    pub(super) fn operator_parameter(
         &self,
         node: NodeId,
         definition: crate::resolve::model::DefId,

@@ -18,6 +18,12 @@ pub(super) struct Pending {
     unsize: bool,
 }
 impl Pending {
+    pub(super) fn expect_receiver(&mut self, expected: TermId) {
+        self.expected = expected;
+    }
+    pub(super) const fn method(&self) -> DefId {
+        self.method
+    }
     pub(super) const fn capture_receiver(&self) -> (u32, Option<TermId>) {
         (self.dereferences, self.borrow)
     }
@@ -167,6 +173,23 @@ impl Checker<'_> {
     }
 
     pub(super) fn publish_methods(&mut self, solved: &Solved) {
+        for index in 0..self.state.call_types.comparison_borrows.len() {
+            let (node, actual, expected) = self.state.call_types.comparison_borrows[index];
+            let key = self.key(node);
+            let (actual, expected) = (
+                solved.types[actual.0 as usize],
+                solved.types[expected.0 as usize],
+            );
+            self.facts.methods.retain_comparison_borrow(key, actual);
+            self.facts.retain_coercion(Coercion {
+                body: self.state.body,
+                source: key,
+                actual,
+                expected,
+                kind: AdjustmentKind::Equality,
+                reference: None,
+            });
+        }
         for index in 0..self.state.call_types.methods.len() {
             let (node, pending) = &self.state.call_types.methods[index];
             let key = self.key(*node);
