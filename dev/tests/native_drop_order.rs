@@ -224,9 +224,10 @@ fn check_final_count(program: &mut Program, index: GlobalId, expected: usize) ->
         .position(|s| s.entry)
         .ok_or("entry")?;
     program.symbols[old_entry].entry = false;
-    program.symbols[old_entry].name = "test.source.entry".into();
     let signature = program.symbols[old_entry].signature;
-    let new_entry = program.declare("main".into(), signature, true)?;
+    // Keep the original symbol and its canonical name index intact. The backend
+    // selects the entry by its role, so the observer wrapper needs its own name.
+    let new_entry = program.declare("test.checked.entry".into(), signature, true)?;
     let mut builder = Builder::default();
     let entry = builder.block()?;
     let yes = builder.block()?;
