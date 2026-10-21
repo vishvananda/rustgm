@@ -60,8 +60,9 @@ source order. Shared indexing borrows its receiver before evaluating the index,
 then dereferences the method's returned reference as a place; the ordinary
 ownership and region checks enforce its loan and mutability.
 
-This checkpoint is not an assignment release. Mutable indexing, assignment and
-comparison hooks, iteration, question-mark, additional derives, formatting and
+This checkpoint is not an assignment release. Mutable indexing is extended by
+the later checkpoint below. Assignment and comparison hooks, iteration,
+question-mark, additional derives, formatting and
 the remaining library method boundary remain implementation work. The
 existing scalar operations, built-in array/slice indexing and earlier derives
 retain their earlier owning contracts.
@@ -102,3 +103,18 @@ evaluation remains eligible; runtime calls cannot acquire static promotion
 merely from aggregate storage. Draft controls are in
 `tests/constructor-promotion-outcomes.json`, with qualification recorded in
 `docs/pa26-constructor-promotion.md`. This does not activate PA26.
+
+## Maintainer mutable indexing checkpoint
+
+`IndexMut<Idx>` inherits the single canonical `Index<Idx>::Output` and supplies
+an ordinary mutable receiver/result contract. Stores, primitive compound
+assignment and mutable borrows select it through typed place demand; shared
+reads retain Index. Nested projections, unsized outputs, generic bounds and
+mutable-reference dereference chains preserve normal loans and lifetimes.
+Raw-pointer dereferences can retain shared indexing without weakening pointer
+permissions. Runtime evaluation order is independently compared with rustc.
+
+Thirty-three draft outcomes and fourteen native programs are recorded in
+`tests/index-mut-outcomes.json` and `docs/pa26-index-mut-checkpoint.md`.
+Capturing closures and custom compound assignment remain explicitly qualified
+prerequisite/hook boundaries. This checkpoint does not activate PA26.

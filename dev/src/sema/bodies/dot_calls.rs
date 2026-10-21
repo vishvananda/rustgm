@@ -221,10 +221,10 @@ impl Checker<'_> {
         callable: TermId,
         subject: TermId,
         receiver: TermId,
-    ) {
+    ) -> usize {
         self.state.call_types.field_receivers.push(subject);
         self.state.alignment.borrows.push((node, source));
-        self.state.call_types.methods.push((
+        let pending = (
             node,
             Pending {
                 method,
@@ -235,6 +235,14 @@ impl Checker<'_> {
                 expected: receiver,
                 unsize: false,
             },
-        ));
+        );
+        if let Some(index) = self.language_index_method(node) {
+            self.state.call_types.methods[index] = pending;
+            index
+        } else {
+            let index = self.state.call_types.methods.len();
+            self.state.call_types.methods.push(pending);
+            index
+        }
     }
 }

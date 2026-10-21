@@ -15,9 +15,10 @@ pub enum Hook {
     Shl,
     Shr,
     Index,
+    IndexMut,
 }
 impl Hook {
-    pub const ALL: [Self; 13] = [
+    pub const ALL: [Self; 14] = [
         Self::Neg,
         Self::Not,
         Self::Add,
@@ -31,6 +32,7 @@ impl Hook {
         Self::Shl,
         Self::Shr,
         Self::Index,
+        Self::IndexMut,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -48,6 +50,7 @@ impl Hook {
             Self::Shl => "Shl",
             Self::Shr => "Shr",
             Self::Index => "Index",
+            Self::IndexMut => "IndexMut",
         }
     }
     #[must_use]
@@ -66,7 +69,12 @@ impl Hook {
             Self::Shl => "shl",
             Self::Shr => "shr",
             Self::Index => "index",
+            Self::IndexMut => "index_mut",
         }
+    }
+    #[must_use]
+    pub const fn indexing(self) -> bool {
+        matches!(self, Self::Index | Self::IndexMut)
     }
     #[must_use]
     pub const fn binary(self) -> bool {

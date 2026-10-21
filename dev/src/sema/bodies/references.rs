@@ -396,6 +396,15 @@ impl Checker<'_> {
     }
     pub(super) fn dereference(&mut self, node: NodeId, operand: NodeId) -> Result<TermId, Error> {
         let term = self.term(operand)?;
+        if self.mutable_language_place(node)
+            && matches!(
+                self.head(node, term)?,
+                Some(Constructor::Reference { mutable: true, .. })
+            )
+        {
+            self.mark_mutable_language_place(operand)?;
+        }
+
         if self.state.address_dereferences.contains(&node)
             && matches!(self.head(node, term)?, Some(Constructor::Pointer { .. }))
         {

@@ -84,17 +84,18 @@ impl Inventory {
         definition: DefId,
         origin: crate::resolve::unit::NodeKey,
         method: super::super::model::Function,
-        output: (DefId, crate::resolve::names::NameId),
+        output: Option<(DefId, crate::resolve::names::NameId)>,
     ) {
         let language = self.language.get_or_insert_with(Default::default);
         language.origins.insert(definition, origin);
         language.members.insert(method.definition, definition);
-        language.members.insert(output.0, definition);
-        language
-            .hook_members
-            .extend([(method.definition, definition), (output.0, definition)]);
+        language.hook_members.push((method.definition, definition));
         language.hooks.push(method);
-        self.type_names.insert(output.0, output.1);
+        if let Some((output, name)) = output {
+            language.members.insert(output, definition);
+            language.hook_members.push((output, definition));
+            self.type_names.insert(output, name);
+        }
     }
     pub(in crate::sema) fn language_functions(
         &self,

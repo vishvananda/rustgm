@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+static mut ORDER:u32=0;fn record(n:u32){unsafe{ORDER=ORDER*10+n;}}struct W(u32);impl core::ops::Index<bool> for W{type Output=u32;fn index(&self,_i:bool)->&u32{record(8);&self.0}}impl core::ops::IndexMut<bool> for W{fn index_mut(&mut self,_i:bool)->&mut u32{record(3);&mut self.0}}fn index()->bool{record(2);false}fn rhs()->u32{record(1);7}fn main(){let mut w=W(1);w[index()]=rhs();check(unsafe{ORDER}==123);check(w.0==7);}

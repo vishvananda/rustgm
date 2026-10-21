@@ -1,7 +1,7 @@
 //! Operator metadata enters ordinary trait conformance and selected-call dispatch.
 use super::{Checker, DefId, Error, ItemId, NodeKey, State, Type};
 use crate::{
-    resolve::model::BuiltinLanguage,
+    resolve::model::{BuiltinLanguage, BuiltinLanguageOutput},
     sema::{associated::Schema, generics::Parameter, model::Function, traits::Header},
     support::language_hooks::Hook,
     syntax::ast::List,
@@ -88,7 +88,7 @@ impl Checker<'_> {
                 binding,
                 anonymous: false,
                 argument: Argument::Type(ty),
-                default: (kind != Hook::Index).then_some(Argument::Type(subject)),
+                default: (!kind.indexing()).then_some(Argument::Type(subject)),
             });
         }
         self.facts
@@ -108,7 +108,7 @@ impl Checker<'_> {
                     captures: 0,
                     bounds: Vec::new(),
                 },
-                Some(declaration.output),
+                declaration.output.declared(),
             )
             .map_err(|e| self.error(origin, e))?;
         Ok((subject, parameters))
@@ -127,35 +127,38 @@ impl Checker<'_> {
             output,
             ..
         } = declaration;
+        let member = output.definition();
         let application = self
             .facts
             .types
             .intern_trait_application(Application {
-                item: ItemId(definition.0),
+                item: ItemId(output.owner(definition).0),
                 arguments,
             })
             .map_err(|e| self.error(origin, e))?;
-        self.facts
-            .types
-            .declare_projection(
-                ItemId(output.0),
-                projection::Schema {
-                    trait_item: ItemId(definition.0),
-                    sized: kind != Hook::Index,
-                    copies: crate::types::copy::Properties::default(),
-                },
-            )
-            .map_err(|e| self.error(origin, e))?;
+        if output.declared().is_some() {
+            self.facts
+                .types
+                .declare_projection(
+                    ItemId(member.0),
+                    projection::Schema {
+                        trait_item: ItemId(definition.0),
+                        sized: !kind.indexing(),
+                        copies: crate::types::copy::Properties::default(),
+                    },
+                )
+                .map_err(|e| self.error(origin, e))?;
+        }
         let projected = self.intern(
             origin,
             Type::Projection(projection::Application {
-                item: ItemId(output.0),
+                item: ItemId(member.0),
                 subject,
                 trait_application: application,
                 arguments: GenericArgs::EMPTY,
             }),
         )?;
-        let bounds = if kind == Hook::Index {
+        let bounds = if kind.indexing() {
             Vec::new()
         } else {
             vec![
@@ -166,45 +169,74 @@ impl Checker<'_> {
                 .into(),
             ]
         };
-        self.facts.associated.types.insert(
+        if output.declared().is_some() {
+            self.facts.associated.types.insert(
+                member,
+                crate::sema::associated::TypeContract {
+                    projection: projected,
+                    bounds: bounds.clone(),
+                },
+            );
+            self.facts.definitions[member.0 as usize] = Some(projected);
+            self.states[member.0 as usize] = State::Complete;
+            self.facts.generics.parameters.insert(member, Vec::new());
+            self.facts.generics.parents.insert(member, definition);
+        }
+        self.language_header(declaration, subject, parameters, application, bounds)?;
+        Ok(projected)
+    }
+    fn language_header(
+        &mut self,
+        declaration: BuiltinLanguage,
+        subject: TypeId,
+        parameters: Vec<Parameter>,
+        application: crate::types::traits::ApplicationId,
+        bounds: Vec<crate::types::parameters::clauses::Clause>,
+    ) -> Result<(), Error> {
+        let BuiltinLanguage {
+            origin,
+            definition,
             output,
-            crate::sema::associated::TypeContract {
-                projection: projected,
-                bounds: bounds.clone(),
-            },
-        );
-        self.facts.definitions[output.0 as usize] = Some(projected);
-        self.states[output.0 as usize] = State::Complete;
-        self.facts.generics.parameters.insert(output, Vec::new());
-        self.facts.generics.parents.insert(output, definition);
+            ..
+        } = declaration;
+        let member = output.definition();
+        let mut header = Header {
+            self_type: subject,
+            self_bounds: std::collections::HashSet::new(),
+            parameters,
+            predicates: Vec::new(),
+            results: bounds
+                .into_iter()
+                .map(|value| {
+                    (
+                        ItemId(member.0),
+                        crate::sema::generics::Predicate {
+                            source: origin,
+                            value,
+                        },
+                    )
+                })
+                .collect(),
+            regions: Vec::new(),
+        };
+        if matches!(output, BuiltinLanguageOutput::Inherited { .. }) {
+            header.self_bounds.insert(origin);
+            header.predicates.push(crate::sema::generics::Predicate {
+                source: origin,
+                value: Predicate {
+                    ty: subject,
+                    bound: Bound::Trait(application),
+                }
+                .into(),
+            });
+        }
         self.facts
             .generics
             .traits
             .get_or_insert_with(Default::default)
-            .declare(
-                ItemId(definition.0),
-                Header {
-                    self_type: subject,
-                    self_bounds: std::collections::HashSet::new(),
-                    parameters,
-                    predicates: Vec::new(),
-                    results: bounds
-                        .into_iter()
-                        .map(|value| {
-                            (
-                                ItemId(output.0),
-                                crate::sema::generics::Predicate {
-                                    source: origin,
-                                    value,
-                                },
-                            )
-                        })
-                        .collect(),
-                    regions: Vec::new(),
-                },
-            )
+            .declare(ItemId(definition.0), header)
             .map_err(|e| self.error(origin, e))?;
-        Ok(projected)
+        Ok(())
     }
     fn language_signature(
         &mut self,
@@ -214,14 +246,14 @@ impl Checker<'_> {
         inputs: &[Argument],
     ) -> Result<(TypeId, TypeId), Error> {
         let BuiltinLanguage { origin, kind, .. } = declaration;
-        let (receiver, result) = if kind == Hook::Index {
+        let (receiver, result) = if kind.indexing() {
             let region = crate::types::RegionId::bound(0, 0).map_err(|e| self.error(origin, e))?;
             (
                 self.intern(
                     origin,
                     Type::Reference {
                         referent: subject,
-                        mutable: false,
+                        mutable: kind == Hook::IndexMut,
                         region,
                     },
                 )?,
@@ -229,7 +261,7 @@ impl Checker<'_> {
                     origin,
                     Type::Reference {
                         referent: projected,
-                        mutable: false,
+                        mutable: kind == Hook::IndexMut,
                         region,
                     },
                 )?,
@@ -253,7 +285,7 @@ impl Checker<'_> {
                 result,
                 unsafe_: false,
                 convention: crate::types::callable::Convention::RUST,
-                bound_regions: u32::from(kind == Hook::Index),
+                bound_regions: u32::from(kind.indexing()),
             },
         )?;
         Ok((receiver, signature))
@@ -317,18 +349,14 @@ impl Checker<'_> {
         self.facts
             .methods
             .receivers
-            .insert(method, (receiver, u32::from(kind == Hook::Index)));
+            .insert(method, (receiver, u32::from(kind.indexing())));
         self.facts.lifetimes.functions.insert(
             method,
             crate::sema::lifetimes::FunctionRegions {
-                total: u32::from(kind == Hook::Index),
+                total: u32::from(kind.indexing()),
                 captures: 0,
                 early: Vec::new(),
-                late: if kind == Hook::Index {
-                    vec![0]
-                } else {
-                    Vec::new()
-                },
+                late: if kind.indexing() { vec![0] } else { Vec::new() },
                 has_declared_late: false,
                 bounds: Vec::new(),
             },
@@ -343,10 +371,12 @@ impl Checker<'_> {
                 parameters: List { start: 0, end: 0 },
                 body: None,
             },
-            (
-                output,
-                self.report.resolution.definitions[output.0 as usize].name,
-            ),
+            output.declared().map(|output| {
+                (
+                    output,
+                    self.report.resolution.definitions[output.0 as usize].name,
+                )
+            }),
         );
         Ok(())
     }

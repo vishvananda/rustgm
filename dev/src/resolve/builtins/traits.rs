@@ -11,7 +11,7 @@ use crate::{
     syntax::ast::NodeId,
 };
 pub use callables::Callable;
-pub use language::Language;
+pub use language::{Language, Output as LanguageOutput};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BuiltinTrait {

@@ -54,8 +54,9 @@ No generated references or assignment activation are included.
 
 ## Remaining PA26 work
 
-- Mutable indexing, assignment/comparison/dereference hooks and primitive
-  operator library implementations beyond the operator checkpoint.
+- Assignment/comparison/dereference hooks and primitive operator library
+  implementations beyond the operator checkpoint. Mutable indexing is now
+  implemented separately in `pa26-index-mut-checkpoint.md`.
 - IntoIterator/Iterator selection and for-loop control flow.
 - Question-mark residual selection, error conversion and early-return cleanup.
 - Additional built-in derives and formatting/runtime macro contracts.

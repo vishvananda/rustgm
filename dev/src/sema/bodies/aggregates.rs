@@ -524,7 +524,11 @@ impl Checker<'_> {
             }
             Some(Constructor::Slice) => Some(Operation::IndexSlice),
             _ => {
-                let kind = crate::support::language_hooks::Hook::Index;
+                let kind = if self.mutable_language_place(node) {
+                    crate::support::language_hooks::Hook::IndexMut
+                } else {
+                    crate::support::language_hooks::Hook::Index
+                };
                 if self
                     .report
                     .resolution

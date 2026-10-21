@@ -1,0 +1,414 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/index-mut/store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/compound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/deref-chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/raw-mut.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/raw-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/immutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/shared-base.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/shared-deref.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/missing-mut.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/borrow-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/index-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/missing-supertrait.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/extra-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/wrong-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/lookalike.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/compound-library-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Custom compound assignment requires the pending AddAssign library hook; this IndexMut checkpoint admits primitive compound assignment."
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/store-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/compound-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/reference-deref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/reference-deref-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/raw-deref-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/raw-field-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/unsized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/captured.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Capturing closures remain an explicit unfinished PA24 prerequisite; mutation in an isolated closure with an explicit mutable parameter is qualified separately."
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/closure-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    }
+  ]
+}

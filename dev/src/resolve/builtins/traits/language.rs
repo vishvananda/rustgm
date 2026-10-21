@@ -6,6 +6,41 @@ use crate::{
     syntax::ast::NodeId,
 };
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Output {
+    Declared(DefId),
+    Inherited {
+        trait_definition: DefId,
+        declaration: DefId,
+    },
+}
+impl Output {
+    #[must_use]
+    pub const fn definition(self) -> DefId {
+        match self {
+            Self::Declared(id)
+            | Self::Inherited {
+                declaration: id, ..
+            } => id,
+        }
+    }
+    #[must_use]
+    pub const fn owner(self, declared_owner: DefId) -> DefId {
+        match self {
+            Self::Declared(_) => declared_owner,
+            Self::Inherited {
+                trait_definition, ..
+            } => trait_definition,
+        }
+    }
+    #[must_use]
+    pub const fn declared(self) -> Option<DefId> {
+        match self {
+            Self::Declared(id) => Some(id),
+            Self::Inherited { .. } => None,
+        }
+    }
+}
 #[derive(Clone, Copy)]
 pub struct Language {
     pub origin: NodeKey,
@@ -13,7 +48,7 @@ pub struct Language {
     pub definition: DefId,
     pub self_parameter: DefId,
     pub argument: Option<DefId>,
-    pub output: DefId,
+    pub output: Output,
     pub method: DefId,
 }
 impl Traits {
@@ -31,6 +66,9 @@ impl Resolver<'_> {
     ) -> Result<(), Error> {
         if self.facts.builtin_traits.language.contains_key(&kind) {
             return Ok(());
+        }
+        if kind == Hook::IndexMut {
+            self.prepare_language_trait(c, node, Hook::Index)?;
         }
         let ops = self
             .facts
@@ -60,16 +98,28 @@ impl Resolver<'_> {
         } else {
             None
         };
-        let output = self.builtin_definition(
-            Context {
-                scope: members,
-                ..c
-            },
-            node,
-            "Output",
-            DefKind::TypeAlias,
-            None,
-        )?;
+        let output = if kind == Hook::IndexMut {
+            let parent = self
+                .facts
+                .builtin_traits
+                .language(Hook::Index)
+                .ok_or_else(|| self.error(c, node, "missing Index supertrait"))?;
+            Output::Inherited {
+                trait_definition: parent.definition,
+                declaration: parent.output.definition(),
+            }
+        } else {
+            Output::Declared(self.builtin_definition(
+                Context {
+                    scope: members,
+                    ..c
+                },
+                node,
+                "Output",
+                DefKind::TypeAlias,
+                None,
+            )?)
+        };
         let method = self.builtin_definition(
             Context {
                 scope: members,

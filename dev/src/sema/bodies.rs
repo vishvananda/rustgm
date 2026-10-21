@@ -239,6 +239,7 @@ pub(super) struct State {
     address_dereferences: HashSet<NodeId>,
     raw_address_places: HashSet<NodeId>,
     union_write_places: HashSet<NodeId>,
+    language_places: Option<Box<language_hooks::Places>>,
     unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
@@ -347,6 +348,7 @@ impl<'a> Checker<'a> {
                 address_dereferences: HashSet::new(),
                 raw_address_places: HashSet::new(),
                 union_write_places: HashSet::new(),
+                language_places: None,
                 unsizing_contexts: std::collections::HashMap::new(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
@@ -1053,12 +1055,32 @@ impl Checker<'_> {
                 op: Unary::Borrow | Unary::BorrowMut,
                 operand,
             } => {
+                if matches!(
+                    self.kind(node),
+                    Kind::Unary {
+                        op: Unary::BorrowMut,
+                        ..
+                    }
+                ) {
+                    self.mark_mutable_language_place(operand)?;
+                }
                 return self.enter_borrow(node, operand, expected);
             }
             Kind::Unary {
                 op: Unary::RawConst | Unary::RawMut,
                 operand,
-            } => return self.enter_address(node, operand, expected),
+            } => {
+                if matches!(
+                    self.kind(node),
+                    Kind::Unary {
+                        op: Unary::RawMut,
+                        ..
+                    }
+                ) {
+                    self.mark_mutable_language_place(operand)?;
+                }
+                return self.enter_address(node, operand, expected);
+            }
             Kind::Tuple(elements) | Kind::Array(elements) => {
                 return self.enter_elements(node, elements, expected);
             }
@@ -1170,9 +1192,14 @@ impl Checker<'_> {
                 ..
             } => {
                 self.mark_union_write(left)?;
+                self.mark_mutable_language_place(left)?;
                 self.state.work.push(Work::AssignmentValue(node));
                 self.state.work.push(Work::Enter(left, None));
                 return Ok(());
+            }
+            Kind::Binary { op, left, right } if scalar::compound_operator(op).is_some() => {
+                self.mark_mutable_language_place(left)?;
+                self.state.children.extend([left, right]);
             }
             Kind::MethodCall { receiver, .. } | Kind::GenericMethodCall { receiver, .. } => {
                 self.state.work.push(Work::MethodArguments(node));

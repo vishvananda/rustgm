@@ -14,7 +14,7 @@ use crate::syntax::{
 };
 pub use intrinsics::{Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal};
-pub use traits::{BuiltinTrait, Callable, Language, Traits};
+pub use traits::{BuiltinTrait, Callable, Language, LanguageOutput, Traits};
 
 impl Resolver<'_> {
     pub(super) fn prepare_library_value(

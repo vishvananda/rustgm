@@ -1,4 +1,5 @@
 //! Operators select explicit library identities through ordinary trait obligations.
+mod mutation;
 use super::{Checker, Constructor, Error, NodeId, TermId, Type};
 use crate::{
     support::language_hooks::Hook,
@@ -7,6 +8,7 @@ use crate::{
         infer::{arguments::Argument, predicates::Predicate},
     },
 };
+pub(super) use mutation::Places;
 impl Checker<'_> {
     pub(super) fn language_operator(
         &mut self,
@@ -24,7 +26,7 @@ impl Checker<'_> {
                 self.error(node, "operator requires its library trait implementation")
             })?;
         let mut subject = self.term(left)?;
-        if kind == Hook::Index {
+        if kind.indexing() {
             subject = self.autoderef(node, subject)?;
         }
         let mut arguments = vec![Argument::Type(subject)];
@@ -77,14 +79,22 @@ impl Checker<'_> {
         let signature = self.call_signature(node, signature)?;
         let arity = usize::from(right.is_some()) + 1;
         let result = self.child(node, signature, arity)?;
-        if kind == Hook::Index {
+        if kind.indexing() {
             let expected = self.child(node, signature, 0)?;
-            self.retain_language_index(node, left, declaration.method, callable, subject, expected);
+            let pending = self.retain_language_index(
+                node,
+                left,
+                declaration.method,
+                callable,
+                subject,
+                expected,
+            );
+            self.retain_language_index_call(node, kind, pending, signature);
         } else {
             self.retain_language_method(node, declaration.method, callable, subject);
+            self.state.calls.push((node, signature));
         }
-        self.state.calls.push((node, signature));
-        if kind == Hook::Index {
+        if kind.indexing() {
             self.child(node, result, 0)
         } else {
             Ok(result)

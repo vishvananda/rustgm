@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct Cell{n:u32}struct W<'a>(&'a mut Cell);impl<'a> core::ops::Index<bool> for W<'a>{type Output=&'a mut Cell;fn index(&self,_i:bool)->&Self::Output{&self.0}}impl<'a> core::ops::IndexMut<bool> for W<'a>{fn index_mut(&mut self,_i:bool)->&mut Self::Output{&mut self.0}}fn main(){let mut c=Cell{n:1};let mut w=W(&mut c);(*w[false]).n=9;check(c.n==9);}
