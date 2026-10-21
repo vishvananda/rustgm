@@ -1,3 +1,4 @@
+pub mod atomic_ordering;
 pub mod call_traits;
 pub mod crates;
 pub(crate) mod intern_slice;

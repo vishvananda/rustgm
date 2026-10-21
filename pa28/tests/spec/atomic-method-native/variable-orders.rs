@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};static A:AtomicU32=AtomicU32::new(0);fn set(a:&AtomicU32,v:u32,o:Ordering){a.store(v,o)}fn get(a:&AtomicU32,o:Ordering)->u32{a.load(o)}fn main(){set(&A,42,Ordering::Release);check(get(&A,Ordering::Acquire)==42);}

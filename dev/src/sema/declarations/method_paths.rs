@@ -355,10 +355,8 @@ impl Checker<'_> {
         let implementation = self
             .facts
             .associated
-            .owner(method)
-            .and_then(|id| self.facts.associated.get(id))
-            .ok_or_else(|| self.error(key, "missing selected method owner"))?
-            .self_definition;
+            .member_owner(method)
+            .ok_or_else(|| self.error(key, "missing selected method owner"))?;
         self.facts.methods.qualified.insert(
             key,
             Qualified {

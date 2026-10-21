@@ -58,6 +58,16 @@ pub enum Access {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Operation {
+    AtomicLoad {
+        ty: Type,
+        address: Operand,
+        ordering: super::atomic::LoadOrder,
+    },
+    AtomicStore {
+        value: Value,
+        address: Operand,
+        ordering: super::atomic::StoreOrder,
+    },
     Copy(Value),
     Address(Operand),
     Index {

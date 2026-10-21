@@ -196,10 +196,8 @@ impl Query {
                 }
                 facts
                     .associated
-                    .owner(member)
-                    .and_then(|id| facts.associated.get(id))
+                    .member_owner(member)
                     .ok_or("missing method candidate owner")?
-                    .self_definition
             }
             Mode::Trait { .. } => facts
                 .associated

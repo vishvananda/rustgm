@@ -62,10 +62,11 @@ packed-access, pattern and validity controls. This checkpoint does not activate
 the assignment or establish generated text references.
 
 The original unused invalid-boolean and uninitialized-byte constant inputs are
-also retained as uncovered cases: they currently escape evaluation. Demanding
-these constants produces the unsupported-union diagnostic, which establishes a
-feature boundary rather than scalar-validity enforcement. Both demanded and
-unused variants must reject for the appropriate validity reason before release.
+retained unchanged. Required initializer completion now rejects them through
+the unsupported-union boundary, as it does their demanded counterparts. This
+rejects the invalid programs but does not establish scalar validity or byte
+initialization enforcement. Both demanded and unused variants must reject for
+the appropriate validity reason before release.
 
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned

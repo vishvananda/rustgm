@@ -177,6 +177,46 @@ impl Builder {
         self.value(Type::Ptr, Operation::Address(value))
     }
     /// # Errors
+    /// Rejects unsupported widths and invalid construction state.
+    pub fn atomic_load(
+        &mut self,
+        ty: Type,
+        address: Operand,
+        ordering: super::atomic::LoadOrder,
+    ) -> Result<Value, &'static str> {
+        if ty != Type::U32 {
+            return Err("atomic load currently requires u32");
+        }
+        self.value(
+            ty,
+            Operation::AtomicLoad {
+                ty,
+                address,
+                ordering,
+            },
+        )
+    }
+    /// # Errors
+    /// Rejects unsupported widths and invalid construction state.
+    pub fn atomic_store(
+        &mut self,
+        value: Value,
+        address: Operand,
+        ordering: super::atomic::StoreOrder,
+    ) -> Result<(), &'static str> {
+        if value.ty != Type::U32 {
+            return Err("atomic store currently requires u32");
+        }
+        self.emit(
+            Operation::AtomicStore {
+                value,
+                address,
+                ordering,
+            },
+            None,
+        )
+    }
+    /// # Errors
     /// Rejects invalid construction state or void loads.
     pub fn load(&mut self, ty: Type, address: Operand) -> Result<Value, &'static str> {
         self.memory_load(Access::Ordinary, ty, address)

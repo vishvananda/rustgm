@@ -2,6 +2,7 @@
 mod aggregates;
 mod alignment;
 mod annotations;
+mod atomic_ordering;
 mod bounds;
 mod calls;
 mod closures;

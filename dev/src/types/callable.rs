@@ -43,7 +43,38 @@ pub struct Templates {
     bounds: Vec<Pair>,
     generics: Vec<ParameterId>,
 }
+#[derive(Clone, Copy)]
+enum FormalOrder {
+    Generic(u32),
+    Monomorphic,
+}
 impl Templates {
+    /// Publish a completed callable with no early/type/const slots.
+    /// Late-bound signature lifetimes remain part of the function type.
+    /// # Errors
+    /// Rejects abstract or escaping signatures and repeated publication.
+    pub fn insert_monomorphic(
+        &mut self,
+        types: &Store,
+        item: ItemId,
+        signature: TypeId,
+    ) -> Result<(), &'static str> {
+        if types.contains_parameters(signature) != Some(false)
+            || types.escaping_binders(signature) != Some(0)
+        {
+            return Err("monomorphic callable requires a closed signature");
+        }
+        super::bound_uses::check_pointer(types, signature)?;
+        self.insert_owned(
+            types,
+            (item, &[item]),
+            signature,
+            FormalOrder::Monomorphic,
+            &[],
+            &[],
+        )
+    }
+
     /// Publish a generic callable once. Bound pairs use early parameter indices
     /// at depth zero; the signature retains its own late-bound depth zero.
     ///
@@ -76,7 +107,7 @@ impl Templates {
             types,
             (item, &[item]),
             signature,
-            parameters,
+            FormalOrder::Generic(parameters),
             bounds,
             generics,
         )
@@ -97,7 +128,7 @@ impl Templates {
             types,
             (item, &[nominal]),
             signature,
-            parameters,
+            FormalOrder::Generic(parameters),
             &[],
             generics,
         )
@@ -120,7 +151,7 @@ impl Templates {
             types,
             (item, &[owner]),
             signature,
-            parameters,
+            FormalOrder::Generic(parameters),
             &[],
             generics,
         )
@@ -143,7 +174,7 @@ impl Templates {
             types,
             (item, owners),
             signature,
-            parameters,
+            FormalOrder::Generic(parameters),
             bounds,
             generics,
         )
@@ -153,14 +184,18 @@ impl Templates {
         types: &Store,
         owners: (ItemId, &[ItemId]),
         signature: TypeId,
-        parameters: u32,
+        order: FormalOrder,
         bounds: &[Pair],
         generics: &[ParameterId],
     ) -> Result<(), &'static str> {
+        let parameters = match order {
+            FormalOrder::Generic(count) => count,
+            FormalOrder::Monomorphic => 0,
+        };
         let (item, parameter_owners) = owners;
         if self.entries.contains_key(&item)
             || parameter_owners.len() > 1_000_000
-            || (parameters == 0 && generics.is_empty())
+            || (matches!(order, FormalOrder::Generic(0)) && generics.is_empty())
             || parameters > 65_536
             || !matches!(types.kind(signature), Some(Kind::Function { .. }))
             || types

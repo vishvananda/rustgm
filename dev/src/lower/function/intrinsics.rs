@@ -12,6 +12,25 @@ impl Lower<'_, '_> {
         arguments: ValueList,
     ) -> Result<Selected, &'static str> {
         let ty = self.context.intrinsic_type(intrinsic, instance)?;
+        if !intrinsic.is_volatile() {
+            let Some(crate::types::Kind::FunctionItem { signature, .. }) =
+                self.context.types.kind(instance.ty())
+            else {
+                return Err("atomic intrinsic requires a selected callable");
+            };
+            let result = if intrinsic == Intrinsic::AtomicLoad {
+                crate::types::TypeId::primitive(crate::types::Primitive::U32)
+            } else {
+                crate::types::TypeId::UNIT
+            };
+            let symbol = self.context.demand_intrinsic(intrinsic, instance)?;
+            return self.call_operand(
+                signature,
+                crate::lowir::program::Operand::Symbol(symbol),
+                arguments,
+                result,
+            );
+        }
         let inputs = self.body.arguments(arguments);
         let pointer = self
             .value(*inputs.first().ok_or("missing volatile pointer operand")?)?

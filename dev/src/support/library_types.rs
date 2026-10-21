@@ -17,6 +17,7 @@ pub enum LibraryType {
     Result,
     ManuallyDrop,
     AtomicU32,
+    Ordering,
 }
 #[derive(Clone, Copy)]
 pub enum LibraryField {
@@ -49,11 +50,12 @@ impl LibraryModule {
     }
 }
 impl LibraryType {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 5] = [
         Self::Option,
         Self::Result,
         Self::ManuallyDrop,
         Self::AtomicU32,
+        Self::Ordering,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -62,6 +64,7 @@ impl LibraryType {
             Self::Result => "Result",
             Self::ManuallyDrop => "ManuallyDrop",
             Self::AtomicU32 => "AtomicU32",
+            Self::Ordering => "Ordering",
         }
     }
     #[must_use]
@@ -70,7 +73,7 @@ impl LibraryType {
             Self::Option => "option",
             Self::Result => "result",
             Self::ManuallyDrop => "mem",
-            Self::AtomicU32 => "atomic",
+            Self::AtomicU32 | Self::Ordering => "atomic",
         }
     }
     #[must_use]
@@ -79,7 +82,7 @@ impl LibraryType {
             Self::Option => &[LibraryModule::Option],
             Self::Result => &[LibraryModule::Result],
             Self::ManuallyDrop => &[LibraryModule::Memory],
-            Self::AtomicU32 => &[LibraryModule::Sync, LibraryModule::Atomic],
+            Self::AtomicU32 | Self::Ordering => &[LibraryModule::Sync, LibraryModule::Atomic],
         }
     }
     #[must_use]
@@ -95,7 +98,7 @@ impl LibraryType {
         match self {
             Self::Option | Self::ManuallyDrop => &["T"],
             Self::Result => &["T", "E"],
-            Self::AtomicU32 => &[],
+            Self::AtomicU32 | Self::Ordering => &[],
         }
     }
     #[must_use]
@@ -108,6 +111,13 @@ impl LibraryType {
             ],
             Self::ManuallyDrop => &[("new", Some(LibraryField::Parameter(0)))],
             Self::AtomicU32 => &[("new", Some(LibraryField::U32))],
+            Self::Ordering => &[
+                ("Relaxed", None),
+                ("Release", None),
+                ("Acquire", None),
+                ("AcqRel", None),
+                ("SeqCst", None),
+            ],
         }
     }
 }

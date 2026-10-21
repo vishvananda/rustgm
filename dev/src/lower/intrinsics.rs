@@ -1,4 +1,5 @@
 //! Typed scalar operations and reified shims use the existing volatile vocabulary.
+mod atomic;
 use super::context::{Context, Representation};
 use crate::{
     lowir::{
@@ -40,6 +41,9 @@ impl Context<'_> {
             || convention != Convention::RUST
         {
             return Err("intrinsic callable permissions differ from its descriptor");
+        }
+        if !intrinsic.is_volatile() {
+            return self.atomic_type(intrinsic, parameters, result);
         }
         let parameters = self
             .types
@@ -92,28 +96,11 @@ impl Context<'_> {
             return Err("intrinsic shim requires a function item");
         };
         let signature = self.signature(signature)?;
-        let mut builder = Builder::default();
-        let entry = builder.block()?;
-        builder.enter(entry)?;
-        let pointer = Value {
-            ty: Type::Ptr,
-            operand: Operand::Parameter(0),
+        let body = if intrinsic.is_volatile() {
+            Self::volatile_body(intrinsic, ty)?
+        } else {
+            self.atomic_body(intrinsic)?
         };
-        let result = match intrinsic {
-            Intrinsic::ReadVolatile => Some(builder.volatile_load(ty, pointer.operand)?),
-            Intrinsic::WriteVolatile => {
-                builder.volatile_store(
-                    Value {
-                        ty,
-                        operand: Operand::Parameter(1),
-                    },
-                    pointer.operand,
-                )?;
-                None
-            }
-        };
-        builder.terminate(Terminator::Return(result))?;
-        let body = builder.finish()?;
         let symbol = self.output.declare(
             self.internal_name(format!(
                 "rg.intrinsic.{}.t{}",
@@ -126,5 +113,30 @@ impl Context<'_> {
         self.output.define(symbol, body)?;
         self.intrinsic_symbols.insert(instance, symbol);
         Ok(symbol)
+    }
+    fn volatile_body(
+        intrinsic: Intrinsic,
+        ty: Type,
+    ) -> Result<crate::lowir::program::Function, &'static str> {
+        let mut builder = Builder::default();
+        let entry = builder.block()?;
+        builder.enter(entry)?;
+        let pointer = Operand::Parameter(0);
+        let result = match intrinsic {
+            Intrinsic::ReadVolatile => Some(builder.volatile_load(ty, pointer)?),
+            Intrinsic::WriteVolatile => {
+                builder.volatile_store(
+                    Value {
+                        ty,
+                        operand: Operand::Parameter(1),
+                    },
+                    pointer,
+                )?;
+                None
+            }
+            _ => return Err("invalid volatile shim identity"),
+        };
+        builder.terminate(Terminator::Return(result))?;
+        builder.finish()
     }
 }

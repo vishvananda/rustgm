@@ -140,6 +140,70 @@ fn callable_catalog_rejects_foreign_duplicate_and_reordered_parameters()
 }
 
 #[test]
+fn monomorphic_templates_preserve_late_binders_and_reject_abstract_signatures()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut types = Store::default();
+    let owner = ItemId(10);
+    let parameter = types.intern_parameter(Parameter {
+        owner,
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let abstract_type = types.intern(Kind::Parameter(parameter))?;
+    let bound = types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(0, 0)?,
+        referent: TypeId::primitive(Primitive::U32),
+    })?;
+    let inputs = types.intern_list(&[bound])?;
+    let escaping = types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(1, 0)?,
+        referent: TypeId::primitive(Primitive::U32),
+    })?;
+    let escaping_inputs = types.intern_list(&[escaping])?;
+    let mut templates = Templates::default();
+    for (parameters, result, bound_regions) in [
+        (inputs, abstract_type, 1),
+        (inputs, TypeId::UNIT, 0),
+        (escaping_inputs, TypeId::UNIT, 1),
+    ] {
+        let signature = types.intern(Kind::Function {
+            parameters,
+            result,
+            bound_regions,
+            unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
+        })?;
+        assert!(
+            templates
+                .insert_monomorphic(&types, owner, signature)
+                .is_err()
+        );
+        assert!(templates.get(owner).is_none());
+    }
+    let signature = types.intern(Kind::Function {
+        parameters: inputs,
+        result: TypeId::UNIT,
+        bound_regions: 1,
+        unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
+    })?;
+    templates.insert_monomorphic(&types, owner, signature)?;
+    assert_eq!(templates.generic_parameters(owner), Some([].as_slice()));
+    assert_eq!(
+        templates.get(owner).ok_or("missing template")?.parameters,
+        0
+    );
+    assert!(
+        templates
+            .insert_monomorphic(&types, owner, signature)
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
 fn fresh_function_items_rebuild_signatures_and_share_unresolved_const_arguments()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut types = Store::default();

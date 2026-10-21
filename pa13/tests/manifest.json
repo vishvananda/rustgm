@@ -6809,6 +6809,84 @@
       }
     },
     {
+      "path": "tests/spec/pattern-policies/unreachable-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa13.lint-policy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns"
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-deny.rs",
+      "exit_status": 1,
+      "features": [
+        "pa13.lint-policy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns"
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-forbid-weaken.rs",
+      "exit_status": 1,
+      "features": [
+        "pa13.lint-policy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns"
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-inner-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa13.lint-policy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns"
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-inner-warn.rs",
+      "exit_status": 0,
+      "features": [
+        "pa13.lint-policy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns"
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-nested-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa13.lint-policy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns"
+    },
+    {
       "path": "tests/spec/product-constants/array.rs",
       "exit_status": 0,
       "features": [

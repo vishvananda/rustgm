@@ -7,6 +7,7 @@ use std::collections::HashMap;
 pub(super) struct Declarations {
     pub schemas: HashMap<DefId, Schema>,
     pub members: HashMap<DefId, DefId>,
+    pub inherent_members: HashMap<DefId, DefId>,
     callables: HashMap<DefId, (CallTrait, crate::resolve::unit::NodeKey)>,
     output: Option<DefId>,
     pub hooks: Vec<super::super::model::Function>,
@@ -107,7 +108,13 @@ impl Inventory {
     pub(in crate::sema) fn member_owner(&self, definition: DefId) -> Option<DefId> {
         self.language
             .as_ref()
-            .and_then(|language| language.members.get(&definition).copied())
+            .and_then(|language| {
+                language
+                    .members
+                    .get(&definition)
+                    .or_else(|| language.inherent_members.get(&definition))
+                    .copied()
+            })
             .or_else(|| {
                 self.get(self.owner(definition)?)
                     .map(|owner| owner.self_definition)
@@ -139,5 +146,24 @@ impl Inventory {
             self.get(self.owner(definition)?)
                 .map(|owner| owner.self_definition)
         }
+    }
+}
+
+impl Inventory {
+    pub(in crate::sema) fn declare_language_inherent(
+        &mut self,
+        owner: DefId,
+        schema: Schema,
+        method: DefId,
+        origin: crate::resolve::unit::NodeKey,
+    ) -> Result<(), &'static str> {
+        let language = self.language.get_or_insert_with(Default::default);
+        if language.inherent_members.insert(method, owner).is_some() {
+            return Err("language inherent method already declared");
+        }
+        language.schemas.entry(owner).or_insert(schema);
+        language.origins.insert(owner, origin);
+        language.hook_members.push((method, owner));
+        Ok(())
     }
 }

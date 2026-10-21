@@ -191,6 +191,10 @@ deterministic partial assignment such as `{ $.0 = false, $.1 = true }` or
 and `[N]` selects an array element. Unconstrained inputs render `_`; these are
 diagnostic constraints, not Rust source to reparse. Whole-arm usefulness still
 ignores guard outcomes and does not diagnose individual redundant alternatives.
+Retained `allow`, `warn`, `deny` and `forbid(unreachable_patterns)` policies
+control rejection of wholly unreachable arms. The default warning level does not
+reject them; nested allow/warn cannot weaken forbid. Item inheritance follows
+lexical policy independently of body and unsafe contexts.
 
 Dynamic slices add a length variable to the same coverage graph. A query lazily
 collects tested start/end positions by canonical slice type from its own roots.
@@ -291,12 +295,12 @@ same checks. Diagnostics return 1 and emit no partial pattern view.
 
 ## Tests and completion
 
-`make test-pa13` compares all 796 manifest cases against committed stdout,
+`make test-pa13` compares all 802 manifest cases against committed stdout,
 stderr and exit-status sidecars. This includes 531 LowIR cases (364 executable
-programs and 167 rejections) and 265 pattern-inspection cases (170 acceptances
-and 95 rejections). Every source and auxiliary module is explicitly discovered.
+programs and 167 rejections) and 271 pattern-inspection cases (173 acceptances
+and 98 rejections). Every source and auxiliary module is explicitly discovered.
 
-`make test-rustc` includes all 796 independent acceptance checks. Eight
+`make test-rustc` includes all 802 independent acceptance checks. Eight
 manifest entries explicitly qualify phase or Reference/rustc differences:
 two inspection programs still need lifetime/loan rejection, and six non-reference
 constant patterns

@@ -11,7 +11,8 @@ pub struct Definition {
     pub kind: Intrinsic,
     pub origin: NodeKey,
     pub definition: DefId,
-    pub parameter: DefId,
+    pub parameter: Option<DefId>,
+    pub owner: Option<DefId>,
 }
 #[derive(Clone, Copy, Default)]
 pub struct Intrinsics {
@@ -47,11 +48,16 @@ impl Resolver<'_> {
         }
         let requested = path.iter().any(|name| {
             let name = self.package.names.get(*name);
-            name == "ptr" || Intrinsic::ALL.into_iter().any(|kind| kind.name() == name)
+            name == "ptr"
+                || Intrinsic::ALL
+                    .into_iter()
+                    .any(|kind| kind.is_volatile() && kind.name() == name)
         });
         if requested {
             for kind in Intrinsic::ALL {
-                self.prepare_intrinsic(c, node, kind)?;
+                if kind.is_volatile() {
+                    self.prepare_intrinsic(c, node, kind)?;
+                }
             }
         }
         Ok(())
@@ -109,8 +115,37 @@ impl Resolver<'_> {
             kind,
             origin: NodeKey { file: c.file, node },
             definition,
-            parameter,
+            parameter: Some(parameter),
+            owner: None,
         });
+        Ok(())
+    }
+}
+
+impl Resolver<'_> {
+    pub(super) fn prepare_atomic_intrinsics(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        owner: DefId,
+        scope: ScopeId,
+    ) -> Result<(), Error> {
+        for kind in [Intrinsic::AtomicLoad, Intrinsic::AtomicStore] {
+            let definition = self.builtin_definition(
+                Context { scope, ..c },
+                node,
+                kind.name(),
+                DefKind::Function,
+                None,
+            )?;
+            self.facts.intrinsics.entries[kind.index()] = Some(Definition {
+                kind,
+                origin: NodeKey { file: c.file, node },
+                definition,
+                parameter: None,
+                owner: Some(owner),
+            });
+        }
         Ok(())
     }
 }

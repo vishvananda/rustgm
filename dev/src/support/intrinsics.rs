@@ -3,6 +3,8 @@
 pub enum Intrinsic {
     ReadVolatile,
     WriteVolatile,
+    AtomicLoad,
+    AtomicStore,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -20,12 +22,19 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 2] = [Self::ReadVolatile, Self::WriteVolatile];
+    pub const ALL: [Self; 4] = [
+        Self::ReadVolatile,
+        Self::WriteVolatile,
+        Self::AtomicLoad,
+        Self::AtomicStore,
+    ];
     #[must_use]
     pub const fn index(self) -> usize {
         match self {
             Self::ReadVolatile => 0,
             Self::WriteVolatile => 1,
+            Self::AtomicLoad => 2,
+            Self::AtomicStore => 3,
         }
     }
     #[must_use]
@@ -33,12 +42,22 @@ impl Intrinsic {
         match self {
             Self::ReadVolatile => "read_volatile",
             Self::WriteVolatile => "write_volatile",
+            Self::AtomicLoad => "load",
+            Self::AtomicStore => "store",
         }
+    }
+    #[must_use]
+    pub const fn is_volatile(self) -> bool {
+        matches!(self, Self::ReadVolatile | Self::WriteVolatile)
     }
     #[must_use]
     pub const fn descriptor(self) -> Descriptor {
         Descriptor {
-            safety: Safety::Unsafe,
+            safety: if self.is_volatile() {
+                Safety::Unsafe
+            } else {
+                Safety::Safe
+            },
             constant: ConstPermission::RuntimeOnly,
         }
     }

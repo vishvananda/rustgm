@@ -205,10 +205,8 @@ impl Search<'_> {
             } else {
                 self.facts
                     .associated
-                    .owner(method)
-                    .and_then(|id| self.facts.associated.get(id))
+                    .member_owner(method)
                     .ok_or("missing receiver candidate owner")?
-                    .self_definition
             };
             let mut probe = Context::default();
             let actual = probe

@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};const A:()={assert!(Ordering::Relaxed as u8==0);assert!(Ordering::Release as u8==1);assert!(Ordering::Acquire as u8==2);assert!(Ordering::AcqRel as u8==3);assert!(Ordering::SeqCst as u8==4);};

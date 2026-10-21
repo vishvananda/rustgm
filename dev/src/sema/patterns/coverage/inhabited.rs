@@ -93,7 +93,7 @@ impl<'a> Inhabited<'a> {
                     if self.facts.aggregates.get(item).is_none() {
                         return Err("missing coverage aggregate");
                     }
-                    if self.union(item) {
+                    if self.union(item) || self.facts.members.external_open(item) {
                         self.cache.values.insert((self.module, ty), true);
                         continue;
                     }

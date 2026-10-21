@@ -187,6 +187,7 @@ impl Checker<'_> {
         self.state.annotation_checks.clear();
         self.state.annotation_children.clear();
         self.state.type_annotations.clear();
+        self.validate_atomic_orderings()?;
         self.validate_operations()?;
         self.validate_assignments()?;
         self.validate_values()?;

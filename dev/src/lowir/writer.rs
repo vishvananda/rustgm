@@ -246,6 +246,26 @@ fn instruction(
             write!(out, ", ")?;
             destination
         }
+        Operation::AtomicLoad {
+            ty,
+            address,
+            ordering,
+        } => {
+            write!(out, "atomic_load {} ", ty.name())?;
+            operand(program, function, address, out)?;
+            return write!(out, ", {}", ordering.encoding());
+        }
+        Operation::AtomicStore {
+            value,
+            address,
+            ordering,
+        } => {
+            write!(out, "atomic_store {} ", value.ty.name())?;
+            operand(program, function, value.operand, out)?;
+            write!(out, ", ")?;
+            operand(program, function, address, out)?;
+            return write!(out, ", {}", ordering.encoding());
+        }
         Operation::Load {
             access,
             ty,

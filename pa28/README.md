@@ -34,9 +34,8 @@ requirements; an unsafe block does not validate a pointer or its contents.
 
 Aggregate, zero-sized and wide-pointer volatile transfers remain explicitly
 unsupported. Ordinary object copies or zero initialization cannot substitute for
-volatile accesses or padding. Atomic library methods and the remaining intrinsic
-families are later slices. The independent `u32` atomic capability controls do
-not claim source-language atomic support.
+volatile accesses or padding. The remaining atomic methods and intrinsic families are later slices. Backend
+capability controls alone do not establish source-language support.
 
 A separate constructor/storage slice introduces the exact canonical
 `core::sync::atomic::AtomicU32` and `std::sync::atomic::AtomicU32` identity and
@@ -53,9 +52,27 @@ The draft `tests/atomic-storage-outcomes.json` records 27 independent source
 outcomes and five native storage comparisons using the already qualified
 volatile operations. Body-local inline const remains an explicit PA25 boundary.
 Initializer-local borrow controls consume PA25's actual body regions, while
-escaping local references remain invalid. Atomic load/store methods and
-`Ordering` are subsequent source slices. These storage
-comparisons establish no atomic-operation or concurrent-execution claim.
+escaping local references remain invalid. These storage comparisons establish no atomic-operation or concurrent-execution
+claim.
+
+The method slice introduces canonical `Ordering` with its non-exhaustive match
+contract and distinct Rust discriminants. Safe runtime `AtomicU32::load` and
+`store` use operation-specific LowIR ordering types; a bounded switch translates
+Rust tags rather than forwarding them as backend order encodings. Invalid
+variable, aliased, UFCS and reified-call orders abort at runtime. Direct method
+syntax with a canonical variant obeys the scoped `invalid_atomic_ordering` lint,
+including allow/warn/deny/forbid inheritance. Atomic operations remain runtime-only
+through the existing whole-CFG constant eligibility gate. Packed receiver borrows
+retain the ordinary alignment check; raw address formation is a separate rule.
+
+External-open coverage keeps an unknown case separate from real variant IDs and
+runtime discriminants. Matching every current Ordering variant still needs a
+wildcard, including nested and refutable patterns. The general scoped
+`unreachable_patterns` policy consumes existing whole-arm usefulness facts;
+partial unreachable alternatives within an otherwise useful arm remain outside
+that retained fact contract. `tests/atomic-method-outcomes.json` records the
+independent source and native method controls. No concurrent-execution suite or
+additional atomic operation family is claimed by this slice.
 
 The draft `tests/manifest.draft.json` declares 53 independently qualified source
 outcomes, including nine native comparisons and five valid Rust inputs that

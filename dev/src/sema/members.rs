@@ -8,7 +8,7 @@ use crate::{
     syntax::item::Shape,
     types::{ItemId, TypeId},
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct VariantId(pub u32);
@@ -79,10 +79,23 @@ pub struct Members {
     field_ordinals: Vec<u32>,
     field_variants: Vec<VariantId>,
     by_node: HashMap<NodeKey, VariantId>,
+    external_open: Option<HashSet<ItemId>>,
     by_owner: HashMap<ItemId, Vec<VariantId>>,
     by_name: HashMap<(VariantId, Name), FieldId>,
 }
 impl Members {
+    /// Unknown external constructors are coverage facts, never storage variants.
+    pub(crate) fn mark_external_open(&mut self, owner: ItemId) {
+        self.external_open
+            .get_or_insert_with(HashSet::new)
+            .insert(owner);
+    }
+    #[must_use]
+    pub fn external_open(&self, owner: ItemId) -> bool {
+        self.external_open
+            .as_ref()
+            .is_some_and(|items| items.contains(&owner))
+    }
     /// Selected construction storage is independent of promotion eligibility.
     #[must_use]
     pub fn constructor(&self, definition: DefId) -> Option<VariantId> {

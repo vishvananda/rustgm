@@ -23,12 +23,16 @@ impl Level {
 struct Policy {
     operation: Level,
     reference: Level,
+    atomic_ordering: Level,
+    unreachable_patterns: Level,
 }
 impl Default for Policy {
     fn default() -> Self {
         Self {
             operation: Level::Warn,
             reference: Level::Deny,
+            atomic_ordering: Level::Deny,
+            unreachable_patterns: Level::Warn,
         }
     }
 }
@@ -36,6 +40,8 @@ impl Default for Policy {
 enum Lint {
     Operation,
     Reference,
+    AtomicOrdering,
+    UnreachablePatterns,
 }
 struct Change {
     lint: Lint,
@@ -54,6 +60,7 @@ pub struct Work {
 #[derive(Default)]
 pub(super) struct Policies {
     nodes: Option<Vec<Vec<Policy>>>,
+    unreachable_denials: bool,
     work: Work,
 }
 impl Policies {
@@ -63,6 +70,9 @@ impl Policies {
         if changes.is_empty() {
             return Ok(policies);
         }
+        policies.unreachable_denials = changes.values().flatten().any(|change| {
+            matches!(change.lint, Lint::UnreachablePatterns) && change.level.denies()
+        });
         let mut nodes: Vec<_> = report
             .package
             .units
@@ -154,6 +164,15 @@ impl Policies {
     pub(super) fn denies_reference(&self, key: NodeKey) -> bool {
         self.at(key).reference.denies()
     }
+    pub(super) fn denies_atomic_ordering(&self, key: NodeKey) -> bool {
+        self.at(key).atomic_ordering.denies()
+    }
+    pub(super) fn has_unreachable_denials(&self) -> bool {
+        self.unreachable_denials
+    }
+    pub(super) fn denies_unreachable_patterns(&self, key: NodeKey) -> bool {
+        self.at(key).unreachable_patterns.denies()
+    }
     pub(super) fn work(&self) -> Work {
         self.work
     }
@@ -163,13 +182,21 @@ impl Policy {
         let level = match change.lint {
             Lint::Operation => &mut self.operation,
             Lint::Reference => &mut self.reference,
+            Lint::AtomicOrdering => &mut self.atomic_ordering,
+            Lint::UnreachablePatterns => &mut self.unreachable_patterns,
         };
         if *level == Level::Forbid {
             if matches!(change.level, Level::Allow | Level::Warn) {
                 return Err(Error::at(
                     key.file,
                     change.offset,
-                    "forbidden unsafe lint cannot be weakened",
+                    match change.lint {
+                        Lint::AtomicOrdering => "forbidden atomic ordering lint cannot be weakened",
+                        Lint::UnreachablePatterns => {
+                            "forbidden unreachable pattern lint cannot be weakened"
+                        }
+                        _ => "forbidden unsafe lint cannot be weakened",
+                    },
                 ));
             }
             return Ok(());

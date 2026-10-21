@@ -84,6 +84,11 @@ impl Checker<'_> {
         )?;
         self.facts.definitions[declaration.definition.0 as usize] = Some(owner);
         self.states[declaration.definition.0 as usize] = State::Complete;
+        if declaration.kind == LibraryType::Ordering {
+            self.facts
+                .members
+                .mark_external_open(ItemId(declaration.definition.0));
+        }
         let kind = if declaration.kind.is_struct() {
             aggregate::Kind::Struct
         } else {
@@ -95,6 +100,7 @@ impl Checker<'_> {
             } else {
                 Representation::Rust
             },
+            tag: (declaration.kind == LibraryType::Ordering).then_some(crate::types::Primitive::U8),
             ..Repr::default()
         };
         let mut variants = Vec::new();
@@ -106,6 +112,14 @@ impl Checker<'_> {
             constructors.extend(definitions);
         }
         let item = ItemId(declaration.definition.0);
+        if !declaration.kind.is_struct()
+            && declaration
+                .variants
+                .iter()
+                .all(|variant| variant.field.is_none())
+        {
+            self.facts.enum_casts.insert(item);
+        }
         self.facts
             .aggregates
             .insert_with_mutation(
@@ -272,6 +286,19 @@ impl Checker<'_> {
             },
         )?;
         self.constructor_template(source, ItemId(definition.0), ItemId(owner.0), signature)?;
+        if self
+            .facts
+            .lifetimes
+            .callables
+            .get(ItemId(definition.0))
+            .is_none()
+        {
+            self.facts
+                .lifetimes
+                .callables
+                .insert_monomorphic(&self.facts.types, ItemId(definition.0), signature)
+                .map_err(|e| self.error(source, e))?;
+        }
         self.intern(
             source,
             Type::FunctionItem {

@@ -34,7 +34,10 @@ struct Place {
 }
 enum Values {
     Scalar(Domain),
-    Tags(Arc<[VariantId]>),
+    Tags {
+        known: Arc<[VariantId]>,
+        external_open: bool,
+    },
     Length,
     Text,
 }
@@ -98,7 +101,9 @@ impl<'a> Coverage<'a> {
         } else {
             match facts.types.kind(ty) {
                 Some(Type::Never) => false,
-                Some(Type::Adt(item, _)) => !facts.members.variants(item).is_empty(),
+                Some(Type::Adt(item, _)) => {
+                    facts.members.external_open(item) || !facts.members.variants(item).is_empty()
+                }
                 _ => true,
             }
         };
@@ -201,11 +206,19 @@ impl<'a> Coverage<'a> {
                 let tags = self
                     .inhabited
                     .tags(info.ty, item, info.valid, &mut self.graph)?;
+                let external_open = self.facts.members.external_open(item);
                 let maximum = tags
                     .len()
-                    .checked_sub(1)
+                    .checked_add(usize::from(external_open))
+                    .and_then(|count| count.checked_sub(1))
                     .ok_or("empty coverage constructor domain")?;
-                (maximum as u128, Values::Tags(tags))
+                (
+                    maximum as u128,
+                    Values::Tags {
+                        known: tags,
+                        external_open,
+                    },
+                )
             }
             Some(Type::Slice(_)) => (u128::from(u64::MAX), Values::Length),
             _ => return Err("coverage place has no decision domain"),
@@ -237,7 +250,7 @@ impl<'a> Coverage<'a> {
     ) -> Result<Work, &'static str> {
         let initial = if let Some(variant) = variant {
             let variable = self.variable(query.place)?;
-            let Values::Tags(tags) = &self.inputs[variable.0 as usize].values else {
+            let Values::Tags { known: tags, .. } = &self.inputs[variable.0 as usize].values else {
                 return Err("missing constructor coverage domain");
             };
             let Ok(rank) = tags.binary_search_by_key(&variant.0, |v| v.0) else {

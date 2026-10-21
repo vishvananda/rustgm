@@ -56,10 +56,8 @@ impl Checker<'_> {
             let implementation = self
                 .facts
                 .associated
-                .owner(selected.method)
-                .and_then(|id| self.facts.associated.get(id))
-                .ok_or_else(|| self.error(node, "missing selected receiver owner"))?
-                .self_definition;
+                .member_owner(selected.method)
+                .ok_or_else(|| self.error(node, "missing selected receiver owner"))?;
             self.state
                 .call_types
                 .method_owners

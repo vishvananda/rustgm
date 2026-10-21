@@ -128,11 +128,10 @@ impl Inventory {
     }
     #[must_use]
     pub fn schema(&self, definition: DefId) -> Option<&Schema> {
-        if let Some(schema) = self
-            .language
-            .as_ref()
-            .and_then(|m| m.schemas.get(&definition))
-        {
+        if let Some(schema) = self.language.as_ref().and_then(|m| {
+            m.schemas
+                .get(m.inherent_members.get(&definition).unwrap_or(&definition))
+        }) {
             return Some(schema);
         }
         self.schemas.get(&self.owner(definition)?)

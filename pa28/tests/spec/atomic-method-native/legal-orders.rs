@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};static A:AtomicU32=AtomicU32::new(0);fn main(){A.store(7,Ordering::Relaxed);check(A.load(Ordering::Relaxed)==7);A.store(17,Ordering::Release);check(A.load(Ordering::Acquire)==17);A.store(42,Ordering::SeqCst);check(A.load(Ordering::SeqCst)==42);}

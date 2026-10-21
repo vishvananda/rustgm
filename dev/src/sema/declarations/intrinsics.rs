@@ -1,4 +1,5 @@
 //! Intrinsic functions publish ordinary sized generic callable signatures.
+mod atomic;
 use super::{Checker, Error, ItemId, State, Type};
 use crate::{
     resolve::model::BuiltinIntrinsic,
@@ -31,6 +32,8 @@ impl Checker<'_> {
             parameter,
             ..
         } = declaration;
+        let parameter =
+            parameter.ok_or_else(|| self.error(origin, "missing intrinsic generic parameter"))?;
         let owner = ItemId(definition.0);
         let formal = self
             .facts
@@ -60,6 +63,9 @@ impl Checker<'_> {
         Ok((formal, subject))
     }
     fn intrinsic_signature(&mut self, declaration: BuiltinIntrinsic) -> Result<(), Error> {
+        if !declaration.kind.is_volatile() {
+            return self.atomic_signature(declaration);
+        }
         let (formal, subject) = self.intrinsic_parameter(declaration)?;
         let BuiltinIntrinsic {
             kind,

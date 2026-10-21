@@ -1,0 +1,1 @@
+use core::sync::atomic::Ordering;const A:u8=Ordering::Relaxed as u8;const B:u8=Ordering::Release as u8;const C:u8=Ordering::Acquire as u8;const D:u8=Ordering::AcqRel as u8;const E:u8=Ordering::SeqCst as u8;fn main(){check(A==0);check(B==1);check(C==2);check(D==3);check(E==4);}

@@ -71,6 +71,8 @@ fn lint(forest: &Forest, source: &str, index: u32) -> Option<Lint> {
     match forest.name(source, index)? {
         "unsafe_op_in_unsafe_fn" => Some(Lint::Operation),
         "static_mut_refs" => Some(Lint::Reference),
+        "invalid_atomic_ordering" => Some(Lint::AtomicOrdering),
+        "unreachable_patterns" => Some(Lint::UnreachablePatterns),
         _ => None,
     }
 }

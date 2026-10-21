@@ -265,6 +265,7 @@ impl Checker<'_> {
         }
         for id in std::mem::take(&mut self.state.matches) {
             self.check_match(id)?;
+            self.check_unreachable_arms(id)?;
         }
         Ok(())
     }
@@ -322,6 +323,29 @@ impl Checker<'_> {
                     return Err(self.error(
                         pattern.source.node,
                         "pattern coverage requires constructor specialization",
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+    fn check_unreachable_arms(&self, id: u32) -> Result<(), Error> {
+        if !self.facts.safety_policies.has_unreachable_denials() {
+            return Ok(());
+        }
+        let decision = &self.facts.patterns.decisions[id as usize];
+        if !decision.uninhabited {
+            for arm in &self.facts.patterns.arms[decision.start as usize..decision.end as usize] {
+                if !arm.useful
+                    && self
+                        .facts
+                        .safety_policies
+                        .denies_unreachable_patterns(arm.source)
+                {
+                    return Err(crate::sema::model::Declarations::error(
+                        self.report,
+                        arm.source,
+                        "unreachable pattern",
                     ));
                 }
             }

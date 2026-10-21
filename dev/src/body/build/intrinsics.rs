@@ -21,6 +21,14 @@ impl Builder<'_> {
         let Some(intrinsic) = self.facts.intrinsics.identify(DefId(item.0)) else {
             return Ok(None);
         };
+        if !intrinsic.is_volatile() {
+            let instance = Instance::new(&self.facts.types, ty).map_err(|e| self.error(node, e))?;
+            return Ok(Some(Rvalue::Intrinsic {
+                intrinsic,
+                instance,
+                arguments,
+            }));
+        }
         let Some(Kind::Function { parameters, .. }) = self.facts.types.kind(signature) else {
             return Err(self.error(node, "intrinsic has no callable signature"));
         };

@@ -1,0 +1,345 @@
+{
+  "stage": "draft",
+  "toolchain": "Rust 1.98 / edition 2024 / x86_64",
+  "cases": [
+    {
+      "name": "load-store",
+      "path": "tests/spec/atomic-methods/load-store.rs",
+      "expected_status": 0,
+      "sha256": "22bfd3214777162ad5b002da3705ebfabce4b94d657a0117ba3e017a5af1006f"
+    },
+    {
+      "name": "variable-order",
+      "path": "tests/spec/atomic-methods/variable-order.rs",
+      "expected_status": 0,
+      "sha256": "492df20e1eb9789f4f8e600b17c5d26c7d00839b96b5c3524053f01a15fd4b31"
+    },
+    {
+      "name": "ufcs-order",
+      "path": "tests/spec/atomic-methods/ufcs-order.rs",
+      "expected_status": 0,
+      "sha256": "3ad591e3a4ea465db02a781f308647c391e7a7e40a172a162a7bc03412b3e531"
+    },
+    {
+      "name": "reified-order",
+      "path": "tests/spec/atomic-methods/reified-order.rs",
+      "expected_status": 0,
+      "sha256": "fa2094e06e685c09e7cd685087790d3ada496c11f92dd04cd98860f997b52740"
+    },
+    {
+      "name": "const-alias-order",
+      "path": "tests/spec/atomic-methods/const-alias-order.rs",
+      "expected_status": 0,
+      "sha256": "bf3fca61a9aa356f13366915e6a42b7c3956f2f6e409d64bc15256c44c51dbcd"
+    },
+    {
+      "name": "block-order",
+      "path": "tests/spec/atomic-methods/block-order.rs",
+      "expected_status": 0,
+      "sha256": "8d2ae36a6048569bea04b5e6c18ac177cb1bd3184e7c347bd35e57078d0289fd"
+    },
+    {
+      "name": "direct-release-load",
+      "path": "tests/spec/atomic-methods/direct-release-load.rs",
+      "expected_status": 1,
+      "sha256": "68dfb34eed9f023b6db624c8333548e12ed1ec6510543480e304f2d35e98504a"
+    },
+    {
+      "name": "direct-acqrel-load",
+      "path": "tests/spec/atomic-methods/direct-acqrel-load.rs",
+      "expected_status": 1,
+      "sha256": "31e2fb70b1b9cf631cd9961014a7111a3ea012e00bd9283c5280edc6635e6777"
+    },
+    {
+      "name": "direct-acquire-store",
+      "path": "tests/spec/atomic-methods/direct-acquire-store.rs",
+      "expected_status": 1,
+      "sha256": "37bf9a88174d702642abfa3910209edabd6aa00f57840d7a5dc348849486bb9e"
+    },
+    {
+      "name": "direct-acqrel-store",
+      "path": "tests/spec/atomic-methods/direct-acqrel-store.rs",
+      "expected_status": 1,
+      "sha256": "ed5447866164194f9e1b7ad955ab1136d12c1c87b29dc6053fd06dd2c7d6b43e"
+    },
+    {
+      "name": "grouped-invalid-order",
+      "path": "tests/spec/atomic-methods/grouped-invalid-order.rs",
+      "expected_status": 1,
+      "sha256": "6ad592ae7a6df1c6e26e18293839d200968ed11bd418925286083be00db20d6e"
+    },
+    {
+      "name": "imported-invalid-order",
+      "path": "tests/spec/atomic-methods/imported-invalid-order.rs",
+      "expected_status": 1,
+      "sha256": "57cd8534937ec283bf42bb709144789e7322d35f2ef4f1d92560a5a34776b1f4"
+    },
+    {
+      "name": "allow-invalid-order",
+      "path": "tests/spec/atomic-methods/allow-invalid-order.rs",
+      "expected_status": 0,
+      "sha256": "b1dab8ec1b9676fe9df366a78bdc345d7dc42ba8e7fb27dd3f988b24fa96ebf3"
+    },
+    {
+      "name": "warn-invalid-order",
+      "path": "tests/spec/atomic-methods/warn-invalid-order.rs",
+      "expected_status": 0,
+      "sha256": "5e7dd006524fb88c834cd13878c5585684f900c791c143f3bbb82d18311b0ddb"
+    },
+    {
+      "name": "forbid-weaken",
+      "path": "tests/spec/atomic-methods/forbid-weaken.rs",
+      "expected_status": 1,
+      "sha256": "e12eb86b507d9f7e8308af85e3d706beef6ee14531be2b9c168e614927a966f3"
+    },
+    {
+      "name": "closure-inherits",
+      "path": "tests/spec/atomic-methods/closure-inherits.rs",
+      "expected_status": 1,
+      "sha256": "0876abffa79bd91d589f1fd812a6a64bf63bedcdbe4f1f1c2205102f10951006"
+    },
+    {
+      "name": "nested-allow",
+      "path": "tests/spec/atomic-methods/nested-allow.rs",
+      "expected_status": 0,
+      "sha256": "f16dfeb38e0830254b4154990df7315cca2c71c71be313f8597ef9b4970ee7d0"
+    },
+    {
+      "name": "known-only-match",
+      "path": "tests/spec/atomic-methods/known-only-match.rs",
+      "expected_status": 1,
+      "sha256": "3c06c80581337f58b0444a872a1010ec3194e585c55e1e5745c594fabd1cc83d"
+    },
+    {
+      "name": "wildcard-match",
+      "path": "tests/spec/atomic-methods/wildcard-match.rs",
+      "expected_status": 0,
+      "sha256": "6d2657d8338f5aee05e97a6bf4763a789645a1f8aca8e4e08b1a59123782732e"
+    },
+    {
+      "name": "known-only-let",
+      "path": "tests/spec/atomic-methods/known-only-let.rs",
+      "expected_status": 1,
+      "sha256": "e2a41dd677f8e92b77cc95bf702b639c52c585455e204cea15d89b227423fc70"
+    },
+    {
+      "name": "nested-known-match",
+      "path": "tests/spec/atomic-methods/nested-known-match.rs",
+      "expected_status": 1,
+      "sha256": "ced57082d60d83c6a35a58de8afe3aadd1016e3f3541573f85004d2d12c4d733"
+    },
+    {
+      "name": "nested-wildcard-match",
+      "path": "tests/spec/atomic-methods/nested-wildcard-match.rs",
+      "expected_status": 0,
+      "sha256": "986b96ee05836a83ff978d4fe7da94831e28cd3a2bab76e0bbdc53ae6e6ace3a"
+    },
+    {
+      "name": "unknown-not-unreachable",
+      "path": "tests/spec/atomic-methods/unknown-not-unreachable.rs",
+      "expected_status": 0,
+      "sha256": "55e7b0819a883b291bb8596203423b092c5f20d2255156765358ef691c1dd5fd"
+    },
+    {
+      "name": "wildcard-makes-unreachable",
+      "path": "tests/spec/atomic-methods/wildcard-makes-unreachable.rs",
+      "expected_status": 1,
+      "sha256": "d2ffdb7bedb7b644ac006a7a296334fc277014f8d525bb3988937d8aaef6d8ba"
+    },
+    {
+      "name": "packed-receiver",
+      "path": "tests/spec/atomic-methods/packed-receiver.rs",
+      "expected_status": 1,
+      "sha256": "cb423ea7e0cb3f0cf0ccdd504e87981552fe22bf50f20c3567864b53fad0c22e"
+    },
+    {
+      "name": "packed-raw",
+      "path": "tests/spec/atomic-methods/packed-raw.rs",
+      "expected_status": 0,
+      "sha256": "d8cc9096e9c62043af4b2c253fe0047eecc122d728cd44f554e68fe57e0cb480"
+    },
+    {
+      "name": "const-load",
+      "path": "tests/spec/atomic-methods/const-load.rs",
+      "expected_status": 1,
+      "sha256": "99b5e853edd18a5d5cf7f25363975fbcfaf0cbd78b5a79bf4ec5dd27222ef176"
+    },
+    {
+      "name": "const-store-skipped",
+      "path": "tests/spec/atomic-methods/const-store-skipped.rs",
+      "expected_status": 1,
+      "sha256": "3f770f3895ce8ee38ea7d80d6ea718066e3da16911d9b4c49b7f2d2ea8f19fca"
+    },
+    {
+      "name": "const-reified",
+      "path": "tests/spec/atomic-methods/const-reified.rs",
+      "expected_status": 1,
+      "sha256": "f4b6b9873d70c9dd637d05c79e4878e48af9e7a679ed5cbf690ed1378ea018cb"
+    },
+    {
+      "name": "ordering-copy",
+      "path": "tests/spec/atomic-methods/ordering-copy.rs",
+      "expected_status": 0,
+      "sha256": "226df12f3bb1d2f2de5eb20dac03105816f40d67985f6de7a9cbb400d1c8904c"
+    },
+    {
+      "name": "wrong-order-type",
+      "path": "tests/spec/atomic-methods/wrong-order-type.rs",
+      "expected_status": 1,
+      "sha256": "4f5e963393df6d0f0316171c161cef4b51d09746b4af566081fe431ba49a9a20"
+    },
+    {
+      "name": "wrong-store-type",
+      "path": "tests/spec/atomic-methods/wrong-store-type.rs",
+      "expected_status": 1,
+      "sha256": "8a38afc1c466e0924223bfa4f8e58dfbb452708e2545b6620cac87c09872b3bf"
+    },
+    {
+      "name": "shadowed-method",
+      "path": "tests/spec/atomic-methods/shadowed-method.rs",
+      "expected_status": 0,
+      "sha256": "e42cc7f073136abe6c535a7a52f585b4919964d78e3ed5f9ea82ec23fc356bd7"
+    },
+    {
+      "name": "ordering-constant-tags",
+      "path": "tests/spec/atomic-methods/ordering-constant-tags.rs",
+      "expected_status": 0,
+      "sha256": "3845b3894582c490db1724ddef04e8500d664e8f19cdf5075f934a66eff15cc2"
+    }
+  ],
+  "native": [
+    {
+      "name": "legal-orders",
+      "path": "tests/spec/atomic-method-native/legal-orders.rs",
+      "expected_status": 0,
+      "panic": false,
+      "sha256": "8e1bd6223454aad48c5157252cf7c126cde3b5f6946e557e34646e05e08ae281"
+    },
+    {
+      "name": "variable-orders",
+      "path": "tests/spec/atomic-method-native/variable-orders.rs",
+      "expected_status": 0,
+      "panic": false,
+      "sha256": "76ee9104a67327efd9edd85509c2ceb267b48e905d28d9539b9ffeaec3350dfa"
+    },
+    {
+      "name": "reified-methods",
+      "path": "tests/spec/atomic-method-native/reified-methods.rs",
+      "expected_status": 0,
+      "panic": false,
+      "sha256": "3281d5b2d1b5e68b8220d0d36d52bb813f42e78b448c9965dc355fc2798e24b6"
+    },
+    {
+      "name": "nested-shared-static",
+      "path": "tests/spec/atomic-method-native/nested-shared-static.rs",
+      "expected_status": 0,
+      "panic": false,
+      "sha256": "a8a82e75304d2d8a39e009024e0129871053768c98bc502004d31cce66d3952b"
+    },
+    {
+      "name": "local-roundtrip",
+      "path": "tests/spec/atomic-method-native/local-roundtrip.rs",
+      "expected_status": 0,
+      "panic": false,
+      "sha256": "6ca75906714f63529e6abc733f93a2bfb5c94911c452bb21728798916add8edf"
+    },
+    {
+      "name": "dynamic-release-load",
+      "path": "tests/spec/atomic-method-native/dynamic-release-load.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "2cd7369e1d4bf3347d5170b041da42b41850ba7f87aae34c2a0bce82c8f4a1e8",
+      "rustc_panic_message": "there is no such thing as a release load"
+    },
+    {
+      "name": "dynamic-acqrel-load",
+      "path": "tests/spec/atomic-method-native/dynamic-acqrel-load.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "5ce6d5cea75e5441eb3ea3050ca08f80787391e6e84e0650de0fbd6f04560d6d",
+      "rustc_panic_message": "there is no such thing as an acquire-release load"
+    },
+    {
+      "name": "dynamic-acquire-store",
+      "path": "tests/spec/atomic-method-native/dynamic-acquire-store.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "bf288edc3a1c57db254583d0b90b6f6d42871cd68c1776974a47721af25f8d32",
+      "rustc_panic_message": "there is no such thing as an acquire store"
+    },
+    {
+      "name": "dynamic-acqrel-store",
+      "path": "tests/spec/atomic-method-native/dynamic-acqrel-store.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "00154d6b03501f7549c4588b727e54b9bd884f80274807ebdffa880c063719af",
+      "rustc_panic_message": "there is no such thing as an acquire-release store"
+    },
+    {
+      "name": "ufcs-invalid",
+      "path": "tests/spec/atomic-method-native/ufcs-invalid.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "61144093b4e0b8d1c18e1f92f393704b336a9aaa98e207b9439c843a0d97decf",
+      "rustc_panic_message": "there is no such thing as a release load"
+    },
+    {
+      "name": "reified-invalid",
+      "path": "tests/spec/atomic-method-native/reified-invalid.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "bf0c4021d18df735d80ecfc9be1ae26eefdf23758ad095a4f64787e975e71a92",
+      "rustc_panic_message": "there is no such thing as a release load"
+    },
+    {
+      "name": "const-alias-invalid",
+      "path": "tests/spec/atomic-method-native/const-alias-invalid.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "2e42b523aeb8d21da1276649aeabe167caa8aadfae97eb03cfd07ec45404df22",
+      "rustc_panic_message": "there is no such thing as an acquire store"
+    },
+    {
+      "name": "allowed-invalid",
+      "path": "tests/spec/atomic-method-native/allowed-invalid.rs",
+      "expected_status": 0,
+      "panic": true,
+      "sha256": "f5e65d4955d0d13a01d752ba423cf4c3b7720b78c2542ab64ec30fa782904abf",
+      "rustc_panic_message": "there is no such thing as a release load"
+    },
+    {
+      "name": "ordering-tags",
+      "path": "tests/spec/atomic-method-native/ordering-tags.rs",
+      "expected_status": 0,
+      "panic": false,
+      "sha256": "05eb153326839ad0ff8ea7114e0a33230248ebf9344c983ec5c6e53eb7d5f736"
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "ordering-tags",
+      "path": "tests/spec/atomic-methods/ordering-tags.rs",
+      "expected_status": 0,
+      "sha256": "4e6fe0308337a95db412e506b4b8ca1702f0b3ac28bd066e9d0888c7e2ab33fc",
+      "frontend_status": 1,
+      "reason": "unresolved macro is not in textual scope or path scope"
+    }
+  ],
+  "native_contract": {
+    "expected_status_applies_to": "source compilation",
+    "success": {
+      "rustc_exit_status": 0,
+      "backend_exit_status": 0,
+      "stdout": "empty",
+      "stderr": "empty"
+    },
+    "panic": {
+      "rustc_signal": 6,
+      "rustc_stdout": "empty",
+      "rustc_stderr_contains": "panicked at",
+      "backend_exit_status": 134,
+      "backend_stdout": "empty",
+      "backend_stderr": "empty"
+    }
+  }
+}

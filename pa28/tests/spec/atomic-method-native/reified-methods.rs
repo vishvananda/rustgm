@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};static A:AtomicU32=AtomicU32::new(0);fn main(){let set:fn(&AtomicU32,u32,Ordering)=AtomicU32::store;let get:fn(&AtomicU32,Ordering)->u32=AtomicU32::load;set(&A,42,Ordering::SeqCst);check(get(&A,Ordering::SeqCst)==42);}

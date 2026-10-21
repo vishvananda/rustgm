@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};struct P{a:[AtomicU32;2]}static A:P=P{a:[AtomicU32::new(0),AtomicU32::new(7)]};fn main(){let p=&A;p.a[0].store(35,Ordering::Relaxed);check(p.a[0].load(Ordering::Relaxed)+p.a[1].load(Ordering::Relaxed)==42);}

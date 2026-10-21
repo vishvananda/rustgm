@@ -43,12 +43,18 @@ impl Coverage<'_> {
                 Values::Length => {
                     write!(result, "{rank}").map_err(|_| "cannot format slice length")?;
                 }
-                Values::Tags(tags) => {
+                Values::Tags {
+                    known: tags,
+                    external_open,
+                } => {
                     let index = usize::try_from(rank).map_err(|_| "invalid constructor witness")?;
-                    self.variant_name(
-                        *tags.get(index).ok_or("invalid constructor witness")?,
-                        &mut result,
-                    )?;
+                    if let Some(&variant) = tags.get(index) {
+                        self.variant_name(variant, &mut result)?;
+                    } else if *external_open && index == tags.len() {
+                        result.push('_');
+                    } else {
+                        return Err("invalid constructor witness");
+                    }
                 }
             }
         }
