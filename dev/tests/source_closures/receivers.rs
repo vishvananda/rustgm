@@ -1,6 +1,154 @@
 //! Typed receiver use determines capture strength independently of storage mode.
 use super::semantic;
-use rustgm::{sema::closures::captures::Mode, types::closure::CallKind};
+use rustgm::{
+    sema::closures::{
+        AccessKind,
+        captures::{Mode, Step},
+    },
+    types::closure::CallKind,
+};
+
+const ADJUSTED_CASES: &[(&str, AccessKind, u32, Mode, CallKind)] = &[
+    (
+        "method-shared",
+        AccessKind::Method,
+        1,
+        Mode::Shared,
+        CallKind::Shared,
+    ),
+    (
+        "method-deep",
+        AccessKind::Method,
+        2,
+        Mode::Shared,
+        CallKind::Shared,
+    ),
+    (
+        "method-mutable",
+        AccessKind::Method,
+        1,
+        Mode::Mutable,
+        CallKind::Mutable,
+    ),
+    (
+        "method-moving",
+        AccessKind::Method,
+        1,
+        Mode::Value,
+        CallKind::Shared,
+    ),
+    (
+        "method-field",
+        AccessKind::Method,
+        1,
+        Mode::Shared,
+        CallKind::Shared,
+    ),
+    (
+        "call-function",
+        AccessKind::Invocation,
+        1,
+        Mode::Shared,
+        CallKind::Shared,
+    ),
+    (
+        "call-closure",
+        AccessKind::Invocation,
+        1,
+        Mode::Shared,
+        CallKind::Shared,
+    ),
+    (
+        "call-mutable",
+        AccessKind::Invocation,
+        1,
+        Mode::Mutable,
+        CallKind::Mutable,
+    ),
+];
+
+#[test]
+fn adjusted_receiver_paths_preserve_the_original_source_place()
+-> Result<(), Box<dyn std::error::Error>> {
+    for &(name, kind, depth, mode, call) in ADJUSTED_CASES {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa24/tests/spec/adjusted-places/{name}.rs"));
+        let source = std::fs::read_to_string(path)?;
+        let (report, facts) =
+            semantic::analyze(&source).map_err(|error| format!("{name}: {error}"))?;
+        let (body, environment) = facts
+            .closures
+            .all()
+            .iter()
+            .find_map(|body| {
+                facts
+                    .closures
+                    .environment(body.identity)
+                    .filter(|environment| !environment.adjusted_accesses.is_empty())
+                    .map(|environment| (body, environment))
+            })
+            .ok_or("missing adjusted capture")?;
+        assert_eq!(environment.adjusted_accesses.len(), 1, "{name}");
+        let (&(site, actual_kind), access) = environment
+            .adjusted_accesses
+            .iter()
+            .next()
+            .ok_or("missing receiver access")?;
+        assert_eq!((actual_kind, access.dereferences), (kind, depth), "{name}");
+        assert_eq!(
+            facts.types.closure_kind(body.identity),
+            Some(call),
+            "{name}"
+        );
+        let capture = environment
+            .plan
+            .covering(access.path)
+            .ok_or("uncaptured receiver")?;
+        assert_eq!(capture.mode, mode, "{name}");
+        let operand = match kind {
+            AccessKind::Method => {
+                report
+                    .resolution
+                    .method_calls
+                    .get(&site)
+                    .ok_or("missing method")?
+                    .receiver
+            }
+            AccessKind::Invocation => {
+                let rustgm::syntax::ast::Kind::Call { callee, .. } = report
+                    .package
+                    .unit(site.file)
+                    .configured
+                    .ast
+                    .node(site.node)
+                    .kind
+                else {
+                    return Err("missing invocation".into());
+                };
+                callee
+            }
+        };
+        let key = rustgm::resolve::unit::NodeKey {
+            node: operand,
+            ..site
+        };
+        let original = environment
+            .accesses
+            .get(&key)
+            .ok_or("missing source place")?;
+        let mut cursor = access.path;
+        for _ in 0..depth {
+            let (parent, step) = environment
+                .plan
+                .parent(cursor)
+                .ok_or("missing adjusted prefix")?;
+            assert!(matches!(step, Step::Dereference { .. }), "{name}");
+            cursor = parent;
+        }
+        assert_eq!(cursor, *original, "{name}");
+    }
+    Ok(())
+}
 
 const CASES: &[(&str, Mode, CallKind, usize)] = &[
     ("method-shared", Mode::Shared, CallKind::Shared, 1),

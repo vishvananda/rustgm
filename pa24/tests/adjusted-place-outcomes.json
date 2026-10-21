@@ -1,0 +1,200 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "method-shared",
+      "path": "tests/spec/adjusted-places/method-shared.rs",
+      "source_sha256": "522af1dca6e524e8efc74bee555758f39480181b89a23f76f960f1a27fcad6d2",
+      "expected_status": 0,
+      "access_kind": "Method",
+      "dereferences": 1,
+      "capture_mode": "Shared",
+      "call_kind": "Shared",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-deep",
+      "path": "tests/spec/adjusted-places/method-deep.rs",
+      "source_sha256": "105c14faf1cb65ab6e69efada7163d2f96bf4965118ee476364702d5f06e2e95",
+      "expected_status": 0,
+      "access_kind": "Method",
+      "dereferences": 2,
+      "capture_mode": "Shared",
+      "call_kind": "Shared",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-mutable",
+      "path": "tests/spec/adjusted-places/method-mutable.rs",
+      "source_sha256": "7051405af9c0c66473a0b27673a269060b0d684c0eced0e6db7f83a24ca4a6f8",
+      "expected_status": 0,
+      "access_kind": "Method",
+      "dereferences": 1,
+      "capture_mode": "Mutable",
+      "call_kind": "Mutable",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-moving",
+      "path": "tests/spec/adjusted-places/method-moving.rs",
+      "source_sha256": "32ae1f8caff7867be8b2307ed80be70f2b6a2835440ae8806b12b560bc1d941e",
+      "expected_status": 0,
+      "access_kind": "Method",
+      "dereferences": 1,
+      "capture_mode": "Value",
+      "call_kind": "Shared",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-field",
+      "path": "tests/spec/adjusted-places/method-field.rs",
+      "source_sha256": "c14638bdfa4a81e1b8bd33ebbcc4f7704a928a5e291730bb0ada53071cf46e42",
+      "expected_status": 0,
+      "access_kind": "Method",
+      "dereferences": 1,
+      "capture_mode": "Shared",
+      "call_kind": "Shared",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "call-function",
+      "path": "tests/spec/adjusted-places/call-function.rs",
+      "source_sha256": "ae771be93830d4da09b760bcd49b4e096af6b33118643518fa272b5a519138d1",
+      "expected_status": 0,
+      "access_kind": "Invocation",
+      "dereferences": 1,
+      "capture_mode": "Shared",
+      "call_kind": "Shared",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "call-closure",
+      "path": "tests/spec/adjusted-places/call-closure.rs",
+      "source_sha256": "caab8d4de2c01ee12fa04edf01a46126c47886fb389a048aed412e3e7e63952a",
+      "expected_status": 0,
+      "access_kind": "Invocation",
+      "dereferences": 1,
+      "capture_mode": "Shared",
+      "call_kind": "Shared",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "call-mutable",
+      "path": "tests/spec/adjusted-places/call-mutable.rs",
+      "source_sha256": "37972eba27161e9dfc1f35f951381fee5b40125d09db897ceccc799f8edffac8",
+      "expected_status": 0,
+      "access_kind": "Invocation",
+      "dereferences": 1,
+      "capture_mode": "Mutable",
+      "call_kind": "Mutable",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-conflict",
+      "path": "tests/spec/adjusted-places/method-conflict.rs",
+      "source_sha256": "5dd88a1a8ec4091b85869180151e4154bb699af5e7933aff669901504af0b45c",
+      "expected_status": 1,
+      "access_kind": null,
+      "dereferences": null,
+      "capture_mode": null,
+      "call_kind": null,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-shared-mutation",
+      "path": "tests/spec/adjusted-places/method-shared-mutation.rs",
+      "source_sha256": "82653b853eda3a5d55e20c1799dad0e73f8d0eb98e4bd9c848de10f7c737b2c5",
+      "expected_status": 1,
+      "access_kind": null,
+      "dereferences": null,
+      "capture_mode": null,
+      "call_kind": null,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

@@ -165,6 +165,7 @@ impl Checker<'_> {
                 formation_types,
                 field_types,
                 accesses: captures.accesses,
+                adjusted_accesses: captures.adjusted_accesses,
                 mentions: captures.mentions,
                 binding_mutability,
             },

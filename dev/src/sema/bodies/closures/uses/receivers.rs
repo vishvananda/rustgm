@@ -1,5 +1,5 @@
 //! Selected receiver permissions and array precision reuse typed inference facts.
-use super::{Checker, Collector, Error, NodeId, Use, Work};
+use super::{AccessKind, Checker, Collector, Error, NodeId, Use, Work};
 use crate::types::infer::Constructor;
 
 impl Collector {
@@ -39,14 +39,6 @@ impl Collector {
             .get(&node)
             .copied()
             .ok_or_else(|| checker.error(node, "missing capture method receiver selection"))?;
-        // A stored synthetic descendant cannot reconstruct its unadjusted source
-        // reference. That needs a distinct adjusted-access contract in the IR.
-        if dereferences != 0 && self.places.get(checker, receiver)?.is_some() {
-            return Err(checker.error(
-                node,
-                "adjusted capture method receivers are not implemented",
-            ));
-        }
         let usage = if let Some(borrow) = borrow {
             match checker.head(node, borrow)? {
                 Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
@@ -60,6 +52,7 @@ impl Collector {
             node: receiver,
             usage,
             dereferences,
+            receiver: Some((node, AccessKind::Method)),
         });
         Ok(())
     }

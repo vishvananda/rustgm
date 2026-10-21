@@ -41,6 +41,19 @@ pub struct Execution {
     pub universals: u32,
     pub receiver: CallKind,
 }
+/// The typed consumer that applies implicit dereferences to a source place.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum AccessKind {
+    Method,
+    Invocation,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AdjustedAccess {
+    /// Exact selected place before capture precision truncation.
+    pub path: captures::PathId,
+    /// The selected consumer must validate and skip this already-applied prefix.
+    pub dereferences: u32,
+}
 /// Typed capture paths retain their source bindings and physical projections.
 pub struct Environment {
     pub plan: captures::Plan,
@@ -51,6 +64,7 @@ pub struct Environment {
     /// Stored value/reference types in selected capture order.
     pub field_types: Vec<TypeId>,
     pub accesses: HashMap<NodeKey, captures::PathId>,
+    pub adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     /// Explicit non-reading uses still require initialized parent places.
     pub mentions: Vec<captures::PathId>,
     pub binding_mutability: HashMap<DefId, bool>,

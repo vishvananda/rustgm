@@ -5,6 +5,7 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::{
         closures::captures::{Mode, PathId, Plan},
+        closures::{AccessKind, AdjustedAccess},
         model::AdjustmentKind,
         scalar,
     },
@@ -18,6 +19,7 @@ pub(super) struct Captures {
     pub plan: Plan,
     pub types: Vec<TermId>,
     pub accesses: HashMap<NodeKey, PathId>,
+    pub adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     pub mentions: Vec<PathId>,
     pub kind: CallKind,
     pub work: usize,
@@ -34,6 +36,7 @@ struct Work {
     node: NodeId,
     usage: Use,
     dereferences: u32,
+    receiver: Option<(NodeId, AccessKind)>,
 }
 struct Collector {
     places: Places,
@@ -43,6 +46,7 @@ struct Collector {
     calls: HashMap<NodeId, (Option<CallTrait>, u32)>,
     methods: HashMap<NodeId, (u32, Option<TermId>)>,
     adjusted: HashSet<NodeId>,
+    adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     kind: CallKind,
     moving: bool,
     work: usize,
@@ -88,6 +92,7 @@ impl Checker<'_> {
                 })
                 .map(|adjustment| adjustment.node)
                 .collect(),
+            adjusted_accesses: HashMap::new(),
             kind: CallKind::Shared,
             moving,
             work: 0,
@@ -111,6 +116,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?,
             types: collector.places.types,
             accesses: collector.places.accesses,
+            adjusted_accesses: collector.adjusted_accesses,
             mentions: collector.mentions,
             kind: collector.kind,
             work,
@@ -170,6 +176,7 @@ impl Collector {
             node,
             usage,
             dereferences: 0,
+            receiver: None,
         });
     }
     fn list(&mut self, checker: &Checker<'_>, list: List) {
@@ -195,6 +202,21 @@ impl Collector {
         }
         for _ in 0..work.dereferences {
             place = self.places.dereference(checker, work.node, place)?;
+        }
+        if work.dereferences != 0
+            && let Some((site, kind)) = work.receiver
+        {
+            let access = AdjustedAccess {
+                path: place.path,
+                dereferences: work.dereferences,
+            };
+            if self
+                .adjusted_accesses
+                .insert((checker.key(site), kind), access)
+                .is_some_and(|prior| prior != access)
+            {
+                return Err(checker.error(site, "capture receiver selection changed"));
+            }
         }
         if matches!(work.usage, Use::Mention) {
             if self.mentioned.insert(place.path) {
@@ -337,6 +359,7 @@ impl Collector {
                         _ => Use::Value,
                     },
                     dereferences,
+                    receiver: Some((node, AccessKind::Invocation)),
                 });
             }
             Kind::Tuple(elements) | Kind::Array(elements) => self.list(checker, elements),
