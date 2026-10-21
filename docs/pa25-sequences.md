@@ -42,11 +42,45 @@ remain integration requirements before publication.
 
 ## Remaining coverage
 
-Subslice/subarray rest views and byte-literal backing are still implementation
-gaps for Rust-accepted inputs. They require preserving backing identity and
+Subslice/subarray rest views remain implementation gaps for Rust-accepted inputs.
+They require preserving backing identity and
 aliasing, rather than allocating unrelated copies for views. Initial positive
 hypotheses for constant `str` matching were rejected by pinned rustc with E0658;
 the unchanged sources and failed hypotheses remain evidence. The current
 interpreter's rejection of those operations does not yet establish whole-body
 constant eligibility, including unreachable operations. None of these boundaries
 is a passing PA25 grading oracle.
+
+## Literal backing checkpoint
+
+Typed dereferences now materialize shared immutable backing for canonical byte
+literal identities. Repeated dereferences reuse one backing record; its sized
+array type and contents remain separate from each pointer's selected metadata.
+Thin pointers do not recover discarded length, and shared backing cannot gain
+write permission from a raw mutability cast. Literal bytes are not copied into
+the backing table. The lazy table has a logical 64 MiB limit charged at 128 bytes
+per distinct backing record; this is not an allocator/RSS measurement.
+
+Reading an entire byte array produces a by-value constant. Mutating a local copy
+uses the ordinary owned-cell path and leaves the original literal unchanged.
+Length inspection preserves explicitly selected pointer metadata. Empty literal
+backing remains addressable with zero logical length.
+
+`literal-backing-outcomes.json` declares eight additional accepted programs and
+two bounds rejections. The raw literal-write rejection belongs to PA27 and is
+declared in `pa27/tests/constant-literal-outcomes.json`. The original
+`slice-bytes` boundary now passes without changing its source. All fifteen
+accepted sequence/literal programs execute unchanged with both rustc and CPPGM;
+all new bounds and write rejections agree with pinned rustc. Private controls
+verify backing reuse at 8/32/128 distinct literals with 128 requests each,
+metadata separation and shared-derived permission. Pointer, constant value and
+reference-place sizes remain 24, 32 and 64 bytes on this target.
+
+The gate in `obj/parallel/pa25/literal-backing-check-v2/` passes three reference
+invariants, three CFG execution test functions, five sequence test functions
+(including the fifteen native programs), strict Clippy, the 1,494-file audit
+with zero findings, layout validation and all PA1–PA23 text suites. The earlier
+gate stopped at a `manual_let_else` lint, which was corrected without changing
+the declarations or fixtures. Full publication qualification and paired timing
+remain pending. The initial independent hypotheses and old compiler failures
+are retained in `obj/parallel/pa25/literal-backing-v1/`.

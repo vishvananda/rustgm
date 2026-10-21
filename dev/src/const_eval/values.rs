@@ -329,9 +329,15 @@ impl Machine<'_, '_> {
                 let Some(value) = self.read(address)? else {
                     return Ok(None);
                 };
-                let length = match Reader::new(self.evaluator.facts()).view(value)? {
-                    View::Product { length, .. } | View::Repeat { length, .. } => length,
-                    _ => value.length().ok_or("constant value has no length")?,
+                let reader = Reader::new(self.evaluator.facts());
+                let length = if let Some(length) = address.address.length() {
+                    length
+                } else {
+                    match reader.view(value)? {
+                        View::Product { length, .. } | View::Repeat { length, .. } => length,
+                        View::Bytes(text) => reader.bytes(text)?.len() as u64,
+                        _ => value.length().ok_or("constant value has no length")?,
+                    }
                 };
                 Constant::scalar(Scalar::Integer(u128::from(length)))
             }

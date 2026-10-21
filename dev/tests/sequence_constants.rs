@@ -1,6 +1,8 @@
 //! Array-backed constant slice views retain bounds, aliasing and compressed values.
 #[path = "harness/checked_sources.rs"]
 mod checked_sources;
+#[path = "support/semantic.rs"]
+mod semantic;
 use std::{path::PathBuf, process::Command};
 
 const ACCEPT: &[&str] = &[
@@ -10,6 +12,17 @@ const ACCEPT: &[&str] = &[
     "slice-suffix",
     "slice-empty",
     "slice-repeat",
+    "slice-bytes",
+];
+const LITERALS: &[&str] = &[
+    "literal-index",
+    "literal-slice",
+    "literal-suffix",
+    "literal-empty",
+    "literal-copy",
+    "literal-copy-mutate",
+    "literal-reference",
+    "literal-repeat-read",
 ];
 
 fn root() -> PathBuf {
@@ -17,6 +30,9 @@ fn root() -> PathBuf {
 }
 fn source(name: &str) -> PathBuf {
     root().join(format!("pa25/tests/spec/sequences/{name}.rs"))
+}
+fn literal(name: &str) -> PathBuf {
+    root().join(format!("pa25/tests/spec/literal-backing/{name}.rs"))
 }
 fn evidence(lane: &str) -> Result<PathBuf, std::io::Error> {
     let path = root().join(format!(
@@ -63,11 +79,6 @@ fn pending_sequence_views_and_const_text_eligibility_stay_explicit()
             "constant slice projection is not implemented",
         ),
         (
-            "slice-bytes",
-            0,
-            "constant projection base is not a pointer",
-        ),
-        (
             "text-match",
             1,
             "constant text pattern execution is not implemented",
@@ -84,12 +95,71 @@ fn pending_sequence_views_and_const_text_eligibility_stay_explicit()
 }
 
 #[test]
+fn literal_storage_obeys_bounds_and_shared_write_permission()
+-> Result<(), Box<dyn std::error::Error>> {
+    let evidence = evidence("literal-sources")?;
+    for &name in LITERALS {
+        checked_sources::check(&literal(name), &evidence, name, (0, 0, ""))?;
+    }
+    for name in ["literal-oob", "literal-empty-oob"] {
+        checked_sources::check(
+            &literal(name),
+            &evidence,
+            name,
+            (1, 1, "constant index is out of bounds"),
+        )?;
+    }
+    checked_sources::check(
+        &root().join("pa27/tests/spec/constant-literal/literal-write.rs"),
+        &evidence,
+        "literal-write",
+        (
+            1,
+            1,
+            "constant raw pointer write is derived from a shared reference",
+        ),
+    )?;
+    Ok(())
+}
+
+#[test]
+fn literal_views_share_backing_without_recovering_discarded_metadata()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::sema::values::{Constant, Evaluator, Reader, View, WritePermission};
+    let (report, mut facts) = semantic::analyze("")?;
+    let text = facts.texts.intern(b"abc")?;
+    let mut evaluator = Evaluator::new(&report, &mut facts);
+    let thin = evaluator.literal_address(Constant::bytes(text))?;
+    let selected = evaluator.literal_address(Constant::bytes(text).unsize(1)?)?;
+    let string = evaluator.literal_address(Constant::string(text))?;
+    assert_eq!(thin.location(), selected.location());
+    assert_eq!(thin.location(), string.location());
+    assert_eq!(thin.length(), None);
+    assert_eq!(selected.length(), Some(1));
+    assert_eq!(string.length(), Some(3));
+    assert_eq!(
+        thin.write_permission(),
+        Some(WritePermission::SharedDerived)
+    );
+    let reader = Reader::new(evaluator.facts());
+    let backing = reader.location(thin.location().ok_or("missing literal location")?)?;
+    assert!(matches!(
+        reader.view(backing.value.ok_or("missing literal contents")?)?,
+        View::Bytes(id) if id == text
+    ));
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn exact_sequence_fixture_bytes_execute_with_both_compilers()
 -> Result<(), Box<dyn std::error::Error>> {
     let evidence = evidence("native")?;
-    for &name in ACCEPT {
-        let input = source(name);
+    for (name, input) in ACCEPT
+        .iter()
+        .map(|&name| (name, source(name)))
+        .chain(LITERALS.iter().map(|&name| (name, literal(name))))
+    {
         let lowir = evidence.join(format!("{name}.lowir"));
         let independent = evidence.join(format!("{name}.rustc"));
         let native = evidence.join(format!("{name}.native"));

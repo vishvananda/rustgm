@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-constants",
+  "cases": [
+    {
+      "path": "tests/spec/constant-literal/literal-write.rs",
+      "source_sha256": "ae41300b4163ca2bfb21ff46ce79b90f403fb260ab1a6031aec1aff535e6d765",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing",
+        "pa27.raw-write"
+      ]
+    }
+  ]
+}

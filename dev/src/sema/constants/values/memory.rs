@@ -37,6 +37,28 @@ impl Constant {
     }
 }
 impl Evaluator<'_> {
+    /// Give an addressed literal its canonical immutable backing on first dereference.
+    /// Other pointer values and explicitly selected metadata remain unchanged.
+    /// # Errors
+    /// Rejects missing literal bytes or exhausted type/backing storage.
+    pub fn literal_address(&mut self, value: Constant) -> Result<Constant, Failure> {
+        let (Value::Bytes(text) | Value::Text(text) | Value::BytePointer { text, .. }) = value.0
+        else {
+            return Ok(value);
+        };
+        let facts = &mut *self.queries.typing.facts;
+        let length = facts.texts.get(text)?.len() as u64;
+        let ty = facts.types.intern(crate::types::Kind::Array {
+            element: TypeId::primitive(crate::types::Primitive::U8),
+            length,
+        })?;
+        let address = Constant(facts.constant_references.literal_place(text, ty)?);
+        let metadata = match value.0 {
+            Value::Text(_) => Some(super::Metadata::Length(length)),
+            _ => value.metadata(),
+        };
+        metadata.map_or(Ok(address), |metadata| address.with_metadata(metadata))
+    }
     /// Execute an already checked reference adjustment without losing slice metadata.
     /// The typed CFG's legacy `Constrain` operation also carries direct array unsizing.
     /// This reads its representation change; it does not establish conversion eligibility.

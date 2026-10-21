@@ -116,6 +116,10 @@ impl Machine<'_, '_> {
         let (length, variant) = match Reader::new(self.evaluator.facts()).view(value)? {
             View::Product { length, variant } => (length, variant),
             View::Repeat { length, .. } => (length, None),
+            View::Bytes(text) => (
+                Reader::new(self.evaluator.facts()).bytes(text)?.len() as u64,
+                None,
+            ),
             _ => return Err("constant field projection requires a product".into()),
         };
         let length = usize::try_from(length).map_err(|_| "constant aggregate exceeds host size")?;
@@ -383,6 +387,7 @@ impl Machine<'_, '_> {
                 let Some(value) = self.read(address)? else {
                     return Ok(None);
                 };
+                let value = self.evaluator.literal_address(value)?;
                 return Ok(Some(Resolved {
                     address: value,
                     ty: projection.ty,

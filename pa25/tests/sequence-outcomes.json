@@ -140,7 +140,7 @@
     {
       "path": "tests/spec/sequences/slice-bytes.rs",
       "source_sha256": "e116e81e5649280a6f4f53b62d8bf9322e7bf1cded25966629d80dfaf058daea",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -150,7 +150,12 @@
       "features": [
         "pa25.const-sequences"
       ],
-      "boundary": "Rust accepts; typed constant range views or literal byte backing remain unimplemented."
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
     },
     {
       "path": "tests/spec/sequences/slice-repeat.rs",

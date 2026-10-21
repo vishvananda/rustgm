@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-constants",
+  "cases": [
+    {
+      "path": "tests/spec/literal-backing/literal-index.rs",
+      "source_sha256": "ebfa01efcb6260023c807cc61c35134cae7dbc382b75d33b9dde915a0ffa3e99",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-slice.rs",
+      "source_sha256": "743c6b64e34d8728198ca3a436f9df5be445ff254760f54fca35b36bcf5014e7",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-suffix.rs",
+      "source_sha256": "34f27f9be8a4f23ced3bf48b13b3fce2eeaedb5e979509ddbdcbbe48ad8401f2",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-empty.rs",
+      "source_sha256": "2e4889551848284caa73729ee5bd259aef7848102e22962d28912f5edfa99505",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-copy.rs",
+      "source_sha256": "3e70a4a6d9fa40ae1b604584490370fbe005e969f289b930ce34d95cfdb274db",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-reference.rs",
+      "source_sha256": "cdb269ca29e67d62f719de7478136f964261d0a5c96f517af6f9492d8b4b6f48",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-repeat-read.rs",
+      "source_sha256": "0dfeef46d6af75c03e56e196d5bede34cf58b5efa01c6c670ed0b6cacdb7d47e",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-oob.rs",
+      "source_sha256": "bbfe1153e635d80e023a2cb921b053c1bd35c93a4d3c9ab87cdd3227b142def5",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ]
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-empty-oob.rs",
+      "source_sha256": "4e9c89ac687e76df84ff9c8d1f4a10f513c96e914c6c32e5da89e6245a558fe6",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ]
+    },
+    {
+      "path": "tests/spec/literal-backing/literal-copy-mutate.rs",
+      "source_sha256": "1f83ab7634c28ae576002ed8ff042b8e5e2571c0eaf59d6d5becad2fba06c5b5",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-literal-backing"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  ]
+}

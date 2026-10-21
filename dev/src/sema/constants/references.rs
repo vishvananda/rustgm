@@ -59,9 +59,33 @@ pub(in crate::sema) struct References {
     places: Vec<Place>,
     projections: Vec<Projection>,
     statics: HashMap<DefId, Id>,
+    literals: HashMap<crate::sema::text::Id, Id>,
     pub(super) static_order: Vec<DefId>,
 }
 impl References {
+    pub(super) fn literal_place(
+        &mut self,
+        text: crate::sema::text::Id,
+        ty: TypeId,
+    ) -> Result<Value, &'static str> {
+        if let Some(&place) = self.literals.get(&text) {
+            return Ok(Value::Reference(Pointer::new(place)));
+        }
+        // Charge a conservative 128 bytes per retained map entry and backing
+        // record. Bytes themselves remain in the existing canonical text arena.
+        if self.literals.len() >= 64 * 1024 * 1024 / 128 {
+            return Err("constant literal backing storage limit exceeded");
+        }
+        let value = self.insert(Place {
+            value: Some(Value::Bytes(text)),
+            ty,
+            access: Access::Shared,
+            packed: None,
+            projection: None,
+        })?;
+        self.literals.insert(text, Self::id(value)?);
+        Ok(value)
+    }
     pub(super) fn static_place(&mut self, id: DefId, ty: TypeId) -> Result<Value, &'static str> {
         if let Some(&place) = self.statics.get(&id) {
             return Ok(Value::Reference(Pointer::new(place)));
@@ -350,6 +374,33 @@ fn pointer_write_permission_is_per_value_and_projection() -> Result<(), &'static
         };
         let projected = Constant(arena.project(pointer, 0, place)?);
         assert_eq!(projected.write_permission(), value.write_permission());
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[test]
+fn repeated_literal_addresses_reuse_one_backing_per_text() -> Result<(), &'static str> {
+    let mut types = crate::types::Store::default();
+    let ty = types.intern(crate::types::Kind::Array {
+        element: TypeId::primitive(crate::types::Primitive::U8),
+        length: 3,
+    })?;
+    let mut references = References::default();
+    for width in [8, 32, 128] {
+        for index in 0..width {
+            let text = crate::sema::text::Id(index);
+            let first = references.literal_place(text, ty)?;
+            for _ in 0..128 {
+                assert!(first == references.literal_place(text, ty)?);
+            }
+            let place = references.get(first)?;
+            assert!(matches!(place.access, Access::Shared));
+            assert!(matches!(place.value, Some(Value::Bytes(id)) if id == text));
+        }
+        assert_eq!(references.places.len(), width as usize);
+        assert_eq!(references.literals.len(), width as usize);
+        assert!(references.projections.is_empty());
     }
     Ok(())
 }
