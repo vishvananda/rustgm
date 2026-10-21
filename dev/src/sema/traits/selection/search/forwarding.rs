@@ -64,14 +64,10 @@ impl Search<'_> {
             {
                 break;
             }
-            if mutable && required == CallTrait::Fn {
+            let Some(next) = required.referent(mutable) else {
                 return Ok(Some(Action::Complete(Decision::Absent)));
-            }
-            required = if mutable {
-                CallTrait::FnMut
-            } else {
-                CallTrait::Fn
             };
+            required = next;
             referent = frame
                 .inputs
                 .context

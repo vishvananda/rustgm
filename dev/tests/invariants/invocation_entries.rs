@@ -129,3 +129,105 @@ fn closure_proof_requires_the_exact_execution_signature()
     assert!(error.message.contains("checked execution signature"));
     Ok(())
 }
+fn prefix_fixture(repeated: bool) -> Result<(Store, TypeId, TypeId)> {
+    let mut types = Store::default();
+    let identity = types.declare_closure(CallKind::Shared)?;
+    let formal = reference(&mut types, RegionId::bound(0, 0)?)?;
+    let outer = reference(&mut types, RegionId::bound(1, 2)?)?;
+    let local = reference(&mut types, RegionId::bound(0, 0)?)?;
+    let parameters = types.intern_list(&[local])?;
+    let a = reference(&mut types, RegionId(7))?;
+    let b = reference(&mut types, RegionId(9))?;
+    let actual = reference(&mut types, RegionId(11))?;
+    let mut closures = Vec::new();
+    for (fields, result) in [
+        (
+            if repeated {
+                vec![formal, formal]
+            } else {
+                vec![formal]
+            },
+            outer,
+        ),
+        (if repeated { vec![a, b] } else { vec![a] }, actual),
+    ] {
+        let fields = types.intern_list(&fields)?;
+        let environment = types.intern(Type::Tuple(fields))?;
+        let signature = types.intern(Type::Function {
+            parameters,
+            result,
+            bound_regions: 1,
+            unsafe_: false,
+            convention: Convention::RUST,
+        })?;
+        closures.push(types.intern(Type::Closure {
+            identity,
+            environment,
+            signature,
+            arguments: crate::types::GenericArgs::EMPTY,
+        })?);
+    }
+    Ok((types, closures[0], closures[1]))
+}
+#[test]
+fn reference_prefixes_reuse_only_exact_source_slots_and_preserve_unused_slots() -> Result {
+    let (types, formal, actual) = prefix_fixture(false)?;
+    for (region, expected, universals) in [
+        (RegionId(7), RegionId::bound(0, 0)?, 3),
+        (RegionId(13), RegionId::bound(0, 3)?, 4),
+        (RegionId::STATIC, RegionId::STATIC, 3),
+    ] {
+        let prefix = matching::bind_instance(&types, 3, formal, actual)?.prefix(region)?;
+        assert_eq!(prefix.region, expected);
+        assert_eq!(prefix.universals, universals);
+        assert!(prefix.equalities.is_empty());
+    }
+    Ok(())
+}
+#[test]
+fn repeated_source_slots_stay_caller_debts_when_reference_prefixes_are_abstracted() -> Result {
+    let (types, formal, actual) = prefix_fixture(true)?;
+    let bindings = matching::bind_instance(&types, 3, formal, actual)?;
+    let equality = *bindings
+        .equalities
+        .first()
+        .ok_or("missing repeated-slot debt")?;
+    assert!(equality == (RegionId(7), RegionId(9)) || equality == (RegionId(9), RegionId(7)));
+    let prefix = bindings.prefix(equality.1)?;
+    assert_eq!(prefix.region, RegionId::bound(0, 3)?);
+    assert_eq!(prefix.universals, 4);
+    assert_eq!(prefix.equalities, vec![equality]);
+    Ok(())
+}
+#[test]
+fn prefix_mapping_cannot_export_a_local_public_call_binder() -> Result {
+    let (mut types, formal, actual) = prefix_fixture(false)?;
+    let Some(Type::Closure {
+        identity,
+        environment,
+        signature,
+        arguments,
+    }) = types.kind(actual)
+    else {
+        return Err("closure");
+    };
+    let Some(Type::Function { parameters, .. }) = types.kind(signature) else {
+        return Err("signature");
+    };
+    let result = reference(&mut types, RegionId::bound(0, 0)?)?;
+    let signature = types.intern(Type::Function {
+        parameters,
+        result,
+        bound_regions: 1,
+        unsafe_: false,
+        convention: Convention::RUST,
+    })?;
+    let actual = types.intern(Type::Closure {
+        identity,
+        environment,
+        signature,
+        arguments,
+    })?;
+    assert!(matching::bind_instance(&types, 3, formal, actual).is_err());
+    Ok(())
+}

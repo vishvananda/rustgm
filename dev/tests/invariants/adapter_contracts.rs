@@ -353,3 +353,115 @@ fn equal_projection_results_do_not_equate_their_inputs() -> TestResult {
     assert!(value.contract.assumptions.is_empty());
     Ok(())
 }
+#[test]
+fn borrowed_self_is_part_of_the_key_and_of_the_checked_execution() -> TestResult {
+    let source_text =
+        "fn call<F:FnOnce()->u8>(f:F)->u8{f()}fn main(){let n=7u8;let f=||n;let _=call(&f);}";
+    let Fixture {
+        mut facts,
+        templates,
+        inputs,
+        instances,
+        program,
+    } = fixture(source_text)?;
+    let checked = originals(&mut facts, &templates, &inputs)?;
+    let entry = selected(&mut facts, &checked, *instances.first().ok_or("instance")?)?;
+    let adapter = entry.adapter().ok_or("adapter")?;
+    assert_ne!(adapter.receiver(), adapter.instance().ty());
+    let owned =
+        types::closure::Adapter::new(&facts.types, adapter.instance(), adapter.requested())?;
+    assert_ne!(owned, adapter);
+    let (mut builder, source, _) = proved_sources(&mut facts, &checked, program, &inputs)?;
+    let report = crate::test_source::resolve(source_text, true)?;
+    let mut prepared = body::adapters::build(&mut facts, entry, builder.body(source)?)?;
+    let Owner::ClosureAdapter { signature, .. } = prepared.body.owner else {
+        return Err("owner".into());
+    };
+    prepared.body.owner = Owner::ClosureAdapter {
+        adapter: owned,
+        signature,
+    };
+    prepared.input.key = body::ir::BodyKey::ClosureAdapter(owned);
+    let error = builder
+        .push_adapter(&report, &mut facts, &checked, source, prepared)
+        .err()
+        .ok_or("owned key authorized borrowed Self ABI")?;
+    assert!(
+        error.message.contains("different materialized wrapper"),
+        "{error}"
+    );
+    Ok(())
+}
+#[test]
+fn distinct_borrowed_callers_cache_exact_self_entries() -> TestResult {
+    use std::fmt::Write as _;
+    for width in [8, 32, 128] {
+        let mut source = String::from("fn id<T>(x:T)->T{x}");
+        for index in 0..width {
+            let (bound, binding) = if index % 2 == 0 {
+                ("FnMut", "mut f")
+            } else {
+                ("FnOnce", "f")
+            };
+            write!(
+                source,
+                "fn call{index}<F:{bound}()->u8>({binding}:F)->u8{{f()}}"
+            )?;
+        }
+        source.push_str("fn main(){let n=7u8;let f=||n;");
+        for index in 0..width {
+            write!(source, "let _=id(call{index}(&f));")?;
+        }
+        source.push('}');
+        let mut report = crate::test_source::resolve(&source, true)?;
+        let analysis = crate::pipeline::analyze_source(&report)?;
+        let mut facts = analysis.facts;
+        let entry = crate::sema::entry::select(&mut report, &facts)?;
+        crate::lower::instances::inspect_roots(
+            &report,
+            &mut facts,
+            crate::lower::Roots::executable(entry),
+            analysis.prepared,
+            |facts, checked, _| -> TestResult {
+                let bodies = &checked.program().bodies;
+                let adapters: Vec<_> = bodies
+                    .iter()
+                    .filter_map(|b| {
+                        if let Owner::ClosureAdapter { adapter, .. } = b.owner {
+                            Some((b, adapter))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                assert_eq!(adapters.len(), 2);
+                assert_eq!(adapters[0].1.receiver(), adapters[1].1.receiver());
+                for (wrapper, adapter) in &adapters {
+                    assert!(matches!(
+                        facts.types.kind(adapter.receiver()),
+                        Some(types::Kind::Reference { .. })
+                    ));
+                    assert_ne!(adapter.receiver(), adapter.instance().ty());
+                    assert_eq!(
+                        wrapper.projections.len(),
+                        if adapter.requested() == crate::support::call_traits::CallTrait::FnOnce {
+                            1
+                        } else {
+                            2
+                        }
+                    );
+                }
+                let bytes: usize = bodies.iter().map(body::ir::Body::retained_bytes).sum();
+                println!(
+                    "borrowed adapters width={width} bodies={} wrappers={} bytes={bytes}",
+                    bodies.len(),
+                    adapters.len()
+                );
+                assert!(bodies.len() <= width + 8);
+                assert!(bytes <= 24_000 * width + 24_000);
+                Ok(())
+            },
+        )??;
+    }
+    Ok(())
+}

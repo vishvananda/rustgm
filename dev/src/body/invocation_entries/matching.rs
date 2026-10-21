@@ -58,6 +58,54 @@ pub(super) fn instance(
 ) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
     Matcher::new(types, universals, formal, actual).finish()
 }
+pub(super) struct Bindings {
+    universals: u32,
+    slots: HashMap<u16, RegionId>,
+    pub equalities: Vec<(RegionId, RegionId)>,
+}
+pub(super) struct Prefix {
+    pub region: RegionId,
+    pub universals: u32,
+    pub equalities: Vec<(RegionId, RegionId)>,
+}
+pub(super) fn bind_instance(
+    types: &Store,
+    universals: u32,
+    formal: TypeId,
+    actual: TypeId,
+) -> Result<Bindings, &'static str> {
+    Matcher::new(types, universals, formal, actual).bindings()
+}
+impl Bindings {
+    pub(super) fn prefix(self, actual: RegionId) -> Result<Prefix, &'static str> {
+        let slot = self
+            .slots
+            .iter()
+            .filter_map(|(&slot, &region)| (region == actual).then_some(slot))
+            .min();
+        let (region, universals) = if actual == RegionId::STATIC {
+            (actual, self.universals)
+        } else if let Some(slot) = slot {
+            (RegionId::bound(0, slot)?, self.universals)
+        } else {
+            (
+                RegionId::bound(
+                    0,
+                    u16::try_from(self.universals)
+                        .map_err(|_| "too many adapter prefix lifetimes")?,
+                )?,
+                self.universals
+                    .checked_add(1)
+                    .ok_or("adapter lifetime overflow")?,
+            )
+        };
+        Ok(Prefix {
+            region,
+            universals,
+            equalities: self.equalities,
+        })
+    }
+}
 impl<'a> Matcher<'a> {
     fn new(types: &'a Store, universals: u32, formal: TypeId, actual: TypeId) -> Self {
         Self {
@@ -70,7 +118,10 @@ impl<'a> Matcher<'a> {
             steps: 0,
         }
     }
-    fn finish(mut self) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
+    fn finish(self) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
+        self.bindings().map(|bindings| bindings.equalities)
+    }
+    fn bindings(mut self) -> Result<Bindings, &'static str> {
         while let Some((a, b, depth)) = self.work.pop() {
             self.charge(1)
                 .map_err(|_| "closure execution matching budget exceeded")?;
@@ -84,7 +135,11 @@ impl<'a> Matcher<'a> {
                 return Err("selected closure execution differs structurally from source contract");
             }
         }
-        Ok(self.equalities)
+        Ok(Bindings {
+            universals: self.universals,
+            slots: self.slots,
+            equalities: self.equalities,
+        })
     }
 }
 impl<'a> Compare<'a> for Matcher<'a> {

@@ -25,8 +25,9 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
         match body.owner {
             Owner::ClosureAdapter { adapter, signature } => write!(
                 out,
-                "closure-adapter instance={} requested={} signature={}",
+                "closure-adapter instance={} receiver={} requested={} signature={}",
                 adapter.instance().ty().0,
+                adapter.receiver().0,
                 adapter.requested().name(),
                 signature.0
             )?,

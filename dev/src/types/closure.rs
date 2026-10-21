@@ -12,12 +12,21 @@ pub struct ClosureId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Adapter {
     instance: super::instance::Instance,
+    receiver: TypeId,
     requested: crate::support::call_traits::CallTrait,
 }
 impl Adapter {
     pub(crate) fn new(
         types: &Store,
         instance: super::instance::Instance,
+        requested: crate::support::call_traits::CallTrait,
+    ) -> Result<Self, &'static str> {
+        Self::for_receiver(types, instance, instance.ty(), requested)
+    }
+    pub(crate) fn for_receiver(
+        types: &Store,
+        instance: super::instance::Instance,
+        receiver: TypeId,
         requested: crate::support::call_traits::CallTrait,
     ) -> Result<Self, &'static str> {
         let Some(super::Kind::Closure {
@@ -31,18 +40,46 @@ impl Adapter {
         let strongest = types
             .closure_kind(identity)
             .ok_or("receiver adapter requires complete call permission")?;
-        let required = CallKind::from_trait(requested);
+        let permission = if receiver == instance.ty() {
+            requested
+        } else {
+            let Some(super::Kind::Reference {
+                referent, mutable, ..
+            }) = types.kind(receiver)
+            else {
+                return Err("receiver adapter Self is not its closure or a supported reference");
+            };
+            if referent != instance.ty() {
+                return Err("nested reference receiver adapters are not implemented");
+            }
+            requested
+                .referent(mutable)
+                .ok_or("mutable references do not implement shared call permission")?
+        };
+        let required = CallKind::from_trait(permission);
         if environment == TypeId::UNIT
             || types.contains_parameters(instance.ty()) != Some(false)
-            || strongest == required
+            || types.contains_parameters(receiver) != Some(false)
+            || (receiver == instance.ty() && strongest == required)
             || !strongest.implements(required)
         {
             return Err("receiver adapter requires a compatible concrete captured closure");
         }
         Ok(Self {
             instance,
+            receiver,
             requested,
         })
+    }
+    pub(crate) fn validate(self, types: &Store) -> Result<(), &'static str> {
+        if Self::for_receiver(types, self.instance, self.receiver, self.requested)? != self {
+            return Err("receiver adapter differs from its canonical identity");
+        }
+        Ok(())
+    }
+    #[must_use]
+    pub const fn receiver(self) -> TypeId {
+        self.receiver
     }
     #[must_use]
     pub const fn instance(self) -> super::instance::Instance {

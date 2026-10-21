@@ -1,4 +1,5 @@
 //! Sparse execution entries retain canonical closure identity and receiver permission.
+mod borrowed;
 mod matching;
 #[cfg(test)]
 #[path = "../../tests/invariants/invocation_entries.rs"]
@@ -52,9 +53,8 @@ impl Entry {
         let adapter = self
             .adapter
             .ok_or("entry does not select a receiver adapter")?;
-        if crate::types::closure::Adapter::new(&facts.types, self.instance, self.requested)?
-            != adapter
-        {
+        adapter.validate(&facts.types)?;
+        if adapter.instance() != self.instance || adapter.requested() != self.requested {
             return Err("receiver adapter differs from its selected instance");
         }
         let Some(Type::Closure { identity, .. }) = facts.types.kind(self.instance.ty()) else {
@@ -78,12 +78,11 @@ impl Entry {
             .list(parameters)
             .and_then(|p| p.first())
             .ok_or("receiver adapter entry has no receiver")?;
-        if receiver_type(&facts.types, receiver)?
-            != (self.instance.ty(), CallKind::from_trait(self.requested))
-        {
+        if borrowed::subject(&facts.types, receiver, self.requested)? != adapter.receiver() {
             return Err("receiver adapter entry has a different physical receiver");
         }
-        let execution = requested_execution(&mut facts.types, source, self.requested)?;
+        let borrowed::Matched { execution, .. } =
+            borrowed::execution(&mut facts.types, source, adapter)?;
         matching::execution(&facts.types, execution, self.execution)?;
         Ok((source, execution))
     }
@@ -131,7 +130,10 @@ pub(crate) fn select(
             .get(receiver.0 as usize)
             .ok_or("invalid closure call receiver")?
             .ty;
-        let (ty, permission) = receiver_type(&facts.types, receiver)?;
+        let subject = borrowed::subject(&facts.types, receiver, kind)?;
+        let Some(ty) = borrowed::leaf(&facts.types, subject)? else {
+            continue;
+        };
         let Some(Type::Closure {
             identity,
             environment,
@@ -142,14 +144,6 @@ pub(crate) fn select(
         };
         if environment == TypeId::UNIT {
             continue;
-        }
-        let required = CallKind::from_trait(kind);
-        let strongest = facts
-            .types
-            .closure_kind(identity)
-            .ok_or("captured closure permission is unresolved")?;
-        if permission != required || !strongest.implements(required) {
-            return Err("captured closure receiver differs from its selected call permission");
         }
         let source = *facts
             .closures
@@ -163,9 +157,21 @@ pub(crate) fn select(
                 "generic captured closure execution requires environment lifetime substitution",
             );
         }
-        let execution = requested_execution(&mut facts.types, source, kind)?;
+        let instance = Instance::closure(&facts.types, ty)?;
+        let adapter = borrowed::adapter(&facts.types, instance, subject, kind)?;
+        let borrowed::Matched {
+            execution,
+            mut equalities,
+        } = if let Some(adapter) = adapter {
+            borrowed::execution(&mut facts.types, source, adapter)?
+        } else {
+            borrowed::Matched {
+                execution: validate_execution(&facts.types, source)?,
+                equalities: Vec::new(),
+            }
+        };
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;
-        let equalities = matching::execution(&facts.types, execution, selected)?;
+        equalities.extend(matching::execution(&facts.types, execution, selected)?);
         contract
             .obligations
             .extend(equalities.into_iter().map(|pair| Obligation {
@@ -173,14 +179,11 @@ pub(crate) fn select(
                 kind: Kind::Equality(pair),
             }));
         let index = ValueId(u32::try_from(index).map_err(|_| "too many closure call values")?);
-        let instance = Instance::closure(&facts.types, ty)?;
         let entry = Entry {
             instance,
             requested: kind,
             execution: selected,
-            adapter: (strongest != required)
-                .then(|| crate::types::closure::Adapter::new(&facts.types, instance, kind))
-                .transpose()?,
+            adapter,
         };
         let entries = body
             .closure_calls
@@ -244,6 +247,31 @@ pub(crate) fn requested_execution(
     })?;
     execution.receiver = required;
     Ok(execution)
+}
+pub(crate) fn validate_receiver(
+    types: &crate::types::Store,
+    signature: TypeId,
+    self_ty: TypeId,
+    adapter: crate::types::closure::Adapter,
+) -> Result<(), &'static str> {
+    adapter.validate(types)?;
+    let Some(Type::Function {
+        parameters,
+        bound_regions,
+        ..
+    }) = types.kind(signature)
+    else {
+        return Err("adapter receiver has no execution signature");
+    };
+    let receiver = *types
+        .list(parameters)
+        .and_then(|inputs| inputs.first())
+        .ok_or("adapter receiver has no physical input")?;
+    if borrowed::subject(types, receiver, adapter.requested())? != self_ty {
+        return Err("adapter execution does not retain its receiver Self");
+    }
+    matching::instance(types, bound_regions, self_ty, adapter.receiver())?;
+    Ok(())
 }
 pub(crate) fn validate_instance(
     types: &crate::types::Store,
@@ -355,26 +383,6 @@ pub(crate) fn validate_execution(
     }
     Ok(execution)
 }
-fn receiver_type(
-    types: &crate::types::Store,
-    ty: TypeId,
-) -> Result<(TypeId, CallKind), &'static str> {
-    let ty = types.storage_head(ty)?;
-    Ok(match types.kind(ty) {
-        Some(Type::Reference {
-            referent, mutable, ..
-        }) => (
-            types.storage_head(referent)?,
-            if mutable {
-                CallKind::Mutable
-            } else {
-                CallKind::Shared
-            },
-        ),
-        _ => (ty, CallKind::Once),
-    })
-}
-
 fn call_signature(
     types: &mut crate::types::Store,
     receiver: TypeId,

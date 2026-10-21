@@ -19,6 +19,7 @@ pub(crate) struct Template {
     source: crate::resolve::unit::NodeKey,
     public: TypeId,
     original: TypeId,
+    receiver: TypeId,
     signature: TypeId,
 }
 pub(crate) struct Prepared {
@@ -36,12 +37,8 @@ impl Template {
         let Some(Kind::Closure { identity, .. }) = types.kind(self.adapter.instance().ty()) else {
             return Err("adapter template has no canonical closure instance");
         };
-        if crate::types::closure::Adapter::new(
-            types,
-            self.adapter.instance(),
-            self.adapter.requested(),
-        )? != self.adapter
-            || original.instance.is_some()
+        self.adapter.validate(types)?;
+        if original.instance.is_some()
             || original.source != self.source
             || !matches!(original.owner, Owner::Closure { identity: actual, signature, execution: Some(execution) }
                 if identity == actual && signature == self.public && execution == self.original)
@@ -52,6 +49,12 @@ impl Template {
             types,
             self.original,
             self.adapter.instance(),
+        )?;
+        super::invocation_entries::validate_receiver(
+            types,
+            self.signature,
+            self.receiver,
+            self.adapter,
         )?;
         if body.source != self.source
             || body.instance != Some(self.adapter.instance())
@@ -113,6 +116,7 @@ pub(crate) fn build(
         source: source.semantic_source(),
         public: source.signature,
         original: canonical.signature,
+        receiver: execution.self_ty,
         signature: execution.signature,
     };
     template.validate(&facts.types, original, &writer.body)?;
@@ -207,6 +211,7 @@ impl Writer {
     ) -> Result<ValueId, &'static str> {
         let region = RegionId(1);
         let place = self.receiver(types, parameters[0], execution.receiver)?;
+        let place = self.referent(types, place, execution.self_ty, canonical.self_ty)?;
         let receiver = types.intern(Kind::Reference {
             referent: canonical.self_ty,
             mutable: canonical.receiver == CallKind::Mutable,
@@ -269,6 +274,39 @@ impl Writer {
         self.body.values.push(Value { ty, kind });
         self.statement(Action::Evaluate(id));
         Ok(id)
+    }
+    fn referent(
+        &mut self,
+        types: &crate::types::Store,
+        place: Place,
+        self_ty: TypeId,
+        closure: TypeId,
+    ) -> Result<Place, &'static str> {
+        if self_ty == closure {
+            return Ok(place);
+        }
+        let Some(Kind::Reference {
+            referent,
+            mutable,
+            region,
+        }) = types.kind(self_ty)
+        else {
+            return Err("borrowed receiver Self is not a reference");
+        };
+        if referent != closure {
+            return Err("borrowed receiver Self selects another closure");
+        }
+        let id = ProjectionId(
+            u32::try_from(self.body.projections.len())
+                .map_err(|_| "too many adapter projections")?,
+        );
+        self.body.projections.push(Projection {
+            base: place,
+            kind: ProjectionKind::Dereference { mutable, region },
+            ty: referent,
+        });
+        self.statement(Action::Project(id));
+        Ok(Place::Projection(id))
     }
     fn receiver(
         &mut self,

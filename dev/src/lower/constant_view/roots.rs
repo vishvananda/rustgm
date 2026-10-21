@@ -121,8 +121,9 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
         entries.sort_unstable_by_key(|(id, _)| id.0);
         let owner = match body.owner {
             Owner::ClosureAdapter { adapter, .. } => format!(
-                "closure-adapter:{}:{}",
+                "closure-adapter:{}:{}:{}",
                 adapter.instance().ty().0,
+                adapter.receiver().0,
                 adapter.requested().name()
             ),
             Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
@@ -160,7 +161,7 @@ fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
             adapter.instance().ty().0,
             adapter.requested() as u32,
             0,
-            0,
+            adapter.receiver().0,
             0,
         ),
         BodyKey::Declaration(id) => (0, id.0, 0, 0, 0, 0),

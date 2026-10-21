@@ -94,35 +94,51 @@
       "name": "shared-reference-to-once",
       "path": "tests/spec/receiver-adapters/shared-reference-to-once.rs",
       "source_sha256": "64266a50b48b270aea8095349e8c2db204f52031ab16db59f193622e3330d8e0",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/shared-reference-to-once.rs"
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/shared-reference-to-once.rs",
+      "supersedes": {
+        "baseline": "39dd10ca",
+        "previous": {
+          "exit_status": 1,
+          "boundary": true
+        },
+        "fixture_unchanged": true
+      }
     },
     {
       "name": "mutable-reference-to-once",
       "path": "tests/spec/receiver-adapters/mutable-reference-to-once.rs",
       "source_sha256": "43d2cb1d8be8e4f8b09afe51f57c05749739725ed3bb0c7b3d36d0972fa1e2be",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-reference-to-once.rs"
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-reference-to-once.rs",
+      "supersedes": {
+        "baseline": "39dd10ca",
+        "previous": {
+          "exit_status": 1,
+          "boundary": true
+        },
+        "fixture_unchanged": true
+      }
     },
     {
       "name": "once-keeps-external-reference",
@@ -162,18 +178,26 @@
       "name": "mutable-borrow-preserves-environment",
       "path": "tests/spec/receiver-adapters/mutable-borrow-preserves-environment.rs",
       "source_sha256": "ad7edf3709fb7e772cc20f08f4e04c3a83bbf2f419dad54cabd59b9eaec6a09e",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-borrow-preserves-environment.rs"
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-borrow-preserves-environment.rs",
+      "supersedes": {
+        "baseline": "39dd10ca",
+        "previous": {
+          "exit_status": 1,
+          "boundary": true
+        },
+        "fixture_unchanged": true
+      }
     },
     {
       "name": "quantified-identity",
@@ -383,6 +407,211 @@
       "features": [
         "pa24.closures"
       ]
+    },
+    {
+      "name": "reference-shared-call",
+      "path": "tests/spec/receiver-adapters/reference-shared-call.rs",
+      "source_sha256": "d034e81d453b7dc1f622a30f9f4464c0b97f6094d3c780c666006e135bf599aa",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-shared-mut-call",
+      "path": "tests/spec/receiver-adapters/reference-shared-mut-call.rs",
+      "source_sha256": "47ce06d87e5c228be759ab503a498708da8802298eed7df7d366a21031bc4a66",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-mut-shared-reject",
+      "path": "tests/spec/receiver-adapters/reference-mut-shared-reject.rs",
+      "source_sha256": "c5142cc03ee318d9fb6b542e2f6c485e5e45aa52af7d7416d4b7fb9c4b7197cb",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-shared-mut-reject",
+      "path": "tests/spec/receiver-adapters/reference-shared-mut-reject.rs",
+      "source_sha256": "3626c353aeeff39abcd2d5496ba055b964b4ba22f59124222920203e583065ae",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-shared-once-reject",
+      "path": "tests/spec/receiver-adapters/reference-shared-once-reject.rs",
+      "source_sha256": "51af5258c38e526a64a7890b6191172bb6600e214b9dd7b0bdd1d3a61e960be0",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-mut-once-reject",
+      "path": "tests/spec/receiver-adapters/reference-mut-once-reject.rs",
+      "source_sha256": "c01569fb08a7ec97a7a83edb307726308699688967ec841ad1204792446d2388",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-shared-external-result",
+      "path": "tests/spec/receiver-adapters/reference-shared-external-result.rs",
+      "source_sha256": "783a9b2957f1682a412a5140bb38164ba05dd0e1b8a0c87c42cb06e24174606d",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-mut-external-result",
+      "path": "tests/spec/receiver-adapters/reference-mut-external-result.rs",
+      "source_sha256": "0069d6d45434060ba4abc09feae337548697f3ad4a9454ea3cba6e2fa7323e76",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-shared-owned-drop",
+      "path": "tests/spec/receiver-adapters/reference-shared-owned-drop.rs",
+      "source_sha256": "73bf2b2e2685266b77d9a481f887f10c814429f6cd1d72e6caec44a19e71f17d",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-mut-owned-drop",
+      "path": "tests/spec/receiver-adapters/reference-mut-owned-drop.rs",
+      "source_sha256": "0a6e6489e61fcc66dc90734b2625fc588c4690a38ef7394e9dbbb20dce56e9c8",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-static-escape",
+      "path": "tests/spec/receiver-adapters/reference-static-escape.rs",
+      "source_sha256": "405738bc1654880e6e64f23c84950dbd45efd21a77a343552b36cf360aa42642",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation"
+    },
+    {
+      "name": "reference-nested-boundary",
+      "path": "tests/spec/receiver-adapters/reference-nested-boundary.rs",
+      "source_sha256": "fbd01947aec9d675e576543bd31d80e4967e08cbb4c840a87747f80e5cebf8ff",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "hypothesis": "declared before borrowed receiver implementation",
+      "boundary_reason": "Nested reference Self is outside this first borrowed receiver slice."
     }
   ]
 }

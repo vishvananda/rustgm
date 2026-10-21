@@ -17,6 +17,18 @@ impl CallTrait {
         }
     }
 
+    /// Canonical blanket reference implementations require this referent permission.
+    pub(crate) const fn referent(self, mutable: bool) -> Option<Self> {
+        if mutable {
+            match self {
+                Self::Fn => None,
+                Self::FnMut | Self::FnOnce => Some(Self::FnMut),
+            }
+        } else {
+            Some(Self::Fn)
+        }
+    }
+
     #[must_use]
     pub const fn parent(self) -> Option<Self> {
         match self {

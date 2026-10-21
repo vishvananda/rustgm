@@ -6,9 +6,8 @@ impl Context<'_> {
         entry: crate::body::invocation_entries::Entry,
     ) -> Result<SymbolId, &'static str> {
         let adapter = entry.adapter().ok_or("missing selected receiver adapter")?;
-        if crate::types::closure::Adapter::new(self.types, entry.instance(), entry.requested())?
-            != adapter
-        {
+        adapter.validate(self.types)?;
+        if adapter.instance() != entry.instance() || adapter.requested() != entry.requested() {
             return Err("receiver adapter demand differs from selected identity");
         }
         let &index = self
