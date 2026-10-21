@@ -1,6 +1,8 @@
 //! Sparse execution entries retain canonical closure identity and receiver permission.
 mod borrowed;
+mod candidates;
 mod matching;
+pub(crate) use candidates::select_execution;
 pub(crate) use matching::source_bindings;
 pub(crate) struct SourceBindings {
     pub original: u32,
@@ -137,77 +139,14 @@ pub(crate) fn select(
             .get(receiver.0 as usize)
             .ok_or("invalid closure call receiver")?
             .ty;
-        let subject = borrowed::subject(&facts.types, receiver, kind)?;
-        let Some(ty) = borrowed::leaf(&facts.types, subject)? else {
+        // Keep the noncaptured path free of additional interned call signatures.
+        if candidates::captured(&facts.types, receiver, kind)?.is_none() {
             continue;
-        };
-        let Some(Type::Closure {
-            identity,
-            environment,
-            ..
-        }) = facts.types.kind(ty)
-        else {
-            continue;
-        };
-        if environment == TypeId::UNIT {
-            continue;
-        }
-        let source = *facts
-            .closures
-            .identity(identity)
-            .ok_or("missing captured closure source")?;
-        let generic = source
-            .owner
-            .is_some_and(|owner| facts.generics.has_parameters(owner));
-        let instance = Instance::closure(&facts.types, ty)?;
-        let adapter = borrowed::adapter(&facts.types, instance, subject, kind)?;
-        if generic && adapter.is_some() {
-            return Err("generic receiver adapters require specialized source proofs");
-        }
-        let borrowed::Matched {
-            mut execution,
-            mut equalities,
-        } = if let Some(adapter) = adapter {
-            borrowed::execution(&mut facts.types, source, adapter)?
-        } else {
-            borrowed::Matched {
-                execution: validate_execution(&facts.types, source)?,
-                equalities: Vec::new(),
-            }
-        };
-        let mut projection = None;
-        if generic {
-            let prepared = crate::body::instantiate::closure_execution(facts, instance, execution)?;
-            execution = prepared.execution;
-            projection = prepared.proof;
         }
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;
-        let bindings = matching::execution_bindings(&facts.types, execution, selected)?;
-        if let Some(proof) = projection {
-            crate::body::instantiate::retain_closure_proof(
-                facts,
-                contract,
-                proof,
-                bindings.slots.iter().map(|(&slot, &actual)| (slot, actual)),
-            )?;
-        }
-        if generic {
-            require_conditions(facts, identity, &bindings, body.source, contract)?;
-        }
-        equalities.extend(bindings.equalities);
-        contract
-            .obligations
-            .extend(equalities.into_iter().map(|pair| Obligation {
-                source: body.source,
-                kind: Kind::Equality(pair),
-            }));
+        let entry = select_execution(facts, contract, body.source, kind, receiver, selected)?
+            .ok_or("captured closure selection changed")?;
         let index = ValueId(u32::try_from(index).map_err(|_| "too many closure call values")?);
-        let entry = Entry {
-            instance,
-            requested: kind,
-            execution: selected,
-            adapter,
-        };
         let entries = body
             .closure_calls
             .get_or_insert_with(|| Box::new(Entries::default()));

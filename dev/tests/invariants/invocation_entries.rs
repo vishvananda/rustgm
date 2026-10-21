@@ -236,3 +236,6 @@ fn prefix_mapping_cannot_export_a_local_public_call_binder() -> Result {
 mod caller_requirements;
 #[path = "invocation_entries/witness_debts.rs"]
 mod witness_debts;
+
+#[path = "invocation_entries/entry_headers.rs"]
+mod entry_headers;
