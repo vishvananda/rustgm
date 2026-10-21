@@ -1,6 +1,7 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 mod export;
 mod imported_values;
+mod type_transport;
 use super::{foreign, model::Declarations};
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
@@ -9,7 +10,7 @@ use crate::{
         linkage::{Linkage as Kind, Naming},
     },
     syntax::item::Safety,
-    types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId, callable::Convention},
+    types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId},
 };
 pub use export::{Exports, export};
 use std::collections::{HashMap, HashSet};
@@ -20,8 +21,20 @@ pub struct Linkage {
     prefix: Option<String>,
     symbols: HashMap<DefId, String>,
     imported_constants: HashSet<DefId>,
+    import_work: ImportWork,
+}
+/// Exact signature graph and root visits during one source-free import pass.
+#[derive(Clone, Copy, Default)]
+pub struct ImportWork {
+    pub signatures: usize,
+    pub type_nodes: usize,
+    pub roots: usize,
 }
 impl Linkage {
+    #[must_use]
+    pub const fn import_work(&self) -> ImportWork {
+        self.import_work
+    }
     /// Install one explicit local identity without changing imported contracts.
     /// # Errors
     /// Rejects a different identity after naming has been published.
@@ -59,27 +72,8 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
     };
-    let linkage = facts.crates.get_or_insert_default();
-    let registry = facts.foreign.get_or_insert_default();
     for (definition, function) in imported.functions() {
-        let parameters: Vec<_> = function
-            .signature()
-            .parameters()
-            .iter()
-            .copied()
-            .map(scalar)
-            .collect();
-        let parameters = facts.types.intern_list(&parameters).map_err(error)?;
-        let signature = facts
-            .types
-            .intern(Type::Function {
-                bound_regions: 0,
-                parameters,
-                result: scalar(function.signature().result()),
-                unsafe_: function.signature().unsafe_(),
-                convention: Convention::RUST,
-            })
-            .map_err(error)?;
+        let signature = type_transport::import(facts, function.signature())?;
         let ty = facts
             .types
             .intern(Type::FunctionItem {
@@ -89,6 +83,8 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
             })
             .map_err(error)?;
         facts.definitions[definition.0 as usize] = Some(ty);
+        let linkage = facts.crates.get_or_insert_default();
+        let registry = facts.foreign.get_or_insert_default();
         let naming = match function.symbol() {
             Symbol::Rust => {
                 linkage

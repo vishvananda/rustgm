@@ -1,4 +1,6 @@
 //! Untrusted metadata is bounded, canonical and independent of local arena order.
+#[path = "metadata_codec/borrowed.rs"]
+mod borrowed;
 #[path = "metadata_codec/scalar_values.rs"]
 mod scalar_values;
 use rustgm::support::crates::{

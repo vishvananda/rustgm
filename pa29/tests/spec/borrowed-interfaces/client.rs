@@ -1,0 +1,4 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(n:u8)->u8{1/n}
+fn retain<'a>(value:&'a u8)->&'a u8{let middle=value;one::deep(&middle)}
+fn inverse(value:f64)->f64{1.0/value}
+fn main(){let first=3u8;let second=9u8;let mut count=4u32;let result=one::update(&mut count,3);check(*result==7);check(*one::identity(&first)==3);check(*two::nested::identity(&second)==9);check(*one::choose(&first,&second)==3);check(*two::nested::choose(&first,&second)==9);check(*one::constant()==7);check(*unsafe{one::guarded(&first)}==3);check(*retain(&first)==3);let mut byte=8u8;check(*one::reborrow(&mut byte)==8);let f:for<'a>fn(&'a u8)->&'a u8=one::identity;check(*f(&first)==3);let empty=();check(one::unit(&empty) as *const () as usize !=0);let wide=340282366920938463463374607431768211455u128;check(*one::wide(&wide)==wide);let real=-0.0f64;check(inverse(*one::real(&real)) == -inverse(0.0));}

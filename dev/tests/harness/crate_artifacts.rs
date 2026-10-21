@@ -34,6 +34,9 @@ pub fn build(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
 pub fn build_values(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
     build_sources(tag, "values", "values")
 }
+pub fn build_borrowed(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
+    build_sources(tag, "borrowed-interfaces", "borrowed")
+}
 fn build_sources(
     tag: &str,
     family: &'static str,

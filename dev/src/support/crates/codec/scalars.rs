@@ -19,9 +19,10 @@ pub(super) fn decode(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
     functions: usize,
+    allow_empty: bool,
 ) -> Result<Vec<Constant>, &'static str> {
     let count = input.count(MAX_FUNCTIONS.saturating_sub(functions), 30)?;
-    if count == 0 {
+    if count == 0 && !allow_empty {
         return Err("empty scalar value profile is not canonical");
     }
     let mut constants = Vec::with_capacity(count);

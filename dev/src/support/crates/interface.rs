@@ -1,12 +1,12 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, MAX_NAME_BYTES,
+    MAX_FUNCTIONS, MAX_NAME_BYTES, Signature,
 };
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum Scalar {
     Unit = 0,
@@ -31,43 +31,6 @@ pub enum Scalar {
 pub enum Symbol {
     Rust,
     Exact(Arc<str>),
-}
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Signature {
-    parameters: Box<[Scalar]>,
-    result: Scalar,
-    unsafe_: bool,
-}
-impl Signature {
-    /// Signatures have Rust ABI; const/generic bodies are outside this wire profile.
-    /// # Errors
-    /// Rejects oversized signatures and non-scalar parameters.
-    pub fn new(
-        parameters: Vec<Scalar>,
-        result: Scalar,
-        unsafe_: bool,
-    ) -> Result<Self, &'static str> {
-        if parameters.len() > 256 || parameters.contains(&Scalar::Unit) {
-            return Err("unsupported metadata scalar parameters");
-        }
-        Ok(Self {
-            parameters: parameters.into_boxed_slice(),
-            result,
-            unsafe_,
-        })
-    }
-    #[must_use]
-    pub fn parameters(&self) -> &[Scalar] {
-        &self.parameters
-    }
-    #[must_use]
-    pub const fn result(&self) -> Scalar {
-        self.result
-    }
-    #[must_use]
-    pub const fn unsafe_(&self) -> bool {
-        self.unsafe_
-    }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
@@ -174,8 +137,7 @@ impl Interface {
             }
             components = components
                 .saturating_add(function.definition.path().len())
-                .saturating_add(function.signature.parameters.len())
-                .saturating_add(1);
+                .saturating_add(function.signature.atoms());
             bytes = bytes.saturating_add(
                 function
                     .definition

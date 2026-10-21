@@ -184,3 +184,15 @@ fn function_only_profile_keeps_its_original_exact_encoding()
     assert_eq!(crates::encode(&interface)?, expected);
     Ok(())
 }
+
+#[test]
+fn named_scalar_profile_keeps_its_original_exact_encoding() -> Result<(), Box<dyn std::error::Error>>
+{
+    let owner = CrateIdentity::new("x", "v")?;
+    let value = constant(&owner, "C", Scalar::U8, 7)?;
+    let interface = Interface::with_constants(owner, vec![], vec![], vec![value])?;
+    let expected=b"RGMETA\r\n\x01\0\0\0\x01\x01\0\0\0x\x01\0\0\0v\0\0\0\0\0\0\0\0\x01\0\0\0\0\0\0\0\x01\x02\x03\x01\0\x01\0\0\0C\x07\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    assert_eq!(crates::encode(&interface)?, expected);
+    assert_eq!(crates::decode(expected)?, interface);
+    Ok(())
+}

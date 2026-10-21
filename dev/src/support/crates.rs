@@ -4,11 +4,13 @@ mod dependencies;
 mod identity;
 mod interface;
 mod scalar_value;
+mod type_graph;
 pub use codec::{SCHEMA, decode, encode};
 pub use dependencies::{Dependencies, Dependency};
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
-pub use interface::{Function, Interface, Scalar, Signature, Symbol};
+pub use interface::{Function, Interface, Scalar, Symbol};
 pub use scalar_value::{Constant, ScalarValue};
+pub use type_graph::{Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 
 pub(crate) const MAX_BYTES: usize = 16_000_000;
 pub(crate) const MAX_FUNCTIONS: usize = 100_000;

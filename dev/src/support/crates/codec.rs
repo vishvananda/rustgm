@@ -1,10 +1,11 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
 mod reader;
 mod scalars;
+mod signatures;
 mod writer;
 use super::{
     CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, Scalar, Signature, Symbol,
+    MAX_FUNCTIONS, Scalar, Symbol,
 };
 use reader::Reader;
 use writer::Writer;
@@ -16,6 +17,7 @@ const TARGET_LINUX_X86_64: u8 = 0;
 const LANGUAGE_RUST_1_98_EDITION_2024: u8 = 0;
 const PROFILE_SCALAR_RUST_FUNCTIONS: u8 = 0;
 const PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES: u8 = 1;
+const PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES: u8 = 2;
 const PROFILE: [u8; 3] = [
     TARGET_LINUX_X86_64,
     LANGUAGE_RUST_1_98_EDITION_2024,
@@ -30,7 +32,13 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.bytes(MAGIC)?;
     out.u16(SCHEMA)?;
     out.bytes(&PROFILE[..2])?;
-    out.u8(if interface.constants().is_empty() {
+    let typed = interface
+        .functions()
+        .iter()
+        .any(|function| !function.signature().is_scalar());
+    out.u8(if typed {
+        PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES
+    } else if interface.constants().is_empty() {
         PROFILE_SCALAR_RUST_FUNCTIONS
     } else {
         PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES
@@ -42,14 +50,14 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     }
     out.u32(interface.functions().len())?;
     for function in interface.functions() {
-        encode_function(&mut out, function)?;
+        encode_function(&mut out, function, typed)?;
     }
-    if !interface.constants().is_empty() {
+    if typed || !interface.constants().is_empty() {
         scalars::encode(&mut out, interface.constants())?;
     }
     Ok(out.finish())
 }
-fn encode_function(out: &mut Writer, function: &Function) -> Result<(), &'static str> {
+fn encode_function(out: &mut Writer, function: &Function, typed: bool) -> Result<(), &'static str> {
     out.u32(0)?; // Owner ordinal zero is this crate, never a local DefId.
     out.bytes(&[1, 1, 1])?; // Value namespace, Function kind, Export linkage.
     out.u8(u8::from(function.signature().unsafe_()))?;
@@ -62,14 +70,7 @@ fn encode_function(out: &mut Writer, function: &Function) -> Result<(), &'static
             out.string(name)?;
         }
     }
-    out.u16(
-        u16::try_from(function.signature().parameters().len())
-            .map_err(|_| "metadata signature exceeds 16 bits")?,
-    )?;
-    for &parameter in function.signature().parameters() {
-        out.u8(parameter as u8)?;
-    }
-    out.u8(function.signature().result() as u8)
+    signatures::encode(out, function.signature(), typed)
 }
 /// Decode and validate all identities, counts and profile rules before inference.
 /// # Errors
@@ -83,7 +84,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         return Err("metadata magic or schema mismatch");
     }
     let profile = input.bytes(3)?;
-    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES {
+    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES {
         return Err("metadata target, language or profile mismatch");
     }
     let identity = input.identity()?;
@@ -97,8 +98,14 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     }
     let count = input.count(MAX_FUNCTIONS, 21)?;
     let mut functions = Vec::with_capacity(count);
+    let typed = profile[2] == PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES;
     for _ in 0..count {
-        functions.push(decode_function(&mut input, &identity, dependencies.len())?);
+        functions.push(decode_function(
+            &mut input,
+            &identity,
+            dependencies.len(),
+            typed,
+        )?);
     }
     if functions
         .windows(2)
@@ -106,10 +113,17 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     {
         return Err("metadata definitions are duplicate or noncanonical");
     }
-    let constants = if profile[2] == PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES {
-        scalars::decode(&mut input, &identity, functions.len())?
-    } else {
+    if typed
+        && functions
+            .iter()
+            .all(|function| function.signature().is_scalar())
+    {
+        return Err("borrowed metadata profile requires a typed signature");
+    }
+    let constants = if profile[2] == PROFILE_SCALAR_RUST_FUNCTIONS {
         Vec::new()
+    } else {
+        scalars::decode(&mut input, &identity, functions.len(), typed)?
     };
     if !input.done() {
         return Err("trailing metadata bytes");
@@ -120,6 +134,7 @@ fn decode_function(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
     dependencies: usize,
+    typed: bool,
 ) -> Result<Function, &'static str> {
     input.owner(dependencies)?;
     if input.bytes(3)? != [1, 1, 1] {
@@ -141,16 +156,7 @@ fn decode_function(
         1 => Symbol::Exact(input.string(4096)?.into()),
         _ => return Err("unknown metadata symbol policy"),
     };
-    let count = usize::from(input.u16()?);
-    if count > 256 || count.saturating_add(1) > input.remaining() {
-        return Err("invalid metadata parameter count");
-    }
-    input.atoms(count + 1)?;
-    let mut parameters = Vec::with_capacity(count);
-    for _ in 0..count {
-        parameters.push(input.scalar()?);
-    }
-    let signature = Signature::new(parameters, input.scalar()?, flags == 1)?;
+    let signature = signatures::decode(input, typed, flags == 1)?;
     Function::new(
         ExternalDef::new(owner.clone(), path, ExternalKind::Function)?,
         signature,

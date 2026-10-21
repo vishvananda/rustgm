@@ -116,7 +116,7 @@ fn unsupported_public_contracts_are_diagnosed_and_unused_bodies_still_checked()
         "pub const fn f(n:u32)->u32{n}",
         "pub extern \"C\" fn f(n:u32)->u32{n}",
         "#[target_feature(enable=\"sse2\")]pub unsafe fn f(n:u32)->u32{n}",
-        "pub fn f(n:&u32)->u32{*n}",
+        "pub fn f<'a:'b,'b>(n:&'a u32)->&'b u32{n}",
         "pub struct S;",
         "pub mod empty{}",
         "mod hidden{pub fn f(n:u32)->u32{n}}pub use hidden::f;",

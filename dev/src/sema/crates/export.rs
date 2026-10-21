@@ -19,7 +19,7 @@ use crate::{
         ast::Kind as Syntax,
         item::{ItemKind, Safety},
     },
-    types::{Kind as Type, Primitive, TypeId, callable::Convention},
+    types::{Kind as Type, Primitive, TypeId, arguments::Argument},
 };
 
 pub struct Exports {
@@ -199,13 +199,35 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
     };
     if flags.constant
         || flags.asynchronous
-        || ast
-            .list(item.generics)
-            .iter()
-            .any(|node| report.package.unit(key.file).configured.active[node.0 as usize])
+        || facts
+            .generics
+            .parameters
+            .get(&definition)
+            .is_some_and(|parameters| {
+                parameters
+                    .iter()
+                    .any(|parameter| !matches!(parameter.argument, Argument::Lifetime(_)))
+            })
     {
         return Err(error(
             "const, async and generic exports are outside the scalar metadata profile",
+        ));
+    }
+    if facts
+        .lifetimes
+        .functions
+        .get(&definition)
+        .is_some_and(|scheme| {
+            scheme.captures != 0 || !scheme.early.is_empty() || !scheme.bounds.is_empty()
+        })
+        || facts
+            .generics
+            .predicates
+            .get(&definition)
+            .is_some_and(|predicates| !predicates.is_empty())
+    {
+        return Err(error(
+            "early lifetime parameters and explicit bounds are outside the metadata profile",
         ));
     }
     let ty =
@@ -213,34 +235,14 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
     let Some(Type::FunctionItem { signature, .. }) = facts.types.kind(ty) else {
         return Err(error("missing export callable"));
     };
-    let Some(Type::Function {
-        bound_regions: 0,
-        parameters,
-        result,
-        unsafe_,
-        convention: Convention::RUST,
-    }) = facts.types.kind(signature)
-    else {
-        return Err(error(
-            "export calling convention is outside the scalar metadata profile",
-        ));
-    };
-    let parameters = facts
-        .types
-        .list(parameters)
-        .ok_or_else(|| error("missing export parameters"))?
-        .iter()
-        .map(|&ty| scalar(facts, ty))
-        .collect::<Result<_, _>>()?;
-    let signature_wire =
-        Signature::new(parameters, scalar(facts, result)?, unsafe_).map_err(error)?;
+    let signature_wire = super::type_transport::export(facts, signature)?;
     Ok(Callable {
         signature,
         wire: signature_wire,
         safety: flags.safety,
     })
 }
-fn scalar(facts: &Declarations, ty: TypeId) -> Result<Scalar, Error> {
+pub(super) fn scalar(facts: &Declarations, ty: TypeId) -> Result<Scalar, Error> {
     if ty == TypeId::UNIT {
         return Ok(Scalar::Unit);
     }

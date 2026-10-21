@@ -30,16 +30,22 @@ bridge. Supply metadata for every dependency; repeat `--extern ALIAS=FILE` for
 the complete graph. Metadata is written only after the ordinary semantic, body,
 ownership and lowering gates succeed. `--crate-name` alone retains legacy names.
 
-This profile exports public nongeneric, nonconst Rust functions with scalar
+Profiles zero and one export public nongeneric, nonconst Rust functions with scalar
 parameters/results, nested public module paths and explicit unsafe permission,
 and completed closed scalar named constants. Constant values retain exact integer
 and floating bits, without imported initializer bodies or runtime global storage.
-Private checked generic instances remain local to each crate. Exposed nominals,
-references, generic/const/async functions, target-feature contracts, other ABIs,
+Profile two additionally transports scalar/reference function signatures with
+explicit late-bound lifetime slots, nested shared/mutable references and static
+output references. It retains ordinary unsafe permission and call/borrow checks;
+it exports no function bodies or const-call permission. Private checked generic
+instances remain local to each crate. Exposed nominals, early lifetime bounds,
+type/const-generic or const/async functions, target-feature contracts, other ABIs,
 public reexports and empty public modules diagnose profile boundaries. Generic
-body exports, aggregate/reference values and allocation graphs, and the full assignment contract remain
-unfinished. See `docs/pa29-scalar-metadata.md`, `docs/pa29-import-remapping.md` and
-`docs/pa29-scalar-linking.md` and `docs/pa29-scalar-values.md`. The assignment remains planned.
+body exports, aggregate/reference values and allocation graphs, and the full
+assignment contract remain unfinished. See `docs/pa29-scalar-metadata.md`,
+`docs/pa29-import-remapping.md`,
+`docs/pa29-scalar-linking.md`, `docs/pa29-scalar-values.md` and
+`docs/pa29-borrowed-signatures.md`. The assignment remains planned.
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error

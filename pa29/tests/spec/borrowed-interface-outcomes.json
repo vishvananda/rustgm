@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "cases": [
+    {
+      "source": "borrowed-interfaces/client.rs",
+      "accepted": true,
+      "role": "consumer",
+      "source_sha256": "74240733ca88f084e7a12d27547abb0d7defff795b4b1d605efa9a3438f5fec1"
+    },
+    {
+      "source": "borrowed-interfaces/const-call.rs",
+      "accepted": false,
+      "role": "consumer",
+      "source_sha256": "6cd4d7cdd877f5a0771de18079ab6c826ebdd4ee1d2a87ed9225dcce849945bf"
+    },
+    {
+      "source": "borrowed-interfaces/dangling.rs",
+      "accepted": false,
+      "role": "consumer",
+      "source_sha256": "88f84738e743c7cec9f5b0690401736c2bdc05461b12392ff777e750b7d0a077"
+    },
+    {
+      "source": "borrowed-interfaces/early-bound.rs",
+      "accepted": true,
+      "role": "library",
+      "source_sha256": "cc357b2b3016eb3238fffed0477ec16a3e4a3b9770205155956b94e3d4371fca",
+      "supported": false,
+      "boundary": "early lifetime parameters and explicit bounds are outside the metadata profile"
+    },
+    {
+      "source": "borrowed-interfaces/exclusive-result.rs",
+      "accepted": false,
+      "role": "consumer",
+      "source_sha256": "8fb5a923e8e86caacaa4e84ff58d2f3b3140c009bb7c978b473aac5709e8ee75"
+    },
+    {
+      "source": "borrowed-interfaces/first.rs",
+      "accepted": true,
+      "role": "library",
+      "source_sha256": "df6bbd6058231715bb1324b077b0e34560cd63607be78fc58f925049fa8152fe"
+    },
+    {
+      "source": "borrowed-interfaces/output-only.rs",
+      "accepted": true,
+      "role": "library",
+      "supported": false,
+      "boundary": "early lifetime parameters and explicit bounds are outside the metadata profile",
+      "source_sha256": "40a3a3c2ba2302665af92dfc2f083766845ad70f86fe2836534a6a54759de653"
+    },
+    {
+      "source": "borrowed-interfaces/second.rs",
+      "accepted": true,
+      "role": "library",
+      "source_sha256": "bb8ac9dfad4688ca9cdb44d5fb9ea3b67d146416070b66fa56af5f308366bf53"
+    },
+    {
+      "source": "borrowed-interfaces/shared-to-mut.rs",
+      "accepted": false,
+      "role": "consumer",
+      "source_sha256": "040b47ec4642df4b0b29414e8445b53294402dd0f5311880251f9b250a1d3107"
+    },
+    {
+      "source": "borrowed-interfaces/unsafe-call.rs",
+      "accepted": false,
+      "role": "consumer",
+      "source_sha256": "a1c9676abf8684b67a3f694cf983d91411c377d3b4615f0ba13ded4af3917296"
+    },
+    {
+      "source": "borrowed-interfaces/wrong-output-slot.rs",
+      "accepted": false,
+      "role": "consumer",
+      "source_sha256": "7252198f182c73d730af5c188290d43f06a6cfadd0ecaceba21d3da8a4c86707"
+    }
+  ]
+}
