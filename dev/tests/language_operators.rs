@@ -112,3 +112,6 @@ fn primitive_invalid_operators_preserve_existing_diagnostics()
 
 #[path = "language_operators/mutation.rs"]
 mod mutation;
+
+#[path = "language_operators/assignment.rs"]
+mod assignment;

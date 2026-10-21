@@ -2149,6 +2149,11 @@ impl Checker<'_> {
             left = inner;
         }
         let target = self.assignment_target(node, left)?;
+        if let Some(kind) = language_hooks::assignment_hook(op)
+            && self.uses_language_assignment(node, kind, left, right)?
+        {
+            return self.language_operator(node, kind, left, Some(right));
+        }
         let operator = scalar::compound_operator(op);
         if matches!(operator, Some(Op::ShiftLeft | Op::ShiftRight)) {
             let integer = self.variable(node, Domain::Integer)?;

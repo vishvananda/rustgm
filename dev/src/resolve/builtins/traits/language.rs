@@ -8,6 +8,7 @@ use crate::{
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Output {
+    Unit,
     Declared(DefId),
     Inherited {
         trait_definition: DefId,
@@ -16,28 +17,30 @@ pub enum Output {
 }
 impl Output {
     #[must_use]
-    pub const fn definition(self) -> DefId {
+    pub const fn definition(self) -> Option<DefId> {
         match self {
+            Self::Unit => None,
             Self::Declared(id)
             | Self::Inherited {
                 declaration: id, ..
-            } => id,
+            } => Some(id),
         }
     }
     #[must_use]
-    pub const fn owner(self, declared_owner: DefId) -> DefId {
+    pub const fn owner(self, declared_owner: DefId) -> Option<DefId> {
         match self {
-            Self::Declared(_) => declared_owner,
+            Self::Unit => None,
+            Self::Declared(_) => Some(declared_owner),
             Self::Inherited {
                 trait_definition, ..
-            } => trait_definition,
+            } => Some(trait_definition),
         }
     }
     #[must_use]
     pub const fn declared(self) -> Option<DefId> {
         match self {
             Self::Declared(id) => Some(id),
-            Self::Inherited { .. } => None,
+            Self::Unit | Self::Inherited { .. } => None,
         }
     }
 }
@@ -98,7 +101,9 @@ impl Resolver<'_> {
         } else {
             None
         };
-        let output = if kind == Hook::IndexMut {
+        let output = if kind.assignment() {
+            Output::Unit
+        } else if kind == Hook::IndexMut {
             let parent = self
                 .facts
                 .builtin_traits
@@ -106,7 +111,10 @@ impl Resolver<'_> {
                 .ok_or_else(|| self.error(c, node, "missing Index supertrait"))?;
             Output::Inherited {
                 trait_definition: parent.definition,
-                declaration: parent.output.definition(),
+                declaration: parent
+                    .output
+                    .definition()
+                    .ok_or_else(|| self.error(c, node, "missing Index output declaration"))?,
             }
         } else {
             Output::Declared(self.builtin_definition(

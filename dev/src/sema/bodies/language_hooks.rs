@@ -30,26 +30,15 @@ impl Checker<'_> {
             subject = self.autoderef(node, subject)?;
         }
         let mut arguments = vec![Argument::Type(subject)];
-        let formal = self.facts.definitions[declaration.self_parameter.0 as usize]
-            .ok_or_else(|| self.error(node, "missing operator Self parameter"))?;
-        let id = crate::sema::generics::parameter_id(
-            &self.facts.types,
-            crate::types::arguments::Argument::Type(formal),
-        )
-        .map_err(|e| self.error(node, e))?;
+        let id = self.operator_parameter(node, declaration.self_parameter)?;
         let mut bindings = vec![(id, Argument::Type(subject))];
         let mut trait_arguments = Vec::new();
         if let Some(right) = right {
             let value = self.term(right)?;
             let formal = declaration
                 .argument
-                .and_then(|id| self.facts.definitions[id.0 as usize])
                 .ok_or_else(|| self.error(node, "missing operator argument parameter"))?;
-            let id = crate::sema::generics::parameter_id(
-                &self.facts.types,
-                crate::types::arguments::Argument::Type(formal),
-            )
-            .map_err(|e| self.error(node, e))?;
+            let id = self.operator_parameter(node, formal)?;
             bindings.push((id, Argument::Type(value)));
             arguments.push(Argument::Type(value));
             trait_arguments.push(Argument::Type(value));
@@ -79,9 +68,9 @@ impl Checker<'_> {
         let signature = self.call_signature(node, signature)?;
         let arity = usize::from(right.is_some()) + 1;
         let result = self.child(node, signature, arity)?;
-        if kind.indexing() {
+        if kind.borrowed() {
             let expected = self.child(node, signature, 0)?;
-            let pending = self.retain_language_index(
+            let pending = self.retain_language_borrow(
                 node,
                 left,
                 declaration.method,
@@ -89,7 +78,11 @@ impl Checker<'_> {
                 subject,
                 expected,
             );
-            self.retain_language_index_call(node, kind, pending, signature);
+            if kind.indexing() {
+                self.retain_language_index_call(node, kind, pending, signature);
+            } else {
+                self.state.calls.push((node, signature));
+            }
         } else {
             self.retain_language_method(node, declaration.method, callable, subject);
             self.state.calls.push((node, signature));
@@ -99,6 +92,19 @@ impl Checker<'_> {
         } else {
             Ok(result)
         }
+    }
+    fn operator_parameter(
+        &self,
+        node: NodeId,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<crate::types::parameters::ParameterId, Error> {
+        let formal = self.facts.definitions[definition.0 as usize]
+            .ok_or_else(|| self.error(node, "missing operator parameter type"))?;
+        crate::sema::generics::parameter_id(
+            &self.facts.types,
+            crate::types::arguments::Argument::Type(formal),
+        )
+        .map_err(|e| self.error(node, e))
     }
     pub(super) fn uses_language_operator(
         &mut self,
@@ -120,6 +126,41 @@ impl Checker<'_> {
             self.head(node, term)?,
             None | Some(Constructor::Primitive(_) | Constructor::Never)
         ))
+    }
+    pub(super) fn uses_language_assignment(
+        &mut self,
+        node: NodeId,
+        kind: Hook,
+        left: NodeId,
+        right: NodeId,
+    ) -> Result<bool, Error> {
+        if self
+            .report
+            .resolution
+            .builtin_traits
+            .language(kind)
+            .is_none()
+        {
+            return Ok(false);
+        }
+        for operand in [left, right] {
+            let term = self.term(operand)?;
+            match self.head(node, term)? {
+                Some(Constructor::Primitive(_) | Constructor::Never) => {}
+                None => {
+                    let domain = self
+                        .state
+                        .infer
+                        .unresolved_domain(term)
+                        .map_err(|e| self.error(node, e))?;
+                    if !matches!(domain, Some(super::Domain::Integer | super::Domain::Float)) {
+                        return Ok(true);
+                    }
+                }
+                _ => return Ok(true),
+            }
+        }
+        Ok(false)
     }
 }
 
@@ -144,6 +185,22 @@ pub(super) const fn binary_hook(operator: crate::lex::token::Punctuation) -> Opt
         Punctuation::Caret => Some(Hook::BitXor),
         Punctuation::ShiftLeft => Some(Hook::Shl),
         Punctuation::ShiftRight => Some(Hook::Shr),
+        _ => None,
+    }
+}
+pub(super) const fn assignment_hook(operator: crate::lex::token::Punctuation) -> Option<Hook> {
+    use crate::lex::token::Punctuation;
+    match operator {
+        Punctuation::PlusEqual => Some(Hook::AddAssign),
+        Punctuation::MinusEqual => Some(Hook::SubAssign),
+        Punctuation::StarEqual => Some(Hook::MulAssign),
+        Punctuation::SlashEqual => Some(Hook::DivAssign),
+        Punctuation::PercentEqual => Some(Hook::RemAssign),
+        Punctuation::AndEqual => Some(Hook::BitAndAssign),
+        Punctuation::OrEqual => Some(Hook::BitOrAssign),
+        Punctuation::CaretEqual => Some(Hook::BitXorAssign),
+        Punctuation::ShiftLeftEqual => Some(Hook::ShlAssign),
+        Punctuation::ShiftRightEqual => Some(Hook::ShrAssign),
         _ => None,
     }
 }

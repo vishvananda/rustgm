@@ -221,7 +221,7 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
-    pub(super) fn retain_language_index(
+    pub(super) fn retain_language_borrow(
         &mut self,
         node: NodeId,
         source: NodeId,

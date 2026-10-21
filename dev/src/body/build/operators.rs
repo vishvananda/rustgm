@@ -45,7 +45,16 @@ impl Builder<'_> {
         };
         let callee = self.evaluate(node, selected.callable, Rvalue::Function(selected.method))?;
         let start = self.index(node, self.body.arguments.len())?;
-        for &operand in operands {
+        let borrowed = selected.borrow.is_some();
+        if borrowed {
+            let receiver = self
+                .scratch
+                .receivers
+                .remove(&node)
+                .ok_or_else(|| self.error(node, "missing evaluated operator receiver"))?;
+            self.body.arguments.push(receiver);
+        }
+        for &operand in &operands[usize::from(borrowed)..] {
             self.body.arguments.push(self.value(operand)?);
         }
         let end = self.index(node, self.body.arguments.len())?;
@@ -64,6 +73,47 @@ impl Builder<'_> {
 }
 
 impl Builder<'_> {
+    pub(super) fn borrowed_language_operator(&self, node: NodeId) -> bool {
+        self.facts
+            .methods
+            .calls
+            .get(&crate::resolve::unit::NodeKey {
+                node,
+                ..self.body.source
+            })
+            .is_some_and(|selected| selected.borrow.is_some())
+    }
+    pub(super) fn language_receiver(&mut self, node: NodeId) -> Result<(), Error> {
+        if let super::Kind::Binary { left, .. } = self.kind(node) {
+            let place = self.pop_place(left)?;
+            let Some(place) = place.filter(|_| self.current.is_some()) else {
+                return Ok(());
+            };
+            let key = crate::resolve::unit::NodeKey {
+                node,
+                ..self.body.source
+            };
+            let selected = self
+                .facts
+                .methods
+                .calls
+                .get(&key)
+                .copied()
+                .ok_or_else(|| self.error(node, "missing assignment operator selection"))?;
+            let receiver = self.receiver_value(
+                node,
+                place,
+                selected.dereferences,
+                selected.borrow,
+                selected.receiver,
+                crate::body::ir::BorrowKind::TwoPhase,
+            )?;
+            self.scratch.receivers.insert(node, receiver);
+            Ok(())
+        } else {
+            self.language_index_receiver(node)
+        }
+    }
     pub(super) fn language_index_receiver(&mut self, node: NodeId) -> Result<(), Error> {
         let key = crate::resolve::unit::NodeKey {
             node,

@@ -1,6 +1,6 @@
 //! Mutable indexing uses canonical inherited output and ordinary selected calls.
 #[path = "../harness/foreign_frontend.rs"]
-mod frontend;
+pub(super) mod frontend;
 use super::native;
 use std::{
     path::{Path, PathBuf},
@@ -15,6 +15,7 @@ fn fixture(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(root()?.join(format!("pa26/tests/spec/index-mut/{name}.rs")))
 }
 const ACCEPTED: &[&str] = &[
+    "compound-library-boundary",
     "mutable-method",
     "read-method",
     "reference-method",
@@ -60,7 +61,6 @@ const REJECTED: &[&str] = &[
     "wrong-reference",
     "lookalike",
     "reference-deref-missing",
-    "compound-library-boundary",
 ];
 #[test]
 fn mutable_index_outcomes_match_independently_qualified_contracts()
@@ -90,11 +90,7 @@ fn mutable_index_outcomes_match_independently_qualified_contracts()
             .arg(folder.join(format!("{name}.o")))
             .output()?;
         std::fs::write(folder.join(format!("{name}.stderr")), &independent.stderr)?;
-        let rustc_accepted = accepted
-            || matches!(
-                name,
-                "compound-library-boundary" | "captured" | "trait-method-boundary"
-            );
+        let rustc_accepted = accepted || matches!(name, "captured" | "trait-method-boundary");
         assert_eq!(
             independent.status.code(),
             Some(i32::from(!rustc_accepted)),
@@ -177,7 +173,7 @@ fn mutable_contract_inherits_the_single_canonical_index_output()
         mutable.output,
         BuiltinLanguageOutput::Inherited {
             trait_definition: index.definition,
-            declaration: index.output.definition()
+            declaration: index.output.definition().ok_or("Index output")?
         }
     );
     assert_eq!(mutable.output.declared(), None);

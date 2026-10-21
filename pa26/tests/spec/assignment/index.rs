@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct C(u32);impl core::ops::AddAssign<u32> for C{fn add_assign(&mut self,r:u32){self.0+=r;}}struct W(C);impl core::ops::Index<bool> for W{type Output=C;fn index(&self,_i:bool)->&C{&self.0}}impl core::ops::IndexMut<bool> for W{fn index_mut(&mut self,_i:bool)->&mut C{&mut self.0}}fn main(){let mut w=W(C(3));w[false]+=4u32;check(w.0.0==7);}

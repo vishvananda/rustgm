@@ -805,7 +805,7 @@ impl<'a> Builder<'a> {
             }
             Work::Reborrow(node) => self.finish_reborrow(node)?,
             Work::MethodReceiver(node) => self.method_receiver(node)?,
-            Work::LanguageReceiver(node) => self.language_index_receiver(node)?,
+            Work::LanguageReceiver(node) => self.language_receiver(node)?,
             Work::InvocationReceiver(node, callee) => self.invocation_receiver(node, callee)?,
             Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
                 self.enter(node)?;
@@ -1116,6 +1116,12 @@ impl<'a> Builder<'a> {
                         self.scratch.work.push(Work::Enter(operand));
                     }
                     Kind::Binary { left, right, .. } => {
+                        if self.borrowed_language_operator(node) {
+                            self.scratch.work.push(Work::Enter(right));
+                            self.scratch.work.push(Work::LanguageReceiver(node));
+                            self.scratch.work.push(Work::Place(left));
+                            return Ok(());
+                        }
                         if matches!(
                             self.fact(node)?.operation,
                             Some(Operation::AssignPlace { .. })

@@ -272,7 +272,7 @@
     },
     {
       "path": "tests/spec/index-mut/compound-library-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.mutable-indexing"
       ],
@@ -280,10 +280,6 @@
         "kind": "program",
         "status": 0,
         "emit": "obj"
-      },
-      "native": {
-        "kind": "codegen",
-        "reason": "Custom compound assignment requires the pending AddAssign library hook; this IndexMut checkpoint admits primitive compound assignment."
       }
     },
     {

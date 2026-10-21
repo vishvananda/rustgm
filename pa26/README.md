@@ -120,6 +120,18 @@ two-phase receiver reservation.
 
 Forty-four draft outcomes and twenty native programs are recorded in
 `tests/index-mut-outcomes.json` and `docs/pa26-index-mut-checkpoint.md`.
-Capturing closures, custom compound assignment and direct library-trait
-dot-method lookup remain explicitly qualified prerequisite/hook boundaries.
+Capturing closures and direct library-trait dot-method lookup remain explicitly
+qualified prerequisite/hook boundaries. Custom compound assignment through
+IndexMut is extended by the assignment checkpoint below.
 This checkpoint does not activate PA26.
+
+## Maintainer assignment-trait checkpoint
+
+All ten arithmetic, bitwise and shift assignment traits use canonical mutable
+receiver contracts with unit output. Selected ordinary calls preserve trait
+assignment's LHS-first evaluation and two-phase receiver reservation, including
+generic custom implementations. Primitive compound syntax retains RHS-first
+evaluation and scalar inference. Thirty-five independently qualified outcomes
+and 24 native programs are recorded in `tests/assignment-outcomes.json` and
+`docs/pa26-assignment-checkpoint.md`. Generic primitive trait implementations
+remain an explicit required boundary; this checkpoint does not activate PA26.

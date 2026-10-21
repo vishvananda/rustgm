@@ -1,0 +1,434 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/assignment/add.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/sub.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/mul.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/div.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/rem.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/and.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/or.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/xor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/shl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/shr.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/mixed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/reservation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/trait-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/primitive-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/generic-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/immutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/shared.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/wrong-receiver.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/wrong-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/extra-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/wrong-rhs.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/lookalike.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/borrow-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/unit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/assignment/generic-primitive-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Generic primitive assignment-trait implementations require a typed builtin method descriptor, separate from this custom-implementation checkpoint."
+      }
+    },
+    {
+      "path": "tests/spec/assignment/mixed-unsuffixed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    }
+  ]
+}

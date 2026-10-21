@@ -37,13 +37,17 @@ Native side-effect controls distinguish the
 shared getter from the mutable getter and verify this ordering.
 
 The 44 declared Rust 1.98.0 object-qualified cases are in
-`pa26/tests/index-mut-outcomes.json`: twenty-five accepted cases, sixteen language
-rejections and three explicitly valid Rust boundaries. Capturing closures remain
+`pa26/tests/index-mut-outcomes.json`: initially twenty-five accepted cases,
+sixteen language rejections and three explicitly valid Rust boundaries.
+The later assignment checkpoint admits the unchanged custom compound case,
+bringing this draft to twenty-six accepted cases and two boundaries.
+Capturing closures remain
 an unfinished PA24 prerequisite, so their mutation is retained as a boundary;
 a noncapturing closure taking an explicit mutable parameter executes correctly.
-Custom compound assignment still needs the pending AddAssign family. Primitive
-compound assignment through a mutable index is implemented. Neither boundary
-is described as a Rust language rejection. Direct library-trait dot-method
+Custom compound assignment is supplied by the later checkpoint in
+`docs/pa26-assignment-checkpoint.md`; primitive compound assignment through a
+mutable index was already implemented here. Neither boundary was described as
+a Rust language rejection. Direct library-trait dot-method
 lookup, such as `w.index_mut(...)`, remains a separate required PA26 surface
 boundary; the paired inherent-method reservation control executes correctly.
 
