@@ -16,10 +16,11 @@ pub struct Instance {
     pub definition: DefId,
     pub arguments: GenericArgs,
 }
-/// One completed value retains its canonical selected type without another cache.
+/// Source completion and checked materialization share one full-instance value.
 #[derive(Clone, Copy)]
 pub(crate) struct Completed {
-    pub(crate) ty: TypeId,
+    /// None retains source-query completion; Some is a materialized CFG result.
+    pub(crate) ty: Option<TypeId>,
     pub(crate) value: super::values::Constant,
 }
 /// Initializer dependencies retain complete identities before owner substitution.
@@ -85,13 +86,23 @@ impl Instance {
         expected: Option<TypeId>,
         value: super::values::Constant,
     ) -> Result<(), &'static str> {
-        let ty = self.result_type(facts)?;
-        if expected.is_some_and(|expected| expected != ty) {
-            return Err("selected initializer result changed at completion");
-        }
-        if let Some(previous) = facts.constant_instances.get(&self) {
-            if previous.ty != ty || previous.value != value {
+        let ty = expected
+            .map(|expected| {
+                let ty = self.result_type(facts)?;
+                if expected != ty {
+                    return Err("selected initializer result changed at completion");
+                }
+                Ok(ty)
+            })
+            .transpose()?;
+        if let Some(previous) = facts.constant_instances.get_mut(&self) {
+            if previous.value != value
+                || matches!((previous.ty, ty), (Some(old), Some(new)) if old != new)
+            {
                 return Err("selected initializer value changed after publication");
+            }
+            if ty.is_some() {
+                previous.ty = ty;
             }
         } else {
             let bytes = facts

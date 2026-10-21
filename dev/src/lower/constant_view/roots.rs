@@ -166,6 +166,13 @@ fn associated(graph: &mut Graph<'_>) -> Result<(), &'static str> {
     let mut values = graph.reader.associated_values().collect::<Vec<_>>();
     values.sort_unstable_by_key(|(instance, _, _)| (instance.definition.0, instance.arguments.0));
     for (instance, ty, value) in values {
+        let Some(ty) = ty else {
+            graph.root(format!(
+                "associated-value instance={}:{} status=source-complete result=deferred",
+                instance.definition.0, instance.arguments.0
+            ))?;
+            continue;
+        };
         let value = graph.value(ty, value)?;
         graph.root(format!(
             "root associated-instance instance={}:{} type={} value=v{value}",

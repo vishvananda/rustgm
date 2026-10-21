@@ -175,3 +175,65 @@ fn associated_inventory_retains_instance_types_without_running_queries()
     assert!(view.lines().any(|line|line.contains("kind=const")&&line.contains("status=deferred-initializer")));
     Ok(())
 }
+
+#[test]
+#[ignore = "requires qualified CPPGM native backend"]
+fn symbolic_selected_values_execute_after_caller_specialization()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, path) in [
+        (
+            "caller-lifetime",
+            "selection/lookup-readiness/semantics/trait-caller-lifetime.rs",
+        ),
+        (
+            "erased-type",
+            "constants/pattern/semantics/erased-type-called.rs",
+        ),
+    ] {
+        let text = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa20/tests/spec")
+                .join(path),
+        )?;
+        let text = text
+            .strip_prefix(native::CHECK)
+            .ok_or("fixture lacks native check prefix")?;
+        native::check_cases(
+            "parallel/pa25-symbolic-selection/native",
+            &[(name, text, false)],
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+fn source_completed_inventory_defers_unmaterialized_results()
+-> Result<(), Box<dyn std::error::Error>> {
+    let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa20/tests/spec/constants/pattern/semantics/erased-type-called.rs");
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .arg("--emit-constants")
+        .arg(input)
+        .output()?;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let text = std::str::from_utf8(&output.stdout)?;
+    let rows = text
+        .lines()
+        .filter(|row| row.starts_with("associated-value "))
+        .collect::<Vec<_>>();
+    assert!(!rows.is_empty());
+    assert!(
+        rows.iter()
+            .all(|row| row.ends_with("status=source-complete result=deferred"))
+    );
+    assert!(
+        !text
+            .lines()
+            .any(|row| row.starts_with("root associated-instance "))
+    );
+    Ok(())
+}

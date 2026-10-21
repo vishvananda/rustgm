@@ -37,12 +37,21 @@ or suspends with the exact body requirement. Preparation and resumption remain
 iterative. Associated activity is separate from the existing monomorphic
 `DefId` static-initializer activity set.
 
-Both AST and CFG completion publish through one checked method into the existing
-full-instance table. Its internal payload is now `{ ty, value }`; the public
-`Reader::associated` signature is unchanged. Publication rejects a different
-canonical result, a changed value after completion, or exhausted retained-value
-storage before insertion. No selected value is installed in the ordinary
-definition-value cache.
+AST and CFG completion share the existing full-instance table. Its internal
+payload is `{ ty: Option<TypeId>, value }`: `None` explicitly records source-query
+completion, and `Some(ty)` records a materialized CFG result. Source completion
+performs no additional declared-result substitution or normalization query. It
+retains legacy symbolic caller selection and its ordinary proof debts without
+speculatively interning types. Existing reference-escape checks still obtain the
+selected type at their original demand point.
+
+CFG publication validates complete argument concreteness and canonical result
+before consulting or upgrading the completed entry. It may upgrade a source
+entry only for the identical value. Source publication never removes a retained
+materialized type. A changed value, conflicting materialized type or exhausted
+retained-value storage rejects publication. No selected value is installed in
+the ordinary definition-value cache, and a source value never authorizes open
+initializer execution.
 
 ## Retained work and inspection
 
@@ -66,13 +75,15 @@ The unreleased `constants 1` grammar adds:
 
 ```text
 root associated-instance instance=DEF:ARGS type=TYPE value=vID
+associated-value instance=DEF:ARGS status=source-complete result=deferred
 ```
 
 Rows follow ordinary initializer roots and precede inline roots, sorted by
 definition and full argument identity. `ARGS` refers to the canonical generic
 argument identity in this compilation. Declaration rows remain
 `status=deferred-initializer`; a completed selection is not completion of every
-selection. The renderer consumes the typed payload without semantic queries.
+selection. Only materialized entries create typed value roots. Source-only entries
+report explicit deferred result state without value graph traversal or semantic queries.
 The independently object-qualified `associated-execution/const-machine.rs`
 example produces two distinct associated roots sharing the containing ordinary
 constants' values, 3 and 4. Two independent inspection runs are byte-identical.
@@ -109,3 +120,26 @@ validity families, or released inspection/oracle coverage. No full matrix,
 benchmark, reference generation or activation ran in this worker slice. Changed-
 path wall/RSS qualification remains pending integrator scheduling, and the earlier
 unexplained scalar RSS increase remains unresolved.
+
+## Symbolic source-cache correction
+
+The regression slice restores all 62 affected PA20 selected-value inspections and
+LowIR outputs byte-for-byte, including eight expected lifetime/bound rejections.
+Pinned Rust 1.98 full-object generation agrees for all 69 cases from the original
+failure set. Seven independent ordinary quantified-lifetime failures remain
+unchanged; they are not qualified as accepted by this correction.
+
+Five private invariants cover canonical requests, erased owner parameters, cache
+quotas, source/materialized publication in both orders and failed upgrades.
+All seven selected-initializer tests pass, including the existing ten native
+programs and two added native controls from unchanged PA20 fixtures. Fifteen
+active inspection tests, strict all-target/all-feature Clippy, the file audit,
+layout and upstream checks pass. The source-only inspection control explicitly
+requires deferred result rows instead of typed graph roots.
+
+The broader nested evaluation run passes 25 of 26 tests. Its existing
+`captured-context.rs` positive still cannot lower: types and constants succeed,
+but LowIR reports a closure/template signature mismatch. Its obsolete expected
+boundary assertion is retained as a failing test pending the separate captured
+execution repair; no expected Rust outcome or generated reference was changed.
+Evidence is under `obj/parallel/pa25-symbolic-selection/`.

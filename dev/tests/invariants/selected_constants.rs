@@ -20,7 +20,8 @@ fn selected_cache_checks_canonical_results_before_reuse() -> Result<(), Box<dyn 
         .collect::<Vec<_>>();
     assert_eq!(values.len(), 2);
     let (instance, completed) = values[0];
-    assert_eq!(completed.ty, TypeId::primitive(Primitive::U8));
+    let result = completed.ty.ok_or("missing materialized result")?;
+    assert_eq!(result, TypeId::primitive(Primitive::U8));
     assert!(
         Reader::new(&facts)
             .definition(instance.definition)
@@ -61,10 +62,7 @@ fn selected_cache_checks_canonical_results_before_reuse() -> Result<(), Box<dyn 
                 &report,
                 &mut facts,
                 &Request {
-                    target: Target::Associated {
-                        instance,
-                        result: completed.ty
-                    },
+                    target: Target::Associated { instance, result },
                     arguments: vec![Constant::scalar(Scalar::Integer(7))]
                 }
             )
@@ -81,7 +79,7 @@ fn selected_cache_checks_canonical_results_before_reuse() -> Result<(), Box<dyn 
                 &mut facts,
                 Target::Associated {
                     instance: malformed,
-                    result: completed.ty
+                    result
                 }
             )
             .is_err()
@@ -101,6 +99,7 @@ fn selected_publication_preserves_immutability_and_storage_bounds()
         .next()
         .map(|(&instance, &value)| (instance, value))
         .ok_or("missing completed value")?;
+    let result = completed.ty.ok_or("missing materialized result")?;
     let wrong = TypeId::primitive(Primitive::U16);
     assert!(
         instance
@@ -111,7 +110,7 @@ fn selected_publication_preserves_immutability_and_storage_bounds()
         instance
             .publish(
                 &mut facts,
-                Some(completed.ty),
+                Some(result),
                 Constant::scalar(Scalar::Integer(99))
             )
             .is_err()
@@ -126,7 +125,7 @@ fn selected_publication_preserves_immutability_and_storage_bounds()
     let constant = facts
         .types
         .intern_constant(crate::types::arguments::Constant {
-            ty: completed.ty,
+            ty: result,
             bits: 99,
         })?;
     let mut changed = false;
@@ -145,7 +144,7 @@ fn selected_publication_preserves_immutability_and_storage_bounds()
     facts.constant_work.associated_value_bytes = 64 * 1024 * 1024;
     assert!(
         fresh
-            .publish(&mut facts, Some(completed.ty), completed.value)
+            .publish(&mut facts, Some(result), completed.value)
             .is_err()
     );
     assert!(Reader::new(&facts).associated(fresh).is_none());
@@ -167,6 +166,7 @@ fn erased_owner_parameters_cannot_supply_selected_execution_identity()
         .iter()
         .next()
         .ok_or("missing selected value")?;
+    let result = completed.ty.ok_or("missing materialized result")?;
     let (_, parameters) = facts
         .generics
         .callable_parameters(&facts.types, instance.definition)?;
@@ -184,19 +184,112 @@ fn erased_owner_parameters_cannot_supply_selected_execution_identity()
                 &mut facts,
                 Target::Associated {
                     instance: malformed,
-                    result: completed.ty,
+                    result,
                 }
             )
             .is_err()
     );
     assert!(
         malformed
-            .publish(&mut facts, Some(completed.ty), completed.value)
+            .publish(&mut facts, Some(result), completed.value)
             .is_err()
     );
     assert!(Reader::new(&facts).associated(malformed).is_none());
     assert_eq!(facts.constant_instances.len(), 1);
     facts.constant_executor = Some(executor);
+    Ok(())
+}
+
+#[test]
+fn symbolic_source_values_do_not_authorize_initializer_execution()
+-> Result<(), Box<dyn std::error::Error>> {
+    for path in [
+        "selection/lookup-readiness/semantics/trait-caller-lifetime.rs",
+        "constants/pattern/semantics/erased-type-called.rs",
+    ] {
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa20/tests/spec")
+                .join(path),
+        )?;
+        let report = test_source::resolve(&source, true)?;
+        let pipeline::Analysis { mut facts, .. } = pipeline::analyze_source(&report)?;
+        let values = facts
+            .constant_instances
+            .iter()
+            .map(|(&instance, &value)| (instance, value))
+            .collect::<Vec<_>>();
+        let count = values.len();
+        let mut executor = facts.constant_executor.take().ok_or("missing provider")?;
+        let mut symbolic = 0;
+        for (instance, completed) in values {
+            if !facts.types.arguments_are_concrete(instance.arguments)? {
+                symbolic += 1;
+                assert!(completed.ty.is_none());
+                let result = facts.definitions[instance.definition.0 as usize]
+                    .ok_or("missing declared type")?;
+                assert!(
+                    executor
+                        .check(&report, &mut facts, Target::Associated { instance, result })
+                        .is_err()
+                );
+                assert!(
+                    instance
+                        .publish(&mut facts, Some(result), completed.value)
+                        .is_err()
+                );
+                assert!(Reader::new(&facts).associated(instance) == Some(completed.value));
+            }
+        }
+        assert!(symbolic > 0);
+        assert_eq!(facts.constant_instances.len(), count);
+        facts.constant_executor = Some(executor);
+    }
+    Ok(())
+}
+
+#[test]
+fn source_publication_upgrades_only_an_identical_checked_value()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (_, mut facts) = facts()?;
+    let (&instance, &completed) = facts
+        .constant_instances
+        .iter()
+        .next()
+        .ok_or("missing value")?;
+    let result = completed.ty.ok_or("missing materialized type")?;
+    facts.constant_instances.remove(&instance);
+    instance.publish(&mut facts, None, completed.value)?;
+    assert!(facts.constant_instances[&instance].ty.is_none());
+    assert!(
+        instance
+            .publish(
+                &mut facts,
+                Some(TypeId::primitive(Primitive::U16)),
+                completed.value
+            )
+            .is_err()
+    );
+    assert!(
+        instance
+            .publish(
+                &mut facts,
+                Some(result),
+                Constant::scalar(Scalar::Integer(99))
+            )
+            .is_err()
+    );
+    assert!(facts.constant_instances[&instance].ty.is_none());
+    instance.publish(&mut facts, Some(result), completed.value)?;
+    assert_eq!(facts.constant_instances[&instance].ty, Some(result));
+    instance.publish(&mut facts, None, completed.value)?;
+    assert_eq!(facts.constant_instances[&instance].ty, Some(result));
+    assert!(
+        instance
+            .publish(&mut facts, None, Constant::scalar(Scalar::Integer(99)))
+            .is_err()
+    );
+    assert!(Reader::new(&facts).associated(instance) == Some(completed.value));
     Ok(())
 }
 
