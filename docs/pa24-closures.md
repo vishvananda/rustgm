@@ -535,3 +535,23 @@ pending. Safe-to-unsafe pointer conversion remains a separate callable conversio
 change coordinated with PA30. Capture construction, generic closure templates,
 dynamic callable adapters and contextual signatures with unresolved components
 still require work. No assignment was activated or text reference changed.
+
+
+The contextual development measurement is complete in
+`obj/parallel/closure-context-performance/measurement-v1/`. Immutable baseline
+`3b03e5e9` and candidate `584e421a` were compared on nine frozen, independently
+object-qualified sources: ordinary functions, scalar closures and contextual
+reference closures at widths 8/32/128. The six shared outputs match byte for
+byte. Reference closures are candidate-only observations because the baseline
+rejects them; they take 3.95/7.06/19.31 ms and 5.66/20.73/81.21 million
+instructions. These observations are consistent with additive independent-body
+work at the measured sizes, not a bound on every closure program.
+
+Shared instruction changes range from -0.62% to +0.07%. Paired wall medians
+range from -7.68% to -2.58%, with shared A/A spread up to 6.12%; individual
+blocks are noisy, so no general speedup or wall-time neutrality is claimed.
+Median RSS increases by 30–468 KiB on the shared inputs; the largest change
+remains unexplained. The candidate also includes the separately qualified
+`option_env!` checkpoint, so this comparison does not isolate each change.
+Every A/A, ABBA, RSS and instruction observation is retained. Successful cleanup
+removed the qualification object; both current comparison binaries remain pinned.
