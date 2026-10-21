@@ -3,6 +3,8 @@
 mod checked;
 #[path = "captured_dispatch/truncation.rs"]
 mod formation_truncation;
+#[path = "captured_dispatch/incoming.rs"]
+mod incoming;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "captured_dispatch/quantifiers.rs"]

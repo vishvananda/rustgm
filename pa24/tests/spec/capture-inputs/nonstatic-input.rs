@@ -1,0 +1,1 @@
+fn make<'a>(x:&'a u8)->impl Fn()->&'static u8+'static{||&*x}fn main(){}

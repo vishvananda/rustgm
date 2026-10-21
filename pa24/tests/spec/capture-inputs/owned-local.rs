@@ -1,0 +1,1 @@
+fn make()->impl Fn()->&'static u8{let n=7u8;move||&n}fn main(){}

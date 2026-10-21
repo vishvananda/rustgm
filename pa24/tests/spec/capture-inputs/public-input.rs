@@ -1,0 +1,1 @@
+fn main(){let _:for<'a>fn(&'a u8)->&'static u8=|x|x;}

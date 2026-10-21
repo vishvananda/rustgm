@@ -1,0 +1,682 @@
+{
+  "profile": "Rust 1.98.0 / edition2024 / x86_64-unknown-linux-gnu",
+  "status": "qualified development checkpoint; no activation or text oracles",
+  "cases": [
+    {
+      "name": "original",
+      "path": "pa24/tests/spec/formation-truncation/reference-result.rs",
+      "sha256": "8c1f2e940cbfea7cf3c140bb5ccc7a1aa5542e82329c289acaff2bc562c0db9e",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "rust_actual": 0,
+      "frontend_actual": [
+        0,
+        0,
+        0
+      ],
+      "source_evidence": "obj/parallel/pa24/formation-truncation/source/1505031",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "750758a72cee459751d9e590488b69988b2f7f9bf2a544cbc772108551a23f12",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "76e3dc1491f34a3e777573123f4ce577d48e558013681ecc0dd88af78d7f5673",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "b3a7e71b862023dff79578410d5ae87329803da590152e8f6eb9d5ead11e3476",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "eb772e24a9610a1564c12ce57d322af766a53b7928dbf51241ee240ff0ff6ac7",
+      "native_expected": 0,
+      "native_evidence": {
+        "path": "obj/parallel/pa24/formation-truncation/native-1505031",
+        "source_sha256": "8c1f2e940cbfea7cf3c140bb5ccc7a1aa5542e82329c289acaff2bc562c0db9e",
+        "lowir_sha256": "76e3dc1491f34a3e777573123f4ce577d48e558013681ecc0dd88af78d7f5673",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing committed ignored native test assertions"
+      }
+    },
+    {
+      "name": "static-input",
+      "path": "pa24/tests/spec/capture-inputs/static-input.rs",
+      "sha256": "fe491cf956684924bd518bc7bbb62489b0f4093794b9b7383e5b52729950bd1e",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "rust_actual": 0,
+      "frontend_actual": [
+        0,
+        0,
+        0
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "519f58da70c034cf5324793980e796b1935d360fff76299baebd0e66d2ef3b1a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "6a477d05642ed7b7699a30f073cba4b94c106c03ad07d2472cf7018f9cbbfcd5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "af1af342d0df8b0497b2e735663e2d7e1621ad0890c0a06dac8d67654014de4a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_expected": 0,
+      "native_evidence": {
+        "path": "obj/parallel/pa24/reference-result/native-1504488",
+        "source_sha256": "fe491cf956684924bd518bc7bbb62489b0f4093794b9b7383e5b52729950bd1e",
+        "lowir_sha256": "6a477d05642ed7b7699a30f073cba4b94c106c03ad07d2472cf7018f9cbbfcd5",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing committed ignored native test assertions"
+      }
+    },
+    {
+      "name": "nonstatic-input",
+      "path": "pa24/tests/spec/capture-inputs/nonstatic-input.rs",
+      "sha256": "df77f0de64be5c3cc20aef23a94aa5f79f4ff7201d8c5693697331f288a5c114",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ],
+      "rust_actual": 1,
+      "frontend_actual": [
+        0,
+        1,
+        1
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "7d91d63188462d00f1b6d1890de09dd95d12a7e376c4b83743813909a3731412",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "509ea249a2dd271553dce904858eb22db2de9dedf77c1fe4b6b7db4b0ff36442",
+          "stderr": "ERROR: file 0: 54: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "509ea249a2dd271553dce904858eb22db2de9dedf77c1fe4b6b7db4b0ff36442",
+          "stderr": "ERROR: file 0: 54: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "7ad8bd862ebfd75b54257efcc3b38f59f614dcbd97ae6d9cc22378a2c0f1372b",
+      "native_expected": null
+    },
+    {
+      "name": "owned-local",
+      "path": "pa24/tests/spec/capture-inputs/owned-local.rs",
+      "sha256": "0cb741020290f71973ce0f9df92cae9660f1b28de9036422069149afe4aa23e2",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ],
+      "rust_actual": 1,
+      "frontend_actual": [
+        0,
+        1,
+        1
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "f845df3f81852cc1f596e1eeced0bd96fd091ab30e034b8bc97329408e6f31f2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b95d9f253035cfae77bd495649862e01cd30b373eb1e39059d7d414e27e637c1",
+          "stderr": "ERROR: file 0: 50: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b95d9f253035cfae77bd495649862e01cd30b373eb1e39059d7d414e27e637c1",
+          "stderr": "ERROR: file 0: 50: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "21fad5ae24c6ee0d5db9bc197d594ec8e323bd38e0c2cba8a521a229318e72f8",
+      "native_expected": null
+    },
+    {
+      "name": "public-input",
+      "path": "pa24/tests/spec/capture-inputs/public-input.rs",
+      "sha256": "6f6a0cf4dc4e48d54c0eb79c153ee2a42ae0a351557ced5842f374c3f28a1322",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ],
+      "rust_actual": 1,
+      "frontend_actual": [
+        0,
+        1,
+        1
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "f1523e7ebf3d2e2d54d2f31e6bc4ccbfb0891ae8988c190e4cfcc9b05011d36c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b95d9f253035cfae77bd495649862e01cd30b373eb1e39059d7d414e27e637c1",
+          "stderr": "ERROR: file 0: 50: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b95d9f253035cfae77bd495649862e01cd30b373eb1e39059d7d414e27e637c1",
+          "stderr": "ERROR: file 0: 50: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "2758be7ce0595c768376051a5ad1c4a2cb6da3a99399a2eaeba8cc1212168cf8",
+      "native_expected": null
+    },
+    {
+      "name": "opaque-call",
+      "path": "pa24/tests/spec/capture-inputs/opaque-call.rs",
+      "sha256": "1ec6be42a792044be214cadd3baa5b8c634a82c7868103824bec4ebab7bec02f",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "rust_actual": 0,
+      "frontend_actual": [
+        0,
+        0,
+        0
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "795c3c2adf0ebc79a4a21991726970d10f62a753217c188353e84940d03aacad",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "c9b1a3ff1bdd81b030f3ef5232314c282f68f6bdf23deaf4a2036a038f4896d9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "fca7d6a74e2effb5ec84e726957a646653b46316fc4d71e2b4293d1ce51702ff",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_expected": null
+    },
+    {
+      "name": "opaque-escape",
+      "path": "pa24/tests/spec/capture-inputs/opaque-escape.rs",
+      "sha256": "d6be5ccfe9ef5984dedecb414ef5bf265f4504c6443ca52aded4b17853edc375",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ],
+      "rust_actual": 1,
+      "frontend_actual": [
+        0,
+        1,
+        1
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "1e46dd91209e13c7ea278a8fe339b18e4ae4ea1e850bb3b475273879bae42c00",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "700332cad8ce19423731f8aa7efe6de8adfa1a2116a46f6bd7fd6c487c5e615f",
+          "stderr": "ERROR: file 0: 112: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "700332cad8ce19423731f8aa7efe6de8adfa1a2116a46f6bd7fd6c487c5e615f",
+          "stderr": "ERROR: file 0: 112: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "531211f6628b514f8cb158a8eb834f29c1c47923140e93f86775f5014383d1db",
+      "native_expected": null
+    },
+    {
+      "name": "nested-reference",
+      "path": "pa24/tests/spec/capture-inputs/nested-reference.rs",
+      "sha256": "35079144ec8c9af595eefb3bd9ecfbf48500829b1e58b5c9f6f86fcb2c34b71f",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "rust_actual": 0,
+      "frontend_actual": [
+        0,
+        0,
+        0
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "010fbc3f2783bf544e11adc235eee1e62bc27b05454afc44e37b8fec0a7793cc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "a071369a2a49d16eaf511cfe7fc09080c4ad3d5c66aaeb6782b83565ffb44fbe",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "b3a7e71b862023dff79578410d5ae87329803da590152e8f6eb9d5ead11e3476",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "52cf7e7e402814c03ae6fe5c669774f06498621d25840c410c0875a3fbbd9045",
+      "native_expected": 0,
+      "native_evidence": {
+        "path": "obj/parallel/pa24/reference-result/native-1504488",
+        "source_sha256": "35079144ec8c9af595eefb3bd9ecfbf48500829b1e58b5c9f6f86fcb2c34b71f",
+        "lowir_sha256": "a071369a2a49d16eaf511cfe7fc09080c4ad3d5c66aaeb6782b83565ffb44fbe",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing committed ignored native test assertions"
+      }
+    },
+    {
+      "name": "nested-binder",
+      "path": "pa24/tests/spec/capture-inputs/nested-binder.rs",
+      "sha256": "3aea51368c045347d4dbf850207edfac0a2023924d3494ec84722dd2aba8136a",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ],
+      "rust_actual": 1,
+      "frontend_actual": [
+        0,
+        1,
+        1
+      ],
+      "source_evidence": "obj/parallel/pa24/reference-result/source/1504488",
+      "outputs": {
+        "types": {
+          "stdout_sha256": "93c42f644592937c1f9fac19e6907416812328a9b934744fe2faebcc313e7c48",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "18204d01528dc612a59c442882d288758e244040eb22990a6636e0b7a6bd0778",
+          "stderr": "ERROR: file 0: 99: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "18204d01528dc612a59c442882d288758e244040eb22990a6636e0b7a6bd0778",
+          "stderr": "ERROR: file 0: 99: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "a02e2439b67e3ecaec4e902b005662ac0c2f03ffbc8ccf2a97e47554f68a08a5",
+      "native_expected": null
+    }
+  ],
+  "base": "9d1d5637 plus 3dd9e9d3 helper",
+  "source_sha256": "b972d5083f2c32147589356703dc0f5b6a71963ee83329c6688c50cffe72a3dc",
+  "compiler_sha256": "ea474d6ca2d292a6664f2328ce3ca4f634d8b55eb97e600d05a60a5cdd316e4e",
+  "strict_gates": [
+    {
+      "name": "format",
+      "status": 0,
+      "seconds": 7.419425010681152
+    },
+    {
+      "name": "lint",
+      "status": 0,
+      "seconds": 61.37858557701111
+    },
+    {
+      "name": "audit",
+      "status": 0,
+      "seconds": 26.660096168518066
+    },
+    {
+      "name": "bridge-seal",
+      "status": 0,
+      "seconds": 83.01487708091736
+    },
+    {
+      "name": "incoming-source-native",
+      "status": 0,
+      "seconds": 66.03974509239197
+    },
+    {
+      "name": "truncation-source-native",
+      "status": 0,
+      "seconds": 1.195770025253296
+    }
+  ],
+  "regressions": [
+    {
+      "name": "observer",
+      "status": 0,
+      "seconds": 0.08284282684326172
+    },
+    {
+      "name": "conditional-graph",
+      "status": 0,
+      "seconds": 0.07278227806091309
+    },
+    {
+      "name": "caller-catalog",
+      "status": 0,
+      "seconds": 0.08829593658447266
+    },
+    {
+      "name": "root-catalog",
+      "status": 0,
+      "seconds": 0.18178009986877441
+    },
+    {
+      "name": "entry-proofs",
+      "status": 0,
+      "seconds": 0.08978700637817383
+    },
+    {
+      "name": "remaining-captured",
+      "status": 0,
+      "seconds": 8.30498743057251
+    },
+    {
+      "name": "environment-references",
+      "status": 0,
+      "seconds": 4.896795272827148
+    },
+    {
+      "name": "environment-chains",
+      "status": 0,
+      "seconds": 3.369598865509033
+    },
+    {
+      "name": "source-closures",
+      "status": 0,
+      "seconds": 4.920443296432495
+    },
+    {
+      "name": "upstream",
+      "status": 0,
+      "seconds": 0.1453535556793213
+    },
+    {
+      "name": "layout",
+      "status": 0,
+      "seconds": 5.093748092651367
+    }
+  ],
+  "text_comparisons": [
+    {
+      "stage": "pa1",
+      "status": 0
+    },
+    {
+      "stage": "pa2",
+      "status": 0
+    },
+    {
+      "stage": "pa3",
+      "status": 0
+    },
+    {
+      "stage": "pa4",
+      "status": 0
+    },
+    {
+      "stage": "pa5",
+      "status": 0
+    },
+    {
+      "stage": "pa6",
+      "status": 0
+    },
+    {
+      "stage": "pa7",
+      "status": 0
+    },
+    {
+      "stage": "pa8",
+      "status": 0
+    },
+    {
+      "stage": "pa9",
+      "status": 0
+    },
+    {
+      "stage": "pa10",
+      "status": 0
+    },
+    {
+      "stage": "pa11",
+      "status": 0
+    },
+    {
+      "stage": "pa12",
+      "status": 0
+    },
+    {
+      "stage": "pa13",
+      "status": 0
+    },
+    {
+      "stage": "pa14",
+      "status": 0
+    },
+    {
+      "stage": "pa15",
+      "status": 0
+    },
+    {
+      "stage": "pa16",
+      "status": 0
+    },
+    {
+      "stage": "pa17",
+      "status": 0
+    },
+    {
+      "stage": "pa18",
+      "status": 0
+    },
+    {
+      "stage": "pa19",
+      "status": 0
+    },
+    {
+      "stage": "pa20",
+      "status": 0
+    },
+    {
+      "stage": "pa21",
+      "status": 0
+    },
+    {
+      "stage": "pa22",
+      "status": 0
+    },
+    {
+      "stage": "pa23",
+      "status": 0
+    }
+  ],
+  "supersedes": {
+    "receipt": "pa24/tests/formation-truncation-outcomes.json",
+    "case": "reference-result",
+    "path": "pa24/tests/spec/formation-truncation/reference-result.rs",
+    "old_frontend": [
+      0,
+      1,
+      1
+    ],
+    "new_frontend": [
+      0,
+      0,
+      0
+    ],
+    "source_unchanged": true
+  },
+  "source_inventory_commands": [
+    "cargo test --locked --manifest-path dev/Cargo.toml --test captured_dispatch -- --skip execute --nocapture",
+    "cargo test --locked --manifest-path dev/Cargo.toml --test captured_dispatch -- --ignored --nocapture",
+    "cargo test --locked --manifest-path dev/Cargo.toml --test captured_dispatch -- --include-ignored --nocapture"
+  ],
+  "command_wrapper": "CARGO_TARGET_DIR=obj/rust CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2 python3 scripts/storage.py run --prune-under obj/parallel/pa24 -- COMMAND",
+  "scaling": {
+    "independent": [
+      {
+        "axis": "fields",
+        "width": 8,
+        "path": "obj/parallel/pa24/reference-result/close/fields-8.rs",
+        "sha256": "ba7ca04753510fc750e01ccc56225f51ec5cc06049ae9498d26f4138852c6f93",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "repeat",
+        "width": 8,
+        "path": "obj/parallel/pa24/reference-result/close/repeat-8.rs",
+        "sha256": "ad5a742da44973d0e893603a1cb9696608192b2312a6d5aa5c695d74f772953f",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "fields",
+        "width": 32,
+        "path": "obj/parallel/pa24/reference-result/close/fields-32.rs",
+        "sha256": "dbcdf7344e701bdec2ff811fab1aeaaa49242ed4867c8d09da39ec9c7ad38986",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "repeat",
+        "width": 32,
+        "path": "obj/parallel/pa24/reference-result/close/repeat-32.rs",
+        "sha256": "3fe60f2b1d55328d4953cf0f52d844433ae13573876625e9669fc90c5de70e59",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "fields",
+        "width": 128,
+        "path": "obj/parallel/pa24/reference-result/close/fields-128.rs",
+        "sha256": "fda415ea42ae186e4e791aef7152a5b72c50161f2fa63d11fb3db485e6f8be14",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "repeat",
+        "width": 128,
+        "path": "obj/parallel/pa24/reference-result/close/repeat-128.rs",
+        "sha256": "a3fa862819d59ffb76637aea7e1ca3457a3962e6c81994cb21c3bcf817504502",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "ordinary",
+        "width": 128,
+        "path": "obj/parallel/pa24/reference-result/close/ordinary.rs",
+        "sha256": "f319eed2b21c09a7cd011f3f8388101f9eb325fe1d55fbd6e3d7b8283f49aaf4",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      }
+    ],
+    "observer_log": "obj/parallel/pa24/reference-result/final/observer.log",
+    "depths": [
+      8,
+      32,
+      128
+    ],
+    "repetitions": [
+      8,
+      32,
+      128
+    ],
+    "logical_work": [
+      [
+        36,
+        60,
+        156
+      ],
+      [
+        108,
+        132,
+        228
+      ],
+      [
+        396,
+        420,
+        516
+      ]
+    ],
+    "ordinary_empty_work": 0,
+    "ordinary_empty_region_index": false
+  },
+  "retained_failures": [
+    "combined/: unchanged original Rust0/checked1 on accepted9d1d5637",
+    "trace/extended-typed.log: research diagnostic assumed every parent field was an inference variable; canonical formal parent fields disproved that assumption",
+    "resource admission69607: 282.9 GiB free versus285.2 GiB reserved requirement; no compiler command ran",
+    "second/lint.log: unchanged accepted-cut inspect_roots101/100; fixed by root3dd9e9d3",
+    "second2/lint.log: if_not_else in new gate; corrected without semantic change"
+  ]
+}

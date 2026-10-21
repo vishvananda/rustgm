@@ -1,0 +1,1 @@
+fn opaque<'a>(x:&'a u8)->impl Fn()->u8+'a{move||*x}fn main(){let n=7u8;let f=||{let _=opaque(&n);0u8};let _=f();}

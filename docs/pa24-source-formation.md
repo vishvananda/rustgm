@@ -83,3 +83,7 @@ at file 0 offset 162 with `required lifetime does not outlive its target`.
 Its exact original bytes are retained. This is not an independent semantic
 negative or assignment completion; the next checkpoint investigates that
 reference-result proof separately.
+
+The later [input-only bridge checkpoint](pa24-input-only-bridges.md) supersedes the
+reference-result boundary above with unchanged fixture bytes. The receipt here
+remains historical evidence for the original catalog checkpoint.

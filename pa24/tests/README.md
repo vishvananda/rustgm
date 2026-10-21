@@ -50,3 +50,11 @@ No generated references or assignment activation accompanies these draft cases.
 `pending-object-outcomes.json` retains unresolved early type/const targets, actual
 object lifetime inputs, unused public binders and opposing type/escape controls.
 Declaration clauses create required goals; no pending caller terms enter a cache.
+
+`capture-input-hypotheses.json` and `capture-input-outcomes.json` qualify
+input-only lifetime bridges for explicit reference results. The original
+`formation-truncation/reference-result.rs` bytes now pass checked/native
+execution; the older failure receipt remains historical. Additional opposing
+and nested controls live in `spec/capture-inputs/`. Source/native inventory
+commands and proof-seal details are in
+[the input-only bridge review](../../docs/pa24-input-only-bridges.md).

@@ -203,9 +203,11 @@ impl Checker<'_> {
         } else {
             None
         };
-        if interface.outputs.is_none() && formation.is_none() {
+        let captured = self.capture_input_ports(source, interface.outputs.is_none())?;
+        if interface.outputs.is_none() && formation.is_none() && captured.is_empty() {
             return Ok(());
         }
+        let parent_body = parent;
         let mut bridges = Vec::new();
         let outputs: HashSet<_> = interface
             .outputs
@@ -213,6 +215,11 @@ impl Checker<'_> {
             .flat_map(|ports| ports.pairs.values())
             .copied()
             .collect();
+        if outputs.is_empty() {
+            // Closing maps visit both original inputs and their local aliases;
+            // the bridge selector then visits the same incoming prefix once.
+            self.facts.body_work.canonical_steps += 3 * interface.opening.universal_count();
+        }
         // Output eligibility is narrower than ordinary input refresh.
         let mut closing = interface
             .closing(&self.state.call_types, true)
@@ -220,13 +227,16 @@ impl Checker<'_> {
         for (parent, slot) in interface
             .opening
             .universal_pairs()
-            .filter(|_| !outputs.is_empty())
+            .filter(|(_, slot)| !outputs.is_empty() || captured.contains(*slot))
         {
             // Public quantified inputs belong to this closure's callable binder,
             // even when the public result can mention them. They are not parent
             // proof identities and cannot discharge a captured output condition.
             if parent.bound_parts().is_some() || closing.region(slot, 0).is_err() {
                 continue;
+            }
+            if outputs.is_empty() {
+                self.validate_capture_input_parent(source, parent, parent_body)?;
             }
             let (_, slot) = slot
                 .bound_parts()

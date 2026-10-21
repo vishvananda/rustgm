@@ -62,15 +62,15 @@ pub(super) fn finish(
             return Err(region_graph::Error::Identity);
         }
     }
-    let (proof, conditions) = if link.bridges.iter().any(|bridge| bridge.output) {
+    let (proof, conditions) = if link.bridges.is_empty() {
+        (constraints.prove()?, Vec::new())
+    } else {
         constraints
             .prove_output(&interface)
             .map_err(|error| match error {
                 region_graph::OutputError::Constraint(error) => error,
                 region_graph::OutputError::Unsupported => region_graph::Error::UnsupportedOutput,
             })?
-    } else {
-        (constraints.prove()?, Vec::new())
     };
     let parent = |region| {
         if region == RegionId::STATIC {
@@ -242,3 +242,7 @@ pub(super) fn prove<'a>(
         .collect::<Result<Vec<_>, _>>()?;
     Ok(Analysis { bodies })
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/bridge_seals.rs"]
+mod tests;

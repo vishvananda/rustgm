@@ -7,6 +7,7 @@ const ACCEPTED: &[&str] = &[
     "unused",
     "unused-valid-child",
     "nested-truncation",
+    "reference-result",
 ];
 fn fixture(name: &str) -> PathBuf {
     let path = if name == "original" {
@@ -52,17 +53,6 @@ fn source_root_conditions_preserve_independent_outcomes() -> Result<(), Box<dyn 
         "unused-invalid-child",
         (1, [0, 1, 1], "access conflicts with a live reference loan"),
     )?;
-    // This independently accepted source remains an explicit checked boundary.
-    checked::check_modes(
-        &fixture("reference-result"),
-        &evidence,
-        "reference-result",
-        (
-            0,
-            [0, 1, 1],
-            "required lifetime does not outlive its target",
-        ),
-    )?;
     Ok(())
 }
 #[test]
@@ -74,6 +64,7 @@ fn source_root_conditions_execute_after_parent_storage_expires()
         "after-scope",
         "generic-owner",
         "nested-truncation",
+        "reference-result",
     ] {
         let source = std::fs::read_to_string(fixture(name))?;
         let body = source

@@ -1,0 +1,1 @@
+fn id(x:&u8)->&u8{x}fn main(){let p:for<'a>fn(&'a u8)->&'a u8=id;let f=||->&'static u8{let n=7u8;p(&n)};let _=f();}

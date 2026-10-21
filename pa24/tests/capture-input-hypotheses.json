@@ -1,0 +1,105 @@
+{
+  "profile": "Rust 1.98.0 / edition2024 / x86_64-unknown-linux-gnu",
+  "status": "predeclared independent source outcomes; no activation or oracles",
+  "cases": [
+    {
+      "name": "original",
+      "path": "pa24/tests/spec/formation-truncation/reference-result.rs",
+      "sha256": "8c1f2e940cbfea7cf3c140bb5ccc7a1aa5542e82329c289acaff2bc562c0db9e",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "static-input",
+      "path": "pa24/tests/spec/capture-inputs/static-input.rs",
+      "sha256": "fe491cf956684924bd518bc7bbb62489b0f4093794b9b7383e5b52729950bd1e",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "nonstatic-input",
+      "path": "pa24/tests/spec/capture-inputs/nonstatic-input.rs",
+      "sha256": "df77f0de64be5c3cc20aef23a94aa5f79f4ff7201d8c5693697331f288a5c114",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "owned-local",
+      "path": "pa24/tests/spec/capture-inputs/owned-local.rs",
+      "sha256": "0cb741020290f71973ce0f9df92cae9660f1b28de9036422069149afe4aa23e2",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "public-input",
+      "path": "pa24/tests/spec/capture-inputs/public-input.rs",
+      "sha256": "6f6a0cf4dc4e48d54c0eb79c153ee2a42ae0a351557ced5842f374c3f28a1322",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "opaque-call",
+      "path": "pa24/tests/spec/capture-inputs/opaque-call.rs",
+      "sha256": "1ec6be42a792044be214cadd3baa5b8c634a82c7868103824bec4ebab7bec02f",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "opaque-escape",
+      "path": "pa24/tests/spec/capture-inputs/opaque-escape.rs",
+      "sha256": "d6be5ccfe9ef5984dedecb414ef5bf265f4504c6443ca52aded4b17853edc375",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "nested-reference",
+      "path": "pa24/tests/spec/capture-inputs/nested-reference.rs",
+      "sha256": "35079144ec8c9af595eefb3bd9ecfbf48500829b1e58b5c9f6f86fcb2c34b71f",
+      "rust_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "nested-binder",
+      "path": "pa24/tests/spec/capture-inputs/nested-binder.rs",
+      "sha256": "3aea51368c045347d4dbf850207edfac0a2023924d3494ec84722dd2aba8136a",
+      "rust_expected": 1,
+      "frontend_expected": [
+        0,
+        1,
+        1
+      ]
+    }
+  ]
+}
