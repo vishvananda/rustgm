@@ -13,7 +13,7 @@ pub struct Release {
     pub location: Location,
     pub exits_before: u32,
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Facts {
     pub created: Vec<Temporary>,
     pub returned: Vec<Release>,

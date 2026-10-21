@@ -17,7 +17,7 @@ use crate::{
 use std::collections::HashMap;
 
 /// Completed promotion facts, distinct from storage-liveness and loan proofs.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Facts {
     entries: Vec<(ValueId, Evaluated)>,
     index: HashMap<ValueId, usize>,

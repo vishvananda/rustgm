@@ -234,9 +234,7 @@ fn semantic(
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
-    } = rustgm::sema::declarations::analyze(&report)
-        .and_then(|facts| rustgm::pipeline::analyze(&report, facts))
-        .map_err(|e| e.to_string())?;
+    } = rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
     if matches!(mode, Mode::Semantics | Mode::Relationships) {
         rustgm::sema::semantic_view::check_ordinary_profile(&report, &facts)
             .map_err(|e| e.to_string())?;

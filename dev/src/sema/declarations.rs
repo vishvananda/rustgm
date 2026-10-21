@@ -10,6 +10,7 @@ mod contracts;
 mod deferred_arguments;
 mod destructors;
 mod evaluation;
+mod execution;
 mod generics;
 mod heads;
 mod impl_headers;
@@ -60,6 +61,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    Execution(crate::sema::values::execution::Requirement, bool),
     CallTraitInputs(BinderId),
     CallTraitOutput(NodeKey, regions::Context),
     ImplHeader(DefId, impl_headers::Phase),
@@ -108,6 +110,16 @@ enum Work {
     Receiver(NodeKey, DefId, BinderId),
 }
 impl Work {
+    fn body_dependency(requirement: crate::sema::bodies::Requirement) -> Self {
+        use crate::sema::bodies::Requirement;
+        match requirement {
+            Requirement::Nominal(item) => Self::ValueType(DefId(item.0)),
+            Requirement::Definition(definition) => Self::Definition(definition, false),
+            Requirement::ImplHeader(owner) => Self::ImplHeader(owner, impl_headers::Phase::Begin),
+            Requirement::Fields(item) => Self::Fields(item, false),
+            Requirement::Opaque(id) => Self::OpaqueHidden(id),
+        }
+    }
     fn selection_dependency(dependency: super::traits::selection::Dependency) -> Self {
         match dependency {
             super::traits::selection::Dependency::Header(owner) => {
@@ -150,6 +162,7 @@ struct Checker<'a> {
         Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
     constant_scratch: super::constants::Scratch,
     constant_evaluations: evaluation::Pending,
+    execution_bodies: execution::Pending,
     constant_dependencies: std::collections::HashSet<NodeKey>,
     constant_captures: generics::Captures,
     parameter_uses: crate::types::parameters::uses::Uses,
@@ -171,6 +184,18 @@ struct Checker<'a> {
 /// Rejects recursive aliases, invalid signatures and unsupported annotation semantics.
 pub fn analyze(report: &Report) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report)?;
+    checker.run().map_err(|error| report.diagnostic(error))?;
+    Ok(checker.facts)
+}
+/// Resolve declarations with the executable pipeline's checked constant service.
+/// # Errors
+/// Reports the same declaration errors, including demanded execution failures.
+pub fn analyze_with_executor(
+    report: &Report,
+    executor: Box<dyn super::values::execution::Executor>,
+) -> Result<Declarations, Error> {
+    let mut checker = Checker::new(report)?;
+    checker.facts.set_constant_executor(executor);
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)
 }
@@ -206,6 +231,7 @@ impl<'a> Checker<'a> {
             constant_modules: None,
             constant_scratch: super::constants::Scratch::default(),
             constant_evaluations: evaluation::Pending::default(),
+            execution_bodies: execution::Pending::default(),
             constant_dependencies: std::collections::HashSet::new(),
             constant_captures: generics::Captures::default(),
             parameter_uses: crate::types::parameters::uses::Uses::default(),
@@ -324,6 +350,7 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::Execution(requirement, resume) => self.execution_body(requirement, resume)?,
                 Work::CallTraitInputs(binder) => self.regions.begin_callable(binder),
                 Work::CallTraitOutput(key, context) => self.call_trait_output(key, context)?,
                 Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
@@ -1150,6 +1177,9 @@ impl Checker<'_> {
                         self.facts.constant_functions.insert(id);
                     }
                     self.register_function_call_traits(key, id);
+                    self.facts
+                        .function_indices
+                        .insert(id, self.facts.functions.len());
                     self.facts.functions.push(Function {
                         definition: id,
                         node: key,

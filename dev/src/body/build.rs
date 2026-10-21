@@ -57,6 +57,14 @@ pub(crate) fn concrete_except(
     facts: &Declarations,
     template: impl Fn(DefId) -> bool,
 ) -> Result<Program, Error> {
+    concrete_prepared(report, facts, template, HashMap::new())
+}
+pub(crate) fn concrete_prepared(
+    report: &Report,
+    facts: &Declarations,
+    template: impl Fn(DefId) -> bool,
+    mut prepared: HashMap<DefId, Body>,
+) -> Result<Program, Error> {
     let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
         crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
@@ -76,6 +84,10 @@ pub(crate) fn concrete_except(
             || facts.generics.has_parameters(function.definition)
             || template(function.definition)
         {
+            continue;
+        }
+        if let Some(body) = prepared.remove(&function.definition) {
+            program.bodies.push(body);
             continue;
         }
         program.bodies.push(function_body(
@@ -183,9 +195,14 @@ fn function_body(
         function,
         std::mem::take(&mut scratch.scopes),
     )?;
-    Builder::new(report, facts, scratch, body, scope_plan, query)
+    let body = Builder::new(report, facts, scratch, body, scope_plan, query)
         .run(Some(function.parameters))
-        .map_err(|e| report.diagnostic(e))
+        .map_err(|e| report.diagnostic(e))?;
+    facts
+        .body_work
+        .cfg_functions
+        .set(facts.body_work.cfg_functions.get().saturating_add(1));
+    Ok(body)
 }
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {

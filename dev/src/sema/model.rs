@@ -161,7 +161,7 @@ pub(super) enum InitializerTyping {
     Complete,
 }
 impl Initializer {
-    pub(super) fn type_checked(&self) -> bool {
+    pub(crate) fn type_checked(&self) -> bool {
         matches!(self.typing, InitializerTyping::Complete)
     }
 }
@@ -271,6 +271,8 @@ pub struct ReferenceAlignment {
 /// Work observations are not language facts and are never part of a text oracle.
 #[derive(Default)]
 pub struct BodyWork {
+    /// Actual successful function CFG constructions, before specialization copies.
+    pub cfg_functions: std::cell::Cell<usize>,
     /// Actual typed unsizing DAG inputs and reuse, separate from eligibility queries.
     pub unsizing_inputs: usize,
     pub unsizing_fields: usize,
@@ -315,6 +317,11 @@ pub struct StoredFieldWork {
     pub retained_bytes: usize,
 }
 pub struct Declarations {
+    pub constant_work: super::values::execution::Work,
+    pub(crate) constant_executor: Option<Box<dyn super::values::execution::Executor>>,
+    pub(crate) function_indices: std::collections::HashMap<DefId, usize>,
+    pub(crate) typed_function_bodies: std::collections::HashSet<DefId>,
+    pub(crate) array_lengths: std::collections::HashMap<NodeKey, u64>,
     /// Const permission belongs to a selected declaration, not its callable type.
     pub(crate) constant_functions: std::collections::HashSet<DefId>,
     pub(super) target_feature_functions: std::collections::HashSet<DefId>,
@@ -383,6 +390,10 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    /// Install the outer checked-body execution service for demanded constants.
+    pub fn set_constant_executor(&mut self, executor: Box<dyn super::values::execution::Executor>) {
+        self.constant_executor = Some(executor);
+    }
     #[must_use]
     pub fn is_const_function(&self, definition: DefId) -> bool {
         self.constant_functions.contains(&definition)
@@ -438,6 +449,11 @@ impl Declarations {
             target_feature_functions: std::collections::HashSet::new(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
+            constant_executor: None,
+            constant_work: super::values::execution::Work::default(),
+            function_indices: std::collections::HashMap::new(),
+            typed_function_bodies: std::collections::HashSet::new(),
+            array_lengths: std::collections::HashMap::new(),
             alias_requirements: super::alias_requirements::Requirements::default(),
             unreduced: super::unreduced::Types::default(),
             anonymous_constants: std::collections::HashMap::new(),

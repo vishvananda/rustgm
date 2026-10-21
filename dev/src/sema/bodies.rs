@@ -550,8 +550,17 @@ impl Checker<'_> {
         self.report.package.unit(self.state.file).configured.active[node.0 as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
+        if self
+            .facts
+            .typed_function_bodies
+            .contains(&function.definition)
+        {
+            return Ok(());
+        }
         let progress = self.start_function(function)?;
-        self.require_complete_body(progress)
+        self.require_complete_body(progress)?;
+        self.facts.typed_function_bodies.insert(function.definition);
+        Ok(())
     }
     fn start_function(&mut self, function: Function) -> Result<Option<Dependency>, Error> {
         self.state.call_types.clear();

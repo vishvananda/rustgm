@@ -1,4 +1,5 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
+pub(crate) mod execution;
 use crate::{
     body::{self, regions::Collector, templates},
     borrow,
@@ -14,6 +15,8 @@ use std::collections::HashMap;
 /// Definition CFGs and contracts already demanded during semantic analysis.
 #[derive(Default)]
 pub struct Prepared {
+    pub(crate) constants: Option<execution::Context>,
+    pub(crate) concrete: HashMap<DefId, body::ir::Body>,
     pub(crate) templates: templates::Prepared,
     pub(crate) contracts: Option<Collector>,
     pub(crate) promotions: body::promote::Scratch,
@@ -60,6 +63,17 @@ pub fn analyze(report: &Report, facts: Declarations) -> Result<Analysis, Error> 
         facts,
         prepared: demand.prepared,
     })
+}
+/// Resolve declarations and bodies with one retained checked constant provider.
+/// # Errors
+/// Preserves all semantic and demanded-constant diagnostics.
+pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
+    let context = execution::Context::default();
+    let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
+    let mut analysis = analyze(report, facts)?;
+    context.transfer(report, &mut analysis.prepared)?;
+    analysis.prepared.constants = Some(context);
+    Ok(analysis)
 }
 
 impl Demand {

@@ -7,6 +7,7 @@ pub(in crate::sema) struct Dependency {
     pub requirement: Requirement,
     pub source: NodeKey,
 }
+#[derive(Clone, Copy)]
 pub(in crate::sema) enum Requirement {
     Nominal(ItemId),
     Definition(DefId),
@@ -33,6 +34,18 @@ pub(super) enum Completion {
 }
 
 impl Checker<'_> {
+    pub(in crate::sema) fn start_execution_function(
+        &mut self,
+        definition: DefId,
+    ) -> Result<Option<Dependency>, Error> {
+        let index = self
+            .facts
+            .function_indices
+            .get(&definition)
+            .copied()
+            .ok_or_else(|| self.error(NodeId(0), "missing demanded const function declaration"))?;
+        self.start_function(self.facts.functions[index])
+    }
     pub(in crate::sema) fn pending_body(&self) -> bool {
         !matches!(self.state.completion, Completion::Inactive)
     }

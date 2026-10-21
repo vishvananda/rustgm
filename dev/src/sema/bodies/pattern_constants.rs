@@ -164,7 +164,7 @@ impl Checker<'_> {
         self.state = saved;
         result
     }
-    pub(super) fn complete_constant_patterns(&mut self) -> Result<(), Error> {
+    pub(in crate::sema) fn complete_constant_patterns(&mut self) -> Result<(), Error> {
         let Some(pending) = self.state.pending_patterns.take() else {
             return Ok(());
         };

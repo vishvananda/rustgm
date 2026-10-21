@@ -1,0 +1,502 @@
+//! Checked constant execution shares demanded CFGs with ordinary compilation.
+mod inputs;
+use super::Prepared;
+use crate::{
+    body::{
+        self,
+        ir::{Body, Owner},
+        regions::{Collector, Contract},
+        templates::{Template, Templates},
+    },
+    borrow,
+    const_eval::{self, Limits, Machine, code::Catalog},
+    resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
+    sema::{
+        model::Declarations,
+        values::{
+            self, Constant, Evaluator,
+            execution::{Executor, Progress, Request, Requirement, Target},
+        },
+    },
+    types::{ItemId, Kind, parameters::environment::Environment},
+};
+pub(crate) use inputs::Context;
+use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
+
+pub(super) struct Proxy(pub Rc<RefCell<Engine>>);
+impl Executor for Proxy {
+    fn check(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        target: Target,
+    ) -> Result<(), Error> {
+        self.0
+            .try_borrow_mut()
+            .map_err(|_| Error::at(FileId(0), 0, "reentrant constant eligibility request"))?
+            .root(report, facts, target)
+            .map(|_| ())
+    }
+    fn advance(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        request: &Request,
+    ) -> Result<Progress, Error> {
+        self.0
+            .try_borrow_mut()
+            .map_err(|_| Error::at(FileId(0), 0, "reentrant constant execution request"))?
+            .advance(report, facts, request)
+    }
+}
+#[derive(Default)]
+struct Session {
+    state: Option<const_eval::State>,
+    scratch: values::Scratch,
+    waiting: Option<Requirement>,
+}
+#[derive(Default)]
+pub(super) struct Engine {
+    catalog: Catalog,
+    roots: HashMap<Target, usize>,
+    sessions: HashMap<Request, Session>,
+    completed: HashMap<Request, Constant>,
+    construction: body::templates::Prepared,
+    contracts: Collector,
+    promotions: body::promote::Scratch,
+    originals: HashMap<DefId, Template>,
+    concrete: HashMap<DefId, Body>,
+    loans: Option<(usize, borrow::loans::templates::Verifier)>,
+    inputs: Rc<RefCell<HashMap<DefId, Body>>>,
+    runtime_templates: Option<Rc<Templates>>,
+    runtime_template_indices: HashMap<DefId, usize>,
+    charged_templates: std::collections::HashSet<DefId>,
+}
+impl Engine {
+    pub(super) fn transfer(
+        &mut self,
+        report: &Report,
+        prepared: &mut Prepared,
+    ) -> Result<(), Error> {
+        prepared.concrete.extend(std::mem::take(&mut self.concrete));
+        for (&definition, template) in &self.originals {
+            if matches!(template.body.owner, Owner::Function { .. }) {
+                prepared
+                    .templates
+                    .retain(template.clone())
+                    .map_err(|e| Declarations::error(report, template.body.source, e))?;
+            } else {
+                return Err(Error::at(
+                    FileId(0),
+                    0,
+                    format!("constant template {} is not a function", definition.0),
+                ));
+            }
+        }
+        Ok(())
+    }
+    fn advance(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        request: &Request,
+    ) -> Result<Progress, Error> {
+        if let Some(&value) = self.completed.get(request) {
+            return Ok(Progress::Complete(value));
+        }
+        let mut session = self.sessions.remove(request).unwrap_or_default();
+        loop {
+            if let Some(requirement) = session.waiting {
+                if !self.prepare(report, facts, requirement)? {
+                    self.sessions.insert(request.clone(), session);
+                    return Ok(Progress::Prepare(requirement));
+                }
+                session.waiting = None;
+            }
+            let root = self.root(report, facts, request.target)?;
+            let evaluator = Evaluator::with_scratch(report, facts, session.scratch);
+            let mut machine = Machine::catalog(evaluator, &self.catalog, Limits::default());
+            if let Some(state) = session.state {
+                machine.restore(state);
+            } else {
+                machine
+                    .begin(root, &request.arguments)
+                    .map_err(|e| Declarations::error(report, e.source, e.message))?;
+            }
+            let progress = machine
+                .advance()
+                .map_err(|e| Declarations::error(report, e.source, e.message))?;
+            let work = machine.work();
+            match progress {
+                Progress::Complete(value) => {
+                    drop(machine);
+                    facts.constant_work.expressions += 1;
+                    facts.constant_work.frames_started += work.calls;
+                    facts.constant_work.steps += work.steps;
+                    facts.constant_work.peak_frames =
+                        facts.constant_work.peak_frames.max(work.peak_frames);
+                    facts.constant_work.peak_slots =
+                        facts.constant_work.peak_slots.max(work.peak_slots);
+                    facts.constant_work.code_bytes = self.catalog.bytes;
+
+                    self.completed.insert(request.clone(), value);
+                    return Ok(Progress::Complete(value));
+                }
+                Progress::Prepare(requirement) => {
+                    let (state, scratch) = machine.suspend();
+                    facts.constant_work.resumes += 1;
+                    session = Session {
+                        state: Some(state),
+                        scratch,
+                        waiting: Some(requirement),
+                    };
+                }
+            }
+        }
+    }
+    fn root(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        target: Target,
+    ) -> Result<usize, Error> {
+        if let Some(&index) = self.roots.get(&target) {
+            return Ok(index);
+        }
+        let Target::Expression {
+            source,
+            result,
+            context,
+        } = target
+        else {
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "constant root is not a typed expression",
+            ));
+        };
+        if context.is_some() {
+            return Err(Declarations::error(
+                report,
+                source,
+                "associated constant execution needs a specialized body",
+            ));
+        }
+        let (mut body, destruction) = self
+            .construction
+            .expression(report, facts, source, result)?;
+        body::promote::instance_reusing(
+            report,
+            facts,
+            &mut body,
+            &destruction,
+            &mut self.promotions,
+        )?;
+        let mut contract = self
+            .contracts
+            .expression(facts, source)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        body::dispatch::resolve(facts, &mut body, &mut contract)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        let template = Template {
+            body,
+            destruction,
+            environment: Arc::new(
+                Environment::new(&facts.types, &[])
+                    .map_err(|e| Declarations::error(report, source, e))?,
+            ),
+        };
+        let templates = Templates {
+            bodies: vec![template],
+        };
+        self.prove(report, facts, &templates.bodies[0], &contract)?;
+        let index = self
+            .catalog
+            .insert(&templates.bodies[0].body)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        self.roots.insert(target, index);
+        Ok(index)
+    }
+    fn prepare(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        requirement: Requirement,
+    ) -> Result<bool, Error> {
+        match requirement {
+            Requirement::FunctionBody(instance) => self.function(report, facts, instance),
+            Requirement::InitializerBody(definition) => {
+                let initializer = facts
+                    .initializers
+                    .iter()
+                    .find(|value| value.definition == definition)
+                    .copied()
+                    .ok_or_else(|| Error::at(FileId(0), 0, "missing required initializer"))?;
+                if !initializer.type_checked() {
+                    return Ok(false);
+                }
+                let target = Target::Expression {
+                    source: initializer.value,
+                    result: initializer.ty,
+                    context: None,
+                };
+                let index = self.root(report, facts, target)?;
+                self.catalog
+                    .initializer(index, definition, initializer.kind)
+                    .map_err(|e| Declarations::error(report, initializer.value, e))?;
+                Ok(true)
+            }
+            Requirement::AssociatedBody(instance) => {
+                let mut evaluator = Evaluator::new(report, facts);
+                evaluator.associated(instance)?;
+                Ok(true)
+            }
+        }
+    }
+    fn function(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: crate::types::instance::Instance,
+    ) -> Result<bool, Error> {
+        if self.catalog.functions.contains_key(&instance) {
+            return Ok(true);
+        }
+        let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty()) else {
+            return Err(Error::at(FileId(0), 0, "missing selected const function"));
+        };
+        let definition = DefId(item.0);
+        if !facts.typed_function_bodies.contains(&definition) {
+            return Ok(false);
+        }
+        let function = *facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| facts.functions.get(index))
+            .ok_or_else(|| Error::at(FileId(0), 0, "missing checked const function"))?;
+        let source = function.body.unwrap_or(function.node);
+        let input = self
+            .contracts
+            .function(facts, &function)
+            .map_err(|e| Declarations::error(report, source, e))?
+            .clone();
+        let inputs = Rc::clone(&self.inputs);
+        let stored = inputs.try_borrow().map_err(|_| {
+            Declarations::error(
+                report,
+                source,
+                "constant CFG lender is preparing another body",
+            )
+        })?;
+        if let Some(body) = stored.get(&definition) {
+            body::constants::eligibility(report, facts, body)?;
+            let mut needed = crate::types::destruction::NeedsDrop::new(
+                facts.destructors.implementations().iter().map(|i| i.item),
+            );
+            let destruction = body::drops::requirements(facts, body, &mut needed)
+                .map_err(|e| Declarations::error(report, source, e))?;
+            let parameters = Arc::new(
+                facts
+                    .generics
+                    .parameter_environment(&facts.types, definition)
+                    .map_err(|e| Declarations::error(report, source, e))?,
+            );
+            self.prove_body(report, facts, body, &destruction, &parameters, &input)?;
+            let index = self
+                .catalog
+                .insert(body)
+                .map_err(|e| Declarations::error(report, source, e))?;
+            self.catalog.functions.insert(instance, index);
+            return Ok(true);
+        }
+        drop(stored);
+        if let Some(templates) = self.runtime_templates.as_ref().map(Rc::clone)
+            && let Some(&index) = self.runtime_template_indices.get(&definition)
+        {
+            self.specialize(report, facts, instance, &templates.bodies[index], &input)?;
+            return Ok(true);
+        }
+        let template = if let Some(template) = self.originals.remove(&definition) {
+            template
+        } else {
+            let mut template = self.construction.function(report, facts, &function)?;
+            body::promote::instance_reusing(
+                report,
+                facts,
+                &mut template.body,
+                &template.destruction,
+                &mut self.promotions,
+            )?;
+            template
+        };
+        self.prove(report, facts, &template, &input)?;
+        if facts.generics.has_parameters(definition)
+            || facts.opaques.owners.contains_key(&definition)
+        {
+            self.specialize(report, facts, instance, &template, &input)?;
+            self.retain_template(report, facts, definition, template)?;
+        } else {
+            let index = self
+                .catalog
+                .insert(&template.body)
+                .map_err(|e| Declarations::error(report, source, e))?;
+            self.catalog.functions.insert(instance, index);
+            self.concrete.insert(definition, template.body);
+        }
+        Ok(true)
+    }
+    fn retain_template(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        definition: DefId,
+        template: Template,
+    ) -> Result<(), Error> {
+        let bytes = crate::const_eval::code::Code::storage_bytes(&template.body)
+            .saturating_add(std::mem::size_of_val(
+                template.destruction.locals.as_slice(),
+            ))
+            .saturating_add(std::mem::size_of_val(
+                template.destruction.values.as_slice(),
+            ))
+            .saturating_add(std::mem::size_of_val(
+                template.destruction.projections.as_slice(),
+            ))
+            .saturating_add(std::mem::size_of_val(template.destruction.sites.as_slice()));
+        let retained = if self.charged_templates.contains(&definition) {
+            facts.constant_work.template_bytes
+        } else {
+            facts
+                .constant_work
+                .template_bytes
+                .saturating_add(bytes.saturating_mul(2))
+        };
+        if retained > 64 * 1024 * 1024 {
+            return Err(Declarations::error(
+                report,
+                template.body.source,
+                "constant template copies exceed 64 MiB budget",
+            ));
+        }
+        facts.constant_work.template_bytes = retained;
+        self.charged_templates.insert(definition);
+        self.originals.insert(definition, template);
+        Ok(())
+    }
+    fn specialize(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: crate::types::instance::Instance,
+        template: &Template,
+        input: &Contract,
+    ) -> Result<(), Error> {
+        let source = template.body.source;
+        let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        body::promote::instance_reusing(
+            report,
+            facts,
+            &mut materialized.body,
+            &materialized.destruction,
+            &mut self.promotions,
+        )?;
+        self.prove_body(
+            report,
+            facts,
+            &materialized.body,
+            &materialized.destruction,
+            &template.environment,
+            &materialized.contract,
+        )?;
+        let index = self
+            .catalog
+            .insert(&materialized.body)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        self.catalog.functions.insert(instance, index);
+        Ok(())
+    }
+    fn prove(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        template: &Template,
+        contract: &Contract,
+    ) -> Result<(), Error> {
+        self.prove_body(
+            report,
+            facts,
+            &template.body,
+            &template.destruction,
+            &template.environment,
+            contract,
+        )
+    }
+    fn prove_body(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        body: &Body,
+        destruction: &body::drops::Requirements,
+        parameters: &Arc<Environment>,
+        contract: &Contract,
+    ) -> Result<(), Error> {
+        let source = body.source;
+        contract
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        let mut queries = crate::types::outlives::Queries::new(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        let regions = borrow::regions::check_one(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &mut queries,
+            contract,
+            body,
+        )
+        .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))?;
+        let custom = facts
+            .destructors
+            .implementations()
+            .iter()
+            .map(|i| i.item)
+            .collect::<Vec<ItemId>>();
+        if self
+            .loans
+            .as_ref()
+            .is_none_or(|(count, _)| *count != custom.len())
+        {
+            self.loans = Some((
+                custom.len(),
+                borrow::loans::templates::Verifier::new(&custom)
+                    .map_err(|e| Declarations::error(report, source, e))?,
+            ));
+        }
+        let (_, loans) = self
+            .loans
+            .as_mut()
+            .ok_or_else(|| Declarations::error(report, source, "missing constant loan verifier"))?;
+        let mut copies = crate::types::copy::Copies::default();
+        loans
+            .body(
+                &mut borrow::Environment {
+                    types: &facts.types,
+                    definitions: &facts.aggregates,
+                    derives: &facts.derives,
+                    copies: &mut copies,
+                },
+                body,
+                destruction,
+                parameters,
+                &regions,
+                &|ty, field| body::drops::nominal_position(facts, ty, field),
+            )
+            .map_err(|e| Declarations::error(report, e.node.unwrap_or(source), e.message))?;
+        Ok(())
+    }
+}

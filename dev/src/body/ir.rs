@@ -293,6 +293,7 @@ pub enum Owner {
         kind: InitializerKind,
     },
 }
+#[derive(Clone)]
 pub struct Body {
     /// Constant eligibility applies independently of whether execution is demanded.
     pub const_context: bool,
@@ -319,7 +320,7 @@ pub struct Body {
     pub statements: Vec<Statement>,
     pub blocks: Vec<Block>,
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct ResolvedCallables {
     targets: std::collections::HashMap<
         crate::types::instance::Instance,
@@ -336,6 +337,16 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    pub(crate) fn callable_targets(
+        &self,
+    ) -> std::collections::HashMap<crate::types::instance::Instance, crate::types::instance::Instance>
+    {
+        self.resolved_callables
+            .as_ref()
+            .map_or_else(std::collections::HashMap::new, |resolved| {
+                resolved.targets.clone()
+            })
+    }
     #[must_use]
     pub fn callable_target(
         &self,
@@ -361,6 +372,15 @@ pub struct StorageRange<'a> {
     locals: &'a [Local],
     first: LocalId,
     next: Option<LocalId>,
+}
+impl<'a> StorageRange<'a> {
+    pub(crate) const fn new(locals: &'a [Local], first: LocalId, last: LocalId) -> Self {
+        Self {
+            locals,
+            first,
+            next: Some(last),
+        }
+    }
 }
 impl Body {
     #[must_use]

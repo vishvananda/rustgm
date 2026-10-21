@@ -1,4 +1,6 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
+pub mod execution;
+mod memory;
 mod session;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
@@ -17,7 +19,7 @@ pub(crate) use session::Scratch;
 
 /// A value in the declaration result's shared constant arenas.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Constant(Value);
+pub struct Constant(pub(super) Value);
 
 /// Opaque location identity in the declaration result's flat reference arena.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

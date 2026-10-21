@@ -47,6 +47,12 @@ pub fn build_prepared(
         &mut templates,
         &mut prepared.promotions,
     )?;
+    let templates = std::rc::Rc::new(templates);
+    if let Some(context) = &prepared.constants {
+        context
+            .templates(std::rc::Rc::clone(&templates))
+            .map_err(|e| diagnostic(report, None, e.into()))?;
+    }
     for input in &inputs {
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
@@ -98,7 +104,15 @@ pub fn build_prepared(
     facts
         .prepare_opaque_storage()
         .map_err(|e| diagnostic(report, None, e.into()))?;
-    let program = demand::prepare(report, facts, entry, &checked, inputs)?;
+    let program = demand::prepare(
+        report,
+        facts,
+        entry,
+        &checked,
+        inputs,
+        prepared.concrete,
+        prepared.constants,
+    )?;
     program
         .with_checked(|checked| super::build(facts, checked, entry))
         .map_err(|e| diagnostic(report, e.node, e.message))?

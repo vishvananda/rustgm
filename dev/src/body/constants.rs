@@ -12,6 +12,13 @@ use std::collections::HashSet;
 pub fn analyze(report: &Report, facts: &mut Declarations, bodies: &Program) -> Result<(), Error> {
     prepare(report, facts, bodies.bodies.iter())
 }
+pub(crate) fn analyze_bodies<'a>(
+    report: &Report,
+    facts: &mut Declarations,
+    bodies: impl Iterator<Item = &'a super::ir::Body>,
+) -> Result<(), Error> {
+    prepare(report, facts, bodies)
+}
 /// Complete constants for one newly demanded body without rescanning the program.
 /// # Errors
 /// Reports the same required-constant failures as `analyze`.

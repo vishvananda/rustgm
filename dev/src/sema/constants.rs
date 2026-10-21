@@ -4,6 +4,7 @@ mod constructors;
 mod contents;
 mod discriminants;
 mod drops;
+mod execution;
 pub(super) use discriminants::{
     Discriminant, Pending as Discriminants, finish as finish_discriminants,
 };
@@ -112,6 +113,7 @@ enum State {
 }
 #[derive(Clone, Copy)]
 enum Expression {
+    Execute,
     Value(Value),
     Product(products::Expression),
     Reference(references::Expression),
@@ -149,6 +151,7 @@ enum Expression {
     },
 }
 enum Work {
+    Execute(NodeKey),
     PrepareNode(NodeKey),
     PrepareInstance(crate::sema::values::Instance),
     Layout(NodeKey, TypeId, bool),
@@ -195,6 +198,14 @@ pub(super) struct Scratch {
     scan: Vec<NodeKey>,
     drops: Option<Box<drops::Scratch>>,
     layouts: layouts::Scratch,
+}
+impl Scratch {
+    pub(in crate::sema) fn take_typing(&mut self) -> bodies::Scratch {
+        std::mem::take(&mut self.typing)
+    }
+    pub(in crate::sema) fn retain_typing(&mut self, typing: bodies::Scratch) {
+        self.typing = typing;
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -427,7 +438,14 @@ impl Queries<'_> {
         Ok(())
     }
     fn drain(&mut self) -> Result<(), Error> {
-        self.drain_until(None).map(|_| ())
+        if self.drain_until(None)?.is_some() {
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "constant execution body is not ready",
+            ));
+        }
+        Ok(())
     }
     fn drain_until(
         &mut self,
@@ -449,6 +467,12 @@ impl Queries<'_> {
             }
             self.budget()?;
             match work {
+                Work::Execute(key) => {
+                    if let Some(requirement) = self.execute(key)? {
+                        self.work.push(Work::Execute(key));
+                        return Ok(Some(suspension::Dependency::Execution(requirement)));
+                    }
+                }
                 Work::PrepareNode(key) => self.prepare(key)?,
                 Work::PrepareInstance(instance) => {
                     let source = self.instance_source(instance)?;
@@ -561,6 +585,7 @@ impl Queries<'_> {
             Query::Place(key) => self.enter_place(key)?,
             Query::Contents(key, id) => self.enter_contents(key, id)?,
             Query::Node(key) => match self.expression(key)? {
+                Expression::Execute => self.work.push(Work::Execute(key)),
                 Expression::Reference(expression) => self.enter_reference(key, expression),
                 Expression::Value(value) => {
                     self.complete_query(query, value)?;
@@ -744,6 +769,7 @@ impl Queries<'_> {
             substitution,
         );
         self.scan.push(root);
+        let mut execution = false;
         while let Some(key) = self.scan.pop() {
             self.budget()?;
             if self.expressions.contains_key(&(self.work.context, key)) {
@@ -784,6 +810,7 @@ impl Queries<'_> {
                     self.work.push(Work::PrepareInstance(instance));
                 }
                 Expression::Value(_) | Expression::Constant(_) | Expression::Instance(_) => {}
+                Expression::Execute => execution = true,
                 Expression::Reference(expression) => {
                     expression.dependencies(|child| self.scan.push(child));
                 }
@@ -798,6 +825,13 @@ impl Queries<'_> {
                 .insert((self.work.context, key), expression);
         }
         self.drop_scratch = drops.map(drops::Check::finish);
+        if execution {
+            self.check_execution(root)?;
+            // Execute the same complete checked root whose region and ownership
+            // proof was retained, including its surrounding scalar operations.
+            self.expressions
+                .insert((self.work.context, root), Expression::Execute);
+        }
         Ok(())
     }
     #[expect(
@@ -892,7 +926,11 @@ impl Queries<'_> {
                         .iter()
                         .any(|n| self.report.package.unit(key.file).configured.active[n.0 as usize])
                     {
-                        return Err(self.error(query, "constant statements require the general constant evaluation assignment"));
+                        return if self.typing.facts.constant_executor.is_some() {
+                            Ok(Expression::Execute)
+                        } else {
+                            Err(self.error(query, "constant statements require the general constant evaluation assignment"))
+                        };
                     }
                     Expression::Forward(child(tail))
                 }
@@ -1011,6 +1049,9 @@ impl Queries<'_> {
                     otherwise: child(otherwise),
                 },
                 _ => {
+                    if self.typing.facts.constant_executor.is_some() {
+                        return Ok(Expression::Execute);
+                    }
                     return Err(self.error(
                         query,
                         "expression requires the general constant evaluation assignment",
