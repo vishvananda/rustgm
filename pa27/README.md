@@ -98,9 +98,18 @@ through a separately formed unaligned field pointer. Static stores remain
 forbidden independently of pointer mutability. No old value is read merely to
 store a replacement; source initialization rules remain separate.
 
-Byte reinterpretation, shared-derived interior-mutable writes and reference
-creation through raw places remain explicit unsupported
-boundaries; unsafe permission grants none of those constant capabilities. Foreign and mutable static contents remain forbidden.
+Exact-type shared references reconstructed through raw pointers validate live,
+fully initialized ordinary symbolic storage and the actual leaf alignment.
+They monotonically restrict that pointer's write authority without changing an
+earlier writable alias. Packed raw-base by-value reads and source packed-reference
+rules remain separate. Existing final reference escape checks still apply.
+Mutable/raw union-field references, numeric nonnull ZST pointers, and raw-derived
+references to mutable/foreign or cyclic static storage remain explicit capability
+boundaries; forming such a reference is not itself a contents read.
+
+Byte reinterpretation and shared-derived interior-mutable writes remain explicit
+unsupported boundaries. Unsafe permission grants none of these missing constant
+capabilities. Foreign and mutable static contents remain forbidden.
 
 Packed by-value copies, primitive compound assignment and raw address formation
 remain distinct from creating a field reference. The qualified let-reference

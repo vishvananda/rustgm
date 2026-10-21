@@ -196,6 +196,9 @@ impl Machine<'_, '_> {
             .copied()
             .ok_or("missing constant snapshot".into())
     }
+    pub(super) fn projects_union_field(&self, place: Resolved) -> Result<bool, Failure> {
+        Ok(self.storage_target(place)?.field().is_some())
+    }
     pub(super) fn read(&mut self, place: Resolved) -> Result<Option<Constant>, Failure> {
         let (root, path) = self.path(place.address)?;
         if let Some(access) = place.raw {

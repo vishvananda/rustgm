@@ -1,5 +1,8 @@
 //! Raw reads validate existing symbolic storage without inventing byte reinterpretation.
 #[cfg(test)]
+#[path = "../../tests/invariants/reconstructed_refs.rs"]
+mod reference_tests;
+#[cfg(test)]
 #[path = "../../tests/invariants/raw_access.rs"]
 mod tests;
 use super::{
@@ -93,6 +96,53 @@ impl Machine<'_, '_> {
         path: &[u64],
     ) -> Result<(), Failure> {
         self.check_raw_access(place, access, root, path, false)
+    }
+    /// The initial reference profile requires completed, fully initialized storage.
+    pub(super) fn shared_raw_reference(
+        &mut self,
+        place: Resolved,
+    ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        if place.raw.is_none() {
+            return Err("constant raw shared reference lacks its access anchor".into());
+        }
+        let (root, path) = self.path(place.address)?;
+        let location = Reader::new(self.evaluator.facts()).location(root)?;
+        if let crate::sema::values::Origin::Static(id) = location.origin
+            && self.check_static_read(id).is_err()
+        {
+            // Reference formation does not imply a contents read. Those legal
+            // static-reference profiles need a separate deferred validity path.
+            return Err("constant raw shared references to mutable or external static storage are not implemented".into());
+        }
+        if self.projects_union_field(place)? {
+            return Err("references into constant union images are not implemented".into());
+        }
+        if let crate::sema::values::Origin::Static(id) = location.origin
+            && self.active_initializers.contains(&id)
+        {
+            return Err(
+                "constant raw shared references to cyclic static storage are not implemented"
+                    .into(),
+            );
+        }
+        let root_type = location.ty;
+        let root_layout = self.footprint(root_type)?;
+        let (ty, offset) = self.storage_offset(root_type, &path)?;
+        if ty != place.ty {
+            return Err(
+                "raw pointer type reinterpretation in constant execution is not implemented".into(),
+            );
+        }
+        let leaf = self.footprint(ty)?;
+        // A packed raw base may permit a by-value field read. Creating a
+        // reference additionally requires the actual selected leaf's alignment.
+        if root_layout.align < leaf.align || !offset.is_multiple_of(u64::from(leaf.align)) {
+            return Err("constant raw shared reference is unaligned".into());
+        }
+        if self.read(place)?.is_none() {
+            return Ok(None);
+        }
+        Ok(Some(place.address.restrict_shared()))
     }
     pub(super) fn check_raw_write(&mut self, place: Resolved) -> Result<(), Failure> {
         let access = place

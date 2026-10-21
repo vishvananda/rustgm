@@ -1,0 +1,293 @@
+{
+  "stage": "declared-development-contract",
+  "baseline": "179250b0",
+  "scope": "exact-type shared &*raw over symbolic ordinary storage; full pointer shared restriction; actual leaf reference alignment independent of raw packed-base read anchor",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/local-scalar.rs",
+      "sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/product.rs",
+      "sha256": "76ce0b8c1b72857163fee8c57bec00784a2f6bc37e1ae0797898ff6149076fa8",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/array-field.rs",
+      "sha256": "1a49caddd8b10b65e41a41d343d1698c73327375fd7d4ac158da9e8672cce396",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-reference.rs",
+      "sha256": "2ce893df81c92ff328d104542bb053b87b394bb24b265d84ff1088ab3cf7623a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-field.rs",
+      "sha256": "8f5680b7583608b7deaa95ab73727f7bc975798a861629fec5172427128cf1ae",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/const-function.rs",
+      "sha256": "cd970c47e6eca490917f04d6948c837b9a0d9c766ecff7a998df15257011799f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-mut-type.rs",
+      "sha256": "ee430ed772a293076b6fd000682679bcfdb17a71a6cecc220fa93962e3d08585",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/writable-alias.rs",
+      "sha256": "8c77906180486964f846f079160a752595444c4d9bc6de3227b34edc2576eb90",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-derived-write.rs",
+      "sha256": "377ed11c061b197b3db95f219661557fdf64fa4df1a695d6f3b3b3469ee4cf89",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-whole.rs",
+      "sha256": "b7f9b180c960979464ea7cdf16254448eb36896b2525a4b8ee9db13e9ccf5e20",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs",
+      "sha256": "8355cae95035f61cad9a10fd4da30b8b986b894c29553824709b14edf5ea1188",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw shared reference is unaligned",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-aligned.rs",
+      "sha256": "90a52a999453f28bd4ea29f1940c984031bcdecc847fd8a1dff289249774f82f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-reference.rs",
+      "sha256": "65e3c062919473a050fe8401a421dce2a0d51478f9ca285bdc377a4cd0844a7b",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw shared reference is unaligned",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/symbolic-zst.rs",
+      "sha256": "4a88e5fc35266ad792b2c431774ead0cb8e1265cf8a90a345a40889b121c29b5",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/numeric-zst.rs",
+      "sha256": "e513c80fa345fe260d6fe132874d0ee7cb8a78826cc5252fc7d0a14cf060ce5a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/null.rs",
+      "sha256": "a0d22b6d250ac8d599842dc892ee9fdd8dd1a980fabf2952e363cc1bfa2664a8",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/expired.rs",
+      "sha256": "50d8e085551115ad0677904804cdc01b3f33caa9133286accd0292bcc256bdab",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/escape.rs",
+      "sha256": "f99da32be120ded99e0b9d212fd5e54adeb501d33ae04659a598f48508246e65",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/uninitialized.rs",
+      "sha256": "dfaa1f67167e64b620f63f80c434e84f15ecac31cede3053beb29a158a42ff06",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "borrowed place may be uninitialized or moved",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-reference.rs",
+      "sha256": "9c042f42383269b717ed9362c6c3c1521a55ddadcc1e14f49715a1166ac9893a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "mutable references through raw pointers in constant execution are not implemented",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/union-field.rs",
+      "sha256": "fda4fd8e9ac7d604e3e0d824202d725d4e3c551507a2d90979f08a6e0252d460",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "references into constant union images are not implemented",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/reinterpret.rs",
+      "sha256": "7bc07f62909072fe00ce7d590d67f7daa06ad80d4c55853dc2dfd4ef1f93b5f0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-static-reference.rs",
+      "sha256": "0784c6541944d34389187bd77c0d040a39d496efcebd41da0484f40db0ac4010",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw shared references to mutable or external static storage are not implemented",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/foreign-static-reference.rs",
+      "sha256": "f0c23d42599b96ed3be36f0920d786aa68b12744f6bf402f0314c34bfdfcf2d2",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw shared references to mutable or external static storage are not implemented",
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs",
+      "sha256": "af6c0f95805d52cdb3377f7dcd54f41bb400ca432e619030ff8271b7e871c99f",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "reference to an unaligned packed field",
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/cyclic-static.rs",
+      "sha256": "93d50c81087c8deac9f012eb18f2aa608c382006dd5c049e3b3f06d1a52b1b8c",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw shared references to cyclic static storage are not implemented",
+      "frontend_types_status": 1
+    }
+  ]
+}

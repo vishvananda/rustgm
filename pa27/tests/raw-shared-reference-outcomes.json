@@ -1,0 +1,2858 @@
+{
+  "stage": "planned-development-checkpoint",
+  "assignment_active": false,
+  "baseline": "179250b0",
+  "source_sha256": "602453569c16e5628c15d1f526f161c84a63ab01e211b755262723895c4d88b5",
+  "source_fingerprint_format": "sha256(concatenated sorted dev/**/*.rs relative path UTF8, NUL, file bytes, NUL)",
+  "compiler_sha256": "d4f664297881c3b2223d0feac5fb5aa942668290eac13b1627c3579f04dc2b25",
+  "frontend_cases": 26,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "backend": "unchanged backend.lock"
+  },
+  "summary": {
+    "rustc=0,types=0,execution=0": 11,
+    "rustc=1,types=1,execution=1": 7,
+    "rustc=0,types=1,execution=1": 7,
+    "rustc=1,types=0,execution=1": 1
+  },
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/local-scalar.rs",
+      "sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "dcc7153a93b340f1e83d39e3b89aaef529b0ac4a7cfdf6413e2a38926b630687",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/product.rs",
+      "sha256": "76ce0b8c1b72857163fee8c57bec00784a2f6bc37e1ae0797898ff6149076fa8",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "65f79aff37fc67f192ddd8f6f874fa1028b47b3b92a37693713d67ccd805621c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/array-field.rs",
+      "sha256": "1a49caddd8b10b65e41a41d343d1698c73327375fd7d4ac158da9e8672cce396",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "26ac163d5403945ac717e7684baacaf62cbc7c4b6e4d42df193c6eb654412673",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-reference.rs",
+      "sha256": "2ce893df81c92ff328d104542bb053b87b394bb24b265d84ff1088ab3cf7623a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "75c07fef5c143106fdfd814a79ca2b03bc38560dfe45b2726630b03a14631828",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "ca3e2c86cc432909336c208033d4d412c6c573466296aa7eb71de681153a164b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-field.rs",
+      "sha256": "8f5680b7583608b7deaa95ab73727f7bc975798a861629fec5172427128cf1ae",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "27e6ace234886a0c612910dab626c17ff106eeb41edbefb8a9a56731cb6cd09c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "3ef024144e32ed818402febaf09b7a05ee36e333d94d0029e0f3d4e14ce071f6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "57893f9dceb76ab7e33d9a4d473e44340ac1e35a7d59c94ec59cfc6316a48324"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/const-function.rs",
+      "sha256": "cd970c47e6eca490917f04d6948c837b9a0d9c766ecff7a998df15257011799f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "29c69dda3be4a4f040df539aeeb84e617683d83276675e406a028ea1edaa57c0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "5fe2ffccd2daf96a4d1207f7df48321dc00bb37d3ac2f79540e7d7a46a29f485",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-mut-type.rs",
+      "sha256": "ee430ed772a293076b6fd000682679bcfdb17a71a6cecc220fa93962e3d08585",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a500d2ca7e9da6adf371ac50cd8de503c7ba36b7c21193dd6fd230650a83fbc6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/writable-alias.rs",
+      "sha256": "8c77906180486964f846f079160a752595444c4d9bc6de3227b34edc2576eb90",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "00cf2b284c335939981946086bc0e885dd641517455544b4044c61c2bf1d9a60",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "5001c0f58cbc0ece8e84f2290983deeceb570124eac1e231d5aaa888f6bd844a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-derived-write.rs",
+      "sha256": "377ed11c061b197b3db95f219661557fdf64fa4df1a695d6f3b3b3469ee4cf89",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/shared-derived-write.rs:2:98\n  |\n2 | const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{let r=&*p;let q=(r as *const u32)as *mut u32;*q=9;}x};fn main(){let _=X;}\n  |                                                                                                  ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/shared-derived-write.rs:2:123\n  |\n2 | const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{let r=&*p;let q=(r as *const u32)as *mut u32;*q=9;}x};fn main(){let _=X;}\n  |                                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-whole.rs",
+      "sha256": "b7f9b180c960979464ea7cdf16254448eb36896b2525a4b8ee9db13e9ccf5e20",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "427e26eb0b855701c858215f1f9b12b69afee07d9d2ae7970856513c7e717ff4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "890696a007e0f72191640f3113ada586c8411763384197ef10eb356ea736a436",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs",
+      "sha256": "8355cae95035f61cad9a10fd4da30b8b986b894c29553824709b14edf5ea1188",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw shared reference is unaligned",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs:1:117\n  |\n1 | ...ix:0,x:37};let p=&raw const x.x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                     ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs:1:138\n  |\n1 | ...:37};let p=&raw const x.x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c",
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c",
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c",
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-aligned.rs",
+      "sha256": "90a52a999453f28bd4ea29f1940c984031bcdecc847fd8a1dff289249774f82f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "094254c40a3d1a1f4a0ba6bb3d55c0e6199638f049a0c8dda9c78473a8ae276c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "1f8131ad37501dbea894e19c575b65ca4434aaec47271af949de5fd65242d850",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-reference.rs",
+      "sha256": "65e3c062919473a050fe8401a421dce2a0d51478f9ca285bdc377a4cd0844a7b",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant raw shared reference is unaligned",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:111\n  |\n1 | #[repr(C,packed)]struct P{prefix:u8,x:u32}const X:u32={let x=P{prefix:0,x:37};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){...\n  |                                                                                                               ^^^^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:119\n  |\n1 | ...:0,x:37};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                     ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:140\n  |\n1 | ...7};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0080, E0793.\nFor more information about an error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c",
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c",
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c",
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/symbolic-zst.rs",
+      "sha256": "4a88e5fc35266ad792b2c431774ead0cb8e1265cf8a90a345a40889b121c29b5",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "reason": "",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f81800065042f9f0229396c7079918bbd50c74b6f036d0126d2f79c0281d3c5b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/numeric-zst.rs",
+      "sha256": "e513c80fa345fe260d6fe132874d0ee7cb8a78826cc5252fc7d0a14cf060ce5a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1",
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/null.rs",
+      "sha256": "a0d22b6d250ac8d599842dc892ee9fdd8dd1a980fabf2952e363cc1bfa2664a8",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer has no allocation provenance",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type &u32: encountered a null reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/null.rs:1:1\n  |\n1 | const R:&u32=unsafe{&*(0usize as *const u32)};fn main(){let _=R;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              00 00 00 00 00 00 00 00                         \u2502 ........\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/null.rs:1:63\n  |\n1 | const R:&u32=unsafe{&*(0usize as *const u32)};fn main(){let _=R;}\n  |                                                               ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f9e0339967805b1e07504624d463cf65b0d22f8e2206b8ade83c534d3e08fbed",
+          "stderr": "ERROR: file 0: 13: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f9e0339967805b1e07504624d463cf65b0d22f8e2206b8ade83c534d3e08fbed",
+          "stderr": "ERROR: file 0: 13: constant pointer has no allocation provenance\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f9e0339967805b1e07504624d463cf65b0d22f8e2206b8ade83c534d3e08fbed",
+          "stderr": "ERROR: file 0: 13: constant pointer has no allocation provenance\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/expired.rs",
+      "sha256": "50d8e085551115ad0677904804cdc01b3f33caa9133286accd0292bcc256bdab",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/expired.rs:1:64\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/expired.rs:1:85\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                                     ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/escape.rs",
+      "sha256": "f99da32be120ded99e0b9d212fd5e54adeb501d33ae04659a598f48508246e65",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "constant pointer refers to expired storage",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type &u32: encountered a dangling reference (use-after-free)\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/escape.rs:1:1\n  |\n1 | const R:&u32={let x=37u32;let p=&raw const x;unsafe{&*p}};fn main(){let _=R;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              \u257e\u2500\u2500\u2500\u2500\u2500alloc2<imm>\u2500\u2500\u2500\u2500\u2500\u257c                         \u2502 \u257e\u2500\u2500\u2500\u2500\u2500\u2500\u257c\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/escape.rs:1:75\n  |\n1 | const R:&u32={let x=37u32;let p=&raw const x;unsafe{&*p}};fn main(){let _=R;}\n  |                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e13c66ab287c6dfe0fe5d4c9f8ccbb599b59d4aa83f5f137018b2c271c5f39cb",
+          "stderr": "ERROR: file 0: 13: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e13c66ab287c6dfe0fe5d4c9f8ccbb599b59d4aa83f5f137018b2c271c5f39cb",
+          "stderr": "ERROR: file 0: 13: constant pointer refers to expired storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e13c66ab287c6dfe0fe5d4c9f8ccbb599b59d4aa83f5f137018b2c271c5f39cb",
+          "stderr": "ERROR: file 0: 13: constant pointer refers to expired storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/uninitialized.rs",
+      "sha256": "dfaa1f67167e64b620f63f80c434e84f15ecac31cede3053beb29a158a42ff06",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "borrowed place may be uninitialized or moved",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0381]: used binding `x` isn't initialized\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/uninitialized.rs:1:30\n  |\n1 | const X:u32={let x:u32;let p=&raw const x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                  -           ^^^^^^^^^^^^ `x` used here but it isn't initialized\n  |                  |\n  |                  binding declared here but left uninitialized\n  |\nhelp: consider assigning a value\n  |\n1 | const X:u32={let x:u32 = 42;let p=&raw const x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                        ++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0381`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69",
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69",
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69",
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-reference.rs",
+      "sha256": "9c042f42383269b717ed9362c6c3c1521a55ddadcc1e14f49715a1166ac9893a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "mutable references through raw pointers in constant execution are not implemented",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8a99aeeb6168cef32f31b01c14032ed43579124460497ed5f67046ad6f0ad7b2",
+          "stderr": "ERROR: file 0: 12: mutable references through raw pointers in constant execution are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8a99aeeb6168cef32f31b01c14032ed43579124460497ed5f67046ad6f0ad7b2",
+          "stderr": "ERROR: file 0: 12: mutable references through raw pointers in constant execution are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8a99aeeb6168cef32f31b01c14032ed43579124460497ed5f67046ad6f0ad7b2",
+          "stderr": "ERROR: file 0: 12: mutable references through raw pointers in constant execution are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/union-field.rs",
+      "sha256": "fda4fd8e9ac7d604e3e0d824202d725d4e3c551507a2d90979f08a6e0252d460",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "references into constant union images are not implemented",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/union-field.rs:1:62\n  |\n1 | union U{word:u32,byte:u8}const X:u32={let u=U{word:37};let p=unsafe{&raw const u.word};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                              ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `byte` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/union-field.rs:1:18\n  |\n1 | union U{word:u32,byte:u8}const X:u32={let u=U{word:37};let p=unsafe{&raw const u.word};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |       -          ^^^^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "918e69d52fec14e90c129168889a3da4ee6f1cd2a09bd95168f01c589d5f4381",
+          "stderr": "ERROR: file 0: 37: references into constant union images are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "918e69d52fec14e90c129168889a3da4ee6f1cd2a09bd95168f01c589d5f4381",
+          "stderr": "ERROR: file 0: 37: references into constant union images are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "918e69d52fec14e90c129168889a3da4ee6f1cd2a09bd95168f01c589d5f4381",
+          "stderr": "ERROR: file 0: 37: references into constant union images are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/reinterpret.rs",
+      "sha256": "7bc07f62909072fe00ce7d590d67f7daa06ad80d4c55853dc2dfd4ef1f93b5f0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa",
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa",
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa",
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-static-reference.rs",
+      "sha256": "0784c6541944d34389187bd77c0d040a39d496efcebd41da0484f40db0ac4010",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw shared references to mutable or external static storage are not implemented",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ecdf579384704a93c194c60f5e1cb73755c63f22c5947b55cbb047cb5abc1144",
+          "stderr": "ERROR: file 0: 33: constant raw shared references to mutable or external static storage are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ecdf579384704a93c194c60f5e1cb73755c63f22c5947b55cbb047cb5abc1144",
+          "stderr": "ERROR: file 0: 33: constant raw shared references to mutable or external static storage are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ecdf579384704a93c194c60f5e1cb73755c63f22c5947b55cbb047cb5abc1144",
+          "stderr": "ERROR: file 0: 33: constant raw shared references to mutable or external static storage are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "23ef0f299f8cbcea56710840370ab0f4b174885d1b5ed81ebf723ed525560656"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/foreign-static-reference.rs",
+      "sha256": "f0c23d42599b96ed3be36f0920d786aa68b12744f6bf402f0314c34bfdfcf2d2",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw shared references to mutable or external static storage are not implemented",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "52f2bffe3414fbf5de100bdf066ae67c50a1e58d34c98a32df7809a00453d2b9",
+          "stderr": "ERROR: file 0: 45: constant raw shared references to mutable or external static storage are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "52f2bffe3414fbf5de100bdf066ae67c50a1e58d34c98a32df7809a00453d2b9",
+          "stderr": "ERROR: file 0: 45: constant raw shared references to mutable or external static storage are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "52f2bffe3414fbf5de100bdf066ae67c50a1e58d34c98a32df7809a00453d2b9",
+          "stderr": "ERROR: file 0: 45: constant raw shared references to mutable or external static storage are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs",
+      "sha256": "af6c0f95805d52cdb3377f7dcd54f41bb400ca432e619030ff8271b7e871c99f",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_status": 1,
+      "frontend_status": 1,
+      "reason": "reference to an unaligned packed field",
+      "frontend_types_status": 0,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs:1:142\n  |\n1 | ...et x=A{prefix:0,p:P{x:37}};let p=&raw const x.p;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                                 ^^^^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "017e202f49333315f123e17cecb61533b2e23ed38f1f6d2e6ff1c0a587662f3d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d1d53ce7bfc55a7ea0a84ef9462b6a138cf58e0dbfb24869953dbd5a4e1595ae",
+          "stderr": "ERROR: file 0: 141: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d1d53ce7bfc55a7ea0a84ef9462b6a138cf58e0dbfb24869953dbd5a4e1595ae",
+          "stderr": "ERROR: file 0: 141: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/cyclic-static.rs",
+      "sha256": "93d50c81087c8deac9f012eb18f2aa608c382006dd5c049e3b3f06d1a52b1b8c",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "reason": "constant raw shared references to cyclic static storage are not implemented",
+      "frontend_types_status": 1,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `r` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/cyclic-static.rs:1:10\n  |\n1 | struct S{r:&'static S}static VALUE:S=S{r:unsafe{&*(&raw const VALUE)}};fn main(){let _=&VALUE;}\n  |        - ^\n  |        |\n  |        field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "feb785f3061765ddcbd3185e1a1bca89586227e991757c03e7fc561ea8480235",
+          "stderr": "ERROR: file 0: 37: constant raw shared references to cyclic static storage are not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "feb785f3061765ddcbd3185e1a1bca89586227e991757c03e7fc561ea8480235",
+          "stderr": "ERROR: file 0: 37: constant raw shared references to cyclic static storage are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "feb785f3061765ddcbd3185e1a1bca89586227e991757c03e7fc561ea8480235",
+          "stderr": "ERROR: file 0: 37: constant raw shared references to cyclic static storage are not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "6fb67ca6d85deec18ff9075fe8e15f14427694f97c3f90b7084e8dc229fab84c"
+    }
+  ],
+  "preimplementation_observations": [
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/local-scalar.rs",
+      "sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/product.rs",
+      "sha256": "76ce0b8c1b72857163fee8c57bec00784a2f6bc37e1ae0797898ff6149076fa8",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/array-field.rs",
+      "sha256": "1a49caddd8b10b65e41a41d343d1698c73327375fd7d4ac158da9e8672cce396",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-reference.rs",
+      "sha256": "2ce893df81c92ff328d104542bb053b87b394bb24b265d84ff1088ab3cf7623a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bd6e6e5a851879e24477033db97c42bba6c2daf7f50e1cf865c45512dd52e03f"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bd6e6e5a851879e24477033db97c42bba6c2daf7f50e1cf865c45512dd52e03f"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bd6e6e5a851879e24477033db97c42bba6c2daf7f50e1cf865c45512dd52e03f"
+        }
+      },
+      "rustc_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-field.rs",
+      "sha256": "8f5680b7583608b7deaa95ab73727f7bc975798a861629fec5172427128cf1ae",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 38: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "709cfa3e4caeb8896cefa63b7c004f5d54fe1b9c9d2bf8ad98b46332c606daed"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 38: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "709cfa3e4caeb8896cefa63b7c004f5d54fe1b9c9d2bf8ad98b46332c606daed"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 38: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "709cfa3e4caeb8896cefa63b7c004f5d54fe1b9c9d2bf8ad98b46332c606daed"
+        }
+      },
+      "rustc_object_sha256": "57893f9dceb76ab7e33d9a4d473e44340ac1e35a7d59c94ec59cfc6316a48324"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/const-function.rs",
+      "sha256": "cd970c47e6eca490917f04d6948c837b9a0d9c766ecff7a998df15257011799f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 39: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "71f81e1c404bce7c597c99349790434f7fcaac21512182e14b2552c56fbac112"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 39: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "71f81e1c404bce7c597c99349790434f7fcaac21512182e14b2552c56fbac112"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 39: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "71f81e1c404bce7c597c99349790434f7fcaac21512182e14b2552c56fbac112"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-mut-type.rs",
+      "sha256": "ee430ed772a293076b6fd000682679bcfdb17a71a6cecc220fa93962e3d08585",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/writable-alias.rs",
+      "sha256": "8c77906180486964f846f079160a752595444c4d9bc6de3227b34edc2576eb90",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-derived-write.rs",
+      "sha256": "377ed11c061b197b3db95f219661557fdf64fa4df1a695d6f3b3b3469ee4cf89",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/shared-derived-write.rs:2:98\n  |\n2 | const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{let r=&*p;let q=(r as *const u32)as *mut u32;*q=9;}x};fn main(){let _=X;}\n  |                                                                                                  ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/shared-derived-write.rs:2:123\n  |\n2 | const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{let r=&*p;let q=(r as *const u32)as *mut u32;*q=9;}x};fn main(){let _=X;}\n  |                                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 49: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b51d71764e83a5933999497a2f6154f26fe8bec25dfd0cb44fae0dfd4028fce7"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 49: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b51d71764e83a5933999497a2f6154f26fe8bec25dfd0cb44fae0dfd4028fce7"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 49: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b51d71764e83a5933999497a2f6154f26fe8bec25dfd0cb44fae0dfd4028fce7"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-whole.rs",
+      "sha256": "b7f9b180c960979464ea7cdf16254448eb36896b2525a4b8ee9db13e9ccf5e20",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs",
+      "sha256": "8355cae95035f61cad9a10fd4da30b8b986b894c29553824709b14edf5ea1188",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs:1:117\n  |\n1 | ...ix:0,x:37};let p=&raw const x.x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                     ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs:1:138\n  |\n1 | ...:37};let p=&raw const x.x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-aligned.rs",
+      "sha256": "90a52a999453f28bd4ea29f1940c984031bcdecc847fd8a1dff289249774f82f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 78: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d4e931c70da96d0941637ceb2d44e0de1ec9b35fa2dc487c6373383bca96841d"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 78: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d4e931c70da96d0941637ceb2d44e0de1ec9b35fa2dc487c6373383bca96841d"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 78: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d4e931c70da96d0941637ceb2d44e0de1ec9b35fa2dc487c6373383bca96841d"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-reference.rs",
+      "sha256": "65e3c062919473a050fe8401a421dce2a0d51478f9ca285bdc377a4cd0844a7b",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:111\n  |\n1 | #[repr(C,packed)]struct P{prefix:u8,x:u32}const X:u32={let x=P{prefix:0,x:37};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){...\n  |                                                                                                               ^^^^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:119\n  |\n1 | ...:0,x:37};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                     ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:140\n  |\n1 | ...7};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0080, E0793.\nFor more information about an error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "baf95b1bba9d0339d21c83b399ff1f7ef34d8f1d2987889351d2f4f15883c75d"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/symbolic-zst.rs",
+      "sha256": "4a88e5fc35266ad792b2c431774ead0cb8e1265cf8a90a345a40889b121c29b5",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/numeric-zst.rs",
+      "sha256": "e513c80fa345fe260d6fe132874d0ee7cb8a78826cc5252fc7d0a14cf060ce5a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/null.rs",
+      "sha256": "a0d22b6d250ac8d599842dc892ee9fdd8dd1a980fabf2952e363cc1bfa2664a8",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type &u32: encountered a null reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/null.rs:1:1\n  |\n1 | const R:&u32=unsafe{&*(0usize as *const u32)};fn main(){let _=R;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              00 00 00 00 00 00 00 00                         \u2502 ........\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/null.rs:1:63\n  |\n1 | const R:&u32=unsafe{&*(0usize as *const u32)};fn main(){let _=R;}\n  |                                                               ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7c99d5c15251cad9b4cad1e40f5f10d4b1effda070624104f3e8f57859f2aeb2"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7c99d5c15251cad9b4cad1e40f5f10d4b1effda070624104f3e8f57859f2aeb2"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7c99d5c15251cad9b4cad1e40f5f10d4b1effda070624104f3e8f57859f2aeb2"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/expired.rs",
+      "sha256": "50d8e085551115ad0677904804cdc01b3f33caa9133286accd0292bcc256bdab",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/expired.rs:1:64\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/expired.rs:1:85\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                                     ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/escape.rs",
+      "sha256": "f99da32be120ded99e0b9d212fd5e54adeb501d33ae04659a598f48508246e65",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type &u32: encountered a dangling reference (use-after-free)\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/escape.rs:1:1\n  |\n1 | const R:&u32={let x=37u32;let p=&raw const x;unsafe{&*p}};fn main(){let _=R;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              \u257e\u2500\u2500\u2500\u2500\u2500alloc2<imm>\u2500\u2500\u2500\u2500\u2500\u257c                         \u2502 \u257e\u2500\u2500\u2500\u2500\u2500\u2500\u257c\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/escape.rs:1:75\n  |\n1 | const R:&u32={let x=37u32;let p=&raw const x;unsafe{&*p}};fn main(){let _=R;}\n  |                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7c99d5c15251cad9b4cad1e40f5f10d4b1effda070624104f3e8f57859f2aeb2"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7c99d5c15251cad9b4cad1e40f5f10d4b1effda070624104f3e8f57859f2aeb2"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7c99d5c15251cad9b4cad1e40f5f10d4b1effda070624104f3e8f57859f2aeb2"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/uninitialized.rs",
+      "sha256": "dfaa1f67167e64b620f63f80c434e84f15ecac31cede3053beb29a158a42ff06",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0381]: used binding `x` isn't initialized\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/uninitialized.rs:1:30\n  |\n1 | const X:u32={let x:u32;let p=&raw const x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                  -           ^^^^^^^^^^^^ `x` used here but it isn't initialized\n  |                  |\n  |                  binding declared here but left uninitialized\n  |\nhelp: consider assigning a value\n  |\n1 | const X:u32={let x:u32 = 42;let p=&raw const x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                        ++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0381`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-reference.rs",
+      "sha256": "9c042f42383269b717ed9362c6c3c1521a55ddadcc1e14f49715a1166ac9893a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/union-field.rs",
+      "sha256": "fda4fd8e9ac7d604e3e0d824202d725d4e3c551507a2d90979f08a6e0252d460",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "warning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/union-field.rs:1:62\n  |\n1 | union U{word:u32,byte:u8}const X:u32={let u=U{word:37};let p=unsafe{&raw const u.word};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                              ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `byte` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/union-field.rs:1:18\n  |\n1 | union U{word:u32,byte:u8}const X:u32={let u=U{word:37};let p=unsafe{&raw const u.word};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |       -          ^^^^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1b3a80cac80e4abf931a6ced12729e818a0ba29f42e61ef1db05f5fb59e109fa"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1b3a80cac80e4abf931a6ced12729e818a0ba29f42e61ef1db05f5fb59e109fa"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1b3a80cac80e4abf931a6ced12729e818a0ba29f42e61ef1db05f5fb59e109fa"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/reinterpret.rs",
+      "sha256": "7bc07f62909072fe00ce7d590d67f7daa06ad80d4c55853dc2dfd4ef1f93b5f0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7b9c7c0082758aa07598f880de024d8a60e38fe279e3e35813fb3c77fb3b2c57"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-static-reference.rs",
+      "sha256": "0784c6541944d34389187bd77c0d040a39d496efcebd41da0484f40db0ac4010",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 33: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "84b616ae923492fd177b36a97f1d329d2ff56c3eece5b034b8b2d51e129db169"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 33: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "84b616ae923492fd177b36a97f1d329d2ff56c3eece5b034b8b2d51e129db169"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 33: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "84b616ae923492fd177b36a97f1d329d2ff56c3eece5b034b8b2d51e129db169"
+        }
+      },
+      "rustc_object_sha256": "23ef0f299f8cbcea56710840370ab0f4b174885d1b5ed81ebf723ed525560656"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/foreign-static-reference.rs",
+      "sha256": "f0c23d42599b96ed3be36f0920d786aa68b12744f6bf402f0314c34bfdfcf2d2",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 45: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b235ad14919d1f882635a386f66408df0fef151f646b32bea6e48a0b7de42586"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 45: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b235ad14919d1f882635a386f66408df0fef151f646b32bea6e48a0b7de42586"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 45: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b235ad14919d1f882635a386f66408df0fef151f646b32bea6e48a0b7de42586"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    }
+  ],
+  "additional_preimplementation_observations": [
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs",
+      "sha256": "af6c0f95805d52cdb3377f7dcd54f41bb400ca432e619030ff8271b7e871c99f",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs:1:142\n  |\n1 | ...et x=A{prefix:0,p:P{x:37}};let p=&raw const x.p;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                                 ^^^^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 78: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d4e931c70da96d0941637ceb2d44e0de1ec9b35fa2dc487c6373383bca96841d"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 78: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d4e931c70da96d0941637ceb2d44e0de1ec9b35fa2dc487c6373383bca96841d"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 78: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d4e931c70da96d0941637ceb2d44e0de1ec9b35fa2dc487c6373383bca96841d"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/cyclic-static.rs",
+      "sha256": "93d50c81087c8deac9f012eb18f2aa608c382006dd5c049e3b3f06d1a52b1b8c",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "warning: field `r` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/cyclic-static.rs:1:10\n  |\n1 | struct S{r:&'static S}static VALUE:S=S{r:unsafe{&*(&raw const VALUE)}};fn main(){let _=&VALUE;}\n  |        - ^\n  |        |\n  |        field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1b3a80cac80e4abf931a6ced12729e818a0ba29f42e61ef1db05f5fb59e109fa"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1b3a80cac80e4abf931a6ced12729e818a0ba29f42e61ef1db05f5fb59e109fa"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1b3a80cac80e4abf931a6ced12729e818a0ba29f42e61ef1db05f5fb59e109fa"
+        }
+      },
+      "rustc_object_sha256": "6fb67ca6d85deec18ff9075fe8e15f14427694f97c3f90b7084e8dc229fab84c"
+    }
+  ],
+  "first_candidate_observations": [
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/local-scalar.rs",
+      "sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "dcc7153a93b340f1e83d39e3b89aaef529b0ac4a7cfdf6413e2a38926b630687",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/product.rs",
+      "sha256": "76ce0b8c1b72857163fee8c57bec00784a2f6bc37e1ae0797898ff6149076fa8",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "65f79aff37fc67f192ddd8f6f874fa1028b47b3b92a37693713d67ccd805621c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/array-field.rs",
+      "sha256": "1a49caddd8b10b65e41a41d343d1698c73327375fd7d4ac158da9e8672cce396",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "26ac163d5403945ac717e7684baacaf62cbc7c4b6e4d42df193c6eb654412673",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-reference.rs",
+      "sha256": "2ce893df81c92ff328d104542bb053b87b394bb24b265d84ff1088ab3cf7623a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "75c07fef5c143106fdfd814a79ca2b03bc38560dfe45b2726630b03a14631828",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "ca3e2c86cc432909336c208033d4d412c6c573466296aa7eb71de681153a164b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "4e7377af620e32cac370a57934db93420de91b47863a2faee4598a681aec3ca2"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/static-field.rs",
+      "sha256": "8f5680b7583608b7deaa95ab73727f7bc975798a861629fec5172427128cf1ae",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "27e6ace234886a0c612910dab626c17ff106eeb41edbefb8a9a56731cb6cd09c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "3ef024144e32ed818402febaf09b7a05ee36e333d94d0029e0f3d4e14ce071f6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "57893f9dceb76ab7e33d9a4d473e44340ac1e35a7d59c94ec59cfc6316a48324"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/const-function.rs",
+      "sha256": "cd970c47e6eca490917f04d6948c837b9a0d9c766ecff7a998df15257011799f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "29c69dda3be4a4f040df539aeeb84e617683d83276675e406a028ea1edaa57c0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "5fe2ffccd2daf96a4d1207f7df48321dc00bb37d3ac2f79540e7d7a46a29f485",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-mut-type.rs",
+      "sha256": "ee430ed772a293076b6fd000682679bcfdb17a71a6cecc220fa93962e3d08585",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a500d2ca7e9da6adf371ac50cd8de503c7ba36b7c21193dd6fd230650a83fbc6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/writable-alias.rs",
+      "sha256": "8c77906180486964f846f079160a752595444c4d9bc6de3227b34edc2576eb90",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "00cf2b284c335939981946086bc0e885dd641517455544b4044c61c2bf1d9a60",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "5001c0f58cbc0ece8e84f2290983deeceb570124eac1e231d5aaa888f6bd844a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/shared-derived-write.rs",
+      "sha256": "377ed11c061b197b3db95f219661557fdf64fa4df1a695d6f3b3b3469ee4cf89",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/shared-derived-write.rs:2:98\n  |\n2 | const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{let r=&*p;let q=(r as *const u32)as *mut u32;*q=9;}x};fn main(){let _=X;}\n  |                                                                                                  ^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/shared-derived-write.rs:2:123\n  |\n2 | const X:u32={let mut x=7u32;let p=&raw mut x;unsafe{let r=&*p;let q=(r as *const u32)as *mut u32;*q=9;}x};fn main(){let _=X;}\n  |                                                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-whole.rs",
+      "sha256": "b7f9b180c960979464ea7cdf16254448eb36896b2525a4b8ee9db13e9ccf5e20",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "427e26eb0b855701c858215f1f9b12b69afee07d9d2ae7970856513c7e717ff4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "890696a007e0f72191640f3113ada586c8411763384197ef10eb356ea736a436",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs",
+      "sha256": "8355cae95035f61cad9a10fd4da30b8b986b894c29553824709b14edf5ea1188",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs:1:117\n  |\n1 | ...ix:0,x:37};let p=&raw const x.x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                     ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-field-unaligned.rs:1:138\n  |\n1 | ...:37};let p=&raw const x.x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-field-aligned.rs",
+      "sha256": "90a52a999453f28bd4ea29f1940c984031bcdecc847fd8a1dff289249774f82f",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "094254c40a3d1a1f4a0ba6bb3d55c0e6199638f049a0c8dda9c78473a8ae276c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "1f8131ad37501dbea894e19c575b65ca4434aaec47271af949de5fd65242d850",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-reference.rs",
+      "sha256": "65e3c062919473a050fe8401a421dce2a0d51478f9ca285bdc377a4cd0844a7b",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:111\n  |\n1 | #[repr(C,packed)]struct P{prefix:u8,x:u32}const X:u32={let x=P{prefix:0,x:37};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){...\n  |                                                                                                               ^^^^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:119\n  |\n1 | ...:0,x:37};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                     ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-reference.rs:1:140\n  |\n1 | ...7};let p=&raw const x;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0080, E0793.\nFor more information about an error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 54: constant raw shared reference is unaligned\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7f81a4317c0cb96d7bdeea62aae6a0438ffec434e80c7b033b5d46bcbacaef3c"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/symbolic-zst.rs",
+      "sha256": "4a88e5fc35266ad792b2c431774ead0cb8e1265cf8a90a345a40889b121c29b5",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 0,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "f81800065042f9f0229396c7079918bbd50c74b6f036d0126d2f79c0281d3c5b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/numeric-zst.rs",
+      "sha256": "e513c80fa345fe260d6fe132874d0ee7cb8a78826cc5252fc7d0a14cf060ce5a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: constant pointer has no allocation provenance\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "178ff3eb5917bffc1e22ab808431f4fabeec81a69d79580b1b7481d02cc35fb1"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/null.rs",
+      "sha256": "a0d22b6d250ac8d599842dc892ee9fdd8dd1a980fabf2952e363cc1bfa2664a8",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type &u32: encountered a null reference\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/null.rs:1:1\n  |\n1 | const R:&u32=unsafe{&*(0usize as *const u32)};fn main(){let _=R;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              00 00 00 00 00 00 00 00                         \u2502 ........\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/null.rs:1:63\n  |\n1 | const R:&u32=unsafe{&*(0usize as *const u32)};fn main(){let _=R;}\n  |                                                               ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: constant pointer has no allocation provenance\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f9e0339967805b1e07504624d463cf65b0d22f8e2206b8ade83c534d3e08fbed"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: constant pointer has no allocation provenance\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f9e0339967805b1e07504624d463cf65b0d22f8e2206b8ade83c534d3e08fbed"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: constant pointer has no allocation provenance\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f9e0339967805b1e07504624d463cf65b0d22f8e2206b8ade83c534d3e08fbed"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/expired.rs",
+      "sha256": "50d8e085551115ad0677904804cdc01b3f33caa9133286accd0292bcc256bdab",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/expired.rs:1:64\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                ^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/expired.rs:1:85\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                                                     ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/escape.rs",
+      "sha256": "f99da32be120ded99e0b9d212fd5e54adeb501d33ae04659a598f48508246e65",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type &u32: encountered a dangling reference (use-after-free)\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/escape.rs:1:1\n  |\n1 | const R:&u32={let x=37u32;let p=&raw const x;unsafe{&*p}};fn main(){let _=R;}\n  | ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 8, align: 8) {\n              \u257e\u2500\u2500\u2500\u2500\u2500alloc2<imm>\u2500\u2500\u2500\u2500\u2500\u257c                         \u2502 \u257e\u2500\u2500\u2500\u2500\u2500\u2500\u257c\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/escape.rs:1:75\n  |\n1 | const R:&u32={let x=37u32;let p=&raw const x;unsafe{&*p}};fn main(){let _=R;}\n  |                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: constant pointer refers to expired storage\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e13c66ab287c6dfe0fe5d4c9f8ccbb599b59d4aa83f5f137018b2c271c5f39cb"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: constant pointer refers to expired storage\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e13c66ab287c6dfe0fe5d4c9f8ccbb599b59d4aa83f5f137018b2c271c5f39cb"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 13: constant pointer refers to expired storage\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e13c66ab287c6dfe0fe5d4c9f8ccbb599b59d4aa83f5f137018b2c271c5f39cb"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/uninitialized.rs",
+      "sha256": "dfaa1f67167e64b620f63f80c434e84f15ecac31cede3053beb29a158a42ff06",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0381]: used binding `x` isn't initialized\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/uninitialized.rs:1:30\n  |\n1 | const X:u32={let x:u32;let p=&raw const x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                  -           ^^^^^^^^^^^^ `x` used here but it isn't initialized\n  |                  |\n  |                  binding declared here but left uninitialized\n  |\nhelp: consider assigning a value\n  |\n1 | const X:u32={let x:u32 = 42;let p=&raw const x;unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                        ++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0381`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 29: borrowed place may be uninitialized or moved\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6a930d1fb76a703b9ee5cd167ad7600886b900f06ec37e8ef4371c36ad852e69"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-reference.rs",
+      "sha256": "9c042f42383269b717ed9362c6c3c1521a55ddadcc1e14f49715a1166ac9893a",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: mutable references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8a99aeeb6168cef32f31b01c14032ed43579124460497ed5f67046ad6f0ad7b2"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: mutable references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8a99aeeb6168cef32f31b01c14032ed43579124460497ed5f67046ad6f0ad7b2"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: mutable references through raw pointers in constant execution are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8a99aeeb6168cef32f31b01c14032ed43579124460497ed5f67046ad6f0ad7b2"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/union-field.rs",
+      "sha256": "fda4fd8e9ac7d604e3e0d824202d725d4e3c551507a2d90979f08a6e0252d460",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "warning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/union-field.rs:1:62\n  |\n1 | union U{word:u32,byte:u8}const X:u32={let u=U{word:37};let p=unsafe{&raw const u.word};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |                                                              ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `byte` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/union-field.rs:1:18\n  |\n1 | union U{word:u32,byte:u8}const X:u32={let u=U{word:37};let p=unsafe{&raw const u.word};unsafe{let r=&*p;*r}};fn main(){let _=X;}\n  |       -          ^^^^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references into constant union images are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "918e69d52fec14e90c129168889a3da4ee6f1cd2a09bd95168f01c589d5f4381"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references into constant union images are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "918e69d52fec14e90c129168889a3da4ee6f1cd2a09bd95168f01c589d5f4381"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: references into constant union images are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "918e69d52fec14e90c129168889a3da4ee6f1cd2a09bd95168f01c589d5f4381"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/reinterpret.rs",
+      "sha256": "7bc07f62909072fe00ce7d590d67f7daa06ad80d4c55853dc2dfd4ef1f93b5f0",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 12: raw pointer type reinterpretation in constant execution is not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a77244d68fb4f6cf35fecc64602f84322dd5db2b00380d7e584aeeb884b308fa"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/mutable-static-reference.rs",
+      "sha256": "0784c6541944d34389187bd77c0d040a39d496efcebd41da0484f40db0ac4010",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 33: constant raw shared references to mutable or external static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ecdf579384704a93c194c60f5e1cb73755c63f22c5947b55cbb047cb5abc1144"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 33: constant raw shared references to mutable or external static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ecdf579384704a93c194c60f5e1cb73755c63f22c5947b55cbb047cb5abc1144"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 33: constant raw shared references to mutable or external static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ecdf579384704a93c194c60f5e1cb73755c63f22c5947b55cbb047cb5abc1144"
+        }
+      },
+      "rustc_object_sha256": "23ef0f299f8cbcea56710840370ab0f4b174885d1b5ed81ebf723ed525560656"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/foreign-static-reference.rs",
+      "sha256": "f0c23d42599b96ed3be36f0920d786aa68b12744f6bf402f0314c34bfdfcf2d2",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 45: constant raw shared references to mutable or external static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "52f2bffe3414fbf5de100bdf066ae67c50a1e58d34c98a32df7809a00453d2b9"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 45: constant raw shared references to mutable or external static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "52f2bffe3414fbf5de100bdf066ae67c50a1e58d34c98a32df7809a00453d2b9"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 45: constant raw shared references to mutable or external static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "52f2bffe3414fbf5de100bdf066ae67c50a1e58d34c98a32df7809a00453d2b9"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs",
+      "sha256": "af6c0f95805d52cdb3377f7dcd54f41bb400ca432e619030ff8271b7e871c99f",
+      "rustc_hypothesis": 1,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": false,
+      "rustc_actual": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/packed-source-aligned.rs:1:142\n  |\n1 | ...et x=A{prefix:0,p:P{x:37}};let p=&raw const x.p;unsafe{let r=&(*p).x;*r}};fn main(){let _=X;}\n  |                                                                 ^^^^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "017e202f49333315f123e17cecb61533b2e23ed38f1f6d2e6ff1c0a587662f3d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 141: reference to an unaligned packed field\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d1d53ce7bfc55a7ea0a84ef9462b6a138cf58e0dbfb24869953dbd5a4e1595ae"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 141: reference to an unaligned packed field\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d1d53ce7bfc55a7ea0a84ef9462b6a138cf58e0dbfb24869953dbd5a4e1595ae"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/raw-shared-reference/cyclic-static.rs",
+      "sha256": "93d50c81087c8deac9f012eb18f2aa608c382006dd5c049e3b3f06d1a52b1b8c",
+      "rustc_hypothesis": 0,
+      "frontend_expected": 1,
+      "accepted_rust_boundary": true,
+      "rustc_actual": 0,
+      "rustc_stderr": "warning: field `r` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/raw-shared-reference/cyclic-static.rs:1:10\n  |\n1 | struct S{r:&'static S}static VALUE:S=S{r:unsafe{&*(&raw const VALUE)}};fn main(){let _=&VALUE;}\n  |        - ^\n  |        |\n  |        field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: constant raw shared references to cyclic static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "feb785f3061765ddcbd3185e1a1bca89586227e991757c03e7fc561ea8480235"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: constant raw shared references to cyclic static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "feb785f3061765ddcbd3185e1a1bca89586227e991757c03e7fc561ea8480235"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 37: constant raw shared references to cyclic static storage are not implemented\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "feb785f3061765ddcbd3185e1a1bca89586227e991757c03e7fc561ea8480235"
+        }
+      },
+      "rustc_object_sha256": "6fb67ca6d85deec18ff9075fe8e15f14427694f97c3f90b7084e8dc229fab84c"
+    }
+  ],
+  "gates": [
+    {
+      "batch": "shared-reference-first",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 6.61112117767334
+    },
+    {
+      "batch": "shared-reference-first",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 101,
+      "seconds": 26.897379398345947
+    },
+    {
+      "batch": "shared-reference-second",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 5.506052494049072
+    },
+    {
+      "batch": "shared-reference-second",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 48.88082957267761
+    },
+    {
+      "batch": "shared-reference-second",
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 23.027899265289307
+    },
+    {
+      "batch": "shared-reference-second",
+      "name": "private",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "raw_access",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 67.77274131774902,
+      "selected_tests": 0,
+      "qualified": false,
+      "explanation": "incorrect filter raw_access matched no tests; final selector raw_reads runs2"
+    },
+    {
+      "batch": "shared-reference-second",
+      "name": "source-native",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "reference_reconstruction",
+        "--",
+        "--include-ignored",
+        "--nocapture",
+        "--test-threads=2"
+      ],
+      "status": 101,
+      "seconds": 56.306331396102905
+    },
+    {
+      "batch": "shared-reference-third",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 6.05211615562439
+    },
+    {
+      "batch": "shared-reference-third",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 51.77931213378906
+    },
+    {
+      "batch": "shared-reference-third",
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 23.13637900352478
+    },
+    {
+      "batch": "shared-reference-third",
+      "name": "private",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--lib",
+        "const_eval::raw_reads::",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 63.4328818321228,
+      "selected_tests": 2,
+      "qualified": true
+    },
+    {
+      "batch": "shared-reference-third",
+      "name": "regressions",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "provenance_reads",
+        "--test",
+        "provenance_writes",
+        "--test",
+        "union_addresses",
+        "--test",
+        "constant_locations",
+        "--test",
+        "reachable_storage",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 67.70455574989319
+    },
+    {
+      "batch": "shared-reference-third",
+      "name": "source-native",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "reference_reconstruction",
+        "--",
+        "--include-ignored",
+        "--nocapture",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 3.1004676818847656
+    },
+    {
+      "batch": "shared-reference-close",
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--bin",
+        "rustgm"
+      ],
+      "status": 0,
+      "seconds": 0.07420659065246582
+    },
+    {
+      "batch": "shared-reference-close",
+      "name": "upstream",
+      "command": [
+        "python3",
+        "scripts/upstream.py",
+        "--verify"
+      ],
+      "status": 0,
+      "seconds": 0.1428966522216797
+    }
+  ],
+  "native": [
+    {
+      "name": "alias-rights",
+      "qualified_source_sha256": "1f95a08d41d6ba14e392ace8a8a765325f43d88ad09ecf770ec7677dd90fdce7",
+      "lowir_sha256": "1b4de4912a0c1847533b18f57d26f9bc6991e68b627e8f9c13c0045874a5e4da",
+      "validated_lowir_sha256": "7f025699fe9cedaf0ddd2a28a05dcefc86367057ae3169da6cc2306bcfc20436",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "shared-reference-third/source-native.log: shared_reference_values_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "local-products",
+      "qualified_source_sha256": "4197b88aafa298686cb724f6d86f6f4dabd76cd849eb6ca41f55ac3b59429d22",
+      "lowir_sha256": "71b696c90566dc99b2c183a96e278c45df7b20d8883530df9570de9d838f061f",
+      "validated_lowir_sha256": "98c4a6c1f5b92077715c4b041b4b4f1e60655c5b89db4a894cc1cb4965034fe0",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "shared-reference-third/source-native.log: shared_reference_values_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "packed-zst",
+      "qualified_source_sha256": "f7b8cbda836d635d0edad58b56252a54081f60089e6c2e203134988a10cc0494",
+      "lowir_sha256": "f48b7cacb5078f143e746660649ee6fe6ca564d04bd8ea19d95d94c684c0617e",
+      "validated_lowir_sha256": "2997d8d436506651da5f614b8f6c0d2205eab9de99a3ce7f461c8faaa6c540a4",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "shared-reference-third/source-native.log: shared_reference_values_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "static-reference-values",
+      "qualified_source_sha256": "1b0b7406a27097b2f708093646b54673f868cf8c2e819b4eb9e7d9be31e5f3f5",
+      "lowir_sha256": "1b4283bbaea9e24b283cf2a9090f761ad2c4c6702e2894d7953a69cd8b3fecef",
+      "validated_lowir_sha256": "096d5df450d21911b91d1782deca11e4ea00b9743c8e194881be3880b6ed38d6",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "shared-reference-third/source-native.log: shared_reference_values_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "static-values",
+      "qualified_source_sha256": "2bc34feab5752dc0d831ce442a125b7fc9f03b013ca91cbcb0dbff1ead3a78fb",
+      "lowir_sha256": "e9778d1788269d910fe38208f2d4e614f2c8f2e891ca21f27d5e2c3571fc63e8",
+      "validated_lowir_sha256": "d4cee67979e9617d707e3bcb35cff50bb643da4834a4ed190ab231772209e514",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "shared-reference-third/source-native.log: shared_reference_values_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    }
+  ],
+  "scaling": {
+    "iterations": [
+      8,
+      32,
+      128
+    ],
+    "ordinary_steps": [
+      501,
+      1749,
+      6741
+    ],
+    "ordinary_slots": [
+      46,
+      70,
+      166
+    ],
+    "raw_steps": [
+      626,
+      2210,
+      8546
+    ],
+    "raw_slots": [
+      50,
+      74,
+      170
+    ],
+    "raw_slot_overhead": [
+      4,
+      4,
+      4
+    ],
+    "superseded_hypothesis": {
+      "claim": "fixed retained slots across loop sizes",
+      "actual": "ordinary reference locals already retain linearly growing cells",
+      "retained_initial_observations": {
+        "iterations": [
+          8,
+          32
+        ],
+        "steps": [
+          501,
+          1749
+        ],
+        "slots": [
+          46,
+          70
+        ]
+      },
+      "evidence": "shared-reference-second/source-native.log"
+    },
+    "current_bounds": "peak slots <= 2*N+64; raw minus ordinary slot overhead constant; step ratio <5 for4x input",
+    "claim": "bounded linear work/storage and constant changed-path storage overhead; no wall-time neutrality claim"
+  },
+  "interface": {
+    "public_enums_changed": false,
+    "cfg_changed": false,
+    "pointer_layout_changed": false,
+    "private_helper": "Machine::shared_raw_reference(Resolved)->Result<Option<Constant>,Failure>",
+    "memory_projection_query": "Machine::projects_union_field(Resolved)->Result<bool,Failure>",
+    "capability": "requires retained RawAccess; restrict_shared is monotone and does not mutate another pointer",
+    "static_scope": "completed immutable storage with existing readiness/retry; mutable/external/cyclic static formation explicit unsupported, not illegal contents-read claim"
+  },
+  "private_invariants": [
+    "nonzero selector2/2 tests",
+    "empty-cell initialization and expired-root rejection",
+    "same LocationId with shared-derived output permission; original writable alias unchanged",
+    "valid packed-base by-value read paired with unaligned leaf-reference rejection",
+    "missing raw access anchor rejection"
+  ],
+  "superseded_fixture": {
+    "path": "pa27/tests/spec/raw-constant-reads/raw-borrow-boundary.rs",
+    "sha256": "24f2833bf1fd457ea61c81f64bbf8e6dfa6641e2251d0beb9f5f842ffd7076d0",
+    "old_frontend_status": 1,
+    "current_frontend_status": 0,
+    "bytes_changed": false
+  },
+  "union_boundary_refinement": {
+    "path": "pa27/tests/spec/union-addresses/reference-reconstruction-boundary.rs",
+    "sha256": "f4f61f6e101fcbc8189c81e97b1177837ea0d494b4e1f327b2b8e48cc57c251b",
+    "frontend_status": 1,
+    "reason": "references into constant union images are not implemented",
+    "bytes_changed": false
+  },
+  "remaining": [
+    "mutable raw-reference reconstruction",
+    "raw-derived references to mutable/foreign statics and cyclic immutable-static reference graphs",
+    "numeric nonnull ZST references without allocation provenance",
+    "union-field references and pointer/reference/function/aggregate union Images",
+    "general raw type/byte reinterpretation and pointer offsets",
+    "shared-derived interior-mutable writes",
+    "runtime invalid_reference_casting default-lint enforcement",
+    "remaining packed/pattern/release contracts",
+    "PA28 memory/numeric intrinsic families, broader volatile and atomic release contracts"
+  ],
+  "metadata": {
+    "upstream": "24fixtures+126Referencefiles verified",
+    "layout": "not repeated: inherited PA16 baseline gap already root-fixed014bfcde"
+  },
+  "evidence_root": "obj/parallel/pa27",
+  "notes": [
+    "private visibility compile failure retained",
+    "zero-test filter is explicitly unqualified; corrected selector requires nonzero tests",
+    "physical CTFE alignment diagnosis supersedes initial expectation of later packed-source wording on misaligned fixture",
+    "physically aligned packed-source fixture retains types0 and executable/constants1 source rejection",
+    "all new native tests ignored by default",
+    "no active oracle generation, assignment activation, backend change or full-release claim"
+  ]
+}

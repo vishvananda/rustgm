@@ -90,7 +90,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "reference-reconstruction-boundary",
         0,
         1,
-        "references through raw pointers in constant execution are not implemented",
+        "references into constant union images are not implemented",
     ),
     (
         "pointer-family-boundary",

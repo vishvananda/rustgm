@@ -31,6 +31,13 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
         machine.read(place).err().map(Failure::message),
         Some("constant reads uninitialized storage")
     );
+    assert_eq!(
+        machine
+            .shared_raw_reference(place)
+            .err()
+            .map(Failure::message),
+        Some("constant reads uninitialized storage")
+    );
     machine.check_raw_write(place).map_err(Failure::message)?;
     assert_eq!(
         machine
@@ -54,6 +61,19 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
             .map_err(Failure::message)?,
         sema::model::Scalar::Integer(37)
     );
+    let shared = machine
+        .shared_raw_reference(place)
+        .map_err(Failure::message)?
+        .ok_or("reference")?;
+    assert_eq!(shared.location(), address.location());
+    assert_eq!(
+        shared.write_permission(),
+        Some(sema::values::WritePermission::SharedDerived)
+    );
+    assert_eq!(
+        address.write_permission(),
+        Some(sema::values::WritePermission::Writable)
+    );
     let layout_steps = machine.evaluator.facts().layouts.steps;
     for _ in 0..8 {
         machine
@@ -66,6 +86,13 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
     machine.memory.expire(&allocations);
     assert_eq!(
         machine.read(place).err().map(Failure::message),
+        Some("constant pointer refers to expired storage")
+    );
+    assert_eq!(
+        machine
+            .shared_raw_reference(place)
+            .err()
+            .map(Failure::message),
         Some("constant pointer refers to expired storage")
     );
     assert_eq!(

@@ -181,16 +181,19 @@ impl Machine<'_, '_> {
                 if place.union.is_some() {
                     return Err("constant union field address formation requires byte-offset provenance and is not implemented".into());
                 }
-                if place.raw.is_some() {
-                    return Err(
-                        "references through raw pointers in constant execution are not implemented"
-                            .into(),
-                    );
-                }
-                if matches!(
+                let shared = matches!(
                     self.evaluator.facts().types.kind(ty),
                     Some(Kind::Reference { mutable: false, .. })
-                ) {
+                );
+                if place.raw.is_some() {
+                    if !shared {
+                        return Err("mutable references through raw pointers in constant execution are not implemented".into());
+                    }
+                    let Some(address) = self.shared_raw_reference(place)? else {
+                        return Ok(None);
+                    };
+                    address
+                } else if shared {
                     place.address.restrict_shared()
                 } else {
                     place.address

@@ -18,7 +18,12 @@ The ordinary uninitialized-local control fails Rust source initialization checki
 
 The native controls check computed values for local products, function/static reads and physically aligned packed storage. The reusable native helper supplies the same checked failure function to Rust and RustGM; the locked CPPGM backend is unchanged. Qualification results, exact diagnostics, complete qualified native input hashes and artifact hashes are recorded in `pa27/tests/raw-read-outcomes.json`.
 
-## Remaining contract
+## Remaining contract at the raw-read checkpoint
+
+This table and the following boundary paragraph are historical. Later scalar
+Images, raw stores, union-field addresses and shared-reference reconstruction
+supersede their respective boundaries; the current remaining map is in
+[the shared-reference review](pa27-shared-reference-review.md).
 
 | Area | Implemented | Remaining |
 | --- | --- | --- |
