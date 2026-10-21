@@ -10,6 +10,10 @@ pub enum Intrinsic {
     AtomicCompareExchange,
     AtomicCompareExchangeWeak,
     AtomicFetchSub,
+    AtomicFetchAnd,
+    AtomicFetchOr,
+    AtomicFetchXor,
+    AtomicFetchNand,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -27,7 +31,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 13] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -37,6 +41,10 @@ impl Intrinsic {
         Self::AtomicCompareExchange,
         Self::AtomicCompareExchangeWeak,
         Self::AtomicFetchSub,
+        Self::AtomicFetchAnd,
+        Self::AtomicFetchOr,
+        Self::AtomicFetchXor,
+        Self::AtomicFetchNand,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -50,6 +58,10 @@ impl Intrinsic {
             Self::AtomicCompareExchange => 6,
             Self::AtomicCompareExchangeWeak => 7,
             Self::AtomicFetchSub => 8,
+            Self::AtomicFetchAnd => 9,
+            Self::AtomicFetchOr => 10,
+            Self::AtomicFetchXor => 11,
+            Self::AtomicFetchNand => 12,
         }
     }
     #[must_use]
@@ -64,6 +76,10 @@ impl Intrinsic {
             Self::AtomicCompareExchange => "compare_exchange",
             Self::AtomicCompareExchangeWeak => "compare_exchange_weak",
             Self::AtomicFetchSub => "fetch_sub",
+            Self::AtomicFetchAnd => "fetch_and",
+            Self::AtomicFetchOr => "fetch_or",
+            Self::AtomicFetchXor => "fetch_xor",
+            Self::AtomicFetchNand => "fetch_nand",
         }
     }
     #[must_use]
@@ -77,9 +93,25 @@ impl Intrinsic {
                 order.load_valid()
             }
             Self::AtomicStore => order.store_valid(),
-            Self::AtomicSwap | Self::AtomicFetchAdd | Self::AtomicFetchSub => true,
+            Self::AtomicSwap
+            | Self::AtomicFetchAdd
+            | Self::AtomicFetchSub
+            | Self::AtomicFetchAnd
+            | Self::AtomicFetchOr
+            | Self::AtomicFetchXor
+            | Self::AtomicFetchNand => true,
             Self::ReadVolatile | Self::WriteVolatile => false,
         }
+    }
+    #[must_use]
+    pub const fn is_bitwise(self) -> bool {
+        matches!(
+            self,
+            Self::AtomicFetchAnd
+                | Self::AtomicFetchOr
+                | Self::AtomicFetchXor
+                | Self::AtomicFetchNand
+        )
     }
     #[must_use]
     pub const fn is_compare_exchange(self) -> bool {

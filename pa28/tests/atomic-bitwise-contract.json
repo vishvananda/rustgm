@@ -1,0 +1,291 @@
+{
+  "stage": "predeclared-development-contract",
+  "baseline": "71c789e2",
+  "scope": "canonical AtomicU32 fetch_and/or/xor/nand; safe RuntimeOnly; all five orders; one relaxed initial load and CAS(success requested,failure Relaxed) retry; no direct backend bitwise opcode",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/and-orders.rs",
+      "sha256": "50ad97ca9eb4fdf43ebca454d77b6317368e7cef07f9c88ca9ca4593c38c76bc",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/sub-orders.rs; fetch_sub replaced by fetch_and"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/variable-order.rs",
+      "sha256": "cdd3e4096cb26dd669b6eabfa65be47d2b4be583cc057d4c8e5a5b8f10685dd6",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/variable-order.rs; fetch_sub replaced by fetch_or"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/aliased-order.rs",
+      "sha256": "b5f8fddd674cd5ad80a2146a37b87630c607f4bdf5de2ff4848e6665530d2dfa",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/aliased-order.rs; fetch_sub replaced by fetch_xor"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/reified.rs",
+      "sha256": "4af278daea2e40b0976344efa739fc44a75b0a994cf4070d298888702681e1b2",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/reified.rs; fetch_sub replaced by fetch_nand"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/ufcs.rs",
+      "sha256": "add6f0901de1cebeb6ff284ebc6a46ea04d33636a103a5d6e6d523d47cf14667",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/ufcs.rs; fetch_sub replaced by fetch_and"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/shared-static.rs",
+      "sha256": "ad8f89b21fc5c03070f6af3f68b57a15afbde5378ada1ce1a33fce4ea3a3e1e6",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/shared-static.rs; fetch_sub replaced by fetch_or"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/masks.rs",
+      "sha256": "da1061e8bf8fbb7fff8af119d91ea7def14e09a69083d6778f0a321230bbb05d",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/wrapping.rs; fetch_sub replaced by fetch_xor",
+      "baseline_observation_path": "pa28/tests/spec/atomic-bitwise/wrapping.rs"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/unsafe-narrowing.rs",
+      "sha256": "808cafe0bd66c031030b144f312d60b423b04a81c68aaa74acf1de54fe9b75da",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/unsafe-narrowing.rs; fetch_sub replaced by fetch_nand"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-and.rs",
+      "sha256": "f8d3e08c1451757c847ecfa357d79377cf898c92a48b9747e4da9664014db377",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-sub.rs; fetch_sub replaced by fetch_and"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-dead-call.rs",
+      "sha256": "481e01e98ac75a301ae33b986e75179576d99ad416641ddc6b49a441e1baebcd",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-dead-sub.rs; fetch_sub replaced by fetch_or",
+      "baseline_observation_path": "pa28/tests/spec/atomic-bitwise/const-dead-sub.rs"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-reified.rs",
+      "sha256": "2b4974165db0a6ea53873db531956f54f98d3f4d902aa575d670e2fef38dc540",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "non-const calls are not allowed in constant initializers",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-reified.rs; fetch_sub replaced by fetch_xor"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/packed-receiver.rs",
+      "sha256": "4ff64848753984ce98392b89293af214f98956ae9bf564fbd1d3660d03cce7dd",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "reason": "reference to an unaligned packed field",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/packed-receiver.rs; fetch_sub replaced by fetch_nand"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/wrong-value.rs",
+      "sha256": "651f65c6bf21865c48e09d90b4e891b3951124a13cc6c2af7904af734a060253",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/wrong-value.rs; fetch_sub replaced by fetch_and"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/wrong-order.rs",
+      "sha256": "1124e80c0bb822ee91b3ca5e1b288eb5d995ac47b90bb4b8d0b4bcd009a49f6c",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/wrong-order.rs; fetch_sub replaced by fetch_or"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/wrong-arity.rs",
+      "sha256": "282914029799ecda637ebb8bb59d9114c68bcdbfe9db3f1ea54b61f443b4f976",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/wrong-arity.rs; fetch_sub replaced by fetch_xor"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/generic-argument.rs",
+      "sha256": "58f46f69a9def4ccbd3031574bff7eabbf3db0982aa6c20c69c4fb4e0dc02efa",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/generic-argument.rs; fetch_sub replaced by fetch_nand"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/local-shadow.rs",
+      "sha256": "bc3ad6f8c3b1ecb43a5a10295e9dd4fba0360bfc8c5dd04b2715221f447ce7f3",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/local-shadow.rs; fetch_sub replaced by fetch_and"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-method-alias.rs",
+      "sha256": "94dadb54b8bb6edd825d542fc2803cc3addadec82cb016786f1f2a29d48b200d",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-sub-alias.rs; fetch_sub replaced by fetch_or",
+      "baseline_observation_path": "pa28/tests/spec/atomic-bitwise/const-and-alias.rs"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-generic-skipped.rs",
+      "sha256": "9a8fff128638c90e868090f7f57a16127ecd8b78132066d231078ceef932ad0b",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-generic-skipped.rs; fetch_sub replaced by fetch_xor"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-unsafe.rs",
+      "sha256": "a4fe683ca78b2ae7ebd91b82bec1193a87fa7b04b33a596aa272e5fa0c5d6ced",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-unsafe.rs; fetch_sub replaced by fetch_nand"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/packed-raw.rs",
+      "sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/packed-raw.rs; fetch_sub replaced by fetch_and"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/or-orders.rs",
+      "sha256": "43d2f74415499f3d28c948530a167c3326d1b74a2b785b97d8e0d2703e502d19",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/sub-orders.rs; fetch_sub replaced by fetch_or"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-or.rs",
+      "sha256": "8784e146ef7d27239fbabe08124e8b2e2fc6b29af4a5593dfc7c134ce9a3831f",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-sub.rs; fetch_sub replaced by fetch_or"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/xor-orders.rs",
+      "sha256": "35b982899049c12408d5443e86341996e405ff0fa19fc74f3aa9f646dfcec654",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/sub-orders.rs; fetch_sub replaced by fetch_xor"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-xor.rs",
+      "sha256": "8b150d1db0d570a34d3cc1f30c6e2e3916ac45f5777901b2d365686b89c99744",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-sub.rs; fetch_sub replaced by fetch_xor"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/nand-orders.rs",
+      "sha256": "e785ab05f316c36ef9bae6ec4979ef1d3f44bcd26f8ff6716570acc84fad8599",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/sub-orders.rs; fetch_sub replaced by fetch_nand"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise/const-nand.rs",
+      "sha256": "46120d72d27d874608cefffdf0f19a9ca8d49ecf27eb511574a2add1e7fd5013",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-subtract/const-sub.rs; fetch_sub replaced by fetch_nand"
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/spec/atomic-bitwise-native/all-orders.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "scope": "uncontended native comparison"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise-native/effects-storage.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "scope": "uncontended native comparison"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise-native/once-arguments.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "scope": "uncontended native comparison"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise-native/reified.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "scope": "uncontended native comparison"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise-native/unchanged-values.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "scope": "uncontended native comparison"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-bitwise-native/zero-max.rs",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "scope": "uncontended native comparison"
+    }
+  ]
+}

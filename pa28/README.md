@@ -97,6 +97,15 @@ The CAS source/native/scaling receipt also qualifies lazy preparation of fully
 qualified AtomicU32/Ordering expression paths, explicit core aliases, no implicit
 prelude and local shadowing. Existing canonical identity checks remain in force.
 See `tests/atomic-cas-outcomes.json` for exact outcomes and phase distinctions.
+The bitwise slice adds canonical safe runtime `fetch_and`, `fetch_or`,
+`fetch_xor` and `fetch_nand` for U32. Each uses one initial Relaxed atomic load
+and a compare-exchange retry loop with the requested success order and Relaxed
+failure order. Failed attempts consume the backend-updated expected scratch;
+success returns its captured old value. Source arguments are evaluated once,
+and unchanged desired values still perform CAS. Nand complements at U32 width.
+`tests/atomic-bitwise-outcomes.json` records source/native and typed loop
+invariants; the native evidence is uncontended. No direct bitwise atomic opcode
+or backend change is introduced.
 Additional atomic widths and intrinsic families remain separate work.
 
 External-open coverage keeps an unknown case separate from real variant IDs and

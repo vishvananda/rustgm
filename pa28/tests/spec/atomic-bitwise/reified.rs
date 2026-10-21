@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let fetch_nand:fn(&A,u32,O)->u32=A::fetch_nand;let add:fn(&A,u32,O)->u32=A::fetch_nand;let _=fetch_nand(&a,2,O::Acquire);let _=add(&a,3,O::Release);}

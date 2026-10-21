@@ -1,11 +1,12 @@
 //! A bounded ordering switch translates Rust tags and aborts invalid dynamic orders.
+mod bitwise;
 mod comparison;
 use crate::{
     lower::context::Context,
     lowir::{
         atomic::{LoadOrder, RmwOrder, StoreOrder},
         builder::Builder,
-        program::{Function, Operand, Terminator, Value},
+        program::{Function, Operand, SlotId, Terminator, Value},
         vocabulary::{Binary, Predicate, Type},
     },
     support::{atomic_ordering::Ordering, intrinsics::Intrinsic},
@@ -87,6 +88,11 @@ impl Context<'_> {
         let entry = builder.block()?;
         let invalid = builder.block()?;
         builder.enter(entry)?;
+        let expected_slot = if intrinsic.is_bitwise() {
+            Some(builder.slot(Type::U32)?)
+        } else {
+            None
+        };
         let tag = builder.load(
             Type::U8,
             Operand::Parameter(if intrinsic == Intrinsic::AtomicLoad {
@@ -109,7 +115,7 @@ impl Context<'_> {
                 no: next,
             })?;
             builder.enter(operation)?;
-            let result = atomic_operation(&mut builder, intrinsic, order)?;
+            let result = atomic_operation(&mut builder, intrinsic, order, expected_slot)?;
             builder.terminate(Terminator::Return(result))?;
             builder.enter(next)?;
         }
@@ -126,6 +132,7 @@ fn atomic_operation(
     builder: &mut Builder,
     intrinsic: Intrinsic,
     order: Ordering,
+    expected: Option<SlotId>,
 ) -> Result<Option<Value>, &'static str> {
     let pointer = Operand::Parameter(0);
     if intrinsic == Intrinsic::AtomicStore {
@@ -180,6 +187,14 @@ fn atomic_operation(
                 // result supplies the old value without another atomic read.
                 builder.binary(Binary::Add, updated, value)?
             }
+            kind if kind.is_bitwise() => bitwise::operation(
+                builder,
+                kind,
+                value,
+                pointer,
+                order,
+                expected.ok_or("missing atomic retry scratch")?,
+            )?,
             _ => return Err("invalid atomic RMW identity"),
         };
         Ok(Some(result))

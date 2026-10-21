@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_xor(2,O::Relaxed);let _=a.fetch_xor(3,O::Release);let _=a.fetch_xor(4,O::Acquire);let _=a.fetch_xor(5,O::AcqRel);let _=a.fetch_xor(6,O::SeqCst);}
