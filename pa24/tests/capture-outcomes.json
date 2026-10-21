@@ -1,0 +1,490 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "noncapturing",
+      "path": "tests/spec/captures/noncapturing.rs",
+      "source_sha256": "c246bd971b0b3009db9e47a6ae4a964e56c89f486dcda744cdeb98ef32e05203",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "contextual-parameters",
+      "path": "tests/spec/captures/contextual-parameters.rs",
+      "source_sha256": "e3bdb4bdef5355325ea4291e9b4fb57a8c2597e961d6db13b4d7dbcd42c6a321",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "first-call-inference",
+      "path": "tests/spec/captures/first-call-inference.rs",
+      "source_sha256": "654a1af8f79da4d36faeb07548c0c029b9adf42a16a16b0b3ddfa73a19187ee2",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "closure-is-not-polymorphic",
+      "path": "tests/spec/captures/closure-is-not-polymorphic.rs",
+      "source_sha256": "c344948b6621160a130cd543678b7c142da8d5934420293f74a5842dd9fb0bde",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-capture",
+      "path": "tests/spec/captures/shared-capture.rs",
+      "source_sha256": "a1c78c6ac36e5978fec912777c123d94c8a24a012ad4995d422aaaf78a45d2ea",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-capture",
+      "path": "tests/spec/captures/mutable-capture.rs",
+      "source_sha256": "e2f4ae42694ce7fb3707e30f38a23f20a3b65855430cbead6e5faf8d7808b44e",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "immutable-binding-cannot-call-mut",
+      "path": "tests/spec/captures/immutable-binding-cannot-call-mut.rs",
+      "source_sha256": "3581e1519fd3593efcf5d076a7d11d63bdafa0c79d370927afda751a7b0ed453",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-still-fn",
+      "path": "tests/spec/captures/move-still-fn.rs",
+      "source_sha256": "7ebc75390f43cafebb67913c8d03304dbcbabafe3dc346996a544d1b38c81cd5",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-once",
+      "path": "tests/spec/captures/move-once.rs",
+      "source_sha256": "956575cd038e18705ea05e4083f56fbecb71255fdb3b568d7680adf27f47bfca",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-twice",
+      "path": "tests/spec/captures/move-twice.rs",
+      "source_sha256": "f7e448f93e05e544beb0468854ca749228472e27027ef8999f1f87b33f82493c",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-environment-copy",
+      "path": "tests/spec/captures/move-environment-copy.rs",
+      "source_sha256": "eb96f80e59b3e8f2dc21da5d73395630f9303d2a7badfc2f94ca274ccd8b23fb",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "precise-field-move",
+      "path": "tests/spec/captures/precise-field-move.rs",
+      "source_sha256": "817cb58d59f06db378e60ea6594ccfc9a8088cdc38d02c688205f0c4bc691d1c",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "precise-field-borrow",
+      "path": "tests/spec/captures/precise-field-borrow.rs",
+      "source_sha256": "4aa2173c8d2b76b4000fa515c46a23ee5e2bd6bea2b55b8c42c4082c3020420e",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "tests/spec/captures/borrow-conflict.rs",
+      "source_sha256": "82ecd118167b7796616d1560c1f49764e485c05122cdd8c11fe3298ab7c1367d",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "borrow-ended",
+      "path": "tests/spec/captures/borrow-ended.rs",
+      "source_sha256": "18e666d9d6b1794250a84955c532bdc1fd10b2aaa379d388961433b7d23736ba",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "unique-immutable",
+      "path": "tests/spec/captures/unique-immutable.rs",
+      "source_sha256": "f07895ead1b0ad4c553da5a28bccdb52f341a62742f74c2ac432e1ee7013a478",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "unique-immutable-conflict",
+      "path": "tests/spec/captures/unique-immutable-conflict.rs",
+      "source_sha256": "633d98d9fb906cad3509fb933ac6369281177a96de9ea9a4ec8374374e2b8fdc",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "fn-bound",
+      "path": "tests/spec/captures/fn-bound.rs",
+      "source_sha256": "6bf69949d8a0de24fb03d7ef9c3095ae128e647b0b01717e1cbaf205ce533150",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "fn-mut-bound",
+      "path": "tests/spec/captures/fn-mut-bound.rs",
+      "source_sha256": "734d5843cad0d982f9ba7f769055f75851eb5170c1c31c6deb0359e0c6045614",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "fn-once-bound",
+      "path": "tests/spec/captures/fn-once-bound.rs",
+      "source_sha256": "9b69f10d1bd04305824ee5da99aeae9e0be85cece49a5f5c2b394c2e2ce0e19b",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "fn-bound-rejects-mut",
+      "path": "tests/spec/captures/fn-bound-rejects-mut.rs",
+      "source_sha256": "b3a434d828e3cefb1938bcbc5e1067d787406ec7fd663f5af19aee9845decdbc",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "fn-mut-rejects-once",
+      "path": "tests/spec/captures/fn-mut-rejects-once.rs",
+      "source_sha256": "73ffff65f85df16bfb0e8e8a55829ecbc306cb6be4e230bcb79fe80df99ee3ce",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "dyn-fn",
+      "path": "tests/spec/captures/dyn-fn.rs",
+      "source_sha256": "0221af472b0e19c645bab3416b4aacda5a091b134289312517ec2c20b8710194",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "dyn-fn-mut",
+      "path": "tests/spec/captures/dyn-fn-mut.rs",
+      "source_sha256": "691287ae2171fb40aa1a32d8f0fba41693ece81c065d7bdd0a29198df240b96e",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "higher-ranked-input-output",
+      "path": "tests/spec/captures/higher-ranked-input-output.rs",
+      "source_sha256": "5f5cafa23a29cc9b6047ca94ff154e46ef0566f284ee489dbd7cb9585cfe2736",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "returned-move",
+      "path": "tests/spec/captures/returned-move.rs",
+      "source_sha256": "50b2444a140d139acf63872e2fc3e65661c1035320cd6a5cc0bee31272e6a82b",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "returned-borrow",
+      "path": "tests/spec/captures/returned-borrow.rs",
+      "source_sha256": "9b0f86e8243e99dd8a193c11b8074acbe5ba206dac8ade2fd173d38c7bc6c279",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "captured-to-fn-pointer",
+      "path": "tests/spec/captures/captured-to-fn-pointer.rs",
+      "source_sha256": "8312bb289708bf9964a8a76b68b587930b8c1426ca48b0f117e1467a93b0ac00",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "zst-captured-to-fn-pointer",
+      "path": "tests/spec/captures/zst-captured-to-fn-pointer.rs",
+      "source_sha256": "e5b160442d7e8fd77dfaa2cb49e4febc37cc4f8b4f77d0d97ec4a3365f54e636",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "drop-capture",
+      "path": "tests/spec/captures/drop-capture.rs",
+      "source_sha256": "4140ecc6798b497d403f5ea154d9f4f7e5af00d245d51d23ed01c44dcd07e827",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-reference-truncation",
+      "path": "tests/spec/captures/shared-reference-truncation.rs",
+      "source_sha256": "57b59bbb0a20524496c38dfc8c15d90ec999e64b178c2e63beddf4dbffabe242",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "nested-captures",
+      "path": "tests/spec/captures/nested-captures.rs",
+      "source_sha256": "767b47c6321c5e163d8a3aa4460945083d8eff838d2feda71c6758be28c1844f",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}
