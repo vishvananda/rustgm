@@ -3,6 +3,9 @@ use super::{native, semantic};
 use std::{path::PathBuf, process::Command};
 
 const CASES: &[(&str, bool)] = &[
+    ("tuple-context", true),
+    ("empty-binder", true),
+    ("const-input", true),
     ("captured-identity", true),
     ("empty-identity", true),
     ("explicit-identity", true),
@@ -108,12 +111,26 @@ fn generic_context_executes_quantified_results() -> Result<(), Box<dyn std::erro
 
 #[test]
 fn independent_contexts_keep_binders_and_bounded_work() -> Result<(), Box<dyn std::error::Error>> {
+    context_growth(false)
+}
+
+#[test]
+fn tuple_contexts_follow_unions_without_scanning_prior_hints()
+-> Result<(), Box<dyn std::error::Error>> {
+    context_growth(true)
+}
+
+fn context_growth(tuple: bool) -> Result<(), Box<dyn std::error::Error>> {
     use std::fmt::Write;
     let mut observations = Vec::new();
     for width in [8, 32, 128] {
-        let mut source = String::from("fn infer<F:for<'a>Fn(&'a u8)->&'a u8>(f:F)->F{f}fn main(){");
+        let parameter = if tuple { "x:(F,)" } else { "f:F" };
+        let result = if tuple { "x.0" } else { "f" };
+        let mut source =
+            format!("fn infer<F:for<'a>Fn(&'a u8)->&'a u8>({parameter})->F{{{result}}}fn main(){{");
         for index in 0..width {
-            write!(source, "let _f{index}=infer(|x|x);")?;
+            let argument = if tuple { "(|x|x,)" } else { "|x|x" };
+            write!(source, "let _f{index}=infer({argument});")?;
         }
         source.push('}');
         let (_, facts) = semantic::analyze(&source)?;

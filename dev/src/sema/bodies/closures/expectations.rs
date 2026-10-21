@@ -5,17 +5,39 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(in crate::sema::bodies) struct Hints {
-    #[expect(
-        clippy::box_collection,
-        reason = "ordinary calls and parked bodies leave the callable context index unallocated"
-    )]
-    values: Option<Box<HashMap<TermId, Hint>>>,
+    data: Option<Box<Data>>,
+}
+#[derive(Default)]
+struct Data {
+    values: HashMap<TermId, Hint>,
+    changes: Vec<(TermId, TermId)>,
+    next: usize,
 }
 #[derive(Clone, Copy)]
 struct Hint {
     inputs: TermId,
     result: TermId,
     regions: Option<u32>,
+    order: usize,
+}
+impl Hints {
+    fn refresh(
+        &mut self,
+        context: &mut crate::types::infer::Context,
+    ) -> Result<(), crate::types::infer::Error> {
+        if let Some(data) = &mut self.data {
+            context.exchange_root_changes(&mut data.changes)?;
+            for (source, target) in data.changes.drain(..) {
+                if let Some(hint) = data.values.remove(&source) {
+                    let current = data.values.entry(target).or_insert(hint);
+                    if hint.order < current.order {
+                        *current = hint;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 impl Checker<'_> {
@@ -54,8 +76,23 @@ impl Checker<'_> {
         self.state
             .call_types
             .closure_expectations
-            .values
-            .get_or_insert_with(Default::default)
+            .refresh(&mut self.state.infer)
+            .map_err(|e| self.error(node, e))?;
+        let subject = self
+            .state
+            .infer
+            .root(subject)
+            .map_err(|e| self.error(node, e))?;
+        self.state.infer.track_root_changes();
+        let data = self
+            .state
+            .call_types
+            .closure_expectations
+            .data
+            .get_or_insert_with(Default::default);
+        let order = data.next;
+        data.next += 1;
+        data.values
             .entry(subject)
             // Keep declaration order. Every original requirement still needs
             // proof; this first contextual signature adds no trait authority.
@@ -63,6 +100,7 @@ impl Checker<'_> {
                 inputs: *inputs,
                 result,
                 regions,
+                order,
             });
         Ok(())
     }
@@ -72,13 +110,23 @@ impl Checker<'_> {
         node: NodeId,
         expected: TermId,
     ) -> Result<Option<TermId>, Error> {
+        self.state
+            .call_types
+            .closure_expectations
+            .refresh(&mut self.state.infer)
+            .map_err(|e| self.error(node, e))?;
+        let expected = self
+            .state
+            .infer
+            .root(expected)
+            .map_err(|e| self.error(node, e))?;
         let Some(hint) = self
             .state
             .call_types
             .closure_expectations
-            .values
+            .data
             .as_ref()
-            .and_then(|values| values.get(&expected))
+            .and_then(|data| data.values.get(&expected))
             .copied()
         else {
             return Ok(None);

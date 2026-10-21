@@ -52,7 +52,7 @@ impl Context {
         self.account_work((entry.end - entry.start) as usize)?;
         let children = self.edges[entry.start as usize..entry.end as usize].to_vec();
         let original = self.construct(kind, &children)?;
-        self.terms[root.0 as usize].parent = result;
+        self.link_root(root, result)?;
         self.normalized_projection(root)?;
         Ok(original)
     }
@@ -95,7 +95,7 @@ impl Context {
                     self.structural(store, original, result, false)?;
                     continue;
                 }
-                self.terms[original.0 as usize].parent = result;
+                self.link_root(original, result)?;
                 self.normalized_projection(original)?;
             } else {
                 self.structural(store, original, result, false)?;

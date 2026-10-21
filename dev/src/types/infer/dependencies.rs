@@ -30,6 +30,7 @@ struct Watch {
 
 #[derive(Default)]
 pub(super) struct Storage {
+    pub(super) root_changes: Option<Vec<(TermId, TermId)>>,
     pub(super) equations: super::deferred::Storage,
     watches: Vec<Watch>,
     waiting: HashMap<Dependency, Vec<WatchId>>,

@@ -11,6 +11,7 @@ pub mod dependencies;
 mod freshen;
 pub use freshen::FreshRegions;
 mod import;
+mod indices;
 pub mod objects;
 pub mod predicates;
 pub mod probe;
@@ -317,7 +318,7 @@ impl Context {
         if self.terms[parent.0 as usize].rank == self.terms[child.0 as usize].rank {
             self.terms[parent.0 as usize].rank += 1;
         }
-        self.terms[child.0 as usize].parent = parent;
+        self.link_root(child, parent)?;
         self.terms[parent.0 as usize].value = Value::Variable(domain);
         self.wake_resolution(dependencies::Dependency::Type(child))?;
         self.wake_resolution(dependencies::Dependency::Type(parent))?;
@@ -361,7 +362,7 @@ impl Context {
         {
             return Err(Error::Occurs);
         }
-        self.terms[variable.0 as usize].parent = candidate;
+        self.link_root(variable, candidate)?;
         self.wake_resolution(dependencies::Dependency::Type(variable))?;
         Ok(())
     }

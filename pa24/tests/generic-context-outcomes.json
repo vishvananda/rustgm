@@ -275,6 +275,51 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ]
+    },
+    {
+      "name": "tuple-context",
+      "path": "tests/spec/generic-context/tuple-context.rs",
+      "source_sha256": "392a9c8c77fdbea075692a9c7d492a95152d47680f6c1f9548367e71a388128b",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "empty-binder",
+      "path": "tests/spec/generic-context/empty-binder.rs",
+      "source_sha256": "5cda081aa9c1d8f3f3ee6434253250d5f1af1aab388ea10cfe2c0451bd2a2a93",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "const-input",
+      "path": "tests/spec/generic-context/const-input.rs",
+      "source_sha256": "da858be7c6c33d5f8700e86215c46c747b95f1a5b69e5640fc6febd23edf4c07",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
     }
   ]
 }
