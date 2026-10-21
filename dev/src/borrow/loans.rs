@@ -1,5 +1,6 @@
 //! Forward loan reachability constrained by inferred use regions.
 mod cleanup;
+mod expiration;
 mod inspection;
 mod state;
 use state::Set;
@@ -73,6 +74,7 @@ struct Flow<'a> {
     origins: Vec<Option<ValueId>>,
     uses: liveness::Analysis,
     regions: points::Liveness,
+    expirations: expiration::Expirations,
     steps: usize,
     snapshots: Vec<inspection::Snapshot>,
 }
@@ -142,25 +144,17 @@ impl Flow<'_> {
             .ok_or("missing loan point")
     }
     fn prune(&mut self, state: &mut Set, point: Point) -> Result<(), &'static str> {
-        self.charge(1)?;
-        let mut from = 0;
-        while let Some(word) = state.next(from) {
-            self.charge(state.depth())?;
-            let mut bits = state.words()[word].live;
-            let mut retained = bits;
-            while bits != 0 {
-                self.charge(1)?;
-                let bit = bits.trailing_zeros() as usize;
-                bits &= bits - 1;
-                if !self
-                    .regions
-                    .contains(self.loans[word * 64 + bit].region, point)?
-                {
-                    retained &= !(1 << bit);
-                }
-            }
-            state.retain(word, retained);
-            from = word + 1;
+        let steps = self
+            .expirations
+            .prune(state, point, &self.loans, &self.regions)?;
+        self.charge(steps)
+    }
+    fn generate(&mut self, state: &mut Set, id: ValueId, point: Point) -> Result<(), &'static str> {
+        let (start, end) = self.generated[id.0 as usize];
+        for loan in start..end {
+            self.charge(1)?;
+            let live = self.regions.contains(self.loans[loan].region, point)?;
+            state.generate(loan, live);
         }
         Ok(())
     }
@@ -427,11 +421,7 @@ impl Flow<'_> {
                 self.inspect(state, action).map_err(error)?;
             }
             if let Action::Evaluate(id) = action {
-                let (start, end) = self.generated[id.0 as usize];
-                for loan in start..end {
-                    self.charge(1).map_err(error)?;
-                    state.generate(loan);
-                }
+                self.generate(state, id, point).map_err(error)?;
             }
         }
         Ok(())
@@ -700,10 +690,13 @@ fn finish<const RECORD: bool>(
         origins: vec![None; body.values.len()],
         uses,
         regions,
+        expirations: expiration::Expirations::default(),
         steps: 0,
         snapshots: Vec::new(),
     };
     flow.collect(types, contract).map_err(error)?;
+    flow.expirations = expiration::Expirations::new(&flow.loans, &flow.regions).map_err(error)?;
+    flow.charge(flow.expirations.steps).map_err(error)?;
     flow.solve::<RECORD>()?;
     let analysis = Analysis {
         loans: flow.loans.len(),

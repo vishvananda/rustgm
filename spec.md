@@ -1990,6 +1990,15 @@ Forward loan states use the same index for pruning, conflict checks and optional
 inspection. Rebuild the occupied-word index after dense CFG copies, clear it when
 the last loan in a word expires, and preserve two-phase activation separately.
 
+Index loan expiration from sparse region-word boundaries once per body. At a
+known consecutive CFG point, remove only the indexed expiring loan masks;
+do not repeat region membership checks for every surviving loan. Dense joins,
+nonconsecutive points and births outside the current region invalidate that
+cursor and require the ordinary full membership check. Later region liveness
+does not regenerate an expired loan. Keep full extents compact, account for
+word-boundary continuations and omit exits beyond the point domain. Bound and
+charge index construction and retained event masks as part of loan analysis.
+
 Collect initial runtime lifetime seeds into one queued entry per region and
 point word before propagating them. Seed collection already precedes propagation;
 combine its bits in first-seen order instead of walking shared static or external

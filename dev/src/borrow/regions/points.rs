@@ -18,6 +18,27 @@ pub struct Liveness {
     pub steps: usize,
 }
 impl Liveness {
+    /// Sparse word-local boundaries whose following point is no longer live.
+    /// Full extents have no boundaries. Adjacent words are checked once, so
+    /// consumers need not enumerate every live point of every region.
+    pub(crate) fn endings(&self) -> impl Iterator<Item = (Region, u32, u64)> + '_ {
+        self.masks.iter().map(|(&(region, word), &bits)| {
+            let mut ends = bits & !(bits >> 1);
+            if ends >> 63 != 0
+                && self
+                    .masks
+                    .get(&(region, word + 1))
+                    .is_some_and(|next| next & 1 != 0)
+            {
+                ends &= !(1 << 63);
+            }
+            let last = self.points.saturating_sub(1);
+            if word == last / 64 {
+                ends &= !(1 << (last % 64));
+            }
+            (region, word, ends)
+        })
+    }
     /// Nonzero words in region/word order. Sort only the retained representation;
     /// full extents expand lazily without allocating a region-by-word matrix.
     pub fn words(&self) -> impl Iterator<Item = (Region, u32, u64)> + '_ {

@@ -76,11 +76,7 @@ impl Flow<'_> {
                         self.inspect(state, action).map_err(error)?;
                     }
                     if let Action::Evaluate(id) = action {
-                        let (start, end) = self.generated[id.0 as usize];
-                        for loan in start..end {
-                            self.charge(1).map_err(error)?;
-                            state.generate(loan);
-                        }
+                        self.generate(state, id, point).map_err(error)?;
                     }
                 }
                 Effect::Cleanup(id) if inspect => {
