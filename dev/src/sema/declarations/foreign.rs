@@ -42,7 +42,9 @@ impl Checker<'_> {
         };
         let block = owner.and_then(|id| self.report.resolution.foreign_owners.get(&id));
         let Some(&block) = block else {
-            if flags.safety == Safety::Safe {
+            if flags.safety == Safety::Safe
+                && owner.is_none_or(|id| self.facts.associated.trait_owner(id).is_none())
+            {
                 return Err(self.error(key, "safe qualifier requires a foreign declaration"));
             }
             return Ok((

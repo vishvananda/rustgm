@@ -91,6 +91,16 @@ const CASES: &[(&str, &str, bool)] = &[
         "pa30/tests/spec/imports/foreign-body.rs",
         false,
     ),
+    (
+        "trait-safe-default",
+        "pa19/tests/spec/trait-headers/trait-safe-default.rs",
+        false,
+    ),
+    (
+        "trait-safe-required",
+        "pa19/tests/spec/trait-headers/trait-safe-required.rs",
+        false,
+    ),
 ];
 fn fixture(path: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join(path))
@@ -142,6 +152,11 @@ fn foreign_function_outcomes_are_independently_qualified() -> Result<(), Box<dyn
             "{name}: {:?}",
             result.as_ref().err()
         );
+        if name.starts_with("trait-safe-") {
+            assert!(result.err().is_some_and(|message| message.contains(
+                "trait methods require inherited visibility and cannot be explicitly safe"
+            )));
+        }
     }
     Ok(())
 }
