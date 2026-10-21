@@ -74,6 +74,7 @@ fn selected_receiver_cannot_skip_a_larger_capture_prefix() -> Result<(), Box<dyn
     Ok(())
 }
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn native_adjusted_receivers() -> Result<(), Box<dyn std::error::Error>> {
     let sources = CASES
         .iter()
@@ -111,6 +112,7 @@ fn independent_adjusted_values() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn native_adjusted_values() -> Result<(), Box<dyn std::error::Error>> {
     for name in ["deep-reference", "mutable-call"] {
         native::check_cases(

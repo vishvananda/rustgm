@@ -138,6 +138,7 @@ fn nested_imports_share_deep_and_repeated_prefix_work() -> Result<(), Box<dyn st
     Ok(())
 }
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn native_nested_values() -> Result<(), Box<dyn std::error::Error>> {
     let mut failures = Vec::new();
     for &(name, accepted) in CASES {
