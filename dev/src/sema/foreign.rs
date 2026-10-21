@@ -31,6 +31,19 @@ impl Registry {
     pub fn function(&self, definition: DefId) -> Option<Function> {
         self.functions.get(&definition).copied()
     }
+    /// Canonical export roots in deterministic definition order.
+    #[must_use]
+    pub fn exports(&self) -> Vec<DefId> {
+        let mut exports: Vec<_> = self
+            .functions
+            .iter()
+            .filter_map(|(&definition, function)| {
+                (function.linkage == Linkage::Export).then_some(definition)
+            })
+            .collect();
+        exports.sort_unstable_by_key(|definition| definition.0);
+        exports
+    }
     /// Register an import with an exact name in this registry's own pool.
     ///
     /// # Errors

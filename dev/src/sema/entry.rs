@@ -33,6 +33,13 @@ pub fn select(report: &mut Report, facts: &Declarations) -> Result<DefId, Error>
     if definition.kind != DefKind::Function {
         return Err(error("main must name a function"));
     }
+    if report
+        .resolution
+        .foreign_owners
+        .contains_key(&binding.target)
+    {
+        return Err(error("main cannot be declared in a foreign block"));
+    }
     if facts.generics.parameters.contains_key(&binding.target) {
         return Err(error("main cannot have type or const parameters"));
     }

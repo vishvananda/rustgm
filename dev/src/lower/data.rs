@@ -250,4 +250,7 @@ impl Context<'_> {
         }
         Ok(())
     }
+    pub fn requires_address_initialization(&self) -> bool {
+        !self.data.fixups.is_empty()
+    }
 }

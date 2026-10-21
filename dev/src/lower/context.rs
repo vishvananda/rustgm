@@ -54,10 +54,10 @@ pub(super) struct Context<'a> {
 pub(super) fn build(
     facts: &mut Declarations,
     bodies: &crate::borrow::Checked<'_>,
-    entry: DefId,
+    roots: super::Roots<'_>,
 ) -> Result<Program, Error> {
     let mut layouts = std::mem::take(&mut facts.layouts);
-    let result = Context::build(facts, &mut layouts, bodies, entry);
+    let result = Context::build(facts, &mut layouts, bodies, roots);
     facts.layouts = layouts;
     result
 }
@@ -85,7 +85,7 @@ impl<'a> Context<'a> {
         facts: &'a Declarations,
         layouts: &'a mut Layouts,
         checked: &'a crate::borrow::Checked<'_>,
-        entry: DefId,
+        roots: super::Roots<'_>,
     ) -> Result<Program, Error> {
         let bodies = checked.program();
         let destruction = checked.destruction();
@@ -140,15 +140,30 @@ impl<'a> Context<'a> {
             node: source,
             message,
         })?;
-        let root = context.demand_definition(entry).map_err(|message| Error {
-            node: source,
-            message,
-        })?;
+        for definition in roots.iter() {
+            context
+                .demand_definition(definition)
+                .map_err(|message| Error {
+                    node: source,
+                    message,
+                })?;
+        }
         context.emit_pending(source)?;
-        context.entry(root).map_err(|message| Error {
-            node: source,
-            message,
-        })?;
+        if let Some(entry) = roots.entry {
+            let root = context.demand_definition(entry).map_err(|message| Error {
+                node: source,
+                message,
+            })?;
+            context.entry(root).map_err(|message| Error {
+                node: source,
+                message,
+            })?;
+        } else if context.requires_address_initialization() {
+            return Err(Error {
+                node: source,
+                message: "entry-free library requires packed address initialization support",
+            });
+        }
         Ok(context.output)
     }
     /// Demand queues own their identities before any dependency is emitted.

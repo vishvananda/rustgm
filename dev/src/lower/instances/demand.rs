@@ -55,7 +55,7 @@ impl Budget {
 pub(super) fn prepare(
     report: &Report,
     facts: &mut Declarations,
-    entry: DefId,
+    roots: crate::lower::Roots<'_>,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
     concrete: HashMap<DefId, Body>,
@@ -69,20 +69,7 @@ pub(super) fn prepare(
     if templates.is_empty() && !facts.types.has_dynamic_shapes() {
         return Ok(program);
     }
-    let source = ordinary
-        .functions
-        .get(&ItemId(entry.0))
-        .and_then(|&i| program.body(i).ok().map(|body| body.source))
-        .ok_or_else(|| diagnostic(report, None, "missing entry body".into()))?;
-    let entry_type = facts
-        .definitions
-        .get(entry.0 as usize)
-        .copied()
-        .flatten()
-        .ok_or_else(|| diagnostic(report, Some(source), "missing entry type".into()))?;
-    let entry = Instance::new(&facts.types, entry_type)
-        .map_err(|e| diagnostic(report, Some(source), e.into()))?;
-    let mut work = vec![Work::Enter(entry, source)];
+    let mut work = initial_work(report, facts, roots, &program, &ordinary)?;
     let mut instances = HashSet::new();
     let mut visited = HashSet::new();
     let mut dependencies = Dependencies::default();
@@ -163,6 +150,41 @@ pub(super) fn prepare(
         dependencies.schedule(report, facts, &mut program, index, &ordinary, &mut work)?;
     }
     Ok(program)
+}
+
+fn initial_work(
+    report: &Report,
+    facts: &Declarations,
+    roots: crate::lower::Roots<'_>,
+    program: &proof::Builder,
+    ordinary: &Ordinary,
+) -> Result<Vec<Work>, Error> {
+    let mut work = Vec::new();
+    for definition in roots.iter().rev() {
+        if facts
+            .foreign
+            .as_deref()
+            .and_then(|registry| registry.function(definition))
+            .is_some_and(|function| function.linkage == crate::support::linkage::Linkage::Import)
+        {
+            continue;
+        }
+        let source = ordinary
+            .functions
+            .get(&ItemId(definition.0))
+            .and_then(|&i| program.body(i).ok().map(|body| body.source))
+            .ok_or_else(|| diagnostic(report, None, "missing root body".into()))?;
+        let ty = facts
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| diagnostic(report, Some(source), "missing root type".into()))?;
+        let instance = Instance::new(&facts.types, ty)
+            .map_err(|e| diagnostic(report, Some(source), e.into()))?;
+        work.push(Work::Enter(instance, source));
+    }
+    Ok(work)
 }
 
 impl Dependencies {

@@ -10,6 +10,8 @@ mod function;
 pub mod instances;
 pub mod linkage;
 mod remainder;
+mod roots;
+pub use roots::Roots;
 mod virtual_dispatch;
 
 use crate::{
@@ -32,7 +34,41 @@ pub fn build(
     bodies: &Checked<'_>,
     entry: DefId,
 ) -> Result<program::Program, Error> {
+    build_roots(facts, bodies, Roots::executable(entry))
+}
+/// Lower checked executable or entry-free library roots, including registry exports.
+/// # Errors
+/// Preserves representation, demand and bounded export diagnostics.
+pub fn build_roots(
+    facts: &mut Declarations,
+    bodies: &Checked<'_>,
+    roots: Roots<'_>,
+) -> Result<program::Program, Error> {
+    let exports = roots::exports(facts, roots.exports).map_err(|message| Error {
+        node: bodies.program().bodies.first().map_or(
+            NodeKey {
+                file: crate::resolve::unit::FileId(0),
+                node: crate::syntax::ast::NodeId(0),
+            },
+            |body| body.source,
+        ),
+        message,
+    })?;
+    build_exact_roots(
+        facts,
+        bodies,
+        Roots {
+            entry: roots.entry,
+            exports: &exports,
+        },
+    )
+}
+pub(crate) fn build_exact_roots(
+    facts: &mut Declarations,
+    bodies: &Checked<'_>,
+    roots: Roots<'_>,
+) -> Result<program::Program, Error> {
     let program = bodies.program();
     alignment::check(facts, program)?;
-    context::build(facts, bodies, entry)
+    context::build(facts, bodies, roots)
 }

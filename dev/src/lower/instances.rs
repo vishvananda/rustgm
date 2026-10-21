@@ -30,8 +30,25 @@ pub fn build_prepared(
     report: &Report,
     facts: &mut Declarations,
     entry: DefId,
+    prepared: crate::pipeline::Prepared,
+) -> Result<crate::lowir::program::Program, Error> {
+    build_roots_prepared(report, facts, super::Roots::executable(entry), prepared)
+}
+/// Check and lower explicit library roots alongside canonical registry exports.
+/// # Errors
+/// Applies the same template, ownership and instance gates as executable lowering.
+pub fn build_roots_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    roots: super::Roots<'_>,
     mut prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
+    let exports = super::roots::exports(facts, roots.exports)
+        .map_err(|e| diagnostic(report, None, e.into()))?;
+    let roots = super::Roots {
+        entry: roots.entry,
+        exports: &exports,
+    };
     let mut templates = prepared.templates.finish(report, facts)?;
     let mut inputs = if let Some(collector) = prepared.contracts {
         collector.finish(facts)
@@ -107,14 +124,14 @@ pub fn build_prepared(
     let program = demand::prepare(
         report,
         facts,
-        entry,
+        roots,
         &checked,
         inputs,
         prepared.concrete,
         prepared.constants,
     )?;
     program
-        .with_checked(|checked| super::build(facts, checked, entry))
+        .with_checked(|checked| super::build_exact_roots(facts, checked, roots))
         .map_err(|e| diagnostic(report, e.node, e.message))?
         .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
 }
