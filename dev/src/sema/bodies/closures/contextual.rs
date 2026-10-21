@@ -33,9 +33,12 @@ impl Checker<'_> {
         } else {
             term
         };
-        let term = self
-            .generic_closure_expectation(node, term)?
-            .unwrap_or(term);
+        let term = if let Some(signature) = self.object_closure_expectation(node, term)? {
+            signature
+        } else {
+            self.generic_closure_expectation(node, term)?
+                .unwrap_or(term)
+        };
         let Some(Constructor::Function {
             bound_regions,
             parameters,

@@ -7,6 +7,13 @@ use std::collections::HashMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LifetimesId(u32);
 
+/// One associated equality retains the object's complete quantified inputs.
+pub struct Binding {
+    pub bound_regions: u32,
+    pub arguments: Vec<super::arguments::Argument>,
+    pub result: TermId,
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Lifetimes {
     pub bound_regions: u32,
@@ -20,6 +27,54 @@ pub(super) struct Storage {
 }
 
 impl Context {
+    /// Inspect a written object equality without proving its concrete implementation.
+    /// # Errors
+    /// Rejects malformed object terms, bindings and exhausted inference work.
+    pub fn object_binding(
+        &mut self,
+        store: &Store,
+        target: TermId,
+        member: super::ItemId,
+    ) -> Result<Option<Binding>, Error> {
+        let target = self.root(target)?;
+        let Constructor::Dynamic {
+            shape,
+            arguments,
+            lifetimes,
+        } = self.materialize(store, target)?
+        else {
+            return Err(Error::InvalidIdentity);
+        };
+        let bound_regions = self.object_lifetimes(lifetimes)?.bound_regions;
+        let value = store.dynamic_shape(shape).ok_or(Error::InvalidIdentity)?;
+        let bindings = store
+            .dynamic_bindings(shape)
+            .ok_or(Error::InvalidIdentity)?;
+        self.account_work(bindings.len().saturating_add(1))?;
+        let arguments = self.application_arguments(target, arguments, 0)?;
+        let mut start = value.principal_arguments as usize;
+        for binding in bindings {
+            let end = start
+                .checked_add(binding.arguments as usize)
+                .ok_or(Error::Overflow)?;
+            if binding.item == member {
+                let Some(&super::arguments::Argument::Type(result)) = arguments.get(end) else {
+                    return Err(Error::InvalidIdentity);
+                };
+                return Ok(Some(Binding {
+                    bound_regions,
+                    arguments: arguments
+                        .get(start..end)
+                        .ok_or(Error::InvalidIdentity)?
+                        .to_vec(),
+                    result,
+                }));
+            }
+            start = end.checked_add(1).ok_or(Error::Overflow)?;
+        }
+        Ok(None)
+    }
+
     pub(super) fn object_lifetimes(&self, id: LifetimesId) -> Result<Lifetimes, Error> {
         self.arguments
             .as_ref()

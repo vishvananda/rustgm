@@ -14,6 +14,31 @@ pub fn check_modes(
     name: &str,
     (rust, frontend, reason): (i32, [i32; 3], &str),
 ) -> Result<(), Box<dyn std::error::Error>> {
+    check_views(
+        source,
+        evidence,
+        name,
+        rust,
+        &[
+            ("--emit-types", frontend[0]),
+            ("--emit-lowir", frontend[1]),
+            ("--emit-constants", frontend[2]),
+        ],
+        reason,
+    )
+}
+pub fn check_views(
+    source: &Path,
+    evidence: &Path,
+    name: &str,
+    rust: i32,
+    modes: &[(&str, i32)],
+    reason: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    assert!(
+        !modes.is_empty(),
+        "source qualification requires at least one view"
+    );
     let independent = Command::new("rustc")
         .args([
             "+1.98.0",
@@ -37,10 +62,7 @@ pub fn check_modes(
         "{name}: {}",
         String::from_utf8_lossy(&independent.stderr)
     );
-    for (mode, frontend) in ["--emit-types", "--emit-lowir", "--emit-constants"]
-        .into_iter()
-        .zip(frontend)
-    {
+    for &(mode, frontend) in modes {
         let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .arg(mode)
             .arg(source)

@@ -132,7 +132,13 @@ impl Checker<'_> {
         output: &mut Vec<crate::sema::generics::Predicate>,
     ) -> Result<bool, Error> {
         if crate::sema::lifetimes::call_arguments(self.report, binding.path)?.is_some() {
-            self.call_output_binding(binding, output)?;
+            self.call_output_binding(
+                binding.path,
+                binding.predicate,
+                binding.original,
+                binding.scope,
+                output,
+            )?;
             return Ok(false);
         }
         let Binding {

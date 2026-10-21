@@ -41,6 +41,42 @@ impl Hints {
 }
 
 impl Checker<'_> {
+    pub(super) fn object_closure_expectation(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+    ) -> Result<Option<TermId>, Error> {
+        if !matches!(
+            self.contextual_head(node, expected)?,
+            Some(Constructor::Dynamic { .. })
+        ) {
+            return Ok(None);
+        }
+        let Some(output) = self.facts.associated.callable_output() else {
+            return Ok(None);
+        };
+        let Some(binding) = self
+            .state
+            .infer
+            .object_binding(&self.facts.types, expected, crate::types::ItemId(output.0))
+            .map_err(|e| self.error(node, e))?
+        else {
+            return Ok(None);
+        };
+        let [Argument::Type(inputs)] = binding.arguments.as_slice() else {
+            return Err(self.error(node, "object callable context requires one input tuple"));
+        };
+        self.contextual_signature(
+            node,
+            Hint {
+                inputs: *inputs,
+                result: binding.result,
+                regions: Some(binding.bound_regions),
+                order: 0,
+            },
+        )
+    }
+
     pub(in crate::sema::bodies) fn record_closure_expectation(
         &mut self,
         node: NodeId,
@@ -131,6 +167,10 @@ impl Checker<'_> {
         else {
             return Ok(None);
         };
+        self.contextual_signature(node, hint)
+    }
+
+    fn contextual_signature(&mut self, node: NodeId, hint: Hint) -> Result<Option<TermId>, Error> {
         if !matches!(self.head(node, hint.inputs)?, Some(Constructor::Tuple)) {
             return Ok(None);
         }

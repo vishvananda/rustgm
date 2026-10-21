@@ -54,6 +54,21 @@ impl Checker<'_> {
             ..
         } = declaration;
         let (self_type, arguments) = self.declare_call_inputs(declaration)?;
+        let application = self
+            .facts
+            .types
+            .intern_trait_application(Application {
+                item: ItemId(definition.0),
+                arguments,
+            })
+            .map_err(|e| self.error(origin, e))?;
+        self.facts.generics.trait_self_bounds.insert(
+            definition,
+            Predicate {
+                ty: self_type,
+                bound: Bound::Trait(application),
+            },
+        );
         self.facts
             .associated
             .declare_callable(definition, kind, output, origin);

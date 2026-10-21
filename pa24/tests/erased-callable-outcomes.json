@@ -1,0 +1,495 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-constants",
+  "pending": [
+    "Dynamic callable runtime dispatch; LowIR and native qualification remain required."
+  ],
+  "cases": [
+    {
+      "name": "shared",
+      "path": "tests/spec/erased-callables/shared.rs",
+      "source_sha256": "eae759e4d40b94417872a5b8d91c142493f92c1aa53f0f44f78c4999313d936c",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "mutable",
+      "path": "tests/spec/erased-callables/mutable.rs",
+      "source_sha256": "85e975f03ac97b9a4d2866d59a31c474d9172fa905462a03e81d4e20894b63d2",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "function",
+      "path": "tests/spec/erased-callables/function.rs",
+      "source_sha256": "6345dae330e356fe61832b0109117892b641d9ba342c8193112b5226dcb6bfa7",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "pointer",
+      "path": "tests/spec/erased-callables/pointer.rs",
+      "source_sha256": "147411ecc524c83af9ba5d74ade834170d2527b6ce97cd0e0f6b06bcf29c0ad5",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "binder",
+      "path": "tests/spec/erased-callables/binder.rs",
+      "source_sha256": "aa4d5b1c8113063acdf34546d7355e3ca24ff55e1e4c0053b6f8be12bdba5140",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic",
+      "path": "tests/spec/erased-callables/generic.rs",
+      "source_sha256": "f2b7f75b4d9d967d2a022f56b81448a281a771afcde17f5a79dccb7d039b4d8a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "mutable-as-shared",
+      "path": "tests/spec/erased-callables/mutable-as-shared.rs",
+      "source_sha256": "23d35820a0b29d1bfed6cdedd91efa3107b53650f476c569243d239797752b1a",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "once-borrowed",
+      "path": "tests/spec/erased-callables/once-borrowed.rs",
+      "source_sha256": "86204a5b0c9cf98d63fc82106bf24a3f2aa7ee04f9af2daf497e9350909a3f8d",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1
+      },
+      "diagnostic": "cannot move a non-Copy value out of a reference",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "local-output",
+      "path": "tests/spec/erased-callables/local-output.rs",
+      "source_sha256": "3a62b8f3a9a7c8828ed4d4bffc014f0d6171a1d2286e9c1fcf81a83ca6982f34",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1
+      },
+      "diagnostic": "required lifetime does not outlive its target",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "contextual",
+      "path": "tests/spec/erased-callables/contextual.rs",
+      "source_sha256": "33b718b5a0164cebcd4eb2b5c9f26c204a3747df8d7964ac6954655de3680213",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "captured-output",
+      "path": "tests/spec/erased-callables/captured-output.rs",
+      "source_sha256": "d33c15ba7b29b3f5eb3b56dd9021100187f55980f0ff800e9a21f6e6ea036764",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "once-object",
+      "path": "tests/spec/erased-callables/once-object.rs",
+      "source_sha256": "800c1578bcf41195ef14ad54f20f7e25b92d56512e69e57b9dc51797b4f103ad",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic-consumer",
+      "path": "tests/spec/erased-callables/generic-consumer.rs",
+      "source_sha256": "a399f6692ffa717f9ffbdfe2054a4f989f269d03846519f96c4a3acb56e9052a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "upcast",
+      "path": "tests/spec/erased-callables/upcast.rs",
+      "source_sha256": "6a3ed6f845eb38ba0e7038941f078b8ad86cb948f200d9694863e029185baa7c",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "wrong-input",
+      "path": "tests/spec/erased-callables/wrong-input.rs",
+      "source_sha256": "cbc2a1eaf140a9f09d420bb460bd9a9bd48d997d1f1d5c8be070dc3541d2dd0d",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "associated type requires an unambiguous validated implementation",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "wrong-output",
+      "path": "tests/spec/erased-callables/wrong-output.rs",
+      "source_sha256": "07a2ce8cc310199fa590d72622943d26a2f7da56c2369b996640077a8346d80b",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "incompatible types",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "unsafe-function",
+      "path": "tests/spec/erased-callables/unsafe-function.rs",
+      "source_sha256": "4278dc685c952c4ba0231122e4db76b6908e1f2dfd44189b449917727e48a832",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "associated type requires an unambiguous validated implementation",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "shared-mutable",
+      "path": "tests/spec/erased-callables/shared-mutable.rs",
+      "source_sha256": "43b911687235e053ad6d4d41718bfaf226510754795814f1b44dd6b3a99e48e2",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1
+      },
+      "diagnostic": "cannot mutably borrow shared or static storage",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "output-binder",
+      "path": "tests/spec/erased-callables/output-binder.rs",
+      "source_sha256": "73e49f25bbf918b8995dcc07a1082bc8ce99aeab8dc1f1d73a74d90a7d219e54",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "call output lifetime is unconstrained by the trait inputs",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "escape",
+      "path": "tests/spec/erased-callables/escape.rs",
+      "source_sha256": "2a334da2e58c6add70abfb7030faef4d313238ef0467f71942d4093187228dbe",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1
+      },
+      "diagnostic": "required lifetime does not outlive its target",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "contextual-crossed",
+      "path": "tests/spec/erased-callables/contextual-crossed.rs",
+      "source_sha256": "de0dd8b9dc19051914e64106ec4fa4f48440bec9ee3c893cc4893a33b5c71b17",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1
+      },
+      "diagnostic": "required lifetime does not outlive its target",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "tests/spec/erased-callables/borrow-conflict.rs",
+      "source_sha256": "46c4b91c7eeab62141022a62f74e4806bc19de80e1ac2c5cd448ec816b21f660",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1
+      },
+      "diagnostic": "access conflicts with a live reference loan",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "inherited-annotated",
+      "path": "tests/spec/erased-callables/inherited-annotated.rs",
+      "source_sha256": "a906deedc3060cb3b0fcc5559d18b9a0aa735e49b7e11732cf3344d2f8b7af40",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    }
+  ]
+}

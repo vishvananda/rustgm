@@ -3,22 +3,18 @@ use super::{
     CallTrait, Checker, Error, GenericArgs, ItemId, Located, NodeKey, Predicate, Type, TypeId,
 };
 use crate::{
-    sema::declarations::generics::bindings::Binding,
+    sema::declarations::generics::bounds::lexical::Scope,
     types::{bound_uses::Uses, parameters::predicates::Bound, projection, traits::Application},
 };
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn call_output_binding(
         &mut self,
-        binding: Binding,
+        path: NodeKey,
+        predicate: Predicate,
+        original: Predicate,
+        scope: Option<Scope>,
         output: &mut Vec<Located>,
     ) -> Result<(), Error> {
-        let Binding {
-            path,
-            predicate,
-            original,
-            scope,
-            ..
-        } = binding;
         let (_, result) = crate::sema::lifetimes::call_arguments(self.report, path)?
             .ok_or_else(|| self.error(path, "missing call output binding"))?;
         let result_source = result.map(|node| NodeKey { node, ..path });

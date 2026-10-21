@@ -50,6 +50,17 @@ impl Checker<'_> {
             .principal
             .as_ref()
             .ok_or_else(|| self.error(key, "missing principal object syntax"))?;
+        if crate::sema::lifetimes::call_arguments(self.report, principal.path)?.is_some() {
+            let mut output = Vec::new();
+            self.call_output_binding(
+                principal.path,
+                predicate,
+                original,
+                principal.scope,
+                &mut output,
+            )?;
+            return Ok(output);
+        }
         let Some(list) = self.associated_bindings.bindings(principal.path) else {
             return Ok(Vec::new());
         };

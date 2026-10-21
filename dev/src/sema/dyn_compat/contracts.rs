@@ -17,6 +17,9 @@ pub(super) fn collect(
     item: DefId,
     steps: &mut usize,
 ) -> Result<Contract, Error> {
+    if let Some(kind) = facts.associated.callable(item) {
+        return callable(facts, item, kind, steps);
+    }
     let owner = facts
         .associated
         .owner(item)
@@ -94,6 +97,37 @@ pub(super) fn collect(
         }
     }
     Ok(contract)
+}
+
+/// Language call traits own completed typed headers, without source AST owners.
+fn callable(
+    facts: &Declarations,
+    item: DefId,
+    kind: crate::support::call_traits::CallTrait,
+    steps: &mut usize,
+) -> Result<Contract, Error> {
+    let header = facts
+        .generics
+        .traits
+        .as_ref()
+        .and_then(|traits| traits.header(ItemId(item.0)))
+        .ok_or("missing completed callable object header")?;
+    charge(steps, header.predicates.len().saturating_add(1))?;
+    let associated = if kind == crate::support::call_traits::CallTrait::FnOnce {
+        vec![
+            facts
+                .associated
+                .callable_output()
+                .ok_or("missing callable object Output declaration")?,
+        ]
+    } else {
+        Vec::new()
+    };
+    Ok(Contract {
+        supertraits: header.predicates.iter().map(|p| p.value).collect(),
+        methods: Vec::new(),
+        associated,
+    })
 }
 
 fn sized(facts: &Declarations, item: DefId, self_type: TypeId) -> Result<bool, Error> {
