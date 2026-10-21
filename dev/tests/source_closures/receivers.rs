@@ -106,6 +106,7 @@ fn adjusted_receiver_paths_preserve_the_original_source_place()
             .ok_or("uncaptured receiver")?;
         assert_eq!(capture.mode, mode, "{name}");
         let operand = match kind {
+            AccessKind::Reference => site.node,
             AccessKind::Method => {
                 report
                     .resolution

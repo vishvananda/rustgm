@@ -18,13 +18,25 @@ impl Builder<'_> {
             .fact(node)?
             .adjustment
             .ok_or_else(|| self.error(node, "missing reference conversion target"))?;
-        if self.place_type(node, place)? != self.ty(node)? {
+        let remaining = self.remaining_receiver_dereferences(
+            node,
+            crate::sema::closures::AccessKind::Reference,
+            reference.conversion.dereferences,
+        )?;
+        let mut source = self.ty(node)?;
+        for _ in remaining..reference.conversion.dereferences {
+            let Some(Type::Reference { referent, .. }) = self.facts.types.kind(source) else {
+                return Err(self.error(node, "captured reference conversion lacks source ancestry"));
+            };
+            source = referent;
+        }
+        if self.place_type(node, place)? != source {
             return Err(self.error(
                 node,
                 "reference conversion source differs from selected place",
             ));
         }
-        for _ in 0..reference.conversion.dereferences {
+        for _ in 0..remaining {
             place = self.dereference_place(node, place)?;
         }
         let kind = if reference.conversion.two_phase {

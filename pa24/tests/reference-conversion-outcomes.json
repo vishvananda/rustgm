@@ -1,0 +1,250 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "shared-from-mut",
+      "path": "tests/spec/reference-conversions/shared-from-mut.rs",
+      "source_sha256": "7071713d07a0d6bc6e3265fc63c418b370c256403375e1eab327cf7b8578ae95",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-reborrow",
+      "path": "tests/spec/reference-conversions/mutable-reborrow.rs",
+      "source_sha256": "aea674eba6fbf0cb5ffadafdd05dde44a2d2aa98dba186829e191bf841fd810f",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-immutable-call",
+      "path": "tests/spec/reference-conversions/mutable-immutable-call.rs",
+      "source_sha256": "61d01c663a2a451dac9029d03d51035e57c1b93d169311ef8c45b5046d1cc440",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-deep",
+      "path": "tests/spec/reference-conversions/shared-deep.rs",
+      "source_sha256": "1e5c54c94bcae4c41f866075e638e45902ae782a5b564b59b8926661209cbefc",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-slice",
+      "path": "tests/spec/reference-conversions/shared-slice.rs",
+      "source_sha256": "39d55799703c29d781b9b475c1e0ea4cd5f9b9b62e94f75fee10efeced67b9e0",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-slice",
+      "path": "tests/spec/reference-conversions/mutable-slice.rs",
+      "source_sha256": "dafe47319f9fc1e0f7efca6480e15d0ed63a88844b9bc7a522d42e720277b9dd",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-slice-from-mut",
+      "path": "tests/spec/reference-conversions/shared-slice-from-mut.rs",
+      "source_sha256": "09c7faad782dd2fc032b8f855cdecb633d6163a1bef5c63ccf380a6570bc80ed",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "field-disjoint",
+      "path": "tests/spec/reference-conversions/field-disjoint.rs",
+      "source_sha256": "3bca19ff97b7cde4a3f9922a6ce2fd5174d6d66f74e2610d73b5eec19f1bdaed",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-conflict",
+      "path": "tests/spec/reference-conversions/shared-conflict.rs",
+      "source_sha256": "0c67a6aa3c2b7ecee6b265f59eec68abf22e448df8a92eaf2f9fb977058bd317",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-conflict",
+      "path": "tests/spec/reference-conversions/mutable-conflict.rs",
+      "source_sha256": "bcd352d64312035562f3ef75ff2859f3cdbdb8b43a442fc66dfc23a35282d451",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-cannot-mutate",
+      "path": "tests/spec/reference-conversions/shared-cannot-mutate.rs",
+      "source_sha256": "89b24b8009e521fdb5550853d24d82f16af98279d2359e694da8f0dac19d0add",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-reborrow",
+      "path": "tests/spec/reference-conversions/move-reborrow.rs",
+      "source_sha256": "02c2a2aa848b5e65930c3f1f113e6b0a9e26aeaf35be1f4d63223eabb89b93c1",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "nested-shared",
+      "path": "tests/spec/reference-conversions/nested-shared.rs",
+      "source_sha256": "17c5ba8101042b3e4d8bec8027a23346a5e006a6df3de86ba7e8a0b77d5a6e8f",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "nested-mutable",
+      "path": "tests/spec/reference-conversions/nested-mutable.rs",
+      "source_sha256": "d191b083c783268f731da879153402de856734476c056f927399fd8b70fbdf02",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "borrowed-output",
+      "path": "tests/spec/reference-conversions/borrowed-output.rs",
+      "source_sha256": "6e2f965ad84569161caa605c326939eb27306925cf1a9ec23ae9ff2e0c4352fb",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "reference-slot-loan",
+      "path": "tests/spec/reference-conversions/reference-slot-loan.rs",
+      "source_sha256": "345415715daf1b73a67a31bc11aaf9b0472d4942ec36867f0b584dc208a3fc79",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

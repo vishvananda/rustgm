@@ -7,7 +7,7 @@ use crate::{
     sema::{
         closures::captures::{Mode, PathId, Plan},
         closures::{AccessKind, AdjustedAccess},
-        model::AdjustmentKind,
+        model::{AdjustmentKind, ReferenceConversion},
         scalar,
     },
     support::call_traits::CallTrait,
@@ -50,6 +50,7 @@ struct Collector<'a> {
     pending: Vec<Work>,
     calls: HashMap<NodeId, (Option<CallTrait>, u32)>,
     methods: HashMap<NodeId, (u32, Option<TermId>)>,
+    references: HashMap<NodeId, (ReferenceConversion, TermId)>,
     adjusted: HashSet<NodeId>,
     adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     kind: CallKind,
@@ -88,6 +89,18 @@ impl Checker<'_> {
                 .iter()
                 .map(|(node, pending)| (*node, pending.capture_receiver()))
                 .collect(),
+            references: self
+                .state
+                .adjustments
+                .iter()
+                .enumerate()
+                .filter_map(|(index, adjustment)| {
+                    self.state
+                        .reference_adjustments
+                        .get(&index)
+                        .map(|&reference| (adjustment.node, reference))
+                })
+                .collect(),
             adjusted: self
                 .state
                 .adjustments
@@ -95,7 +108,12 @@ impl Checker<'_> {
                 .filter(|adjustment| {
                     !matches!(
                         adjustment.kind,
-                        AdjustmentKind::Equality | AdjustmentKind::Never
+                        AdjustmentKind::Equality
+                            | AdjustmentKind::Never
+                            | AdjustmentKind::ArrayToSlice
+                            | AdjustmentKind::Unsize
+                            | AdjustmentKind::Pointer
+                            | AdjustmentKind::FunctionPointer
                     )
                 })
                 .map(|adjustment| adjustment.node)
@@ -206,9 +224,13 @@ impl Collector<'_> {
         let Some(mut place) = self.places.get(checker, work.node)? else {
             return Ok(false);
         };
-        if self.adjusted.contains(&work.node) {
-            return Err(checker.error(work.node, "adjusted capture uses are not implemented"));
-        }
+        let converted;
+        let work = if self.adjusted.contains(&work.node) {
+            converted = self.reference_use(checker, work)?;
+            &converted
+        } else {
+            work
+        };
         for _ in 0..work.dereferences {
             place = self.places.dereference(checker, work.node, place)?;
         }

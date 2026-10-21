@@ -3,6 +3,30 @@ use super::{AccessKind, Checker, Collector, Error, NodeId, Use, Work};
 use crate::types::infer::Constructor;
 
 impl Collector<'_> {
+    pub(super) fn reference_use(
+        &self,
+        checker: &mut Checker<'_>,
+        work: &Work,
+    ) -> Result<Work, Error> {
+        let (conversion, borrow) = self.references.get(&work.node).copied().ok_or_else(|| {
+            checker.error(work.node, "missing capture reference conversion selection")
+        })?;
+        if work.dereferences != 0 || work.receiver.is_some() || matches!(work.usage, Use::Mention) {
+            return Err(checker.error(work.node, "conflicting capture reference conversion uses"));
+        }
+        let usage = match checker.head(work.node, borrow)? {
+            Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+            Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+            _ => return Err(checker.error(work.node, "missing capture reference borrow type")),
+        };
+        Ok(Work {
+            node: work.node,
+            usage,
+            dereferences: conversion.dereferences,
+            receiver: Some((work.node, AccessKind::Reference)),
+        })
+    }
+
     pub(super) fn call_receiver(
         &self,
         checker: &mut Checker<'_>,

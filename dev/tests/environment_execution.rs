@@ -5,6 +5,8 @@ mod adjusted;
 mod native;
 #[path = "environment_execution/nested.rs"]
 mod nested;
+#[path = "environment_execution/references.rs"]
+mod references;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]

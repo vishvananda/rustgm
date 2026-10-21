@@ -50,6 +50,7 @@ pub struct Execution {
 pub enum AccessKind {
     Method,
     Invocation,
+    Reference,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AdjustedAccess {

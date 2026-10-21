@@ -895,7 +895,12 @@ impl<'a> Builder<'a> {
                 }) {
                     self.scratch.unadjusted.push(node);
                     self.scratch.work.push(Work::Reborrow(node));
-                    self.scratch.work.push(Work::Place(node));
+                    let place = self.receiver_place_work(
+                        node,
+                        node,
+                        crate::sema::closures::AccessKind::Reference,
+                    );
+                    self.scratch.work.push(place);
                 } else {
                     self.enter(node)?;
                 }
