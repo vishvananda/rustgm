@@ -254,58 +254,66 @@ fn constant_pattern_rejections_agree_with_rustc() -> Result<(), Box<dyn std::err
     Ok(())
 }
 
+const EXECUTED_CONSTANTS: &[(&str, &str, bool)] = &[
+    (
+        "block",
+        "const C:u8={let n=7;n};fn main(){check(match 7u8{C=>true,_=>false});}",
+        false,
+    ),
+    (
+        "match",
+        "const N:u8=7;const C:u8=match 7u8{N=>1,_=>2};fn main(){check(match 1u8{C=>true,_=>false});}",
+        false,
+    ),
+];
+
+#[path = "harness/native_references.rs"]
+mod native;
+#[path = "helpers/qualify.rs"]
+mod rustc;
+
 #[test]
-fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dyn std::error::Error>>
-{
-    let folder = folder("constant-boundaries")?;
-    for (index, (source, boundary)) in [
-        (
-            "const C:u8={let n=7;n};fn main(){match 7u8{C=>(),_=>()}}",
-            "general constant evaluation",
-        ),
-        (
-            "const N:u8=7;const C:u8=match 7u8{N=>1,_=>2};fn main(){match 1u8{C=>(),_=>()}}",
-            "general constant evaluation",
-        ),
-        (
-            "const N:isize=7;enum E{A=match 7isize{N=>1,_=>2}}fn main(){}",
-            "general constant evaluation",
-        ),
-    ]
-    .into_iter()
-    .enumerate()
-    {
-        let file = folder.join(format!("boundary{index}.rs"));
+fn executed_constants_supply_patterns() -> Result<(), Box<dyn std::error::Error>> {
+    let folder = folder("executed-constants")?;
+    for &(name, source, _) in EXECUTED_CONSTANTS {
+        let source = format!("{CHECK}{source}");
+        rustc::qualify(name, &source, true)?;
+        let file = folder.join(format!("{name}.rs"));
         std::fs::write(&file, source)?;
         let compiler = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .arg("--emit-lowir")
             .arg(&file)
             .output()?;
-        assert_eq!(compiler.status.code(), Some(1), "{source}");
-        assert!(compiler.stdout.is_empty());
         assert!(
-            String::from_utf8_lossy(&compiler.stderr).contains(boundary),
-            "{source}: {}",
+            compiler.status.success(),
+            "{name}: {}",
             String::from_utf8_lossy(&compiler.stderr)
         );
-        let rustc = Command::new("rustc")
-            .args([
-                "--edition=2024",
-                "--crate-name",
-                "constant_boundary",
-                "--emit=metadata",
-            ])
-            .arg(&file)
-            .arg("-o")
-            .arg(folder.join("metadata"))
-            .output()?;
-        std::fs::write(file.with_extension("rustc-stderr"), &rustc.stderr)?;
-        assert!(
-            rustc.status.success(),
-            "{source}: {}",
-            String::from_utf8_lossy(&rustc.stderr)
-        );
+        assert!(!compiler.stdout.is_empty());
     }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM native backend"]
+fn executed_constants_match_native_values() -> Result<(), Box<dyn std::error::Error>> {
+    native::check_cases("parallel/executed-constants/cases", EXECUTED_CONSTANTS)
+}
+
+#[test]
+fn named_patterns_in_discriminants_retain_the_general_evaluation_boundary()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = "const N:isize=7;enum E{A=match 7isize{N=>1,_=>2}}fn main(){}";
+    rustc::qualify("discriminant-named-pattern", source, true)?;
+    let file = folder("constant-boundaries")?.join("discriminant.rs");
+    std::fs::write(&file, source)?;
+    let compiler = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .arg("--emit-lowir")
+        .arg(file)
+        .output()?;
+    assert_eq!(compiler.status.code(), Some(1));
+    assert!(compiler.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&compiler.stderr).contains("general constant evaluation"));
     Ok(())
 }
 
