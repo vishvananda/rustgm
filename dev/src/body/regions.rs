@@ -126,7 +126,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         bodies.push(closure_contract(facts, closure)?);
     }
     for initializer in &facts.initializers {
-        index.insert(initializer.value, bodies.len());
+        index.insert(initializer.semantic_source(), bodies.len());
         bodies.push(initializer_contract(facts, initializer)?);
     }
     for (source, _) in facts.constant_bodies() {
@@ -290,11 +290,16 @@ fn initializer_contract(
     initializer: &crate::sema::model::Initializer,
 ) -> Result<Contract, &'static str> {
     let Some(schema) = facts.associated.schema(initializer.definition) else {
-        let mut contract = Contract::constant(initializer.value);
+        let mut contract = Contract::constant(initializer.semantic_source());
         contract.key = super::ir::BodyKey::Declaration(initializer.definition);
         return Ok(contract);
     };
-    let mut contract = parameter_contract(facts, initializer.definition, initializer.value, None)?;
+    let mut contract = parameter_contract(
+        facts,
+        initializer.definition,
+        initializer.semantic_source(),
+        None,
+    )?;
     contract.universals = schema.captures;
     contract.assumptions.clone_from(&schema.bounds);
     Ok(contract)

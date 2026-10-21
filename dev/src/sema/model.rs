@@ -149,6 +149,7 @@ pub enum InitializerKind {
 #[derive(Clone, Copy)]
 pub struct Initializer {
     pub(super) typing: InitializerTyping,
+    pub(super) body: NodeKey,
     pub definition: DefId,
     pub node: NodeKey,
     pub value: NodeKey,
@@ -162,6 +163,12 @@ pub(super) enum InitializerTyping {
     Complete,
 }
 impl Initializer {
+    /// Semantic fact ownership is separate from the syntax root evaluated by this initializer.
+    #[must_use]
+    pub const fn semantic_source(&self) -> NodeKey {
+        self.body
+    }
+
     pub(crate) fn type_checked(&self) -> bool {
         matches!(self.typing, InitializerTyping::Complete)
     }

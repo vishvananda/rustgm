@@ -22,12 +22,12 @@ pub(crate) enum Dependency {
 #[derive(Clone, Copy)]
 pub(super) enum ValueScope {
     Anonymous { body: NodeKey, ty: TypeId },
-    Initializer { body: NodeKey },
+    Initializer { body: NodeKey, index: usize },
 }
 impl ValueScope {
     pub(super) const fn body(self) -> NodeKey {
         match self {
-            Self::Anonymous { body, .. } | Self::Initializer { body } => body,
+            Self::Anonymous { body, .. } | Self::Initializer { body, .. } => body,
         }
     }
     pub(super) fn retain(

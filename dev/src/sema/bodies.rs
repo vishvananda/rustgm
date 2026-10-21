@@ -405,7 +405,10 @@ impl<'a> Checker<'a> {
             call_types: Some(self.state.call_types),
         }
     }
-    fn prepare_constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
+    fn prepare_constant(&mut self, initializer: super::model::Initializer) -> Result<(), Error> {
+        let key = initializer.semantic_source();
+        let ty = initializer.ty;
+        let owner = initializer.definition;
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
         self.begin_constant(
             key,

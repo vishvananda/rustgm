@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/initializer-owners/ordinary.rs",
+      "expected_status": 0,
+      "source_sha256": "d2e3a6f92a049db85264e46f8e821c5558efa96284ed973c063c151340267194",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/root.rs",
+      "expected_status": 0,
+      "source_sha256": "21cfc316341af30cb029e02d21687fbdeefbbbdf350b1e0e23b9833db20d6aef",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/grouped.rs",
+      "expected_status": 0,
+      "source_sha256": "df2abde5a1a84a52587b7623eec1fb57099c81509c8f645049232cc88cee52c0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/attributed.rs",
+      "expected_status": 0,
+      "source_sha256": "191b569ff8824244ebbe934cbc07267dc0d1e8e3ea74530b10907a8c07cd093f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/block.rs",
+      "expected_status": 0,
+      "source_sha256": "f62d45ad9944f03b63e9243313c02bb323e6facbb22c3c338977a1dd68275e3d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/inline.rs",
+      "expected_status": 0,
+      "source_sha256": "2ef1fd7fb9d386df8050a5baf5a644d1f108b22055b4588fee8a4423083d3a48",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/static.rs",
+      "expected_status": 0,
+      "source_sha256": "f35f2008ee894004979c01549da04a99c5561c12a1ed8f437cc8320349c48651",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-owners/dangling.rs",
+      "expected_status": 1,
+      "source_sha256": "54a22a9ddea61508245443482a1de20e62859b6d1707a114935b7a9b4fe18e00",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ]
+    },
+    {
+      "path": "tests/spec/initializer-owners/escaping-input.rs",
+      "expected_status": 1,
+      "source_sha256": "f2b79593c952de249db375d93a1f5f38da863e240afd64d7b66054059287057a",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "features": [
+        "pa24.function-pointer-coercions"
+      ]
+    }
+  ]
+}

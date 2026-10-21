@@ -14,6 +14,9 @@ impl Engine {
         if let Some(&index) = self.roots.get(&target) {
             return Ok(index);
         }
+        if let Target::Initializer(definition) = target {
+            return self.initializer_root(report, facts, definition);
+        }
         let Target::Expression {
             source,
             result,

@@ -1,5 +1,6 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
 mod expressions;
+mod initializers;
 mod inputs;
 #[cfg(test)]
 #[path = "../../tests/invariants/execution_storage.rs"]
@@ -268,10 +269,14 @@ impl Engine {
                 if !initializer.type_checked() {
                     return Ok(false);
                 }
-                let target = Target::Expression {
-                    source: initializer.value,
-                    result: initializer.ty,
-                    context: None,
+                let target = if initializer.semantic_source() == initializer.value {
+                    Target::Expression {
+                        source: initializer.value,
+                        result: initializer.ty,
+                        context: None,
+                    }
+                } else {
+                    Target::Initializer(definition)
                 };
                 let index = self.root(report, facts, target)?;
                 self.catalog

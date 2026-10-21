@@ -82,6 +82,35 @@ impl Prepared {
             .map_err(|e| Declarations::error(report, source, e))?;
         Ok((body, requirements))
     }
+    pub(crate) fn initializer(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        initializer: &crate::sema::model::Initializer,
+    ) -> Result<Template, Error> {
+        let environment = environment(
+            report,
+            facts,
+            initializer.definition,
+            initializer.semantic_source(),
+        )?;
+        let query = self.query.get_or_insert_with(|| {
+            NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
+        });
+        let mut scoped = query.scoped(Arc::clone(&environment));
+        let scratch = self
+            .scratch
+            .get_or_insert_with(|| Box::new(Scratch::new(facts)));
+        let body = super::initializer_body(report, facts, scratch, initializer, Some(&mut scoped))?;
+        crate::body::constants::eligibility(report, facts, &body)?;
+        let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
+            .map_err(|e| Declarations::error(report, body.source, e))?;
+        Ok(Template {
+            body,
+            destruction,
+            environment,
+        })
+    }
     /// Actual CFG construction and subsequent reuse counts.
     #[must_use]
     pub const fn work(&self) -> (usize, usize) {

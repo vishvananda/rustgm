@@ -3,6 +3,8 @@
 mod constants;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "closure_pointers/owners.rs"]
+mod owners;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]
