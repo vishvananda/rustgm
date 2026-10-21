@@ -15,9 +15,12 @@ pub(crate) fn table_method(
     concrete: TypeId,
     slot: Slot,
 ) -> Result<Option<Instance>, String> {
+    let crate::sema::vtable_plans::Method::Declared(method) = slot.method else {
+        return Err("language callable requires its checked execution adapter".into());
+    };
     let arguments = bindings(facts, concrete, slot)?;
-    let source = arguments::instantiate(facts, slot.method, &arguments)?;
-    let Some(conditions) = conditions(facts, slot.method, source)? else {
+    let source = arguments::instantiate(facts, method, &arguments)?;
+    let Some(conditions) = conditions(facts, method, source)? else {
         return Ok(None);
     };
     let mut dispatch = Dispatcher::new(0, 1)?;
@@ -108,7 +111,10 @@ fn bindings(
             bindings.insert(argument_id(&facts.types, parameter.argument)?, argument);
         }
     }
-    let item = ItemId(slot.method.0);
+    let crate::sema::vtable_plans::Method::Declared(method) = slot.method else {
+        return Err("language callable has no declared method bindings");
+    };
+    let item = ItemId(method.0);
     let template = facts
         .lifetimes
         .callables

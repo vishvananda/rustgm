@@ -67,7 +67,15 @@ fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<
     facts.aggregates.prepare(&mut facts.types, concrete)?;
     let mut methods = Vec::with_capacity(slots.slots.len());
     for &slot in &slots.slots {
-        methods.push(crate::sema::dispatch::table_method(facts, concrete, slot)?);
+        methods.push(match slot.method {
+            super::Method::Declared(_) => {
+                crate::sema::dispatch::table_method(facts, concrete, slot)?
+                    .map(super::Target::Function)
+            }
+            super::Method::Callable(_) => Some(super::Target::Callable(super::operators::target(
+                facts, concrete,
+            )?)),
+        });
     }
     let storage = facts
         .objects

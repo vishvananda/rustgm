@@ -1,0 +1,214 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "notes": [
+    "Function items, pointers and empty environments; captured environment wrappers require separate source proof.",
+    "Declared before independent source and native qualification; no assignment activation or reference generation."
+  ],
+  "cases": [
+    {
+      "name": "item",
+      "path": "tests/spec/callable-dispatch/item.rs",
+      "source_sha256": "0e630c90a98e09cc69e3eb70299cdf687cb396a27a32c61a69fc140c0c82a206",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "pointer",
+      "path": "tests/spec/callable-dispatch/pointer.rs",
+      "source_sha256": "0a2afb445ca8356687bac0529c4e63b6a8e7b9e2ac905ef623f0a9a2b5ca091b",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "empty",
+      "path": "tests/spec/callable-dispatch/empty.rs",
+      "source_sha256": "4ad4ed54e5d77e5c4b9f2305a2a53e2425087e83770475b735f837ec6eea2807",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "mutable",
+      "path": "tests/spec/callable-dispatch/mutable.rs",
+      "source_sha256": "b02a47ff970566f55af1afa68136b4878ae7456bcbd6c547388de28703e37e21",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic-item",
+      "path": "tests/spec/callable-dispatch/generic-item.rs",
+      "source_sha256": "4fbc498c221f55ff6e32cbaa33e0cb5a8ce3ba4b0675b9ddc706b5e0bb219af6",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "aggregate",
+      "path": "tests/spec/callable-dispatch/aggregate.rs",
+      "source_sha256": "43ebbacb4aba5bf22b7f092c0e02d257655d087b34b55e2845817b44c56b5ed3",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic-consumer",
+      "path": "tests/spec/callable-dispatch/generic-consumer.rs",
+      "source_sha256": "d326cc3767bc8fee450fb26a22f04f0ab4e2ef3ba888cfce99af4bb8463b9094",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "borrowed-consumer",
+      "path": "tests/spec/callable-dispatch/borrowed-consumer.rs",
+      "source_sha256": "b864c1a3a0e1aa8d24a4daf9272fd74c02902a0387da8cdc98a169901e71e2e3",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "inherited",
+      "path": "tests/spec/callable-dispatch/inherited.rs",
+      "source_sha256": "856c4a4625a93fc7a40d894aca99773c4b4df0b3778c5733f729b60cd48d376f",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "upcast",
+      "path": "tests/spec/callable-dispatch/upcast.rs",
+      "source_sha256": "4e65c43049dbd6bf3ff939e094e49b11a629a93462a27380196ae995308c8297",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "higher-ranked",
+      "path": "tests/spec/callable-dispatch/higher-ranked.rs",
+      "source_sha256": "ef05e337b60c383cb1dfd8899b4b0d44a6d2e55bc5b0a6a22aaeccd418935611",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "static",
+      "path": "tests/spec/callable-dispatch/static.rs",
+      "source_sha256": "4a13359b7c7e75c70ffb077013ef87412f0d1e0ea2129aef234105460828b612",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    }
+  ]
+}

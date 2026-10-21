@@ -89,7 +89,14 @@ impl Context<'_> {
         for &method in &table.methods {
             items.push(if let Some(method) = method {
                 Item::Address {
-                    target: Target::Function(self.demand(method)?),
+                    target: Target::Function(match method {
+                        crate::sema::vtable_plans::Target::Function(instance) => {
+                            self.demand(instance)?
+                        }
+                        crate::sema::vtable_plans::Target::Callable(callable) => {
+                            self.callable_target(callable)?
+                        }
+                    }),
                     addend: 0,
                 }
             } else {

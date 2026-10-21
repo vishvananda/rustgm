@@ -1,11 +1,16 @@
 //! Executable object plans are demanded from bodies whose source proofs have passed.
+mod operators;
 mod shapes;
 mod tables;
+#[cfg(test)]
+#[path = "../../tests/invariants/erased_entries.rs"]
+mod tests;
 mod upcasts;
 use crate::{
     resolve::model::DefId,
     types::{TypeId, instance::Instance, substitute::Bound, traits::ApplicationId},
 };
+pub(crate) use operators::{Operator, prepare_operator};
 use std::{collections::HashMap, sync::Arc};
 pub(crate) use tables::{complete_tables, prepare_table};
 pub(crate) use upcasts::prepare_upcast;
@@ -19,18 +24,35 @@ pub(crate) struct TableId(pub u32);
 pub(crate) struct Table {
     pub concrete: TypeId,
     pub shape: ShapeId,
-    pub methods: Vec<Option<Instance>>,
+    pub methods: Vec<Option<Target>>,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum Target {
+    Function(Instance),
+    Callable(Callable),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(crate) struct Callable {
+    pub concrete: TypeId,
+    pub signature: TypeId,
+    pub execution: TypeId,
 }
 
 #[derive(Clone, Copy)]
 pub(crate) struct Slot {
-    pub method: DefId,
+    pub method: Method,
     pub parent: ApplicationId,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(crate) enum Method {
+    Declared(DefId),
+    Callable(crate::support::call_traits::CallTrait),
 }
 pub(crate) struct Shape {
     pub object: TypeId,
     pub slots: Vec<Slot>,
-    indices: HashMap<(DefId, ApplicationId), u32>,
+    indices: HashMap<(Method, ApplicationId), u32>,
     pub upcasts: Vec<ShapeId>,
     upcast_indices: HashMap<ShapeId, u32>,
 }
@@ -55,6 +77,8 @@ struct Storage {
     shapes: Vec<Arc<Shape>>,
     shape_ids: HashMap<TypeId, ShapeId>,
     calls: HashMap<Instance, Option<Virtual>>,
+    operators: HashMap<(TypeId, crate::support::call_traits::CallTrait, TypeId), Operator>,
+    callable_targets: HashMap<TypeId, Callable>,
     tables: Vec<Table>,
     table_ids: HashMap<(TypeId, ShapeId), TableId>,
     conversions: HashMap<(TypeId, TypeId), TableId>,
@@ -73,6 +97,8 @@ impl Default for Storage {
             shapes: Vec::new(),
             shape_ids: HashMap::new(),
             calls: HashMap::new(),
+            operators: HashMap::new(),
+            callable_targets: HashMap::new(),
             tables: Vec::new(),
             table_ids: HashMap::new(),
             conversions: HashMap::new(),
@@ -88,6 +114,18 @@ impl Default for Storage {
     }
 }
 impl Objects {
+    pub(crate) fn operator(
+        &self,
+        receiver: TypeId,
+        kind: crate::support::call_traits::CallTrait,
+        signature: TypeId,
+    ) -> Option<Operator> {
+        self.storage
+            .as_ref()?
+            .operators
+            .get(&(receiver, kind, signature))
+            .copied()
+    }
     pub(crate) fn call(&self, instance: Instance) -> Option<Virtual> {
         self.storage
             .as_ref()?
@@ -178,7 +216,7 @@ pub(crate) fn prepare_call(
         .shape(shape)
         .ok_or("missing object method shape")?
         .indices
-        .get(&(method, parent))
+        .get(&(Method::Declared(method), parent))
         .copied();
     let value = slot.map(|slot| Virtual { shape, slot });
     facts

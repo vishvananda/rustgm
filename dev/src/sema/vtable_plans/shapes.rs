@@ -1,5 +1,5 @@
 //! Runtime slots retain complete trait inputs while sharing repeated supertraits.
-use super::{Shape, ShapeId, Slot};
+use super::{Method, Shape, ShapeId, Slot};
 use crate::{
     resolve::{expansion::Report, model::DefId},
     sema::{model::Declarations, traits::object_bounds},
@@ -79,19 +79,30 @@ fn collect(
             .trait_application(parent)
             .ok_or("missing object slot owner")?
             .item;
+        if let Some(kind) = facts.associated.callable(DefId(owner.0)) {
+            insert(&mut shape, Method::Callable(kind), parent)?;
+            continue;
+        }
         let contract = queries
             .demand(report, facts, DefId(owner.0))
             .map_err(|e| e.to_string())?;
         for &method in &contract.methods {
-            if let std::collections::hash_map::Entry::Vacant(entry) =
-                shape.indices.entry((method, parent))
-            {
-                let slot =
-                    u32::try_from(shape.slots.len()).map_err(|_| "too many virtual methods")?;
-                entry.insert(slot);
-                shape.slots.push(Slot { method, parent });
-            }
+            insert(&mut shape, Method::Declared(method), parent)?;
         }
     }
     Ok(shape)
+}
+
+fn insert(
+    shape: &mut Shape,
+    method: Method,
+    parent: crate::types::traits::ApplicationId,
+) -> Result<(), &'static str> {
+    if let std::collections::hash_map::Entry::Vacant(entry) = shape.indices.entry((method, parent))
+    {
+        let slot = u32::try_from(shape.slots.len()).map_err(|_| "too many virtual methods")?;
+        entry.insert(slot);
+        shape.slots.push(Slot { method, parent });
+    }
+    Ok(())
 }

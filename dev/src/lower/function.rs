@@ -693,10 +693,10 @@ impl Lower<'_, '_> {
                 arguments,
             } => return self.intrinsic(intrinsic, instance, arguments),
             Rvalue::Invoke {
+                kind,
                 signature,
                 arguments,
-                ..
-            } => return self.invoke(id, signature, arguments, value.ty),
+            } => return self.invoke(id, kind, signature, arguments, value.ty),
             Rvalue::Call {
                 signature,
                 callee,

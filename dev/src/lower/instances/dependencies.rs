@@ -36,6 +36,7 @@ struct Discovered {
     calls: Vec<Instance>,
     tables: Vec<(TypeId, TypeId)>,
     upcasts: Vec<(TypeId, TypeId)>,
+    operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
 }
 impl Discovered {
     fn callable(
@@ -98,7 +99,7 @@ impl Dependencies {
     fn prepared(
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
-        result: Discovered,
+        mut result: Discovered,
     ) -> Result<Demands, String> {
         let mut concrete = Vec::new();
         for instance in result.calls {
@@ -112,6 +113,9 @@ impl Dependencies {
             }
         }
         let mut object_types = Vec::new();
+        for (receiver, kind, signature) in result.operators {
+            crate::sema::vtable_plans::prepare_operator(report, facts, receiver, kind, signature)?;
+        }
         for (source, target) in result.tables {
             crate::sema::vtable_plans::prepare_table(report, facts, source, target)?;
         }
@@ -123,7 +127,22 @@ impl Dependencies {
                 .objects
                 .table(id)
                 .ok_or("missing demanded object table")?;
-            concrete.extend(table.methods.iter().flatten().copied());
+            for target in table.methods.iter().flatten() {
+                match *target {
+                    crate::sema::vtable_plans::Target::Function(instance) => {
+                        concrete.push(instance);
+                    }
+                    crate::sema::vtable_plans::Target::Callable(callable) => {
+                        match facts.types.kind(callable.concrete) {
+                            Some(Kind::FunctionItem { .. }) => {
+                                concrete.push(Instance::new(&facts.types, callable.concrete)?);
+                            }
+                            Some(Kind::Closure { .. }) => result.closures.push(callable.concrete),
+                            _ => {}
+                        }
+                    }
+                }
+            }
             object_types.push(table.concrete);
         }
         Ok(Demands {
@@ -165,11 +184,16 @@ impl Dependencies {
             {
                 result.upcasts.push((source, target));
             }
-            if let Rvalue::Invoke { arguments, .. } = value.kind {
+            if let Rvalue::Invoke {
+                kind,
+                signature,
+                arguments,
+            } = value.kind
+            {
                 let id = crate::body::ir::ValueId(
                     u32::try_from(index).map_err(|_| "too many callable values")?,
                 );
-                self.invocation(facts, body, id, arguments, &mut result)?;
+                self.invocation(facts, body, id, (kind, signature, arguments), &mut result)?;
             }
             let operand = match value.kind {
                 Rvalue::Reify(id)
@@ -240,7 +264,11 @@ impl Dependencies {
         facts: &Declarations,
         body: &Body,
         id: crate::body::ir::ValueId,
-        arguments: crate::body::ir::ValueList,
+        invocation: (
+            crate::support::call_traits::CallTrait,
+            TypeId,
+            crate::body::ir::ValueList,
+        ),
         result: &mut Discovered,
     ) -> Result<(), &'static str> {
         if let Some(entry) = body
@@ -252,16 +280,20 @@ impl Dependencies {
             result.adapters.push(entry);
             return Ok(());
         }
+        let (kind, signature, arguments) = invocation;
         let receiver = *body
             .arguments(arguments)
             .first()
             .ok_or("missing call operator receiver")?;
-        let mut ty = facts
-            .types
-            .storage_head(body.values[receiver.0 as usize].ty)?;
+        let receiver = body.values[receiver.0 as usize].ty;
+        let mut ty = facts.types.storage_head(receiver)?;
         while let Some(Kind::Reference { referent, .. }) = facts.types.kind(ty) {
             self.charge(1)?;
             ty = facts.types.storage_head(referent)?;
+        }
+        if matches!(facts.types.kind(ty), Some(Kind::Dynamic { .. })) {
+            result.operators.push((receiver, kind, signature));
+            return Ok(());
         }
         result.callable(&facts.types, body, ty)
     }

@@ -9,6 +9,7 @@ impl Lower<'_, '_> {
     pub(super) fn invoke(
         &mut self,
         id: crate::body::ir::ValueId,
+        kind: crate::support::call_traits::CallTrait,
         signature: TypeId,
         arguments: ValueList,
         result: TypeId,
@@ -32,6 +33,20 @@ impl Lower<'_, '_> {
             .arguments(arguments)
             .first()
             .ok_or("missing call operator receiver")?;
+        let receiver_type = self.body.values[receiver.0 as usize].ty;
+        if let Some(call) = self
+            .context
+            .objects
+            .operator(receiver_type, kind, signature)
+        {
+            let symbol = self.context.object_operator(call)?;
+            return self.call_operand(
+                call.execution,
+                crate::lowir::program::Operand::Symbol(symbol),
+                arguments,
+                result,
+            );
+        }
         let mut ty = self
             .context
             .types

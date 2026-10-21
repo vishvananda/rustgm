@@ -1,8 +1,10 @@
 # PA24 callable object contracts
 
 This checkpoint admits the typed contracts of `dyn Fn`, `dyn FnMut` and
-`dyn FnOnce`. PA24 remains planned. Dynamic invocation lowering and native
-qualification are still required before these fixtures become LowIR oracles.
+`dyn FnOnce`. PA24 remains planned. The subsequent
+[dispatch checkpoint](pa24-erased-dispatch.md) implements function, pointer and
+empty-environment targets. Captured-environment targets and full assignment
+qualification remain required before publishing the complete LowIR contract.
 
 Language call traits retain their own complete `Self`/argument application in
 their default object-lifetime templates. Parenthesized object bounds use the
