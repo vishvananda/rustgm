@@ -25,8 +25,25 @@ def configure(checkout):
     for name, path in tools.items():
         if digest(Path(path)) != lock["sha256"][name]:
             raise ValueError(f"{name}: binary differs from reviewed backend; qualify a new lock explicitly")
-    (ROOT / "backend.local.json").write_text(json.dumps({"tools": tools}, indent=2) + "\n")
-    print("Configured pinned CPPGM backend")
+    # Verify every live input before installing pins or replacing configuration.
+    local = ROOT / "backend.local.json"
+    configured = json.loads(local.read_text())["tools"] if local.is_file() else {}
+    for name, path in tools.items():
+        configured[name] = str(pin_tool(Path(path), name, lock["sha256"][name]))
+    local.write_text(json.dumps({"tools": configured}, indent=2) + "\n")
+    print("Configured immutable pinned CPPGM backend")
+
+
+def pin_tool(source, name, expected):
+    pin = ROOT / "obj" / "backend" / "pins" / expected / name
+    pin.parent.mkdir(parents=True, exist_ok=True)
+    if not pin.exists():
+        shutil.copyfile(source, pin)
+    if digest(pin) != expected:
+        raise ValueError(f"{name}: immutable backend pin differs from reviewed bytes")
+    pin.chmod(0o555)
+    (pin.parent / ".keep-artifacts").write_text("Current reviewed LowIR backend pin\n")
+    return pin
 
 
 def object_profile(lock):
@@ -65,15 +82,7 @@ def configure_object(checkout):
     expected = profile["sha256"]["cppgm++"]
     if digest(source) != expected:
         raise ValueError("cppgm++: binary differs from reviewed object backend")
-    pin = ROOT / "obj" / "backend" / "pins" / expected / "cppgm++"
-    pin.parent.mkdir(parents=True, exist_ok=True)
-    if not pin.exists():
-        shutil.copyfile(source, pin)
-    if digest(pin) != expected:
-        raise ValueError("cppgm++: immutable object backend pin differs from reviewed bytes")
-    pin.chmod(0o555)
-    (pin.parent / ".keep-artifacts").write_text("Current reviewed LowIR object backend pin\n")
-    tools["cppgm++"] = str(pin)
+    tools["cppgm++"] = str(pin_tool(source, "cppgm++", expected))
     (ROOT / "backend.local.json").write_text(json.dumps({"tools": tools}, indent=2) + "\n")
     print("Configured immutable pinned CPPGM LowIR object backend")
 

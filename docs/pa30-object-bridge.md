@@ -58,3 +58,14 @@ The first optional configuration attempt correctly rejected the live checkout's
 revision against the older executable profile. The reviewed separate optional
 profile records that newer provenance explicitly; default commit and hashes
 remain unchanged.
+
+Default configuration now also copies both original tools to hash-named immutable
+pins after checking the original commit and both lock hashes. It retains an
+already configured optional driver. A live checkout rebuild cannot change a
+configured executable bridge; changed pin bytes still fail before execution.
+The regression test executes the configured validator/linker after overwriting
+both live tools, then verifies rejection of a modified pin, a mismatched commit,
+a changed live binary and an existing corrupt pin without replacing local
+configuration. The updated focused gate passes all eight bridge tests, all 56
+harness tests, the 38-stage layout check and the original exit-42 backend smoke.
+No lock hash or CPPGM source changes are involved.
