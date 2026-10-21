@@ -52,6 +52,11 @@ Evidence is in `obj/parallel/pa30/imports/` and resource receipt
 fixtures; the audit required reviewed vocabulary provenance, so tests now load
 the declared files at runtime. No audit exceptions or oracle changes were added.
 
+The bounded matched-release performance study is recorded in
+`pa30-import-performance.md`. It retains A/A calibration, every ABBA/RSS
+observation and exact shared output/status equality; macro wall medians were
+about 1.4–1.6% higher, without a tight threshold claim for these short controls.
+
 Remaining PA30 work includes foreign statics, linkage attributes and export
 roots, the PA29 crate-qualified Rust naming provider, C aggregate classification,
 variadic calls and the full release/performance qualification. Imported Rust
