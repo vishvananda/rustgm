@@ -7,11 +7,11 @@ shared holes retain identity. One binder fold opens all expected children
 together, preserving nested callable binders and enclosing lifetime aliases.
 
 An unresolved function pointer still has a binder even when it introduces zero
-late lifetimes. Calls now remove that empty frame before using references to an
-enclosing lifetime. Previously the shortcut left a depth-one lifetime on an
+late lifetimes. Calls remove that empty frame when the partial signature contains an escaping
+lifetime, before using references to an enclosing lifetime. Previously the shortcut left a depth-one lifetime on an
 ordinary call operand and produced an invalid lifetime-identity diagnostic.
-Inferred call substitution now folds one bundle of inputs and output, sharing
-work across common subgraphs instead of walking each child independently.
+Inferred call substitution shares one mapping cache per fixed lifetime fold
+across its input and output roots, preserving each child's canonicalization order.
 
 Eleven new controls were independently qualified with pinned rustc 1.98.0 object
 compilation before the final implementation: seven valid input/output holes,
@@ -33,7 +33,34 @@ typed-contract diagnostic probe remain available beside it.
 The foreign-convention native harness now places its outputs under the
 integrator's registered `obj/parallel/` budget and scoped cleanup roots.
 
-## Immutable development measurement
+## Preserve earlier inspection contracts
+
+The first combined text run stopped before reference generation: synthetic tuple
+transport had introduced 386 unexpected inspection differences. Those tuples
+are gone. The existing binder mapper now shares its cache across roots directly,
+without creating transport-only types. Canonicalization between roots is allowed;
+solving input holes or changing the lifetime fold requires a fresh cache.
+
+Three remaining differences exposed unnecessary opening of partial signatures
+without escaping lifetimes. A read-only query now checks this demand first,
+using canonical summaries and one visit per partial term/binder-depth pair. It
+preserves nested local quantifiers and does not intern types or add lifetime
+equations. Unknown holes establish no occurrence; absence is never cached across
+later equations. Two invariants cover local/outer lifetimes, nested callables,
+known inputs, unchanged arenas/equalities, shared DAGs at 8/32/128 and holes
+that later acquire an escaping lifetime.
+
+`obj/parallel/partial-closure-context/gates-v6/` records both passing invariants,
+all 20 focused closure/convention source/native groups, formatting, strict
+all-target/all-feature release Clippy and the audit (1,211 files, zero findings).
+All 23 active PA text suites have zero unexpected differences. Only the eleven
+independently reviewed constant-evaluation diagnostics remain; no references
+were rewritten by this gate. Earlier failed gates are retained.
+
+## Superseded development measurement
+
+The following measurement predates the inspection-contract correction above.
+It remains historical evidence and does not qualify the corrected compiler.
 
 The frozen compiler for `6b684da5` has SHA-256
 `509020188d72abde37fc091603a0cb9f1f97ffa5cf17b1837f168dd80947ee1f`.

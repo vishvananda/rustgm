@@ -157,19 +157,20 @@ impl Checker<'_> {
         })
     }
     pub(super) fn alias_argument(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
+        self.alias_argument_mapped(node, term, &mut infer::RegionMapping::default())
+    }
+    fn alias_argument_mapped(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        mapping: &mut infer::RegionMapping,
+    ) -> Result<TermId, Error> {
         let transformed = match self.state.infer.resolved(&mut self.facts.types, term) {
             Ok(ty) => {
                 let ty = self.alias_type(node, ty)?;
                 self.known(node, ty)
             }
-            Err(infer::Error::Unresolved) => {
-                self.prepare_universals(node)?;
-                let regions = self.state.call_types.universal_arguments();
-                self.state
-                    .infer
-                    .substitute_regions(&mut self.facts.types, term, &regions)
-                    .map_err(|e| self.error(node, e))
-            }
+            Err(infer::Error::Unresolved) => self.alias_inferred_mapped(node, term, mapping),
             Err(e) => Err(self.error(node, e)),
         }?;
         if self.state.projections.active() && transformed != term {
@@ -200,24 +201,22 @@ impl Checker<'_> {
             arguments.push(self.body_region(node, BodyRegionOrigin::CallArgument)?);
         }
         let mut children = Vec::with_capacity(parameters as usize + 1);
+        let mut opened = infer::RegionMapping::default();
+        let mut aliases = infer::RegionMapping::default();
+        let mut substitution = crate::types::substitute::Bound::new(arguments);
+        // Share each fold across all inputs and the result while retaining the
+        // canonicalization order. Transport must not intern a synthetic tuple.
         for index in 0..=parameters {
-            children.push(self.child(node, term, index as usize)?);
-        }
-        // One fold per signature preserves shared partial graphs across all
-        // inputs and the result, including references outside an empty binder.
-        let bundle = self
-            .state
-            .infer
-            .construct(Constructor::Tuple, &children)
-            .map_err(|e| self.error(node, e))?;
-        let bundle = self
-            .state
-            .infer
-            .substitute_regions(&mut self.facts.types, bundle, &arguments)
-            .map_err(|e| self.error(node, e))?;
-        let bundle = self.alias_argument(node, bundle)?;
-        for (index, child) in children.iter_mut().enumerate() {
-            *child = self.child(node, bundle, index)?;
+            let child = self.child(node, term, index as usize)?;
+            let child = opened
+                .apply(
+                    &mut self.state.infer,
+                    &mut self.facts.types,
+                    child,
+                    &mut substitution,
+                )
+                .map_err(|e| self.error(node, e))?;
+            children.push(self.alias_argument_mapped(node, child, &mut aliases)?);
         }
         self.state
             .infer

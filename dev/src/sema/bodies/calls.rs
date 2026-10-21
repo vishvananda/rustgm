@@ -262,13 +262,25 @@ impl Checker<'_> {
         node: NodeId,
         term: TermId,
     ) -> Result<TermId, Error> {
+        self.alias_inferred_mapped(node, term, &mut infer::RegionMapping::default())
+    }
+    pub(super) fn alias_inferred_mapped(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        mapping: &mut infer::RegionMapping,
+    ) -> Result<TermId, Error> {
         self.prepare_universals(node)?;
         let Some(substitution) = self.state.call_types.universals.as_mut() else {
             return Err(self.error(node, "missing universal substitution"));
         };
-        self.state
-            .infer
-            .map_regions(&mut self.facts.types, term, substitution)
+        mapping
+            .apply(
+                &mut self.state.infer,
+                &mut self.facts.types,
+                term,
+                substitution,
+            )
             .map_err(|e| self.error(node, e))
     }
 
@@ -313,6 +325,16 @@ impl Checker<'_> {
         } else {
             let ty = match self.state.infer.resolved(&mut self.facts.types, root) {
                 Ok(ty) => ty,
+                Err(infer::Error::Unresolved)
+                    if bound_regions == 0
+                        && !self
+                            .state
+                            .infer
+                            .contains_escaping_regions(&self.facts.types, root)
+                            .map_err(|error| self.error(node, error))? =>
+                {
+                    return Ok(term);
+                }
                 // Even an empty binder can enclose outer lifetime references.
                 // Open it before checking arguments without solving type holes.
                 Err(infer::Error::Unresolved) => return self.instantiate_call_term(node, term),

@@ -1,4 +1,5 @@
 //! Binder substitution over unresolved type graphs preserves their inference variables.
+mod escaping;
 use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
 use crate::types::substitute::Bound;
 use std::collections::HashMap;
@@ -55,7 +56,7 @@ impl Context {
         root: TermId,
         bound: &mut Bound,
     ) -> Result<MappedRegions, Error> {
-        let mut mapping = Mapping::default();
+        let mut mapping = RegionMapping::default();
         let term = mapping.apply(self, store, root, bound)?;
         Ok(MappedRegions {
             term,
@@ -64,14 +65,14 @@ impl Context {
     }
     /// One immutable input graph may have many shared roots. Do not rebuild its
     /// prefixes separately for every exported input binding.
-    pub(super) fn map_region_roots(
+    pub(crate) fn map_region_roots(
         &mut self,
         store: &mut Store,
         roots: &[TermId],
         bound: &mut Bound,
     ) -> Result<Vec<TermId>, Error> {
         self.account_work(roots.len())?;
-        let mut mapping = Mapping::default();
+        let mut mapping = RegionMapping::default();
         roots
             .iter()
             .map(|&root| mapping.apply(self, store, root, bound))
@@ -134,15 +135,18 @@ impl Context {
     }
 }
 
+/// A cache for one fixed binder fold over immutable roots in one inference
+/// context. Allocation and canonicalization are allowed between applications;
+/// changing the fold or solving source holes requires a fresh cache.
 #[derive(Default)]
-struct Mapping {
+pub(crate) struct RegionMapping {
     results: HashMap<(TermId, u16), TermId>,
     work: Vec<((TermId, u16), bool)>,
     children: Vec<TermId>,
     projections: bool,
 }
-impl Mapping {
-    fn apply(
+impl RegionMapping {
+    pub(crate) fn apply(
         &mut self,
         context: &mut Context,
         store: &mut Store,

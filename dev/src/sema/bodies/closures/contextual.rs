@@ -122,18 +122,9 @@ fn inferred_children(
                 .map_err(|_| "invalid contextual closure input")?,
         );
     }
-    // Open this signature's binder once over all roots. Shared partial graphs
-    // and repeated inference holes retain their identity across its children.
-    let tuple = context
-        .construct(Constructor::Tuple, &children)
-        .map_err(|_| "invalid contextual input bundle")?;
-    let opened = context
-        .map_regions(store, tuple, &mut interface.opening)
-        .map_err(|_| "invalid contextual lifetime mapping")?;
-    for (index, child) in children.iter_mut().enumerate() {
-        *child = context
-            .child(store, opened, index)
-            .map_err(|_| "invalid opened contextual input")?;
-    }
-    Ok(children)
+    // Open this signature's binder once over all roots, without interning a
+    // transport-only type. Shared partial graphs and holes retain identity.
+    context
+        .map_region_roots(store, &children, &mut interface.opening)
+        .map_err(|_| "invalid contextual lifetime mapping")
 }

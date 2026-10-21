@@ -18,6 +18,7 @@ pub mod projections;
 pub mod properties;
 pub mod refinement;
 mod regions;
+pub(crate) use regions::RegionMapping;
 mod resolve;
 mod scoped;
 mod specialize;
