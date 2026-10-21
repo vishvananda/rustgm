@@ -56,7 +56,7 @@ The private visibility compile failure, zero-test selector, fixed-slot hypothesi
 and initial diagnostic expectation are retained in the checkpoint receipt.
 No active references, activation, backend changes or full-release claim occur.
 
-Current PA27 requirements still needing closure include mutable/raw union-field
+At this checkpoint, PA27 requirements still needing closure included mutable/raw union-field
 reference creation, the other reference profiles listed above, general raw
 byte/type reinterpretation and pointer offsets, shared-derived interior writes,
 pointer/reference/function/aggregate union Images, the default runtime
@@ -66,3 +66,7 @@ swap, add/sub, bitwise RMWs and strong/weak CAS. Memory/numeric intrinsic famili
 aggregate/ZST/wide volatile, other atomic widths, fences/accessors/min/max/update
 and concurrent release qualification remain. These partial checkpoints do not
 complete either assignment.
+
+The later [mutable reference review](pa27-mutable-reference-review.md) supersedes
+the ordinary writable-local mutable reborrow boundary while retaining its other
+explicit profiles. Historical outcomes above are unchanged.

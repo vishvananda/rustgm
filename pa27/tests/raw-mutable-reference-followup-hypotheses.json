@@ -1,0 +1,43 @@
+{
+  "stage": "preimplementation-independent-followup-hypotheses",
+  "baseline": "6b1f97e7",
+  "reason": "initial unused mutable borrows are accepted; separately demand actual accesses without replacing original cases",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/shared-derived-write.rs",
+      "sha256": "196d0ab90a2295bd0bb2036a286c8eab5f1b8464780f94a96b017dc3b240c35a",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/shared-derived-read.rs",
+      "sha256": "d56bb1f968b3686374981802d0761ed8e5c0d805f602a6fd1eb91185281eebd1",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/expired-demanded.rs",
+      "sha256": "002f14ce5be8ce42fd8b524df3faf381798bab7fd6bd489309168dc80463de68",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/null-demanded.rs",
+      "sha256": "856e3abcf04a696cefe728b74cdd0e8cec5d1bd8b6ee4a627a32fb3c61728126",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/packed-unaligned-demanded.rs",
+      "sha256": "128ee81274e1dd800181eaeebc866f08bc65a7b185251274f81fd7430550846e",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/shared-reborrow-then-original.rs",
+      "sha256": "081754a2a77dba2bce87efdb5ee8648db892dd4c9135628336464b883fc4e8fb",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+const fn pass(p:*mut u32)->*mut u32{p}const X:u32={let mut x=7u32;let p=&raw mut x;let pair=(p,0u32);let q=pass(pair.0);unsafe{let s=&*p;let _old=*s;let r=&mut *q;*r=37;let s=&*r;let _new=*s;*p=41;}x};fn main(){check(X==41);}

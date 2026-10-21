@@ -76,13 +76,7 @@ const CASES: &[(&str, i32, i32, i32, &str)] = &[
         1,
         "borrowed place may be uninitialized or moved",
     ),
-    (
-        "mutable-reference",
-        0,
-        1,
-        1,
-        "mutable references through raw pointers in constant execution are not implemented",
-    ),
+    ("mutable-reference", 0, 0, 0, ""),
     (
         "union-field",
         0,

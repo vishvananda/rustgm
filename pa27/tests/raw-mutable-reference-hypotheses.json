@@ -1,0 +1,121 @@
+{
+  "stage": "preimplementation-independent-hypotheses",
+  "baseline": "6b1f97e7",
+  "scope": "exact-type mutable raw-reference construction requires existing Writable pointer authority, initialized live nonstatic symbolic storage; no schema changes",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/local.rs",
+      "sha256": "9c042f42383269b717ed9362c6c3c1521a55ddadcc1e14f49715a1166ac9893a",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/raw-const-cast.rs",
+      "sha256": "06efed89410a3a0505a0014e7c259c9fb4659ab2b7f7bcddaa06a46f995a83dc",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/shared-derived-cast.rs",
+      "sha256": "a150568f5d2b1884e50eeefb07e21583cf6763baad977929fbacfc88210e7bce",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/original-alias.rs",
+      "sha256": "6cbcb918de39371753bca0938c40790eaba8999603f6c22e0e3a4af61bba0ad5",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/call-product-copy.rs",
+      "sha256": "fbc24bbb5ec33ce0c7b3fd35039eb9553edf964502f80744d32df698b0a83b8b",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/shared-call-product.rs",
+      "sha256": "646029a5047a3bc767e2b8a31ba8fbdd3c5c2b2655acb38f42325e4ad0b6ecb9",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/transient.rs",
+      "sha256": "5be11e0f2899f07e11c3a46e8b46ba272d647ca7c1815497448dd0b7bafc6c71",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/escape.rs",
+      "sha256": "944432dc1b4a311a6b734eb5174235353c7638949787ffb5a1da4bb1a42eab0e",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/expired.rs",
+      "sha256": "642a216579ff77a8816aaac3853db7117719e99f2d3b7ed1019ca278c6812175",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/null.rs",
+      "sha256": "fd01dd87de1dd514223d09bd4923a7db1d19f7d59c18ed408df645d418b52f3e",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/packed-field-unaligned.rs",
+      "sha256": "0f13bbfde5cb7c090bad57be1205dcef5ad00c87d3c9164c377b576e913c9640",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/packed-field-aligned.rs",
+      "sha256": "5f2c735eff4bca589bb9295b59baa62993dd00606ae99a0121ccf4fd57769b0a",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/packed-source-aligned.rs",
+      "sha256": "c036424acf783ab77e9774c1aa93850f5fad2fb8ca050dedcf96fd6a3d9efef9",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/packed-whole.rs",
+      "sha256": "bd96995dd073b8e7cd0c1d078b1d4b6cbbfcef8b4fcc2872b4b4487910d38a95",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/symbolic-zst.rs",
+      "sha256": "8e3424987198a2e9f73363ed10941b5f187c3b4505d1d0b8aa8ece25b11b14cc",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/reinterpret-boundary.rs",
+      "sha256": "aba105ed8ccee713dc5dfd781f36695a89031739b94ee3fe49fd7b3875901fb8",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/uninitialized.rs",
+      "sha256": "53ffb8a737bd3ad34f79bfa850ec7e02a8a09edaf99e783b343accc9e712b019",
+      "rustc_hypothesis": 1,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/union-boundary.rs",
+      "sha256": "b040ee2eebf23d1e249db2492e2c05790bf7731c91bf1aa02ac7442222b7138c",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-mutable-reference/static-boundary.rs",
+      "sha256": "94f4a73b4925ddf34395db228fa76929ebecbc84139d35f30f5e498ab1f5d2e4",
+      "rustc_hypothesis": 0,
+      "frontend_intended": 1
+    }
+  ]
+}

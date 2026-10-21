@@ -108,9 +108,16 @@ when raw storage is checked: outer mutability and the exact referent type must
 still match. This does not relax source lifetime proofs or recursively inspect
 unused inner references. Different inner lifetime structure remains unsupported;
 actual dereferences retain lifetime, initialization and per-pointer checks.
-Mutable/raw union-field references, numeric nonnull ZST pointers, and raw-derived
-references to mutable/foreign or cyclic static storage remain explicit capability
-boundaries; forming such a reference is not itself a contents read.
+Mutable references through raw pointers additionally require existing writable
+pointer authority and ordinary nonstatic storage. Success retains the identical
+pointer; a cast to `*mut` cannot upgrade a shared-derived value. Copies, products,
+function calls and a separate shared reborrow preserve an original writable alias.
+This initial profile checks initialized storage even for unused references. Pinned
+Rust accepts some unused null/expired/unaligned mutable borrows and read-only uses
+of shared-derived mutable borrows; those forms remain explicit unsupported cases,
+not qualified language rejections. Union-field references, numeric nonnull ZST
+pointers, and raw-derived references to mutable/foreign or cyclic static storage
+also remain boundaries; forming a reference is not itself a contents read.
 
 Byte reinterpretation and shared-derived interior-mutable writes remain explicit
 unsupported boundaries. Unsafe permission grants none of these missing constant

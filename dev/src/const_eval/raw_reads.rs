@@ -1,5 +1,8 @@
 //! Raw reads validate existing symbolic storage without inventing byte reinterpretation.
 #[cfg(test)]
+#[path = "../../tests/invariants/mutable_refs.rs"]
+mod mutable_tests;
+#[cfg(test)]
 #[path = "../../tests/invariants/reconstructed_refs.rs"]
 mod reference_tests;
 #[cfg(test)]
@@ -112,16 +115,41 @@ impl Machine<'_, '_> {
     ) -> Result<(), Failure> {
         self.check_raw_access(place, access, root, path, false)
     }
-    /// The initial reference profile requires completed, fully initialized storage.
     pub(super) fn shared_raw_reference(
         &mut self,
         place: Resolved,
+    ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        self.raw_reference(place, false)
+    }
+    pub(super) fn mutable_raw_reference(
+        &mut self,
+        place: Resolved,
+    ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        self.raw_reference(place, true)
+    }
+    /// The initial reference profile requires completed, fully initialized storage.
+    fn raw_reference(
+        &mut self,
+        place: Resolved,
+        mutable: bool,
     ) -> Result<Option<crate::sema::values::Constant>, Failure> {
         if place.raw.is_none() {
             return Err("constant raw shared reference lacks its access anchor".into());
         }
         let (root, path) = self.path(place.address)?;
         let location = Reader::new(self.evaluator.facts()).location(root)?;
+        if mutable {
+            if matches!(location.origin, crate::sema::values::Origin::Static(_)) {
+                return Err(
+                    "constant mutable raw references to static storage are not implemented".into(),
+                );
+            }
+            if place.address.write_permission()
+                != Some(crate::sema::values::WritePermission::Writable)
+            {
+                return Err("constant mutable raw references from shared-derived pointers are not implemented".into());
+            }
+        }
         if let crate::sema::values::Origin::Static(id) = location.origin
             && self.check_static_read(id).is_err()
         {
@@ -152,12 +180,21 @@ impl Machine<'_, '_> {
         // A packed raw base may permit a by-value field read. Creating a
         // reference additionally requires the actual selected leaf's alignment.
         if root_layout.align < leaf.align || !offset.is_multiple_of(u64::from(leaf.align)) {
-            return Err("constant raw shared reference is unaligned".into());
+            return Err(if mutable {
+                "constant raw mutable reference is unaligned"
+            } else {
+                "constant raw shared reference is unaligned"
+            }
+            .into());
         }
         if self.read(place)?.is_none() {
             return Ok(None);
         }
-        Ok(Some(place.address.restrict_shared()))
+        Ok(Some(if mutable {
+            place.address
+        } else {
+            place.address.restrict_shared()
+        }))
     }
     pub(super) fn check_raw_write(&mut self, place: Resolved) -> Result<(), Failure> {
         let access = place

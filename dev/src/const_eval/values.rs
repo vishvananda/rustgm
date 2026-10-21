@@ -186,10 +186,12 @@ impl Machine<'_, '_> {
                     Some(Kind::Reference { mutable: false, .. })
                 );
                 if place.raw.is_some() {
-                    if !shared {
-                        return Err("mutable references through raw pointers in constant execution are not implemented".into());
-                    }
-                    let Some(address) = self.shared_raw_reference(place)? else {
+                    let address = if shared {
+                        self.shared_raw_reference(place)?
+                    } else {
+                        self.mutable_raw_reference(place)?
+                    };
+                    let Some(address) = address else {
                         return Ok(None);
                     };
                     address

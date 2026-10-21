@@ -3,10 +3,8 @@
 mod checked;
 #[path = "harness/native_references.rs"]
 mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+#[path = "harness/reconstruction_work.rs"]
+mod work;
 use std::path::PathBuf;
 const CASES: &[(&str, i32, i32, &str)] = &[
     ("expired-reference-cell", 0, 0, ""),
@@ -99,52 +97,14 @@ fn reference_cell_values_execute() -> Result<(), Box<dyn std::error::Error>> {
 }
 #[test]
 fn reference_cell_compatibility_has_bounded_work() -> Result<(), Box<dyn std::error::Error>> {
-    let mut ordinary = std::collections::HashMap::new();
-    let mut overhead = None;
-    for raw in [false, true] {
-        let mut previous = None;
-        for count in [8, 32, 128] {
-            let pointer = if raw {
-                "let p=&raw const r;"
-            } else {
-                "let p=&r;"
-            };
-            let text = format!(
-                "const fn f(n:u32)->u32{{let x=1u32;let r=&x;{pointer}let mut i=0u32;let mut total=0u32;while i<n{{total+=unsafe{{**p}};i+=1;}}total}}const X:u32=f({count});fn main(){{let _=X;}}"
-            );
-            rustc::qualify(
-                &format!("parallel/pa27/reference-cells-scaling-{raw}-{count}"),
-                &text,
-                true,
-            )?;
-            let mut report = source::resolve(&text, true)?;
-            let rustgm::pipeline::Analysis {
-                mut facts,
-                prepared,
-            } = rustgm::pipeline::analyze_source(&report)?;
-            let entry = rustgm::sema::entry::select(&mut report, &facts)?;
-            rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
-            let work = &facts.constant_work;
-            println!(
-                "raw={raw} n={count} steps={} slots={}",
-                work.steps, work.peak_slots
-            );
-            assert!(work.peak_slots <= count + 96);
-            if let Some(old) = previous {
-                assert!(work.steps < old * 5);
-            }
-            previous = Some(work.steps);
-            if raw {
-                let baseline = ordinary.get(&count).copied().ok_or("ordinary baseline")?;
-                let delta = i64::try_from(work.peak_slots)? - baseline;
-                if let Some(old) = overhead {
-                    assert_eq!(delta, old);
-                }
-                overhead = Some(delta);
-            } else {
-                ordinary.insert(count, i64::try_from(work.peak_slots)?);
-            }
-        }
-    }
-    Ok(())
+    work::compare("parallel/pa27/reference-cells-scaling", |raw, count| {
+        let pointer = if raw {
+            "let p=&raw const r;"
+        } else {
+            "let p=&r;"
+        };
+        format!(
+            "const fn f(n:u32)->u32{{let x=1u32;let r=&x;{pointer}let mut i=0u32;let mut total=0u32;while i<n{{total+=unsafe{{**p}};i+=1;}}total}}const X:u32=f({count});fn main(){{let _=X;}}"
+        )
+    })
 }
