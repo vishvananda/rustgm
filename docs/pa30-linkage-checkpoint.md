@@ -60,3 +60,7 @@ are awaiting publication. No references were regenerated here, and the failed
 check is retained separately from passing discovery. Evidence is in
 `obj/parallel/pa30/linkage/`; focused receipt
 `b14273d83e5d4172abd8d8f1d9138402` records strict Clippy and the first 15 groups.
+
+Matched release instruction/wall/RSS observations and their limits are recorded
+in `pa30-linkage-performance.md`. Macro controls show about 0.56–0.59% more
+instructions; noisy wall measurements do not establish a tight threshold.
