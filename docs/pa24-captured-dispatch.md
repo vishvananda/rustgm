@@ -2,8 +2,8 @@
 
 Borrowed captured closures now execute through `dyn Fn` and `dyn FnMut`, using
 their existing source bodies and receiver adapters. PA24 remains planned.
-Higher-ranked public call signatures with actual captured environments still
-require quantified conversion-proof transport; they remain an explicit boundary.
+Higher-ranked public call signatures now retain quantified conversion debts;
+see `pa24-quantified-dispatch.md` for the subsequent implementation and evidence.
 An unsized `dyn FnOnce` view may exist, but this does not implement consuming an
 unsized object by value.
 

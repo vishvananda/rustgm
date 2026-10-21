@@ -1449,6 +1449,23 @@
       "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
     },
     {
+      "path": "tests/spec/conversions/quantified-outer-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/captured_dispatch/quantifiers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/dispatch/object-dispatch/object-aggregate-abi.rs",
       "exit_status": 0,
       "features": [

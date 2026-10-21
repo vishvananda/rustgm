@@ -3,6 +3,8 @@
 mod checked;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "captured_dispatch/quantifiers.rs"]
+mod quantifiers;
 use std::path::PathBuf;
 
 const ACCEPTED: &[&str] = &[
@@ -22,15 +24,10 @@ const ACCEPTED: &[&str] = &[
     "destruction",
     "captured-zst",
     "multiple-lifetimes",
+    "quantified-capture",
 ];
 const OPPOSING: &[(&str, i32, [i32; 3], &str)] = &[
     ("result", 1, [1, 1, 1], "cannot infer an output lifetime"),
-    (
-        "quantified-capture",
-        0,
-        [0, 1, 1],
-        "captured object entry requires quantified call proof transport",
-    ),
     (
         "mutable-to-shared",
         1,

@@ -108,17 +108,20 @@ fn repeated_dispatch_shares_tables_and_has_bounded_plan_work()
 #[test]
 fn captured_targets_share_sealed_entries_with_bounded_conversion_work()
 -> Result<(), Box<dyn std::error::Error>> {
-    for distinct in [false, true] {
+    for (distinct, quantified) in [(false, false), (true, false), (false, true), (true, true)] {
         let mut observations = Vec::new();
         for width in [8usize, 32, 128] {
-            let mut source = if distinct {
-                "fn run<const N:u16>(x:u16)->u16{let f=move||x+N;let p:&dyn Fn()->u16=&f;p()}fn main(){".to_owned()
-            } else {
-                "fn main(){let x=7u16;let f=move||x;".to_owned()
-            };
+            let mut source = match (distinct, quantified) {
+                (true, true) => "fn run<const N:u16>(x:u16)->u16{let f=move|y:&u16|x+N+*y;let p:&dyn for<'a>Fn(&'a u16)->u16=&f;p(&0)}fn main(){",
+                (true, false) => "fn run<const N:u16>(x:u16)->u16{let f=move||x+N;let p:&dyn Fn()->u16=&f;p()}fn main(){",
+                (false, true) => "fn main(){let x=7u16;let f=move|y:&u16|x+*y;",
+                (false, false) => "fn main(){let x=7u16;let f=move||x;",
+            }.to_owned();
             for index in 0..width {
                 if distinct {
                     write!(source, "let _=run::<{index}>(7);")?;
+                } else if quantified {
+                    source.push_str("{let p:&dyn for<'a>Fn(&'a u16)->u16=&f;let _=p(&0);}");
                 } else {
                     source.push_str("{let p:&dyn Fn()->u16=&f;let _=p();}");
                 }
@@ -153,7 +156,7 @@ fn captured_targets_share_sealed_entries_with_bounded_conversion_work()
             );
             assert!(storage.steps <= 4096 * (width + 1));
             eprintln!(
-                "captured/{distinct}/{width}: steps={}, tables={}, targets={}",
+                "captured/{distinct}/{quantified}/{width}: steps={}, tables={}, targets={}",
                 storage.steps,
                 storage.tables.len(),
                 storage.captured_targets.len()

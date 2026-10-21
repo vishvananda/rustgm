@@ -222,6 +222,7 @@ impl Checker<'_> {
         target: TermId,
         upcast: bool,
     ) -> Result<(), Error> {
+        let [concrete, target] = self.scoped_object_inputs(node, [concrete, target])?;
         if !upcast {
             self.object_callable_demands(node, concrete, target)?;
         }

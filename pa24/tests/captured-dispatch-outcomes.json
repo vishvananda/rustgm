@@ -4,7 +4,8 @@
   "notes": [
     "Declared hypotheses and opposing object/native observations retained in obj/parallel/pa24/captured-objects.",
     "Initial result fixture is invalid without a named output lifetime; initial wildcard higher-ranked control does not capture its local. Both original inputs and observations remain unchanged.",
-    "No assignment activation or oracle generation."
+    "No assignment activation or oracle generation.",
+    "The quantified-capture boundary is superseded by independent three-view/native qualification in quantified-objects/native-second."
   ],
   "cases": [
     {
@@ -333,11 +334,11 @@
       "name": "quantified-capture",
       "path": "tests/spec/captured-dispatch/quantified-capture.rs",
       "source_sha256": "0debb2f6647d2854eb9be9cf7f94f3fbf591ed547926c72faee0c19ec375bb06",
-      "exit_status": 1,
+      "exit_status": 0,
       "views": {
         "types": 0,
-        "constants": 1,
-        "lowir": 1
+        "constants": 0,
+        "lowir": 0
       },
       "rustc": {
         "kind": "program",
@@ -345,8 +346,8 @@
         "emit": "obj",
         "default_lints": true
       },
-      "native": false,
-      "reason": "quantified captured call proof transport remains unimplemented",
+      "native": true,
+      "reason": "Quantified conversion debts retain public universal scope and checked source entry.",
       "features": [
         "pa24.closures",
         "pa23.objects"

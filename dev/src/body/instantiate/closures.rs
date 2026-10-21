@@ -232,6 +232,39 @@ pub(crate) struct ProofCursor {
     next: Option<u32>,
 }
 impl ProofCursor {
+    pub(crate) fn first(
+        &mut self,
+        facts: &mut Declarations,
+        contract: &crate::body::regions::Contract,
+    ) -> Result<u32, &'static str> {
+        if let Some(next) = self.next {
+            return Ok(next);
+        }
+        facts.body_work.canonical_steps += contract.obligations.len() + contract.proofs.len();
+        let first = super::projections::first_region(contract)?;
+        self.next = Some(first);
+        Ok(first)
+    }
+
+    /// Publish already allocated caller evidence without rebasing actual inputs.
+    pub(crate) fn append(
+        &mut self,
+        facts: &mut Declarations,
+        contract: &mut crate::body::regions::Contract,
+        proof: crate::types::lifetime_proof::Obligations,
+    ) -> Result<(), &'static str> {
+        if proof.regions.start != self.first(facts, contract)?
+            || proof.regions.end < proof.regions.start
+        {
+            return Err("closure entry proof allocation differs from its caller cursor");
+        }
+        self.next = Some(proof.regions.end);
+        contract
+            .proofs
+            .push(crate::body::regions::Proof::new(contract.source, proof));
+        Ok(())
+    }
+
     pub(crate) fn retain(
         &mut self,
         facts: &mut Declarations,
@@ -239,12 +272,7 @@ impl ProofCursor {
         mut proof: crate::types::lifetime_proof::Obligations,
         slots: impl Iterator<Item = (u16, crate::types::RegionId)>,
     ) -> Result<(), &'static str> {
-        let first = if let Some(next) = self.next {
-            next
-        } else {
-            facts.body_work.canonical_steps += contract.obligations.len() + contract.proofs.len();
-            super::projections::first_region(contract)?
-        };
+        let first = self.first(facts, contract)?;
         let work = proof.rebase(&mut facts.types, first)?;
         let mapping = slots
             .map(|(slot, actual)| Ok((crate::types::RegionId::bound(0, slot)?, actual)))
@@ -252,10 +280,6 @@ impl ProofCursor {
         let mut fold = Bound::restore_owned_regions(mapping, proof.regions.clone());
         proof.substitute(&mut facts.types, &mut fold)?;
         facts.body_work.canonical_steps += work + fold.steps;
-        self.next = Some(proof.regions.end);
-        contract
-            .proofs
-            .push(crate::body::regions::Proof::new(contract.source, proof));
-        Ok(())
+        self.append(facts, contract, proof)
     }
 }

@@ -6,6 +6,43 @@ use crate::types::{
 };
 
 impl Checker<'_> {
+    /// Alias caller slots before introducing query-local quantifiers. Ordinary
+    /// nonclosure conversions keep their original lifetime obligations and owner.
+    pub(super) fn scoped_object_inputs(
+        &mut self,
+        node: NodeId,
+        mut inputs: [TermId; 2],
+    ) -> Result<[TermId; 2], Error> {
+        if self.state.body_binders == 0 {
+            return Ok(inputs);
+        }
+        let target = self
+            .head(node, inputs[1])?
+            .ok_or_else(|| self.error(node, "object conversion has no target constructor"))?;
+        let count = self
+            .state
+            .infer
+            .binder_regions(target)
+            .map_err(|e| self.error(node, e))?
+            .ok_or_else(|| self.error(node, "object conversion has no target binder"))?;
+        // Inherited callable demands retain even an empty declared quantifier.
+        if count == 0 && !matches!(self.head(node, inputs[0])?, Some(Constructor::Closure(..))) {
+            return Ok(inputs);
+        }
+        let mut mapping = crate::types::infer::RegionMapping::default();
+        for input in &mut inputs {
+            if self
+                .state
+                .infer
+                .contains_escaping_regions(&self.facts.types, *input)
+                .map_err(|e| self.error(node, e))?
+            {
+                *input = self.alias_inferred_mapped(node, *input, &mut mapping)?;
+            }
+        }
+        Ok(inputs)
+    }
+
     pub(super) fn object_callable_demands(
         &mut self,
         node: NodeId,

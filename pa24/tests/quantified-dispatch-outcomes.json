@@ -1,0 +1,495 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "notes": [
+    "Independent object and native evidence precedes promotion in obj/parallel/pa24/quantified-objects.",
+    "The shared quantified-capture fixture remains in captured-dispatch; the nonclosure caller-lifetime control belongs to PA23.",
+    "No PA24 activation or reference generation."
+  ],
+  "cases": [
+    {
+      "name": "mutable",
+      "path": "tests/spec/quantified-dispatch/mutable.rs",
+      "source_sha256": "f99c56c2d2eebf125228975bbf958ff9705574a0abc2596da958ecacea6fca0f",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "weaker",
+      "path": "tests/spec/quantified-dispatch/weaker.rs",
+      "source_sha256": "f0df652b2b81d3b6865ea9f1fb6b6afcd51caf39575910de38d00c9e2f9ef106",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "identity-result",
+      "path": "tests/spec/quantified-dispatch/identity-result.rs",
+      "source_sha256": "e9c50d14086194877e9f668d487390b4d421b242c286d213e2a6c7667b16c2b1",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "two-inputs",
+      "path": "tests/spec/quantified-dispatch/two-inputs.rs",
+      "source_sha256": "72f55df234bf2c23f5fefb55bc0f91004bf60a7141755565e23a7b4aaa1ac17a",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "external-result",
+      "path": "tests/spec/quantified-dispatch/external-result.rs",
+      "source_sha256": "b08f4533043d13821809abaef071829e57831f5d1c86f5da5f06413e9e29d7a2",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "nested-callable",
+      "path": "tests/spec/quantified-dispatch/nested-callable.rs",
+      "source_sha256": "d070c0d5212479428cbb26aa2fe63f3b4a2c92474f79e73ea1ae71a3fc30b29d",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic",
+      "path": "tests/spec/quantified-dispatch/generic.rs",
+      "source_sha256": "b19d2c0178abb0eb2d7a330d99dccc9b0b8afa22b3eca50d5dda63d3d3cf4233",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "once-view",
+      "path": "tests/spec/quantified-dispatch/once-view.rs",
+      "source_sha256": "1caa79ed3a72b0b94308c11840abebb3537adb5328112b63c1a20d8faecc0c8d",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "captured-zst",
+      "path": "tests/spec/quantified-dispatch/captured-zst.rs",
+      "source_sha256": "aa7818d5badadd96b7956afb2f17bf93c2321cefdc99949b1bbd6132e8b753b0",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic-consumer",
+      "path": "tests/spec/quantified-dispatch/generic-consumer.rs",
+      "source_sha256": "0f1f0492fe323599414c9f2eccf2e2d78fb8e21b38cbbd2bf04147153e6d5b73",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "upcast",
+      "path": "tests/spec/quantified-dispatch/upcast.rs",
+      "source_sha256": "fc1cf8ec9781a92e979b1a1f6b5a33936dfee312de01df2a7ab8b7e08dc57836",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "local-as-static",
+      "path": "tests/spec/quantified-dispatch/local-as-static.rs",
+      "source_sha256": "cfb78e230732874b3825c559bf4d2773db40784657d0d40868368c4b55c93524",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "capture-as-static",
+      "path": "tests/spec/quantified-dispatch/capture-as-static.rs",
+      "source_sha256": "15174db2315cb7d24d85c3ae97a6e92bcd047788ce977576dca0b0317fc03228",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "mutable-to-shared",
+      "path": "tests/spec/quantified-dispatch/mutable-to-shared.rs",
+      "source_sha256": "c0cade7b513a29fefe274879fa6cffd8e841c58ce95e7188b0fef9ba08806e37",
+      "exit_status": 1,
+      "views": {
+        "types": 1,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "loan-conflict",
+      "path": "tests/spec/quantified-dispatch/loan-conflict.rs",
+      "source_sha256": "a3a7cce67f388829f0e3d01bfa71cbd913c55d0169913fd707b6e6c3cc26f6a1",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "projected",
+      "path": "tests/spec/quantified-dispatch/projected.rs",
+      "source_sha256": "c54510587e09faae726cfc47bc60019e19ea87d05aee6d282181b87b57e1f6f4",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "projected-lifetime",
+      "path": "tests/spec/quantified-dispatch/projected-lifetime.rs",
+      "source_sha256": "e2cb75170dc02f0b2db14031998ed7f10c0d58b2421e6b8c7d97264910882cdc",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "late-permission",
+      "path": "tests/spec/quantified-dispatch/late-permission.rs",
+      "source_sha256": "22a1346d833ac1bbe4f6c5505c0434509ba3ac38eae42d68804df8e19e3fabaf",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "outer-first",
+      "path": "tests/spec/quantified-dispatch/outer-first.rs",
+      "source_sha256": "ec8d0216f588c83500f20254f35ab5f2922d95fd83641e39e6e6e753148f9fcc",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "outer-second",
+      "path": "tests/spec/quantified-dispatch/outer-second.rs",
+      "source_sha256": "54deb51d5ca375ddd1955f711db374bafa3e90d99565eca0a2c2478bd08ecc6f",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "outer-upcast",
+      "path": "tests/spec/quantified-dispatch/outer-upcast.rs",
+      "source_sha256": "6c58f54cd4e7b09bbc3829464bd055c1a219eeccf5bdca2271c67fd7badbcc2f",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "outer-wrong",
+      "path": "tests/spec/quantified-dispatch/outer-wrong.rs",
+      "source_sha256": "829001f5a816f084e7b5a50bb18dfa2caa014873ff5a6da56d8699b91595f0ae",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    }
+  ]
+}

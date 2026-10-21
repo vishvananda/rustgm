@@ -1,15 +1,15 @@
 # PA23 fixtures
 
-The manifest owns 399 course-authored LowIR fixtures: 262 accept and 137 reject.
+The manifest owns 400 course-authored LowIR fixtures: 263 accept and 137 reject.
 All outcomes were declared and checked with pinned rustc before generating text
-oracles. Accepted inputs include 85 native execution controls and 177 explicit
+oracles. Accepted inputs include 86 native execution controls and 177 explicit
 compile-only controls. The latter check acceptance and unused bodies without
 claiming to execute those bodies.
 
 | Family | Cases | Responsibility |
 | --- | ---: | --- |
 | annotations | 59 | Dyn compatibility, associated bindings, quantified principals and default binding time |
-| conversions | 33 | Concrete implementations, equalities and object coercion proof |
+| conversions | 34 | Concrete implementations, equalities and object coercion proof |
 | members | 34 | Intrinsic object evidence, method selection and scoped requirements |
 | markers | 147 | Structural and explicit builtin markers, object marker sets and proof cycles |
 | hidden-results | 25 | Defining-body readiness, hidden lifetimes, independent captures and retained proofs |
@@ -35,3 +35,7 @@ Every source belongs to `manifest.json`; `.ref`, `.ref.stderr` and
 Signals, exit 86, timeouts and panics in the compiler are never valid rejections.
 Unregistered files and personal tests do not contribute to the default totals.
 See the handout and `docs/pa23-release.md` for the contract and release checks.
+
+The quantified outer-result conversion independently executes through both compilers.
+Its associated result keeps the caller lifetime outside the object quantifier;
+source qualification is shared with `dev/tests/captured_dispatch/quantifiers.rs`.

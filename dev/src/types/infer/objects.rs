@@ -107,7 +107,7 @@ impl Context {
         Ok(id)
     }
 
-    pub(super) fn binder_regions(&self, kind: Constructor) -> Result<Option<u32>, Error> {
+    pub(crate) fn binder_regions(&self, kind: Constructor) -> Result<Option<u32>, Error> {
         Ok(match kind {
             Constructor::Function { bound_regions, .. } => Some(bound_regions),
             Constructor::Dynamic { lifetimes, .. } => {

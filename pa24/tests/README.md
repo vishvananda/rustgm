@@ -21,3 +21,9 @@ and explicit quantified/unresolved-target boundaries. See
 [the implementation contract](../../docs/pa24-object-input-inference.md) for the
 ordinary required-goal protocol, cache identity, independent/native evidence and
 remaining scope. It does not activate a grading suite or generated references.
+
+`quantified-dispatch-outcomes.json` declares 22 additional captured callable
+controls, with 16 native positives and six language rejections. The existing
+`captured-dispatch/quantified-capture.rs` now accepts and executes; its prior
+unsupported observation remains documented. A nonclosure caller-lifetime
+regression belongs to PA23, and no PA24 text oracles are generated yet.

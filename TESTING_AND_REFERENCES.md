@@ -769,9 +769,9 @@ source and native targets include PA22. PA24–PA38 remain planned and fail expl
 See [docs/pa22-release.md](docs/pa22-release.md) for qualification and performance.
 
 
-PA23 publishes 399 LowIR cases: 262 accept and 137 reject. Pinned rustc
+PA23 publishes 400 LowIR cases: 263 accept and 137 reject. Pinned rustc
 independently qualifies every declared source outcome. The native lane has
-85 execution comparisons and 177 explicit compile-only controls. Its matrix
+86 execution comparisons and 177 explicit compile-only controls. Its matrix
 covers object annotations and lifetimes, dyn compatibility, quantified and
 associated contracts, dynamic dispatch, upcasts, tails, marker implementations
 and defining-body dependencies. The former PA19 future-object boundary moves

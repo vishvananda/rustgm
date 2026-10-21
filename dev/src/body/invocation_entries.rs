@@ -4,6 +4,7 @@ mod candidates;
 mod matching;
 mod shaping;
 mod vtable_entries;
+mod vtable_scopes;
 pub(crate) use candidates::select_execution;
 pub(crate) use matching::source_bindings;
 pub(crate) struct SourceBindings {
