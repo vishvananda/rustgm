@@ -207,8 +207,7 @@ fn initial_work(
             .map_err(|e| diagnostic(report, Some(source), e.into()))?;
         work.push(Work::Enter(instance, source));
     }
-    let dependencies =
-        Dependencies::roots(report, facts, program, roots.globals, &mut work)?;
+    let dependencies = Dependencies::roots(report, facts, program, roots.globals, &mut work)?;
     Ok((work, dependencies))
 }
 

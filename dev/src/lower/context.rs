@@ -416,11 +416,9 @@ impl<'a> Context<'a> {
         } else {
             format!("rg.closure.{}", identity.0)
         };
-        let symbol = self.output.declare(
-            self.internal_name(name),
-            signature,
-            false,
-        )?;
+        let symbol = self
+            .output
+            .declare(self.internal_name(name), signature, false)?;
         self.symbols[index] = Some(symbol);
         self.queue.push(index);
         Ok(symbol)
