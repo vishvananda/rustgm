@@ -1,0 +1,32 @@
+function @main() -> i64 [role=entry] {
+  slot $value : i32
+  slot $expected : i32
+  block ^entry:
+    %p = addr $value
+    %e = addr $expected
+    atomic_store i32 7, %p, 5
+    %first = atomic_load i32 %p, 2
+    %first_ok = cmp eq i32 %first, 7
+    store i32 7, $expected
+    %success = atomic_compare_exchange i32 %p, %e, 9, 4, 2
+    %success_ok = cmp eq i64 %success, 1
+    store i32 0, $expected
+    %failure = atomic_compare_exchange i32 %p, %e, 13, 0, 0
+    %failure_ok = cmp eq i64 %failure, 0
+    %updated = load i32 $expected
+    %updated_ok = cmp eq i32 %updated, 9
+    %old = atomic_exchange i32 %p, 10, 5
+    %old_ok = cmp eq i32 %old, 9
+    %new = atomic_add_fetch i32 %p, 2, 5
+    %new_ok = cmp eq i32 %new, 12
+    %a = binary and i64 %first_ok, %success_ok
+    %b = binary and i64 %failure_ok, %updated_ok
+    %c = binary and i64 %old_ok, %new_ok
+    %d = binary and i64 %a, %b
+    %all = binary and i64 %d, %c
+    branch %all, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}

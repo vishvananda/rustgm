@@ -8,6 +8,23 @@ Prerequisite: PA27. The common source profile is Rust 1.98.0, initially edition
 
 Memory and numeric intrinsics, atomics and volatile operations.
 
+The initial capability checkpoint uses the existing pinned LowIR vocabulary and
+backend without extending either. The independent inputs in `tests/backend/`
+qualify scalar volatile loads and stores for integer widths 8 through 128,
+`f32`, `f64` and pointers. They also qualify `u32` atomic load, store, exchange,
+compare-exchange success and failure (including the expected-value update), and
+add-and-fetch. Run the ignored `intrinsic_backend` maintainer test with the
+configured backend and GNU objdump to execute these controls and inspect the
+atomic machine instructions. This establishes backend capabilities only.
+
+The first frontend slice is canonical scalar `read_volatile` and `write_volatile`.
+Use exact library definition identities and typed intrinsic descriptors; track
+unsafe permission independently of constant-operation eligibility. Volatile
+operations are runtime-only, including in skipped const branches. Aggregate
+volatile transfers remain explicitly unsupported initially: ordinary object
+copies or zero initialization cannot substitute for volatile accesses or padding.
+Atomic library methods and the remaining intrinsic families are later slices.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

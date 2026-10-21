@@ -1,0 +1,8 @@
+function @main() -> i64 [role=entry] {
+  slot $value : i32
+  block ^entry:
+    store volatile i32 42, $value
+    %read = load volatile i32 $value
+    %answer = convert sext i64 i32 %read
+    return i64 %answer
+}

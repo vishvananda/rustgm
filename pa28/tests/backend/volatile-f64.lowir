@@ -1,0 +1,8 @@
+function @main() -> i64 [role=entry] {
+  slot $value : f64
+  block ^entry:
+    store volatile f64 42.0, $value
+    %read = load volatile f64 $value
+    %answer = convert fptosi i64 f64 %read
+    return i64 %answer
+}
