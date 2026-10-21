@@ -9,6 +9,10 @@ hashes are retained in the draft declarations; their obsolete rejection oracles
 are removed from the earlier assignments. Native qualification executes both compilers before these fixtures can enter
 the released PA25 manifest.
 
+The unchanged former PA9 `constant-call` boundary is also retained, with a
+declared rejection: required constants cannot call non-const functions, including
+when unused. Its type inspection mode preserves the original input contract.
+
 Required families: const restrictions; pointers; recursive calls; limits; const generics.
 
 Put required regressions here, in the earliest assignment owning all their

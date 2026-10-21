@@ -61,6 +61,26 @@
       },
       "migrated_from": "pa12/tests/spec/boundary/constant-function.rs",
       "source_sha256": "e2e3fb57917a2afe38c1ffba4ac1e596a5899a4579dcb8651025b549f10b1294"
+    },
+    {
+      "path": "tests/spec/migrated/nonconstant-call.rs",
+      "mode": "--emit-types",
+      "exit_status": 1,
+      "features": [
+        "pa25.constant-call-eligibility"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "migrated_from": "pa9/tests/spec/boundary/constant-call.rs",
+      "source_sha256": "54ab3c1eb4b81035da6042a44441fa02d4e5bd8fabb8a8faaf2125aaa98f139f",
+      "rule": "A required constant initializer cannot call an ordinary non-const function, even when the constant is unused."
     }
+  ],
+  "additional_modes": [
+    "--emit-types"
   ]
 }

@@ -75,7 +75,7 @@ This view checks types, not complete Rust program validity. PA14 owns definite
 initialization and binding write permissions; PA15/PA16 own lifetime contracts
 and borrow/region proofs; PA25 owns constant-expression validity; PA27 owns
 unsafe access. Their deferred obligations must not be silently treated as
-proved. The four `boundary/` fixtures deliberately differ from rustc's final
+proved. The three `boundary/` fixtures deliberately differ from rustc's final
 acceptance and declare the owning later phase in their manifests.
 
 Directed region coercions and genuine equality obligations are retained with
@@ -84,7 +84,9 @@ dereferencing, coercion variance and lifetime-polymorphic calls require later
 contracts. Text literals and aggregate expressions require their later value
 and layout semantics. Foreign/async signatures, generic types, associated
 methods and general lint-attribute interpretation are outside this profile.
-PA9 does not evaluate constant arithmetic or check constant-call eligibility.
+PA9 does not require constant evaluation. The cumulative maintainer now checks
+required constant initializers; the former non-const-call acceptance boundary
+moved unchanged to PA25, which owns that rejection.
 PA11 owns procedural runtime arithmetic checks; PA25 owns constant evaluation.
 
 ## Tool surface and error contract

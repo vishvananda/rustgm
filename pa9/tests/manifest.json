@@ -2326,19 +2326,6 @@
       }
     },
     {
-      "path": "tests/spec/boundary/constant-call.rs",
-      "exit_status": 0,
-      "features": [
-        "pa9.boundary"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 1,
-        "default_lints": true,
-        "reason": "PA25 owns constant-expression validity; PA9 checks the initializer type."
-      }
-    },
-    {
       "path": "tests/spec/boundary/return-region.rs",
       "exit_status": 0,
       "features": [

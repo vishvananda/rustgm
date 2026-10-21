@@ -51,7 +51,7 @@ casts, calls, expected-type propagation, control transfers, demanded shape
 validity, lifetime elision and file/include expansion. Auxiliary files are
 registered with their owning source package.
 
-Four explicit phase-boundary cases differ from final rustc acceptance:
+At the original release, four explicit phase-boundary cases differed from final rustc acceptance:
 initialization and immutable writes belong to PA14, region proof to PA15/16,
 and constant-call eligibility to PA25. The reference preserves these obligations;
 it does not claim to prove them. No other PA9 acceptance difference is exempted.
@@ -113,3 +113,11 @@ at `obj/perf/1791800968009479024/samples.json`: candidate paired medians
 This precedes the compact control-target change. `make perf-types` reproduces
 the workload; API and public-driver sources differ in spacing and are compared
 only within their own frozen-input runs.
+
+## Required initializer integration
+
+The cumulative maintainer now validates required constant initializers. The
+unchanged `constant-call.rs` boundary moved to PA25 as
+`tests/spec/migrated/nonconstant-call.rs`, with an independently declared rejection.
+The current PA9 manifest has 200 fixtures and three deferred phase boundaries;
+the historical release counts above describe their original snapshot.

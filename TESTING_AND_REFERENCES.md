@@ -128,11 +128,13 @@ The optional rustc `default_lints: true` metadata omits the usual lint cap for a
 case whose expected rejection depends on a default lint, such as incomplete
 `include!()` expressions. Such a case is not an acceptance-boundary exception.
 
-PA9 has 201 full-program type-view fixtures. Its rustc checks retain default
-literal lints. Four manifest entries explicitly defer initialization/write
-permissions, lifetime proof or constant-call validity to the later owning
-assignment. The type view retains those facts without claiming those obligations
-are proved. CLI tests check deterministic output, count/full-view agreement and
+PA9 has 200 full-program type-view fixtures. Its rustc checks retain default
+literal lints. Three manifest entries explicitly defer initialization/write
+permissions or lifetime proof to the later owning assignment. The former
+constant-call boundary moved unchanged to the PA25 draft with a declared
+rejection once the maintainer implemented required initializer validation. The
+type view retains deferred facts without claiming those obligations are proved.
+CLI tests check deterministic output, count/full-view agreement and
 empty stdout on semantic failure. See `docs/pa9-validation.md`.
 
 PA10 adds 50 typed-body fixtures. Its integer CFG test executor verifies the

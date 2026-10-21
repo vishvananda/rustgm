@@ -6,8 +6,10 @@ correspond to independently maintained rustc acceptance matrices. Descriptive
 alias, occurs-check and package fixtures extend their integration coverage.
 
 `boundary/` cases deliberately defer initialization/write permissions, region
-proofs and constant-call validity. Each declares its difference from rustc and
+proofs. Each declares its difference from rustc and
 names the later owning phase; these are not whole-program acceptance claims.
+The former constant-call boundary moved unchanged to PA25 after the maintainer
+implemented required initializer validation.
 
 Reference stdout/stderr/status sidecars are generated only by `make ref-test-pa9`
 after declared outcomes and independent checks agree. All fixtures are authored
