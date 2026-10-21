@@ -39,9 +39,13 @@ pub struct Environment {
     pub plan: captures::Plan,
     /// Types in interned path order, in the checked closure body's lifetime context.
     pub path_types: Vec<TypeId>,
+    /// The same paths closed back into their immediate enclosing body's context.
+    pub formation_types: Vec<TypeId>,
     /// Stored value/reference types in selected capture order.
     pub field_types: Vec<TypeId>,
     pub accesses: HashMap<NodeKey, captures::PathId>,
+    /// Explicit non-reading uses still require initialized parent places.
+    pub mentions: Vec<captures::PathId>,
     pub binding_mutability: HashMap<DefId, bool>,
 }
 #[derive(Default)]
