@@ -15,6 +15,24 @@ pub use library::{LibraryTypes, Nominal as LibraryNominal};
 pub use traits::{BuiltinTrait, Callable, Language, Traits};
 
 impl Resolver<'_> {
+    pub(super) fn prepare_library_value(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        kind: crate::support::library_types::LibraryValue,
+    ) -> Result<ScopeId, Error> {
+        if self.facts.builtin_traits.library.is_none() {
+            self.prepare_external_traits(c, node)?;
+        }
+        match kind {
+            crate::support::library_types::LibraryValue::EnvironmentOption => self
+                .prepare_library_type(c, node, crate::support::library_types::LibraryType::Option),
+        }?;
+        self.facts
+            .builtin_traits
+            .library
+            .ok_or_else(|| self.error(c, node, "missing library value scope"))
+    }
     pub(super) fn builtin_crate(
         &mut self,
         c: Context,

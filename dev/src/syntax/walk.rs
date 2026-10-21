@@ -81,7 +81,8 @@ impl<L> Syntax<L> {
                 output.extend(start);
                 output.extend(end);
             }
-            Kind::Return(value)
+            Kind::LibraryValue { value, .. }
+            | Kind::Return(value)
             | Kind::Break { value, .. }
             | Kind::Binding {
                 subpattern: value, ..

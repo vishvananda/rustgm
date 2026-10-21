@@ -9,6 +9,7 @@ mod conditions;
 mod defining_bodies;
 mod divergence;
 mod dot_calls;
+mod environment_values;
 mod field_storage;
 mod finalization;
 mod generics;
@@ -1179,6 +1180,7 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::Closure { .. } => self.term(node),
+            Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),
             Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =

@@ -30,7 +30,9 @@ impl Checker<'_> {
                 | Kind::Field { value, .. }
                 | Kind::FieldInit { value, .. }
                 | Kind::Repeat { value, .. } => self.state.diverges[value.0 as usize],
-                Kind::Let { value, .. } => value.is_some_and(|n| self.state.diverges[n.0 as usize]),
+                Kind::LibraryValue { value, .. } | Kind::Let { value, .. } => {
+                    value.is_some_and(|n| self.state.diverges[n.0 as usize])
+                }
                 Kind::Binary {
                     op: Op::AndAnd | Op::OrOr,
                     left,

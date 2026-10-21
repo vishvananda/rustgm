@@ -1143,6 +1143,9 @@ impl<'a> Builder<'a> {
                         }
                     }
                     Kind::Tuple(elements) | Kind::Array(elements) => self.children(elements),
+                    Kind::LibraryValue { value, .. } => {
+                        self.scratch.work.extend(value.map(Work::Enter));
+                    }
                     Kind::Repeat { value, .. } | Kind::FieldInit { value, .. } => {
                         self.scratch.work.push(Work::Enter(value));
                     }
@@ -1360,6 +1363,7 @@ impl<'a> Builder<'a> {
             Kind::Tuple(elements) if elements.start != elements.end => {
                 self.aggregate_elements(node, elements)?
             }
+            Kind::LibraryValue { value, .. } => self.library_value(node, value)?,
             Kind::Array(elements) => self.aggregate_elements(node, elements)?,
             Kind::Repeat { value, .. } => self.repeat(node, value)?,
             Kind::Struct { fields, base, .. } => self.construct(node, fields, base)?,

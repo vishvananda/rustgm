@@ -72,8 +72,12 @@ Demand-loaded `Option`, `Result` and `ManuallyDrop` metadata supplies canonical
 nominal and constructor identities through ordinary type and value namespaces.
 Aliases retain those identities; local lookalikes retain ordinary declarations.
 `Option` and `Result` have ordinary enum fields, constructors and pattern checks.
-This supplies the nominal foundation for `option_env!` and question-mark; those
-entry points require separate typed expansion and control-flow work.
+This supplies the nominal foundation for `option_env!` and question-mark.
+`option_env!` now retains an explicit library-value tag and optional decoded
+string child through expansion; semantics fixes `Option<&'static str>` and
+selects its real variant for ordinary aggregate lowering. Environment snapshots
+remain explicit provider inputs. Question-mark control flow remains separate
+implementation work.
 
 `ManuallyDrop<T>` preserves T's transparent layout and formation requirements.
 Its private field cannot be constructed or destructured by callers. Its explicit
@@ -86,3 +90,8 @@ Body lifetime and ownership contracts pair by declaration or anonymous body
 identity, independently of shared diagnostic provenance. Metadata variants and
 constructors never receive invented source nodes. See
 `docs/pa26-nominal-checkpoint.md` for the typed boundary and integration notes.
+
+The option_env checkpoint and explicit remaining PA26 responsibilities are
+recorded in `docs/pa26-environment-checkpoint.md`. PA26 remains planned while
+later independently accepted work proceeds; partial checkpoints do not complete
+this assignment's full hook families.

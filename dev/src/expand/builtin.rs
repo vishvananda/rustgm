@@ -1,4 +1,5 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
+mod library;
 use super::{
     config::{self, Config},
     crate_syntax::{self, ConfiguredCrate},
@@ -17,6 +18,7 @@ use crate::{
         token_tree::{ForestBuilder, Span, error},
     },
 };
+pub use library::option_environment;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Builtin {
@@ -32,9 +34,10 @@ pub enum Builtin {
     IncludeStr,
     IncludeBytes,
     Include,
+    OptionEnv,
 }
 impl Builtin {
-    pub const ALL: [Self; 12] = [
+    pub const ALL: [Self; 13] = [
         Self::Cfg,
         Self::Line,
         Self::Column,
@@ -47,12 +50,14 @@ impl Builtin {
         Self::IncludeStr,
         Self::IncludeBytes,
         Self::Include,
+        Self::OptionEnv,
     ];
     #[must_use]
     pub const fn eager(self) -> bool {
         matches!(
             self,
-            Self::Concat
+            Self::OptionEnv
+                | Self::Concat
                 | Self::CompileError
                 | Self::Env
                 | Self::IncludeStr
@@ -76,6 +81,7 @@ impl Builtin {
             Self::Concat => "concat",
             Self::CompileError => "compile_error",
             Self::Env => "env",
+            Self::OptionEnv => "option_env",
             Self::IncludeStr => "include_str",
             Self::IncludeBytes => "include_bytes",
             Self::Include => "include",
@@ -105,7 +111,8 @@ pub fn expand(
     environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
     match builtin {
-        Builtin::Concat
+        Builtin::OptionEnv
+        | Builtin::Concat
         | Builtin::CompileError
         | Builtin::Env
         | Builtin::IncludeStr

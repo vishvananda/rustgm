@@ -15,6 +15,18 @@ impl<S: Sources> Engine<'_, S> {
     ) -> Result<builtin::Expansion, Error> {
         let unit = self.loader.package.unit(file);
         let original = unit.configured.ast.node(target).span;
+        if kind == builtin::Builtin::OptionEnv {
+            let (_, name) = builtin::string_argument(&unit.configured.ast, arguments, |index| {
+                unit.literal(index)
+            })
+            .map_err(|e| Error::at(file, e.offset, e.message))?;
+            let value = self
+                .loader
+                .environment(&name)
+                .map_err(|e| Error::at(file, original.start, e))?;
+            return builtin::option_environment(value, grammar, self.config)
+                .map_err(|e| Error::at(file, original.start, e.message));
+        }
         if kind == builtin::Builtin::Env {
             let (name, message) =
                 builtin::environment_arguments(&unit.configured.ast, arguments, |index| {

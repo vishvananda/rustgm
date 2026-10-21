@@ -69,7 +69,7 @@ impl Resolver<'_> {
         }
         Ok(())
     }
-    fn prepare_library_type(
+    pub(super) fn prepare_library_type(
         &mut self,
         c: Context,
         node: NodeId,
