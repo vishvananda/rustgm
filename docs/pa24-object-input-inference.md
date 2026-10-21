@@ -42,11 +42,10 @@ logical storage bound, not a measured heap-size claim.
 ## Declared outcomes and evidence
 
 `pa24/tests/object-input-outcomes.json` declares seventeen complete programs:
-ten supported positives, six independently Rust-invalid executable negatives,
-and one independently Rust-valid unsupported positive. All are checked with
+eleven supported positives and six independently Rust-invalid executable negatives. All are checked with
 pinned full-object compilation, types, LowIR and constants views. The static-only
 quantified-input negative is accepted by the type view and rejected by the
-ordinary executable lifetime proof. Ten positive programs additionally execute
+ordinary executable lifetime proof. Eleven positive programs additionally execute
 through the pinned CPPGM backend; their Cargo test is explicitly ignored in the
 ordinary backend-free lane.
 
@@ -54,9 +53,9 @@ The supported families cover inherited Fn/FnMut/FnOnce, mixed target arguments,
 deep and diamond inheritance, an unused quantified binder, and opposing written
 annotations/captured values. The assigned-slot follow-up supports quantified
 reference input and external-reference output; see
-[signature ownership](pa24-signature-slot-ownership.md). Target arguments still
-unresolved when conversion is first reached remain an explicit valid-Rust
-boundary. The original trace and earlier failing observations are retained.
+[signature ownership](pa24-signature-slot-ownership.md). The pending-target follow-up also supports arguments unresolved when conversion
+is first reached; see [pending object inputs](pa24-pending-object-inputs.md).
+The original trace and earlier failing observations are retained.
 
 
 Private invariants check payload sharing across outer lifetimes, distinct unused

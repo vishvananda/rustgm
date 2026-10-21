@@ -26,7 +26,46 @@ pub(super) struct Storage {
     index: HashMap<Lifetimes, LifetimesId>,
 }
 
+/// Principal inputs retain their declared object binder and pending type/const terms.
+pub(crate) struct Principal {
+    pub item: super::ItemId,
+    pub bound_regions: u32,
+    pub arguments: Vec<super::arguments::Argument>,
+}
+
 impl Context {
+    /// Read principal arguments without resolving holes or opening the object binder.
+    pub(crate) fn object_principal(
+        &mut self,
+        store: &Store,
+        target: TermId,
+    ) -> Result<Option<Principal>, Error> {
+        let target = self.root(target)?;
+        let Constructor::Dynamic {
+            shape,
+            arguments,
+            lifetimes,
+        } = self.materialize(store, target)?
+        else {
+            return Err(Error::InvalidIdentity);
+        };
+        let shape = store.dynamic_shape(shape).ok_or(Error::InvalidIdentity)?;
+        let Some(item) = shape.principal else {
+            return Ok(None);
+        };
+        let bound_regions = self.object_lifetimes(lifetimes)?.bound_regions;
+        let mut arguments = self.application_arguments(target, arguments, 0)?;
+        if arguments.len() < shape.principal_arguments as usize {
+            return Err(Error::InvalidIdentity);
+        }
+        arguments.truncate(shape.principal_arguments as usize);
+        Ok(Some(Principal {
+            item,
+            bound_regions,
+            arguments,
+        }))
+    }
+
     /// Inspect a written object equality without proving its concrete implementation.
     /// # Errors
     /// Rejects malformed object terms, bindings and exhausted inference work.

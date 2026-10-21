@@ -295,7 +295,7 @@
       "name": "unresolved-target",
       "path": "tests/spec/object-input-context/unresolved-target.rs",
       "source_sha256": "e7c68b536b472cafd86e3df6b8dedf5dba9c2dc5f829f0a28d87bfed1a8ea611",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -303,15 +303,15 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+      "diagnostic": ""
     },
     {
       "name": "unused-binder",

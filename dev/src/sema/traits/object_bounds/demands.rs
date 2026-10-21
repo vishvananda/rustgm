@@ -1,4 +1,5 @@
 //! Immutable object contracts supply inference goals, never assumed evidence.
+pub(in crate::sema) mod pending;
 use super::graph::{self, Graph};
 use crate::{
     resolve::model::DefId,
@@ -25,9 +26,17 @@ pub(in crate::sema) struct Template {
     pub parameter: ParameterId,
     pub clauses: Arc<[Clause]>,
 }
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Key {
+    Resolved(TypeId),
+    Declared {
+        principal: crate::types::traits::ApplicationId,
+        bound_regions: u32,
+    },
+}
 #[derive(Default)]
 pub(super) struct Cache {
-    entries: HashMap<TypeId, Template>,
+    entries: HashMap<Key, Template>,
     payload: usize,
     steps: usize,
 }
@@ -52,6 +61,18 @@ pub(in crate::sema) fn get(
         bound_regions,
         region: RegionId::STATIC,
     })?;
+    if let Some(value) = cached(facts, Key::Resolved(key))? {
+        return Ok((Some(value), 1));
+    }
+    let Some(application) = facts.types.dynamic_principal(key)? else {
+        return Ok((None, 1));
+    };
+    let (value, steps) = prepare(facts, application, bound_regions)?;
+    publish(facts, Key::Resolved(key), &value, steps)?;
+    Ok((Some(value), steps))
+}
+
+fn cached(facts: &mut Declarations, key: Key) -> Result<Option<Template>, &'static str> {
     if let Some(cache) = facts
         .generics
         .traits
@@ -63,11 +84,16 @@ pub(in crate::sema) fn get(
         if cache.steps.saturating_add(cache.entries.len()) > 1_000_000 {
             return Err("object input contract cache work budget exceeded");
         }
-        return Ok((Some(value.clone()), 1));
+        return Ok(Some(value.clone()));
     }
-    let Some(application) = facts.types.dynamic_principal(key)? else {
-        return Ok((None, 1));
-    };
+    Ok(None)
+}
+
+fn prepare(
+    facts: &mut Declarations,
+    application: crate::types::traits::ApplicationId,
+    bound_regions: u32,
+) -> Result<(Template, usize), &'static str> {
     let item = facts
         .types
         .trait_application(application)
@@ -110,8 +136,7 @@ pub(in crate::sema) fn get(
         parameter,
         clauses: clauses.into(),
     };
-    publish(facts, key, &value, steps)?;
-    Ok((Some(value), steps))
+    Ok((value, steps))
 }
 
 fn callable_clause(facts: &Declarations, clause: Clause) -> Result<bool, &'static str> {
@@ -129,7 +154,7 @@ fn callable_clause(facts: &Declarations, clause: Clause) -> Result<bool, &'stati
 
 fn publish(
     facts: &mut Declarations,
-    key: TypeId,
+    key: Key,
     value: &Template,
     steps: usize,
 ) -> Result<(), &'static str> {
@@ -146,7 +171,7 @@ fn publish(
     let payload = cache
         .payload
         .saturating_add(value.clauses.len().saturating_mul(size_of::<Clause>()));
-    let bytes = crate::support::retained::new_map::<TypeId, Template>(cache.entries.len() + 1)
+    let bytes = crate::support::retained::new_map::<Key, Template>(cache.entries.len() + 1)
         .saturating_add(payload);
     let work = cache.steps.saturating_add(steps);
     if bytes > 64 * 1024 * 1024 || work.saturating_add(cache.entries.len()) > 1_000_000 {

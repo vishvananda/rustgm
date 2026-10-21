@@ -13,6 +13,7 @@ const POSITIVES: &[&str] = &[
     "unused-binder",
     "quantified-input",
     "quantified-output",
+    "unresolved-target",
 ];
 const NEGATIVES: &[(&str, i32, &str)] = &[
     (
@@ -46,10 +47,6 @@ const NEGATIVES: &[(&str, i32, &str)] = &[
         "required lifetime does not outlive its target",
     ),
 ];
-const FRONTIERS: &[(&str, &str)] = &[(
-    "unresolved-target",
-    "trait obligation requires an unambiguous",
-)];
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join(format!("../pa24/tests/spec/object-input-context/{name}.rs"))
@@ -71,14 +68,6 @@ fn inherited_requirements_preserve_independent_object_outcomes()
     }
     for &(name, types, reason) in NEGATIVES {
         checked_sources::check_modes(&fixture(name), &evidence, name, (1, [types, 1, 1], reason))?;
-    }
-    Ok(())
-}
-#[test]
-fn unresolved_target_frontier_remains_explicit() -> Result<(), Box<dyn std::error::Error>> {
-    let evidence = evidence("frontiers")?;
-    for &(name, reason) in FRONTIERS {
-        checked_sources::check(&fixture(name), &evidence, name, (0, 1, reason))?;
     }
     Ok(())
 }

@@ -51,8 +51,10 @@ No public wire, callable ABI, BodyKey or const permission changes.
 
 ## Declared controls
 
-`object-input-outcomes.json` now has ten executable positives, six independently
-Rust-invalid executable negatives and one unresolved-target boundary. The two
+`object-input-outcomes.json` had ten executable positives, six independently
+Rust-invalid executable negatives and one unresolved-target boundary at this
+checkpoint. The later [pending-input follow-up](pa24-pending-object-inputs.md)
+promotes that unchanged boundary to an executable positive. The two
 original quantified positive files are unchanged. The existing `output-escape`
 negative now reaches its actual executable lifetime rejection; emit-types emits
 the deferred facts rather than the earlier incompatible-types failure.

@@ -17,7 +17,7 @@ features. Keep draft inputs in their outcome manifests. At assignment release,
 register every required input in `manifest.json`; no undiscovered fixtures.
 
 `object-input-outcomes.json` declares inherited callable-object inference controls
-including quantified input/output and the explicit unresolved-target boundary. See
+including quantified input/output and pending generic target arguments. See
 [the implementation contract](../../docs/pa24-object-input-inference.md) for the
 ordinary required-goal protocol, cache identity, independent/native evidence and
 remaining scope. It does not activate a grading suite or generated references.
@@ -46,3 +46,7 @@ released manifest or generated oracle. See
 outer/local lifetime ownership. The exact registration, import and scoped equality
 contract is in [signature ownership](../../docs/pa24-signature-slot-ownership.md).
 No generated references or assignment activation accompanies these draft cases.
+
+`pending-object-outcomes.json` retains unresolved early type/const targets, actual
+object lifetime inputs, unused public binders and opposing type/escape controls.
+Declaration clauses create required goals; no pending caller terms enter a cache.

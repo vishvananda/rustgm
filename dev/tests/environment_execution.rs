@@ -17,6 +17,8 @@ mod native;
 mod nested;
 #[path = "environment_execution/conversion_context.rs"]
 mod object_inputs;
+#[path = "environment_execution/pending_objects.rs"]
+mod pending_objects;
 #[path = "environment_execution/dependent.rs"]
 mod projected;
 #[path = "environment_execution/copy_inputs.rs"]

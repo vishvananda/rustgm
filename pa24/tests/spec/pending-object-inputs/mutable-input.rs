@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Apply<T>:FnMut(T)->T{}impl<T,F:FnMut(T)->T>Apply<T> for F{}fn run<T:Copy>(f:&mut dyn Apply<T>,x:T)->T{f(x)}fn main(){let mut n=4;let mut f=|x|{n+=x;n};check(run(&mut f,3u16)==7);}

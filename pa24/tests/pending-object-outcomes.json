@@ -1,0 +1,229 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "early-type",
+      "path": "tests/spec/pending-object-inputs/early-type.rs",
+      "source_sha256": "5f1f1bb11730c2c48c71aec89e91574e11d8d6e275091b853f188e98200254cc",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "mutable-input",
+      "path": "tests/spec/pending-object-inputs/mutable-input.rs",
+      "source_sha256": "285138fba9192d42d56b718874b6a80bf915f655f9e270de391e0cd0a4d2cb44",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "mixed-output",
+      "path": "tests/spec/pending-object-inputs/mixed-output.rs",
+      "source_sha256": "2e16b17f0594d218bdb18f59bbdbbadd757251ce24ceca7b274286b42f1e0f4d",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "mixed-constant",
+      "path": "tests/spec/pending-object-inputs/mixed-constant.rs",
+      "source_sha256": "27faaeb11dd01879b16cb0d9b508c25849fcad813193159fb4a2836be8eab501",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "unused-public-binder",
+      "path": "tests/spec/pending-object-inputs/unused-public-binder.rs",
+      "source_sha256": "c8956c2387e5ae122e9f26832d84a1d4ac1a73175647ddd3132a76daf07c0d93",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "quantified-reference",
+      "path": "tests/spec/pending-object-inputs/quantified-reference.rs",
+      "source_sha256": "948fd73099f7123a5af7c248d598d589e271e8af73a77e67b61585054f723c31",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "early-lifetime-result",
+      "path": "tests/spec/pending-object-inputs/early-lifetime-result.rs",
+      "source_sha256": "9dee8bbe32f7cf6acdf1e1df5004942fbb3edeeff06444cc3eb80228592bc70a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "wrong-written-input",
+      "path": "tests/spec/pending-object-inputs/wrong-written-input.rs",
+      "source_sha256": "0133ceef4ebf7e67ec2ded8e53cb08d1a611905f1c704019b48546c6eff56a88",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous"
+    },
+    {
+      "name": "wrong-array-length",
+      "path": "tests/spec/pending-object-inputs/wrong-array-length.rs",
+      "source_sha256": "cc1492376b454d18a4aa1a078eaf1a91755272792e6c2058783d9a702bec005b",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous"
+    },
+    {
+      "name": "escaping-result",
+      "path": "tests/spec/pending-object-inputs/escaping-result.rs",
+      "source_sha256": "6ac258ff56ab0186a206cbeaaff6756b7daa2bf19cc1adb7c08714a1f567e0d1",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "access conflicts with a live reference loan"
+    }
+  ]
+}

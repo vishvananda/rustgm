@@ -56,7 +56,7 @@ impl Checker<'_> {
             Ok(ty) => ty,
             Err(
                 crate::types::infer::Error::Unresolved | crate::types::infer::Error::Normalization,
-            ) => return Ok(()),
+            ) => return self.pending_object_demands(node, concrete, target),
             Err(e) => return Err(self.error(node, e)),
         };
         let (template, steps) =
@@ -69,12 +69,48 @@ impl Checker<'_> {
         let Some(template) = template else {
             return Ok(());
         };
-        let mut inference = Instantiation::new(
-            &mut self.state.infer,
-            &self.facts.types,
+        self.apply_object_demands(
+            node,
+            &template,
             &[(template.parameter, Argument::Type(concrete))],
         )
-        .map_err(|e| self.error(node, e))?;
+    }
+
+    fn pending_object_demands(
+        &mut self,
+        node: NodeId,
+        concrete: TermId,
+        target: TermId,
+    ) -> Result<(), Error> {
+        let Some(principal) = self
+            .state
+            .infer
+            .object_principal(&self.facts.types, target)
+            .map_err(|e| self.error(node, e))?
+        else {
+            return Ok(());
+        };
+        let mut prepared =
+            crate::sema::traits::object_bounds::demands::pending::get(self.facts, &principal)
+                .map_err(|e| self.error(node, e))?;
+        self.state
+            .infer
+            .account_work(prepared.steps)
+            .map_err(|e| self.error(node, e))?;
+        prepared
+            .bindings
+            .push((prepared.template.parameter, Argument::Type(concrete)));
+        self.apply_object_demands(node, &prepared.template, &prepared.bindings)
+    }
+
+    fn apply_object_demands(
+        &mut self,
+        node: NodeId,
+        template: &crate::sema::traits::object_bounds::demands::Template,
+        bindings: &[(crate::types::parameters::ParameterId, Argument)],
+    ) -> Result<(), Error> {
+        let mut inference = Instantiation::new(&mut self.state.infer, &self.facts.types, bindings)
+            .map_err(|e| self.error(node, e))?;
         let mut regions = substitute::Bound::new(Vec::new());
         for &clause in template.clauses.iter() {
             self.instantiate_bound_obligation(node, clause, None, &mut regions, &mut inference)?;

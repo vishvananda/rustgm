@@ -211,3 +211,90 @@ fn repeated_and_distinct_target_graphs_charge_linear_work() -> Result<(), Box<dy
     }
     Ok(())
 }
+
+#[test]
+fn declared_templates_reuse_no_pending_caller_terms_and_keep_exact_binders()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::infer::{Context, Domain, arguments::Argument};
+    let mut facts = facts("trait Apply<'a,T>:Fn(T)->&'a u8{}type A=dyn Apply<'static,u8>;")?;
+    let target = (0..u32::try_from(facts.types.len())?)
+        .map(TypeId)
+        .find(|&ty| matches!(facts.types.kind(ty), Some(Kind::Dynamic { .. })))
+        .ok_or("missing object")?;
+    let mut context = Context::default();
+    let root = context.known(&facts.types, target)?;
+    let mut principal = context
+        .object_principal(&facts.types, root)?
+        .ok_or("missing principal")?;
+    let first = context.variable(Domain::Any)?;
+    principal.arguments[1] = Argument::Type(first);
+    let a = pending::get(&mut facts, &principal)?;
+    let other = context.variable(Domain::Any)?;
+    principal.arguments[1] = Argument::Type(other);
+    let b = pending::get(&mut facts, &principal)?;
+    assert!(Arc::ptr_eq(&a.template.clauses, &b.template.clauses));
+    assert_eq!(a.bindings[0].1, Argument::Type(first));
+    assert_eq!(b.bindings[0].1, Argument::Type(other));
+    assert_eq!(b.steps, 3);
+    principal.bound_regions = 1;
+    let c = pending::get(&mut facts, &principal)?;
+    assert!(!Arc::ptr_eq(&a.template.clauses, &c.template.clauses));
+    principal.arguments[0] = Argument::Lifetime(RegionId::bound(0, 0)?);
+    let d = pending::get(&mut facts, &principal)?;
+    assert!(!Arc::ptr_eq(&c.template.clauses, &d.template.clauses));
+    for clause in d.template.clauses.iter() {
+        let Clause::ForAll(id) = clause else {
+            return Err("lost quantifier".into());
+        };
+        assert!(
+            facts
+                .types
+                .quantified(*id)
+                .ok_or("missing clause")?
+                .bound_regions
+                >= 1
+        );
+    }
+    assert_eq!(
+        facts
+            .generics
+            .traits
+            .as_ref()
+            .and_then(|c| c.object_bounds.demands.as_ref())
+            .ok_or("missing cache")?
+            .entries
+            .len(),
+        3
+    );
+    Ok(())
+}
+
+#[test]
+fn malformed_pending_principals_do_not_publish_completed_templates()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::infer::{Context, arguments::Argument};
+    let mut facts = facts("trait Apply<T>:Fn(T)->T{}type A=dyn Apply<u8>;")?;
+    let target = (0..u32::try_from(facts.types.len())?)
+        .map(TypeId)
+        .find(|&ty| matches!(facts.types.kind(ty), Some(Kind::Dynamic { .. })))
+        .ok_or("missing object")?;
+    let mut context = Context::default();
+    let root = context.known(&facts.types, target)?;
+    let mut principal = context
+        .object_principal(&facts.types, root)?
+        .ok_or("missing principal")?;
+    principal.arguments.clear();
+    assert!(pending::get(&mut facts, &principal).is_err());
+    principal
+        .arguments
+        .push(Argument::Lifetime(RegionId::STATIC));
+    assert!(pending::get(&mut facts, &principal).is_err());
+    assert!(
+        facts
+            .generics
+            .traits
+            .as_ref()
+            .is_some_and(|c| c.object_bounds.demands.is_none())
+    );
+    Ok(())
+}
