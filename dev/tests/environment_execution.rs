@@ -1,8 +1,12 @@
 //! Direct capture endpoints retain ordinary body, borrow and cleanup proofs.
+#[path = "environment_execution/adjusted.rs"]
+mod adjusted;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
+#[path = "support/semantic.rs"]
+mod semantic;
 
 const CASES: &[(&str, &str, bool)] = &[
     ("wildcard-reference-loan", "wildcard-reference-loan", false),

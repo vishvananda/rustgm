@@ -10,6 +10,7 @@ use crate::{
 pub(super) struct Places {
     fields: Vec<Place>,
     mentions: std::collections::HashSet<PathId>,
+    pub(super) validated: std::collections::HashSet<(PathId, PathId, u32)>,
 }
 pub(super) enum Access {
     Ordinary,
@@ -22,7 +23,7 @@ enum Formation {
     Initialization,
 }
 impl Builder<'_> {
-    fn capture_environment(&self) -> Option<&Environment> {
+    pub(super) fn capture_environment(&self) -> Option<&Environment> {
         let Owner::Closure { identity, .. } = self.body.owner else {
             return None;
         };
@@ -63,6 +64,7 @@ impl Builder<'_> {
                 self.capture_places = Some(Box::new(Places {
                     fields: Vec::new(),
                     mentions,
+                    validated: std::collections::HashSet::new(),
                 }));
             }
             return Ok(());
@@ -119,6 +121,7 @@ impl Builder<'_> {
         self.capture_places = Some(Box::new(Places {
             fields: places,
             mentions,
+            validated: std::collections::HashSet::new(),
         }));
         Ok(())
     }
@@ -228,6 +231,14 @@ impl Builder<'_> {
         }) else {
             return Ok(Access::Ordinary);
         };
+        self.capture_path_place(node, environment, path)
+    }
+    pub(super) fn capture_path_place(
+        &mut self,
+        node: NodeId,
+        environment: &Environment,
+        path: PathId,
+    ) -> Result<Access, Error> {
         let Some(index) = environment.plan.covering_field(path) else {
             return if self
                 .capture_places

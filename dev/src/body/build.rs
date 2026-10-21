@@ -5,6 +5,7 @@ mod closures;
 mod conditions;
 mod constructors;
 pub(super) use constructors::finish_factory;
+mod adjusted;
 mod decisions;
 mod drops;
 mod environments;
@@ -293,6 +294,11 @@ enum Work {
         has_value: bool,
     },
     Place(NodeId),
+    AdjustedPlace {
+        operand: NodeId,
+        site: NodeId,
+        kind: crate::sema::closures::AccessKind,
+    },
     FinishPlace(NodeId),
     TemporaryPlace(NodeId),
     ReadPlace(NodeId),
@@ -838,6 +844,13 @@ impl<'a> Builder<'a> {
                 }
             }
             Work::Place(node) => self.enter_place(node)?,
+            Work::AdjustedPlace {
+                operand,
+                site,
+                kind,
+            } => {
+                self.enter_adjusted_place(operand, site, kind)?;
+            }
             Work::FinishPlace(node) => self.finish_place(node)?,
             Work::TemporaryPlace(node) => {
                 let place = if self.current.is_some() {
@@ -1242,7 +1255,12 @@ impl<'a> Builder<'a> {
                     } => {
                         self.children(arguments);
                         self.scratch.work.push(Work::MethodReceiver(node));
-                        self.scratch.work.push(Work::Place(receiver));
+                        let place = self.receiver_place_work(
+                            receiver,
+                            node,
+                            crate::sema::closures::AccessKind::Method,
+                        );
+                        self.scratch.work.push(place);
                     }
                     Kind::Call { callee, arguments } => {
                         self.children(arguments);
@@ -1250,7 +1268,12 @@ impl<'a> Builder<'a> {
                             self.scratch
                                 .work
                                 .push(Work::InvocationReceiver(node, callee));
-                            self.scratch.work.push(Work::Place(callee));
+                            let place = self.receiver_place_work(
+                                callee,
+                                node,
+                                crate::sema::closures::AccessKind::Invocation,
+                            );
+                            self.scratch.work.push(place);
                         } else {
                             self.scratch.work.push(Work::Enter(callee));
                         }

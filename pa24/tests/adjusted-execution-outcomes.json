@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "deep-reference",
+      "path": "tests/spec/adjusted-native/deep-reference.rs",
+      "source_sha256": "1a4d2af40a3639e719ab0c174fc1a30a2cb6331eb6732a8eb96f1f988f577e20",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-call",
+      "path": "tests/spec/adjusted-native/mutable-call.rs",
+      "source_sha256": "5a8c2c3307c84bbda5bd9c2a4084a6d900c64381a2c19f83bc5b68493760e92c",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

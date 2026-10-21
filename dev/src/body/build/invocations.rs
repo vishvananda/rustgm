@@ -26,7 +26,11 @@ impl Builder<'_> {
         let value = self.receiver_value(
             node,
             place,
-            selected.dereferences,
+            self.remaining_receiver_dereferences(
+                node,
+                crate::sema::closures::AccessKind::Invocation,
+                selected.dereferences,
+            )?,
             selected.borrow,
             selected.receiver,
             crate::body::ir::BorrowKind::TwoPhase,
