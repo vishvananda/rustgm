@@ -14,7 +14,10 @@ pub enum Mode {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Step {
     Field(u32),
-    Dereference,
+    /// Preserve reference capability when a required ancestor covers this place.
+    Dereference {
+        mutable: bool,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PathId(u32);
@@ -54,11 +57,16 @@ impl Default for Graph {
 /// Selected prefixes share their paths; no capture owns a copied ancestor chain.
 pub struct Plan {
     paths: Vec<Path>,
-    pub captures: Vec<Capture>,
+    covering: Vec<Option<usize>>,
+    captures: Vec<Capture>,
     /// Actual place operations and finalization node visits, including cache hits.
     pub work: usize,
 }
 impl Plan {
+    #[must_use]
+    pub fn captures(&self) -> &[Capture] {
+        &self.captures
+    }
     #[must_use]
     pub fn root(&self, path: PathId) -> Option<DefId> {
         self.paths.get(path.0 as usize).map(|p| p.root)
@@ -70,6 +78,13 @@ impl Plan {
     #[must_use]
     pub fn path_count(&self) -> usize {
         self.paths.len()
+    }
+    /// Find an environment capture for an already interned use without walking
+    /// its ancestors. An unused prefix of narrower captures has no such owner.
+    #[must_use]
+    pub fn covering(&self, path: PathId) -> Option<&Capture> {
+        self.captures
+            .get(self.covering.get(path.0 as usize).copied().flatten()?)
     }
 }
 impl Graph {
@@ -152,21 +167,29 @@ impl Graph {
         for index in (0..self.paths.len()).rev() {
             self.charge()?;
             let path = self.paths[index];
-            if let Some((parent, _)) = path.parent {
+            if let Some((parent, step)) = path.parent {
                 let parent = &mut self.paths[parent.0 as usize];
-                parent.mode = parent.mode.max(path.mode);
+                // A mutation through &mut needs uniqueness of a captured
+                // reference, not permission to replace that reference binding.
+                let mode = match (step, path.mode) {
+                    (Step::Dereference { mutable: true }, Some(Mode::Mutable)) => {
+                        Some(Mode::UniqueImmutable)
+                    }
+                    (_, mode) => mode,
+                };
+                parent.mode = parent.mode.max(mode);
             }
         }
-        let mut covered = vec![false; self.paths.len()];
+        let mut covering = vec![None; self.paths.len()];
         let mut captures = Vec::new();
         for index in 0..self.paths.len() {
             self.charge()?;
             let path = self.paths[index];
-            let inherited = path.parent.is_some_and(|(p, _)| covered[p.0 as usize]);
-            covered[index] = inherited || path.used;
-            if !inherited && path.used {
+            covering[index] = path.parent.and_then(|(p, _)| covering[p.0 as usize]);
+            if covering[index].is_none() && path.used {
                 let mode = path.mode.ok_or("required capture lacks a mode")?;
                 let id = u32::try_from(index).map_err(|_| "closure capture identity overflow")?;
+                covering[index] = Some(captures.len());
                 captures.push(Capture {
                     path: PathId(id),
                     mode,
@@ -175,6 +198,7 @@ impl Graph {
         }
         Ok(Plan {
             paths: self.paths,
+            covering,
             captures,
             work: self.work,
         })
