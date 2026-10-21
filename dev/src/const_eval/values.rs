@@ -67,10 +67,15 @@ impl Machine<'_, '_> {
                     .ok_or("missing constant scalar")?,
             ),
             Rvalue::Unit => self.evaluator.fields(&[], None)?,
-            Rvalue::Union { .. } => {
-                return Err(
-                    "union byte initialization in constant execution is not implemented".into(),
-                );
+            Rvalue::Union { field, value } => {
+                let (value, work) = self.evaluator.union_value(
+                    ty,
+                    field,
+                    Self::value(frame, value)?,
+                    self.limits.steps.saturating_sub(self.work.steps),
+                )?;
+                self.charge(work)?;
+                value
             }
             Rvalue::Aggregate { fields, variant } => {
                 let arguments = self.arguments(frame, fields)?;
@@ -140,12 +145,18 @@ impl Machine<'_, '_> {
                 let Some(place) = self.place(frame, place)? else {
                     return Ok(None);
                 };
+                if place.union.is_some() {
+                    return Err("constant union field address formation requires byte-offset provenance and is not implemented".into());
+                }
                 place.address
             }
             Rvalue::Borrow { place, .. } => {
                 let Some(place) = self.place(frame, place)? else {
                     return Ok(None);
                 };
+                if place.union.is_some() {
+                    return Err("constant union field address formation requires byte-offset provenance and is not implemented".into());
+                }
                 if place.raw.is_some() {
                     return Err(
                         "references through raw pointers in constant execution are not implemented"

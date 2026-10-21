@@ -1,0 +1,1 @@
+#[derive(Clone,Copy)]union U{word:u32,byte:u8}static PARTIAL:U=U{byte:7};const C:U=U{word:16909060};static FULL:U=C;struct Pair{u:U,x:u8}const N:Pair=Pair{u:U{word:42},x:3};fn main(){unsafe{check(PARTIAL.byte==7);check(FULL.word==16909060);check(N.u.word==42);}check(N.x==3);}

@@ -6,6 +6,24 @@ use crate::{
     types::TypeId,
 };
 impl Context<'_> {
+    fn zero_image(
+        &mut self,
+        ty: TypeId,
+        value: Constant,
+        size: u64,
+        layout_size: u64,
+    ) -> Result<bool, &'static str> {
+        let image = self.constants.image(value)?;
+        if image.ty != ty || size != layout_size || image.bytes.len() as u64 != size {
+            return Err("constant union image differs from zero storage type");
+        }
+        self.data.charge(image.bytes.len())?;
+        Ok(image
+            .bytes
+            .iter()
+            .enumerate()
+            .all(|(i, byte)| !image.initialized(i) || *byte == 0))
+    }
     pub(super) fn zero_data(&mut self, ty: TypeId, value: Constant) -> Result<bool, &'static str> {
         let root = (ty, value);
         let mut work = vec![(root, false)];
@@ -21,6 +39,7 @@ impl Context<'_> {
             }
             let zero = match self.constants.view(value)? {
                 View::Scalar(scalar) => bits(scalar) == 0,
+                View::Image { size } => self.zero_image(ty, value, size, layout.size)?,
                 View::Reference(_)
                 | View::Function(_)
                 | View::Text(_)

@@ -1,0 +1,320 @@
+{
+  "stage": "draft",
+  "rustc": "1.98.0 / edition2024 / x86_64",
+  "baseline_source": "7385a2dc",
+  "image_profile": "all concrete union fields primitive scalar, no pointer/provenance images",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/scalar-union/word-byte.rs",
+      "sha256": "08bef28d22332179f1fc4bb6e7e7dbbc4e2a115f114994dc520cb63f0c21db59",
+      "rustc_status": 0,
+      "purpose": "initialized overlap and little-endian byte",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/bool-zero.rs",
+      "sha256": "693fe25597749771cc4d9dd629fb84db48eb90df545e36ea059251cd341e0fe9",
+      "rustc_status": 0,
+      "purpose": "valid bool false",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/bool-one.rs",
+      "sha256": "1c7d88fbc1732256520bfa5d7c18ebc68dcb6b899f4118aaa675322b2eb33863",
+      "rustc_status": 0,
+      "purpose": "valid bool true",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/invalid-alternative.rs",
+      "sha256": "7c994afe0f7168d98eb595e1e4b185ae38ba366d6f15aef8f81b6d08b0a3971a",
+      "rustc_status": 0,
+      "purpose": "union storage does not validate unselected alternatives",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/char-valid.rs",
+      "sha256": "9fba1f706b6e22ddeb33d6ce081c4abffe93d6dd1b8101c9d28c78f9cd5d2064",
+      "rustc_status": 0,
+      "purpose": "valid char scalar",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/char-surrogate.rs",
+      "sha256": "7a164c41f458fa45f618e818d7da6af812e7c7d156d783651f7fec01c618eb0e",
+      "rustc_status": 1,
+      "purpose": "invalid surrogate char",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/char-above-unicode.rs",
+      "sha256": "a60ef50921f7e83f0ab25259c1069ea3671edbe35ef8df6c00b26007849f2c46",
+      "rustc_status": 1,
+      "purpose": "char exceeds Unicode range",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/float-from-bits.rs",
+      "sha256": "84e14e01d867f83d7e0f1044b72001ecb42dbc6c93c86be1938eda47f524633d",
+      "rustc_status": 0,
+      "purpose": "exact f32 bits",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/negative-zero-bits.rs",
+      "sha256": "22dc35226d0d29fa44fc324f208039b97e685e5302482f78490b78e372af56fd",
+      "rustc_status": 0,
+      "purpose": "exact f64 negative zero",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/wide-low-byte.rs",
+      "sha256": "42bd17c2c4b324fd039e9c0537c0ec1d8ba5b5e1fc37fdbe6104b2a4732b5b41",
+      "rustc_status": 0,
+      "purpose": "sixteen-byte scalar image",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/partial-preserve.rs",
+      "sha256": "4d24164f28288a623ccdf331b0badd179568c73703788998dcd30be87c60ff8a",
+      "rustc_status": 0,
+      "purpose": "partial field store preserves higher initialized bytes",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/partial-uninitialized.rs",
+      "sha256": "ec9eb963bacf56d15a6a55ca453285c9019294b4f0ca3dcdc7185397c04c75a4",
+      "rustc_status": 1,
+      "purpose": "partial store does not initialize remaining bytes",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/copy-snapshot.rs",
+      "sha256": "9409ac47ea88e482856596d69b38ef1d01ef9e4689bc4accce19234f45daf9b4",
+      "rustc_status": 0,
+      "purpose": "copies share immutable image until store publishes replacement",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/const-function.rs",
+      "sha256": "be7ee909b5d151f21f387c39b240b97f9b2819b9a7db9e867ce51a17f0ea26fb",
+      "rustc_status": 0,
+      "purpose": "safe field stores and unsafe reads in const function",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/nested-product.rs",
+      "sha256": "2bb09747d0417aed0e06e7e1c8e02076ea68cca615aef10e8ec19b3142a45657",
+      "rustc_status": 0,
+      "purpose": "nested union cell overlap",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/static-partial.rs",
+      "sha256": "5900fa0db09b44faddc304498e32aafa697206d90bc776aa7589452ae18e0461",
+      "rustc_status": 0,
+      "purpose": "static image and partial initialization",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/pointer-family.rs",
+      "sha256": "97b9a0dcf6cbb763ae598e55cd1b29db4bc4b793fb29262c292b2b429b750d85",
+      "rustc_status": 0,
+      "purpose": "explicit unsupported provenance family",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/array-family.rs",
+      "sha256": "0d1a1a8cd4b81c7ac6525410e745f0e53193c02ec477f0b5ff2ae23e14e1cf87",
+      "rustc_status": 0,
+      "purpose": "explicit unsupported aggregate family",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/field-address.rs",
+      "sha256": "ecbece6b2f32219655e1572a0730b5b55c7ff1fa84284816e1f185e5ece7a186",
+      "rustc_status": 1,
+      "purpose": "Rust rejects raw address of named-const temporary; original hypothesis retained",
+      "initial_hypothesis_rustc_status": 0,
+      "hypothesis_correction": "First full-object qualification rejected the named-const temporary; use static-field-address for the intended byte-origin capability boundary.",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/ordinary-scalar.rs",
+      "sha256": "45ca2789e7e1a95e7f0219ab31ae680e6481d2d5eb41ff6b7cf6beff206cccf0",
+      "rustc_status": 0,
+      "purpose": "ordinary no-image control",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/unions/invalid-bool-const.rs",
+      "sha256": "87bf34a9052b796bc42cd13004a16c4c8e2905b87ca29877a359b5b9a406aaaf",
+      "rustc_status": 1,
+      "purpose": "unchanged previously qualified union input",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/unions/unused-invalid-bool-const.rs",
+      "sha256": "c2d266606a6a2f8351006f0576036df5ce075af947db6d7a7655fd94d9fb0b1b",
+      "rustc_status": 1,
+      "purpose": "unchanged previously qualified union input",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/unions/uninitialized-byte-const.rs",
+      "sha256": "2a96c5f44c82a5ebb226bb9b58bdbbd2ec10f5ad6d3439d3aa25749b43ecd7bb",
+      "rustc_status": 1,
+      "purpose": "unchanged previously qualified union input",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/unions/unused-uninitialized-byte-const.rs",
+      "sha256": "5e8c2e09c97e333a3756dabe8fec89bcd1f75e5f730ceaf03517a1f3f629a063",
+      "rustc_status": 1,
+      "purpose": "unchanged previously qualified union input",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/unions/valid-bool-const-unsupported.rs",
+      "sha256": "37a943ccb0f1530eca41d1ad3240eb2577ba11a58e7bc74092f68efc3b577d86",
+      "rustc_status": 0,
+      "purpose": "unchanged previously qualified union input",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/unions/uninit-field-write.rs",
+      "sha256": "4e86cea311e81f9cbc8569bbcc1289291f8edc96fc66fbb96f3abc73df8dd98f",
+      "rustc_status": 1,
+      "purpose": "unchanged previously qualified union input",
+      "frontend_types_status": 0,
+      "frontend_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/static-field-address.rs",
+      "sha256": "4cb65e8cc176a20197b4d5107eba495c3949c283d218e89f35d73bb57776701b",
+      "rustc_status": 0,
+      "purpose": "accepted static-backed union field address; explicit byte-offset origin boundary",
+      "frontend_status": 1,
+      "frontend_types_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/reference-field.rs",
+      "sha256": "ec8f03eb9efdec178de7a5c783b6385183407829bbc411fc12c2d04c16557e57",
+      "rustc_status": 0,
+      "purpose": "typed reference receiver selects byte image",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/reference-function.rs",
+      "sha256": "49ad7c66a986e443575578f04a23ec50ae0dc73179c81f1544eff9a888169764",
+      "rustc_status": 0,
+      "purpose": "const function reference argument selects byte image",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/atomic-context.rs",
+      "sha256": "dc29fd3c1b0d423f262ce1eddb7cf63fd0fe0b3a2abcfb782bc86e02dd86d564",
+      "rustc_status": 0,
+      "purpose": "image reference remains ordinary while canonical interior-mutation facts are present",
+      "frontend_status": 0,
+      "frontend_types_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/signed-bits.rs",
+      "sha256": "eb8f90a2b0f874d352f1d1cf5f04abb47ad35eb71ff633d935fe66b55f0b8526",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "purpose": "signed primitive uses its declared storage width"
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/mutable-reference.rs",
+      "sha256": "6abe8fd451d6ec47a6deedafb9387436ecfb5a33b6a76245d49767274b13bb60",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "purpose": "mutable reference field store uses shared byte image"
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/image-size-limit.rs",
+      "sha256": "018b080d5d40e3e3bda93405bf0ca68a09ddb9c060e2fd3857200af0433f87ee",
+      "rustc_status": 0,
+      "frontend_status": 1,
+      "frontend_types_status": 1,
+      "purpose": "explicit image size limit before payload allocation"
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/generic-scalar.rs",
+      "sha256": "b8a644226d2935200c32d6023e23fcb4881250ee4691965d2b140020ea5cb34c",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "purpose": "closed generic family"
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union/zero-image.rs",
+      "sha256": "05edf106a398654930e5235c53845774af757c952258b0e5ce10596b833a61f3",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "frontend_types_status": 0,
+      "purpose": "zero native placement preserves partial CTFE mask"
+    }
+  ],
+  "native": [
+    {
+      "path": "pa27/tests/spec/scalar-union-native/numeric.rs",
+      "sha256": "94541985c0c3963ecdb3d597cb25a006b8c8e4d4c21452929f2843ad0545e33d",
+      "qualified_input_sha256": "ccd98ba5b4f0892548fc6867e992ee777da62622d530b905855d2595543de773",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union-native/overlap.rs",
+      "sha256": "250816155ab865b6b9e4ae2832b2be89f64fe2213b624cdb6eda7279dbdc6234",
+      "qualified_input_sha256": "ff035cb7e57ad30987bbdd74fd2cefc0ec4b26a9f5020ef60bda81ef9be8dca6",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union-native/references.rs",
+      "sha256": "43220c9c601f1a406cacc011dbefc91a75fdfc18d142b545daa653fad816fe76",
+      "qualified_input_sha256": "d34f29b6cc9672fd98601f1f29f3d22466abab12871d1c8a550db3dd54dbe34f",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/scalar-union-native/storage.rs",
+      "sha256": "65267605d0c15c6c07a5c555bc3c9a74dbce3dda094296b7b67b28fd2f64c5e0",
+      "qualified_input_sha256": "b5fe49a182134b81e775c0f6cce90c44cda97a4ec299cd4791668ea0587d15e3",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    }
+  ]
+}

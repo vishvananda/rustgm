@@ -21,6 +21,7 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
     let place = Resolved {
         address,
         ty,
+        union: None,
         raw: Some(RawAccess {
             location: address.location(),
             ty,
@@ -66,6 +67,7 @@ fn initialized_storage_is_required_before_a_raw_read() -> Result<(), String> {
             .read(Resolved {
                 address: invalid,
                 ty,
+                union: None,
                 raw: Some(RawAccess {
                     location: invalid.location(),
                     ty

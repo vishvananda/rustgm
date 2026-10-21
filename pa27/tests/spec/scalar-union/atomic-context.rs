@@ -1,0 +1,1 @@
+use std::sync::atomic::AtomicU32;const ATOMIC:AtomicU32=AtomicU32::new(0);union U{word:u32,byte:u8}const IMAGE:U=U{word:37};const R:&U=&IMAGE;const X:u32=unsafe{R.word};fn main(){let _=ATOMIC;let _=X;}

@@ -52,6 +52,7 @@ struct Frame {
     temporaries: HashMap<ValueId, Constant>,
     projections: HashMap<crate::body::ir::ProjectionId, memory::Resolved>,
     raw_views: HashMap<crate::body::ir::LocalId, memory::RawAccess>,
+    union_views: HashMap<crate::body::ir::LocalId, memory::UnionField>,
     allocations: Vec<crate::sema::values::LocationId>,
 }
 /// All CFGs are immutable and already checked by their defining-body pipeline.
@@ -274,6 +275,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             temporaries: HashMap::new(),
             projections: HashMap::new(),
             raw_views: HashMap::new(),
+            union_views: HashMap::new(),
             allocations: Vec::new(),
         };
         let mut parameters = 0;
@@ -408,7 +410,7 @@ impl<'a, 'b> Machine<'a, 'b> {
                         "raw pointer writes in constant execution are not implemented".into(),
                     );
                 }
-                self.write(location.address, value)?;
+                self.write_place(location, value)?;
             }
             Action::StorageLive(id) => {
                 let ty = self.bodies[frame.body].locals[id.0 as usize].ty;
@@ -443,6 +445,11 @@ impl<'a, 'b> Machine<'a, 'b> {
                     frame.raw_views.insert(view, access);
                 } else {
                     frame.raw_views.remove(&view);
+                }
+                if let Some(union) = location.union {
+                    frame.union_views.insert(view, union);
+                } else {
+                    frame.union_views.remove(&view);
                 }
                 frame.locals[view.0 as usize] = Some(location.address);
             }

@@ -21,10 +21,16 @@ pub(super) struct RawAccess {
     pub ty: TypeId,
 }
 #[derive(Clone, Copy)]
+pub(super) struct UnionField {
+    pub owner: TypeId,
+    pub field: crate::sema::members::Selection,
+}
+#[derive(Clone, Copy)]
 pub(super) struct Resolved {
     pub address: Constant,
     pub ty: TypeId,
     pub raw: Option<RawAccess>,
+    pub union: Option<UnionField>,
 }
 #[derive(Default)]
 pub(super) struct Memory {
@@ -66,6 +72,7 @@ impl Machine<'_, '_> {
             crate::body::ir::LocalKind::Guard(_)
         ) {
             frame.raw_views.remove(&id);
+            frame.union_views.remove(&id);
             frame.locals[id.0 as usize] = None;
             return Ok(());
         }
@@ -191,31 +198,71 @@ impl Machine<'_, '_> {
     pub(super) fn read(&mut self, place: Resolved) -> Result<Option<Constant>, Failure> {
         let (root, path) = self.path(place.address)?;
         if let Some(access) = place.raw {
-            self.check_raw_read(place, access, root, &path)?;
+            self.check_raw_read(
+                Resolved {
+                    ty: place.union.map_or(place.ty, |u| u.owner),
+                    union: None,
+                    ..place
+                },
+                access,
+                root,
+                &path,
+            )?;
         }
-        if self.memory.roots.contains_key(&root) {
+        let value = if self.memory.roots.contains_key(&root) {
             let cell = self.cell(root, &path)?;
-            return self.freeze(cell).map(Some);
-        }
-        let reader = Reader::new(self.evaluator.facts());
-        let location = reader.location(root)?;
-        let mut value = if let Origin::Static(id) = location.origin {
-            self.check_static_read(id)?;
-            let Some(value) = reader.definition(id) else {
-                self.waiting = Some(super::Requirement::InitializerBody(id));
-                return Ok(None);
-            };
-            value
+            self.freeze(cell)?
         } else {
-            location
-                .value
-                .ok_or("constant allocation has no completed contents")?
+            let reader = Reader::new(self.evaluator.facts());
+            let location = reader.location(root)?;
+            let mut value = if let Origin::Static(id) = location.origin {
+                self.check_static_read(id)?;
+                let Some(value) = reader.definition(id) else {
+                    self.waiting = Some(super::Requirement::InitializerBody(id));
+                    return Ok(None);
+                };
+                value
+            } else {
+                location
+                    .value
+                    .ok_or("constant allocation has no completed contents")?
+            };
+            for index in path {
+                self.charge(1)?;
+                value = self.evaluator.field(value, index)?;
+            }
+            value
         };
-        for index in path {
-            self.charge(1)?;
-            value = self.evaluator.field(value, index)?;
+        if let Some(union) = place.union {
+            let (value, work) = self.evaluator.union_read(
+                value,
+                union.owner,
+                union.field,
+                self.limits.steps.saturating_sub(self.work.steps),
+            )?;
+            self.charge(work)?;
+            return Ok(Some(value));
         }
         Ok(Some(value))
+    }
+    pub(super) fn write_place(&mut self, place: Resolved, value: Constant) -> Result<(), Failure> {
+        if let Some(union) = place.union {
+            let (root, path) = self.path(place.address)?;
+            let cell = self.cell(root, &path)?;
+            let image = self.freeze(cell)?;
+            let (image, work) = self.evaluator.union_write(
+                image,
+                union.owner,
+                union.field,
+                value,
+                self.limits.steps.saturating_sub(self.work.steps),
+            )?;
+            self.charge(work)?;
+            self.memory.cells[cell] = Cell::Frozen(image);
+            Ok(())
+        } else {
+            self.write(place.address, value)
+        }
     }
     pub(super) fn write(&mut self, address: Constant, value: Constant) -> Result<(), Failure> {
         let (root, path) = self.path(address)?;
@@ -259,6 +306,7 @@ impl Machine<'_, '_> {
                             .ok_or("constant local is outside its storage lifetime")?,
                         ty: body.locals[id.0 as usize].ty,
                         raw: frame.raw_views.get(&id).copied(),
+                        union: frame.union_views.get(&id).copied(),
                     };
                 }
                 Place::Static(id) => {
@@ -274,6 +322,7 @@ impl Machine<'_, '_> {
                         address: self.evaluator.static_address(id, ty)?,
                         ty,
                         raw: None,
+                        union: None,
                     };
                 }
                 Place::Temporary(id) => {
@@ -281,6 +330,7 @@ impl Machine<'_, '_> {
                         address: self.temporary(frame, id)?,
                         ty: body.values[id.0 as usize].ty,
                         raw: None,
+                        union: None,
                     };
                 }
                 Place::Projection(id) => {
@@ -322,6 +372,7 @@ impl Machine<'_, '_> {
                 return Ok(Some(Resolved {
                     address: value,
                     ty: projection.ty,
+                    union: None,
                     raw: matches!(projection.kind, ProjectionKind::RawDereference { .. })
                         .then_some(RawAccess {
                             location: value.location(),
@@ -343,10 +394,17 @@ impl Machine<'_, '_> {
                 self.evaluator
                     .projection(address.address, u64::from(index), projection.ty)?
             }
-            ProjectionKind::UnionField(_) => {
-                return Err(
-                    "union field reinterpretation in constant execution is not implemented".into(),
-                );
+            ProjectionKind::UnionField(field) => {
+                self.project_raw_type(address)?;
+                return Ok(Some(Resolved {
+                    address: address.address,
+                    ty: projection.ty,
+                    raw: address.raw,
+                    union: Some(UnionField {
+                        owner: address.ty,
+                        field,
+                    }),
+                }));
             }
             ProjectionKind::ConstantIndex(index) => {
                 self.project_raw_type(address)?;
@@ -377,6 +435,7 @@ impl Machine<'_, '_> {
             address: result,
             ty: projection.ty,
             raw: address.raw,
+            union: None,
         }))
     }
     pub(super) fn validate_result(&mut self, root: Constant, ty: TypeId) -> Result<(), Failure> {

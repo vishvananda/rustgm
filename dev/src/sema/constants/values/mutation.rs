@@ -179,6 +179,15 @@ impl Inspection<'_> {
         else {
             return Ok(Answer::Unresolved);
         };
+        if let View::Image { .. } = self.reader.view(value)? {
+            if shape.definition.kind != crate::types::aggregate::Kind::Union
+                || self.reader.image(value)?.ty != ty
+            {
+                return Err("constant union image differs from its nominal storage");
+            }
+            // The image arena only admits all-fields primitive scalar families.
+            return Ok(Answer::Ordinary);
+        }
         let View::Product { variant, .. } = self.reader.view(value)? else {
             return Err("nominal storage lacks a product value");
         };

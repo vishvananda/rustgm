@@ -288,7 +288,7 @@ const CASES: &[(&str, bool, &str)] = &[
 
 // Retain the unused forms independently: the frontend currently fails to demand
 // these invalid initializers. They are release blockers, not passing validity cases.
-const UNCOVERED_CONST_INITIALIZERS: &[(&str, bool, &str)] = &[
+const INVALID_CONST_INITIALIZERS: &[(&str, bool, &str)] = &[
     (
         "unused-invalid-bool-const",
         false,
@@ -303,7 +303,7 @@ const UNCOVERED_CONST_INITIALIZERS: &[(&str, bool, &str)] = &[
 
 #[test]
 fn unused_union_constants_are_independently_invalid() -> Result<(), Box<dyn std::error::Error>> {
-    for &(name, expected, text) in UNCOVERED_CONST_INITIALIZERS {
+    for &(name, expected, text) in INVALID_CONST_INITIALIZERS {
         source::qualify(name, text, expected)?;
     }
     Ok(())
@@ -363,27 +363,15 @@ fn union_field_checks_and_construction_scale_additively() -> Result<(), Box<dyn 
 }
 
 #[test]
-fn union_constant_initialization_has_an_explicit_boundary() -> Result<(), Box<dyn std::error::Error>>
-{
-    use std::{path::Path, process::Command};
-    let text = "union U{x:u8,b:bool}const X:bool=unsafe{U{x:1}.b};fn main(){let _=X;}";
-    source::qualify("union-const-valid", text, true)?;
-    let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
-        "../obj/language-qualification/union-boundary-{}",
-        std::process::id()
-    ));
-    std::fs::create_dir_all(&folder)?;
-    let input = folder.join("main.rs");
-    std::fs::write(&input, text)?;
-    let result = Command::new(env!("CARGO_BIN_EXE_rustgm"))
-        .arg("--emit-lowir")
-        .arg(input)
-        .output()?;
-    assert_eq!(result.status.code(), Some(1));
-    assert!(
-        String::from_utf8_lossy(&result.stderr)
-            .contains("union byte initialization in constant execution is not implemented")
-    );
+fn union_scalar_constant_initialization_executes() -> Result<(), Box<dyn std::error::Error>> {
+    source::check(
+        "parallel/pa27/union-scalar-constant",
+        &[(
+            "valid-bool",
+            true,
+            "union U{x:u8,b:bool}const X:bool=unsafe{U{x:1}.b};",
+        )],
+    )?;
     Ok(())
 }
 

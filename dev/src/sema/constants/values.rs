@@ -9,6 +9,7 @@ mod session;
 mod structure;
 pub use structure::FieldTypes;
 mod inline;
+mod union_storage;
 mod validation;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
@@ -24,6 +25,7 @@ use crate::{
     types::Primitive,
 };
 pub(crate) use session::Scratch;
+pub use union_storage::ImageView;
 
 /// A value in the declaration result's shared constant arenas.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -48,6 +50,9 @@ pub struct Location {
 #[derive(Clone, Copy)]
 pub enum View {
     Scalar(Scalar),
+    Image {
+        size: u64,
+    },
     Function(crate::types::instance::Instance),
     Reference(LocationId),
     Address {
@@ -98,6 +103,9 @@ impl<'a> Reader<'a> {
     pub fn view(self, constant: Constant) -> Result<View, &'static str> {
         Ok(match constant.0 {
             Value::Scalar(value) => View::Scalar(value),
+            Value::Image(_) => View::Image {
+                size: self.image(constant)?.bytes.len() as u64,
+            },
             Value::Function(id) => {
                 let target = self.facts.generics.constant_callable_targets.get(&id.ty());
                 View::Function(if let Some(&ty) = target {

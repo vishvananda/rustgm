@@ -293,6 +293,12 @@ impl Dependencies {
                     }
                     match reader.view(value)? {
                         View::Function(instance) => result.calls.push(instance),
+                        View::Image { .. } => {
+                            if reader.image(value)?.ty != ty {
+                                return Err("constant union image differs from dependency storage");
+                            }
+                            // Scalar-only images contain no pointer or callable relocations.
+                        }
                         View::Reference(id) => work.push(Work::Location(id)),
                         View::Repeat { value, length } if length != 0 => {
                             let Some(Kind::Array { element, .. }) = facts.types.kind(ty) else {

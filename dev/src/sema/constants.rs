@@ -15,6 +15,7 @@ pub(super) use generics::{
     argument as generic_argument,
 };
 mod address_values;
+pub(super) mod images;
 mod instances;
 mod layouts;
 mod member_readiness;
@@ -61,6 +62,7 @@ pub(super) enum Value {
     Bytes(super::text::Id),
     Variant(VariantId),
     Product(products::Id),
+    Image(images::Id),
 }
 impl Value {
     const fn metadata(self) -> Option<references::Metadata> {
@@ -80,6 +82,7 @@ impl Value {
             | Self::Function(_)
             | Self::Variant(_)
             | Self::Product(_)
+            | Self::Image(_)
             | Self::Text(_)
             | Self::Bytes(_) => Err("constant requires a scalar value"),
         }

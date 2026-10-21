@@ -54,19 +54,26 @@ Moving a non-`Copy` field consumes the containing union. Field eligibility uses
 the canonical `ManuallyDrop` identity, and implicit field cleanup is suppressed
 while an explicit union destructor still runs.
 
-Constant union initialization and field reinterpretation remain explicitly
-unsupported. The draft tests distinguish this valid-Rust boundary from invalid
-boolean values and uninitialized-byte reads. Byte initialization, provenance and
-constant promotion must be qualified before release, together with the remaining
-packed-access, pattern and validity controls. This checkpoint does not activate
-the assignment or establish generated text references.
+Constant unions whose concrete fields are all primitive scalars use immutable
+byte images with an independent initialized-byte mask. They have no active
+member. A selected field read checks its byte range, initialization and scalar
+validity, including bool and char representations. A field store replaces only
+its bytes and preserves the remaining initialization facts. Copies retain an
+immutable snapshot. Closed generic scalar families use the same rules.
 
-The original unused invalid-boolean and uninitialized-byte constant inputs are
-retained unchanged. Required initializer completion now rejects them through
-the unsupported-union boundary, as it does their demanded counterparts. This
-rejects the invalid programs but does not establish scalar validity or byte
-initialization enforcement. Both demanded and unused variants must reject for
-the appropriate validity reason before release.
+The original demanded and unused invalid-boolean and uninitialized-byte inputs
+remain unchanged and now reject for their respective validity failures. An
+unread alternative field need not contain a valid representation. Native output
+may choose zero for unspecified padding without marking those bytes initialized
+for constant evaluation. The constants view prints explicit bytes and mask bits.
+
+Pointer, reference, function and aggregate field families, and union-field
+address formation, remain explicit constant-execution boundaries. This first
+image profile contains no pointer bits or relocations. Images are limited to
+64 KiB each and a bounded 64 MiB arena; operations also consume the existing
+execution work budget. These controls do not activate the assignment or create
+generated text references. General provenance reinterpretation and the remaining
+packed/pattern validity controls still require qualification before release.
 
 Final constant storage follows logical aggregate reachability. A zero-length
 repeat stores no fill value, so a raw pointer computed for its operand does not

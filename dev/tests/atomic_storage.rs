@@ -122,14 +122,11 @@ fn atomic_storage_source_contracts() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 #[test]
-fn inline_constant_repeat_retains_its_separate_body_boundary()
--> Result<(), Box<dyn std::error::Error>> {
+fn inline_constant_repeat_preserves_empty_atomic_storage() -> Result<(), Box<dyn std::error::Error>>
+{
     let text = fixture("spec/atomic-storage/zero-array-repeat-return.rs")?;
     source::qualify("parallel/pa28/atomic-storage-inline-const", &text, true)?;
-    let result = lowered(&format!("{text}fn main(){{}}"));
-    assert!(
-        matches!(result, Err(error) if error.contains("body construct requires later semantic implementation"))
-    );
+    lowered(&format!("{text}fn main(){{let _=f();}}"))?;
     Ok(())
 }
 fn lowered(text: &str) -> Result<rustgm::lowir::program::Program, String> {
@@ -226,6 +223,15 @@ fn canonical_factory_identity_and_body_work_remain_additive()
 #[test]
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn canonical_atomic_storage_executes() -> Result<(), Box<dyn std::error::Error>> {
+    let empty = fixture("spec/atomic-storage/zero-array-repeat-return.rs")?;
+    native::check_cases(
+        "parallel/pa28/atomic-storage-inline",
+        &[(
+            "zero-repeat",
+            &format!("{empty}fn main(){{let _=f();}}"),
+            false,
+        )],
+    )?;
     for &(name, path, panic) in &[
         (
             "shared-static",

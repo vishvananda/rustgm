@@ -89,9 +89,18 @@
       "path": "tests/spec/atomic-storage/zero-array-repeat-return.rs",
       "expected_status": 0,
       "sha256": "de32d2569a89bd1bc9aec5c795c87bb35236f10a9161a6d4fb15f39bae03e2ac",
-      "frontend_status": 1,
-      "supported": false,
-      "boundary": "PA25 body-local inline const is not implemented; pinned Rust acceptance remains required."
+      "frontend_status": 0,
+      "supported": true,
+      "integration": "PA25 closed inline bodies; original fixture bytes retained and requalified.",
+      "supersedes_boundary": "PA25 body-local inline const is not implemented (previous frontend_status=1); closed inline execution is now integrated.",
+      "requalification": {
+        "evidence": "obj/parallel/pa28/atomic-storage-inline-3584359",
+        "qualified_input_sha256": "3b0616998abf1b9599b1ffbee0546d4f6883f27f5f7fc33f1afe712f15053de6",
+        "rustc_binary_sha256": "85816d9686aad87ebc68421a3362ac69f4877d1d3dd61dbeecd901bba21d36f3",
+        "native_binary_sha256": "9082def03bdd9013a0e2a07c86798f4b6f38a144aa5d703d52246eb4c274ff8d",
+        "rustc_run_status": 0,
+        "frontend_run_status": 0
+      }
     },
     {
       "path": "tests/spec/atomic-storage/inactive-option-return.rs",

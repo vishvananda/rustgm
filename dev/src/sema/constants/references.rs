@@ -195,6 +195,32 @@ impl Queries<'_> {
         };
         super::address_values::unsize(value, metadata).map_err(|e| self.error(query, e.message()))
     }
+    fn union_receiver(&self, key: NodeKey, base: NodeKey) -> Result<bool, Error> {
+        let Some(mut ty) = self.typing.facts.node(base).and_then(|f| f.ty) else {
+            return Ok(false);
+        };
+        let count = self.typing.facts.autoderefs.get(&key).copied().unwrap_or(0);
+        if count > 1_000_000 {
+            return Err(self.error(
+                Query::Node(key),
+                "union field autodereference budget exceeded",
+            ));
+        }
+        for _ in 0..count {
+            let Some(crate::types::Kind::Reference { referent, .. }) =
+                self.typing.facts.types.kind(ty)
+            else {
+                return Err(self.error(
+                    Query::Node(key),
+                    "union field lost its selected reference receiver",
+                ));
+            };
+            ty = referent;
+        }
+        Ok(
+            matches!(self.typing.facts.types.kind(ty), Some(crate::types::Kind::Adt(item, _)) if self.typing.facts.aggregates.get(item).is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union)),
+        )
+    }
     pub(super) fn reference_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let facts =
             self.typing.facts.node(key).ok_or_else(|| {
@@ -224,6 +250,9 @@ impl Queries<'_> {
                     }
                 }
                 (Kind::Field { value, .. }, Some(Operation::Field { field })) => {
+                    if self.union_receiver(key, child(value))? {
+                        return Ok(None);
+                    }
                     let index = match field {
                         Selection::Tuple(index) => index,
                         Selection::Nominal(field) => {

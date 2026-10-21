@@ -83,10 +83,7 @@ impl Queries<'_> {
                     .get(owner)
                     .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Union)
                 {
-                    return Err(self.error(
-                        Query::Node(key),
-                        "union byte initialization in constant execution is not implemented",
-                    ));
+                    return Ok(None);
                 }
                 Some(Expression::Record {
                     variant,

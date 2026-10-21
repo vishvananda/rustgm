@@ -2166,14 +2166,16 @@
       "path": "tests/spec/unions/uninit-field-write.rs",
       "exit_status": 1,
       "features": [
-        "pa27.unions"
+        "pa27.unions",
+        "pa27.scalar-union-images"
       ],
       "rustc": {
         "kind": "program",
         "status": 1,
         "emit": "obj"
       },
-      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES",
+      "type_inspection_status": 0
     },
     {
       "path": "tests/spec/unions/uninit-field-read.rs",
@@ -2352,28 +2354,28 @@
       "exit_status": 1,
       "features": [
         "pa27.unions",
-        "pa27.const-union-unsupported"
+        "pa27.scalar-union-images"
       ],
       "rustc": {
         "kind": "program",
         "status": 1,
         "emit": "obj"
       },
-      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
     },
     {
       "path": "tests/spec/unions/uninitialized-byte-const.rs",
       "exit_status": 1,
       "features": [
         "pa27.unions",
-        "pa27.const-union-unsupported"
+        "pa27.scalar-union-images"
       ],
       "rustc": {
         "kind": "program",
         "status": 1,
         "emit": "obj"
       },
-      "maintainer_origin": "dev/tests/unsafe_unions.rs:CASES"
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
     },
     {
       "path": "tests/spec/unions/raw-nested-field-safe.rs",
@@ -2651,28 +2653,28 @@
       "exit_status": 1,
       "features": [
         "pa27.unions",
-        "pa27.const-validity-uncovered"
+        "pa27.scalar-union-images"
       ],
       "rustc": {
         "kind": "program",
         "status": 1,
         "emit": "obj"
       },
-      "maintainer_origin": "dev/tests/unsafe_unions.rs:UNCOVERED_CONST_INITIALIZERS"
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
     },
     {
       "path": "tests/spec/unions/unused-uninitialized-byte-const.rs",
       "exit_status": 1,
       "features": [
         "pa27.unions",
-        "pa27.const-validity-uncovered"
+        "pa27.scalar-union-images"
       ],
       "rustc": {
         "kind": "program",
         "status": 1,
         "emit": "obj"
       },
-      "maintainer_origin": "dev/tests/unsafe_unions.rs:UNCOVERED_CONST_INITIALIZERS"
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
     },
     {
       "path": "tests/spec/unions-native/shared-bytes.rs",
@@ -2837,18 +2839,17 @@
     },
     {
       "path": "tests/spec/unions/valid-bool-const-unsupported.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa27.unions",
-        "pa27.const-union-unsupported"
+        "pa27.scalar-union-images"
       ],
       "rustc": {
         "kind": "program",
         "status": 0,
-        "emit": "obj",
-        "reason": "Valid union byte reinterpretation is explicitly unsupported until const memory tracks initialized bytes and provenance."
+        "emit": "obj"
       },
-      "maintainer_origin": "dev/tests/unsafe_unions.rs:union_constant_initialization_has_an_explicit_boundary"
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
     },
     {
       "path": "tests/spec/callable-safety/unsafe-closure.rs",
@@ -2917,6 +2918,416 @@
         "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
       },
       "maintainer_origin": "dev/tests/foreign_conventions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/word-byte.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/bool-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/bool-one.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/invalid-alternative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/char-valid.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/char-surrogate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/char-above-unicode.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/float-from-bits.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/negative-zero-bits.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/wide-low-byte.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/partial-preserve.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/partial-uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/copy-snapshot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/const-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/nested-product.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/static-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/pointer-family.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "explicit unsupported provenance family"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/array-family.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "explicit unsupported aggregate family"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/field-address.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/ordinary-scalar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/static-field-address.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "accepted static-backed union field address; explicit byte-offset origin boundary"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/reference-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/reference-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/atomic-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/signed-bits.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/mutable-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/image-size-limit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "explicit image size limit before payload allocation"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/generic-scalar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/scalar-union/zero-image.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.unions",
+        "pa27.scalar-union-images"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/image_storage.rs:CASES"
     }
   ]
 }

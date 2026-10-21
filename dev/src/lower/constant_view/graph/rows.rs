@@ -19,6 +19,7 @@ impl Graph<'_> {
         let mut row = format!("value v{id} type={} ", ty.0);
         match self.reader.view(value)? {
             View::Scalar(scalar) => row.push_str(&scalar_row(scalar)),
+            View::Image { size } => self.image_row(&mut row, ty, value, size)?,
             View::Function(instance) => row.push_str(&callable_row(self.facts, instance)?),
             View::Reference(location) => {
                 let allocation = self.location(location)?;
@@ -48,6 +49,40 @@ impl Graph<'_> {
             }
         }
         Ok(row)
+    }
+    fn image_row(
+        &mut self,
+        row: &mut String,
+        ty: TypeId,
+        value: Constant,
+        size: u64,
+    ) -> Result<(), &'static str> {
+        let image = self.reader.image(value)?;
+        if image.ty != ty || image.bytes.len() as u64 != size {
+            return Err("constant view image differs from its stored type");
+        }
+        self.charge(image.bytes.len().saturating_add(image.initialized.len()))?;
+        self.storage(
+            image
+                .bytes
+                .len()
+                .saturating_mul(2)
+                .saturating_add(image.initialized.len().saturating_mul(16))
+                .saturating_add(64),
+        )?;
+        write!(row, "image size={size} bytes=").map_err(|_| "constant view formatting failed")?;
+        for (index, byte) in image.bytes.iter().enumerate() {
+            if image.initialized(index) {
+                write!(row, "{byte:02x}").map_err(|_| "constant view formatting failed")?;
+            } else {
+                row.push_str("??");
+            }
+        }
+        row.push_str(" initialized=");
+        for word in image.initialized {
+            write!(row, "{word:016x}").map_err(|_| "constant view formatting failed")?;
+        }
+        Ok(())
     }
     fn literal_row(
         &mut self,

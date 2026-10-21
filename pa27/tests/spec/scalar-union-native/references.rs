@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;const ATOMIC:AtomicU32=AtomicU32::new(0);union U{word:u32,byte:u8}const IMAGE:U=U{word:23};const R:&U=&IMAGE;const fn read(u:&U)->u32{unsafe{u.word}}const X:u32=read(R);fn main(){let _=ATOMIC;check(X==23);unsafe{check(R.word==23);}}
