@@ -51,6 +51,10 @@ pub struct Work {
     pub initializer_indexed: usize,
     /// Every shared initializer-index hit or miss, including cached value demands.
     pub initializer_lookups: std::cell::Cell<usize>,
+    /// Rows visited by the one ordinary-initializer completion pass.
+    pub initializer_visits: usize,
+    /// Required ordinary closed initializer demands, including cached values.
+    pub initializer_validations: usize,
     /// Discriminant finish entry visits, including every suspended entry resume.
     pub discriminant_visits: usize,
     /// Combined frame/value/cell slots retained by all suspended requests.

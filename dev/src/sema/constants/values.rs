@@ -2,6 +2,7 @@
 pub mod execution;
 mod memory;
 mod session;
+mod validation;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
 pub use super::references::Metadata;
