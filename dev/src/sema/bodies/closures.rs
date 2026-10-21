@@ -3,9 +3,7 @@ mod completion;
 mod contextual;
 mod interface;
 mod universes;
-use super::{
-    Checker, Constructor, Domain, Error, Kind, NodeId, Scratch, State, TermId, TypeId, Work,
-};
+use super::{Checker, Constructor, Domain, Error, Kind, NodeId, Scratch, TermId, TypeId, Work};
 use crate::{
     syntax::ast::List,
     types::{
@@ -15,25 +13,17 @@ use crate::{
     },
 };
 
-/// All parked states have `closures: None`; nesting never owns a recursive tree.
-#[derive(Default)]
-pub(super) struct Scheduler {
-    entries: Vec<Entry>,
-    stack: Vec<(Option<usize>, Box<State>)>,
-    active: Option<usize>,
-}
+pub(super) type Scheduler = super::nested::Scheduler<Metadata>;
+type Entry = super::nested::Entry<Metadata>;
 pub(super) struct InputRefresh {
     source: NodeId,
     pairs: Vec<(Argument, Argument)>,
 }
-struct Entry {
-    source: NodeId,
+pub(super) struct Metadata {
     identity: ClosureId,
     parameters: List,
     signature: TermId,
-    inputs: Refinement,
     lifetimes: universes::Interface,
-    state: Option<Box<State>>,
 }
 impl Checker<'_> {
     pub(super) fn enter_closure(
@@ -124,12 +114,14 @@ impl Checker<'_> {
             body,
             Entry {
                 source: node,
-                identity,
-                parameters,
-                signature,
                 inputs,
-                lifetimes,
                 state: None,
+                payload: Metadata {
+                    identity,
+                    parameters,
+                    signature,
+                    lifetimes,
+                },
             },
         )?;
         self.closure_parameters(node, signature, nodes, result)?;
@@ -180,11 +172,13 @@ impl Checker<'_> {
         child.in_function = true;
         child.safety = self.state.safety;
         child.body_binders = entry
+            .payload
             .lifetimes
             .count()
             .map_err(|e| self.error(entry.source, e))?;
         child.infer.region_equalities.extend(
             entry
+                .payload
                 .lifetimes
                 .equations()
                 .map_err(|e| self.error(entry.source, e))?,
@@ -233,11 +227,12 @@ impl Checker<'_> {
         // value lookup in this isolated body. Reaching here proves an empty environment.
         self.facts
             .types
-            .complete_closure(entry.identity, CallKind::Shared)
+            .complete_closure(entry.payload.identity, CallKind::Shared)
             .map_err(|e| self.error(body, e))?;
-        self.closure_result_boundary(&entry.lifetimes)?;
+        self.closure_result_boundary(&entry.payload.lifetimes)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
         let mut identity = entry
+            .payload
             .lifetimes
             .closing(&self.state.call_types, false)
             .map_err(|e| self.error(body, e))?;

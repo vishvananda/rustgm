@@ -36,16 +36,17 @@ impl Checker<'_> {
             .incoming_regions(
                 &mut self.facts.types,
                 &mut self.state.infer,
-                &mut entry.lifetimes.opening,
+                &mut entry.payload.lifetimes.opening,
             )
             .map_err(|e| self.error(entry.source, e))?;
         std::mem::swap(&mut entry.inputs.context, &mut child.infer);
         child.body_binders = entry
+            .payload
             .lifetimes
             .count()
             .map_err(|e| self.error(entry.source, e))?;
         let source = entry.source;
-        let signature = entry.signature;
+        let signature = entry.payload.signature;
         self.state.finalization = Some(Box::new(Finalization::Closures(evidence)));
         let parent = std::mem::replace(&mut self.state, *child);
         scheduler.stack.push((scheduler.active, Box::new(parent)));
@@ -155,21 +156,21 @@ impl Checker<'_> {
             .last_mut()
             .ok_or_else(|| self.error(body, "missing closure inference parent"))?;
         let entry = &mut scheduler.entries[index];
-        self.closure_result_boundary(&entry.lifetimes)?;
+        self.closure_result_boundary(&entry.payload.lifetimes)?;
         let mut children = Vec::new();
         let Some(super::Constructor::Function {
             parameters,
             unsafe_,
             convention,
             ..
-        }) = self.head(body, entry.signature)?
+        }) = self.head(body, entry.payload.signature)?
         else {
             return Err(self.error(body, "missing closure body signature"));
         };
         for index in 0..=parameters as usize {
-            children.push(self.child(body, entry.signature, index)?);
+            children.push(self.child(body, entry.payload.signature, index)?);
         }
-        entry.signature = self
+        entry.payload.signature = self
             .state
             .infer
             .construct(
@@ -190,6 +191,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(body, e))?;
         std::mem::swap(&mut inputs.context, &mut self.state.infer);
         let mut identity = entry
+            .payload
             .lifetimes
             .closing(&self.state.call_types, false)
             .map_err(|e| self.error(body, e))?;
@@ -216,13 +218,14 @@ impl Checker<'_> {
         };
         let entry = &scheduler.entries[index];
         let source = entry.source;
-        let identity = entry.identity;
-        let parameters = entry.parameters;
+        let identity = entry.payload.identity;
+        let parameters = entry.payload.parameters;
         let inherited = entry
+            .payload
             .lifetimes
             .inherited()
             .map_err(|e| self.error(source, e))?;
-        let signature = solved.types[entry.signature.0 as usize];
+        let signature = solved.types[entry.payload.signature.0 as usize];
         let signature = self.closure_contract_signature(source, signature, solved)?;
         let Some(Kind::Function { result, .. }) = self.facts.types.kind(signature) else {
             return Err(self.error(source, "missing completed closure signature"));
