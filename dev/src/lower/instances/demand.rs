@@ -22,6 +22,53 @@ struct Ordinary {
     functions: HashMap<ItemId, usize>,
     closures: HashMap<crate::types::closure::ClosureId, usize>,
 }
+/// A source family selects either its checked template or existing concrete body.
+struct Selected<'a> {
+    family: BodyKey,
+    template: Option<(&'a body::templates::Template, &'a Contract)>,
+    ordinary: Option<usize>,
+}
+impl Ordinary {
+    fn select<'a>(
+        &self,
+        facts: &Declarations,
+        templates: &'a Checked<'_>,
+        instance: Instance,
+    ) -> Result<Option<Selected<'a>>, &'static str> {
+        Ok(Some(match facts.types.kind(instance.ty()) {
+            Some(Kind::FunctionItem { item, .. }) => {
+                if facts
+                    .foreign
+                    .as_deref()
+                    .and_then(|r| r.function(DefId(item.0)))
+                    .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
+                {
+                    return Ok(None);
+                }
+                let template = templates
+                    .get(item)
+                    .map(|template| {
+                        templates
+                            .input(item)
+                            .map(|input| (template, input))
+                            .ok_or("missing checked template input")
+                    })
+                    .transpose()?;
+                Selected {
+                    family: BodyKey::Declaration(DefId(item.0)),
+                    template,
+                    ordinary: self.functions.get(&item).copied(),
+                }
+            }
+            Some(Kind::Closure { identity, .. }) => Selected {
+                family: BodyKey::Closure(identity),
+                template: templates.closure(identity),
+                ordinary: self.closures.get(&identity).copied(),
+            },
+            _ => return Err("invalid demanded instance"),
+        }))
+    }
+}
 #[derive(Default)]
 struct Budget {
     active: HashMap<BodyKey, usize>,
@@ -94,37 +141,13 @@ pub(super) fn prepare(
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
-        let (family, selected, ordinary_index) = match facts.types.kind(instance.ty()) {
-            Some(Kind::FunctionItem { item, .. }) => {
-                if facts
-                    .foreign
-                    .as_deref()
-                    .and_then(|r| r.function(DefId(item.0)))
-                    .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
-                {
-                    continue;
-                }
-                let selected = templates
-                    .get(item)
-                    .map(|template| {
-                        templates
-                            .input(item)
-                            .map(|input| (template, input))
-                            .ok_or_else(|| error("missing checked template input"))
-                    })
-                    .transpose()?;
-                (
-                    BodyKey::Declaration(DefId(item.0)),
-                    selected,
-                    ordinary.functions.get(&item).copied(),
-                )
-            }
-            Some(Kind::Closure { identity, .. }) => (
-                BodyKey::Closure(identity),
-                templates.closure(identity),
-                ordinary.closures.get(&identity).copied(),
-            ),
-            _ => return Err(error("invalid demanded instance")),
+        let Some(Selected {
+            family,
+            template: selected,
+            ordinary: ordinary_index,
+        }) = ordinary.select(facts, templates, instance).map_err(error)?
+        else {
+            continue;
         };
         let index = if let Some((template, input)) = selected {
             if !instances.insert(instance) {
