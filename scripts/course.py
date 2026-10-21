@@ -11,6 +11,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import reference_batches
 from storage import cleanup_roots
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -132,8 +133,9 @@ def compare(fixture, actual):
     return errors
 
 
-def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None):
+def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None, case_paths=None):
     manifest, cases = load_cases(root, stage)
+    cases = reference_batches.select(cases, case_paths, stage)
     artifact_root = Path(evidence_root) if evidence_root is not None else Path("obj/tests")
     if not artifact_root.is_absolute():
         artifact_root = root.resolve() / artifact_root
@@ -166,20 +168,30 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.
     if bless and not any(errors for _, _, _, errors in results):
+        source_hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                         for p in sorted((root / "dev").rglob("*.rs"))}
+        batch = reference_batches.prepare(root, stage, manifest, source_hashes, results) if case_paths is not None else None
         for _, fixture, actual, _ in results:
             for suffix, value in zip(SIDECARS, actual):
                 Path(str(fixture) + suffix).write_bytes(value)
-        source_hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-                         for p in sorted((root / "dev").rglob("*.rs"))}
-        receipt = {"schema": 1, "mode": manifest["mode"], "compiler_source_sha256": source_hashes,
-                   "manifest_sha256": hashlib.sha256((root / stage / "tests/manifest.json").read_bytes()).hexdigest(),
-                   "fixtures": {case["path"]: hashlib.sha256(fixture.read_bytes()).hexdigest()
-                                for case, fixture, _, _ in results}}
-        auxiliary = sorted({p for case in cases for p in case.get("auxiliary", [])})
-        if auxiliary:
-            receipt["auxiliary"] = {p: hashlib.sha256((root / stage / p).read_bytes()).hexdigest()
-                                    for p in auxiliary}
-        (root / stage / "reference.json").write_text(json.dumps(receipt, indent=2) + "\n")
+        if batch is not None:
+            path, data = batch
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        else:
+            receipt = {"schema": 1, "mode": manifest["mode"], "compiler_source_sha256": source_hashes,
+                       "manifest_sha256": hashlib.sha256((root / stage / "tests/manifest.json").read_bytes()).hexdigest(),
+                       "fixtures": {case["path"]: hashlib.sha256(fixture.read_bytes()).hexdigest()
+                                    for case, fixture, _, _ in results}}
+            previous_batches = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                                for p in sorted((root / stage / "reference-batches").glob("*.json"))}
+            if previous_batches:
+                receipt["supersedes_reference_batches"] = previous_batches
+            auxiliary = sorted({p for case in cases for p in case.get("auxiliary", [])})
+            if auxiliary:
+                receipt["auxiliary"] = {p: hashlib.sha256((root / stage / p).read_bytes()).hexdigest()
+                                        for p in auxiliary}
+            (root / stage / "reference.json").write_text(json.dumps(receipt, indent=2) + "\n")
     passed = 0
     for case, _, _, errors in results:
         if not errors:
@@ -197,6 +209,7 @@ def main():
     parser.add_argument("stage")
     parser.add_argument("--app", default=str(ROOT / "dev/rustgm"))
     parser.add_argument("--bless", action="store_true")
+    parser.add_argument("--case", dest="case_paths", action="append", help="select one exact manifest path; repeat for a scoped batch")
     parser.add_argument("--jobs", type=int, default=int(os.environ.get("RUSTGM_TEST_JOBS", "4")))
     parser.add_argument("--timeout", type=float, default=10)
     parser.add_argument("--evidence-root", type=Path,
@@ -207,7 +220,7 @@ def main():
     try:
         return 0 if run_stage(ROOT, args.stage, [str(Path(args.app).resolve())],
                              bless=args.bless, jobs=args.jobs, timeout=args.timeout,
-                             evidence_root=args.evidence_root) else 1
+                             evidence_root=args.evidence_root, case_paths=args.case_paths) else 1
     except (ValueError, OSError, KeyError) as error:
         print(f"harness error: {error}", file=sys.stderr)
         return 2

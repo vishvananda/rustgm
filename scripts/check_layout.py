@@ -8,6 +8,7 @@ import sys
 from course import ROOT, SIDECARS, load_cases
 from check_native import classification
 from check_layouts import classification as layout_classification
+import reference_batches
 
 
 def check(root=ROOT):
@@ -32,15 +33,12 @@ def check(root=ROOT):
                     classification(case)
                 elif mode == "--emit-layouts":
                     layout_classification(case)
-            receipt = json.loads((folder / "reference.json").read_text())
-            if receipt.get("manifest_sha256") != hashlib.sha256((folder / "tests/manifest.json").read_bytes()).hexdigest():
-                raise ValueError(f"manifest changed since reference generation: {folder}")
-            recorded = receipt["fixtures"]
+            recorded, recorded_auxiliary = reference_batches.validate(root, stage["path"], manifest, cases)
             expected_auxiliary = {p for case in cases for p in case.get("auxiliary", [])}
-            if set(receipt.get("auxiliary", {})) != expected_auxiliary:
+            if set(recorded_auxiliary) != expected_auxiliary:
                 raise ValueError(f"auxiliary receipt disagrees with manifest: {folder}")
             for path in expected_auxiliary:
-                if receipt["auxiliary"][path] != hashlib.sha256((folder / path).read_bytes()).hexdigest():
+                if recorded_auxiliary[path] != hashlib.sha256((folder / path).read_bytes()).hexdigest():
                     raise ValueError(f"auxiliary changed since reference generation: {folder / path}")
             for case in cases:
                 fixture = folder / case["path"]
