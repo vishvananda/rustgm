@@ -29,10 +29,12 @@ pub enum Trigger {
     /// Index into the body's retained scope/temporary exits.
     Exit(u32),
 }
+#[derive(Clone)]
 pub struct Site {
     pub location: Location,
     pub trigger: Trigger,
 }
+#[derive(Clone)]
 pub struct Requirements {
     pub locals: Vec<bool>,
     pub values: Vec<bool>,

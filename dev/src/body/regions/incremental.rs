@@ -21,6 +21,16 @@ pub struct Collector {
     completed: HashMap<NodeKey, Contract>,
 }
 impl Collector {
+    pub(crate) fn expression(
+        &mut self,
+        facts: &Declarations,
+        source: NodeKey,
+    ) -> Result<Contract, &'static str> {
+        self.update(facts)?;
+        let mut contract = Contract::constant(source);
+        self.populate(facts, &mut contract);
+        Ok(contract)
+    }
     /// Number of semantic facts visited, excluding fixed body-header construction.
     #[must_use]
     pub const fn observations(&self) -> usize {

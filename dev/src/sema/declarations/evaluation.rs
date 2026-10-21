@@ -11,6 +11,7 @@ pub(super) struct Request {
     key: NodeKey,
     ty: TypeId,
     owner: DefId,
+    array_length: bool,
 }
 struct Suspended {
     input: constants::ArgumentInput,
@@ -40,8 +41,39 @@ impl Checker<'_> {
         if self.constant_evaluations.completed.contains_key(&(key, ty)) {
             return Ok(());
         }
-        self.work
-            .push(Work::EvaluateConstant(Request { key, ty, owner }, false));
+        self.work.push(Work::EvaluateConstant(
+            Request {
+                key,
+                ty,
+                owner,
+                array_length: false,
+            },
+            false,
+        ));
+        self.constant_dependencies(key, context)
+    }
+    pub(super) fn schedule_array_length(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if self.facts.array_lengths.contains_key(&key) {
+            return Ok(());
+        }
+        let ty = TypeId::primitive(crate::types::Primitive::Usize);
+        let owner = context
+            .binder
+            .and_then(|binder| self.regions.owner(binder))
+            .unwrap_or(DefId(0));
+        self.work.push(Work::EvaluateConstant(
+            Request {
+                key,
+                ty,
+                owner,
+                array_length: true,
+            },
+            false,
+        ));
         self.constant_dependencies(key, context)
     }
 
@@ -58,7 +90,12 @@ impl Checker<'_> {
         request: Request,
         resume: bool,
     ) -> Result<(), Error> {
-        let Request { key, ty, owner } = request;
+        let Request {
+            key,
+            ty,
+            owner,
+            array_length,
+        } = request;
         if self.constant_evaluations.completed.contains_key(&(key, ty)) {
             return Ok(());
         }
@@ -111,6 +148,11 @@ impl Checker<'_> {
                     .intern_constant(Constant { ty, bits })
                     .map_err(|e| self.error(key, e))?;
                 self.constant_evaluations.completed.insert((key, ty), id);
+                if array_length {
+                    let length = u64::try_from(bits)
+                        .map_err(|_| self.error(key, "array length overflows usize"))?;
+                    self.facts.array_lengths.insert(key, length);
+                }
             }
             constants::ArgumentProgress::Prepare(dependency, continuation) => {
                 self.constant_evaluations.suspended.insert(
@@ -123,21 +165,8 @@ impl Checker<'_> {
                 self.work.push(Work::EvaluateConstant(request, true));
                 match dependency {
                     constants::ArgumentDependency::Body(dependency) => {
-                        self.work.push(match dependency.requirement {
-                            crate::sema::bodies::Requirement::Nominal(item) => {
-                                Work::ValueType(DefId(item.0))
-                            }
-                            crate::sema::bodies::Requirement::Definition(definition) => {
-                                Work::Definition(definition, false)
-                            }
-                            crate::sema::bodies::Requirement::ImplHeader(owner) => {
-                                Work::ImplHeader(owner, super::impl_headers::Phase::Begin)
-                            }
-                            crate::sema::bodies::Requirement::Fields(item) => {
-                                Work::Fields(item, false)
-                            }
-                            crate::sema::bodies::Requirement::Opaque(id) => Work::OpaqueHidden(id),
-                        });
+                        self.work
+                            .push(Work::body_dependency(dependency.requirement));
                     }
                     constants::ArgumentDependency::Initializer(definition) => {
                         self.require_initializer_readiness(key, definition)?;
@@ -150,13 +179,16 @@ impl Checker<'_> {
                                 .map(|request| Work::ConstantMember(request, false)),
                         );
                     }
+                    constants::ArgumentDependency::Execution(requirement) => {
+                        self.work.push(Work::Execution(requirement, false));
+                    }
                 }
             }
         }
         Ok(())
     }
 
-    fn require_initializer_readiness(
+    pub(super) fn require_initializer_readiness(
         &mut self,
         key: NodeKey,
         definition: DefId,

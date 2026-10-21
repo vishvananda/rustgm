@@ -316,7 +316,11 @@ impl Checker<'_> {
         }
         Ok(crate::types::Kind::Array {
             element,
-            length: super::super::array_length(self.report, length_key)?,
+            length: if let Some(&length) = self.facts.array_lengths.get(&length_key) {
+                length
+            } else {
+                super::super::array_length(self.report, length_key)?
+            },
         })
     }
 }

@@ -2,6 +2,7 @@
 pub mod abi;
 pub mod body;
 pub mod borrow;
+pub mod const_eval;
 pub mod expand;
 pub mod lex;
 pub mod literal;

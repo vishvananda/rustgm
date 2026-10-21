@@ -214,15 +214,7 @@ impl Scratch {
                     }
                     TypeFlavor::Tuple => Constructor::Tuple,
                     TypeFlavor::Slice => Constructor::Slice,
-                    TypeFlavor::Array => Constructor::Array(declarations::array_length(
-                        host.report(),
-                        NodeKey {
-                            node: *children
-                                .get(1)
-                                .ok_or_else(|| error(host, key, "missing array length"))?,
-                            ..key
-                        },
-                    )?),
+                    TypeFlavor::Array => Constructor::Array(array_length(host, key, children)?),
                     TypeFlavor::PointerConst | TypeFlavor::PointerMut => Constructor::Pointer {
                         mutable: flavor == TypeFlavor::PointerMut,
                     },
@@ -303,4 +295,22 @@ fn known(host: &mut impl Host, key: NodeKey, ty: TypeId) -> Result<TermId, Error
     infer
         .known(&facts.types, ty)
         .map_err(|e| error(host, key, e))
+}
+
+fn array_length(
+    host: &impl Host,
+    key: NodeKey,
+    children: &[crate::syntax::ast::NodeId],
+) -> Result<u64, Error> {
+    let length = NodeKey {
+        node: *children
+            .get(1)
+            .ok_or_else(|| error(host, key, "missing array length"))?,
+        ..key
+    };
+    if let Some(&length) = host.facts().array_lengths.get(&length) {
+        Ok(length)
+    } else {
+        declarations::array_length(host.report(), length)
+    }
 }

@@ -108,6 +108,13 @@ pub(super) struct Instances {
     environments: Vec<Environment>,
 }
 impl Queries<'_> {
+    pub(super) fn execution_context(&self) -> Option<Instance> {
+        self.work
+            .context
+            .0
+            .checked_sub(1)
+            .map(|index| self.instances.environments[index as usize].instance)
+    }
     pub(super) fn drop_substitution(&self) -> Result<Option<Bound>, &'static str> {
         self.work
             .context

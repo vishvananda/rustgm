@@ -57,8 +57,11 @@ pub(super) fn prepare(
     entry: DefId,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
+    concrete: HashMap<DefId, Body>,
+    constants: Option<crate::pipeline::execution::Context>,
 ) -> Result<proof::Builder, Error> {
-    let (mut program, ordinary) = prepare_ordinary(report, facts, templates, inputs)?;
+    let (mut program, ordinary) =
+        prepare_ordinary(report, facts, templates, inputs, concrete, constants)?;
     // Discovery includes implicit constructor factories. With no templates,
     // ordinary lowering already follows calls and selected cleanup dependencies.
     // All source bodies have still been checked before taking this path.
@@ -193,10 +196,15 @@ fn prepare_ordinary(
     facts: &mut Declarations,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
+    concrete: HashMap<DefId, Body>,
+    constants: Option<crate::pipeline::execution::Context>,
 ) -> Result<(proof::Builder, Ordinary), Error> {
-    let mut program = body::concrete_except(report, facts, |owner| {
-        templates.get(ItemId(owner.0)).is_some()
-    })?;
+    let mut program = body::concrete_prepared(
+        report,
+        facts,
+        |owner| templates.get(ItemId(owner.0)).is_some(),
+        concrete,
+    )?;
     let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.key, c)).collect();
     for body in &mut program.bodies {
         let input = inputs.get_mut(&body.key()).ok_or_else(|| {
@@ -210,7 +218,11 @@ fn prepare_ordinary(
             .map_err(|e| diagnostic(report, Some(body.source), e))?;
     }
     body::promote::analyze(report, facts, &mut program)?;
-    body::constants::analyze(report, facts, &program)?;
+    if let Some(context) = constants {
+        context.constants(report, facts, &mut program)?;
+    } else {
+        body::constants::analyze(report, facts, &program)?;
+    }
     let (mut program, bodies) =
         proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
     let mut ordinary = Ordinary::default();

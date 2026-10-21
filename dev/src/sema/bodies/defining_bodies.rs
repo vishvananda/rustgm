@@ -33,7 +33,18 @@ impl Checker<'_> {
             .filter(|(_, function)| self.facts.opaques.owners.contains_key(&function.definition))
             .map(|(index, function)| (function.definition, index))
             .collect();
-        let mut states = vec![Status::Unseen; self.facts.functions.len()];
+        let mut states: Vec<_> = self
+            .facts
+            .functions
+            .iter()
+            .map(|function| {
+                if self.facts.typed_function_bodies.contains(&function.definition) {
+                    Status::Complete
+                } else {
+                    Status::Unseen
+                }
+            })
+            .collect();
         let mut patterns: Vec<_> = std::iter::repeat_with(|| None).take(states.len()).collect();
         let mut stack: Vec<Suspended> = Vec::new();
         let mut cursor = 0;
@@ -97,6 +108,9 @@ impl Checker<'_> {
                 }
             } else {
                 states[index] = Status::Complete;
+                self.facts
+                    .typed_function_bodies
+                    .insert(self.facts.functions[index].definition);
                 patterns[index] = self.state.pending_patterns.take();
                 current = stack.pop().map(|saved| {
                     self.restore_body(*saved.state);

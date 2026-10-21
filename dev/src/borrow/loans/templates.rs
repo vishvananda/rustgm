@@ -47,10 +47,7 @@ pub fn verify<S: std::hash::BuildHasher>(
             return Err(error("duplicate template cleanup contract"));
         }
     }
-    let custom: std::collections::HashSet<_> = custom.iter().copied().collect();
-    let needed = NeedsDrop::new(custom.iter().copied());
-    let drops = Regions::new(custom.iter().copied()).map_err(error)?;
-    let mut components = LiveRegions::default();
+    let mut verifier = Verifier::new(custom).map_err(error)?;
     let mut results = Vec::with_capacity(templates.bodies.len());
     for template in &templates.bodies {
         let body = &template.body;
@@ -62,8 +59,48 @@ pub fn verify<S: std::hash::BuildHasher>(
         let contract = index
             .remove(&body.key())
             .ok_or_else(|| error("template cleanup contract is missing or repeated"))?;
+        results.push(verifier.body(
+            environment,
+            body,
+            &template.destruction,
+            &template.environment,
+            contract,
+            &position,
+        )?);
+    }
+    Ok(results)
+}
+
+/// Reusable ownership, cleanup and loan work for one demanded checked CFG.
+pub(crate) struct Verifier {
+    custom: std::collections::HashSet<crate::types::ItemId>,
+    needed: NeedsDrop,
+    drops: Regions,
+    components: LiveRegions,
+}
+impl Verifier {
+    pub(crate) fn new(custom: &[crate::types::ItemId]) -> Result<Self, &'static str> {
+        Ok(Self {
+            custom: custom.iter().copied().collect(),
+            needed: NeedsDrop::new(custom.iter().copied()),
+            drops: Regions::new(custom.iter().copied())?,
+            components: LiveRegions::default(),
+        })
+    }
+    pub(crate) fn body<S: std::hash::BuildHasher>(
+        &mut self,
+        environment: &mut crate::borrow::Environment<'_, S>,
+        body: &crate::body::ir::Body,
+        destruction: &crate::body::drops::Requirements,
+        parameters: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+        contract: &regions::Body,
+        position: &impl Fn(
+            crate::types::TypeId,
+            crate::body::ir::Selection,
+        ) -> Result<(u32, u32), &'static str>,
+    ) -> Result<Analysis, Error> {
         let parameters = crate::borrow::permissions::check(environment, contract)?
-            .unwrap_or_else(|| std::sync::Arc::clone(&template.environment));
+            .unwrap_or_else(|| std::sync::Arc::clone(parameters));
         let mut copies = Copies::in_environment(std::sync::Arc::clone(&parameters));
         let facts = initialization::analyze(
             environment.types,
@@ -76,33 +113,33 @@ pub fn verify<S: std::hash::BuildHasher>(
             node: Some(e.node),
             message: e.message.into(),
         })?;
-        let analysis = if no_cleanup(&template.destruction) {
+        let analysis = if no_cleanup(destruction) {
             // Scoped requirements prove the absence of destruction. Moves from
             // custom-Drop containers still need their independent legality check.
             facts
-                .destructor_moves(environment.types, |item| custom.contains(&item))
+                .destructor_moves(environment.types, |item| self.custom.contains(&item))
                 .map_err(|e| Error {
                     node: Some(e.node),
                     message: e.message.into(),
                 })?;
             super::check(
                 environment.types,
-                &mut components,
+                &mut self.components,
                 body,
                 contract,
                 &facts.ownership,
                 &facts.storage,
             )
         } else {
-            let mut needed = needed.scoped(std::sync::Arc::clone(&parameters));
-            let mut drops = drops.scoped(parameters);
+            let mut needed = self.needed.scoped(std::sync::Arc::clone(&parameters));
+            let mut drops = self.drops.scoped(parameters);
             let plan = symbolic::select(
                 environment.types,
                 environment.definitions,
                 &mut needed,
                 &facts,
-                |item| custom.contains(&item),
-                &position,
+                |item| self.custom.contains(&item),
+                position,
             )
             .map_err(|e| Error {
                 node: Some(e.node),
@@ -111,19 +148,18 @@ pub fn verify<S: std::hash::BuildHasher>(
             super::check_schedule(
                 environment.types,
                 environment.definitions,
-                &mut components,
+                &mut self.components,
                 &mut drops,
                 &facts,
                 contract,
                 plan.schedule(),
             )
         };
-        results.push(analysis.map_err(|e| Error {
+        analysis.map_err(|e| Error {
             node: Some(e.node),
             message: e.message.into(),
-        })?);
+        })
     }
-    Ok(results)
 }
 
 fn no_cleanup(requirements: &crate::body::drops::Requirements) -> bool {

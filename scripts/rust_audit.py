@@ -21,13 +21,15 @@ ALLOWED_DEPENDENCIES = {
     "resolve": {"support", "lex", "literal", "syntax", "expand"},
     "body": {"support", "types", "sema", "syntax", "resolve", "lex"},
     "borrow": {"support", "types", "body"},
-    "const_eval": {"support", "types", "body"},
+    # Constant execution consumes shared typed values, operators and source identities.
+    # Semantic analysis remains independent of CFG construction and execution.
+    "const_eval": {"support", "types", "body", "sema", "resolve", "lex", "syntax"},
     "lex": {"support", "types"}, "preprocess": {"support", "lex", "types"},
     "syntax": {"support", "lex", "literal", "types", "preprocess"},
     "sema": {"support", "lex", "literal", "types", "syntax", "resolve", "abi"},
     "abi": {"support", "lex", "types"}, "lowir": {"support", "types"},
     "lower": {"support", "lex", "literal", "types", "syntax", "resolve", "sema", "body", "borrow", "const_eval", "abi", "lowir", "pipeline"},
-    "pipeline": {"support", "types", "resolve", "sema", "body", "borrow"},
+    "pipeline": {"support", "types", "resolve", "sema", "body", "borrow", "const_eval"},
     "opt": {"support", "types", "lowir"},
     "native": {"support", "types", "abi", "lowir"},
 }

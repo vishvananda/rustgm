@@ -6,6 +6,7 @@ pub(in crate::sema) enum Dependency {
     Body(crate::sema::bodies::Dependency),
     Initializer(DefId),
     Members(Vec<crate::sema::traits::implementations::ConstantRequest>),
+    Execution(super::values::execution::Requirement),
 }
 
 pub(in crate::sema) struct Continuation {

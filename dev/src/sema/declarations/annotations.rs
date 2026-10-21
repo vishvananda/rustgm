@@ -87,6 +87,19 @@ impl Checker<'_> {
             Kind::Type { flavor, elements } => {
                 let unit = self.report.package.unit(key.file);
                 let elements = unit.configured.ast.list(elements);
+                if flavor == TypeFlavor::Array {
+                    let length = NodeKey {
+                        node: *elements
+                            .get(1)
+                            .ok_or_else(|| self.error(key, "missing array length"))?,
+                        ..key
+                    };
+                    if !matches!(self.kind(length), Kind::Literal(_))
+                        && self.const_parameter(length).is_none()
+                    {
+                        self.schedule_array_length(length, context)?;
+                    }
+                }
                 let count = elements
                     .len()
                     .saturating_sub(usize::from(flavor == TypeFlavor::Array));

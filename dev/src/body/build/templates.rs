@@ -7,6 +7,7 @@ use crate::{
 };
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Template {
     pub body: Body,
     pub destruction: Requirements,
@@ -34,6 +35,43 @@ pub struct Prepared {
     reused: usize,
 }
 impl Prepared {
+    /// Build one already typed anonymous constant using retained construction scratch.
+    /// # Errors
+    /// Reports missing facts and the same const eligibility failures as functions.
+    pub fn expression(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        source: crate::resolve::unit::NodeKey,
+        result: crate::types::TypeId,
+    ) -> Result<(Body, Requirements), Error> {
+        let scratch = self
+            .scratch
+            .get_or_insert_with(|| Box::new(Scratch::new(facts)));
+        let scope_plan = crate::body::scopes::constant_with_scratch(
+            report,
+            facts,
+            source,
+            std::mem::take(&mut scratch.scopes),
+        )?;
+        let query = self.query.get_or_insert_with(|| {
+            NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
+        });
+        let body = super::Builder::new(
+            report,
+            facts,
+            scratch,
+            Body::new(crate::body::ir::Owner::AnonymousConstant, source, result),
+            scope_plan,
+            Some(query),
+        )
+        .run(None)
+        .map_err(|e| report.diagnostic(e))?;
+        crate::body::constants::eligibility(report, facts, &body)?;
+        let requirements = crate::body::drops::requirements(facts, &body, query)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        Ok((body, requirements))
+    }
     /// Actual CFG construction and subsequent reuse counts.
     #[must_use]
     pub const fn work(&self) -> (usize, usize) {
