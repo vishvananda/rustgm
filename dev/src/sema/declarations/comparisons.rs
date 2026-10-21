@@ -190,17 +190,7 @@ impl Checker<'_> {
                 .intern_list(&parameters)
                 .map_err(|e| self.error(origin, e))?;
             for (method, member) in methods.iter() {
-                let result = self.comparison_result(origin, method)?;
-                let signature = self.intern(
-                    origin,
-                    Type::Function {
-                        parameters,
-                        result,
-                        unsafe_: false,
-                        convention: crate::types::callable::Convention::RUST,
-                        bound_regions: 2,
-                    },
-                )?;
+                let signature = self.comparison_signature(origin, method, subject, parameters)?;
                 let arguments = if declaration.kind.has_rhs() {
                     vec![Argument::Type(right)]
                 } else {
@@ -218,6 +208,21 @@ impl Checker<'_> {
                     subject,
                     &arguments,
                 )?;
+                if method.owned() {
+                    self.facts
+                        .generics
+                        .predicates
+                        .entry(member)
+                        .or_default()
+                        .push(Written {
+                            source: origin,
+                            value: Predicate {
+                                ty: subject,
+                                bound: Bound::Sized,
+                            }
+                            .into(),
+                        });
+                }
             }
         }
         Ok(())
@@ -273,6 +278,37 @@ impl Checker<'_> {
             });
         }
         Ok(())
+    }
+    fn comparison_signature(
+        &mut self,
+        origin: crate::resolve::unit::NodeKey,
+        method: Method,
+        subject: TypeId,
+        parameters: crate::types::ListId,
+    ) -> Result<TypeId, Error> {
+        let result = if method.owned() {
+            subject
+        } else {
+            self.comparison_result(origin, method)?
+        };
+        let inputs = if method.owned() {
+            self.facts
+                .types
+                .intern_list(&vec![subject; if method == Method::Clamp { 3 } else { 2 }])
+                .map_err(|e| self.error(origin, e))?
+        } else {
+            parameters
+        };
+        self.intern(
+            origin,
+            Type::Function {
+                parameters: inputs,
+                result,
+                unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
+                bound_regions: if method.owned() { 0 } else { 2 },
+            },
+        )
     }
     fn comparison_result(
         &mut self,

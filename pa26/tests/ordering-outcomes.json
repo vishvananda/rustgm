@@ -383,7 +383,7 @@
     },
     {
       "path": "tests/spec/ordering/ord-helpers.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.ordering-hooks"
       ],
@@ -393,8 +393,8 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
-      "boundary": true
+      "native": true,
+      "boundary": false
     },
     {
       "path": "tests/spec/ordering/primitive-ord.rs",

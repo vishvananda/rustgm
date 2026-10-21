@@ -234,6 +234,7 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
             }
             Terminator::Return(value) => write!(out, "return v{}", value.0)?,
             Terminator::Unreachable => write!(out, "unreachable")?,
+            Terminator::Panic => write!(out, "panic")?,
         }
         writeln!(out, " source={}", block.source.0)?;
     }

@@ -140,6 +140,7 @@ impl Machine<'_> {
                     return frame.value(value);
                 }
                 Terminator::Unreachable => return Err("executed unreachable terminator".into()),
+                Terminator::Panic => return Err("executed panic terminator".into()),
             };
         }
     }

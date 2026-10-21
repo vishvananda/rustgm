@@ -1,0 +1,430 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/ord-helpers/tie-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "00a4fcd6a55957d456c91adb8e5b28c606d3a8787709955c91b45d210d8a4aa4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/tie-max.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "c89c374f233e578ab2f10ddc61609eebf483e44f4d239cec544282215e0b8c46",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/clamp-middle.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "75db50e08bb2e79c50a40530b0ab50db08b6abadc6555467c0f9d4d9f92a4d1c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/clamp-low.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "b79a5eaa037de9ca94361636ecf4d65a2e862d6c865b34bd6eabe87ea52749e5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/clamp-high.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "b53cbc063a85ed4916ea70c0c0df9263dd58ece020602750fe2bdbbea29171f6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/clamp-equal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "dac8e76d84612be7283c027e3c9750b6d4cbdae3dfdb83806ff16decbb93b422",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/clamp-inverted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "fa7e35766956916a5d1112eb018577a70ce4845cb13e6350d0618c1161f32a86",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": true
+    },
+    {
+      "path": "tests/spec/ord-helpers/primitive-helpers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "fcb010506e342e8b348b66bd1552b7c1e5e5cfc5c004ee2db87eca5df62ee166",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/generic-selected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "aa8fbd92c6f239e8c1db89707a1d719df672aedfd60beb515126c76aac0db7c0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/qualified-reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "41bd507a8683e84cacfca75c93d2b94b0bc4b097d1c61143be4f25f1a25952ed",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/borrowed-contained.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "85d9f4b3d421f9da99f781d0ccf4fd405a6ba202c083d383ae975fff00545392",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/override-helpers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "8a2e5dc81bc3e1af141d1395d1e3bae440e1ae9626e9700803e45f5e4aadd785",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/relation-override-min-max.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "5f9078609ed4d19266f35ebdc294ff2490ed06a7fa6aa60ff4b0b3317d3676b9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/relation-override-clamp.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "8724bc1ea6305ef661c94e1e015ec8cda8ef17160d9c11a18efa52a8010cbdc2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/atomic-traits.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "a314577db508d151d73f8dec063960b419b86c28ed8de9a4c282ea306eb04557",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/float-ord-nan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "772b4d720c1c3d0b2a6d49d6867544b78ecd2e6895d8a294c2d53ed8c7389b3c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/missing-ord.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "b354e0ecac9b1fcf9888a16cf3f90ff589e8c8c667da6b11f6eebc3686f46f6d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/wrong-helper-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "466afd89b13a3516a1eb7881a3c5b10c1fc881820b2ad1782c72dad6cac824d0",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/moved-owned.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "b88039d365c115f25d18e8e914eae99cfafb36d350eb19715f3c299e9d86ab19",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/lookalike.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "7b41895bfe8d6b68d0573d066bc78fa1d75edb051b5bc95ea4378d4b50d760a0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/drop-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "0b518d1a3d9cb35ab2166094cb5db0dd1299062c1d136eba54aa3501f5ff502f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/drop-max.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "a4c4d547ea4b83ea79290c3db59c61a4cf355b2c85d7785d701217f8538d9908",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/drop-clamp.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "6ba174e94500ae4abc4c57fcb3de1f08b2c5fb703ccbbb4e85b8c6d3cb1b576e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/escaping-owned.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "b25881f0fe762c008b4da4cabea7519355626e4eed22071b23d278cd1897df47",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/clamp-override-panic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "f62ea918fc9af61b95190f8523c3aa854fe034399b0093d1a1363cdc525bbadc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": true
+    },
+    {
+      "path": "tests/spec/ord-helpers/argument-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "9950c9da29bd4703f68da00e214c2a7f86e1c5e6054f14a85db4ea0e759f8e80",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ord-helpers/unordered-clamp.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "054c6b9993002f46040c22cb504a82d94a5362912b8f8b7c856959bd4596e37d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": true
+    },
+    {
+      "path": "tests/spec/ord-helpers/const-not-eligible.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ord-helpers"
+      ],
+      "source_sha256": "e04bc44d94b90b53738ecdfa2555848c3bf08b6407eba0060dec7c7674af3ab7",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 //! Provided library methods enter the ordinary original-template proof inventory.
+mod extrema;
 mod ordering;
 use super::{
     ir::{
@@ -41,36 +42,25 @@ pub(crate) fn append(
             })?;
         let source = function.node;
         let error = |message| Declarations::error(report, source, message);
-        let (callee, member, requirement) = match default {
-            LibraryDefault::PartialEqNe { eq } => (
-                eq,
-                crate::support::comparisons::Method::Ne,
-                crate::support::comparisons::Method::Eq,
-            ),
-            LibraryDefault::PartialOrdRelation {
-                partial_cmp,
-                relation,
-            } => (
-                partial_cmp,
-                relation,
-                crate::support::comparisons::Method::PartialCmp,
-            ),
-        };
-        if facts.associated.comparison_method(callee) != Some(requirement)
-            || facts.associated.comparison_method(definition) != Some(member)
-            || facts.associated.trait_owner(callee) != facts.associated.trait_owner(definition)
-        {
-            return Err(error(
-                "provided comparison body has a different canonical owner",
-            ));
-        }
+        validate_default(facts, definition, default).map_err(error)?;
         let environment = Arc::new(
             facts
                 .generics
                 .parameter_environment(&facts.types, definition)
                 .map_err(error)?,
         );
-        let body = match default {
+        let mut contract =
+            super::regions::callable(facts, definition, definition, source, function.signature)
+                .map_err(error)?;
+        let mut body = match default {
+            LibraryDefault::OrdHelper { .. } => extrema::build(
+                facts,
+                definition,
+                default,
+                function.signature,
+                source,
+                &mut contract,
+            ),
             LibraryDefault::PartialEqNe { eq } => {
                 build(facts, definition, eq, function.signature, source)
             }
@@ -90,13 +80,10 @@ pub(crate) fn append(
         let query = crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
         );
-        let destruction =
-            super::drops::requirements(facts, &body, &mut query.scoped(Arc::clone(&environment)))
-                .map_err(error)?;
-        contracts.push(
-            super::regions::callable(facts, definition, definition, source, function.signature)
-                .map_err(error)?,
-        );
+        let mut query = query.scoped(Arc::clone(&environment));
+        super::build::factory_owned_values(facts, &mut body, &mut query).map_err(error)?;
+        let destruction = super::drops::requirements(facts, &body, &mut query).map_err(error)?;
+        contracts.push(contract);
         templates.bodies.push(Template {
             body,
             destruction,
@@ -296,4 +283,35 @@ fn operands(
         arguments.push(crate::types::arguments::Argument::Type(referent));
     }
     Ok(([left, right], arguments))
+}
+
+fn validate_default(
+    facts: &Declarations,
+    definition: DefId,
+    default: LibraryDefault,
+) -> Result<(), &'static str> {
+    let validation = match default {
+        LibraryDefault::OrdHelper { .. } => None,
+        LibraryDefault::PartialEqNe { eq } => Some((
+            eq,
+            crate::support::comparisons::Method::Ne,
+            crate::support::comparisons::Method::Eq,
+        )),
+        LibraryDefault::PartialOrdRelation {
+            partial_cmp,
+            relation,
+        } => Some((
+            partial_cmp,
+            relation,
+            crate::support::comparisons::Method::PartialCmp,
+        )),
+    };
+    if let Some((callee, member, requirement)) = validation
+        && (facts.associated.comparison_method(callee) != Some(requirement)
+            || facts.associated.comparison_method(definition) != Some(member)
+            || facts.associated.trait_owner(callee) != facts.associated.trait_owner(definition))
+    {
+        return Err("provided comparison body has a different canonical owner");
+    }
+    Ok(())
 }

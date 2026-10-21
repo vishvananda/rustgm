@@ -222,3 +222,17 @@ Comparison Ordering remains distinct from atomic Ordering.
 See `docs/pa26-ordering.md`. Ord helpers, structural/reference implementations,
 derive execution and the remaining hook families are still required; PA26 stays
 planned.
+
+## Maintainer owned Ord-helper checkpoint
+
+Ord `min`, `max` and `clamp` now use checked provided originals with owned inputs,
+method-level Self:Sized and ordinary return/drop/loan contracts. Min retains the
+first tie, max the second; clamp preserves selected comparison overrides and
+uses the existing abort runtime for invalid bounds. Helpers gain no const-call
+permission or primitive factory exemption.
+
+`tests/ord-helper-outcomes.json` declares 28 qualified controls with 21 native
+programs, including three checked failures. The earlier unchanged Ord-helper
+boundary is now accepted/native. Ordering's own comparison traits and the other
+remaining families are still required; see `docs/pa26-ord-helpers.md`.
+This checkpoint does not activate PA26.

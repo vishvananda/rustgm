@@ -19,7 +19,7 @@ pub struct Equality {
 pub enum Members {
     Equality([DefId; 2]),
     PartialOrder([DefId; 5]),
-    TotalOrder { cmp: DefId },
+    TotalOrder([DefId; 4]),
 }
 impl Members {
     #[must_use]
@@ -32,7 +32,10 @@ impl Members {
             (Self::PartialOrder([_, _, le, _, _]), Method::Le) => Some(le),
             (Self::PartialOrder([_, _, _, gt, _]), Method::Gt) => Some(gt),
             (Self::PartialOrder([_, _, _, _, ge]), Method::Ge) => Some(ge),
-            (Self::TotalOrder { cmp }, Method::Cmp) => Some(cmp),
+            (Self::TotalOrder([cmp, _, _, _]), Method::Cmp) => Some(cmp),
+            (Self::TotalOrder([_, min, _, _]), Method::Min) => Some(min),
+            (Self::TotalOrder([_, _, max, _]), Method::Max) => Some(max),
+            (Self::TotalOrder([_, _, _, clamp]), Method::Clamp) => Some(clamp),
             _ => None,
         }
     }
@@ -47,7 +50,9 @@ impl Members {
             (Comparison::PartialOrd, [partial, lt, le, gt, ge]) => {
                 Some(Self::PartialOrder([*partial, *lt, *le, *gt, *ge]))
             }
-            (Comparison::Ord, [cmp]) => Some(Self::TotalOrder { cmp: *cmp }),
+            (Comparison::Ord, [cmp, min, max, clamp]) => {
+                Some(Self::TotalOrder([*cmp, *min, *max, *clamp]))
+            }
             _ => None,
         }
     }

@@ -5,6 +5,7 @@ mod closures;
 mod conditions;
 mod constructors;
 pub(super) use constructors::{finish_factory, finish_factory_block};
+pub(in crate::body) use drops::factory_values as factory_owned_values;
 mod adjusted;
 mod decisions;
 mod drops;
@@ -541,7 +542,7 @@ impl<'a> Builder<'a> {
                     self.scratch.reach[yes.0 as usize].incoming = true;
                     self.scratch.reach[no.0 as usize].incoming = true;
                 }
-                Terminator::Return(_) | Terminator::Unreachable => {}
+                Terminator::Return(_) | Terminator::Unreachable | Terminator::Panic => {}
             }
             let block = &mut self.body.blocks[block.0 as usize];
             block.terminator = terminator;

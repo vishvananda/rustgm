@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct W(f32);impl PartialEq for W{fn eq(&self,o:&Self)->bool{self.0==o.0}}impl Eq for W{}impl PartialOrd for W{fn partial_cmp(&self,o:&Self)->Option<core::cmp::Ordering>{self.0.partial_cmp(&o.0)}}impl Ord for W{fn cmp(&self,_:&Self)->core::cmp::Ordering{core::cmp::Ordering::Equal}}fn main(){let n=0.0f32/0.0;let _=W(0.0).clamp(W(n),W(1.0));}

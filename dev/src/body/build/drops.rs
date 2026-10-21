@@ -116,45 +116,88 @@ pub(super) fn constructor(
     body: &mut Body,
     query: &mut crate::types::destruction::NeedsDrop,
 ) -> Result<(), &'static str> {
-    for (index, statement) in body.statements.iter().enumerate() {
-        let Action::Evaluate(value) = statement.action else {
-            continue;
-        };
-        if query.demand(
-            &facts.types,
-            &facts.aggregates,
-            body.values[value.0 as usize].ty,
-        )? {
-            body.owned
-                .get_or_insert_with(Box::default)
-                .insert(Temporary {
-                    value,
-                    source: statement.source,
-                    lifetime: Lifetime::Scope(Id(0)),
-                    block: BlockId(0),
-                    before: u32::try_from(index + 1)
-                        .map_err(|_| "too many constructor statements")?,
-                    exits_before: 0,
-                })?;
-        }
-    }
-    let Terminator::Return(value) = body.blocks[0].terminator else {
+    if !matches!(
+        body.blocks.first().map(|block| block.terminator),
+        Some(Terminator::Return(_))
+    ) {
         return Err("missing constructor return");
-    };
-    if let Some(owned) = &mut body.owned
-        && owned.creation(value).is_some()
-    {
-        let location = body
-            .storage
-            .as_ref()
-            .and_then(|s| s.exits.first())
-            .ok_or("missing constructor cleanup")?
-            .location;
-        owned.returned.push(Release {
-            value,
-            location,
-            exits_before: 0,
-        });
+    }
+    factory_values(facts, body, query)
+}
+
+/// Register typed factory rvalues and return transfers using their actual CFG cleanup exits.
+pub(in crate::body) fn factory_values(
+    facts: &crate::sema::model::Declarations,
+    body: &mut Body,
+    query: &mut crate::types::destruction::NeedsDrop,
+) -> Result<(), &'static str> {
+    let exits = &body
+        .storage
+        .as_ref()
+        .ok_or("missing factory storage")?
+        .exits;
+    let mut cursor = 0;
+    for (ordinal, block) in body.blocks.iter().enumerate() {
+        let block_id = BlockId(u32::try_from(ordinal).map_err(|_| "too many factory blocks")?);
+        let first = cursor;
+        for index in block.start..block.end {
+            let statement = &body.statements[index as usize];
+            let Action::Evaluate(value) = statement.action else {
+                continue;
+            };
+            while let Some(exit) = exits.get(cursor) {
+                let Location::At { block, before } = exit.location else {
+                    return Err("factory cleanup is not a statement location");
+                };
+                if block.0 > block_id.0 || block == block_id && before > index {
+                    break;
+                }
+                cursor += 1;
+            }
+            if query.demand(
+                &facts.types,
+                &facts.aggregates,
+                body.values[value.0 as usize].ty,
+            )? {
+                body.owned
+                    .get_or_insert_with(Box::default)
+                    .insert(Temporary {
+                        value,
+                        source: statement.source,
+                        lifetime: Lifetime::Scope(Id(0)),
+                        block: block_id,
+                        before: index + 1,
+                        exits_before: u32::try_from(cursor)
+                            .map_err(|_| "too many factory cleanups")?,
+                    })?;
+            }
+        }
+        if let Terminator::Return(value) = block.terminator
+            && let Some(owned) = &mut body.owned
+            && owned.creation(value).is_some()
+        {
+            let location = exits
+                .get(first)
+                .ok_or("missing factory return cleanup")?
+                .location;
+            if !matches!(location,Location::At{block,..} if block==block_id) {
+                return Err("factory return cleanup belongs to another block");
+            }
+            owned.returned.push(Release {
+                value,
+                location,
+                exits_before: u32::try_from(first).map_err(|_| "too many factory cleanups")?,
+            });
+        }
+        while let Some(exit) = exits.get(cursor) {
+            let Location::At { block, .. } = exit.location else {
+                return Err("factory cleanup is not a statement location");
+            };
+            if block.0 > block_id.0 {
+                break;
+            }
+            cursor += 1;
+        }
     }
     Ok(())
 }

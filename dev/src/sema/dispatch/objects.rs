@@ -115,3 +115,29 @@ impl Dispatcher {
         }
     }
 }
+
+/// Owned provided methods reuse successful selection without a primitive factory token.
+pub(super) fn retain_language(
+    facts: &mut Declarations,
+    method: DefId,
+    ty: TypeId,
+    descriptor: crate::sema::primitive_methods::Descriptor,
+) -> Result<(), String> {
+    if !facts
+        .associated
+        .comparison_method(method)
+        .is_some_and(crate::support::comparisons::Method::owned)
+    {
+        crate::sema::primitive_methods::retain(
+            facts,
+            crate::types::instance::Instance::new(&facts.types, ty)?,
+            descriptor,
+        )?;
+    } else if !matches!(
+        facts.associated.library_default(method),
+        Some(crate::sema::associated::LibraryDefault::OrdHelper { .. })
+    ) {
+        return Err("owned comparison helper has no canonical provided original".into());
+    }
+    Ok(())
+}

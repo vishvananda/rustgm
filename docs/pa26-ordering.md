@@ -74,10 +74,12 @@ no references were regenerated here.
 
 ## Remaining scope
 
-Ord `max`/`min`/`clamp`, Ordering's own trait implementations and convenience
-methods, and structural/reference/tuple/array/string/function-pointer comparison
-implementations remain outstanding. Equality derive execution and its accepted
-reference-forwarding boundary are also unchanged.
+The later `docs/pa26-ord-helpers.md` checkpoint supplies Ord `max`/`min`/`clamp`
+and supersedes the unchanged Ord-helper boundary fixture as accepted/native.
+Ordering's own trait implementations and convenience methods, and
+structural/reference/tuple/array/string/function-pointer comparison implementations
+remain outstanding. Equality derive execution and its accepted reference-forwarding
+boundary are also unchanged.
 
 Other PA26 requirements still include primitive reference/unary and Deref hooks,
 iteration, question-mark, required derives and formatting/runtime hooks.

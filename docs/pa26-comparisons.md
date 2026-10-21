@@ -102,8 +102,9 @@ input and failed receipt are preserved alongside the separately frozen control.
 
 PA26 still needs the remaining primitive/unary/reference and Deref hooks,
 iteration, question-mark, required derives and formatting/runtime hooks. The
-bounded PartialOrd/Ord checkpoint is recorded in `docs/pa26-ordering.md`; Ord
-helpers and structural/reference implementations remain outstanding.
+bounded PartialOrd/Ord checkpoint is recorded in `docs/pa26-ordering.md`, with
+owned Ord helpers in `docs/pa26-ord-helpers.md`. Structural/reference
+implementations remain outstanding.
 PA30's accepted scalar/foreign-static and bounded repr(C) aggregate ABI
 checkpoints remain separate; this change expands no ABI, metadata or linkage
 surface. Combined release, text comparisons and publication belong to integration.

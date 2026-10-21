@@ -133,3 +133,6 @@ mod comparison;
 
 #[path = "language_operators/ordering.rs"]
 mod ordering;
+
+#[path = "language_operators/extrema.rs"]
+mod extrema;

@@ -308,6 +308,8 @@ pub enum Terminator {
     },
     Return(ValueId),
     Unreachable,
+    /// A checked diverging failure using the current abort runtime contract.
+    Panic,
 }
 #[derive(Clone, Copy)]
 pub struct Block {

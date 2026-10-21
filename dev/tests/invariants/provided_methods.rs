@@ -49,7 +49,15 @@ fn verify(
                 .input(types::ItemId(definition.0))
                 .ok_or("default contract")?
                 .universals,
-            2
+            if facts
+                .associated
+                .comparison_method(definition)
+                .is_some_and(crate::support::comparisons::Method::owned)
+            {
+                0
+            } else {
+                2
+            }
         );
     }
     Ok(())
@@ -138,6 +146,81 @@ fn ordering_defaults_use_original_proof_with_both_collectors() -> Result {
         let selected=templates.bodies.iter().position(|template| matches!(template.body.owner,body::ir::Owner::Function{definition,..} if facts.associated.comparison_method(definition)==Some(crate::support::comparisons::Method::Lt))).ok_or("provided lt original")?;
         assert_eq!(templates.bodies[selected].body.blocks.len(), 4);
         templates.bodies[selected].body.locals[0].kind = body::ir::LocalKind::Binding;
+        assert!(verify(&mut facts, &templates, contracts).is_err());
+    }
+    Ok(())
+}
+
+#[test]
+fn owned_helpers_require_original_contracts_with_method_only_sized() -> Result {
+    use crate::support::comparisons::{Comparison, Method};
+    let report = crate::test_source::resolve(
+        "fn main(){let _=u8::min(1,2);let _=u8::clamp(2,1,3);}",
+        true,
+    )?;
+    let crate::pipeline::Analysis { mut facts, .. } = crate::pipeline::analyze_source(&report)?;
+    for incremental in [false, true] {
+        let mut contracts = if incremental {
+            body::regions::Collector::default().finish(&facts)?.bodies
+        } else {
+            body::regions::collect(&facts)?.bodies
+        };
+        let mut templates = body::templates::Templates { bodies: Vec::new() };
+        super::append(&report, &mut facts, &mut templates, &mut contracts)?;
+        assert_eq!(templates.bodies.len(), 8);
+        let error = verify(&mut facts, &templates, contracts.clone())
+            .err()
+            .ok_or("missing promotion gate")?;
+        assert!(
+            error
+                .to_string()
+                .contains("requires completed promotion analysis")
+        );
+        body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
+        verify(&mut facts, &templates, contracts.clone())?;
+        let helper=templates.bodies.iter().position(|template|matches!(template.body.owner,body::ir::Owner::Function{definition,..} if facts.associated.comparison_method(definition)==Some(Method::Min))).ok_or("provided min")?;
+        let body::ir::Owner::Function {
+            definition,
+            signature,
+        } = templates.bodies[helper].body.owner
+        else {
+            return Err("owned helper owner".into());
+        };
+        assert!(matches!(
+            facts.types.kind(signature),
+            Some(types::Kind::Function {
+                bound_regions: 0,
+                ..
+            })
+        ));
+        assert!(
+            facts.generics.predicates[&definition]
+                .iter()
+                .any(|p| matches!(
+                    p.value,
+                    types::parameters::clauses::Clause::Predicate(
+                        types::parameters::predicates::Predicate {
+                            bound: types::parameters::predicates::Bound::Sized,
+                            ..
+                        }
+                    )
+                ))
+        );
+        let owner = facts
+            .associated
+            .trait_owner(definition)
+            .ok_or("Ord owner")?;
+        assert_eq!(facts.associated.comparison(owner), Some(Comparison::Ord));
+        assert!(!facts.generics.predicates[&owner].iter().any(|p| matches!(
+            p.value,
+            types::parameters::clauses::Clause::Predicate(
+                types::parameters::predicates::Predicate {
+                    bound: types::parameters::predicates::Bound::Sized,
+                    ..
+                }
+            )
+        )));
+        templates.bodies[helper].body.locals[0].kind = body::ir::LocalKind::Binding;
         assert!(verify(&mut facts, &templates, contracts).is_err());
     }
     Ok(())

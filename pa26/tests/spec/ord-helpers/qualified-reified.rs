@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn main(){let a:fn(u8,u8)->u8=u8::min;let b:fn(u8,u8)->u8=u8::max;let c:fn(u8,u8,u8)->u8=u8::clamp;check(a(1,2)==1);check(b(1,2)==2);check(c(4,1,3)==3)}

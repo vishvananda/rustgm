@@ -49,3 +49,10 @@ Ord-helper boundary. `language_operators::ordering` independently qualifies the
 source matrix; its explicitly ignored CPPGM native test executes 27 controls.
 The no-prelude program also has retained standalone native qualification.
 See `docs/pa26-ordering.md` for contracts, evidence and remaining scope.
+
+`ord-helper-outcomes.json` declares 28 `spec/ord-helpers` outcomes: 21 native
+programs (three checked failures) and seven rejections. The extrema module of
+`language_operators` qualifies the source matrix and its explicitly ignored
+native test compares execution with Rust and the external CPPGM backend.
+The unchanged earlier `ordering/ord-helpers.rs` control is now accepted/native.
+See `docs/pa26-ord-helpers.md`; Ordering's own trait implementations remain pending.

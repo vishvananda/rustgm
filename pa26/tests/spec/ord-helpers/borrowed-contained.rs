@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct R<'a>{key:u8,r:&'a u8}impl PartialEq for R<'_>{fn eq(&self,o:&Self)->bool{self.key==o.key}}impl Eq for R<'_>{}impl PartialOrd for R<'_>{fn partial_cmp(&self,o:&Self)->Option<core::cmp::Ordering>{Some(self.cmp(o))}}impl Ord for R<'_>{fn cmp(&self,o:&Self)->core::cmp::Ordering{self.key.cmp(&o.key)}}fn main(){let a=7;let b=9;let r=R{key:1,r:&a}.max(R{key:2,r:&b});check(*r.r==9)}

@@ -94,6 +94,11 @@ impl Descriptor {
                     Method::Le => Punctuation::LessEqual,
                     Method::Gt => Punctuation::Greater,
                     Method::Ge => Punctuation::GreaterEqual,
+                    Method::Min | Method::Max | Method::Clamp => {
+                        return Err(
+                            "owned comparison helper requires its checked provided original",
+                        );
+                    }
                 }
             }
             _ => return Err("primitive descriptor differs from canonical method identity"),

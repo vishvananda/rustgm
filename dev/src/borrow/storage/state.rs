@@ -63,7 +63,7 @@ pub(super) fn successors(terminator: Terminator) -> [Option<crate::body::ir::Blo
             real: yes,
             imaginary: no,
         } => [Some(yes), Some(no)],
-        Terminator::Return(_) | Terminator::Unreachable => [None, None],
+        Terminator::Return(_) | Terminator::Unreachable | Terminator::Panic => [None, None],
     }
 }
 pub(super) fn solve(

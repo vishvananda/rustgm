@@ -27,7 +27,7 @@ const CASES: &[(&str, bool, bool, bool)] = &[
     ("mutable-receiver", false, false, false),
     ("atomic-result", false, false, false),
     ("mismatched-primitives", false, false, false),
-    ("ord-helpers", true, false, false),
+    ("ord-helpers", true, true, true),
     ("primitive-ord", true, true, true),
     ("primitive-relations-qualified", true, true, true),
     ("primitive-partial-reified", true, true, true),

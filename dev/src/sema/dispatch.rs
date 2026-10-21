@@ -185,11 +185,7 @@ impl Dispatcher {
                     return Ok(ty);
                 }
                 objects::Method::Language { descriptor, proof } => {
-                    super::primitive_methods::retain(
-                        facts,
-                        crate::types::instance::Instance::new(&facts.types, ty)?,
-                        descriptor,
-                    )?;
+                    objects::retain_language(facts, method, ty, descriptor)?;
                     self.obligations.extend(proof)?;
                     self.selected.insert(ty, ty);
                     return Ok(ty);

@@ -41,7 +41,7 @@ impl Comparison {
                 Method::Gt,
                 Method::Ge,
             ],
-            Self::Ord => &[Method::Cmp],
+            Self::Ord => &[Method::Cmp, Method::Min, Method::Max, Method::Clamp],
         }
     }
 }
@@ -55,9 +55,12 @@ pub enum Method {
     Gt,
     Ge,
     Cmp,
+    Min,
+    Max,
+    Clamp,
 }
 impl Method {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 11] = [
         Self::Eq,
         Self::Ne,
         Self::PartialCmp,
@@ -66,6 +69,9 @@ impl Method {
         Self::Gt,
         Self::Ge,
         Self::Cmp,
+        Self::Min,
+        Self::Max,
+        Self::Clamp,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -78,6 +84,9 @@ impl Method {
             Self::Gt => "gt",
             Self::Ge => "ge",
             Self::Cmp => "cmp",
+            Self::Min => "min",
+            Self::Max => "max",
+            Self::Clamp => "clamp",
         }
     }
     #[must_use]
@@ -85,8 +94,12 @@ impl Method {
         match self {
             Self::Eq | Self::Ne => Comparison::PartialEq,
             Self::PartialCmp | Self::Lt | Self::Le | Self::Gt | Self::Ge => Comparison::PartialOrd,
-            Self::Cmp => Comparison::Ord,
+            Self::Cmp | Self::Min | Self::Max | Self::Clamp => Comparison::Ord,
         }
+    }
+    #[must_use]
+    pub const fn owned(self) -> bool {
+        matches!(self, Self::Min | Self::Max | Self::Clamp)
     }
     #[must_use]
     pub const fn relation(self) -> bool {

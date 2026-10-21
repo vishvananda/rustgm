@@ -405,6 +405,9 @@ impl<'a, 'b> Machine<'a, 'b> {
                     }
                     continue;
                 }
+                Terminator::Panic => {
+                    return Err((index, Failure::Fault("constant execution reached panic")));
+                }
                 Terminator::Unreachable => {
                     return Err((
                         index,

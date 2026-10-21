@@ -168,6 +168,16 @@ impl Lower<'_, '_> {
                 },
                 ir::Terminator::Return(value) => self.returned(value)?,
                 ir::Terminator::Unreachable => Terminator::Unreachable,
+                ir::Terminator::Panic => {
+                    let panic = if let Some(block) = self.panic {
+                        block
+                    } else {
+                        let block = self.builder.block()?;
+                        self.panic = Some(block);
+                        block
+                    };
+                    Terminator::Jump(panic)
+                }
             };
             self.builder.terminate(terminator)?;
         }

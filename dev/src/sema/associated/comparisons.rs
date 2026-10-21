@@ -9,6 +9,11 @@ pub(crate) enum LibraryDefault {
     PartialEqNe {
         eq: DefId,
     },
+    OrdHelper {
+        method: Method,
+        cmp: DefId,
+        partial: [DefId; 3],
+    },
     PartialOrdRelation {
         partial_cmp: DefId,
         relation: Method,
@@ -62,8 +67,14 @@ impl Inventory {
             .as_deref()
             .and_then(|language| language.comparisons.as_deref())
             .into_iter()
-            .flat_map(|comparisons| comparisons.methods.iter().flatten())
-            .flat_map(|methods| {
+            .flat_map(|comparisons| {
+                comparisons
+                    .methods
+                    .iter()
+                    .flatten()
+                    .map(move |methods| (comparisons, methods))
+            })
+            .flat_map(|(comparisons, methods)| {
                 methods.iter().filter_map(move |(method, definition)| {
                     let default = match method {
                         Method::Ne => LibraryDefault::PartialEqNe {
@@ -73,6 +84,18 @@ impl Inventory {
                             partial_cmp: methods.get(Method::PartialCmp)?,
                             relation,
                         },
+                        helper if helper.owned() => {
+                            let partial = comparisons.methods[Comparison::PartialOrd as usize]?;
+                            LibraryDefault::OrdHelper {
+                                method: helper,
+                                cmp: methods.get(Method::Cmp)?,
+                                partial: [
+                                    partial.get(Method::Le)?,
+                                    partial.get(Method::Lt)?,
+                                    partial.get(Method::Gt)?,
+                                ],
+                            }
+                        }
                         _ => return None,
                     };
                     Some((definition, default))

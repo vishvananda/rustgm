@@ -415,6 +415,6 @@ fn successors(terminator: Terminator) -> [Option<BlockId>; 2] {
             real: yes,
             imaginary: no,
         } => [Some(yes), Some(no)],
-        Terminator::Return(_) | Terminator::Unreachable => [None, None],
+        Terminator::Return(_) | Terminator::Unreachable | Terminator::Panic => [None, None],
     }
 }

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct K;impl PartialEq for K{fn eq(&self,_:&Self)->bool{true}}impl PartialOrd for K{fn partial_cmp(&self,_:&Self)->Option<core::cmp::Ordering>{None}}fn main(){let _=Ord::min(K,K);}
