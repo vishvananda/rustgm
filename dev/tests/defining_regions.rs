@@ -206,9 +206,12 @@ fn unrelated_constants_are_indexed_once_across_defining_bodies() -> ResultTest {
                 constants.initializer_validations,
             );
             assert_eq!(constants.initializer_indexed, count);
-            assert_eq!(constants.initializer_visits, count);
-            assert_eq!(constants.initializer_validations, count);
-            assert!(constants.initializer_lookups.get() <= 8 * count);
+            // This lower-level defining-body pipeline deliberately skips the
+            // public pipeline's eager ordinary initializer validation. Unused
+            // constants are indexed once and never queried by these bodies.
+            assert_eq!(constants.initializer_visits, 0);
+            assert_eq!(constants.initializer_validations, 0);
+            assert_eq!(constants.initializer_lookups.get(), 0);
             assert_eq!(facts.initializer_index_bytes(), 4 * facts.definitions.len());
         })?;
         println!("unrelated constants={count}: {work:?}");
