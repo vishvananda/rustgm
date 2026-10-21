@@ -1,7 +1,7 @@
 //! Validate old-value dataflow and backend-updated scratch on each CAS backedge.
 use rustgm::lowir::{
     program::{
-        BlockId, Function, Instruction, Literal, Operand, Operation, Storage, TempId, Terminator,
+        BlockId, Function, Instruction, Literal, Operand, Operation, ResultId, Storage, Terminator,
     },
     vocabulary::{Binary, Type},
 };
@@ -79,8 +79,8 @@ pub fn check(body: &Function) -> Result<(), Error> {
     assert_eq!(loops, 5);
     Ok(())
 }
-fn temporary(operand: Operand, result: Option<TempId>) -> bool {
-    matches!(operand, Operand::Temporary(id) if Some(id) == result)
+fn temporary(operand: Operand, result: Option<ResultId>) -> bool {
+    matches!((operand, result), (Operand::Temporary(id), Some(ResultId::Scalar(actual))) if id == actual)
 }
 fn check_loop(body: &Function, id: BlockId, code: &[Instruction]) -> Result<(), Error> {
     assert!(matches!(code.len(), 3 | 4));
