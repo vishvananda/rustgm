@@ -132,6 +132,16 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
             .push_adapter(&report, &mut facts, &checked, indices[0], unpaid)
             .is_err()
     );
+    let mut injected = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    injected
+        .input
+        .assumptions
+        .push((RegionId(1), RegionId::STATIC));
+    assert!(
+        builder
+            .push_adapter(&report, &mut facts, &checked, indices[0], injected)
+            .is_err()
+    );
     let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
     builder.push_adapter(&report, &mut facts, &checked, indices[0], prepared)?;
     Ok(())
@@ -234,7 +244,10 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
         .push_adapter(&report, &mut facts, &checked, source, prepared)
         .err()
         .ok_or("forged signature authorized an adapter")?;
-    assert!(error.message.contains("contract differs"), "{error}");
+    assert!(
+        error.message.contains("different materialized wrapper"),
+        "{error}"
+    );
     let mut prepared = body::adapters::build(&mut facts, entry, builder.body(source)?)?;
     let forged = types::closure::Adapter::new(
         &facts.types,

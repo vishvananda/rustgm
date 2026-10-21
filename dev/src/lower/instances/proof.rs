@@ -196,6 +196,22 @@ impl Builder {
         source: usize,
         mut prepared: crate::body::adapters::Prepared,
     ) -> Result<usize, borrow::Error> {
+        let error = |message: &str| borrow::Error {
+            node: Some(prepared.body.source),
+            message: message.into(),
+        };
+        prepared
+            .template
+            .validate(
+                &facts.types,
+                self.body(source).map_err(error)?,
+                &prepared.body,
+            )
+            .map_err(error)?;
+        prepared
+            .template
+            .validate_contract(&facts.types, &prepared.input)
+            .map_err(error)?;
         let mut query = crate::types::destruction::NeedsDrop::new(
             facts
                 .destructors

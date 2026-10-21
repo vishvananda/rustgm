@@ -1,4 +1,5 @@
 //! Receiver wrappers retain distinct identities and ordinary local borrow/cleanup duties.
+mod preconditions;
 use super::{
     invocation_entries::Entry,
     ir::{
@@ -22,6 +23,7 @@ pub(crate) struct Template {
     instance: Option<crate::types::instance::Instance>,
     receiver: TypeId,
     signature: TypeId,
+    requirements: preconditions::Requirements,
 }
 pub(crate) struct Prepared {
     pub body: Body,
@@ -29,6 +31,23 @@ pub(crate) struct Prepared {
     pub template: Template,
 }
 impl Template {
+    pub(crate) fn validate_contract(
+        &self,
+        types: &crate::types::Store,
+        input: &Contract,
+    ) -> Result<(), &'static str> {
+        let Some(Kind::Function { bound_regions, .. }) = types.kind(self.signature) else {
+            return Err("receiver adapter has no declared execution signature");
+        };
+        if input.key != BodyKey::ClosureAdapter(self.adapter)
+            || input.source != self.source
+            || input.signature != Some(self.signature)
+            || input.universals != bound_regions
+        {
+            return Err("receiver adapter has a different declared interface");
+        }
+        self.requirements.validate(input)
+    }
     pub(crate) fn validate(
         &self,
         types: &crate::types::Store,
@@ -129,6 +148,8 @@ pub(crate) fn build(
         .to_vec();
     let mut writer = Writer::new(source, adapter, execution, &parameters, result)?;
     let mut contract = contract(source.semantic_source(), adapter, execution);
+    let requirements = preconditions::selected(facts, source, canonical, adapter)?;
+    contract.assumptions.extend_from_slice(requirements.pairs());
     for proof in prepared.proofs {
         crate::body::instantiate::retain_closure_proof(
             facts,
@@ -161,6 +182,7 @@ pub(crate) fn build(
         instance,
         receiver: execution.self_ty,
         signature: execution.signature,
+        requirements,
     };
     template.validate(&facts.types, original, &writer.body)?;
     Ok(Prepared {
@@ -175,7 +197,7 @@ fn contract(
     adapter: crate::types::closure::Adapter,
     execution: crate::sema::closures::Execution,
 ) -> Contract {
-    // The private borrow never replaces a source universal or receives assumptions.
+    // The private borrow never replaces a source universal or acquires a premise.
     let region = RegionId(1);
     Contract {
         key: BodyKey::ClosureAdapter(adapter),

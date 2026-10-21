@@ -111,35 +111,37 @@
       "name": "external-result",
       "path": "tests/spec/generic-receivers/external-result.rs",
       "source_sha256": "40c59f1c6cb63d327f475c8d5503577b64bcc1efbd56afc93cc5244bc9bb590f",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json",
+      "frontend_supersession": "obj/parallel/pa24/generic-receivers/ninth.json"
     },
     {
       "name": "reference-result",
       "path": "tests/spec/generic-receivers/reference-result.rs",
       "source_sha256": "f4f8c80b4569c5b769b36053effe28b0fefa899d1d87cc696a4d315286fba860",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json",
+      "frontend_supersession": "obj/parallel/pa24/generic-receivers/ninth.json"
     },
     {
       "name": "late-argument",
@@ -196,35 +198,37 @@
       "name": "projected-output",
       "path": "tests/spec/generic-receivers/projected-output.rs",
       "source_sha256": "ffc71fe571af005c6b30c0f8b7db8ab3cd131bbab958284f2d874e53cbe8019c",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json",
+      "frontend_supersession": "obj/parallel/pa24/generic-receivers/ninth.json"
     },
     {
       "name": "projected-reference",
       "path": "tests/spec/generic-receivers/projected-reference.rs",
       "source_sha256": "996dae0e4fd6789c7b0d6b712bb1726535deaed9c4c9844e7995725585b74758",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json",
+      "frontend_supersession": "obj/parallel/pa24/generic-receivers/ninth.json"
     },
     {
       "name": "drop-once",

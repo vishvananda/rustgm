@@ -41,8 +41,7 @@ impl Context {
         };
         let original = self.projection_application(store, goal.subject())?;
         self.equate_projection_inputs(store, &original, application)?;
-        let expected = self.known(store, expected)?;
-        self.equate_scoped_terms(store, result, expected)
+        self.equate_canonical_input(store, result, expected, &[])
     }
 
     /// Existential header compatibility, with lifetime proof deliberately deferred.

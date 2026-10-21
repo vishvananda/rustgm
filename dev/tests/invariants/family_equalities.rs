@@ -330,3 +330,94 @@ fn proven_equality_transport_matches_family_inputs_before_committing_result() ->
     assert_ne!(value.arguments, GenericArgs::EMPTY);
     Ok(())
 }
+
+#[test]
+fn proved_projection_results_preserve_operation_identity_without_inverting_inputs() -> TestResult {
+    let mut store = Store::default();
+    let inner = application(&mut store, &[], &[])?;
+    let projected = store.intern(Kind::Projection(inner))?;
+    let outer = application(&mut store, &[], &[Argument::Type(WORD)])?;
+    let proof = equation(&mut store, outer, projected)?;
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, proof, &mut substitution)?;
+    context.equate_proved_predicate(&mut store, &goal, proof)?;
+    let changed = store.intern(Kind::Projection(projection::Application {
+        subject: WORD,
+        ..inner
+    }))?;
+    let wrong = equation(&mut store, outer, changed)?;
+    assert!(
+        context
+            .equate_proved_predicate(&mut store, &goal, wrong)
+            .is_err()
+    );
+    assert_eq!(context.resolved_predicate(&mut store, &goal)?, proof);
+    assert!(context.region_equalities.is_empty());
+    Ok(())
+}
+
+#[test]
+fn proved_result_relations_settle_shared_holes_beside_opaque_projections() -> TestResult {
+    let mut store = Store::default();
+    let inner = application(&mut store, &[], &[])?;
+    let projected = store.intern(Kind::Projection(inner))?;
+    let outer = application(&mut store, &[], &[])?;
+    let mut context = Context::default();
+    let hole = context.variable(infer::Domain::Any)?;
+    let opaque = context.known(&store, projected)?;
+    let tuple = context.construct(infer::Constructor::Tuple, &[opaque, hole, hole])?;
+    let predicate = equation(&mut store, outer, BYTE)?;
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
+    let mut ordinal = 0;
+    let goal = goal.map_arguments(|argument| {
+        ordinal += 1;
+        Ok(if ordinal == 2 {
+            Inferred::Type(tuple)
+        } else {
+            argument
+        })
+    })?;
+    let fields = store.intern_list(&[projected, WORD, WORD])?;
+    let result = store.intern(Kind::Tuple(fields))?;
+    let proof = equation(&mut store, outer, result)?;
+    context.equate_proved_predicate(&mut store, &goal, proof)?;
+    assert_eq!(context.resolved(&mut store, hole)?, WORD);
+    assert_eq!(context.resolved_predicate(&mut store, &goal)?, proof);
+    Ok(())
+}
+
+#[test]
+fn proved_projection_result_never_infers_an_unknown_operation_input() -> TestResult {
+    let mut store = Store::default();
+    let inner = application(&mut store, &[], &[])?;
+    let projected = store.intern(Kind::Projection(inner))?;
+    let outer = application(&mut store, &[], &[])?;
+    let proof = equation(&mut store, outer, projected)?;
+    let mut context = Context::default();
+    let hole = context.variable(infer::Domain::Any)?;
+    let result = context.projected(&store, inner.item, hole, &[], &[])?;
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, proof, &mut substitution)?;
+    let mut ordinal = 0;
+    let goal = goal.map_arguments(|argument| {
+        ordinal += 1;
+        Ok(if ordinal == 2 {
+            Inferred::Type(result)
+        } else {
+            argument
+        })
+    })?;
+    assert!(
+        context
+            .equate_proved_predicate(&mut store, &goal, proof)
+            .is_err()
+    );
+    assert!(matches!(
+        context.resolved(&mut store, hole),
+        Err(infer::Error::Unresolved)
+    ));
+    assert!(context.region_equalities.is_empty());
+    Ok(())
+}
