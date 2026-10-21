@@ -55,3 +55,11 @@ This is an isolated correction for the frozen publication candidate. Full
 combined release/native/source qualification remains the integrator's gate.
 Anonymous specialization work is separately preserved and is not part of this
 checkpoint. PA25 remains incomplete.
+
+The standalone qualification test subsequently switched from the common
+metadata helper to an explicit pinned full-program object helper. All nine
+original fixture bytes pass that stronger outcome check; the seven accepted
+programs already had independent native compilation. This makes the
+object/metadata distinction explicit rather than relying on metadata rejection
+for the two borrow errors. Follow-up evidence:
+`obj/parallel/pa25-associated/owner-objects.log`.

@@ -1,5 +1,7 @@
 //! Initializer declarations and root closures retain independent checked contracts.
-use super::{native, rustc, semantic};
+use super::{native, semantic};
+#[path = "../helpers/objects.rs"]
+mod object;
 const CASES: &[(&str, bool, bool)] = &[
     ("ordinary", true, false),
     ("root", true, true),
@@ -22,10 +24,11 @@ fn independent_initializer_owners_preserve_source_outcomes()
 -> Result<(), Box<dyn std::error::Error>> {
     for &(name, accepted, _) in CASES {
         let text = fixture(name)?;
-        rustc::qualify(
+        object::qualify(
             &format!("parallel/borrowed-result/qualification/{name}"),
             &text,
             accepted,
+            "bin",
         )?;
         let mut report = semantic::resolve(&text)?;
         let result = rustgm::pipeline::analyze_source(&report).and_then(|analysis| {
