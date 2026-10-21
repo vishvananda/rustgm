@@ -52,6 +52,46 @@ const POSITIVES: &[(&str, &str, bool)] = &[
         false,
     ),
     (
+        "forward-value-header",
+        "const fn f()->usize{N+1}type A=[u8;f()];const N:usize=2;fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "reordered-value-header",
+        "const N:usize=2;const fn f()->usize{N+1}type A=[u8;f()];fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "forward-function-header",
+        "const fn f()->usize{g()}type A=[u8;f()];const fn g()->usize{3}fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "reordered-function-header",
+        "const fn g()->usize{3}const fn f()->usize{g()}type A=[u8;f()];fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "forward-constructor-header",
+        "const fn f()->usize{let _=S(7);3}type A=[u8;f()];struct S(u32);fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "reordered-constructor-header",
+        "struct S(u32);const fn f()->usize{let _=S(7);3}type A=[u8;f()];fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "forward-static-header",
+        "const fn f()->usize{let _=&S;3}type A=[u8;f()];static S:u32=7;fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
+        "reordered-static-header",
+        "static S:u32=7;const fn f()->usize{let _=&S;3}type A=[u8;f()];fn main(){let a:A=[7;3];check(a[2]==7);}",
+        false,
+    ),
+    (
         "promoted-result",
         "const fn f()->&'static u32{&7}const C:&u32=f();fn main(){check(*C==7);}",
         false,
@@ -172,6 +212,40 @@ fn early_late_and_repeated_demands_construct_each_function_cfg_once()
         assert!(facts.constant_work.steps > 0, "{text}");
         assert!(facts.constant_work.code_bytes > 0, "{text}");
         assert!(facts.constant_work.peak_frames >= 2, "{text}");
+    }
+    Ok(())
+}
+
+#[test]
+fn repeated_roots_prepare_one_append_only_value_index() -> Result<(), Box<dyn std::error::Error>> {
+    for width in [8, 32, 128] {
+        let mut text = String::from("const fn f(n:usize)->usize{n+1}");
+        for index in 0..width {
+            use std::fmt::Write;
+            write!(text, "const C{index}:usize=f({index});")?;
+        }
+        text.push_str("fn main(){let _=(");
+        for index in 0..width {
+            use std::fmt::Write;
+            write!(text, "C{index},")?;
+        }
+        text.push_str(");}");
+        let mut report = source::resolve(&text, true)?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+        rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
+        assert_eq!(facts.constant_work.expressions, width);
+        let index_size =
+            facts.definitions.len() + facts.initializers.len() + report.package.units.len();
+        assert!(
+            facts.constant_work.value_preparation <= index_size * 2,
+            "{width} roots: {} preparation visits for {index_size} index entries",
+            facts.constant_work.value_preparation
+        );
+        assert_eq!(facts.body_work.cfg_functions.get(), 2);
     }
     Ok(())
 }

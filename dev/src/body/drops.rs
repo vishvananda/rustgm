@@ -41,6 +41,17 @@ pub struct Requirements {
     pub projections: Vec<bool>,
     pub sites: Vec<Site>,
 }
+impl Requirements {
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        use crate::support::retained::{sum, vector};
+        sum([
+            vector(&self.locals),
+            vector(&self.values),
+            vector(&self.projections),
+            vector(&self.sites),
+        ])
+    }
+}
 /// Retaining this value forbids completed borrow proofs and executable lowering.
 /// These candidates still need move/init flags, destructor liveness and elaboration.
 pub struct Pending {

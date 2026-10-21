@@ -362,6 +362,43 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    /// Owned payload only: shared static metadata and canonical arena values
+    /// remain charged to their original owners, never to each cloned body.
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        use crate::support::retained::{map, sum, vector};
+        sum([
+            vector(&self.temporaries),
+            vector(&self.guards),
+            vector(&self.guard_places),
+            vector(&self.projections),
+            vector(&self.locals),
+            vector(&self.values),
+            vector(&self.scalars),
+            vector(&self.arguments),
+            vector(&self.statements),
+            vector(&self.blocks),
+            self.storage.as_ref().map_or(0, |facts| {
+                sum([vector(&facts.scopes), vector(&facts.exits)])
+            }),
+            self.owned.as_ref().map_or(0, |facts| {
+                size_of::<super::drops::values::Facts>().saturating_add(facts.allocation_bytes())
+            }),
+            self.promotions
+                .as_ref()
+                .map_or(0, super::promote::Facts::allocation_bytes),
+            self.resolved_callables.as_ref().map_or(0, |facts| {
+                size_of::<ResolvedCallables>().saturating_add(map(&facts.targets))
+            }),
+        ])
+    }
+    pub(crate) fn retained_bytes(&self) -> usize {
+        size_of::<Self>().saturating_add(self.allocation_bytes())
+    }
+    pub(crate) fn callable_allocation_bytes(&self) -> usize {
+        self.resolved_callables
+            .as_ref()
+            .map_or(0, |facts| crate::support::retained::map(&facts.targets))
+    }
     /// Read place types from retained CFG facts, including external static storage.
     #[must_use]
     pub fn place_type(&self, place: Place) -> Option<TypeId> {

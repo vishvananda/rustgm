@@ -39,7 +39,8 @@ impl Budget {
         if self.instances > 100_000 {
             return Err("generic instantiation exceeds 100000 bodies");
         }
-        let bytes = body_bytes(body)
+        let bytes = body
+            .retained_bytes()
             .saturating_add(std::mem::size_of_val(input.obligations.as_slice()))
             .saturating_add(std::mem::size_of_val(input.assumptions.as_slice()))
             .saturating_add(std::mem::size_of_val(input.type_assumptions.as_slice()));
@@ -256,34 +257,4 @@ fn prepare_ordinary(
         }
     }
     Ok((program, ordinary))
-}
-
-fn body_bytes(body: &Body) -> usize {
-    use std::mem::size_of_val;
-    let mut bytes = size_of::<Body>();
-    for part in [
-        size_of_val(body.locals.as_slice()),
-        size_of_val(body.values.as_slice()),
-        size_of_val(body.projections.as_slice()),
-        size_of_val(body.temporaries.as_slice()),
-        size_of_val(body.guards.as_slice()),
-        size_of_val(body.guard_places.as_slice()),
-        size_of_val(body.scalars.as_slice()),
-        size_of_val(body.arguments.as_slice()),
-        size_of_val(body.statements.as_slice()),
-        size_of_val(body.blocks.as_slice()),
-    ] {
-        bytes = bytes.saturating_add(part);
-    }
-    if let Some(storage) = &body.storage {
-        bytes = bytes
-            .saturating_add(size_of_val(storage.scopes.as_slice()))
-            .saturating_add(size_of_val(storage.exits.as_slice()));
-    }
-    if let Some(owned) = &body.owned {
-        bytes = bytes
-            .saturating_add(size_of_val(owned.created.as_slice()))
-            .saturating_add(size_of_val(owned.returned.as_slice()));
-    }
-    bytes
 }

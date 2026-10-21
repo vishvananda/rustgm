@@ -20,6 +20,14 @@ pub struct Facts {
     index: HashMap<ValueId, usize>,
 }
 impl Facts {
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        use crate::support::retained::{map, sum, vector};
+        sum([
+            vector(&self.created),
+            vector(&self.returned),
+            map(&self.index),
+        ])
+    }
     #[must_use]
     pub fn creation(&self, value: ValueId) -> Option<&Temporary> {
         self.index.get(&value).map(|&index| &self.created[index])

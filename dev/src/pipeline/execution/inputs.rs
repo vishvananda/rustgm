@@ -20,6 +20,15 @@ enum Slot {
     Shared(DefId),
 }
 impl Context {
+    #[cfg(test)]
+    pub(super) fn bounded(limits: crate::const_eval::Limits) -> Self {
+        Self {
+            engine: Rc::new(RefCell::new(Engine {
+                limits,
+                ..Engine::default()
+            })),
+        }
+    }
     pub(crate) fn executor(&self) -> Box<dyn Executor> {
         Box::new(Proxy(Rc::clone(&self.engine)))
     }

@@ -45,6 +45,10 @@ pub struct Work {
     pub frames_started: usize,
     pub steps: usize,
     pub resumes: usize,
+    /// Actual append-only definition-index and source-budget preparation visits.
+    pub value_preparation: usize,
+    /// Combined frame/value/cell slots retained by all suspended requests.
+    pub peak_suspended_slots: usize,
     pub peak_frames: usize,
     pub peak_slots: usize,
     pub code_bytes: usize,
