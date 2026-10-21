@@ -6,5 +6,16 @@
   "sha256": {
     "lowir": "2acc7cefeecc3752c4a15da4ddb1e65c9cb2b88e0032a23d1eca7ff36a005882",
     "lowir2native": "57f2c1156168eac7e653a4a193f27f124b635413e07de29940daf34a0b831fec"
+  },
+  "optional": {
+    "object": {
+      "commit": "3438f5aea24d8fcc9a0113316f7e27c890cd5ac6",
+      "target": "x86_64-linux",
+      "object_format": "elf64-x86-64",
+      "capabilities": ["lowir-to-object"],
+      "sha256": {
+        "cppgm++": "ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc"
+      }
+    }
   }
 }

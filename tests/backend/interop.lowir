@@ -1,0 +1,28 @@
+declare function @host_add(%p0 : i32) -> i32
+declare global @host_global : i32
+global @rg_export_global : i32 [binding=strong] = 17
+function @rg_add(%p0 : i32, %p1 : i32) -> i32 [binding=strong] {
+  block ^b0:
+    %t0 = binary add i32 %p0, %p1
+    return i32 %t0
+}
+function @rg_fp(%p0 : f64, %p1 : f64) -> f64 [binding=strong] {
+  block ^b0:
+    %t0 = binary add f64 %p0, %p1
+    return f64 %t0
+}
+function @rg_import(%p0 : i32) -> i32 [binding=strong] {
+  block ^b0:
+    %t0 = call i32 @host_add(%p0)
+    return i32 %t0
+}
+function @rg_callback(%p0 : ptr, %p1 : i32) -> i32 [binding=strong] {
+  block ^b0:
+    %t0 = call i32 %p0(%p1) as (%arg0 : i32) -> i32
+    return i32 %t0
+}
+function @rg_read_global() -> i32 [binding=strong] {
+  block ^b0:
+    %t0 = load i32 @host_global
+    return i32 %t0
+}
