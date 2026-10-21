@@ -323,12 +323,7 @@ impl<'a> Queries<'a> {
         scratch.constants.resize(facts.definitions.len(), None);
         for (index, initializer) in facts.initializers.iter().enumerate().skip(scratch.indexed) {
             scratch.preparation_steps += 1;
-            if matches!(
-                initializer.kind,
-                InitializerKind::Const | InitializerKind::Static { mutable: false }
-            ) {
-                scratch.constants[initializer.definition.0 as usize] = Some(index);
-            }
+            scratch.constants[initializer.definition.0 as usize] = Some(index);
         }
         // Scratch belongs to one immutable report. Resuming a body must not
         // rescan every source unit merely to reconstruct its work budget.
@@ -906,7 +901,7 @@ impl Queries<'_> {
                 }
                 (
                     Kind::Block {
-                        flavor: BlockFlavor::Plain,
+                        flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                         statements,
                         tail: Some(tail),
                     }

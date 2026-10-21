@@ -3,7 +3,7 @@ use super::{
     Cleanup, Condition, Field, Flag, Interval, Node, NodeId, Operation, Plan, Variant, glue,
 };
 use crate::{
-    body::ir::{Body, Place, Selection},
+    body::ir::{Body, Selection},
     borrow::ownership::{
         Component, Error, PathId, Paths,
         initialization::{self, Candidate, Event, Point, Status},
@@ -118,13 +118,9 @@ impl Builder<'_, '_> {
         candidate: Candidate,
         point: &mut Point<'_>,
     ) -> Result<(), &'static str> {
-        let ty = match candidate.place {
-            Place::Local(id) => body.locals.get(id.0 as usize).map(|l| l.ty),
-            Place::Temporary(id) => body.values.get(id.0 as usize).map(|v| v.ty),
-            Place::Projection(id) => body.projections.get(id.0 as usize).map(|p| p.ty),
-            Place::Static(_) => None,
-        }
-        .ok_or("invalid or unsupported destruction place")?;
+        let ty = body
+            .place_type(candidate.place)
+            .ok_or("invalid or unsupported destruction place")?;
         let tracked = candidate.path.map_or(Tracking::External, Tracking::Path);
         let mut cleanup = Cleanup {
             candidate,

@@ -41,6 +41,9 @@ pub(super) enum Access {
     Owned,
     Shared,
     Mutable,
+    RawShared,
+    RawMutable,
+    StaticMutable,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct PlaceInfo {
@@ -52,7 +55,36 @@ pub(super) struct PlaceInfo {
     /// An empty subarray is not a read or move of its containing array.
     pub empty: bool,
 }
+impl PlaceInfo {
+    fn reference(mut self, mutable: bool) -> Self {
+        self.access = if mutable {
+            match self.access {
+                Access::StaticMutable | Access::RawMutable => self.access,
+                Access::Owned | Access::Mutable if self.path.is_some() => Access::Mutable,
+                _ => Access::Shared,
+            }
+        } else {
+            Access::Shared
+        };
+        self.empty = false;
+        self
+    }
+    /// A raw referent is external memory, independent of its pointer's move path.
+    fn raw(mutable: bool) -> Self {
+        Self {
+            path: None,
+            indexed: false,
+            access: if mutable {
+                Access::RawMutable
+            } else {
+                Access::RawShared
+            },
+            empty: false,
+        }
+    }
+}
 pub struct Paths {
+    mutable_statics: Option<std::sync::Arc<std::collections::HashSet<crate::body::ir::DefId>>>,
     partitions: Option<Box<arrays::Partitions>>,
     pub entries: Vec<Path>,
     pub bits: u32,
@@ -68,6 +100,7 @@ impl Paths {
         retain_initialization: bool,
     ) -> Result<Self, &'static str> {
         let mut paths = Self {
+            mutable_statics: body.mutable_statics.clone(),
             partitions: None,
             entries: Vec::new(),
             bits: 0,
@@ -89,13 +122,11 @@ impl Paths {
             let mut info = paths.place(projection.base)?;
             let component = match projection.kind {
                 ProjectionKind::Dereference { mutable, .. } => {
-                    info.access = if mutable && info.access != Access::Shared && info.path.is_some()
-                    {
-                        Access::Mutable
-                    } else {
-                        Access::Shared
-                    };
-                    info.empty = false;
+                    info = info.reference(mutable);
+                    None
+                }
+                ProjectionKind::RawDereference { mutable } => {
+                    info = PlaceInfo::raw(mutable);
                     None
                 }
                 ProjectionKind::Field(field) => Some(Component::Field(field)),
@@ -315,7 +346,22 @@ impl Paths {
                     .copied()
                     .ok_or("projection precedes its base place");
             }
-            Place::Static(_) => None,
+            Place::Static(id) => {
+                return Ok(PlaceInfo {
+                    path: None,
+                    indexed: false,
+                    access: if self
+                        .mutable_statics
+                        .as_ref()
+                        .is_some_and(|ids| ids.contains(&id))
+                    {
+                        Access::StaticMutable
+                    } else {
+                        Access::Owned
+                    },
+                    empty: false,
+                });
+            }
         };
         Ok(PlaceInfo {
             path,

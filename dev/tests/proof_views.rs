@@ -31,6 +31,10 @@ fn contract_view_distinguishes_assumptions_variables_and_retained_requirements()
     let proof = graph.prove()?;
     let analysis = regions::Analysis {
         bodies: vec![regions::Body {
+            key: body::ir::BodyKey::Anonymous(NodeKey {
+                file: FileId(0),
+                node: NodeId(1),
+            }),
             hidden_regions: Vec::new(),
             builtins: None,
             source: NodeKey {

@@ -1,7 +1,7 @@
 //! Check reference formation for every body, before demand erases unused code.
 use super::Error;
 use crate::{
-    body::ir::{Action, Body, Place, Program, ProjectionId, ProjectionKind, Rvalue},
+    body::ir::{Action, Body, Place, Program, ProjectionId, Rvalue},
     sema::model::Declarations,
     types::TypeId,
 };
@@ -113,7 +113,7 @@ impl Check<'_> {
                 break align;
             }
             let projection = &self.body.projections[id.0 as usize];
-            if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            if projection.kind.is_dereference() {
                 let align = self.required(projection.ty)?;
                 self.projections[id.0 as usize] = Some(align);
                 break align;

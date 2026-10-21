@@ -539,6 +539,7 @@ impl Resolver<'_> {
                 if let Access::Within(restriction) = field {
                     access = match access {
                         Access::Public => field,
+                        Access::ExternalPrivate => Access::ExternalPrivate,
                         Access::Within(existing) => {
                             if self.package.is_descendant(restriction, existing) {
                                 field
@@ -649,7 +650,7 @@ impl Resolver<'_> {
             .unwrap_or_default();
         let mut path = prefix.to_vec();
         path.extend(local);
-        self.prepare_builtin_path(c, node, absolute || local_absolute, &path)?;
+        self.prepare_builtin_path(c, node, absolute || local_absolute, Namespace::Type, &path)?;
         if tree.children.start == tree.children.end {
             let alias = tree
                 .rename

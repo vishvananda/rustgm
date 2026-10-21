@@ -27,6 +27,7 @@ pub mod patterns;
 pub(crate) mod projections;
 mod regions;
 mod representation;
+mod safety;
 mod scalar;
 pub mod scopes;
 pub mod semantic_view;

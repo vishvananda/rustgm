@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/operators/add.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/neg.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/shadow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/wrong-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/wrong-rhs.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Operator contract acceptance and rejection; independent native controls live in the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Index receiver/result contract; native execution is checked by the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/index-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Index receiver/result contract; native execution is checked by the maintainer suite."
+      }
+    },
+    {
+      "path": "tests/spec/operators/index-argument-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Ownership and receiver loan rejection."
+      }
+    },
+    {
+      "path": "tests/spec/operators/moved-operand.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.operators"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Ownership and receiver loan rejection."
+      }
+    }
+  ]
+}

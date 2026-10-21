@@ -143,7 +143,9 @@ impl Queries<'_> {
                 (Kind::Tuple(fields) | Kind::Array(fields), _) => Some(Expression::Fields(fields)),
                 (
                     Kind::Block {
-                        flavor: crate::syntax::ast::BlockFlavor::Plain,
+                        flavor:
+                            crate::syntax::ast::BlockFlavor::Plain
+                            | crate::syntax::ast::BlockFlavor::Unsafe,
                         statements,
                         tail: None,
                     }

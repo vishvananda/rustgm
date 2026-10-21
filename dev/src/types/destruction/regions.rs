@@ -183,6 +183,14 @@ impl Regions {
                 } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                     return Err("generic drop checking requires a parameter environment");
                 }
+                if matches!(kind, Kind::Adt(item, _) if !self.custom.contains(&item)
+                    && definitions.destruction(item) == Some(crate::types::aggregate::FieldDestruction::Suppressed))
+                {
+                    let mut values = Values::default();
+                    self.retain(2 * size_of::<(Key, State)>())?;
+                    self.publish(key, &mut values)?;
+                    continue;
+                }
                 let symbolic_result = match kind {
                     Kind::Projection(application) => !types
                         .projection_schema(application.item)
@@ -360,11 +368,15 @@ fn dependencies(
             let definition = definitions
                 .get(item)
                 .ok_or("missing drop region definition")?;
-            fields(
-                types,
-                definitions.variants(definition).iter().copied(),
-                &mut visit,
-            )?;
+            if definitions.destruction(item)
+                != Some(crate::types::aggregate::FieldDestruction::Suppressed)
+            {
+                fields(
+                    types,
+                    definitions.variants(definition).iter().copied(),
+                    &mut visit,
+                )?;
+            }
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
             Kind::Closure { environment, .. } => visit(Key::Type(environment))?,

@@ -9,6 +9,7 @@ use crate::{
 };
 
 pub struct Body {
+    pub key: crate::body::ir::BodyKey,
     pub source: NodeKey,
     pub instance: Option<crate::types::instance::Instance>,
     pub solution: graph::Solution,
@@ -92,7 +93,7 @@ pub fn check_templates(
 ) -> Result<Analysis, Error> {
     let mut index = std::collections::HashMap::with_capacity(contracts.bodies.len());
     for input in &contracts.bodies {
-        if index.insert(input.source, input).is_some() {
+        if index.insert(input.key, input).is_some() {
             return Err(Error {
                 source: Some(input.source),
                 message: "duplicate lifetime body contract".into(),
@@ -102,7 +103,7 @@ pub fn check_templates(
     let inputs = templates.bodies.iter().map(|template| {
         let cfg = &template.body;
         index
-            .remove(&cfg.source)
+            .remove(&cfg.key())
             .map(|input| (input, Some(cfg)))
             .ok_or_else(|| Error {
                 source: Some(cfg.source),
@@ -133,7 +134,7 @@ pub fn check_ordered(
         .iter()
         .zip(&program.bodies)
         .map(|(input, cfg)| {
-            if input.source != cfg.source {
+            if input.key != cfg.key() || input.source != cfg.source {
                 return Err(Error {
                     source: Some(cfg.source),
                     message: "instance contract does not match its body".into(),
@@ -154,7 +155,7 @@ pub(crate) fn check_one(
     input: &Contract,
     cfg: &crate::body::ir::Body,
 ) -> Result<Body, Error> {
-    if input.source != cfg.source {
+    if input.key != cfg.key() || input.source != cfg.source {
         return Err(Error {
             source: Some(cfg.source),
             message: "instance contract does not match its body".into(),
@@ -177,10 +178,10 @@ fn run(
     let cfgs: std::collections::HashMap<_, _> = program
         .into_iter()
         .flat_map(|p| &p.bodies)
-        .map(|b| (b.source, b))
+        .map(|b| (b.key(), b))
         .collect();
     let inputs = contracts.bodies.iter().map(|input| {
-        let cfg = cfgs.get(&input.source).copied();
+        let cfg = cfgs.get(&input.key).copied();
         if program.is_some() && cfg.is_none() {
             return Err(Error {
                 source: Some(input.source),
@@ -294,6 +295,7 @@ fn body(
     let hidden_regions = members.finish(&proof).map_err(|e| error(e.to_string()))?;
     Ok(Body {
         hidden_regions,
+        key: input.key,
         source: input.source,
         instance: cfg.and_then(|body| body.instance),
         solution: proof.solution,

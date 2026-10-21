@@ -367,9 +367,16 @@ impl Lower<'_, '_> {
         }
     }
     fn reify(&mut self, id: ir::ValueId) -> Result<Selected, &'static str> {
+        let ty = self.body.values[id.0 as usize].ty;
         let selected = self.value(id)?;
-        if let Selected::Item(definition) = selected {
-            let symbol = self.context.demand(definition)?;
+        let symbol = if matches!(self.context.types.kind(ty), Some(Kind::Closure { .. })) {
+            Some(self.context.demand_closure(ty)?)
+        } else if let Selected::Item(definition) = selected {
+            Some(self.context.demand(definition)?)
+        } else {
+            None
+        };
+        if let Some(symbol) = symbol {
             self.builder
                 .address(Operand::Symbol(symbol))
                 .map(Selected::Runtime)
@@ -678,13 +685,22 @@ impl Lower<'_, '_> {
         arguments: ir::ValueList,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
-        let signature = self.context.signature(signature)?;
-        let representation = self.context.representation(result)?;
         let callee = match callee {
             Selected::Item(definition) => Operand::Symbol(self.context.demand(definition)?),
             Selected::Runtime(value) => value.operand,
             Selected::Unit | Selected::Object(_) => return Err("non-function used as call target"),
         };
+        self.call_operand(signature, callee, arguments, result)
+    }
+    fn call_operand(
+        &mut self,
+        signature: TypeId,
+        callee: Operand,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let signature = self.context.signature(signature)?;
+        let representation = self.context.representation(result)?;
         self.arguments.clear();
         let destination = if matches!(representation, Representation::Object(_)) {
             let address = self.allocate(result)?.ok_or("missing result allocation")?;

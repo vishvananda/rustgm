@@ -368,3 +368,142 @@ all 7,784 byte oracles, 7,583 independent source checks plus
 literal and layout checks also passed. This publishes callable implementations
 and generic invocation as a development checkpoint. Source closure inference,
 captures and native adapters still remain; PA24 stays planned and PA25 pending.
+
+
+## Runtime lifetime propagation
+
+The callable checkpoint was published as `f7634509` on main. Full-checkpoint
+cleanup removed 9,190 files and 8.57 GiB of unshared blocks (receipt
+`1792546237399778930.jsonl`). Superseded model/contract/forwarding/invocation
+executables were retired separately; their hashes, sources and observations
+remain. The PA23 baseline and latest callable checkpoint remain pinned.
+
+The subsequent lifetime change was developed in the detached
+`/home/vishvananda/rustgm-pa24-work` checkout while the callable checkpoint's
+source stayed frozen. `obj/region-components/` in that checkout retains its
+receipts and immutable binary
+`3346f81195c29b54ebb76bcd7f1543131bb6be5ecdda3104295a92c1ee464d69`.
+The existing iterative component engine now has a runtime mode excluding LOCAL
+and declared assumptions. Point seeds merge by required component; completed
+word sets propagate once along deduplicated component edges in topological
+order. Equal regions expand only at the final result boundary. Full extents
+stay compact, and existing symbolic/runtime verification remains mandatory.
+This removes repeated point-delta propagation; it does not claim that all
+frontend work or the public region-by-word result has become linear.
+
+The isolated candidate passes eight point-set tests, including independent set
+closure, LOCAL isolation, compact full extents, cyclic and acyclic work bounds;
+56 related maintainer groups; 21 graph invariants; strict Clippy and file audit
+(1,153 files, zero findings); all 7,784 active byte oracles; six unchanged LowIR
+scaling probes; and callable/defining-region native checks. The first native
+attempt lacked the isolated checkout's local backend configuration. Its failure
+is retained; backend qualification and `native-v2.log` pass after reusing the
+reviewed tool paths. The backend was not changed. Successful scoped cleanup
+removed 53 generated files/0.11 GiB; the isolated Cargo cache was subsequently
+removed after the immutable measurement completed.
+
+The 44-input `performance-v1/` study compares this candidate with `d91454bf`,
+retaining the same pinned-rustc inputs, all A/A/ABBA/RSS/Callgrind observations and
+identical outputs. At inferred reference depths 8/32/96, instructions change
+from 4.762/32.012/398.791 million to 4.790/25.570/188.337 million. Candidate wall
+medians are 5.82/6.98/32.24 ms, with paired changes -2.34%/-8.97%/-46.53% and
+A/A spreads 8.40%/5.32%/5.18%. The small depth-8 wall change is not established.
+The other 41 inputs have instruction changes from -0.098% to +1.936%, paired
+wall medians from -5.83% to +4.51% (median -1.09%), and RSS changes -256 to
++244 KiB. Their A/A spread reaches 49.81%; no wall-time neutrality claim follows.
+Whole compilation remains superlinear on the nested-reference input. At depth
+96 the new profile still spends about 40% in runtime point inference and 59%
+in borrow checking (inclusive counts overlap).
+
+This isolated candidate has been integrated into the working tree alongside
+pending closure inference work; it has not yet passed a combined publication
+checkpoint. No assignment contract or reference sidecar changed.
+
+
+## Separate source bodies checkpoint
+
+Source closures now retain isolated inference, control, lifetime and CFG owners.
+A flat scheduler parks each body without recursively owned state or copying the
+whole enclosing inference graph. Signature constraints cross an explicit input
+interface; input-only universals cannot escape through an inferred result.
+Completed source bodies enter ordinary ownership, loan, region, promotion and
+native lowering. Unused bodies are checked, and executable demands find generic
+calls inside nongeneric closures. Enclosing generic arguments remain in identity;
+executing a closure defined in a generic owner still needs template integration.
+
+`obj/parallel/pa24-focused-v2/` qualifies this local checkpoint: formatting,
+strict all-target/all-feature Clippy, 1,161-file audit with no findings, and 30
+release test groups pass. The source controls independently qualify 34 closure
+outcomes and seven lifetime outcomes. All 17 native programs execute with pinned
+rustc and the CPPGM backend. Eight point-set tests and eleven closure-type tests
+also pass. Successful scoped cleanup removes 34 executables (0.07 GiB); receipt
+`1792554179239200450.jsonl`. Full combined publication checks remain outstanding.
+
+Capture construction, closure-to-function-pointer coercion, generic closure
+body templates and dynamic callable adapters remain required PA24 work. The
+current empty environment is justified by rejecting outer-local lookup; it does
+not grant capture permissions. PA24 remains planned and no oracle was changed.
+
+
+## Function pointers and unsafe-context integration
+
+Noncapturing closures now use the ordinary function-pointer coercion and cast
+paths, constraining their environment to the empty tuple. Reification demands
+the checked closure symbol and discovers generic calls in its body. Conditional
+joins support distinct noncapturing closures and function items. Capture-bearing
+environments cannot satisfy the empty-environment constraint.
+
+PA26 operator checkpoint `9e8fc3b` and PA27 unsafe checkpoint `0211052f` are
+integrated locally. A closure copies its creating lexical safety context into
+its isolated child state; nested item functions retain their own context.
+`closure_safety.rs` independently qualifies six outcomes and executes two native
+controls. No call site grants unsafe permission to a closure defined elsewhere.
+
+`obj/parallel/pa24-integration-v1/` records clean formatting, strict Clippy and
+file audit, followed by 34 passing release test groups. The final pointer-only
+follow-up `obj/parallel/closure-pointers-v2.log` adds a demanded generic dependency:
+14 independently qualified pointer outcomes and eleven native programs pass.
+Together the source-body, pointer and safety lanes execute 30 native programs.
+Their two successful cleanup receipts are `1792554736433123479.jsonl` and
+`1792554818725652371.jsonl` (80 generated files, approximately 0.17 GiB).
+
+Full combined publication checks are still pending. Contextual higher-ranked
+function-pointer signatures, captures, generic closure templates and dynamic
+callable adapters remain required work; PA24 remains planned.
+
+
+The first combined active-oracle comparison, `obj/parallel/integrated-text-v1/`,
+checks all 7,784 cases in 23 assignments. All declared acceptance/rejection
+outcomes agree. Six diagnostic strings differ: three unsafe-context rejections
+in PA19/PA22 and three operator/index rejections in PA12/PA18/PA22. Independent
+review and reference regeneration are pending; no unexpected accepted-program
+output change was observed. This comparison is a failed byte gate until those
+reviewed diagnostics are published and the affected suites pass.
+
+
+## Diagnostic review and lexical capture inputs
+
+Operator interception without demanded library metadata was an integration
+regression. Commit `961a727c` restores the existing PA12 tuple-index, PA18
+arithmetic and PA22 pointer-add diagnostics; pinned rustc object generation
+independently rejects all three inputs. The three PA19/PA22 unsafe inputs also
+remain independently rejected, now with implemented unsafe-context diagnostics.
+Only those three stderr sidecars were regenerated. Receipt changes are confined
+to compiler-source hashes; input bytes and declared outcomes are unchanged.
+
+The frozen `b65fa7d3` compiler (SHA-256
+`9dc6bb417d7c6c4e6b8bac89d5233553e1651fcd2d165d373da47f16a332f848`)
+passes all 7,784 active text comparisons with the reviewed references. Evidence
+is in `rustgm-validation-work/obj/parallel/unsafe-diagnostics-v1/`. Later
+mutable-static and worker integrations require their own combined qualification.
+
+The next capture component indexes resolved free bindings across closure scopes.
+It resolves each scope owner once, deduplicates each binding/boundary edge and
+shares ancestor traversal across repeated mentions. Forward parent links from
+hygiene are supported; malformed parents, cycles and exhausted work fail.
+These are lexical type inputs, not capture permissions: a wildcard mention does
+not establish a read, and actual typed uses still determine capture precision,
+receiver kind, loans, moves and environment storage. The index is not yet wired
+into source capture construction. Initial focused checks cover nested scopes,
+shadowed definitions, macro hygiene and repeated-use scaling; final lint and
+combined validation remain pending.

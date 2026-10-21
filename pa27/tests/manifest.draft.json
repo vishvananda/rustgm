@@ -1,0 +1,1815 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/contexts/unsafe-block-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-constant-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/safe-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-read-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/const-pointer-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-fn-body.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-call-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-fn-caller.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-pointer-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-pointer-call-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-method-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/nested-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-does-not-leak.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/nested-item-reset.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/nested-unsafe-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-address-cancel.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-address-field-needs-unsafe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-to-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-to-mut-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-const-to-mut-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-copy-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-uninitialized-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/mutable-static-read-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/mutable-static-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/const-mutable-static-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/mutable-static-raw-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/mutable-static-raw-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/mutable-static-raw-field-unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/mutable-static-pointer-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/unsafe-type-checks.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/packed-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/packed-raw-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/native/read-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:raw_access_and_unsafe_calls_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/native/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:raw_access_and_unsafe_calls_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/native/function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:raw_access_and_unsafe_calls_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/native/wide-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:raw_access_and_unsafe_calls_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/native/raw-aliases.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_contexts.rs:raw_access_and_unsafe_calls_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-mut-reference-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-const-reference-store.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/contexts/raw-mut-shared-reference-store.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/store-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/immutable-store.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/field-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/immutable-field-store.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/index-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/compound-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/unsafe-function-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-mut-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-mut-immutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/shared-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/mutable-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/field-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/method-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/unused-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/unreachable-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/immutable-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/ref-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/ref-mut-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/paren-ref-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/let-else-ref-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/statics/match-ref-lint-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/struct-ref-lint-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/if-let-ref-lint-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/guard-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics/destructor-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/contexts/raw-mut-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.contexts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/statics-native/destructor-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:static_stores_and_raw_addresses_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/statics-native/direct-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:static_stores_and_raw_addresses_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/statics-native/field-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:static_stores_and_raw_addresses_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/statics-native/indexed-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:static_stores_and_raw_addresses_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/statics-native/raw-mut-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.statics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_statics.rs:static_stores_and_raw_addresses_execute",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/policies/statement-operation-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/statement-operation-deny.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/statement-reference-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/statement-reference-deny.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/operation-deny.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/operation-forbid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/operation-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/operation-warn.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/operation-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/allow-safe-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/deny-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/deny-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/crate-deny.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/crate-override.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/block-override.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/nested-item-inherit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/nested-item-override.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/inline-module-inherit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/inline-module-override.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/inline-inner-deny.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/forbid-allow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/forbid-warn.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/forbid-deny.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/forbid-same.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/forbid-deny-allow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/reference-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/reference-warn.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/reference-safe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/reference-deny-override.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/reference-forbid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/reference-binding-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/reference-method-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/configured-allow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/configured-disabled.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/unknown-path.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policies.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/modules/external-inherit/main.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES"
+    },
+    {
+      "path": "tests/spec/policies/modules/external-outer-override/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and module policy control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/modules/external-inner-override/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Declared source acceptance and module policy control; no runtime execution claim."
+      }
+    },
+    {
+      "path": "tests/spec/policies/modules/external-forbid/main.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.policies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/unsafe_policy_modules.rs:CASES"
+    }
+  ]
+}

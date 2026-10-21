@@ -17,7 +17,7 @@ impl Lower<'_, '_> {
         metadata: Option<Value>,
     ) -> Result<(Address, Option<Value>), &'static str> {
         let projection = &self.body.projections[id.0 as usize];
-        if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+        if projection.kind.is_dereference() {
             let address = self.dereference(base, projection.ty)?;
             return Ok((address, self.load_metadata(base, projection.ty)?));
         }

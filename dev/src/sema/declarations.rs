@@ -16,6 +16,8 @@ mod heads;
 mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
+mod language_hooks;
+mod library_types;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
@@ -252,6 +254,7 @@ impl<'a> Checker<'a> {
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
         self.reserve_member_parents();
+        self.prepare_library_types()?;
         self.reserve_nominals()?;
         self.reserve_implementation_candidates()?;
         self.reserve_inherent_headers()?;
@@ -270,6 +273,7 @@ impl Checker<'_> {
             })
             .saturating_mul(16);
         self.prepare_call_contracts()?;
+        self.prepare_language_contracts()?;
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
@@ -494,61 +498,51 @@ impl Checker<'_> {
                 unit.configured.ast.push_children(node, &mut nodes);
                 nodes[mark..].reverse();
                 contexts.resize(nodes.len(), context);
-                if let Kind::GenericMethodCall { method, .. } = unit.configured.ast.node(node).kind
-                {
-                    self.prepare_method_arguments(
-                        NodeKey { file, node },
-                        method,
-                        context,
-                        steps,
-                        limit,
-                        &mut scan,
-                    )?;
-                }
-                if self.schedule_method_path(
-                    NodeKey { file, node },
-                    context,
-                    steps,
-                    limit,
-                    &mut scan,
-                )? {
-                    self.drain(steps, limit)?;
-                    continue;
-                }
-                if self.schedule_alias_variant(
-                    NodeKey { file, node },
-                    context,
-                    steps,
-                    limit,
-                    &mut scan,
-                )? {
-                    self.drain(steps, limit)?;
-                }
-                if matches!(unit.configured.ast.node(node).kind, Kind::Path { .. })
-                    && let Some(owner) = self.generic_use_owner(NodeKey { file, node })
-                {
-                    self.schedule_item_arguments(
-                        NodeKey { file, node },
-                        owner,
-                        context,
-                        steps,
-                        limit,
-                        &mut scan,
-                    )?;
-                    self.drain(steps, limit)?;
-                }
-                let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) =
-                    unit.configured.ast.node(node).kind
-                else {
-                    continue;
-                };
-                // Holes stay in the owning body, while the ordinary elaborator
-                // resolves every written lifetime and nested callable binder.
-                self.annotation_holes(NodeKey { file, node: ty }, steps, limit, &mut scan)?;
-                self.node_work(file, ty, context);
-                self.drain(steps, limit)?;
+                self.local_annotation(NodeKey { file, node }, context, steps, limit, &mut scan)?;
             }
         }
+        Ok(())
+    }
+    fn local_annotation(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        if let Kind::GenericMethodCall { method, .. } = self.kind(key) {
+            self.prepare_method_arguments(key, method, context, steps, limit, scan)?;
+        }
+        if self.schedule_method_path(key, context, steps, limit, scan)? {
+            self.drain(steps, limit)?;
+            return Ok(());
+        }
+        if self.schedule_alias_variant(key, context, steps, limit, scan)? {
+            self.drain(steps, limit)?;
+        }
+        if matches!(self.kind(key), Kind::Path { .. })
+            && let Some(owner) = self.generic_use_owner(key)
+        {
+            self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
+            self.drain(steps, limit)?;
+        }
+        if let Kind::Closure { parameters, .. } = self.kind(key) {
+            self.closure_annotation_inputs(key, parameters, context, steps, limit, scan)?;
+        }
+        let (Kind::Let { ty: Some(ty), .. }
+        | Kind::Cast { ty, .. }
+        | Kind::Closure {
+            result: Some(ty), ..
+        }) = self.kind(key)
+        else {
+            return Ok(());
+        };
+        // Holes stay in the owning body, while the ordinary elaborator
+        // resolves every written lifetime and nested callable binder.
+        self.annotation_holes(NodeKey { node: ty, ..key }, steps, limit, scan)?;
+        self.node_work(key.file, ty, context);
+        self.drain(steps, limit)?;
         Ok(())
     }
     fn annotation_holes(

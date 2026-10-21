@@ -275,6 +275,11 @@ impl Context {
                 }
             }
             Constructor::Closure(identity, args) => {
+                if store.closure_declaration(identity)
+                    == Some(crate::types::closure::Declaration::Pending)
+                {
+                    return Err(Error::Unresolved);
+                }
                 let [signature, environment, arguments @ ..] = children else {
                     return Err(Error::InvalidIdentity);
                 };

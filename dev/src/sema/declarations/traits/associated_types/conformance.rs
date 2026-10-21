@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{
     resolve::{expansion::Report, model::DefKind, names::NameId},
-    sema::{associated::OwnerId, model::Declarations},
+    sema::model::Declarations,
     types::{
         outlives::Queries,
         parameters::{
@@ -15,23 +15,17 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(in super::super) struct Members {
-    owners: HashMap<OwnerId, Vec<DefId>>,
-    names: HashMap<(OwnerId, NameId), DefId>,
+    owners: HashMap<DefId, Vec<DefId>>,
+    names: HashMap<(DefId, NameId), DefId>,
 }
 impl Members {
     pub(in super::super) fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
-        for member in facts.associated.members() {
-            let definition = &report.resolution.definitions[member.definition.0 as usize];
+        for (member, owner) in facts.associated.declaration_members() {
+            let definition = &report.resolution.definitions[member.0 as usize];
             if definition.kind == DefKind::TypeAlias {
-                result
-                    .owners
-                    .entry(member.owner)
-                    .or_default()
-                    .push(member.definition);
-                result
-                    .names
-                    .insert((member.owner, definition.name), member.definition);
+                result.owners.entry(owner).or_default().push(member);
+                result.names.insert((owner, definition.name), member);
             }
         }
         result
@@ -57,12 +51,12 @@ impl Checker<'_> {
         let trait_owner = self
             .facts
             .associated
-            .owner(DefId(app.item.0))
+            .declaration_owner(DefId(app.item.0))
             .ok_or_else(|| self.error(source, "missing trait owner"))?;
         let impl_owner = self
             .facts
             .associated
-            .owner(owner)
+            .declaration_owner(owner)
             .ok_or_else(|| self.error(source, "missing impl owner"))?;
         if !members.owners.contains_key(&trait_owner) && !members.owners.contains_key(&impl_owner) {
             return Ok(Vec::new());

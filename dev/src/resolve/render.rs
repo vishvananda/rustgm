@@ -110,6 +110,7 @@ pub fn write(package: &Package, facts: &Resolution, out: &mut impl Write) -> io:
 fn access(out: &mut impl Write, value: Access) -> io::Result<()> {
     match value {
         Access::Public => write!(out, "public"),
+        Access::ExternalPrivate => write!(out, "external-private"),
         Access::Within(module) => write!(out, "module:{}", module.0),
     }
 }

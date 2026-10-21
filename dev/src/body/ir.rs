@@ -1,9 +1,8 @@
 //! Function-owned flat control-flow storage. Values snapshot reads before later effects.
-pub use crate::resolve::unit::NodeKey;
+pub use crate::resolve::{model::DefId, unit::NodeKey};
 pub use crate::sema::members::{Selection, VariantId};
 use crate::{
     lex::token::Punctuation,
-    resolve::model::DefId,
     sema::model::{Cast, InitializerKind, RegionEquality, Scalar},
     syntax::ast::{NodeId, Unary},
     types::TypeId,
@@ -48,6 +47,10 @@ pub enum ProjectionKind {
         region: crate::types::RegionId,
         mutable: bool,
     },
+    /// Raw access has no reference region, loan ancestry or owned move path.
+    RawDereference {
+        mutable: bool,
+    },
     Field(crate::sema::members::Selection),
     Index {
         index: ValueId,
@@ -78,6 +81,13 @@ pub enum ProjectionKind {
         start: u64,
         end: u64,
     },
+}
+impl ProjectionKind {
+    /// Both forms evaluate pointer storage before selecting a referent place.
+    #[must_use]
+    pub const fn is_dereference(self) -> bool {
+        matches!(self, Self::Dereference { .. } | Self::RawDereference { .. })
+    }
 }
 #[derive(Clone, Copy)]
 pub struct Projection {
@@ -282,6 +292,10 @@ pub struct Block {
 }
 #[derive(Clone, Copy)]
 pub enum Owner {
+    Closure {
+        identity: crate::types::closure::ClosureId,
+        signature: TypeId,
+    },
     /// A declaration-time constant requiring lifetime/loan proof, never a native function.
     AnonymousConstant,
     Function {
@@ -293,8 +307,19 @@ pub enum Owner {
         kind: InitializerKind,
     },
 }
+/// Declaration identity is separate from shared diagnostic provenance.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum BodyKey {
+    Declaration(DefId),
+    Closure(crate::types::closure::ClosureId),
+    Anonymous(NodeKey),
+}
 #[derive(Clone)]
 pub struct Body {
+    /// Canonical types of static places actually referenced by this CFG.
+    pub static_types: Option<std::sync::Arc<std::collections::HashMap<DefId, TypeId>>>,
+    /// Immutable declaration permissions, shared by checked bodies and instances.
+    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
     /// Constant eligibility applies independently of whether execution is demanded.
     pub const_context: bool,
     /// Concrete specialization identity; diagnostics keep the original source owner.
@@ -337,6 +362,26 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    /// Read place types from retained CFG facts, including external static storage.
+    #[must_use]
+    pub fn place_type(&self, place: Place) -> Option<TypeId> {
+        match place {
+            Place::Local(id) => self.locals.get(id.0 as usize).map(|l| l.ty),
+            Place::Temporary(id) => self.values.get(id.0 as usize).map(|v| v.ty),
+            Place::Projection(id) => self.projections.get(id.0 as usize).map(|p| p.ty),
+            Place::Static(id) => self.static_types.as_ref()?.get(&id).copied(),
+        }
+    }
+    #[must_use]
+    pub const fn key(&self) -> BodyKey {
+        match self.owner {
+            Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
+                BodyKey::Declaration(definition)
+            }
+            Owner::AnonymousConstant => BodyKey::Anonymous(self.source),
+            Owner::Closure { identity, .. } => BodyKey::Closure(identity),
+        }
+    }
     pub(crate) fn callable_targets(
         &self,
     ) -> std::collections::HashMap<crate::types::instance::Instance, crate::types::instance::Instance>

@@ -156,10 +156,12 @@ impl Checker<'_> {
         self.known(node, specialized.ty)
     }
     pub(super) fn prepare_universals(&mut self, node: NodeId) -> Result<(), Error> {
-        if self.state.call_types.universals.is_some() {
+        let first = u32::try_from(self.state.call_types.universal_regions.len())
+            .map_err(|_| self.error(node, "too many body lifetime parameters"))?;
+        if self.state.call_types.universals.is_some() && first == self.state.body_binders {
             return Ok(());
         }
-        for index in 0..self.state.body_binders {
+        for index in first..self.state.body_binders {
             let bound = RegionId::bound(
                 0,
                 u16::try_from(index)

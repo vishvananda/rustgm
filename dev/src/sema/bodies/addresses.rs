@@ -19,6 +19,7 @@ impl Checker<'_> {
         expected: Option<TermId>,
     ) -> Result<(), Error> {
         let direct = self.address_operand(operand)?;
+        self.state.raw_address_places.insert(direct);
         if matches!(
             self.kind(direct),
             Kind::Unary {

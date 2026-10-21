@@ -1,1 +1,1 @@
-ERROR: file 0: 73: dereferencing requires a known reference; raw pointers require unsafe semantics
+ERROR: file 0: 73: raw pointer dereference requires an unsafe context

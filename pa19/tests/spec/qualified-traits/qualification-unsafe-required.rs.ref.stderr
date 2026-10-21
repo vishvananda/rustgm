@@ -1,1 +1,1 @@
-ERROR: file 0: 89: unsafe or lifetime-polymorphic calls require later implementation
+ERROR: file 0: 89: call to unsafe function requires an unsafe context

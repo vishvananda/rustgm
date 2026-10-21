@@ -411,8 +411,16 @@ impl Resolver<'_> {
             return self.lifetime(c, node, span);
         }
         let (absolute, path) = self.path_names(c, node)?;
-        if ns == Namespace::Type {
-            self.prepare_builtin_path(c, node, absolute, &path)?;
+        if ns == Namespace::Type
+            || ns == Namespace::Value
+                && path.iter().any(|name| {
+                    matches!(
+                        self.package.names.get(*name),
+                        "Option" | "Some" | "None" | "Result" | "Ok" | "Err" | "ManuallyDrop"
+                    )
+                })
+        {
+            self.prepare_builtin_path(c, node, absolute, ns, &path)?;
         }
         if ns == Namespace::Type && path.len() == 1 {
             // Syntactically ambiguous const generic arguments are typed after lookup.

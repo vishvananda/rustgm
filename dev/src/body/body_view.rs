@@ -23,6 +23,10 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
     for (index, body) in program.bodies.iter().enumerate() {
         write!(out, "body {index} ")?;
         match body.owner {
+            Owner::Closure {
+                identity,
+                signature,
+            } => write!(out, "closure id={} signature={}", identity.0, signature.0)?,
             Owner::AnonymousConstant => write!(out, "anonymous-const")?,
             Owner::Function {
                 definition,
@@ -107,6 +111,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         match projection.kind {
             ProjectionKind::Dereference { region, mutable } => {
                 write!(out, " dereference region={} mutable={mutable}", region.0)?;
+            }
+            ProjectionKind::RawDereference { mutable } => {
+                write!(out, " raw-dereference mutable={mutable}")?;
             }
             ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
             ProjectionKind::Index { index, length } => {

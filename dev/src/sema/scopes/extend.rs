@@ -105,7 +105,7 @@ impl Walker<'_> {
                 self.push(Work::ExtendExpression(value, lifetime))?;
             }
             Syntax::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 tail,
                 ..
             }

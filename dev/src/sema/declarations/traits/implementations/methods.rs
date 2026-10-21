@@ -3,7 +3,6 @@ use super::{Checker, DefId, Error, NodeKey};
 use crate::{
     resolve::{expansion::Report, names::NameId},
     sema::{
-        associated::OwnerId,
         model::{Declarations, Function},
         traits::conformance,
     },
@@ -14,28 +13,28 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Members {
-    owners: HashMap<OwnerId, Vec<Function>>,
-    names: HashMap<(OwnerId, NameId), Function>,
+    owners: HashMap<DefId, Vec<Function>>,
+    names: HashMap<(DefId, NameId), Function>,
 }
 impl Members {
     pub fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
-        for &function in &facts.functions {
-            if let Some(owner) = facts.associated.owner(function.definition) {
+        for &function in facts
+            .functions
+            .iter()
+            .chain(facts.associated.language_functions())
+        {
+            if let Some(owner) = facts.associated.member_owner(function.definition) {
                 let name = report.resolution.definitions[function.definition.0 as usize].name;
                 result.names.insert((owner, name), function);
             }
         }
-        for member in facts.associated.members() {
-            let name = report.resolution.definitions[member.definition.0 as usize].name;
-            if let Some(&function) = result.names.get(&(member.owner, name))
-                && function.definition == member.definition
+        for (member, owner) in facts.associated.declaration_members() {
+            let name = report.resolution.definitions[member.0 as usize].name;
+            if let Some(&function) = result.names.get(&(owner, name))
+                && function.definition == member
             {
-                result
-                    .owners
-                    .entry(member.owner)
-                    .or_default()
-                    .push(function);
+                result.owners.entry(owner).or_default().push(function);
             }
         }
         result
@@ -61,12 +60,12 @@ impl Checker<'_> {
         let trait_owner = self
             .facts
             .associated
-            .owner(DefId(app.item.0))
+            .declaration_owner(DefId(app.item.0))
             .ok_or_else(|| self.error(source, "missing trait owner"))?;
         let impl_owner = self
             .facts
             .associated
-            .owner(owner)
+            .declaration_owner(owner)
             .ok_or_else(|| self.error(source, "missing impl owner"))?;
         for function in members.owners.get(&impl_owner).into_iter().flatten() {
             let name = self.report.resolution.definitions[function.definition.0 as usize].name;

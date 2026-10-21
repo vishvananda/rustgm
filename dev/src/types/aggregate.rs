@@ -34,6 +34,12 @@ pub struct Variant {
     /// Target-width two's-complement bits; the semantic checker validates its range.
     pub discriminant: u128,
 }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum FieldDestruction {
+    #[default]
+    Fields,
+    Suppressed,
+}
 #[derive(Clone, Copy, Debug)]
 pub struct Definition {
     pub item: ItemId,
@@ -52,8 +58,27 @@ pub struct Definitions {
     instances: Option<Box<instances::Instances>>,
     storage: Option<Box<field_forms::Fields>>,
     metadata_ready: std::collections::HashSet<TypeId>,
+    suppressed_fields: std::collections::HashSet<ItemId>,
 }
 impl Definitions {
+    /// Declaration policy suppresses implicit field cleanup, preserving an explicit destructor.
+    #[must_use]
+    pub fn destruction(&self, item: ItemId) -> Option<FieldDestruction> {
+        self.get(item)?;
+        Some(if self.suppressed_fields.contains(&item) {
+            FieldDestruction::Suppressed
+        } else {
+            FieldDestruction::Fields
+        })
+    }
+    pub(crate) fn suppress_field_destruction(&mut self, item: ItemId) -> Result<(), &'static str> {
+        self.get(item)
+            .ok_or("missing destruction policy declaration")?;
+        if !self.suppressed_fields.insert(item) {
+            return Err("field destruction policy is already registered");
+        }
+        Ok(())
+    }
     /// Instantiate immediate fields from completed templates, keyed by the full
     /// canonical nominal type. This does not expand referents or prove layout.
     /// Parameter/default/bound validation belongs to declaration semantics.

@@ -313,6 +313,12 @@ impl Checker<'_> {
                         definition: id,
                     });
                 }
+                if matches!(builtin, Some(BuiltinTrait::Language(_))) {
+                    return Ok(Written::User {
+                        path: key,
+                        definition: id,
+                    });
+                }
                 if builtin.is_some()
                     && crate::sema::lifetimes::arguments(self.report, key, false)?
                         .is_some_and(|list| list.start != list.end)
@@ -324,6 +330,10 @@ impl Checker<'_> {
                     Some(BuiltinTrait::Clone) => Ok(Written::Trait(Bound::Clone)),
                     Some(BuiltinTrait::Sized) => Ok(Written::Trait(Bound::Sized)),
                     Some(BuiltinTrait::Auto(marker)) => Ok(Written::Trait(Bound::Auto(marker))),
+                    Some(BuiltinTrait::Language(_)) => Ok(Written::User {
+                        path: key,
+                        definition: id,
+                    }),
                     Some(BuiltinTrait::Callable(_)) => {
                         Err(self.error(key, "missing call-trait syntax"))
                     }

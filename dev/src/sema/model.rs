@@ -1,4 +1,5 @@
 //! Declaration and node facts shared by type checking and later body construction.
+pub use super::safety::Work as SafetyWork;
 use crate::{
     lex::token::Punctuation,
     literal::value::FloatBits,
@@ -317,6 +318,9 @@ pub struct StoredFieldWork {
     pub retained_bytes: usize,
 }
 pub struct Declarations {
+    pub(super) safety_policies: super::safety::Policies,
+    /// Immutable declaration permissions, shared by checked bodies and instances.
+    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
     pub constant_work: super::values::execution::Work,
     pub(crate) constant_executor: Option<Box<dyn super::values::execution::Executor>>,
     pub(crate) function_indices: std::collections::HashMap<DefId, usize>,
@@ -325,6 +329,7 @@ pub struct Declarations {
     /// Const permission belongs to a selected declaration, not its callable type.
     pub(crate) constant_functions: std::collections::HashSet<DefId>,
     pub(super) target_feature_functions: std::collections::HashSet<DefId>,
+    pub closures: super::closures::Bodies,
     pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
@@ -395,6 +400,10 @@ impl Declarations {
         self.constant_executor = Some(executor);
     }
     #[must_use]
+    pub fn safety_work(&self) -> SafetyWork {
+        self.safety_policies.work()
+    }
+    #[must_use]
     pub fn is_const_function(&self, definition: DefId) -> bool {
         self.constant_functions.contains(&definition)
     }
@@ -445,8 +454,11 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            safety_policies: super::safety::Policies::analyze(report)?,
+            mutable_statics: None,
             constant_functions: std::collections::HashSet::new(),
             target_feature_functions: std::collections::HashSet::new(),
+            closures: super::closures::Bodies::default(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             constant_executor: None,
@@ -538,6 +550,21 @@ impl Declarations {
             }
         }
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
+            if definition.kind == DefKind::Static
+                && let Some(key) = definition.node
+                && let Kind::Item(item) = Self::kind(report, key)
+                && matches!(
+                    report.package.unit(key.file).configured.ast.items[item as usize].kind,
+                    crate::syntax::item::ItemKind::Static { mutable: true, .. }
+                )
+            {
+                let id = DefId(
+                    u32::try_from(index)
+                        .map_err(|_| Self::error(report, key, "too many static declarations"))?,
+                );
+                std::sync::Arc::make_mut(self.mutable_statics.get_or_insert_with(Default::default))
+                    .insert(id);
+            }
             if (matches!(
                 definition.kind,
                 DefKind::Local | DefKind::Parameter | DefKind::Label | DefKind::Generic

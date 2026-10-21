@@ -1,0 +1,225 @@
+//! Nominal metadata registers distinct library types, parameters and constructor identities.
+use super::{Context, DefId, DefKind, Error, NameId, Namespace, Resolver, ScopeId};
+use crate::{
+    resolve::{package::ModuleId, unit::NodeKey},
+    support::library_types::LibraryType,
+    syntax::ast::NodeId,
+};
+use std::collections::HashMap;
+
+#[derive(Clone, Copy)]
+pub struct Variant {
+    pub type_definition: Option<DefId>,
+    pub constructor: DefId,
+    pub field: Option<u32>,
+}
+#[derive(Clone)]
+pub struct Nominal {
+    pub origin: NodeKey,
+    pub kind: LibraryType,
+    pub definition: DefId,
+    pub parameters: Vec<DefId>,
+    pub variants: Vec<Variant>,
+}
+#[derive(Default)]
+pub struct LibraryTypes {
+    entries: HashMap<LibraryType, Nominal>,
+    prelude: HashMap<(NameId, Namespace), DefId>,
+}
+impl LibraryTypes {
+    #[must_use]
+    pub fn get(&self, kind: LibraryType) -> Option<&Nominal> {
+        self.entries.get(&kind)
+    }
+    #[must_use]
+    pub fn identify(&self, definition: DefId) -> Option<LibraryType> {
+        self.entries
+            .values()
+            .find(|entry| entry.definition == definition)
+            .map(|entry| entry.kind)
+    }
+    pub(super) fn prelude(&self, name: NameId, namespace: Namespace) -> Option<DefId> {
+        self.prelude.get(&(name, namespace)).copied()
+    }
+}
+impl Resolver<'_> {
+    pub(super) fn prepare_library_metadata(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        path: &[NameId],
+    ) -> Result<(), Error> {
+        if self.facts.builtin_traits.library.is_none() {
+            return Ok(());
+        }
+        let Some(last) = path.last().map(|name| self.package.names.get(*name)) else {
+            return Ok(());
+        };
+        let kind = LibraryType::ALL.into_iter().find(|kind| {
+            kind.name() == last
+                || kind.module() == last
+                || kind != &LibraryType::ManuallyDrop
+                    && kind.variants().iter().any(|(name, _)| *name == last)
+                || path
+                    .iter()
+                    .any(|name| self.package.names.get(*name) == kind.name())
+        });
+        if let Some(kind) = kind {
+            self.prepare_library_type(c, node, kind)?;
+        }
+        Ok(())
+    }
+    fn prepare_library_type(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        kind: LibraryType,
+    ) -> Result<(), Error> {
+        if self.facts.library_types.get(kind).is_some() {
+            return Ok(());
+        }
+        let library = self
+            .facts
+            .builtin_traits
+            .library
+            .ok_or_else(|| self.error(c, node, "missing library module"))?;
+        let module = self.new_scope(None, ModuleId(0), true)?;
+        self.builtin_definition(
+            Context {
+                scope: library,
+                ..c
+            },
+            node,
+            kind.module(),
+            DefKind::Module,
+            Some(module),
+        )?;
+        let members = self.new_scope(None, ModuleId(0), true)?;
+        let definition = self.builtin_definition(
+            Context { scope: module, ..c },
+            node,
+            kind.name(),
+            if kind == LibraryType::ManuallyDrop {
+                DefKind::Struct
+            } else {
+                DefKind::Enum
+            },
+            Some(members),
+        )?;
+        let parameter_scope = self.new_scope(None, ModuleId(0), true)?;
+        let mut parameters = Vec::new();
+        for name in kind.parameters() {
+            parameters.push(self.builtin_definition(
+                Context {
+                    scope: parameter_scope,
+                    ..c
+                },
+                node,
+                name,
+                DefKind::Generic,
+                None,
+            )?);
+        }
+        let variants = self.library_variants(c, node, kind, members)?;
+        if kind != LibraryType::ManuallyDrop {
+            let name = self.facts.definitions[definition.0 as usize].name;
+            self.facts
+                .library_types
+                .prelude
+                .insert((name, Namespace::Type), definition);
+        }
+        self.facts.library_types.entries.insert(
+            kind,
+            Nominal {
+                origin: NodeKey { file: c.file, node },
+                kind,
+                definition,
+                parameters,
+                variants,
+            },
+        );
+        Ok(())
+    }
+    fn library_variants(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        kind: LibraryType,
+        members: ScopeId,
+    ) -> Result<Vec<Variant>, Error> {
+        let mut variants = Vec::new();
+        for &(name, field) in kind.variants() {
+            let constructor = self.library_value(
+                Context {
+                    scope: members,
+                    ..c
+                },
+                node,
+                name,
+                if kind == LibraryType::ManuallyDrop {
+                    DefKind::Constructor
+                } else {
+                    DefKind::Variant
+                },
+            )?;
+            let type_definition = if kind == LibraryType::ManuallyDrop {
+                None
+            } else {
+                Some(self.builtin_definition(
+                    Context {
+                        scope: members,
+                        ..c
+                    },
+                    node,
+                    name,
+                    DefKind::Variant,
+                    None,
+                )?)
+            };
+            if kind != LibraryType::ManuallyDrop {
+                let name = self.facts.definitions[constructor.0 as usize].name;
+                self.facts
+                    .library_types
+                    .prelude
+                    .insert((name, Namespace::Value), constructor);
+                if let Some(id) = type_definition {
+                    self.facts
+                        .library_types
+                        .prelude
+                        .insert((name, Namespace::Type), id);
+                }
+            }
+            variants.push(Variant {
+                type_definition,
+                constructor,
+                field,
+            });
+        }
+        Ok(variants)
+    }
+    fn library_value(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        spelling: &str,
+        kind: DefKind,
+    ) -> Result<DefId, Error> {
+        let name = self
+            .package
+            .names
+            .intern(spelling)
+            .map_err(|e| self.error(c, node, e))?;
+        self.define(
+            crate::resolve::model::Definition {
+                name,
+                namespace: Namespace::Value,
+                kind,
+                scope: c.scope,
+                node: None,
+                access: crate::resolve::model::Access::Public,
+                members: None,
+            },
+            false,
+        )
+    }
+}

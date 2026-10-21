@@ -49,6 +49,7 @@ pub struct Obligation {
 }
 #[derive(Clone)]
 pub struct Contract {
+    pub key: super::ir::BodyKey,
     pub source: NodeKey,
     pub signature: Option<TypeId>,
     pub universals: u32,
@@ -80,6 +81,7 @@ impl Contract {
     }
     fn constant(source: NodeKey) -> Self {
         Self {
+            key: super::ir::BodyKey::Anonymous(source),
             source,
             signature: None,
             universals: 0,
@@ -110,6 +112,12 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             index.insert(source, bodies.len());
             bodies.push(function_contract(facts, function, source)?);
         }
+    }
+    for closure in facts.closures.all() {
+        if index.insert(closure.body, bodies.len()).is_some() {
+            return Err("duplicate closure lifetime owner");
+        }
+        bodies.push(closure_contract(facts, closure)?);
     }
     for initializer in &facts.initializers {
         index.insert(initializer.value, bodies.len());
@@ -220,10 +228,15 @@ fn constructors(
             continue;
         }
         let source = variant.node;
-        if index.insert(source, bodies.len()).is_some() {
+        if facts.members.at_node(source).is_some() && index.insert(source, bodies.len()).is_some() {
             return Err("duplicate constructor lifetime owner");
         }
-        bodies.push(constructor(facts, variant, signature)?);
+        bodies.push(constructor(
+            facts,
+            crate::resolve::model::DefId(item.0),
+            variant,
+            signature,
+        )?);
     }
     Ok(())
 }
@@ -239,12 +252,34 @@ fn function_contract(
     contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
     Ok(contract)
 }
+fn closure_contract(
+    facts: &Declarations,
+    closure: &crate::sema::closures::Body,
+) -> Result<Contract, &'static str> {
+    let mut contract = if let Some(owner) = closure.owner {
+        parameter_contract(facts, owner, closure.body, Some(closure.signature))?
+    } else {
+        Contract::constant(closure.body)
+    };
+    contract.key = super::ir::BodyKey::Closure(closure.identity);
+    contract.signature = Some(closure.signature);
+    contract.universals = closure.universals;
+    if let Some(scheme) = closure
+        .owner
+        .and_then(|owner| facts.lifetimes.functions.get(&owner))
+    {
+        contract.assumptions.clone_from(&scheme.bounds);
+    }
+    Ok(contract)
+}
 fn initializer_contract(
     facts: &Declarations,
     initializer: &crate::sema::model::Initializer,
 ) -> Result<Contract, &'static str> {
     let Some(schema) = facts.associated.schema(initializer.definition) else {
-        return Ok(Contract::constant(initializer.value));
+        let mut contract = Contract::constant(initializer.value);
+        contract.key = super::ir::BodyKey::Declaration(initializer.definition);
+        return Ok(contract);
     };
     let mut contract = parameter_contract(facts, initializer.definition, initializer.value, None)?;
     contract.universals = schema.captures;
@@ -253,6 +288,7 @@ fn initializer_contract(
 }
 pub(super) fn constructor(
     facts: &Declarations,
+    definition: crate::resolve::model::DefId,
     variant: crate::sema::members::Variant,
     signature: TypeId,
 ) -> Result<Contract, &'static str> {
@@ -266,6 +302,7 @@ pub(super) fn constructor(
         variant.node,
         Some(signature),
     )?;
+    contract.key = super::ir::BodyKey::Declaration(definition);
     contract.universals = bound_regions;
     // Signature well-formedness contributes the completed nominal requirements.
     Ok(contract)
@@ -292,6 +329,7 @@ fn parameter_contract(
         }
     }
     Ok(Contract {
+        key: super::ir::BodyKey::Declaration(owner),
         source,
         signature,
         universals: 0,

@@ -7,7 +7,7 @@ impl Walker<'_> {
         self.record(node, context)?;
         match self.kind(node) {
             Syntax::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 statements,
                 tail,
             } => {
@@ -148,7 +148,8 @@ impl Walker<'_> {
                 }
                 self.expressions(fields, context)?;
             }
-            Syntax::Literal(_)
+            Syntax::Closure { .. }
+            | Syntax::Literal(_)
             | Syntax::Name(_)
             | Syntax::Path { .. }
             | Syntax::Qualified { .. }

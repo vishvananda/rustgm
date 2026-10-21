@@ -423,7 +423,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn constructor_template(
+    pub(super) fn constructor_template(
         &mut self,
         key: NodeKey,
         item: ItemId,

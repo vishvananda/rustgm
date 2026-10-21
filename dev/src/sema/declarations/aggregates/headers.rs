@@ -10,6 +10,17 @@ impl Checker<'_> {
             if !matches!(definition.kind, DefKind::Struct | DefKind::Enum) {
                 continue;
             }
+            if self
+                .report
+                .resolution
+                .library_types
+                .identify(DefId(u32::try_from(index).map_err(|_| {
+                    Error::at(FileId(0), 0, "too many nominal definitions")
+                })?))
+                .is_some()
+            {
+                continue;
+            }
             let key = definition
                 .node
                 .ok_or_else(|| Error::at(FileId(0), 0, "nominal declaration has no syntax"))?;

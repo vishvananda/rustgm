@@ -4,6 +4,7 @@ mod alignment;
 mod annotations;
 mod bounds;
 mod calls;
+mod closures;
 mod conditions;
 mod defining_bodies;
 mod divergence;
@@ -14,6 +15,7 @@ mod generics;
 mod hidden_results;
 mod invocations;
 mod item_values;
+mod language_hooks;
 mod lifetimes;
 mod matches;
 mod methods;
@@ -29,6 +31,7 @@ mod addresses;
 mod pointer_casts;
 mod pointers;
 mod references;
+mod safety;
 mod selected_arguments;
 mod slots;
 mod text;
@@ -162,6 +165,7 @@ enum Work {
     CallArguments(NodeId, Option<TermId>),
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
+    CollectClosure,
 }
 /// Cleared storage can be reused between short declaration-time constants.
 /// Successful checks clear touched slots; caller evidence is cleared before reuse.
@@ -183,6 +187,9 @@ pub(super) struct Checker<'a> {
     state: State,
 }
 pub(super) struct State {
+    closures: Option<Box<closures::Scheduler>>,
+    closure_children: Vec<usize>,
+    closure_cursor: usize,
     steps: usize,
     completion: readiness::Completion,
     alignment: alignment::Pending,
@@ -194,6 +201,7 @@ pub(super) struct State {
     result_term: Option<TermId>,
     opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
     in_function: bool,
+    safety: safety::Context,
     infer: Context,
     terms: slots::Terms,
     diverges: slots::Slots<bool>,
@@ -221,6 +229,7 @@ pub(super) struct State {
     pointer_casts: Vec<NodeId>,
     reference_expected: HashSet<NodeId>,
     address_dereferences: HashSet<NodeId>,
+    raw_address_places: HashSet<NodeId>,
     unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
@@ -281,6 +290,9 @@ impl<'a> Checker<'a> {
             facts,
             pattern_queries: None,
             state: State {
+                closures: None,
+                closure_children: Vec::new(),
+                closure_cursor: 0,
                 steps: 0,
                 completion: readiness::Completion::Inactive,
                 alignment: alignment::Pending::default(),
@@ -298,6 +310,7 @@ impl<'a> Checker<'a> {
                 result_term: None,
                 opaque_terms: Vec::new(),
                 in_function: true,
+                safety: safety::Context::default(),
                 infer: Context::default(),
                 touched: scratch.touched,
                 bindings: Vec::new(),
@@ -321,6 +334,7 @@ impl<'a> Checker<'a> {
                 pointer_casts: Vec::new(),
                 reference_expected: HashSet::new(),
                 address_dereferences: HashSet::new(),
+                raw_address_places: HashSet::new(),
                 unsizing_contexts: std::collections::HashMap::new(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
@@ -410,6 +424,7 @@ impl<'a> Checker<'a> {
         self.state.result_term = None;
         self.state.opaque_terms.clear();
         self.state.in_function = false;
+        self.state.safety = safety::Context::default();
     }
     pub(super) fn anonymous_constant(
         &mut self,
@@ -596,9 +611,14 @@ impl Checker<'_> {
         self.prepare_bound_environment(body.node, function.definition, Some(function.signature))?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
-        let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {
+        let Some(Type::Function {
+            result, unsafe_, ..
+        }) = self.facts.types.kind(function.signature)
+        else {
             return Err(self.error(body.node, "missing function signature"));
         };
+        self.state.safety = safety::Context::default();
+        self.state.safety.function = unsafe_;
         self.state.result = result;
         self.prepare_opaque_results(body.node)?;
         let unit = self.report.package.unit(self.state.file);
@@ -644,6 +664,16 @@ impl Checker<'_> {
         self.advance_body()
     }
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
+        loop {
+            if let Some(dependency) = self.advance_current_body()? {
+                return Ok(Some(dependency));
+            }
+            if !self.continue_closure_bodies()? {
+                return Ok(None);
+            }
+        }
+    }
+    fn advance_current_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         if let Some(finalization) = self.state.finalization.take() {
             return self.resume_finalization(*finalization);
@@ -652,6 +682,7 @@ impl Checker<'_> {
             return self.finish(body);
         }
         loop {
+            let body = self.state.body.node;
             if matches!(
                 self.availability,
                 super::traits::implementations::Availability::Declarations
@@ -668,6 +699,7 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
+                Work::CollectClosure => self.collect_closure()?,
                 Work::Conditional {
                     node,
                     pattern,
@@ -725,7 +757,7 @@ impl Checker<'_> {
                 Work::CompleteExpression(node, term) => self.exit_expression(node, term)?,
             }
         }
-        self.finish(body)
+        self.finish(self.state.body.node)
     }
     fn schedule_expression_completion(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         if matches!(
@@ -740,6 +772,7 @@ impl Checker<'_> {
         }
     }
     fn exit_expression(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
+        self.leave_safety(node)?;
         self.state.type_annotations.remove(&node);
         self.save(node, term);
         let mut local_exit = false;
@@ -910,6 +943,7 @@ impl Checker<'_> {
                 .unwrap_or(true);
             self.pattern(node, term, valid)?;
             let root = self.facts.patterns.roots[&self.key(node)];
+            self.check_static_binding(node, root, input)?;
             self.state.alignment.patterns.push((root, input));
             return Ok(());
         }
@@ -959,6 +993,10 @@ impl Checker<'_> {
         {
             frame.in_condition = false;
         }
+        if matches!(self.kind(node), Kind::Closure { .. }) {
+            return self.enter_closure(node, expected);
+        }
+        self.enter_safety(node)?;
         self.enter_control(node, expected)?;
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
@@ -1133,6 +1171,7 @@ impl Checker<'_> {
                 }
                 self.term(value)
             }
+            Kind::Closure { .. } => self.term(node),
             Kind::Literal(index) => self.literal(node, index),
             Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =
@@ -1165,6 +1204,9 @@ impl Checker<'_> {
                 {
                     return self.generic_constructor(node, ty, variant);
                 }
+                if definition.kind == DefKind::Static {
+                    self.check_static_access(node, id)?;
+                }
                 if definition.kind == DefKind::Const && self.facts.associated.owner(id).is_some() {
                     return self.associated_constant(node, id, ty);
                 }
@@ -1196,7 +1238,7 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 statements,
                 tail,
             }
@@ -1264,9 +1306,14 @@ impl Checker<'_> {
                 )
             }
             Kind::Unary {
-                op: Unary::Negate | Unary::Not,
+                op: op @ (Unary::Negate | Unary::Not),
                 operand,
             } => {
+                let kind = language_hooks::unary_hook(op)
+                    .ok_or_else(|| self.error(node, "missing unary library hook"))?;
+                if self.uses_language_operator(node, kind, operand)? {
+                    return self.language_operator(node, kind, operand, None);
+                }
                 if matches!(
                     self.kind(node),
                     Kind::Unary {
@@ -1354,9 +1401,14 @@ impl Checker<'_> {
                 self.prepare_pointer_cast(node, value, source, target)?;
                 if matches!(
                     self.head(node, source)?,
-                    Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+                    Some(
+                        Constructor::FunctionItem(..)
+                            | Constructor::FunctionItemArgs(..)
+                            | Constructor::Closure(..)
+                    )
                 ) && matches!(self.head(node, target)?, Some(Constructor::Function { .. }))
                 {
+                    self.closure_pointer_environment(node, source)?;
                     let signature = self.child(node, source, 0)?;
                     self.callable_shape(node, signature, target)?;
                 }
@@ -1468,9 +1520,14 @@ impl Checker<'_> {
         }
         if matches!(
             actual_head,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            Some(
+                Constructor::FunctionItem(..)
+                    | Constructor::FunctionItemArgs(..)
+                    | Constructor::Closure(..)
+            )
         ) && matches!(expected_head, Some(Constructor::Function { .. }))
         {
+            self.closure_pointer_environment(source, actual)?;
             let signature = self.child(source, actual, 0)?;
             self.callable_shape(source, signature, expected)?;
             self.record_adjustment(source, expected, AdjustmentKind::FunctionPointer)?;
@@ -1537,11 +1594,19 @@ impl Checker<'_> {
         }
         let a_item = matches!(
             ah,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            Some(
+                Constructor::FunctionItem(..)
+                    | Constructor::FunctionItemArgs(..)
+                    | Constructor::Closure(..)
+            )
         );
         let b_item = matches!(
             bh,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            Some(
+                Constructor::FunctionItem(..)
+                    | Constructor::FunctionItemArgs(..)
+                    | Constructor::Closure(..)
+            )
         );
         let distinct_items = match (ah, bh) {
             (Some(Constructor::FunctionItem(a, _)), Some(Constructor::FunctionItem(b, _))) => {
@@ -1578,6 +1643,11 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         if op == Op::Equal || scalar::compound_operator(op).is_some() {
             return self.assignment(node, op, left, right);
+        }
+        if let Some(kind) = language_hooks::binary_hook(op)
+            && self.uses_language_operator(node, kind, left)?
+        {
+            return self.language_operator(node, kind, left, Some(right));
         }
         let a = self.term(left)?;
         let b = self.term(right)?;
@@ -1639,11 +1709,11 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        if unsafe_ || bound_regions != 0 {
-            return Err(self.error(
-                node,
-                "unsafe or lifetime-polymorphic calls require later implementation",
-            ));
+        if unsafe_ {
+            self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
+        }
+        if bound_regions != 0 {
+            return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));
         }
         let unit = self.report.package.unit(self.state.file);
         let mut count = usize::from(matches!(
@@ -2146,7 +2216,13 @@ impl Checker<'_> {
             kind
         } else if matches!(
             self.facts.types.kind(self.ty(value)?),
-            Some(Type::FunctionItem { .. })
+            Some(
+                Type::FunctionItem { .. }
+                    | Type::Closure {
+                        environment: TypeId::UNIT,
+                        ..
+                    }
+            )
         ) && matches!(
             self.facts.types.kind(self.ty(ty)?),
             Some(Type::Function { .. })

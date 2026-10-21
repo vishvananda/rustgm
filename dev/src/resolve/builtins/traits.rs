@@ -1,6 +1,8 @@
 //! Small demand-loaded trait modules retain identity through aliases and globs.
 mod callables;
+mod language;
 use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
+use crate::support::language_hooks::Hook;
 use crate::{
     resolve::lookup::{Lookup, LookupMode},
     resolve::model::Namespace,
@@ -9,6 +11,7 @@ use crate::{
     syntax::ast::NodeId,
 };
 pub use callables::Callable;
+pub use language::Language;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BuiltinTrait {
@@ -17,16 +20,18 @@ pub enum BuiltinTrait {
     Sized,
     Auto(AutoTrait),
     Callable(CallTrait),
+    Language(Hook),
 }
 impl BuiltinTrait {
-    fn index(self) -> usize {
-        match self {
+    fn index(self) -> Option<usize> {
+        Some(match self {
             Self::Copy => 0,
             Self::Clone => 1,
             Self::Sized => 2,
             Self::Auto(marker) => 3 + marker as usize,
             Self::Callable(kind) => 8 + kind as usize,
-        }
+            Self::Language(_) => return None,
+        })
     }
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -36,6 +41,7 @@ impl BuiltinTrait {
             Self::Sized => "Sized",
             Self::Auto(marker) => marker.name(),
             Self::Callable(kind) => kind.name(),
+            Self::Language(kind) => kind.name(),
         }
     }
 }
@@ -48,11 +54,26 @@ pub struct Traits {
     pub(super) ops: Option<ScopeId>,
     entries: [Option<DefId>; 11],
     callables: Option<Box<[Callable; 3]>>,
+    language: std::collections::HashMap<Hook, Language>,
 }
 impl Traits {
+    fn insert_fixed(
+        &mut self,
+        trait_: BuiltinTrait,
+        definition: DefId,
+    ) -> Result<(), &'static str> {
+        let index = trait_
+            .index()
+            .ok_or("language trait has no fixed metadata slot")?;
+        self.entries[index] = Some(definition);
+        Ok(())
+    }
     #[must_use]
     pub fn get(&self, trait_: BuiltinTrait) -> Option<DefId> {
-        self.entries[trait_.index()]
+        if let BuiltinTrait::Language(kind) = trait_ {
+            return self.language(kind).map(|entry| entry.definition);
+        }
+        self.entries[trait_.index()?]
     }
     #[must_use]
     pub fn identify(&self, id: DefId) -> Option<BuiltinTrait> {
@@ -61,6 +82,12 @@ impl Traits {
             .chain(AutoTrait::ALL.into_iter().map(BuiltinTrait::Auto))
             .chain(CallTrait::ALL.into_iter().map(BuiltinTrait::Callable))
             .find(|t| self.get(*t) == Some(id))
+            .or_else(|| {
+                self.language
+                    .values()
+                    .find(|entry| entry.definition == id)
+                    .map(|entry| BuiltinTrait::Language(entry.kind))
+            })
     }
     pub(super) fn identities(&self) -> impl Iterator<Item = DefId> + '_ {
         self.entries[..6]
@@ -88,6 +115,9 @@ impl Resolver<'_> {
         // decides whether the written name denotes a user declaration or alias.
         // Defer this family until a call-trait name is actually demanded so an
         // existing ops glob does not eagerly create unrelated declarations.
+        if let Some(kind) = Hook::ALL.into_iter().find(|kind| kind.name() == last) {
+            return self.prepare_language_trait(c, node, kind);
+        }
         if CallTrait::ALL.into_iter().any(|kind| kind.name() == last) {
             return self.prepare_call_traits(c, node);
         }
@@ -228,7 +258,10 @@ impl Resolver<'_> {
             DefKind::BuiltinTrait,
             None,
         )?;
-        self.facts.builtin_traits.entries[trait_.index()] = Some(id);
+        self.facts
+            .builtin_traits
+            .insert_fixed(trait_, id)
+            .map_err(|e| self.error(c, node, e))?;
         Ok(())
     }
     fn trait_module(
@@ -260,7 +293,10 @@ impl Resolver<'_> {
                 DefKind::BuiltinTrait,
                 None,
             )?;
-            self.facts.builtin_traits.entries[trait_.index()] = Some(id);
+            self.facts
+                .builtin_traits
+                .insert_fixed(*trait_, id)
+                .map_err(|e| self.error(c, node, e))?;
         }
         self.builtin_definition(
             Context {

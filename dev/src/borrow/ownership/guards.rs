@@ -37,10 +37,7 @@ impl<'a> Proof<'a> {
             frames: Vec::new(),
             loans: Vec::new(),
             remaining: 32_000_000,
-            precise: if body
-                .projections
-                .iter()
-                .any(|p| matches!(p.kind, crate::body::ir::ProjectionKind::Dereference { .. }))
+            precise: if body.projections.iter().any(|p| p.kind.is_dereference())
                 || body
                     .values
                     .iter()

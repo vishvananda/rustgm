@@ -214,6 +214,9 @@ fn concrete_proofs_require_the_matching_instance_owner_and_original() -> TestRes
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
     contract.source.node.0 += 1;
     assert!(prove(&mut f.facts, &checked, body, &contract).is_err());
+    let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
+    contract.key = crate::body::ir::BodyKey::Anonymous(body.source);
+    assert!(prove(&mut f.facts, &checked, body, &contract).is_err());
     let (mut body, contract) = specialize(&mut f.facts, &checked, first)?;
     let Some(Kind::FunctionItem {
         item, signature, ..
@@ -271,7 +274,7 @@ fn assembly_cannot_erase_a_completed_destruction_proof() -> TestResult {
         let input = f
             .inputs
             .iter()
-            .find(|input| input.source == body.source)
+            .find(|input| input.key == body.key())
             .ok_or("missing ordinary contract")?;
         builder.push(&mut f.facts, &checked, body, input, None)?;
     }

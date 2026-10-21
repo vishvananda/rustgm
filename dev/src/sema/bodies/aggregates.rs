@@ -274,10 +274,10 @@ impl Checker<'_> {
         if definition.kind != DefKind::Struct {
             return Err(self.error(node, "enum fields require a selected variant"));
         }
-        definition
-            .node
-            .and_then(|key| self.facts.members.at_node(key))
-            .ok_or_else(|| self.error(node, "missing struct member facts"))
+        let [variant] = self.facts.members.variants(item) else {
+            return Err(self.error(node, "missing struct member facts"));
+        };
+        Ok(*variant)
     }
     pub(super) fn member_name(&mut self, node: NodeId, span: Span) -> Result<Name, Error> {
         let spelling = self
@@ -306,6 +306,9 @@ impl Checker<'_> {
     }
     pub(super) fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
         let access = self.facts.members.fields[field.0 as usize].access;
+        if access == Access::ExternalPrivate {
+            return Err(self.error(node, "aggregate field is private"));
+        }
         if let Access::Within(module) = access
             && !self.report.package.is_descendant(self.state.module, module)
         {
@@ -494,7 +497,19 @@ impl Checker<'_> {
                 None
             }
             Some(Constructor::Slice) => Some(Operation::IndexSlice),
-            _ => return Err(self.error(node, "indexing requires a known array type")),
+            _ => {
+                let kind = crate::support::language_hooks::Hook::Index;
+                if self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .language(kind)
+                    .is_none()
+                {
+                    return Err(self.error(node, "indexing requires a known array type"));
+                }
+                return self.language_operator(node, kind, value, Some(index));
+            }
         };
         let usize = self.known(node, TypeId::primitive(Primitive::Usize))?;
         self.coerce(index, usize)?;
@@ -532,7 +547,8 @@ impl Checker<'_> {
         node: NodeId,
         left: NodeId,
     ) -> Result<Option<DefId>, Error> {
-        if self.state.pending_indexes.contains_key(&left)
+        if matches!(self.kind(left), Kind::Index { .. })
+            || self.state.pending_indexes.contains_key(&left)
             || self.facts.node(self.key(left)).is_some_and(|f| {
                 matches!(
                     f.operation,
@@ -553,6 +569,12 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "assignment requires a place"));
         };
+        if self.report.resolution.definitions[target.0 as usize].kind == DefKind::Static {
+            if !self.mutable_static(target) {
+                return Err(self.error(node, "cannot assign to immutable static storage"));
+            }
+            return Ok(None);
+        }
         if !matches!(
             self.report.resolution.definitions[target.0 as usize].kind,
             DefKind::Local | DefKind::Parameter

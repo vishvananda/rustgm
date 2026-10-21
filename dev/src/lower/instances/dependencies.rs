@@ -24,14 +24,34 @@ enum Work {
     Location(LocationId),
 }
 pub(super) struct Demands {
+    pub closures: Vec<crate::types::closure::ClosureId>,
     pub calls: Vec<Instance>,
     pub object_types: Vec<TypeId>,
 }
 #[derive(Default)]
 struct Discovered {
+    closures: Vec<crate::types::closure::ClosureId>,
     calls: Vec<Instance>,
     tables: Vec<(TypeId, TypeId)>,
     upcasts: Vec<(TypeId, TypeId)>,
+}
+impl Discovered {
+    fn callable(
+        &mut self,
+        types: &crate::types::Store,
+        body: &Body,
+        ty: TypeId,
+    ) -> Result<(), &'static str> {
+        match types.kind(ty) {
+            Some(Kind::FunctionItem { .. }) => {
+                self.calls
+                    .push(body.callable_target(Instance::new(types, ty)?));
+            }
+            Some(Kind::Closure { identity, .. }) => self.closures.push(identity),
+            _ => {}
+        }
+        Ok(())
+    }
 }
 impl Dependencies {
     pub(super) fn collect(
@@ -66,6 +86,7 @@ impl Dependencies {
             object_types.push(table.concrete);
         }
         Ok(Demands {
+            closures: result.closures,
             calls: concrete,
             object_types,
         })
@@ -114,11 +135,7 @@ impl Dependencies {
                     self.charge(1)?;
                     ty = facts.types.storage_head(referent)?;
                 }
-                if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                    result
-                        .calls
-                        .push(body.callable_target(Instance::new(&facts.types, ty)?));
-                }
+                result.callable(&facts.types, body, ty)?;
             }
             let operand = match value.kind {
                 Rvalue::Reify(id)
@@ -135,11 +152,7 @@ impl Dependencies {
                     .get(id.0 as usize)
                     .ok_or("invalid callable operand")?
                     .ty;
-                if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                    result
-                        .calls
-                        .push(body.callable_target(Instance::new(&facts.types, ty)?));
-                }
+                result.callable(&facts.types, body, ty)?;
             }
         }
         for (id, _) in body::constants::references(body) {

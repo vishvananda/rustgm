@@ -1,5 +1,8 @@
 //! Stable name-resolution facts; lexical bindings point directly at definitions.
-pub use super::builtins::{BuiltinTrait, Callable as BuiltinCallable, Traits as BuiltinTraits};
+pub use super::builtins::{
+    BuiltinTrait, Callable as BuiltinCallable, Language as BuiltinLanguage, LibraryNominal,
+    LibraryTypes, Traits as BuiltinTraits,
+};
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
 use crate::syntax::ast::NodeId;
 use std::collections::HashMap;
@@ -33,6 +36,7 @@ impl Namespace {
 pub enum Access {
     Public,
     Within(ModuleId),
+    ExternalPrivate,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DefKind {
@@ -246,6 +250,7 @@ pub struct Resolution {
     /// Unnameable `impl Trait` input parameters, grouped by their owning function.
     pub anonymous_parameters: HashMap<NodeKey, Vec<NodeKey>>,
     pub builtin_traits: BuiltinTraits,
+    pub library_types: LibraryTypes,
     /// Language-owned identity, distinct from any user declaration named `Drop`.
     pub drop_trait: Option<DefId>,
     /// Supported external crate metadata, separate from the crate's lexical root.

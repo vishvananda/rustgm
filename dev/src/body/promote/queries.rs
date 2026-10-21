@@ -127,6 +127,7 @@ impl Engine<'_, '_> {
                 let projection = self.projection(id)?;
                 match projection.kind {
                     ProjectionKind::Dereference { .. }
+                    | ProjectionKind::RawDereference { .. }
                     | ProjectionKind::Subarray { .. }
                     | ProjectionKind::Subslice { .. }
                     | ProjectionKind::FromEnd { .. } => Ok(false),

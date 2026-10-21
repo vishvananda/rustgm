@@ -74,10 +74,28 @@ impl Index {
                 );
             }
         }
-        for projection in &body.projections {
+        for (ordinal, projection) in body.projections.iter().enumerate() {
+            if matches!(projection.kind, ProjectionKind::RawDereference { .. }) {
+                let id = crate::body::ir::ProjectionId(
+                    u32::try_from(ordinal).map_err(|_| "too many raw loan projections")?,
+                );
+                this.capacity()?;
+                let path = Id(this.paths.len());
+                this.paths.push(Path {
+                    root: Place::Projection(id),
+                    parent: None,
+                    step: None,
+                    shared: false,
+                });
+                this.projections.push(path);
+                continue;
+            }
             let base = this.place(projection.base)?;
             let step = match projection.kind {
                 ProjectionKind::Dereference { mutable, .. } => Step::Dereference { mutable },
+                ProjectionKind::RawDereference { .. } => {
+                    return Err("raw loan root escaped dispatch");
+                }
                 ProjectionKind::Field(field) => Step::Field(field),
                 ProjectionKind::ConstantIndex(i) => Step::Element(i),
                 ProjectionKind::Subarray { start, end } => Step::Range(start, end),

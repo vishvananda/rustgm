@@ -26,6 +26,7 @@ impl Lower<'_, '_> {
         let projection = &self.body.projections[id.0 as usize];
         match projection.kind {
             ProjectionKind::Dereference { .. }
+            | ProjectionKind::RawDereference { .. }
             | ProjectionKind::FromEnd { .. }
             | ProjectionKind::Subslice { .. } => Ok(Step::Dynamic(id)),
             ProjectionKind::Field(field) => {

@@ -33,7 +33,7 @@ impl super::model::Declarations {
             let ast = &report.package.unit(key.file).configured.ast;
             match ast.node(key.node).kind {
                 Kind::Block {
-                    flavor: BlockFlavor::Plain,
+                    flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                     statements,
                     tail: Some(node),
                 } if statements.start == statements.end && !block => {

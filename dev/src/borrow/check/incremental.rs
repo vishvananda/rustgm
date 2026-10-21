@@ -65,7 +65,10 @@ impl Verifier {
             message: message.into(),
         };
         super::require_body_promotions(&body)?;
-        if contract.source != body.source || contract.instance != body.instance {
+        if contract.key != body.key()
+            || contract.source != body.source
+            || contract.instance != body.instance
+        {
             return Err(error("instance proof belongs to another body"));
         }
         if let Some(instance) = body.instance {

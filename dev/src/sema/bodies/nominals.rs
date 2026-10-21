@@ -244,7 +244,7 @@ impl Checker<'_> {
             .generics
             .parameters
             .get(&DefId(owner.0))
-            .ok_or_else(|| self.error(node, "missing nominal argument schema"))?;
+            .map_or(&[][..], Vec::as_slice);
         if parameters.len() != arguments.len() {
             return Err(self.error(node, "invalid nominal argument count"));
         }

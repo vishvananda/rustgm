@@ -410,11 +410,14 @@ impl Checker<'_> {
             self.selected(node, Operation::AddressDereference)?;
             return self.child(node, term, 0);
         }
-        if !matches!(self.head(node, term)?, Some(Constructor::Reference { .. })) {
-            return Err(self.error(
-                node,
-                "dereferencing requires a known reference; raw pointers require unsafe semantics",
-            ));
+        match self.head(node, term)? {
+            Some(Constructor::Reference { .. }) => {}
+            Some(Constructor::Pointer { .. }) => {
+                self.require_unsafe(node, "raw pointer dereference requires an unsafe context")?;
+            }
+            _ => {
+                return Err(self.error(node, "dereferencing requires a known reference or pointer"));
+            }
         }
         self.selected(node, Operation::Dereference)?;
         self.child(node, term, 0)

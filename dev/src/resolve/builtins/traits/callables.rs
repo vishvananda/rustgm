@@ -74,8 +74,10 @@ impl Resolver<'_> {
             } else {
                 None
             };
-            self.facts.builtin_traits.entries[BuiltinTrait::Callable(kind).index()] =
-                Some(definition);
+            self.facts
+                .builtin_traits
+                .insert_fixed(BuiltinTrait::Callable(kind), definition)
+                .map_err(|e| self.error(c, node, e))?;
             entries.push(Callable {
                 origin: crate::resolve::unit::NodeKey { file: c.file, node },
                 definition,

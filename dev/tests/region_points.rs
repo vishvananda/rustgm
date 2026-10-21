@@ -246,3 +246,78 @@ fn explicit_full_extents_do_not_retain_a_region_by_word_matrix()
     assert!(!live.contains(unrelated, Point(30))?);
     Ok(())
 }
+
+#[test]
+fn cyclic_extents_propagate_complete_words_with_output_bounded_work()
+-> Result<(), Box<dyn std::error::Error>> {
+    for count in [8_u32, 32, 128, 512, 1024] {
+        let mut graph = Graph::new(2_000_000);
+        let regions = (0..count)
+            .map(|_| graph.region(Kind::Variable { universe: 0 }))
+            .collect::<Result<Vec<_>, _>>()?;
+        for index in 0..count as usize {
+            let next = (index + 1) % regions.len();
+            graph.require(regions[next], regions[index], 0)?;
+            // Repeated source obligations retain distinct diagnostic identities
+            // but do not require repeated propagation between runtime components.
+            graph.require(regions[next], regions[index], 1)?;
+        }
+        let unrelated = graph.region(Kind::Variable { universe: 0 })?;
+        let proof = graph.solve()?;
+        let words = count as usize * count.div_ceil(64) as usize;
+        let limit = 16 * (3 * count as usize + words) + 100;
+        let live = infer(
+            &proof,
+            count,
+            regions.iter().copied().zip((0..count).map(Point)),
+            [],
+            limit,
+        )?;
+        assert_eq!(live.mask_count(), words);
+        assert!(live.steps <= limit);
+        for region in regions {
+            for point in [0, count / 2, count - 1] {
+                assert!(live.contains(region, Point(point))?);
+            }
+        }
+        assert!(!live.contains(unrelated, Point(0))?);
+        assert!(!live.contains(Region::STATIC, Point(0))?);
+    }
+    Ok(())
+}
+
+#[test]
+fn joined_acyclic_extents_send_each_complete_word_once() -> Result<(), Box<dyn std::error::Error>> {
+    for count in [8_u32, 32, 128, 512] {
+        let mut graph = Graph::new(2_000_000);
+        let regions = (0..count)
+            .map(|_| graph.region(Kind::Variable { universe: 0 }))
+            .collect::<Result<Vec<_>, _>>()?;
+        for index in 0..regions.len() {
+            for distance in [1, 2] {
+                if let Some(&longer) = regions.get(index + distance) {
+                    graph.require(longer, regions[index], 0)?;
+                }
+            }
+        }
+        let proof = graph.solve()?;
+        let words = (1..=count).map(|n| n.div_ceil(64) as usize).sum::<usize>();
+        let limit = 16 * (3 * count as usize + words) + 100;
+        let seeds: Vec<_> = regions.iter().copied().zip((0..count).map(Point)).collect();
+        for seeds in [seeds.clone(), seeds.into_iter().rev().collect()] {
+            let live = infer(&proof, count, seeds, [], limit)?;
+            assert_eq!(live.mask_count(), words);
+            assert!(live.steps <= limit);
+            for (index, region) in regions.iter().copied().enumerate() {
+                let end = u32::try_from(index)?;
+                for point in [0, end / 2, end] {
+                    assert!(live.contains(region, Point(point))?);
+                }
+                if end + 1 < count {
+                    assert!(!live.contains(region, Point(end + 1))?);
+                }
+            }
+        }
+    }
+    Ok(())
+}

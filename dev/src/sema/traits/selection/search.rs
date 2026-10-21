@@ -47,6 +47,9 @@ mod partial;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/retained_candidates.rs"]
 mod partial_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/pending_closures.rs"]
+mod pending_closure_tests;
 mod result_bounds;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/contract_evidence.rs"]

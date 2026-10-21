@@ -127,6 +127,7 @@ fn source(node: u32) -> NodeKey {
 }
 fn contract(proof: Obligations) -> Contract {
     Contract {
+        key: crate::body::ir::BodyKey::Anonymous(source(1)),
         builtins: None,
         source: source(1),
         signature: None,

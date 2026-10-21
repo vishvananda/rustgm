@@ -35,6 +35,7 @@ pub(super) struct Context<'a> {
     pub output: Program,
     pub data: data::Storage,
     body_indices: Vec<Option<usize>>,
+    closure_indices: HashMap<crate::types::closure::ClosureId, usize>,
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
@@ -97,7 +98,7 @@ impl<'a> Context<'a> {
             .bodies
             .iter()
             .map(|body| match body.owner {
-                Owner::AnonymousConstant => 0,
+                Owner::AnonymousConstant | Owner::Closure { .. } => 0,
                 Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                     definition.0 as usize + 1
                 }
@@ -117,6 +118,7 @@ impl<'a> Context<'a> {
             output: Program::default(),
             data: data::Storage::default(),
             body_indices: vec![None; size],
+            closure_indices: HashMap::new(),
             instance_indices: HashMap::new(),
             symbols: vec![None; bodies.bodies.len()],
             signatures: HashMap::new(),
@@ -202,6 +204,13 @@ impl<'a> Context<'a> {
     }
     fn index_bodies(&mut self) -> Result<(), &'static str> {
         for (index, body) in self.bodies.bodies.iter().enumerate() {
+            if let Owner::Closure { identity, .. } = body.owner {
+                if body.instance.is_some() || self.closure_indices.insert(identity, index).is_some()
+                {
+                    return Err("closure body requires a distinct source identity");
+                }
+                continue;
+            }
             let Owner::Function {
                 definition,
                 signature,
@@ -237,14 +246,11 @@ impl<'a> Context<'a> {
             bound_regions: _,
             parameters,
             result,
-            unsafe_,
+            unsafe_: _,
         }) = self.types.kind(ty)
         else {
             return Err("missing selected function signature");
         };
-        if unsafe_ {
-            return Err("unsafe calls require later checking");
-        }
         let mut native = Vec::new();
         let result_type = self.representation(result)?;
         if matches!(result_type, Representation::Object(_)) {
@@ -296,7 +302,7 @@ impl<'a> Context<'a> {
         }
         if matches!(
             self.types.kind(ty),
-            Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(..))
+            Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(..) | Kind::Closure { .. })
         ) && ty != TypeId::UNIT
         {
             let layout = self.layout(ty)?;
@@ -321,6 +327,33 @@ impl<'a> Context<'a> {
             Metadata::Length | Metadata::VTable(_) => Ok(true),
             Metadata::Unknown(_) => Err("lowering requires resolved pointer metadata"),
         }
+    }
+    pub fn demand_closure(&mut self, ty: TypeId) -> Result<SymbolId, &'static str> {
+        let Some(Kind::Closure {
+            identity,
+            environment: TypeId::UNIT,
+            ..
+        }) = self.types.kind(ty)
+        else {
+            return Err("closure requires a checked environment adapter");
+        };
+        let &index = self
+            .closure_indices
+            .get(&identity)
+            .ok_or("missing checked closure body")?;
+        if let Some(symbol) = self.symbols[index] {
+            return Ok(symbol);
+        }
+        let Owner::Closure { signature, .. } = self.bodies.bodies[index].owner else {
+            return Err("closure body identity mismatch");
+        };
+        let signature = self.signature(signature)?;
+        let symbol = self
+            .output
+            .declare(format!("rg.closure.{}", identity.0), signature, false)?;
+        self.symbols[index] = Some(symbol);
+        self.queue.push(index);
+        Ok(symbol)
     }
     pub fn demand_definition(&mut self, definition: DefId) -> Result<SymbolId, &'static str> {
         let ty = self

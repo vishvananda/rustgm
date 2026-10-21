@@ -190,7 +190,7 @@ impl Lower<'_, '_> {
     pub(super) fn project(&mut self, id: ProjectionId) -> Result<(), &'static str> {
         let projection = &self.body.projections[id.0 as usize];
         let base = self.place(projection.base)?;
-        if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+        if projection.kind.is_dereference() {
             return self
                 .project_reference(id, base.ok_or("reference place has no pointer storage")?);
         }
@@ -213,6 +213,7 @@ impl Lower<'_, '_> {
         let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
         let address = match projection.kind {
             ProjectionKind::Dereference { .. }
+            | ProjectionKind::RawDereference { .. }
             | ProjectionKind::SliceIndex { .. }
             | ProjectionKind::FromEnd { .. }
             | ProjectionKind::Subslice { .. } => {

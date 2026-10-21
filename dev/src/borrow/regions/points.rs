@@ -1,4 +1,5 @@
 //! Sparse CFG-point propagation over an already proved outlives graph.
+mod propagate;
 mod verify;
 use super::graph::{Region, Solution};
 use std::collections::{HashMap, HashSet};
@@ -75,14 +76,8 @@ impl Liveness {
         Ok(())
     }
 }
-struct Change {
-    region: Region,
-    word: u32,
-    bits: u64,
-}
 struct Solver {
     result: Liveness,
-    work: Vec<Change>,
     limit: usize,
 }
 impl Solver {
@@ -136,29 +131,24 @@ impl Solver {
             .ok_or("runtime lifetime work budget exceeded")?;
         Ok(())
     }
-    fn insert<const SEED: bool>(
-        &mut self,
-        region: Region,
-        word: u32,
-        bits: u64,
-    ) -> Result<(), &'static str> {
+    fn insert(&mut self, region: Region, word: u32, bits: u64) -> Result<bool, &'static str> {
         self.charge(1)?;
         if self.result.full.contains(&region) {
-            return Ok(());
+            return Ok(false);
         }
         let old = self.result.masks.get(&(region, word)).copied().unwrap_or(0);
         let added = bits & !old;
         if added == 0 {
-            return Ok(());
+            return Ok(false);
         }
-        // Budget both retained sparse words and pending deltas before growth.
+        // Budget retained sparse words before growth. Component propagation
+        // additionally budgets its temporary graph and word index.
         // Hash-table overhead is bounded separately from propagation steps.
         if self
             .result
             .masks
             .len()
             .saturating_add(self.result.full.len())
-            .saturating_add(self.work.len())
             >= 500_000
         {
             return Err("runtime lifetime storage budget exceeded");
@@ -171,16 +161,7 @@ impl Solver {
                 .ok_or("runtime lifetime word count overflow")?;
         }
         self.result.masks.insert((region, word), old | added);
-        // Initial seeds are all collected before propagation. Queue each word
-        // once, in first-seen order; subsequent propagation still carries deltas.
-        if !SEED || old == 0 {
-            self.work.push(Change {
-                region,
-                word,
-                bits: added,
-            });
-        }
-        Ok(())
+        Ok(old == 0)
     }
 }
 /// Propagate explicit use-site seeds backwards through retained outlives edges.
@@ -208,34 +189,14 @@ pub fn infer(
             word_count: 0,
             steps: 0,
         },
-        work: Vec::new(),
         limit,
     };
     solver.full_extents(proof, full_extents)?;
     for (region, point) in seeds {
         solver.result.validate(region, point)?;
-        solver.insert::<true>(region, point.0 / 64, 1 << (point.0 % 64))?;
+        solver.insert(region, point.0 / 64, 1 << (point.0 % 64))?;
     }
-    solver.charge(solver.work.len())?;
-    for change in &mut solver.work {
-        change.bits = *solver
-            .result
-            .masks
-            .get(&(change.region, change.word))
-            .ok_or("missing runtime lifetime seed word")?;
-    }
-    while let Some(change) = solver.work.pop() {
-        solver.charge(1)?;
-        for relation in proof
-            .requirements(change.region)
-            .map_err(|_| "invalid proven lifetime graph")?
-        {
-            solver.charge(1)?;
-            if relation.longer != Region::LOCAL {
-                solver.insert::<false>(relation.longer, change.word, change.bits)?;
-            }
-        }
-    }
+    solver.propagate(proof)?;
     solver.verify(proof)?;
     Ok(solver.result)
 }

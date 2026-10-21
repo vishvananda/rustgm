@@ -123,10 +123,7 @@ fn visit<'a, S: BuildHasher>(
                 .values
                 .iter()
                 .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
-                || body
-                    .projections
-                    .iter()
-                    .any(|p| matches!(p.kind, ProjectionKind::Dereference { .. })))
+                || body.projections.iter().any(|p| p.kind.is_dereference()))
         {
             pending = Some(body.source);
         }
@@ -318,8 +315,15 @@ impl BodyFacts {
             }
             Action::Evaluate(id) => self.inspect_value(body, types, state, id)?,
             Action::Project(id) | Action::Select { projection: id, .. } => {
-                let info = self.paths.projections[id.0 as usize];
-                if (info.indexed || info.access != Access::Owned)
+                let projection = &body.projections[id.0 as usize];
+                let info = if matches!(projection.kind, ProjectionKind::RawDereference { .. }) {
+                    self.paths.place(projection.base)?
+                } else {
+                    self.paths.projections[id.0 as usize]
+                };
+                if (projection.kind.is_dereference()
+                    || info.indexed
+                    || info.access != Access::Owned)
                     && let Some(path) = info.path
                     && !state.initialized(&self.paths.entries[path.0 as usize])?
                 {
@@ -421,7 +425,7 @@ impl BodyFacts {
             return Err("cannot assign through a guard binding");
         }
         if info.access != Access::Owned {
-            if info.access == Access::Shared {
+            if matches!(info.access, Access::Shared | Access::RawShared) {
                 return Err("cannot assign through a shared reference");
             }
             return Ok(());
@@ -455,7 +459,10 @@ impl BodyFacts {
         if self.paths.view_root(body, info.path).is_some() {
             return Err("cannot mutably borrow through a guard binding");
         }
-        if info.access == Access::Shared || info.path.is_none() {
+        if matches!(info.access, Access::Shared | Access::RawShared)
+            || (info.path.is_none()
+                && !matches!(info.access, Access::RawMutable | Access::StaticMutable))
+        {
             return Err("cannot mutably borrow shared or static storage");
         }
         if info.access == Access::Owned

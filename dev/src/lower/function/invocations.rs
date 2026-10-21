@@ -26,10 +26,22 @@ impl Lower<'_, '_> {
             ty = self.context.types.storage_head(referent)?;
             if matches!(self.context.types.kind(ty), Some(Kind::FunctionItem { .. })) {
                 value = Selected::Item(Instance::new(self.context.types, ty)?);
-            } else {
+            } else if !matches!(self.context.types.kind(ty), Some(Kind::Closure { .. })) {
                 let pointer = value.runtime()?;
                 value = Selected::Runtime(self.builder.load(Type::Ptr, pointer.operand)?);
             }
+        }
+        if matches!(self.context.types.kind(ty), Some(Kind::Closure { .. })) {
+            let symbol = self.context.demand_closure(ty)?;
+            return self.call_operand(
+                signature,
+                crate::lowir::program::Operand::Symbol(symbol),
+                ValueList {
+                    start: arguments.start + 1,
+                    ..arguments
+                },
+                result,
+            );
         }
         match self.context.types.kind(ty) {
             Some(Kind::FunctionItem { .. }) => {

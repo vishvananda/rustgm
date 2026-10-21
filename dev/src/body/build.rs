@@ -1,6 +1,7 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod addresses;
 mod aggregates;
+mod closures;
 mod conditions;
 mod constructors;
 mod decisions;
@@ -133,6 +134,13 @@ pub(crate) fn concrete_prepared(
             .map_err(|e| report.diagnostic(e))?,
         );
     }
+    closures::concrete(
+        report,
+        facts,
+        &mut scratch,
+        &mut program,
+        drop_query.as_mut(),
+    )?;
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
@@ -207,6 +215,8 @@ fn function_body(
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            mutable_statics: None,
+            static_types: None,
             const_context: matches!(owner, Owner::Initializer { .. } | Owner::AnonymousConstant),
             instance: None,
             owned: None,
@@ -266,6 +276,7 @@ enum Work {
     EnterUnadjusted(NodeId),
     Reborrow(NodeId),
     MethodReceiver(NodeId),
+    LanguageReceiver(NodeId),
     InvocationReceiver(NodeId, NodeId),
     Finish(NodeId),
     EndBlock {
@@ -361,10 +372,11 @@ impl<'a> Builder<'a> {
         report: &'a Report,
         facts: &'a Declarations,
         scratch: &'a mut Scratch,
-        body: Body,
+        mut body: Body,
         scope_plan: scopes::Facts,
         drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
     ) -> Self {
+        body.mutable_statics.clone_from(&facts.mutable_statics);
         Self {
             drop_query,
             report,
@@ -760,21 +772,9 @@ impl<'a> Builder<'a> {
             Work::Place(node) => self.enter_place(node)?,
             Work::FinishPlace(node) => self.finish_place(node)?,
             Work::TemporaryPlace(node) => {
-                let place = if let Some(block) = self.current {
+                let place = if self.current.is_some() {
                     let value = self.value(node)?;
-                    self.body.temporaries.push(super::ir::Temporary {
-                        lifetime: self
-                            .scope_plan
-                            .node(node)
-                            .ok_or_else(|| self.error(node, "missing temporary scope"))?
-                            .temporary,
-                        value,
-                        source: node,
-                        block,
-                        before: self.index(node, self.body.statements.len())?,
-                        exits_before: self.index(node, self.scope_exits.len())?,
-                    });
-                    Some(Place::Temporary(value))
+                    self.materialize_place(node, value)?
                 } else {
                     None
                 };
@@ -793,6 +793,7 @@ impl<'a> Builder<'a> {
             }
             Work::Reborrow(node) => self.finish_reborrow(node)?,
             Work::MethodReceiver(node) => self.method_receiver(node)?,
+            Work::LanguageReceiver(node) => self.language_index_receiver(node)?,
             Work::InvocationReceiver(node, callee) => self.invocation_receiver(node, callee)?,
             Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
                 self.enter(node)?;
@@ -974,7 +975,7 @@ impl<'a> Builder<'a> {
                 self.scratch.work.push(Work::Place(value));
             }
             Kind::Block {
-                flavor: BlockFlavor::Plain,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
                 statements,
                 tail,
             }
@@ -1322,7 +1323,7 @@ impl<'a> Builder<'a> {
                         .get(&definition)
                         .ok_or_else(|| self.error(node, "missing const parameter value"))?,
                 ),
-                DefKind::Static => Rvalue::Read(Place::Static(definition)),
+                DefKind::Static => Rvalue::Read(self.static_place(node, definition)?),
                 _ => return Err(self.error(node, "unsupported resolved body value")),
             },
         )
@@ -1355,6 +1356,7 @@ impl<'a> Builder<'a> {
     fn finish(&mut self, node: NodeId) -> Result<(), Error> {
         let ty = self.ty(node)?;
         let value = match self.kind(node) {
+            Kind::Closure { .. } => self.closure_value(node, ty)?,
             Kind::Tuple(elements) if elements.start != elements.end => {
                 self.aggregate_elements(node, elements)?
             }
@@ -1431,6 +1433,9 @@ impl<'a> Builder<'a> {
         Ok(())
     }
     fn binary(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<ValueId, Error> {
+        if let Some(value) = self.language_call(node, &[left, right])? {
+            return Ok(value);
+        }
         let right = self.value(right)?;
         match self.fact(node)?.operation {
             Some(Operation::AssignPlace {

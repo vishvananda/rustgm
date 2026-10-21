@@ -36,6 +36,7 @@ impl<'a> Inhabited<'a> {
     pub fn visible(&self, access: Access) -> bool {
         match access {
             Access::Public => true,
+            Access::ExternalPrivate => false,
             Access::Within(owner) => self.report.package.is_descendant(self.module, owner),
         }
     }

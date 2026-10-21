@@ -1,7 +1,7 @@
 //! Borrowed temporary addresses are materialized where their values dominate uses.
 use super::{Address, Lower, Representation, Selected};
 use crate::{
-    body::ir::{self, Action, Place, ProjectionKind, Rvalue, ValueId},
+    body::ir::{self, Action, Place, Rvalue, ValueId},
     lowir::{
         program::{MemorySpan, Operand},
         vocabulary::Type,
@@ -24,7 +24,7 @@ impl Storage {
             }
         }
         for projection in &body.projections {
-            if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            if projection.kind.is_dereference() {
                 result.mark(body, projection.base)?;
             }
         }

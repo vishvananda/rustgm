@@ -129,6 +129,20 @@ impl NeedsDrop {
             .ok_or("destruction query work budget exceeded")?;
         Ok(())
     }
+    fn nominal_requirement(
+        &self,
+        definitions: &Definitions,
+        item: ItemId,
+    ) -> Result<Option<bool>, &'static str> {
+        let policy = definitions
+            .destruction(item)
+            .ok_or("missing destruction aggregate")?;
+        Ok(match (self.custom.contains(&item), policy) {
+            (true, _) => Some(true),
+            (_, super::aggregate::FieldDestruction::Suppressed) => Some(false),
+            _ => None,
+        })
+    }
     fn run(&mut self, types: &Store, definitions: &Definitions) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
             self.charge()?;
@@ -201,14 +215,11 @@ impl NeedsDrop {
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
                 definitions.shape(types, ty)?;
             }
-            if let Kind::Adt(item, _) = kind {
-                definitions
-                    .get(item)
-                    .ok_or("missing destruction aggregate")?;
-                if self.custom.contains(&item) {
-                    self.record(ty, State::Ready(true));
-                    continue;
-                }
+            if let Kind::Adt(item, _) = kind
+                && let Some(needed) = self.nominal_requirement(definitions, item)?
+            {
+                self.record(ty, State::Ready(needed));
+                continue;
             }
             let mut needed = false;
             if !finish {

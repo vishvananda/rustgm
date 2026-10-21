@@ -1,7 +1,7 @@
 //! Flat indexes share scope membership and preserve event order at equal CFG points.
 use super::state::{self, State};
 use crate::body::{
-    ir::{BlockId, Body, Place, ProjectionKind},
+    ir::{BlockId, Body, Place},
     scopes,
     storage::{End, Location},
 };
@@ -96,7 +96,7 @@ impl Index {
         index.exits(body, state)?;
         for projection in &body.projections {
             let base = index.root(projection.base)?;
-            let root = if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            let root = if projection.kind.is_dereference() {
                 None
             } else {
                 base
