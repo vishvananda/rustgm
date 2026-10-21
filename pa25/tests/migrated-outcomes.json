@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/migrated/discriminant-statements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constant-statements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "migrated_from": "pa12/tests/spec/boundary/constant-statements.rs",
+      "source_sha256": "239645bad5463f6245e3255b066adfdb96199f2f37794032546b285f89c125be"
+    },
+    {
+      "path": "tests/spec/migrated/generic-constant-statements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constant-statements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "migrated_from": "pa19/tests/spec/boundaries/general-constant-statements.rs",
+      "source_sha256": "95b525171d545c1bf80a4bd1e756a0c085ccd9af9256329bd91eee27ecb82311"
+    },
+    {
+      "path": "tests/spec/migrated/discriminant-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constant-functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "migrated_from": "pa12/tests/spec/boundary/constant-function.rs",
+      "source_sha256": "e2e3fb57917a2afe38c1ffba4ac1e596a5899a4579dcb8651025b549f10b1294"
+    }
+  ]
+}

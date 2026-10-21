@@ -1,6 +1,6 @@
 # PA19 fixture ownership
 
-The manifest owns 1,104 fixtures: 440 semantic inspection cases and 665 LowIR
+The manifest owns 1,103 fixtures: 440 semantic inspection cases and 663 LowIR
 cases. Expected outcomes were recorded before compiler probes and reference
 creation. The source corpus comes from the independently qualified maintainer
 trait/method tests, with `maintainer_origin` preserving each source's origin.
@@ -12,7 +12,7 @@ conformance, impl selection, caller assumptions, qualified and implicit paths,
 lexical visibility, default/required dispatch, receiver adjustments, callable
 binders, lifetime equality, generic Drop requirements and execution. Native
 programs use the same `check`/`fail` helper as their original maintainer checks.
-The 269 accepted LowIR programs declare runtime outcomes; the other 395 LowIR
+The 269 accepted LowIR programs declare runtime outcomes; the other 394 LowIR
 cases are required rejections. Semantic inspection contributes 436 accepted
 cases and four required early rejections.
 
@@ -26,8 +26,9 @@ the entry function.
 `receiver-lookup/receiver-former-pa18-boundary.rs` preserves PA18's trait-method
 boundary. Their accepted source bytes are unchanged.
 
-`boundaries/` has two remaining later-assignment differences. The former
-trait-object boundary is preserved as an accepted PA23 fixture. `inspection/` has
+`boundaries/` has one remaining later-assignment difference. The former
+trait-object boundary is preserved as an accepted PA23 fixture, and the unchanged
+general-constant-statements source is in PA25's draft migrated fixtures. `inspection/` has
 one pending-lifetime view paired with the existing rejecting LowIR source in
 `receiver-contracts/`. `compiler-differences/` has three explicit redundant-binder
 acceptance differences from the default pinned compiler; see

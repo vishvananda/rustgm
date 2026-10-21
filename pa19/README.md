@@ -217,20 +217,20 @@ the same safe Rust, Clippy and syntax-aware audit requirements as earlier stages
 Associated types/constants, projections, normalization and extended coherence
 belong to PA20. Higher-ranked trait bounds, GATs, opaque captures and advanced
 generic relationships belong to PA21. General unsized types, trait objects and
-constant statements remain PA22, PA23 and PA25 respectively. The two remaining explicit
-later-stage boundary fixtures record rustc acceptance and this stage's rejection.
+constant statements remain PA22, PA23 and PA25 respectively. The remaining explicit
+later-stage boundary fixture records rustc acceptance and this stage's rejection.
 The higher-ranked bound boundary belongs to the semantic inspection lane: its
 ordinary-predicate vocabulary cannot encode quantified clauses, even when later
 source-to-LowIR functionality can compile the same program.
 
 ## Validation
 
-The manifest contains 1,104 cases: 705 accepted and 399 rejected. There are 440
-semantic inspection cases and 664 LowIR cases. The LowIR lane has 269 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 395
+The manifest contains 1,103 cases: 705 accepted and 398 rejected. There are 440
+semantic inspection cases and 663 LowIR cases. The LowIR lane has 269 accepted
+programs, all with declared clean execution through rustc and CPPGM, and 394
 rejections. No accepted native control is silently skipped.
 
-Six acceptance differences are explicit: two later-stage boundaries, one
+Five acceptance differences are explicit: one later-stage boundary, one
 pending-lifetime inspection control and three redundant-binder compiler
 differences. They are excluded from default-rustc acceptance-parity claims.
 The migrated PA17/PA18 inherent boundaries and PA18 trait-method boundary retain
@@ -238,6 +238,8 @@ their original source bytes in accepted fixtures.
 The former associated-type and associated-constant boundaries are covered by
 PA20's associated-item contract. The former trait-object boundary is now an
 accepted PA23 fixture, with its source bytes preserved.
+The unchanged general-constant-statements boundary now belongs to PA25's draft
+migrated fixtures because the maintainer supports its constant argument.
 
 Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
 `make lint audit-rust test-harness test-upstream`. The root report includes PA19;

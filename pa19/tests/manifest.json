@@ -121,21 +121,6 @@
       "maintainer_origin": "dev/tests/trait_bounds/binders.rs:14"
     },
     {
-      "path": "tests/spec/boundaries/general-constant-statements.rs",
-      "exit_status": 1,
-      "features": [
-        "pa19.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "General constant statements belong to PA25. The existing maintainer control explicitly expects RustGM to reject this Rust-accepted source until that assignment."
-      },
-      "maintainer_origin": "dev/tests/dot_methods.rs:345",
-      "mode": "--emit-lowir"
-    },
-    {
       "path": "tests/spec/boundaries/higher-ranked-trait-bound.rs",
       "exit_status": 1,
       "features": [
