@@ -13,6 +13,16 @@ pub struct Template {
     pub destruction: Requirements,
     pub environment: Arc<Environment>,
 }
+impl Template {
+    /// Both template consumers share the immutable permission environment.
+    /// The charge covers this owner's inline records and every owned body and
+    /// destruction collection; canonical stores and `Arc` pointees are excluded.
+    pub(crate) fn retained_bytes(&self) -> usize {
+        size_of::<Self>()
+            .saturating_add(self.body.allocation_bytes())
+            .saturating_add(self.destruction.allocation_bytes())
+    }
+}
 pub struct Templates {
     pub bodies: Vec<Template>,
 }

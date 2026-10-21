@@ -736,6 +736,13 @@ impl Checker<'_> {
                     self.state.work.push(Work::Enter(right, Some(expected)));
                 }
                 Work::Exit(node) => {
+                    if let Some(requirement) = self.value_readiness(node) {
+                        self.state.work.push(Work::Exit(node));
+                        return Ok(Some(Dependency {
+                            requirement,
+                            source: self.key(node),
+                        }));
+                    }
                     let term = if let Kind::Field { value, name } = self.kind(node) {
                         let field = self.prepare_field(node, value, name)?;
                         if let Some(item) = self.field_dependency(&field) {

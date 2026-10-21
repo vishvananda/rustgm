@@ -24,6 +24,10 @@ pub struct Facts {
     pub steps: usize,
 }
 impl Facts {
+    pub(crate) fn allocation_bytes(&self) -> usize {
+        use crate::support::retained::{map, sum, vector};
+        sum([vector(&self.entries), map(&self.index)])
+    }
     #[must_use]
     pub fn get(&self, root: ValueId) -> Option<Constant> {
         self.index

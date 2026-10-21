@@ -92,6 +92,7 @@ enum Work {
     Fields(ItemId, bool),
     OpaqueHidden(crate::types::opaque::OpaqueId),
     Constructor(DefId),
+    PrepareConstructor(DefId),
     ValueType(DefId),
     ValueContract(TypeId, bool),
     ValueShape(TypeId),
@@ -117,6 +118,7 @@ impl Work {
         match requirement {
             Requirement::Nominal(item) => Self::ValueType(DefId(item.0)),
             Requirement::Definition(definition) => Self::Definition(definition, false),
+            Requirement::Constructor(definition) => Self::PrepareConstructor(definition),
             Requirement::ImplHeader(owner) => Self::ImplHeader(owner, impl_headers::Phase::Begin),
             Requirement::Fields(item) => Self::Fields(item, false),
             Requirement::Opaque(id) => Self::OpaqueHidden(id),
@@ -424,6 +426,7 @@ impl Checker<'_> {
                     ));
                 }
                 Work::Constructor(id) => self.constructor(id)?,
+                Work::PrepareConstructor(id) => self.constant_constructor(id)?,
                 Work::ValueType(id) => self.constant_value_type(id),
                 Work::ValueContract(ty, finish) => self.constant_type_contract(ty, finish)?,
                 Work::ValueShape(ty) => self.constant_value_shape(ty)?,

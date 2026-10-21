@@ -68,6 +68,11 @@ pub(crate) struct State {
     slots: usize,
     active_initializers: HashSet<DefId>,
 }
+impl State {
+    pub(crate) fn retained_slots(&self) -> usize {
+        self.slots.saturating_add(self.memory.retained_cells())
+    }
+}
 impl<'a, 'b> Machine<'a, 'b> {
     /// # Errors
     /// Rejects ambiguous body identities; permission is still checked at each call.
@@ -220,8 +225,12 @@ impl<'a, 'b> Machine<'a, 'b> {
         self.slots = self
             .slots
             .checked_add(slots)
-            .filter(|n| *n <= self.limits.slots)
+            .filter(|n| n.saturating_add(self.memory.retained_cells()) <= self.limits.slots)
             .ok_or(Failure::Fault("constant execution storage limit exceeded"))?;
+        self.work.peak_slots = self
+            .work
+            .peak_slots
+            .max(self.slots.saturating_add(self.memory.retained_cells()));
         self.charge(slots)?;
         let first = body
             .blocks

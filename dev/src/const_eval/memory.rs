@@ -22,6 +22,9 @@ pub(super) struct Memory {
     expired: HashSet<LocationId>,
 }
 impl Memory {
+    pub(super) fn retained_cells(&self) -> usize {
+        self.cells.len()
+    }
     pub(super) fn expire(&mut self, locations: &[LocationId]) {
         self.expired.extend(locations.iter().copied());
     }

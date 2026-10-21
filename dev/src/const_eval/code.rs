@@ -1,4 +1,7 @@
 //! Immutable execution snapshots retain typed CFG operations after proof handoff.
+#[cfg(test)]
+#[path = "../../tests/invariants/retained_cfg_storage.rs"]
+mod storage_tests;
 use crate::{
     body::ir::{Block, Body, Local, Owner, Projection, Statement, Value, ValueId},
     resolve::{model::DefId, unit::NodeKey},
@@ -34,11 +37,9 @@ impl Code {
             std::mem::size_of_val(body.projections.as_slice()),
             std::mem::size_of_val(body.blocks.as_slice()),
             body.promotions.as_ref().map_or(0, |facts| {
-                facts
-                    .entries()
-                    .count()
-                    .saturating_mul(std::mem::size_of::<(ValueId, Constant)>())
+                crate::support::retained::new_map::<ValueId, Constant>(facts.entries().count())
             }),
+            body.callable_allocation_bytes(),
         ]
         .into_iter()
         .fold(0, usize::saturating_add)

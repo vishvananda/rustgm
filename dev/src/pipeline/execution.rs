@@ -1,5 +1,8 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
 mod inputs;
+#[cfg(test)]
+#[path = "../../tests/invariants/execution_storage.rs"]
+mod storage_tests;
 use super::Prepared;
 use crate::{
     body::{
@@ -52,12 +55,14 @@ impl Executor for Proxy {
 #[derive(Default)]
 struct Session {
     state: Option<const_eval::State>,
-    scratch: values::Scratch,
     waiting: Option<Requirement>,
 }
 #[derive(Default)]
 pub(super) struct Engine {
     catalog: Catalog,
+    values: values::Scratch,
+    limits: Limits,
+    suspended_slots: usize,
     roots: HashMap<Target, usize>,
     sessions: HashMap<Request, Session>,
     completed: HashMap<Request, Constant>,
@@ -104,18 +109,20 @@ impl Engine {
         if let Some(&value) = self.completed.get(request) {
             return Ok(Progress::Complete(value));
         }
-        let mut session = self.sessions.remove(request).unwrap_or_default();
+        let mut session = self.take_session(request)?;
         loop {
             if let Some(requirement) = session.waiting {
                 if !self.prepare(report, facts, requirement)? {
-                    self.sessions.insert(request.clone(), session);
-                    return Ok(Progress::Prepare(requirement));
+                    return self.retain_session(facts, request, session, requirement);
                 }
                 session.waiting = None;
             }
             let root = self.root(report, facts, request.target)?;
-            let evaluator = Evaluator::with_scratch(report, facts, session.scratch);
-            let mut machine = Machine::catalog(evaluator, &self.catalog, Limits::default());
+            let preparation = self.values.preparation_steps();
+            let evaluator =
+                Evaluator::with_scratch(report, facts, std::mem::take(&mut self.values));
+            let limits = self.available_limits()?;
+            let mut machine = Machine::catalog(evaluator, &self.catalog, limits);
             if let Some(state) = session.state {
                 machine.restore(state);
             } else {
@@ -129,7 +136,8 @@ impl Engine {
             let work = machine.work();
             match progress {
                 Progress::Complete(value) => {
-                    drop(machine);
+                    let (_, scratch) = machine.suspend();
+                    self.retain_values(facts, scratch, preparation);
                     facts.constant_work.expressions += 1;
                     facts.constant_work.frames_started += work.calls;
                     facts.constant_work.steps += work.steps;
@@ -144,15 +152,74 @@ impl Engine {
                 }
                 Progress::Prepare(requirement) => {
                     let (state, scratch) = machine.suspend();
+                    self.retain_values(facts, scratch, preparation);
                     facts.constant_work.resumes += 1;
                     session = Session {
                         state: Some(state),
-                        scratch,
                         waiting: Some(requirement),
                     };
                 }
             }
         }
+    }
+    fn take_session(&mut self, request: &Request) -> Result<Session, Error> {
+        let session = self.sessions.remove(request).unwrap_or_default();
+        let retained = session
+            .state
+            .as_ref()
+            .map_or(0, const_eval::State::retained_slots);
+        self.suspended_slots = self.suspended_slots.checked_sub(retained).ok_or_else(|| {
+            Error::at(
+                FileId(0),
+                0,
+                "constant continuation storage accounting is inconsistent",
+            )
+        })?;
+        Ok(session)
+    }
+    fn retain_session(
+        &mut self,
+        facts: &mut Declarations,
+        request: &Request,
+        session: Session,
+        requirement: Requirement,
+    ) -> Result<Progress, Error> {
+        let retained = session
+            .state
+            .as_ref()
+            .map_or(0, const_eval::State::retained_slots);
+        self.suspended_slots = self
+            .suspended_slots
+            .checked_add(retained)
+            .filter(|slots| *slots <= self.limits.slots)
+            .ok_or_else(|| Error::at(FileId(0), 0, "constant suspended storage limit exceeded"))?;
+        facts.constant_work.peak_suspended_slots = facts
+            .constant_work
+            .peak_suspended_slots
+            .max(self.suspended_slots);
+        self.sessions.insert(request.clone(), session);
+        Ok(Progress::Prepare(requirement))
+    }
+    fn available_limits(&self) -> Result<Limits, Error> {
+        Ok(Limits {
+            slots: self
+                .limits
+                .slots
+                .checked_sub(self.suspended_slots)
+                .ok_or_else(|| {
+                    Error::at(FileId(0), 0, "constant suspended storage exceeds limit")
+                })?,
+            ..self.limits
+        })
+    }
+    fn retain_values(
+        &mut self,
+        facts: &mut Declarations,
+        scratch: values::Scratch,
+        preparation: usize,
+    ) {
+        facts.constant_work.value_preparation += scratch.preparation_steps() - preparation;
+        self.values = scratch;
     }
     fn root(
         &mut self,
@@ -333,8 +400,9 @@ impl Engine {
         if facts.generics.has_parameters(definition)
             || facts.opaques.owners.contains_key(&definition)
         {
+            self.reserve_template(report, facts, definition, &template)?;
             self.specialize(report, facts, instance, &template, &input)?;
-            self.retain_template(report, facts, definition, template)?;
+            self.originals.insert(definition, template);
         } else {
             let index = self
                 .catalog
@@ -345,24 +413,14 @@ impl Engine {
         }
         Ok(true)
     }
-    fn retain_template(
+    fn reserve_template(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
         definition: DefId,
-        template: Template,
+        template: &Template,
     ) -> Result<(), Error> {
-        let bytes = crate::const_eval::code::Code::storage_bytes(&template.body)
-            .saturating_add(std::mem::size_of_val(
-                template.destruction.locals.as_slice(),
-            ))
-            .saturating_add(std::mem::size_of_val(
-                template.destruction.values.as_slice(),
-            ))
-            .saturating_add(std::mem::size_of_val(
-                template.destruction.projections.as_slice(),
-            ))
-            .saturating_add(std::mem::size_of_val(template.destruction.sites.as_slice()));
+        let bytes = template.retained_bytes();
         let retained = if self.charged_templates.contains(&definition) {
             facts.constant_work.template_bytes
         } else {
@@ -380,7 +438,6 @@ impl Engine {
         }
         facts.constant_work.template_bytes = retained;
         self.charged_templates.insert(definition);
-        self.originals.insert(definition, template);
         Ok(())
     }
     fn specialize(
@@ -392,6 +449,13 @@ impl Engine {
         input: &Contract,
     ) -> Result<(), Error> {
         let source = template.body.source;
+        if template.retained_bytes() > 64 * 1024 * 1024 {
+            return Err(Declarations::error(
+                report,
+                source,
+                "constant instance copy exceeds 64 MiB budget",
+            ));
+        }
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| Declarations::error(report, source, e))?;
         body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)

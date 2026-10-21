@@ -1,4 +1,7 @@
 //! `RustGM`'s maintainer frontend. Text formats are views of typed phases.
+// Shared source-loading helpers also serve library invariant tests.
+#[cfg(test)]
+extern crate self as rustgm;
 pub mod abi;
 pub mod body;
 pub mod borrow;
@@ -17,3 +20,7 @@ pub mod sema;
 pub mod support;
 pub mod syntax;
 pub mod types;
+
+#[cfg(test)]
+#[path = "../tests/helpers/resolve.rs"]
+mod test_source;

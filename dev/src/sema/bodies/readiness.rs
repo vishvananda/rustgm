@@ -1,7 +1,10 @@
 //! A declaration body yields exact nominal dependencies while retaining its inference graph.
 use super::{Checker, Error, ModuleId, NodeId, NodeKey, Scratch, State, TypeId, Work};
 use crate::types::ItemId;
-use crate::{resolve::model::DefId, sema::model::InitializerTyping};
+use crate::{
+    resolve::model::{DefId, DefKind},
+    sema::model::InitializerTyping,
+};
 
 pub(in crate::sema) struct Dependency {
     pub requirement: Requirement,
@@ -11,6 +14,7 @@ pub(in crate::sema) struct Dependency {
 pub(in crate::sema) enum Requirement {
     Nominal(ItemId),
     Definition(DefId),
+    Constructor(DefId),
     ImplHeader(DefId),
     Fields(ItemId),
     Opaque(crate::types::opaque::OpaqueId),
@@ -34,6 +38,38 @@ pub(super) enum Completion {
 }
 
 impl Checker<'_> {
+    /// Yield only the unresolved value currently being consumed. Header/type
+    /// readiness does not request any constant or static initializer value.
+    pub(super) fn value_readiness(&self, node: NodeId) -> Option<Requirement> {
+        if !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) || !matches!(
+            self.kind(node),
+            crate::syntax::ast::Kind::Name(_)
+                | crate::syntax::ast::Kind::Path { .. }
+                | crate::syntax::ast::Kind::Qualified { .. }
+        ) {
+            return None;
+        }
+        let crate::resolve::model::Target::Definition(definition) =
+            self.facts.node(self.key(node))?.reference?
+        else {
+            return None;
+        };
+        if self.facts.definitions.get(definition.0 as usize)?.is_some()
+            || self.state.locals[definition.0 as usize].is_some()
+        {
+            return None;
+        }
+        match self.report.resolution.definitions[definition.0 as usize].kind {
+            DefKind::Function | DefKind::Const | DefKind::Static => {
+                Some(Requirement::Definition(definition))
+            }
+            DefKind::Constructor | DefKind::Variant => Some(Requirement::Constructor(definition)),
+            _ => None,
+        }
+    }
     pub(in crate::sema) fn start_execution_function(
         &mut self,
         definition: DefId,
@@ -134,6 +170,7 @@ impl Checker<'_> {
             let message = match dependency.requirement {
                 Requirement::Nominal(_) => "missing struct member facts",
                 Requirement::Definition(_) => "missing completed associated type definition",
+                Requirement::Constructor(_) => "missing completed constructor type",
                 Requirement::ImplHeader(_) => "missing prepared implementation header",
                 Requirement::Fields(_) => "missing nominal field declarations",
                 Requirement::Opaque(_) => "missing completed opaque hidden type",
