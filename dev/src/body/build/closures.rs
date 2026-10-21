@@ -17,48 +17,43 @@ pub(super) fn concrete(
             .owner
             .is_some_and(|owner| facts.generics.has_parameters(owner))
         {
-            return Err(Declarations::error(
-                report,
-                closure.source,
-                "generic closure body construction requires a checked template",
-            ));
+            continue;
         }
-        let Some(Type::Function { result, .. }) = facts.types.kind(closure.signature) else {
-            return Err(Declarations::error(
-                report,
-                closure.source,
-                "missing closure signature",
-            ));
-        };
-        let scope_plan = scopes::closure_with_scratch(
-            report,
-            facts,
-            closure,
-            std::mem::take(&mut scratch.scopes),
-        )?;
-        let body = Body::new(
-            Owner::Closure {
-                identity: closure.identity,
-                signature: closure.signature,
-            },
-            closure.body,
-            result,
-        );
-        let builder = Builder::new(
-            report,
-            facts,
-            scratch,
-            body,
-            scope_plan,
-            query.as_deref_mut(),
-        );
-        program.bodies.push(
-            builder
-                .run(Some(closure.parameters))
-                .map_err(|e| report.diagnostic(e))?,
-        );
+        program
+            .bodies
+            .push(body(report, facts, scratch, closure, query.as_deref_mut())?);
     }
     Ok(())
+}
+
+/// Source closure bodies share one constructor across symbolic and concrete proof.
+pub(super) fn body(
+    report: &Report,
+    facts: &Declarations,
+    scratch: &mut Scratch,
+    closure: &crate::sema::closures::Body,
+    query: Option<&mut NeedsDrop>,
+) -> Result<Body, Error> {
+    let Some(Type::Function { result, .. }) = facts.types.kind(closure.signature) else {
+        return Err(Declarations::error(
+            report,
+            closure.source,
+            "missing closure signature",
+        ));
+    };
+    let scope_plan =
+        scopes::closure_with_scratch(report, facts, closure, std::mem::take(&mut scratch.scopes))?;
+    let body = Body::new(
+        Owner::Closure {
+            identity: closure.identity,
+            signature: closure.signature,
+        },
+        closure.body,
+        result,
+    );
+    Builder::new(report, facts, scratch, body, scope_plan, query)
+        .run(Some(closure.parameters))
+        .map_err(|e| report.diagnostic(e))
 }
 impl Builder<'_> {
     pub(super) fn closure_value(&mut self, node: NodeId, ty: TypeId) -> Result<ValueId, Error> {

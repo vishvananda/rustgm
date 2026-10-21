@@ -2,17 +2,18 @@
 use super::{Environment, Error, loans, regions};
 use crate::{
     body::{
-        ir::Selection,
+        ir::{BodyKey, Owner, Selection},
         regions::{Contract, Contracts},
         templates::{Template, Templates},
     },
-    types::{ItemId, TypeId, variance::Variances},
+    types::{ItemId, TypeId, closure::ClosureId, variance::Variances},
 };
 use std::{collections::HashMap, hash::BuildHasher};
 
 pub struct Checked<'a> {
     templates: &'a Templates,
     index: HashMap<ItemId, usize>,
+    closures: HashMap<ClosureId, usize>,
     regions: regions::Analysis,
     loans: Vec<loans::Analysis>,
     contracts: Vec<Contract>,
@@ -39,11 +40,17 @@ impl Checked<'_> {
     pub fn input(&self, item: ItemId) -> Option<&Contract> {
         self.index.get(&item).map(|&index| &self.contracts[index])
     }
+    #[must_use]
+    pub fn closure(&self, identity: ClosureId) -> Option<(&Template, &Contract)> {
+        let &index = self.closures.get(&identity)?;
+        Some((&self.templates.bodies[index], &self.contracts[index]))
+    }
     pub(super) fn contract(&self, body: &crate::body::ir::Body) -> Option<&regions::Body> {
-        let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
-            return None;
-        };
-        let &index = self.index.get(&ItemId(definition.0))?;
+        let &index = match body.key() {
+            BodyKey::Declaration(definition) => self.index.get(&ItemId(definition.0)),
+            BodyKey::Closure(identity) => self.closures.get(&identity),
+            BodyKey::Anonymous(_) => None,
+        }?;
         (self.templates.bodies[index].body.key() == body.key()).then(|| &self.regions.bodies[index])
     }
 }
@@ -61,20 +68,23 @@ pub fn verify<'a, S: BuildHasher>(
     position: impl Fn(TypeId, Selection) -> Result<(u32, u32), &'static str>,
 ) -> Result<Checked<'a>, Error> {
     let mut index = HashMap::with_capacity(templates.bodies.len());
+    let mut closures = HashMap::new();
     for (ordinal, template) in templates.bodies.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {
             node: Some(body.source),
             message: message.into(),
         };
-        let definition = match body.owner {
-            crate::body::ir::Owner::Function { definition, .. }
-            | crate::body::ir::Owner::Initializer { definition, .. } => definition,
-            crate::body::ir::Owner::AnonymousConstant | crate::body::ir::Owner::Closure { .. } => {
+        let duplicate = match body.owner {
+            Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
+                index.insert(ItemId(definition.0), ordinal).is_some()
+            }
+            Owner::Closure { identity, .. } => closures.insert(identity, ordinal).is_some(),
+            Owner::AnonymousConstant => {
                 return Err(error("template requires a declared owner"));
             }
         };
-        if body.instance.is_some() || index.insert(ItemId(definition.0), ordinal).is_some() {
+        if body.instance.is_some() || duplicate {
             return Err(error("template proof requires distinct original owners"));
         }
         if body.promotions.is_none()
@@ -111,6 +121,7 @@ pub fn verify<'a, S: BuildHasher>(
     Ok(Checked {
         templates,
         index,
+        closures,
         regions,
         loans,
         contracts,

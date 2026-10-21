@@ -78,6 +78,33 @@ fn slot(index: usize) -> Result<RegionId, &'static str> {
 }
 
 impl super::Checker<'_> {
+    /// Body contracts bind their own universals before any local variables exist.
+    /// Keep the equality obligations, but restore signature aliases to those slots.
+    pub(super) fn closure_contract_signature(
+        &mut self,
+        node: super::NodeId,
+        signature: super::TypeId,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<super::TypeId, Error> {
+        if self.facts.types.needs_region_context(signature) == Some(false) {
+            return Ok(signature);
+        }
+        let mut equations = crate::types::substitute::RegionEquations::default();
+        let work = equations
+            .extend(solved.region_equalities.iter().copied())
+            .map_err(|e| self.error(node, e))?;
+        // Only static and this body's bound slots may anchor a formal signature.
+        let mut fold = Bound::close_projection_regions(1, 0, HashMap::new())
+            .map_err(|e| self.error(node, e))?;
+        fold.exchange_projection_equations(&mut equations)
+            .map_err(|e| self.error(node, e))?;
+        let signature = fold
+            .signature(&mut self.facts.types, signature, self.state.body_binders)
+            .map_err(|e| self.error(node, e))?;
+        self.facts.body_work.canonical_steps += work + fold.steps;
+        Ok(signature)
+    }
+
     pub(super) fn closure_result_boundary(&mut self, interface: &Interface) -> Result<(), Error> {
         let node = self.state.body.node;
         let result = self

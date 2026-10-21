@@ -178,6 +178,13 @@ impl Prepared {
                 environment,
             });
         }
+        for closure in facts.closures.all() {
+            if let Some(owner) = closure.owner
+                && facts.generics.has_parameters(owner)
+            {
+                bodies.push(self.closure(report, facts, closure, owner)?);
+            }
+        }
         if let Some(template) = self.bodies.values().next() {
             return Err(Declarations::error(
                 report,
@@ -187,6 +194,32 @@ impl Prepared {
         }
         crate::body::constants::alias_cycles(report, facts, &bodies)?;
         Ok(Templates { bodies })
+    }
+
+    fn closure(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        closure: &crate::sema::closures::Body,
+        owner: crate::resolve::model::DefId,
+    ) -> Result<Template, Error> {
+        let environment = environment(report, facts, owner, closure.source)?;
+        let query = self.query.get_or_insert_with(|| {
+            NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
+        });
+        let mut scoped = query.scoped(Arc::clone(&environment));
+        let scratch = self
+            .scratch
+            .get_or_insert_with(|| Box::new(Scratch::new(facts)));
+        let body = super::closures::body(report, facts, scratch, closure, Some(&mut scoped))?;
+        let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
+            .map_err(|message| Declarations::error(report, body.source, message))?;
+        self.built += 1;
+        Ok(Template {
+            body,
+            destruction,
+            environment,
+        })
     }
 }
 fn environment(

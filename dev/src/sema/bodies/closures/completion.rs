@@ -149,16 +149,20 @@ impl Checker<'_> {
             return Ok(());
         };
         let entry = &scheduler.entries[index];
+        let source = entry.source;
+        let identity = entry.identity;
+        let parameters = entry.parameters;
         let signature = solved.types[entry.signature.0 as usize];
+        let signature = self.closure_contract_signature(source, signature, solved)?;
         let Some(Kind::Function { result, .. }) = self.facts.types.kind(signature) else {
-            return Err(self.error(entry.source, "missing completed closure signature"));
+            return Err(self.error(source, "missing completed closure signature"));
         };
         self.state.result = result;
         let body = Body {
-            identity: entry.identity,
-            source: self.key(entry.source),
+            identity,
+            source: self.key(source),
             body: self.state.body,
-            parameters: entry.parameters,
+            parameters,
             signature,
             owner: self.state.environment_owner,
             universals: self.state.body_binders,
