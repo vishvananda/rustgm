@@ -40,22 +40,25 @@ impl Adapter {
         let strongest = types
             .closure_kind(identity)
             .ok_or("receiver adapter requires complete call permission")?;
-        let permission = if receiver == instance.ty() {
-            requested
-        } else {
+        let mut permission = requested;
+        let mut referent_ty = receiver;
+        let mut depth = 0usize;
+        while referent_ty != instance.ty() {
+            depth += 1;
+            if depth > 1_000_000 {
+                return Err("receiver adapter reference path exceeds its work budget");
+            }
             let Some(super::Kind::Reference {
                 referent, mutable, ..
-            }) = types.kind(receiver)
+            }) = types.kind(referent_ty)
             else {
                 return Err("receiver adapter Self is not its closure or a supported reference");
             };
-            if referent != instance.ty() {
-                return Err("nested reference receiver adapters are not implemented");
-            }
-            requested
+            permission = permission
                 .referent(mutable)
-                .ok_or("mutable references do not implement shared call permission")?
-        };
+                .ok_or("mutable references do not implement shared call permission")?;
+            referent_ty = referent;
+        }
         let required = CallKind::from_trait(permission);
         if environment == TypeId::UNIT
             || types.contains_parameters(instance.ty()) != Some(false)

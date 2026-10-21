@@ -51,3 +51,7 @@ owned controls retain two wrappers and CFG bytes 16,440/49,368/181,080. No wall-
 performance claim is made. The root's newer captured-output producer checkpoint
 `96c37682` awaits combined integration; these observations describe this worker's
 frozen source. No assignment activation or reference regeneration is included.
+
+The later [nested receiver checkpoint](pa24-nested-receivers.md) extends
+ordinary captured invocation through reference chains and supersedes the
+remaining nested-reference boundary, retaining the earlier evidence.

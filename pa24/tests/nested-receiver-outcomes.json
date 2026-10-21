@@ -1,0 +1,366 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "shared-shared-shared",
+      "path": "tests/spec/nested-receivers/shared-shared-shared.rs",
+      "source_sha256": "5ef4e72a03f9c588ccb16ad616761db38bfb89648c9ec8eb37e8bd1a2c796fa7",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "shared-shared-mutable",
+      "path": "tests/spec/nested-receivers/shared-shared-mutable.rs",
+      "source_sha256": "fdff4b011b16b8ff8ffb4dd9a0d431631d7fd38cc4da6924585fe0322f2d96e8",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "shared-shared-once",
+      "path": "tests/spec/nested-receivers/shared-shared-once.rs",
+      "source_sha256": "38decaf7456073477f5dd6628b6b2f126a77fe5866a21d0a8549648a8bfb2712",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "mutable-shared-mutable",
+      "path": "tests/spec/nested-receivers/mutable-shared-mutable.rs",
+      "source_sha256": "208ca0c8336045a1bedc1be24e9cfbb1a10ee33a10019f69c99dd33657166dde",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "mutable-shared-once",
+      "path": "tests/spec/nested-receivers/mutable-shared-once.rs",
+      "source_sha256": "57c2fc1d35c91e34c7d3a36a7a79462a97761d8e081dadaa7c17e7e304f47dd8",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "mutable-mutable-mutable",
+      "path": "tests/spec/nested-receivers/mutable-mutable-mutable.rs",
+      "source_sha256": "9fa52ebf037158e4df5f9f9e6ce317bb68221b081d336a0cba51c2480db45845",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "mutable-mutable-once",
+      "path": "tests/spec/nested-receivers/mutable-mutable-once.rs",
+      "source_sha256": "41f51702ea922df8b67ea92d79818f3ced32cccc03cc7ad2e6b0619b84f8334a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "three-shared",
+      "path": "tests/spec/nested-receivers/three-shared.rs",
+      "source_sha256": "c909ccdcf03d1d47c7f345c107c0eaf2ee5b977d9a77ebc28cbf714ba469afb4",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "three-mixed",
+      "path": "tests/spec/nested-receivers/three-mixed.rs",
+      "source_sha256": "68ed249d898f377ca5c6bd6e374ba8558c246f5d02e5a50b1b848631c0b43aed",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "shared-mutable-shared-reject",
+      "path": "tests/spec/nested-receivers/shared-mutable-shared-reject.rs",
+      "source_sha256": "54a0ec71485cfaa6ee8ff94d2149bac871e30be7a42da20e8c709fadce3e4432",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "shared-mutable-once-reject",
+      "path": "tests/spec/nested-receivers/shared-mutable-once-reject.rs",
+      "source_sha256": "2c34c897a90e03ab51f47bf26e3c07448a929ba39f1a01dc72bafa293eda2645",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "mutable-shared-shared-reject",
+      "path": "tests/spec/nested-receivers/mutable-shared-shared-reject.rs",
+      "source_sha256": "271666204c65a129633bafdf0689d5447acda9a4bead79aff8205e6d99b81393",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "shared-chain-mutation-reject",
+      "path": "tests/spec/nested-receivers/shared-chain-mutation-reject.rs",
+      "source_sha256": "e2f013bbf26a4506011991c319f7f021ce947fa7955f3a77386f990d46c8d7fc",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "once-leaf-reject",
+      "path": "tests/spec/nested-receivers/once-leaf-reject.rs",
+      "source_sha256": "7ba4ca8688848046020a43294352941adc42acd29b2b49c8525a8b4029201b13",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "external-result",
+      "path": "tests/spec/nested-receivers/external-result.rs",
+      "source_sha256": "4f4e5af6f9183f514057e8cd04d38f93dfb130c22d7634161e00fa0106028dca",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "generic-owner",
+      "path": "tests/spec/nested-receivers/generic-owner.rs",
+      "source_sha256": "b55f2a2c6f350788bce24d52c0b239ffaf70eb72efa372b137192b59ae408f38",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "static-escape-reject",
+      "path": "tests/spec/nested-receivers/static-escape-reject.rs",
+      "source_sha256": "f3488d2366d4e4bdef57b61bf75f52d7a5fb0d9d5aa34adfdef092dd04b11a83",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "owned-result-escape-reject",
+      "path": "tests/spec/nested-receivers/owned-result-escape-reject.rs",
+      "source_sha256": "37bc202d4537c91c3aada13b93a936245419c759a8d1ff2c966bf3417308e348",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "borrow-conflict-reject",
+      "path": "tests/spec/nested-receivers/borrow-conflict-reject.rs",
+      "source_sha256": "718a27c6956c9d59b3a761460666cb4ea9c4924e0dd265c81169ab6686d5a04c",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "nested-binder",
+      "path": "tests/spec/nested-receivers/nested-binder.rs",
+      "source_sha256": "4cb8d4cb45dd52796fb5aed235f5b7e04e5b3e5bbdf1258f7881389d1476fdb7",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    },
+    {
+      "name": "owned-drop",
+      "path": "tests/spec/nested-receivers/owned-drop.rs",
+      "source_sha256": "16d15af08458332f6f15028ffae207ff8198d05fc5f67218da1702e2daf203cd",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/nested-receivers/qualification-v1.json"
+    }
+  ]
+}

@@ -34,7 +34,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("reference-shared-owned-drop", true, true),
     ("reference-mut-owned-drop", true, true),
     ("reference-static-escape", false, false),
-    ("reference-nested-boundary", true, false),
+    ("reference-nested-boundary", true, true),
 ];
 fn fixture(name: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(

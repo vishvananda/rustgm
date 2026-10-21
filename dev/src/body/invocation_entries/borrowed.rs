@@ -34,12 +34,9 @@ pub(super) fn leaf(types: &Store, mut subject: TypeId) -> Result<Option<TypeId>,
         }
         subject = types.storage_head(referent)?;
     }
-    let Some(Type::Closure { environment, .. }) = types.kind(subject) else {
+    let Some(Type::Closure { .. }) = types.kind(subject) else {
         return Ok(None);
     };
-    if references > 1 && environment != TypeId::UNIT {
-        return Err("nested reference receiver adapters are not implemented");
-    }
     Ok(Some(subject))
 }
 pub(super) fn adapter(
@@ -96,29 +93,13 @@ pub(super) fn prepared(
             equalities: Vec::new(),
         });
     }
-    let Some(Type::Reference {
-        referent,
-        mutable,
-        region,
-    }) = types.kind(adapter.receiver())
-    else {
-        return Err("reference adapter has no reference Self");
-    };
-    if referent != adapter.instance().ty() {
-        return Err("reference adapter selects another closure Self");
-    }
     let base = if preserve_slots {
         canonical.universals
     } else {
         original_receiver
     };
-    let prefix =
-        matching::bind_instance(types, base, canonical.self_ty, referent)?.prefix(region)?;
-    let self_ty = types.intern(Type::Reference {
-        referent: canonical.self_ty,
-        mutable,
-        region: prefix.region,
-    })?;
+    let prefix = reference_self(types, canonical.self_ty, adapter, base)?;
+    let self_ty = prefix.self_ty;
     let receiver = CallKind::from_trait(adapter.requested());
     let physical = if receiver == CallKind::Once {
         self_ty
@@ -170,6 +151,51 @@ pub(super) fn prepared(
             universals,
             receiver,
         },
+        equalities: prefix.equalities,
+    })
+}
+
+struct Receiver {
+    self_ty: TypeId,
+    universals: u32,
+    equalities: Vec<crate::types::outlives::Pair>,
+}
+fn reference_self(
+    types: &mut Store,
+    canonical: TypeId,
+    adapter: Adapter,
+    base: u32,
+) -> Result<Receiver, &'static str> {
+    let mut chain = Vec::new();
+    let mut actual = adapter.receiver();
+    while actual != adapter.instance().ty() {
+        if chain.len() >= 1_000_000 {
+            return Err("adapter reference path exceeds its work budget");
+        }
+        let Some(Type::Reference {
+            referent,
+            mutable,
+            region,
+        }) = types.kind(actual)
+        else {
+            return Err("reference adapter selects another closure Self");
+        };
+        chain.push((mutable, region));
+        actual = referent;
+    }
+    let regions = chain.iter().map(|&(_, region)| region).collect::<Vec<_>>();
+    let prefix = matching::bind_instance(types, base, canonical, actual)?.prefixes(&regions)?;
+    let mut self_ty = canonical;
+    for (&(mutable, _), &region) in chain.iter().zip(&prefix.regions).rev() {
+        self_ty = types.intern(Type::Reference {
+            referent: self_ty,
+            mutable,
+            region,
+        })?;
+    }
+    Ok(Receiver {
+        self_ty,
+        universals: prefix.universals,
         equalities: prefix.equalities,
     })
 }

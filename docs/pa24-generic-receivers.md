@@ -90,3 +90,7 @@ python3 scripts/storage.py run -- cargo test --manifest-path dev/Cargo.toml --te
 
 This checkpoint does not complete PA24 or activate its assignment. Nested
 reference adapter chains and dynamic callable objects remain separate work.
+
+The later [nested receiver checkpoint](pa24-nested-receivers.md) extends
+ordinary captured invocation through reference chains and supersedes the
+remaining nested-reference boundary, retaining the earlier evidence.

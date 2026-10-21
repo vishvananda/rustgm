@@ -70,8 +70,14 @@ pub(super) struct Bindings {
     pub slots: HashMap<u16, RegionId>,
     pub equalities: Vec<(RegionId, RegionId)>,
 }
+#[cfg(test)]
 pub(super) struct Prefix {
     pub region: RegionId,
+    pub universals: u32,
+    pub equalities: Vec<(RegionId, RegionId)>,
+}
+pub(super) struct Prefixes {
+    pub regions: Vec<RegionId>,
     pub universals: u32,
     pub equalities: Vec<(RegionId, RegionId)>,
 }
@@ -84,30 +90,48 @@ pub(super) fn bind_instance(
     Matcher::new(types, universals, formal, actual).bindings()
 }
 impl Bindings {
+    #[cfg(test)]
     pub(super) fn prefix(self, actual: RegionId) -> Result<Prefix, &'static str> {
-        let slot = self
-            .slots
-            .iter()
-            .filter_map(|(&slot, &region)| (region == actual).then_some(slot))
-            .min();
-        let (region, universals) = if actual == RegionId::STATIC {
-            (actual, self.universals)
-        } else if let Some(slot) = slot {
-            (RegionId::bound(0, slot)?, self.universals)
-        } else {
-            (
-                RegionId::bound(
-                    0,
-                    u16::try_from(self.universals)
-                        .map_err(|_| "too many adapter prefix lifetimes")?,
-                )?,
-                self.universals
-                    .checked_add(1)
-                    .ok_or("adapter lifetime overflow")?,
-            )
-        };
+        let mut prefix = self.prefixes(&[actual])?;
         Ok(Prefix {
-            region,
+            region: prefix.regions.pop().ok_or("missing adapter prefix")?,
+            universals: prefix.universals,
+            equalities: prefix.equalities,
+        })
+    }
+    pub(super) fn prefixes(self, actual: &[RegionId]) -> Result<Prefixes, &'static str> {
+        if actual.len().saturating_add(self.slots.len()) > 1_000_000 {
+            return Err("adapter prefix mapping exceeds its work budget");
+        }
+        let mut images = HashMap::<RegionId, u16>::with_capacity(self.slots.len());
+        for (slot, region) in self.slots {
+            images
+                .entry(region)
+                .and_modify(|old| *old = (*old).min(slot))
+                .or_insert(slot);
+        }
+        let mut universals = self.universals;
+        let mut regions = Vec::with_capacity(actual.len());
+        for &region in actual {
+            if region == RegionId::STATIC {
+                regions.push(region);
+                continue;
+            }
+            let slot = if let Some(&slot) = images.get(&region) {
+                slot
+            } else {
+                let slot =
+                    u16::try_from(universals).map_err(|_| "too many adapter prefix lifetimes")?;
+                universals = universals
+                    .checked_add(1)
+                    .ok_or("adapter lifetime overflow")?;
+                images.insert(region, slot);
+                slot
+            };
+            regions.push(RegionId::bound(0, slot)?);
+        }
+        Ok(Prefixes {
+            regions,
             universals,
             equalities: self.equalities,
         })

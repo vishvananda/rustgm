@@ -344,35 +344,38 @@ impl Writer {
     fn referent(
         &mut self,
         types: &crate::types::Store,
-        place: Place,
-        self_ty: TypeId,
+        mut place: Place,
+        mut self_ty: TypeId,
         closure: TypeId,
     ) -> Result<Place, &'static str> {
-        if self_ty == closure {
-            return Ok(place);
+        let mut depth = 0usize;
+        while self_ty != closure {
+            depth += 1;
+            if depth > 1_000_000 {
+                return Err("adapter reference path exceeds its work budget");
+            }
+            let Some(Kind::Reference {
+                referent,
+                mutable,
+                region,
+            }) = types.kind(self_ty)
+            else {
+                return Err("borrowed receiver Self is not a reference to its closure");
+            };
+            let id = ProjectionId(
+                u32::try_from(self.body.projections.len())
+                    .map_err(|_| "too many adapter projections")?,
+            );
+            self.body.projections.push(Projection {
+                base: place,
+                kind: ProjectionKind::Dereference { mutable, region },
+                ty: referent,
+            });
+            self.statement(Action::Project(id));
+            place = Place::Projection(id);
+            self_ty = referent;
         }
-        let Some(Kind::Reference {
-            referent,
-            mutable,
-            region,
-        }) = types.kind(self_ty)
-        else {
-            return Err("borrowed receiver Self is not a reference");
-        };
-        if referent != closure {
-            return Err("borrowed receiver Self selects another closure");
-        }
-        let id = ProjectionId(
-            u32::try_from(self.body.projections.len())
-                .map_err(|_| "too many adapter projections")?,
-        );
-        self.body.projections.push(Projection {
-            base: place,
-            kind: ProjectionKind::Dereference { mutable, region },
-            ty: referent,
-        });
-        self.statement(Action::Project(id));
-        Ok(Place::Projection(id))
+        Ok(place)
     }
     fn receiver(
         &mut self,

@@ -3,6 +3,8 @@
 mod adapters;
 #[path = "environment_execution/adjusted.rs"]
 mod adjusted;
+#[path = "environment_execution/chains.rs"]
+mod chains;
 #[path = "harness/checked_sources.rs"]
 mod checked_sources;
 #[path = "environment_execution/contextual.rs"]

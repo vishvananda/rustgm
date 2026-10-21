@@ -599,19 +599,23 @@
       "name": "reference-nested-boundary",
       "path": "tests/spec/receiver-adapters/reference-nested-boundary.rs",
       "source_sha256": "fbd01947aec9d675e576543bd31d80e4967e08cbb4c840a87747f80e5cebf8ff",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
       "hypothesis": "declared before borrowed receiver implementation",
-      "boundary_reason": "Nested reference Self is outside this first borrowed receiver slice."
+      "superseded_boundary": {
+        "exit_status": 1,
+        "reason": "Nested reference Self is outside this first borrowed receiver slice."
+      },
+      "frontend_supersession": "obj/parallel/pa24/nested-receivers/second.json"
     }
   ]
 }
