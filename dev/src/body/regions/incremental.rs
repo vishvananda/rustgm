@@ -88,7 +88,10 @@ impl Collector {
         for closure in facts.closures.all() {
             let mut contract = super::closure_contract(facts, closure)?;
             self.populate(facts, &mut contract);
-            if index.insert(closure.semantic_source(), bodies.len()).is_some() {
+            if index
+                .insert(closure.semantic_source(), bodies.len())
+                .is_some()
+            {
                 return Err("duplicate closure lifetime owner");
             }
             bodies.push(contract);

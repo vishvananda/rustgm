@@ -18,6 +18,9 @@ pub(super) struct Pending {
     unsize: bool,
 }
 impl Pending {
+    pub(super) const fn capture_receiver(&self) -> (u32, Option<TermId>) {
+        (self.dereferences, self.borrow)
+    }
     pub(super) fn value_types(&self, solved: &Solved) -> [crate::types::TypeId; 3] {
         [self.callable, self.actual, self.expected].map(|term| solved.types[term.0 as usize])
     }

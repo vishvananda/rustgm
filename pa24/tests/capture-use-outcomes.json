@@ -1,0 +1,424 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "method-shared",
+      "path": "tests/spec/typed-capture-uses/method-shared.rs",
+      "source_sha256": "0ae26cba3da76d6fa70f26f8c0cf67d0410b1ac5aae3ac0d8469ec56dc55893c",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-mutable",
+      "path": "tests/spec/typed-capture-uses/method-mutable.rs",
+      "source_sha256": "be7b2f75473f74985a319be233e9414fbbae946907c21e6b49c053922bbe4064",
+      "expected_status": 0,
+      "expected_capture_mode": "Mutable",
+      "expected_call_kind": "Mutable",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-once",
+      "path": "tests/spec/typed-capture-uses/method-once.rs",
+      "source_sha256": "8473082260d550f52ce15f3884076f0511d53206971f1170c040824f477bffee",
+      "expected_status": 0,
+      "expected_capture_mode": "Value",
+      "expected_call_kind": "Once",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-move-shared",
+      "path": "tests/spec/typed-capture-uses/method-move-shared.rs",
+      "source_sha256": "b992e9ed12bf8e183a6a73ac4aa0c30e6bab8dfc1f35853f6d94f3251a8d7f16",
+      "expected_status": 0,
+      "expected_capture_mode": "Value",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-precise-field",
+      "path": "tests/spec/typed-capture-uses/method-precise-field.rs",
+      "source_sha256": "76e94e2860bdc971e5f02ad801ef4a78d59ae96b6f5f6eff572ff0c1b959329f",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-shared",
+      "path": "tests/spec/typed-capture-uses/array-shared.rs",
+      "source_sha256": "7944d3dc4e551e788a6f8d4a14e317c664f36f2f11ecdd3a1a2c1d6b71ae0a64",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-mutable",
+      "path": "tests/spec/typed-capture-uses/array-mutable.rs",
+      "source_sha256": "2edf48b147b46c6545cc59742cfd019e8b628761b3102c324fa43868e561a051",
+      "expected_status": 0,
+      "expected_capture_mode": "Mutable",
+      "expected_call_kind": "Mutable",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-index-captured",
+      "path": "tests/spec/typed-capture-uses/array-index-captured.rs",
+      "source_sha256": "7b5fd61d6fb247510c5ac715e8e829f61c0ccc0e2808db1b554741453045e2d4",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 2,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-move-shared",
+      "path": "tests/spec/typed-capture-uses/array-move-shared.rs",
+      "source_sha256": "a5be1e21a71848d6fed0b6c9321d9a4bec1046ec0e723b54bf52fc14483b59cd",
+      "expected_status": 0,
+      "expected_capture_mode": "Value",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-explicit-borrow",
+      "path": "tests/spec/typed-capture-uses/array-explicit-borrow.rs",
+      "source_sha256": "1ac1c602bfacf6187da262b66465b10769d8354051c55025e6653c7cc9f5dbd1",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-mutable-conflict",
+      "path": "tests/spec/typed-capture-uses/method-mutable-conflict.rs",
+      "source_sha256": "fdda12646ce1071edef3db2e5423a8e56bea17863ec298aaf5ac55bf74981986",
+      "expected_status": 1,
+      "expected_capture_mode": null,
+      "expected_call_kind": null,
+      "expected_capture_count": null,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-once-twice",
+      "path": "tests/spec/typed-capture-uses/method-once-twice.rs",
+      "source_sha256": "4635f7e0d351b6d5ad6cf99f38366a8325ca013a59d48de6ec3040261f7261a3",
+      "expected_status": 1,
+      "expected_capture_mode": null,
+      "expected_call_kind": null,
+      "expected_capture_count": null,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-disjoint-conflict",
+      "path": "tests/spec/typed-capture-uses/array-disjoint-conflict.rs",
+      "source_sha256": "4ef1a5db0ad93e5ee88c4bb96aa4e29e96c549a25c3c63c8a2caf2b64d92fdc3",
+      "expected_status": 1,
+      "expected_capture_mode": null,
+      "expected_call_kind": null,
+      "expected_capture_count": null,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-mutable-alias",
+      "path": "tests/spec/typed-capture-uses/array-mutable-alias.rs",
+      "source_sha256": "b947d7944ba53b09d8a41b8de013d58b13408b9c7ae46de642fcdbe81af78e92",
+      "expected_status": 1,
+      "expected_capture_mode": null,
+      "expected_call_kind": null,
+      "expected_capture_count": null,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-field-copy",
+      "path": "tests/spec/typed-capture-uses/array-field-copy.rs",
+      "source_sha256": "1297c4733a13de8132852b567ec3bf2cc0070e69dc99f012717cfea92313df93",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-field-mutable",
+      "path": "tests/spec/typed-capture-uses/array-field-mutable.rs",
+      "source_sha256": "7da07507c7c7bc9604adaf0a4dd31f493a75514c84ecb07c76a459c2e868d025",
+      "expected_status": 0,
+      "expected_capture_mode": "Mutable",
+      "expected_call_kind": "Mutable",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-nested-shared",
+      "path": "tests/spec/typed-capture-uses/array-nested-shared.rs",
+      "source_sha256": "e1c2ac8cb3b77b7d515a29b6ac72c469fe9e11bf296bda95e2ec2a02fecd6809",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "array-nested-mutable",
+      "path": "tests/spec/typed-capture-uses/array-nested-mutable.rs",
+      "source_sha256": "bee7047e52949e05dd8a584a897643ec6abcdced12641632e17379cb3f405c61",
+      "expected_status": 0,
+      "expected_capture_mode": "Mutable",
+      "expected_call_kind": "Mutable",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "method-indexed-element",
+      "path": "tests/spec/typed-capture-uses/method-indexed-element.rs",
+      "source_sha256": "3c4d78ca1a960402ab2d93e119bfee7b13b47dde6f90def0a8919ed4826b11d2",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "local-projection-unresolved",
+      "path": "tests/spec/typed-capture-uses/local-projection-unresolved.rs",
+      "source_sha256": "0db7037ac3c4310a61a7d44d2a0040b5775e50251398744d3747780dfe2231a0",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "direct-function",
+      "path": "tests/spec/typed-capture-uses/direct-function.rs",
+      "source_sha256": "09f5759f7301eeb26b2a95c86139ba130e8dd352d9cc9d399dafc0708f467dd7",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "direct-constructor",
+      "path": "tests/spec/typed-capture-uses/direct-constructor.rs",
+      "source_sha256": "0b7fda954e55ab90ef70f39a840d4a5855afe4b1c0edd5606f6eb7e71f0684b0",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "direct-function-pointer",
+      "path": "tests/spec/typed-capture-uses/direct-function-pointer.rs",
+      "source_sha256": "1c4e09818e8ecb66c123cf209a78fb739ca1035b3f5ef01dec08b1f29998284c",
+      "expected_status": 0,
+      "expected_capture_mode": "Shared",
+      "expected_call_kind": "Shared",
+      "expected_capture_count": 2,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

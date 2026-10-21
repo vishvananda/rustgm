@@ -114,7 +114,10 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         }
     }
     for closure in facts.closures.all() {
-        if index.insert(closure.semantic_source(), bodies.len()).is_some() {
+        if index
+            .insert(closure.semantic_source(), bodies.len())
+            .is_some()
+        {
             return Err("duplicate closure lifetime owner");
         }
         bodies.push(closure_contract(facts, closure)?);
@@ -256,7 +259,12 @@ fn closure_contract(
     closure: &crate::sema::closures::Body,
 ) -> Result<Contract, &'static str> {
     let mut contract = if let Some(owner) = closure.owner {
-        parameter_contract(facts, owner, closure.semantic_source(), Some(closure.signature))?
+        parameter_contract(
+            facts,
+            owner,
+            closure.semantic_source(),
+            Some(closure.signature),
+        )?
     } else {
         Contract::constant(closure.semantic_source())
     };

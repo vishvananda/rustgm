@@ -1,4 +1,5 @@
 //! Capture requirements consume typed places and the actual expression use context.
+mod receivers;
 use super::{Checker, Domain, Error, Kind, NodeId, TermId, places::Places};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
@@ -24,6 +25,7 @@ pub(super) struct Captures {
 #[derive(Clone, Copy)]
 enum Use {
     Value,
+    ValueOf(TermId),
     Shared,
     Mutable,
     Mention,
@@ -39,6 +41,7 @@ struct Collector {
     mentioned: HashSet<PathId>,
     pending: Vec<Work>,
     calls: HashMap<NodeId, (Option<CallTrait>, u32)>,
+    methods: HashMap<NodeId, (u32, Option<TermId>)>,
     adjusted: HashSet<NodeId>,
     kind: CallKind,
     moving: bool,
@@ -62,6 +65,13 @@ impl Checker<'_> {
                 .state
                 .call_types
                 .invocations
+                .iter()
+                .map(|(node, pending)| (*node, pending.capture_receiver()))
+                .collect(),
+            methods: self
+                .state
+                .call_types
+                .methods
                 .iter()
                 .map(|(node, pending)| (*node, pending.capture_receiver()))
                 .collect(),
@@ -191,15 +201,18 @@ impl Collector {
             }
             return Ok(true);
         }
-        let term = self.places.types[place.path.index()];
+        let term = match work.usage {
+            Use::ValueOf(term) => term,
+            _ => self.places.types[place.path.index()],
+        };
         let mut mode = match work.usage {
             Use::Shared => Mode::Shared,
             Use::Mutable => {
                 self.kind = self.kind.max(CallKind::Mutable);
                 Mode::Mutable
             }
-            Use::Value if checker.capture_copy(work.node, term)? => Mode::Shared,
-            Use::Value => {
+            Use::Value | Use::ValueOf(_) if checker.capture_copy(work.node, term)? => Mode::Shared,
+            Use::Value | Use::ValueOf(_) => {
                 self.kind = CallKind::Once;
                 Mode::Value
             }
@@ -314,9 +327,7 @@ impl Collector {
             }
             Kind::Call { callee, arguments } => {
                 self.list(checker, arguments);
-                let (kind, dereferences) = self.calls.get(&node).copied().ok_or_else(|| {
-                    checker.error(node, "missing capture call receiver selection")
-                })?;
+                let (kind, dereferences) = self.call_receiver(checker, node, callee)?;
                 self.pending.push(Work {
                     node: callee,
                     usage: match kind {
@@ -328,10 +339,24 @@ impl Collector {
                 });
             }
             Kind::Tuple(elements) | Kind::Array(elements) => self.list(checker, elements),
+            Kind::MethodCall {
+                receiver,
+                arguments,
+                ..
+            }
+            | Kind::GenericMethodCall {
+                receiver,
+                arguments,
+                ..
+            } => {
+                self.list(checker, arguments);
+                self.method(checker, node, receiver)?;
+            }
+            Kind::Index { value, index } => self.index(checker, work, value, index)?,
+            Kind::Field { value, .. } => self.projected(checker, node, value, work.usage)?,
             Kind::Repeat { value, .. }
             | Kind::Cast { value, .. }
-            | Kind::FieldInit { value, .. }
-            | Kind::Field { value, .. } => self.push(value, Use::Value),
+            | Kind::FieldInit { value, .. } => self.push(value, Use::Value),
             Kind::Struct { fields, base, .. } => {
                 if let Some(base) = base {
                     self.push(base, Use::Value);

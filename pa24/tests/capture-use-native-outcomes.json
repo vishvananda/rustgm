@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "methods",
+      "path": "tests/spec/typed-capture-native/methods.rs",
+      "source_sha256": "3f974dff2e9719407a5e7b3212b116549ca5f5fdbb489dd27ed5b0234ab6c2d2",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "indices",
+      "path": "tests/spec/typed-capture-native/indices.rs",
+      "source_sha256": "e479f85027925ebc55d27db33c7016328729bb14e5cbf913d1588e41edf70390",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "noncopy-field",
+      "path": "tests/spec/typed-capture-native/noncopy-field.rs",
+      "source_sha256": "ed38edd4bd946189366cd295de628ef622c850ac07f7609d30992547d2259555",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "moving",
+      "path": "tests/spec/typed-capture-native/moving.rs",
+      "source_sha256": "edfd86dede0b5f828c5e0cb0ba251df1d1400fe5a4af524e49feb6586c5cbb73",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "leaf-local",
+      "path": "tests/spec/typed-capture-native/leaf-local.rs",
+      "source_sha256": "e35cbd20d713930bf2946f07206b277046151c8af80b127863df0b19bf587130",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@ const CASES: &[(&str, &str, Mode, CallKind)] = &[
         CallKind::Shared,
     ),
     ("once", "move-once", Mode::Value, CallKind::Once),
+    ("destruction", "drop-capture", Mode::Value, CallKind::Once),
     (
         "precise-borrow",
         "precise-field-borrow",
