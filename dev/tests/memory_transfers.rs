@@ -124,12 +124,7 @@ const CASES: &[(&str, i32, [i32; 3], &str)] = &[
         [1, 1, 1],
         "constant raw pointer write is derived from a shared reference",
     ),
-    (
-        "wide-value",
-        0,
-        [1, 1, 1],
-        "constant slice projection is not implemented",
-    ),
+    ("wide-value", 0, [0, 0, 0], ""),
     ("ordinary-scalar", 0, [0, 0, 0], ""),
 ];
 #[test]
@@ -158,6 +153,11 @@ fn pointer_memory_native_snapshots_and_reified_abi() -> Result<(), Box<dyn std::
     native::check_cases(
         "parallel/pa28/pointer-memory-native",
         &[
+            (
+                "constant-wide-value",
+                "const S:[u32;3]=[3,7,37];const X:u32={let mut r:&[u32]=&S;unsafe{let s=core::ptr::read(&raw const r);core::ptr::write(&raw mut r,s);r[2]}};fn main(){check(X==37);}",
+                false,
+            ),
             (
                 "const-generic",
                 "const unsafe fn take<T>(p:*const T)->T{unsafe{core::ptr::read(p)}}const unsafe fn put<T>(p:*mut T,x:T){unsafe{core::ptr::write(p,x)}}const X:u32={let mut x=(3u8,7u32);unsafe{let y=take(&raw const x);put(&raw mut x,(y.0,37));x.1}};fn main(){check(X==37);}",

@@ -5,8 +5,19 @@ use std::process::Command;
 fn qualified_atomic_value_preparation() -> Result<(), Box<dyn std::error::Error>> {
     use rustgm::support::library_types::LibraryType;
     for kind in LibraryType::ALL {
-        assert_eq!(LibraryType::from_name(kind.name()), Some(kind));
+        // Unqualified names are preparation hints. Both Ordering descriptors
+        // share a spelling; their resolved modules establish distinct identities.
+        let hint = if kind == LibraryType::ComparisonOrdering {
+            LibraryType::Ordering
+        } else {
+            kind
+        };
+        assert_eq!(LibraryType::from_name(kind.name()), Some(hint));
     }
+    assert_ne!(
+        LibraryType::Ordering.module(),
+        LibraryType::ComparisonOrdering.module()
+    );
     let root = root()?;
     let output = root.join(format!(
         "obj/parallel/pa28/atomic-preparation-{}",

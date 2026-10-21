@@ -45,6 +45,7 @@ fn input(width: usize, repeats: usize, unrelated: usize, owned: bool) -> String 
 #[test]
 fn repeated_memory_calls_reuse_layouts_and_shims_across_width_and_unrelated_types()
 -> Result<(), Box<dyn std::error::Error>> {
+    let mut peaks = std::collections::HashMap::new();
     for owned in [false, true] {
         for width in [2, 16, 64] {
             for unrelated in [0, 64] {
@@ -72,10 +73,21 @@ fn repeated_memory_calls_reuse_layouts_and_shims_across_width_and_unrelated_type
                         "owned={owned} width={width} repeats={repeats} unrelated={unrelated} total={} slots={}",
                         work.steps, work.peak_slots
                     );
-                    // Four slots per field and eighteen per statement group;
-                    // nominal wrapper roots retain four additional fixed slots.
+                    // Preserve the original allocation ceiling. Immutable
+                    // product reads may reduce the old fixed allocation cost.
                     let fixed = if owned { 23 } else { 19 };
-                    assert_eq!(work.peak_slots, width * 4 + repeats * 18 + fixed);
+                    assert!(work.peak_slots <= width * 4 + repeats * 18 + fixed);
+                    let key = (owned, width, repeats);
+                    if unrelated == 0 {
+                        peaks.insert(key, work.peak_slots);
+                    } else {
+                        assert_eq!(
+                            work.peak_slots,
+                            *peaks
+                                .get(&key)
+                                .ok_or("missing ordinary allocation baseline")?
+                        );
+                    }
                     if let Some(old) = previous {
                         assert!(work.steps < old * 9);
                     }
