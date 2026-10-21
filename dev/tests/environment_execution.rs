@@ -131,6 +131,7 @@ fn direct_execution_outcomes() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn native_direct_execution() -> Result<(), Box<dyn std::error::Error>> {
     let sources = CASES
         .iter()
