@@ -227,6 +227,7 @@ fn rebuilt_callable_results_need_fresh_occurrence_proofs_without_new_lifetimes()
         result,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut templates = Templates::default();
     templates.insert_generic(&types, owner, signature, 0, &[], &[parameter])?;
@@ -282,6 +283,7 @@ fn projected_arguments_retain_work_even_with_unprojected_callable_templates() ->
         result: subject,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(types.contains_projections(signature), Some(false));
     let mut templates = Templates::default();

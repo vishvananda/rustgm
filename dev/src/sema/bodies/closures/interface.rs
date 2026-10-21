@@ -49,6 +49,7 @@ impl Checker<'_> {
                     bound_regions: lifetimes.count().map_err(|e| self.error(node, e))?,
                     parameters,
                     unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
                 },
                 &terms,
             )

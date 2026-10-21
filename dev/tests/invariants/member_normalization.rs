@@ -94,6 +94,7 @@ impl Fixture {
             parameters,
             result,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?)
     }
 }

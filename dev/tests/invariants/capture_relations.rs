@@ -99,6 +99,7 @@ fn pointer_input_contravariance_sets_a_hidden_lifetime_lower_bound() -> TestResu
             result: unit,
             bound_regions: 0,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?);
     }
     let variances = Variances::default();

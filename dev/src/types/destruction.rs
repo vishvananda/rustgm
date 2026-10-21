@@ -296,6 +296,7 @@ pub(crate) fn validate_method(
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: super::callable::Convention::RUST,
     }) = types.kind(signature)
     else {
         return Err("selected destructor has an invalid signature");

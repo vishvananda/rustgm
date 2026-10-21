@@ -247,12 +247,21 @@ impl<'a> Context<'a> {
             parameters,
             result,
             unsafe_: _,
+            convention,
         }) = self.types.kind(ty)
         else {
             return Err("missing selected function signature");
         };
         let mut native = Vec::new();
+        if convention.variadic {
+            return Err("variadic call lowering is not implemented");
+        }
         let result_type = self.representation(result)?;
+        if convention.abi == crate::types::callable::Abi::C
+            && matches!(result_type, Representation::Object(_))
+        {
+            return Err("C aggregate result classification is not implemented");
+        }
         if matches!(result_type, Representation::Object(_)) {
             native.push(Type::Ptr);
         }
@@ -261,7 +270,13 @@ impl<'a> Context<'a> {
             .list(parameters)
             .ok_or("missing parameter list")?
         {
-            let representation = self.representation(*ty)?.parameter();
+            let representation = self.representation(*ty)?;
+            if convention.abi == crate::types::callable::Abi::C
+                && matches!(representation, Representation::Object(_))
+            {
+                return Err("C aggregate argument classification is not implemented");
+            }
+            let representation = representation.parameter();
             if representation != Type::Void {
                 native.push(representation);
             }

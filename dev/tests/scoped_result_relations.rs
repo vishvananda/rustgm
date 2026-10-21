@@ -47,6 +47,7 @@ fn function(types: &mut Store, count: u32, input: TypeId, result: TypeId) -> Res
         parameters,
         result,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?)
 }
 #[test]

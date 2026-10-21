@@ -429,10 +429,19 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             parameters,
             result,
             unsafe_,
+            convention,
         } => {
             write!(out, "function binders={bound_regions} parameters=")?;
             list(store, parameters, out)?;
-            write!(out, " result={} unsafe={unsafe_}", result.0)
+            write!(out, " result={} unsafe={unsafe_}", result.0)?;
+            if convention != crate::types::callable::Convention::RUST {
+                write!(
+                    out,
+                    " abi={:?} variadic={}",
+                    convention.abi, convention.variadic
+                )?;
+            }
+            Ok(())
         }
         Kind::FunctionItem {
             item,

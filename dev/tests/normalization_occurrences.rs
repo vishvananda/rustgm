@@ -64,6 +64,7 @@ fn nested_and_sibling_callables_keep_their_actual_scope_counts() -> TestResult {
         bound_regions: count,
         parameters: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     };
     let inner = context.construct(function(0), &[projection, unit])?;
     let outer = context.construct(function(1), &[inner, unit])?;

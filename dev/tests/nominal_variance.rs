@@ -69,6 +69,7 @@ impl Fixture {
             result,
             bound_regions,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })
     }
     fn infer(&self) -> Result<Variances, &'static str> {

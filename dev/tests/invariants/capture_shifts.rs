@@ -19,6 +19,7 @@ fn callable(store: &mut Store, local: TypeId, capture: TypeId) -> Result<TypeId,
         result: capture,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })
 }
 #[test]

@@ -26,6 +26,7 @@ fn signature(store: &mut Store, parameter: TypeId) -> Result<TypeId, &'static st
         result: TypeId::primitive(Primitive::U8),
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })
 }
 

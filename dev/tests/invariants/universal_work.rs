@@ -261,6 +261,7 @@ fn shared_openings_preserve_nested_callable_captures() -> TestResult {
             result: TypeId::UNIT,
             bound_regions: 1,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         let args = facts.types.intern_arguments(&[
             Argument::Lifetime(RegionId::bound(0, 0)?),

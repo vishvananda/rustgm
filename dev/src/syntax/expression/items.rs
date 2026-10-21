@@ -328,7 +328,11 @@ impl Parser<'_, '_> {
                                     Safety::Default
                                 },
                             },
-                            abi,
+                            abi: if external {
+                                crate::syntax::item::Abi::Extern(abi)
+                            } else {
+                                crate::syntax::item::Abi::Rust
+                            },
                             parameters,
                             result,
                             body,

@@ -330,6 +330,7 @@ fn symbolic_live_components_keep_zero_arrays_binders_and_shared_shapes_distinct(
         parameters: inputs,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let parts = query.symbolic(&types, function)?;
     assert!(parts.regions.is_empty());

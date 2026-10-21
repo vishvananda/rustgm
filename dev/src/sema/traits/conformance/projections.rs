@@ -105,6 +105,7 @@ impl Definitions {
             result,
             bound_regions,
             unsafe_,
+            convention,
         }) = facts.types.kind(ty)
         else {
             return Err("missing conformance signature");
@@ -138,6 +139,7 @@ impl Definitions {
             result,
             bound_regions,
             unsafe_,
+            convention,
         })
     }
 }

@@ -172,6 +172,7 @@ impl Checker<'_> {
                     bound_regions: 0,
                     parameters: variant.end - variant.start,
                     unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
                 },
                 &children,
             )

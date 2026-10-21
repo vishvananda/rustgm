@@ -63,6 +63,7 @@ fn substitution_does_not_capture_nested_binders_or_share_argument_environments()
         parameters,
         result: outer,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(store.escaping_binders(function), Some(2));
     let mut substitution = Bound::new(vec![RegionId::bound(0, 3)?]);
@@ -130,6 +131,7 @@ fn nested_nominal_arguments_and_function_items_substitute_without_changing_owner
         parameters,
         result: aggregate,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let item = store.intern(Kind::FunctionItem {
         arguments: rustgm::types::GenericArgs::EMPTY,
@@ -179,6 +181,7 @@ fn substitution_limits_reject_before_materializing_unbounded_argument_work()
         parameters,
         result: outside,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut overflowing = Bound::new(vec![RegionId::bound(0x7fff, 0)?]);
     assert_eq!(

@@ -275,11 +275,13 @@ impl Scratch {
             return Err(error(host, key, "missing elaborated callable binder"));
         };
         let bound_regions = *bound_regions;
+        let convention = declarations::callable_convention(host.report(), key, function.abi)?;
         host.callable(key);
         Ok(Constructor::Function {
             bound_regions,
             parameters,
             unsafe_: function.unsafe_,
+            convention,
         })
     }
 }

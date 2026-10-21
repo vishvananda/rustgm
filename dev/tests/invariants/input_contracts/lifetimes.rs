@@ -170,6 +170,7 @@ fn family_conditions_with_callable_locals_are_filtered_before_component_decompos
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let mut bounds =
         Bounds::infer_with_inputs(&mut store, &Definitions::default(), &[], [], families)?;

@@ -227,6 +227,7 @@ pub(super) struct State {
         std::collections::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
     unsizing_adjustments: std::collections::HashMap<usize, unsizing::Pending>,
     pointer_adjustments: std::collections::HashMap<usize, pointers::Pending>,
+    callable_adjustments: std::collections::HashMap<usize, TermId>,
     pointer_casts: Vec<NodeId>,
     reference_expected: HashSet<NodeId>,
     address_dereferences: HashSet<NodeId>,
@@ -332,6 +333,7 @@ impl<'a> Checker<'a> {
                 reference_adjustments: std::collections::HashMap::new(),
                 unsizing_adjustments: std::collections::HashMap::new(),
                 pointer_adjustments: std::collections::HashMap::new(),
+                callable_adjustments: std::collections::HashMap::new(),
                 pointer_casts: Vec::new(),
                 reference_expected: HashSet::new(),
                 address_dereferences: HashSet::new(),
@@ -1538,15 +1540,25 @@ impl Checker<'_> {
         {
             self.closure_pointer_environment(source, actual)?;
             let signature = self.child(source, actual, 0)?;
-            self.callable_shape(source, signature, expected)?;
+            let view = self.callable_conversion(source, signature, expected)?;
+            self.callable_shape(source, view, expected)?;
+            let index = self.state.adjustments.len();
             self.record_adjustment(source, expected, AdjustmentKind::FunctionPointer)?;
+            if view != signature {
+                self.state.callable_adjustments.insert(index, view);
+            }
             return Ok(());
         }
         if matches!(actual_head, Some(Constructor::Function { .. }))
             && matches!(expected_head, Some(Constructor::Function { .. }))
         {
-            self.callable_shape(source, actual, expected)?;
+            let view = self.callable_conversion(source, actual, expected)?;
+            self.callable_shape(source, view, expected)?;
+            let index = self.state.adjustments.len();
             self.record_adjustment(source, expected, AdjustmentKind::Equality)?;
+            if view != actual {
+                self.state.callable_adjustments.insert(index, view);
+            }
             return Ok(());
         }
         if matches!(actual_head, Some(Constructor::Reference { .. }))
@@ -1713,6 +1725,7 @@ impl Checker<'_> {
         let Some(Constructor::Function {
             parameters,
             unsafe_,
+            convention,
             bound_regions,
         }) = self.head(node, term)?
         else {
@@ -1720,6 +1733,9 @@ impl Checker<'_> {
         };
         if unsafe_ {
             self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
+        }
+        if convention.variadic {
+            return Err(self.error(node, "variadic calls require foreign argument promotion"));
         }
         if bound_regions != 0 {
             return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));

@@ -47,6 +47,7 @@ fn fixture(implementation: &str) -> TestResult<(Report, Declarations, Predicate)
         parameters,
         result,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let goal = tests::predicate(
         &mut facts,

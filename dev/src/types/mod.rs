@@ -209,6 +209,7 @@ pub enum Kind {
         parameters: ListId,
         result: TypeId,
         unsafe_: bool,
+        convention: callable::Convention,
     },
     FunctionItem {
         item: ItemId,
@@ -428,8 +429,15 @@ impl Store {
             Kind::Reference { referent, .. } => valid_type(referent),
             Kind::Pointer { pointee, .. } => valid_type(pointee),
             Kind::Function {
-                parameters, result, ..
-            } => self.list(parameters).is_some() && valid_type(result),
+                parameters,
+                result,
+                convention,
+                ..
+            } => {
+                self.list(parameters).is_some()
+                    && valid_type(result)
+                    && (!convention.variadic || convention.abi == callable::Abi::C)
+            }
             Kind::FunctionItem {
                 signature,
                 arguments,
@@ -448,7 +456,11 @@ impl Store {
                     && self.arguments(arguments).is_some()
                     && matches!(
                         self.kind(signature),
-                        Some(Kind::Function { unsafe_: false, .. })
+                        Some(Kind::Function {
+                            unsafe_: false,
+                            convention: callable::Convention::RUST,
+                            ..
+                        })
                     )
                     && matches!(self.kind(environment), Some(Kind::Tuple(_)))
             }

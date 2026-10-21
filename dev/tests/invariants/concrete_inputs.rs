@@ -57,6 +57,7 @@ fn callable_local_binders_do_not_hide_external_lifetime_dependencies() -> Result
             result: TypeId::UNIT,
             bound_regions: 1,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         assert_eq!(concrete(&store, callable)?, expected);
     }

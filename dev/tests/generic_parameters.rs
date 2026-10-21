@@ -158,6 +158,7 @@ fn generic_presence_survives_every_structural_constructor() -> Result<(), &'stat
         parameters: list,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let empty = store.intern_list(&[])?;
     let output = store.intern(Kind::Function {
@@ -165,12 +166,14 @@ fn generic_presence_survives_every_structural_constructor() -> Result<(), &'stat
         parameters: empty,
         result: parameter,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let closed = store.intern(Kind::Function {
         bound_regions: 0,
         parameters: empty,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     for kind in [
         Kind::Tuple(list),

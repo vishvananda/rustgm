@@ -228,6 +228,7 @@ fn normalization_retains_selected_impl_lifetime_debts_inside_nested_callables() 
                     parameters,
                     result: TypeId::UNIT,
                     unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
                 })?;
             }
             let mut proof = Obligations::new(1);

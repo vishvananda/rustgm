@@ -61,6 +61,7 @@ pub(in crate::sema) fn match_signature(
         bound_regions,
         parameters,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     }) = context.head(&facts.types, signature)?
     else {
         return Err(infer::Error::Mismatch);

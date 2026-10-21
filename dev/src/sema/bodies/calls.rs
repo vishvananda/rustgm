@@ -92,6 +92,52 @@ impl CallTypes {
 }
 
 impl Checker<'_> {
+    /// Safety weakening is a top-level coercion, never a nested type equation.
+    pub(super) fn callable_conversion(
+        &mut self,
+        node: NodeId,
+        actual: TermId,
+        expected: TermId,
+    ) -> Result<TermId, Error> {
+        let (
+            Some(Constructor::Function {
+                bound_regions,
+                parameters,
+                unsafe_: source,
+                convention,
+            }),
+            Some(Constructor::Function {
+                unsafe_: target,
+                convention: expected_convention,
+                ..
+            }),
+        ) = (self.head(node, actual)?, self.head(node, expected)?)
+        else {
+            return Ok(actual);
+        };
+        if convention != expected_convention || (source && !target) {
+            return Err(self.error(node, "incompatible callable convention or safety"));
+        }
+        if source == target {
+            return Ok(actual);
+        }
+        let mut children = Vec::with_capacity(parameters as usize + 1);
+        for index in 0..=parameters {
+            children.push(self.child(node, actual, index as usize)?);
+        }
+        self.state
+            .infer
+            .construct(
+                Constructor::Function {
+                    bound_regions,
+                    parameters,
+                    unsafe_: target,
+                    convention,
+                },
+                &children,
+            )
+            .map_err(|e| self.error(node, e))
+    }
     pub(super) fn callable_shape(
         &mut self,
         node: NodeId,
@@ -275,6 +321,7 @@ impl Checker<'_> {
             parameters,
             result,
             unsafe_,
+            convention,
         }) = self.facts.types.kind(signature)
         else {
             return Err(self.error(node, "missing callable signature"));
@@ -318,6 +365,7 @@ impl Checker<'_> {
                 parameters,
                 result,
                 unsafe_,
+                convention,
             })
             .map_err(|e| self.error(node, e))
     }

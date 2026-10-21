@@ -63,6 +63,7 @@ fn callable(f: &mut Fixture, region: RegionId) -> Result<TypeId> {
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?)
 }
 

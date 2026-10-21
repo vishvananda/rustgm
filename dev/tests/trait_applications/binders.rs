@@ -29,6 +29,7 @@ pub(super) fn function(
         result,
         bound_regions: count,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 

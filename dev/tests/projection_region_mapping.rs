@@ -56,6 +56,7 @@ fn pointer(store: &mut Store, fields: &[TypeId], result: TypeId) -> Result<TypeI
         parameters,
         result,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 

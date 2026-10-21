@@ -51,6 +51,7 @@ fn symbolic_cleanup_depends_on_fixed_copy_assumptions() -> Result<(), &'static s
         parameters: inputs,
         result: ty,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let definitions = Definitions::default();
     for abilities in [

@@ -28,6 +28,7 @@ fn function(store: &mut Store, inputs: &[TypeId], result: TypeId) -> Result<Type
         result,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 fn trait_bound(store: &mut Store, arguments: &[Argument]) -> Result<Bound, &'static str> {

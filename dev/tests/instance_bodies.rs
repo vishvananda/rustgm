@@ -338,6 +338,7 @@ mod projections {
             parameters,
             result: TypeId::UNIT,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?;
         let ty = selected.facts.types.intern(Kind::FunctionItem {
             item: selected.item,

@@ -4,6 +4,9 @@ mod aggregates;
 mod annotations;
 mod associated;
 mod call_traits;
+mod calling_conventions;
+pub(super) use calling_conventions::callable_convention;
+use calling_conventions::rust_abi;
 mod capture_bounds;
 mod constants;
 mod contracts;
@@ -139,6 +142,7 @@ struct Signature {
     result: Option<NodeId>,
     binders: List,
     unsafe_: bool,
+    convention: crate::types::callable::Convention,
 }
 struct Checker<'a> {
     call_paths: std::collections::HashSet<NodeKey>,
@@ -860,16 +864,12 @@ impl Checker<'_> {
                 .configured
                 .ast
                 .function_types[index as usize];
-            if !rust_abi(self.report, key, function.abi)? {
-                return Err(
-                    self.error(key, "foreign signatures require later semantic assignments")
-                );
-            }
             return Ok(Signature {
                 parameters: function.parameters,
                 result: function.result,
                 binders: function.binders,
                 unsafe_: function.unsafe_,
+                convention: callable_convention(self.report, key, function.abi)?,
             });
         }
         let item = self.item(key)?;
@@ -883,10 +883,10 @@ impl Checker<'_> {
         else {
             return Err(self.error(key, "expected function signature"));
         };
-        if !rust_abi(self.report, key, abi)? || flags.asynchronous {
+        if flags.asynchronous {
             return Err(self.error(
                 key,
-                "foreign, async or bounded signatures require later semantic assignments",
+                "async or bounded signatures require later semantic assignments",
             ));
         }
         Ok(Signature {
@@ -894,6 +894,7 @@ impl Checker<'_> {
             result,
             binders: item.generics,
             unsafe_: flags.safety == Safety::Unsafe,
+            convention: callable_convention(self.report, key, abi)?,
         })
     }
     fn declared_regions(&self, key: NodeKey, list: List) -> Result<Vec<DefId>, Error> {
@@ -1142,6 +1143,7 @@ impl Checker<'_> {
                         parameters,
                         result,
                         unsafe_: signature.unsafe_,
+                        convention: signature.convention,
                     },
                 )?;
                 let original = self.unreduced_signature(key, ty, &signature)?;
@@ -1374,20 +1376,6 @@ pub(super) fn parameter_type(report: &Report, mut key: NodeKey) -> Result<NodeId
             }
         }
     }
-}
-
-/// Explicit Rust ABI spellings use the same calling convention as omission.
-fn rust_abi(report: &Report, key: NodeKey, abi: Option<NodeId>) -> Result<bool, Error> {
-    let Some(node) = abi else { return Ok(true) };
-    let key = NodeKey { node, ..key };
-    let unit = report.package.unit(key.file);
-    let Kind::Literal(index) = unit.configured.ast.node(node).kind else {
-        return Ok(false);
-    };
-    let value = unit
-        .literal(index)
-        .map_err(|e| Declarations::error(report, key, e.message))?;
-    Ok(matches!(value, crate::literal::Value::String(bytes) if bytes.as_ref() == b"Rust"))
 }
 
 pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> {

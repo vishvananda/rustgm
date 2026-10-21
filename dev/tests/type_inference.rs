@@ -47,6 +47,7 @@ fn empty_instantiation_preserves_rigid_shared_graphs_and_later_substitution()
         parameters,
         result: t_ty,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     for _ in 0..12 {
         let fields = store.intern_list(&[template, template])?;
@@ -136,6 +137,7 @@ fn canonical_shapes_share_lists_but_preserve_semantic_identity() -> Result<(), &
         parameters: list,
         result: i32_,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let a = store.intern(Kind::FunctionItem {
         arguments: rustgm::types::GenericArgs::EMPTY,

@@ -417,6 +417,7 @@ fn normalization_preserves_callable_binders_around_a_selected_result() -> TestRe
             bound_regions: 1,
             parameters: 1,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &[projected, unit],
     )?;
@@ -431,6 +432,7 @@ fn normalization_preserves_callable_binders_around_a_selected_result() -> TestRe
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let known = context.known(&store, normalized)?;
     let id = pending(context.equate_deferred(&store, callable, known, Relation::Shape)?)?;

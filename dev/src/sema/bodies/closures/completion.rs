@@ -98,6 +98,7 @@ impl Checker<'_> {
         let Some(super::Constructor::Function {
             parameters,
             unsafe_,
+            convention,
             ..
         }) = self.head(body, entry.signature)?
         else {
@@ -114,6 +115,7 @@ impl Checker<'_> {
                     bound_regions: self.state.body_binders,
                     parameters,
                     unsafe_,
+                    convention,
                 },
                 &children,
             )

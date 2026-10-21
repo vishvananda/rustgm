@@ -144,6 +144,7 @@ fn only_encountered_private_lifetimes_allocate_and_callable_locals_remain_local(
         parameters,
         result: private,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut closing = Bound::export_regions(
         &[ExportSource::Caller(1..2), ExportSource::Private(2..4)],
@@ -159,6 +160,7 @@ fn only_encountered_private_lifetimes_allocate_and_callable_locals_remain_local(
             parameters: expected,
             result: exported,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })
     );
     assert_eq!(closing.next_region(), Some(6));

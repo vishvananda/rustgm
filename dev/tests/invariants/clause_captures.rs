@@ -70,6 +70,7 @@ fn whole_clause_occurrences_keep_callable_locals_and_enclosing_captures_distinct
         result: local,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let equality = reference(&mut store, 1, 7)?;
     let clause = quantify(

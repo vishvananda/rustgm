@@ -186,6 +186,7 @@ impl Checker<'_> {
                             .get(&index)
                             .map(|pending| pending.view)
                     })
+                    .or_else(|| self.state.callable_adjustments.get(&index).copied())
                     .unwrap_or(self.state.adjustments[index].actual);
                 let target = self.state.adjustments[index].expected;
                 let actual = self.inferred_regions(value, original)?;

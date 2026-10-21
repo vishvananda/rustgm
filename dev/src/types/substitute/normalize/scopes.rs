@@ -124,11 +124,13 @@ impl Normalizer {
                 parameters,
                 result,
                 unsafe_,
+                convention,
             } => Kind::Function {
                 bound_regions,
                 parameters: self.frame.fold.list(store, parameters, 0)?,
                 result: self.frame.fold.child(store, result, 0)?,
                 unsafe_,
+                convention,
             },
             Kind::Dynamic {
                 shape,

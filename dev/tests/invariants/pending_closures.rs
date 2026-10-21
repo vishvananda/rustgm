@@ -30,6 +30,7 @@ fn pending_capture_kind_retains_signature_inference_without_granting_permission(
                 parameters: 1,
                 bound_regions: 0,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             },
             &[unknown, unknown],
         )?;

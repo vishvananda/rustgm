@@ -405,6 +405,7 @@ impl Checker<'_> {
                     parameters: fields,
                     result: owner,
                     unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
                 },
             )?;
             self.constructor_template(key, ItemId(id.0), variant.owner, signature)?;

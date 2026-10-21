@@ -20,6 +20,7 @@ impl Checker<'_> {
         let Some(Constructor::Function {
             bound_regions,
             parameters,
+            convention: crate::types::callable::Convention::RUST,
             ..
         }) = self.contextual_head(node, term)?
         else {

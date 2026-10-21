@@ -77,6 +77,7 @@ fn nested_callable_scopes_export_only_free_requirements() -> Result<(), &'static
         parameters: inputs,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let bounds = Bounds::default();
     let templates = Templates::default();

@@ -15,6 +15,7 @@ fn signature(store: &mut Store, input: TypeId) -> Result<TypeId, &'static str> {
         result: TypeId::UNIT,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })
 }
 fn closure(

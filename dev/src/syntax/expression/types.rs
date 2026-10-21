@@ -545,9 +545,9 @@ impl Parser<'_, '_> {
         let binders = self.binders()?;
         let unsafe_ = self.word("unsafe")?;
         let abi = if self.word("extern")? {
-            self.abi()?
+            crate::syntax::item::Abi::Extern(self.abi()?)
         } else {
-            None
+            crate::syntax::item::Abi::Rust
         };
         if !self.word("fn")? {
             return Err(self.error("expected fn in function pointer type")?);

@@ -156,6 +156,7 @@ fn callable(types: &mut Store, input: RegionId, result: RegionId) -> Result<Type
         parameters,
         result,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?)
 }
 

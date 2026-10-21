@@ -89,6 +89,7 @@ impl Checker<'_> {
                     bound_regions,
                     parameters: count,
                     unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
                 },
                 &terms,
             )

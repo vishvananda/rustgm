@@ -39,6 +39,7 @@ fn callable(store: &mut Store, regions: &[(u16, u16)]) -> Result<TypeId, &'stati
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })
 }
 fn predicate(store: &mut Store, ty: TypeId, args: &[Argument]) -> Result<Predicate, &'static str> {

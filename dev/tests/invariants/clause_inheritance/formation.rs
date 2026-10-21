@@ -162,6 +162,7 @@ fn empty_and_nonempty_binders_preserve_captured_inputs_and_nested_callable_local
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let lifted_capture = reference(&mut store, 1, BYTE)?;
     let parameters = store.intern_list(&[inner_local, lifted_capture])?;
@@ -170,6 +171,7 @@ fn empty_and_nonempty_binders_preserve_captured_inputs_and_nested_callable_local
         result: TypeId::UNIT,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let application = predicate(&mut store, item, function, &[Argument::Type(function)])?;
     for count in [0, 1] {

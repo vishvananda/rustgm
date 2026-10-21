@@ -96,6 +96,7 @@ fn mapping_preserves_empty_and_nested_binders_and_opens_captures_in_source_order
         result: BYTE,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let value = trait_bound(
         &mut store,
@@ -138,6 +139,7 @@ fn mapping_preserves_empty_and_nested_binders_and_opens_captures_in_source_order
         result: BYTE,
         bound_regions: 1,
         unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
     })?;
     let value = trait_bound(
         &mut store,

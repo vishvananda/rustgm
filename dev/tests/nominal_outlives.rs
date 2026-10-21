@@ -161,6 +161,7 @@ fn declared_type_bounds_propagate_even_without_a_reference_field() -> TestResult
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let templates = Templates::default();
     let mut queries = Queries::new(&fixture.types, &bounds, &templates);

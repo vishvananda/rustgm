@@ -65,6 +65,7 @@ pub enum Constructor {
         bound_regions: u32,
         parameters: u32,
         unsafe_: bool,
+        convention: super::callable::Convention,
     },
     FunctionItem(ItemId, GenericArgs),
     /// Signature and environment tuple precede the enclosing type argument edges.
@@ -638,14 +639,16 @@ impl Context {
                 Constructor::Function {
                     parameters: a,
                     unsafe_: x,
+                    convention: av,
                     ..
                 },
                 Constructor::Function {
                     parameters: b,
                     unsafe_: y,
+                    convention: bv,
                     ..
                 },
-            ) if !record_regions && a == b && x == y => {
+            ) if !record_regions && a == b && x == y && av == bv => {
                 // Quantifier subsumption belongs to the directed region proof.
                 // Shape inference must permit specialization of a late binder.
             }
@@ -744,6 +747,7 @@ impl Context {
                 parameters,
                 result,
                 unsafe_,
+                convention,
             } => {
                 let parameters = store.list(parameters).ok_or(Error::InvalidIdentity)?;
                 for ty in parameters {
@@ -754,6 +758,7 @@ impl Context {
                     bound_regions,
                     parameters: u32::try_from(parameters.len()).map_err(|_| Error::Overflow)?,
                     unsafe_,
+                    convention,
                 }
             }
             Kind::FunctionItem {
@@ -914,6 +919,7 @@ fn canonical(
             bound_regions,
             parameters,
             unsafe_,
+            convention,
         } => {
             let parameters = parameters as usize;
             Kind::Function {
@@ -923,6 +929,7 @@ fn canonical(
                     .map_err(|_| Error::Overflow)?,
                 result: *children.get(parameters).ok_or(Error::InvalidIdentity)?,
                 unsafe_,
+                convention,
             }
         }
         Constructor::FunctionItem(item, arguments) => Kind::FunctionItem {

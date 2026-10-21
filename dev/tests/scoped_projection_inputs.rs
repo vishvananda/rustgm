@@ -216,6 +216,7 @@ fn nested_callable_slots_still_alpha_rename_beneath_rigid_ancestors() -> TestRes
             parameters,
             result: TypeId::UNIT,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         })?);
     }
     let mut context = Context::default();

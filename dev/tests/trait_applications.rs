@@ -107,6 +107,7 @@ fn predicate_substitution_preserves_nested_binders_and_const_arguments()
         parameters,
         result: ty,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
         bound_regions: 1,
     })?;
     let trait_ = application(

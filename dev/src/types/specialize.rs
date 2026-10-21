@@ -182,6 +182,7 @@ fn rebuild(store: &mut Store, kind: Kind, children: &[TypeId]) -> Result<Kind, &
         Kind::Function {
             bound_regions,
             unsafe_,
+            convention,
             ..
         } => {
             let (result, parameters) = children
@@ -190,6 +191,7 @@ fn rebuild(store: &mut Store, kind: Kind, children: &[TypeId]) -> Result<Kind, &
             Kind::Function {
                 bound_regions,
                 unsafe_,
+                convention,
                 result: *result,
                 parameters: store.intern_list(parameters)?,
             }

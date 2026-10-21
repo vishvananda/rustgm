@@ -226,7 +226,7 @@ impl Bases {
         }
         for function in &source.function_types {
             let mut function = *function;
-            self.optional(&mut function.abi);
+            self.abi(&mut function.abi);
             self.list(&mut function.binders);
             self.list(&mut function.parameters);
             self.optional(&mut function.result);
@@ -508,6 +508,11 @@ impl Bases {
         }
         Ok(())
     }
+    fn abi(&self, abi: &mut super::item::Abi) {
+        if let super::item::Abi::Extern(value) = abi {
+            self.optional(value);
+        }
+    }
     fn item(
         &self,
         kind: &mut ItemKind,
@@ -521,7 +526,7 @@ impl Bases {
                 body,
                 ..
             } => {
-                self.optional(abi);
+                self.abi(abi);
                 self.list(parameters);
                 self.optional(result);
                 self.optional(body);

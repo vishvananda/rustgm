@@ -1,5 +1,5 @@
 //! Item/type/pattern spellings extend the PA4 expression vocabulary.
-use super::{Children, Kind, Optional, Syntax, Write, io, label, spelling};
+use super::{CallableAbi, Children, Kind, Optional, Syntax, Write, io, label, spelling};
 use crate::syntax::item::{Item, ItemKind, Visibility};
 
 fn visibility(visibility: Visibility, output: &mut impl Write) -> io::Result<()> {
@@ -134,7 +134,7 @@ pub(super) fn node<L>(
             write!(
                 output,
                 "function-type {unsafe_} {} {} {} {}",
-                Optional(abi),
+                CallableAbi(abi),
                 Children(ast, binders),
                 Children(ast, parameters),
                 Optional(result)
@@ -239,7 +239,7 @@ pub(super) fn item<L>(
             flags.asynchronous,
             flags.safety == crate::syntax::item::Safety::Unsafe,
             flags.safety == crate::syntax::item::Safety::Safe,
-            Optional(abi),
+            CallableAbi(abi),
             Children(ast, parameters),
             Optional(result),
             Optional(body)

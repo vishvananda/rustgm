@@ -274,6 +274,7 @@ fn arrays_nominal_parameters_and_function_item_identity_keep_their_structure()
         result: TypeId::UNIT,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let item = store.intern(Kind::FunctionItem {
         item,
@@ -317,6 +318,7 @@ fn callable_binders_preserve_bound_lifetimes_and_freshen_only_free_positions()
         result: late,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(store.contains_regions(signature), Some(true));
     assert_eq!(store.has_free_regions(signature, 0), Some(true));
@@ -352,6 +354,7 @@ fn callable_binders_preserve_bound_lifetimes_and_freshen_only_free_positions()
         result: late,
         bound_regions: 1,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     assert_eq!(store.has_free_regions(closed, 0), Some(false));
     let closed = cx.known(&store, closed)?;
@@ -567,6 +570,7 @@ fn nested_callable_specialization_is_bounded_and_keeps_positions_independent()
         parameters,
         result: reference,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let list = store.intern_list(&[poly, poly])?;
     let pair = store.intern(Kind::Tuple(list))?;

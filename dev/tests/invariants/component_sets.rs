@@ -61,6 +61,7 @@ fn inputs(types: &mut Store) -> Result<Vec<TypeId>> {
             parameters,
             result: reference,
             unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
         })?;
         values.push(signature);
         values.push(types.intern(Kind::FunctionItem {
@@ -138,6 +139,7 @@ fn shared_wide_lists_are_summarized_once_per_scope_and_policy() -> Result {
                 parameters,
                 result,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             })?);
         }
         let mut query = Sets::default();

@@ -41,6 +41,7 @@ fn unresolved_region_substitution_preserves_nested_binders_and_argument_edges()
             parameters: 3,
             bound_regions: 1,
             unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
         },
         &[nominal, mixed, borrowed, variable],
     )?;
@@ -112,6 +113,7 @@ fn callable_catalog_rejects_foreign_duplicate_and_reordered_parameters()
         result: TypeId::UNIT,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut templates = Templates::default();
     for args in [
@@ -163,6 +165,7 @@ fn fresh_function_items_rebuild_signatures_and_share_unresolved_const_arguments(
         result: array,
         bound_regions: 0,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut templates = Templates::default();
     templates.insert_generic(&types, owner, signature, 0, &[], &[type_id, const_id])?;

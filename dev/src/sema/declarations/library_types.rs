@@ -238,6 +238,7 @@ impl Checker<'_> {
                 parameters,
                 result,
                 unsafe_: false,
+                convention: crate::types::callable::Convention::RUST,
             },
         )?;
         self.constructor_template(source, ItemId(definition.0), ItemId(owner.0), signature)?;

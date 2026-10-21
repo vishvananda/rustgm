@@ -121,6 +121,7 @@ fn parameter_insertion_shifts_only_lifetimes_outside_the_argument()
         parameters,
         result: formal,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let reference = types.intern(Kind::Reference {
         mutable: false,
@@ -133,6 +134,7 @@ fn parameter_insertion_shifts_only_lifetimes_outside_the_argument()
         parameters,
         result: reference,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let elements = types.intern_list(&[reference, inner])?;
     let argument = types.intern(Kind::Tuple(elements))?;
@@ -149,6 +151,7 @@ fn parameter_insertion_shifts_only_lifetimes_outside_the_argument()
         parameters,
         result: shifted,
         unsafe_: false,
+        convention: rustgm::types::callable::Convention::RUST,
     })?;
     let mut context = Context::default();
     let argument = context.known(&types, argument)?;

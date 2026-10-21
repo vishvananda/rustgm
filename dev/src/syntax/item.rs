@@ -46,11 +46,28 @@ pub struct FunctionFlags {
     pub safety: Safety,
 }
 
+/// Distinguishes an ordinary Rust signature from `extern` with its ABI omitted.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Abi {
+    #[default]
+    Rust,
+    Extern(Option<NodeId>),
+}
+impl Abi {
+    #[must_use]
+    pub const fn literal(self) -> Option<NodeId> {
+        match self {
+            Self::Rust => None,
+            Self::Extern(value) => value,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ItemKind {
     Function {
         flags: FunctionFlags,
-        abi: Option<NodeId>,
+        abi: Abi,
         parameters: List,
         result: Option<NodeId>,
         body: Option<NodeId>,
@@ -141,7 +158,7 @@ pub struct GenericParameter {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FunctionType {
     pub unsafe_: bool,
-    pub abi: Option<NodeId>,
+    pub abi: Abi,
     pub binders: List,
     pub parameters: List,
     pub result: Option<NodeId>,
