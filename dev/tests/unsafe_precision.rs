@@ -103,27 +103,19 @@ fn source_precision_and_access_permissions() -> Result<(), Box<dyn std::error::E
                 folder.join(format!("{name}.{mode}.status")),
                 output.status.code().ok_or("signal")?.to_string(),
             )?;
-            let blocked = matches!(name, "packed-aligned-reference" | "union-field-reference");
-            let actual_expected = if blocked {
-                1
-            } else if mode == "--emit-types" {
+            let actual_expected = if mode == "--emit-types" {
                 i32::from(matches!(
                     name,
-                    "raw-unsafe-required"
-                        | "union-raw-nested-unsafe"
-                        | "packed-unaligned-reference"
+                    "raw-unsafe-required" | "union-raw-nested-unsafe"
                 ))
             } else {
                 expected
             };
-            if blocked {
-                assert!(
-                    String::from_utf8_lossy(&output.stderr)
-                        .contains("closure result retains an input-only or local lifetime"),
-                    "{name}"
-                );
-            }
-            if name == "packed-unaligned-local-borrow" && mode != "--emit-types" {
+            if matches!(
+                name,
+                "packed-unaligned-local-borrow" | "packed-unaligned-reference"
+            ) && mode != "--emit-types"
+            {
                 assert!(
                     String::from_utf8_lossy(&output.stderr)
                         .contains("reference to an unaligned packed field"),
@@ -288,6 +280,21 @@ fn repeated_precision_boundaries_keep_linear_graph_work() -> Result<(), Box<dyn 
             work.push(sum);
         }
         assert_eq!(work[2] - work[1], 4 * (work[1] - work[0]));
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires qualified external CPPGM backend"]
+fn combined_reference_outputs_execute() -> Result<(), Box<dyn std::error::Error>> {
+    for name in ["packed-reference", "union-reference"] {
+        let source = std::fs::read_to_string(root()?.join(format!(
+            "pa27/tests/spec/capture-integration-native/{name}.rs"
+        )))?;
+        native::check_cases(
+            "parallel/pa27/capture-reference-native",
+            &[(name, &source, false)],
+        )?;
     }
     Ok(())
 }

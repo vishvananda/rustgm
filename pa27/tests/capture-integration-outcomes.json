@@ -1,0 +1,344 @@
+{
+  "gates": [
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--check"
+      ],
+      "status": 0,
+      "seconds": 5.524770736694336
+    },
+    {
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--bin",
+        "rustgm"
+      ],
+      "status": 0,
+      "seconds": 62.58657622337341
+    }
+  ],
+  "source": [
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-reference.rs",
+      "sha256": "d6dd6d978f09bec33150fda1a327d50c50f8becff46537b3ca66933069b9b3e4",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "75129ec6dd079e25fe04c066a322d176948de125cf5589ebba1f8c42a4a6a8b1",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "baad3062824ef19e7d60c83ea4fd8c8e0268211ca823c4082bcbe82cf2fb8cef",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "ebdb0076e48c8b2279ec6d9b2dd465903758b7921a4550e5113749da15b7b789",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-field-reference.rs",
+      "sha256": "82bd21e8bcbc2ceee193ec4c3182c7f84b98897ea68a5e967bff6463042aad72",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "1ea05005f887ea8029b4a47c86dcc3ce0aee3259621921a4e406a096df42ae04",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "aa7e55be0e4a4029b9a9ea37e54744fd7206515cc798eb66af349942bcab89c6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "f89ecf563e7bcce49e87bdba04b86f5c53728d1d3c4c0deaa4e89bb20b5cc828",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-reference.rs",
+      "sha256": "30092298a6f8763626e957284f3183684b80eed9a30f180f881f9ee2af6aa738",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "5cb1d3b49ff66a90b11e2bdae73e039a2f355e887a0739c6af2b4489ec41c056",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "74fdb9b3b6ed256c5507e6f461a33cd37b384d3cf0ae39ba6310d225575450bc",
+          "stderr": "ERROR: file 0: 70: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "74fdb9b3b6ed256c5507e6f461a33cd37b384d3cf0ae39ba6310d225575450bc",
+          "stderr": "ERROR: file 0: 70: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-local-borrow.rs",
+      "sha256": "e92c08e165e89eae148a56bdd175260f2add2ae77847534504e3d1deed961e6c",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "5af8ed46c6f2093410ab1ca7cc8cba39d35f7f2a4b265464ccca115ca8f6a29b",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "abbf09334ee454c90962fe2f051ec5b406f969d6924f7042cd91466a99532a57",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "ee3f157a7def92304dc9a5625d095aa02d8c7072264a16328c41604e3bb38110",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-local-borrow.rs",
+      "sha256": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "858bcc72874f824d8d7f8c53135a51341db46390b1b5e21ffdd88ad9ac32dfa9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "580ac6d37f242f4d22b167c48c13ef6fac33585936897094674494400e649a4e",
+          "stderr": "ERROR: file 0: 77: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "580ac6d37f242f4d22b167c48c13ef6fac33585936897094674494400e649a4e",
+          "stderr": "ERROR: file 0: 77: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-places/method-deep.rs",
+      "sha256": "105c14faf1cb65ab6e69efada7163d2f96bf4965118ee476364702d5f06e2e95",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "f6916810854564e3fa57c833e6c4523fd00a96afd19c158d2c96e46e3820a367",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "8a228a08803edc50ea545c62bad95db54f2d745e48a0dfe90f03b1023d572cda",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "b30529ef8dcaca7ee2a1e11e36433a175e522850dc30768155f221e3eb4b2674",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "d7e17e91b7d7954bb936a080e75513e283815d35c30eb890b66ebf31de20f010",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-places/call-mutable.rs",
+      "sha256": "37972eba27161e9dfc1f35f951381fee5b40125d09db897ceccc799f8edffac8",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_object_sha256": "b511174f57e59af7ce1d1e81c81c96218a6edce1a76f7f994bd3e0f9e32e6fdf",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f285f07244bb7fe2440b47652e36500e4fe65814ad4b60729732b842dc8cbc5f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "f887c9a65e6a78a9d0062ccb047581ce632176ce9f31c6fc2a25b7db3f213893",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    }
+  ],
+  "native": [
+    {
+      "path": "pa27/tests/spec/capture-integration-native/packed-reference.rs",
+      "sha256": "0dc988a448a3882a6a9c9f8734b51781ebf3cb6772d97ee35cd746d4842d173c",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "a596d1311c2c97a1e9e7103898793f65da205e6be104bae98171ffdac4b188ee",
+      "native_run_status": 0,
+      "native_binary_sha256": "19dc8bce0b735e8438af9835f21ce96f264318b366e280f0e397634c12095ab4",
+      "lowir_sha256": "d3434d7552833457ff54b148e30a85f9e9444fe6961242befcc0a87e1fbc82e4"
+    },
+    {
+      "path": "pa27/tests/spec/capture-integration-native/union-reference.rs",
+      "sha256": "a7d6bed1f5e92842d8020df477a6a37be793c93d294187ac2cd14287daa0d467",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "b274e9c33471981a304823696287db5541378da24591023f25fa2f5d8c203872",
+      "native_run_status": 0,
+      "native_binary_sha256": "c53b6a8faf3a655c9a49abc93dff3348d9c9d2e88c7239b4df71c2082f902bc4",
+      "lowir_sha256": "40146bee229116e0e4bebdbf9b69468a910d396f7bb0bcd512c17540f6c30ade"
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-native/deep-reference.rs",
+      "sha256": "1a4d2af40a3639e719ab0c174fc1a30a2cb6331eb6732a8eb96f1f988f577e20",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "883bde32aa26a9212307609e4e4011efabb09b01102e43ccf126575047d54533",
+      "native_run_status": 0,
+      "native_binary_sha256": "88f6902c4a1f5d5bb109793d927987559ea6c669397cc6e00096ec45e2391ef4",
+      "lowir_sha256": "492a7fbd63fa037eab3cc7d0388aece125b8fa545138d0f1b4c735c5e400aa5e"
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-native/mutable-call.rs",
+      "sha256": "5a8c2c3307c84bbda5bd9c2a4084a6d900c64381a2c19f83bc5b68493760e92c",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "rustc_binary_sha256": "ca4214e960cbc2f3c01da49905ea4b26248d8e34385ddb424cfff8db511eef1d",
+      "native_run_status": 0,
+      "native_binary_sha256": "e41cecd0c0277fc702168677a72bc86c4345ba146ee29762cfce3aa63d4cd3f4",
+      "lowir_sha256": "ad87e1907da4f13e914d6e39ba90757fdfb717f2807dc9b4c06a6f18ed06c7ad"
+    }
+  ],
+  "frontend_binary_sha256": "04fa6183aacf3551bc357e24da2f5d13cb34ba8ee94417433532b11c0da88b4e",
+  "stage": "qualified-combined-development-follow-up",
+  "isolated_checkpoint": "b8ecdfb1",
+  "combined_base": "95c8667a",
+  "development_merge": "1dce915c",
+  "compiler_source_sha256": "dc5b4c8ad413e10430b34518e5e5fad363d202153fecbe5759f2abb62dfbea3f",
+  "source_hash_encoding": "SHA256 of compact sorted JSON mapping every dev/**/*.rs path to its SHA256",
+  "source_manifest": "obj/parallel/pa27/capture-integration-close/source-manifest.json",
+  "source_manifest_file_sha256": "1435310fe25ab20e5724bbcbd676bc195349bc9149d2a255b1ac35c088181863",
+  "supersedes_current_boundary_claims": {
+    "receipt": "pa27/tests/capture-precision-outcomes.json",
+    "receipt_sha256": "f804cddede8ae9fbe3d058038eac5713b1bd5bad68c761e5918df90e2e0f2412",
+    "claims": [
+      "Packed-aligned and union reference outputs now pass all3views and independent native comparisons.",
+      "Packed-unaligned reference output is now types0, executable/constant1 specifically for packed alignment.",
+      "method-deep and call-mutable now pass all3views and native value comparisons."
+    ],
+    "preserves_original_receipt": true
+  },
+  "integration_gate_receipt": "obj/parallel/pa27/capture-integration-close/gates.json",
+  "original_probe_receipt": "obj/parallel/pa27/capture-integration/results.json",
+  "layout": {
+    "status": 1,
+    "classification": "Confirmed imported95c baseline provenance gap, not a worker feature failure; root owns independently qualified oracle refresh.",
+    "stage": "pa16",
+    "actual_manifest_sha256": "34a95457aa383ce0f73bc703d89cc7d8e357b3256b98b78c36c7f4d2bb398435",
+    "recorded_manifest_sha256": "570d4835869888e9adee7d0ce6298302960f6cb239c2171a58658b98821b978f"
+  },
+  "unchanged_fixture_hashes": {
+    "pa27/tests/spec/capture-precision/packed-aligned-reference.rs": "d6dd6d978f09bec33150fda1a327d50c50f8becff46537b3ca66933069b9b3e4",
+    "pa27/tests/spec/capture-precision/union-field-reference.rs": "82bd21e8bcbc2ceee193ec4c3182c7f84b98897ea68a5e967bff6463042aad72",
+    "pa27/tests/spec/capture-precision/packed-unaligned-reference.rs": "30092298a6f8763626e957284f3183684b80eed9a30f180f881f9ee2af6aa738",
+    "pa27/tests/spec/capture-precision/packed-aligned-local-borrow.rs": "e92c08e165e89eae148a56bdd175260f2add2ae77847534504e3d1deed961e6c",
+    "pa27/tests/spec/capture-precision/packed-unaligned-local-borrow.rs": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
+    "pa24/tests/spec/adjusted-places/method-deep.rs": "105c14faf1cb65ab6e69efada7163d2f96bf4965118ee476364702d5f06e2e95",
+    "pa24/tests/spec/adjusted-places/call-mutable.rs": "37972eba27161e9dfc1f35f951381fee5b40125d09db897ceccc799f8edffac8"
+  },
+  "limitations": [
+    "No compiler logic changes in this follow-up.",
+    "No activation, generated reference changes or backend changes.",
+    "Broad release/performance qualification remains integrator-owned."
+  ],
+  "source_contract_requalification": {
+    "cases": 45,
+    "evidence": "obj/parallel/pa27/capture-source-3920665",
+    "status_evidence": "Passing source_precision_and_access_permissions with exact three-view statuses; original hypothesis discrepancies preserved."
+  },
+  "maintainer_reference_native": [
+    {
+      "name": "packed-reference",
+      "input_sha256": "47118edd468764b16d68720331092cbdaf6e20a109f9a4b9d15c83d87366a104",
+      "rustc_binary_sha256": "c173876aff08fb7a57874ec1aaec272441828de41105c4da495a2342bef0daba",
+      "native_binary_sha256": "19dc8bce0b735e8438af9835f21ce96f264318b366e280f0e397634c12095ab4",
+      "lowir_sha256": "be75847602229c04da2f2264ea202100a028cb6b6ec2b52754423f76b7b3b98f",
+      "rustc_run_status": 0,
+      "native_run_status": 0,
+      "status_evidence": "Passing combined_reference_outputs_execute"
+    },
+    {
+      "name": "union-reference",
+      "input_sha256": "6a6eb3137c24ba3aa1c50d2d2632e421c1c46c67c91e136b20ff42a1e1a00e4c",
+      "rustc_binary_sha256": "bbde7d6c8bf22bb32cee067345ccf1aff605f058c4041161e8344683d5925a7b",
+      "native_binary_sha256": "c53b6a8faf3a655c9a49abc93dff3348d9c9d2e88c7239b4df71c2082f902bc4",
+      "lowir_sha256": "740f292f35ed73d7da67935b3702a94d00c4cc51a07cc5eb41edadf9080bec01",
+      "rustc_run_status": 0,
+      "native_run_status": 0,
+      "status_evidence": "Passing combined_reference_outputs_execute"
+    }
+  ]
+}

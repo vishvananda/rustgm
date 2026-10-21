@@ -102,11 +102,12 @@ separation. Nested formation checks the same raw/reference and union/ordinary
 field capabilities, including exact nominal field ownership. Capture truncation
 grants no unsafe, alignment or constant-evaluation permission.
 
-The draft capture receipt preserves independently accepted reference-output
-controls that currently await the separately owned closure lifetime proof. It
-also retains original hypothesis disagreements for union Copy reads and direct
-raw field addresses. These boundaries are not feature acceptance or assignment
-completion.
+The isolated draft capture receipt preserves its original reference-output
+boundaries. A separate integration receipt qualifies the unchanged packed and
+union reference-output controls after the closure lifetime proof: both succeed,
+while an unaligned returned reference rejects for packed alignment. Original
+hypothesis disagreements for union Copy reads and direct raw field addresses
+remain explicit. These checkpoints do not complete the assignment.
 
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned

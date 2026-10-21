@@ -1,0 +1,83 @@
+{
+  "stage": "draft-predeclared",
+  "isolated_checkpoint": "b8ecdfb1",
+  "combined_base": "95c8667a",
+  "merge": "1dce915c",
+  "source": [
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-reference.rs",
+      "sha256": "d6dd6d978f09bec33150fda1a327d50c50f8becff46537b3ca66933069b9b3e4",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-field-reference.rs",
+      "sha256": "82bd21e8bcbc2ceee193ec4c3182c7f84b98897ea68a5e967bff6463042aad72",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-reference.rs",
+      "sha256": "30092298a6f8763626e957284f3183684b80eed9a30f180f881f9ee2af6aa738",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-local-borrow.rs",
+      "sha256": "e92c08e165e89eae148a56bdd175260f2add2ae77847534504e3d1deed961e6c",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-local-borrow.rs",
+      "sha256": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-places/method-deep.rs",
+      "sha256": "105c14faf1cb65ab6e69efada7163d2f96bf4965118ee476364702d5f06e2e95",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-places/call-mutable.rs",
+      "sha256": "37972eba27161e9dfc1f35f951381fee5b40125d09db897ceccc799f8edffac8",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0
+    }
+  ],
+  "native": [
+    {
+      "path": "pa27/tests/spec/capture-integration-native/packed-reference.rs",
+      "sha256": "0dc988a448a3882a6a9c9f8734b51781ebf3cb6772d97ee35cd746d4842d173c",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-integration-native/union-reference.rs",
+      "sha256": "a7d6bed1f5e92842d8020df477a6a37be793c93d294187ac2cd14287daa0d467",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-native/deep-reference.rs",
+      "sha256": "1a4d2af40a3639e719ab0c174fc1a30a2cb6331eb6732a8eb96f1f988f577e20",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa24/tests/spec/adjusted-native/mutable-call.rs",
+      "sha256": "5a8c2c3307c84bbda5bd9c2a4084a6d900c64381a2c19f83bc5b68493760e92c",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    }
+  ]
+}
