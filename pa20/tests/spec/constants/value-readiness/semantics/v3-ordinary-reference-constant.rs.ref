@@ -27,26 +27,27 @@ type 24 function-item def=14 signature=23
 type 25 function binders=0 parameters=[11] result=20 unsafe=false
 type 26 function-item def=18 signature=25
 type 27 reference mutable=false region=static referent=20
-type 28 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 29 function binders=0 parameters=[] result=28 unsafe=false
-type 30 function-item def=19 signature=29
-type 31 function binders=0 parameters=[] result=1 unsafe=false
-type 32 function-item def=21 signature=31
-type 33 array element=11 length=parameter:15:0
-type 34 function binders=0 parameters=[33] result=19 unsafe=false
-type 35 function-item def=16 signature=34
-type 36 array element=11 length=3
-type 37 function binders=0 parameters=[36] result=28 unsafe=false
-type 38 function-item def=16 signature=37 arguments=[const:16:0x00000000000000000000000000000003]
+type 28 reference mutable=false region=region:1 referent=20
+type 29 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 30 function binders=0 parameters=[] result=29 unsafe=false
+type 31 function-item def=19 signature=30
+type 32 function binders=0 parameters=[] result=1 unsafe=false
+type 33 function-item def=21 signature=32
+type 34 array element=11 length=parameter:15:0
+type 35 function binders=0 parameters=[34] result=19 unsafe=false
+type 36 function-item def=16 signature=35
+type 37 array element=11 length=3
+type 38 function binders=0 parameters=[37] result=29 unsafe=false
+type 39 function-item def=16 signature=38 arguments=[const:16:0x00000000000000000000000000000003]
 def 13 type=22 name="check" source=0:19
 def 14 type=24 name="fail" source=0:35
 def 15 type=19 name="X" source=0:47
-def 16 type=35 name="X" source=0:47
+def 16 type=36 name="X" source=0:47
 def 17 type=20 name="V" source=0:52
 def 18 type=26 name="V" source=0:52
-def 19 type=30 name="f" source=0:72
+def 19 type=31 name="f" source=0:72
 def 20 type=27 name="C" source=0:82
-def 21 type=32 name="main" source=0:96
+def 21 type=33 name="main" source=0:96
 def 22 type=2 name="bool"
 def 23 type=3 name="char"
 def 24 type=4 name="str"
@@ -68,4 +69,6 @@ def 39 type=16 name="N" source=0:39
 def 40 type=2 name="ok" source=0:2
 def 41 type=11 name="x" source=0:22
 parameter owner=15 binding=39 argument=const-parameter:15:0 default=-
+region-var region:1 body=0:81 source=0:81 origin=expression-borrow pending
+region-coercion body=0:81 source=0:81 actual=28 expected=27 kind=same-shape pending
 eof owners=0 members=0 parameters=1 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

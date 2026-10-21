@@ -35,23 +35,24 @@ type 32 function binders=0 parameters=[30] result=19 unsafe=false
 type 33 function-item def=16 signature=32
 type 34 function binders=0 parameters=[31] result=29 unsafe=false
 type 35 function-item def=16 signature=34 arguments=[const:16:0x00000000000000000000000000000002]
-type 36 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 37 function binders=0 parameters=[] result=36 unsafe=false
-type 38 function-item def=19 signature=37
-type 39 function binders=0 parameters=[] result=1 unsafe=false
-type 40 function-item def=31 signature=39
-type 41 function binders=0 parameters=[11] result=20 unsafe=false
-type 42 function-item def=18 signature=41
-type 43 array element=11 length=3
-type 44 function binders=0 parameters=[43] result=36 unsafe=false
-type 45 function-item def=16 signature=44 arguments=[const:16:0x00000000000000000000000000000003]
+type 36 reference mutable=false region=region:1 referent=21
+type 37 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 38 function binders=0 parameters=[] result=37 unsafe=false
+type 39 function-item def=19 signature=38
+type 40 function binders=0 parameters=[] result=1 unsafe=false
+type 41 function-item def=31 signature=40
+type 42 function binders=0 parameters=[11] result=20 unsafe=false
+type 43 function-item def=18 signature=42
+type 44 array element=11 length=3
+type 45 function binders=0 parameters=[44] result=37 unsafe=false
+type 46 function-item def=16 signature=45 arguments=[const:16:0x00000000000000000000000000000003]
 def 13 type=25 name="check" source=0:19
 def 14 type=27 name="fail" source=0:35
 def 15 type=19 name="X" source=0:47
 def 16 type=33 name="X" source=0:47
 def 17 type=20 name="V" source=0:52
-def 18 type=42 name="V" source=0:52
-def 19 type=38 name="f" source=0:74
+def 18 type=43 name="V" source=0:52
+def 19 type=39 name="f" source=0:74
 def 21 type=22 name="Self" source=0:79
 def 22 type=16 name="N" source=0:78
 def 23 type=12 name="Self" source=0:91
@@ -61,7 +62,7 @@ def 27 type=23 name="Self" source=0:117
 def 28 type=28 name="C" source=0:116
 def 29 type=11 name="Self" source=0:143
 def 30 type=28 name="C" source=0:142
-def 31 type=40 name="main" source=0:157
+def 31 type=41 name="main" source=0:157
 def 32 type=2 name="bool"
 def 33 type=3 name="char"
 def 34 type=4 name="str"
@@ -101,6 +102,8 @@ trait-path source=0:61 method=28 trait=26 qualifier=explicit origin=ordinary sub
 trait-path source=0:104 method=22 trait=20 qualifier=explicit origin=ordinary subject-source=0:99
 implementation-use source=0:61 owner=29 arguments=[]
 implementation-use source=0:104 owner=23 arguments=[]
+region-var region:1 body=0:141 source=0:141 origin=expression-borrow pending
+region-coercion body=0:141 source=0:141 actual=36 expected=28 kind=same-shape pending
 associated-constant def=22 type=16
 associated-constant def=24 type=16
 associated-constant def=28 type=28

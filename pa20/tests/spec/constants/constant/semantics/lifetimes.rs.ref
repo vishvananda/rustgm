@@ -22,7 +22,7 @@ type 19 parameter def=14 index=0
 type 20 reference mutable=false region=bound:0:0 referent=11
 type 21 function binders=0 parameters=[] result=1 unsafe=false
 type 22 function-item def=18 signature=21
-type 23 reference mutable=false region=static referent=11
+type 23 reference mutable=false region=region:1 referent=11
 def 14 type=19 name="Self" source=0:7
 def 15 type=20 name="C" source=0:6
 def 16 type=11 name="Self" source=0:25
@@ -53,6 +53,7 @@ parameter owner=13 binding=36 argument=region:bound:0:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
 predicate owner=13 source=0:7 subject=19 bound=trait:13 arguments=[region:bound:0:0]
 impl owner=16 source=0:25 subject=11 bound=trait:13 arguments=[region:bound:0:0]
+region-var region:1 body=0:23 source=0:23 origin=expression-borrow pending
 region-coercion body=0:23 source=0:23 actual=23 expected=20 kind=same-shape pending
 associated-constant def=15 type=20
 associated-constant def=17 type=20

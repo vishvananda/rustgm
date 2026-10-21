@@ -31,35 +31,36 @@ type 28 reference mutable=false region=static referent=11
 type 29 aggregate def=18 regions=[region:1,region:2]
 type 30 aggregate def=18 regions=[region:3,region:4]
 type 31 reference mutable=false region=bound:0:0 referent=11
-type 32 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 33 function binders=0 parameters=[] result=32 unsafe=false
-type 34 function-item def=17 signature=33
-type 35 function binders=0 parameters=[] result=1 unsafe=false
-type 36 function-item def=25 signature=35
-type 37 array element=11 length=parameter:15:0
-type 38 function binders=0 parameters=[37] result=19 unsafe=false
-type 39 function-item def=16 signature=38
-type 40 function binders=2 parameters=[31,27] result=20 unsafe=false
-type 41 reference mutable=false region=bound:1:0 referent=11
-type 42 reference mutable=false region=bound:1:1 referent=11
-type 43 aggregate def=18 regions=[bound:1:0,bound:1:1]
-type 44 function binders=0 parameters=[41,42] result=43 unsafe=false
-type 45 function-item def=19 signature=40
-type 46 array element=11 length=3
-type 47 function binders=0 parameters=[46] result=32 unsafe=false
-type 48 function-item def=16 signature=47 arguments=[const:16:0x00000000000000000000000000000003]
+type 32 reference mutable=false region=region:3 referent=11
+type 33 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 34 function binders=0 parameters=[] result=33 unsafe=false
+type 35 function-item def=17 signature=34
+type 36 function binders=0 parameters=[] result=1 unsafe=false
+type 37 function-item def=25 signature=36
+type 38 array element=11 length=parameter:15:0
+type 39 function binders=0 parameters=[38] result=19 unsafe=false
+type 40 function-item def=16 signature=39
+type 41 function binders=2 parameters=[31,27] result=20 unsafe=false
+type 42 reference mutable=false region=bound:1:0 referent=11
+type 43 reference mutable=false region=bound:1:1 referent=11
+type 44 aggregate def=18 regions=[bound:1:0,bound:1:1]
+type 45 function binders=0 parameters=[42,43] result=44 unsafe=false
+type 46 function-item def=19 signature=41
+type 47 array element=11 length=3
+type 48 function binders=0 parameters=[47] result=33 unsafe=false
+type 49 function-item def=16 signature=48 arguments=[const:16:0x00000000000000000000000000000003]
 def 13 type=24 name="check" source=0:19
 def 14 type=26 name="fail" source=0:35
 def 15 type=19 name="X" source=0:47
-def 16 type=39 name="X" source=0:47
-def 17 type=34 name="f" source=0:79
+def 16 type=40 name="X" source=0:47
+def 17 type=35 name="f" source=0:79
 def 18 type=20 name="S" source=0:94
-def 19 type=45 name="S" source=0:94
+def 19 type=46 name="S" source=0:94
 def 21 type=21 name="Self" source=0:103
 def 22 type=27 name="C" source=0:102
 def 23 type=20 name="Self" source=0:128
 def 24 type=31 name="C" source=0:127
-def 25 type=36 name="main" source=0:142
+def 25 type=37 name="main" source=0:142
 def 26 type=2 name="bool"
 def 27 type=3 name="char"
 def 28 type=4 name="str"
@@ -94,11 +95,12 @@ trait-path source=0:62 method=22 trait=20 qualifier=explicit origin=ordinary sub
 implementation-use source=0:62 owner=23 arguments=[region:region:1,region:region:2]
 region-var region:1 body=0:68 source=0:62 origin=inference pending
 region-var region:2 body=0:68 source=0:62 origin=inference pending
+region-var region:3 body=0:126 source=0:126 origin=expression-borrow pending
 region-equal body=0:68 left=static right=region:1
 region-equal body=0:68 left=static right=region:2
 region-equal body=0:68 left=static right=region:1
 region-equal body=0:68 left=static right=region:2
-region-coercion body=0:126 source=0:126 actual=28 expected=31 kind=same-shape pending
+region-coercion body=0:126 source=0:126 actual=32 expected=31 kind=same-shape pending
 region-outlives body=0:68 source=0:62 longer=region:1 shorter=region:2 pending
 associated-constant def=22 type=27
 associated-constant def=24 type=31

@@ -28,8 +28,8 @@ type 25 reference mutable=false region=bound:1:0 referent=11
 type 26 aggregate def=13 regions=[bound:1:0]
 type 27 function binders=0 parameters=[25] result=26 unsafe=false
 type 28 function-item def=14 signature=24
-type 29 reference mutable=false region=static referent=11
-type 30 reference mutable=false region=static referent=29
+type 29 reference mutable=false region=region:1 referent=11
+type 30 reference mutable=false region=region:2 referent=29
 def 13 type=19 name="S" source=0:7
 def 14 type=28 name="S" source=0:7
 def 15 type=19 name="Self" source=0:27
@@ -54,6 +54,8 @@ def 33 type=17 name="f32"
 def 34 type=18 name="f64"
 associated-owner 0 kind=inherent self-def=15 self=19 source=0:27 unsafe=false
 associated-member def=16 owner=0
+region-var region:1 body=0:25 source=0:24 origin=expression-borrow pending
+region-var region:2 body=0:25 source=0:25 origin=expression-borrow pending
 region-coercion body=0:25 source=0:25 actual=30 expected=21 kind=same-shape pending
 associated-constant def=16 type=21
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

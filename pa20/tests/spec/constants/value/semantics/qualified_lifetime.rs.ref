@@ -30,7 +30,7 @@ type 27 function-item def=14 signature=23
 type 28 aggregate def=13 regions=[static]
 type 29 aggregate def=13 regions=[region:1]
 type 30 reference mutable=false region=region:1 referent=11
-type 31 reference mutable=false region=static referent=11
+type 31 reference mutable=false region=region:2 referent=11
 def 13 type=19 name="S" source=0:7
 def 14 type=27 name="S" source=0:7
 def 15 type=19 name="Self" source=0:22
@@ -57,6 +57,7 @@ associated-owner 0 kind=inherent self-def=15 self=19 source=0:22 unsafe=false
 associated-member def=16 owner=0
 inherent-path source=0:31 method=16 implementation=15 prefix=0:28 annotation=true
 region-var region:1 body=0:34 source=0:31 origin=item-argument pending
+region-var region:2 body=0:20 source=0:20 origin=expression-borrow pending
 region-equal body=0:34 left=region:1 right=static
 region-coercion body=0:20 source=0:20 actual=31 expected=20 kind=same-shape pending
 associated-constant def=16 type=20
