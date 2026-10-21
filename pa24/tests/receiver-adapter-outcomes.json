@@ -1,0 +1,379 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "shared-to-mutable",
+      "path": "tests/spec/receiver-adapters/shared-to-mutable.rs",
+      "source_sha256": "a73c5bfc50f563d3a94d92ca18e733555fa441b91cc4c5967468a53e1e3c5029",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/shared-to-mutable.rs"
+    },
+    {
+      "name": "shared-to-once",
+      "path": "tests/spec/receiver-adapters/shared-to-once.rs",
+      "source_sha256": "6feccdf4f22320fd2c7b1ef7c7b779c8879bcfa6b3d33e69b73be12a224aba5e",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/shared-to-once.rs"
+    },
+    {
+      "name": "mutable-to-once",
+      "path": "tests/spec/receiver-adapters/mutable-to-once.rs",
+      "source_sha256": "244dac58006d232e9b4ba16c1e8f8b0d500de59cf1c5a1a2b612dee96ee3b9c1",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-to-once.rs"
+    },
+    {
+      "name": "owned-shared-to-mutable",
+      "path": "tests/spec/receiver-adapters/owned-shared-to-mutable.rs",
+      "source_sha256": "06ba6524904f70c8c4e66a166f9a6b9e4e7e3d31d85bcdb06e219c86a7c658ba",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/owned-shared-to-mutable.rs"
+    },
+    {
+      "name": "owned-mutable-to-once",
+      "path": "tests/spec/receiver-adapters/owned-mutable-to-once.rs",
+      "source_sha256": "73f58158d38e0b19fedc569e4f2d19f82107d08891cf344107220246dee3a332",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/owned-mutable-to-once.rs"
+    },
+    {
+      "name": "shared-reference-to-once",
+      "path": "tests/spec/receiver-adapters/shared-reference-to-once.rs",
+      "source_sha256": "64266a50b48b270aea8095349e8c2db204f52031ab16db59f193622e3330d8e0",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/shared-reference-to-once.rs"
+    },
+    {
+      "name": "mutable-reference-to-once",
+      "path": "tests/spec/receiver-adapters/mutable-reference-to-once.rs",
+      "source_sha256": "43d2cb1d8be8e4f8b09afe51f57c05749739725ed3bb0c7b3d36d0972fa1e2be",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-reference-to-once.rs"
+    },
+    {
+      "name": "once-keeps-external-reference",
+      "path": "tests/spec/receiver-adapters/once-keeps-external-reference.rs",
+      "source_sha256": "1ad2d0b7ae41153a9bfb39c6b586254598a8b1e7036282999e83d3f35b012f21",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/once-keeps-external-reference.rs"
+    },
+    {
+      "name": "once-drops-owned-environment",
+      "path": "tests/spec/receiver-adapters/once-drops-owned-environment.rs",
+      "source_sha256": "7065a946965fd877c769706299e80af2e850b6c87c2d2c2395f647a0fff8db5a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/once-drops-owned-environment.rs"
+    },
+    {
+      "name": "mutable-borrow-preserves-environment",
+      "path": "tests/spec/receiver-adapters/mutable-borrow-preserves-environment.rs",
+      "source_sha256": "ad7edf3709fb7e772cc20f08f4e04c3a83bbf2f419dad54cabd59b9eaec6a09e",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-borrow-preserves-environment.rs"
+    },
+    {
+      "name": "quantified-identity",
+      "path": "tests/spec/receiver-adapters/quantified-identity.rs",
+      "source_sha256": "7b5e5dd29bbe8e25e15b59edf52155ba95a250f211d25e14ca0f46ec01648340",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/quantified-identity.rs"
+    },
+    {
+      "name": "shared-rejects-mutable",
+      "path": "tests/spec/receiver-adapters/shared-rejects-mutable.rs",
+      "source_sha256": "41dda41b0c5caa37be6c5f6cd9fdd1a8ee6330ec003000c02c7f8173d24c8fbe",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/shared-rejects-mutable.rs"
+    },
+    {
+      "name": "mutable-rejects-once",
+      "path": "tests/spec/receiver-adapters/mutable-rejects-once.rs",
+      "source_sha256": "3bed4094abf12f4f6277899a4f7e02ee5983ae0de20c47ab28a17df07e4c861e",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-rejects-once.rs"
+    },
+    {
+      "name": "once-still-consumes",
+      "path": "tests/spec/receiver-adapters/once-still-consumes.rs",
+      "source_sha256": "a95b6973d868e189e892e51d13f5a7ea29b8f8c385608f3b758fa50bfe281eee",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/once-still-consumes.rs"
+    },
+    {
+      "name": "mutable-reference-rejects-shared-alias",
+      "path": "tests/spec/receiver-adapters/mutable-reference-rejects-shared-alias.rs",
+      "source_sha256": "05687ab5e9d9186c6166a8dfc8abd56dca1fe9ac57e0ddb6941e49f12cc9c803",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/mutable-reference-rejects-shared-alias.rs"
+    },
+    {
+      "name": "once-rejects-owned-reference-escape",
+      "path": "tests/spec/receiver-adapters/once-rejects-owned-reference-escape.rs",
+      "source_sha256": "b9c70f1861602db801cbf416b3b98735f602c5d8b8ddac180aa81a1def9ae52c",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/declared-v1/once-rejects-owned-reference-escape.rs"
+    },
+    {
+      "name": "contextual-quantified-identity",
+      "path": "tests/spec/receiver-adapters/contextual-quantified-identity.rs",
+      "source_sha256": "10f5c7500069184324b240379cd026952fccfb14e71cf268f93abb71a6374ef1",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/receiver-adapters/captured-v1/contextual-quantified-identity.rs",
+      "boundary_reason": "Existing producer inference identity failure, reproduced on independently pinned f8939df8; owned adapter not reached."
+    },
+    {
+      "name": "false-output",
+      "path": "tests/spec/receiver-adapters/false-output.rs",
+      "source_sha256": "23cade818d9fa10f4a2a22ed244356c4e9ee3c8405e943a912ed856d6676c653",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    },
+    {
+      "name": "crossed-output",
+      "path": "tests/spec/receiver-adapters/crossed-output.rs",
+      "source_sha256": "bf8357e53bd030ffbc57c4a62e415b2e28fa6c431f836ee8aa5f751a62c0e202",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    },
+    {
+      "name": "noninjective-output",
+      "path": "tests/spec/receiver-adapters/noninjective-output.rs",
+      "source_sha256": "7cbea6ed0e5362c941bafa94476384dbc38fcc4edfe6e013d8700f07cec6a6c3",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    },
+    {
+      "name": "unused-binder",
+      "path": "tests/spec/receiver-adapters/unused-binder.rs",
+      "source_sha256": "fc053b1a11097e9da88601c34d058a4f329fcca69b331601c0fb68333cca63af",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    },
+    {
+      "name": "unused-binder-escape",
+      "path": "tests/spec/receiver-adapters/unused-binder-escape.rs",
+      "source_sha256": "f1137711cb7d9fcb6d5a1193937e767934a29b9358ad60f8fd50481bfa912950",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    }
+  ]
+}

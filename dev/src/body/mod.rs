@@ -1,4 +1,5 @@
 //! Typed control flow consumes solved semantic facts without repeating inference.
+pub(crate) mod adapters;
 pub mod body_view;
 mod build;
 pub mod constants;

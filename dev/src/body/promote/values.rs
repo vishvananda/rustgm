@@ -131,6 +131,7 @@ impl Engine<'_, '_> {
                                 || self.evaluator.facts().generics.has_parameters(definition)
                         }
                         crate::body::ir::Owner::AnonymousConstant
+                        | crate::body::ir::Owner::ClosureAdapter { .. }
                         | crate::body::ir::Owner::Closure { .. } => false,
                     }
                 {

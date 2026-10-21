@@ -20,6 +20,7 @@ pub struct Entry {
     instance: Instance,
     requested: CallTrait,
     execution: TypeId,
+    adapter: Option<crate::types::closure::Adapter>,
 }
 impl Entry {
     #[must_use]
@@ -34,12 +35,68 @@ impl Entry {
     pub const fn execution(self) -> TypeId {
         self.execution
     }
+    #[must_use]
+    pub const fn adapter(self) -> Option<crate::types::closure::Adapter> {
+        self.adapter
+    }
+    pub(crate) fn validate_adapter(
+        self,
+        facts: &mut Declarations,
+    ) -> Result<
+        (
+            crate::sema::closures::Body,
+            crate::sema::closures::Execution,
+        ),
+        &'static str,
+    > {
+        let adapter = self
+            .adapter
+            .ok_or("entry does not select a receiver adapter")?;
+        if crate::types::closure::Adapter::new(&facts.types, self.instance, self.requested)?
+            != adapter
+        {
+            return Err("receiver adapter differs from its selected instance");
+        }
+        let Some(Type::Closure { identity, .. }) = facts.types.kind(self.instance.ty()) else {
+            return Err("receiver adapter does not select a closure");
+        };
+        let source = *facts
+            .closures
+            .identity(identity)
+            .ok_or("missing adapter source")?;
+        if source
+            .owner
+            .is_some_and(|owner| facts.generics.has_parameters(owner))
+        {
+            return Err("receiver adapter requires a nongeneric original body");
+        }
+        let Some(Type::Function { parameters, .. }) = facts.types.kind(self.execution) else {
+            return Err("receiver adapter entry has no selected signature");
+        };
+        let receiver = *facts
+            .types
+            .list(parameters)
+            .and_then(|p| p.first())
+            .ok_or("receiver adapter entry has no receiver")?;
+        if receiver_type(&facts.types, receiver)?
+            != (self.instance.ty(), CallKind::from_trait(self.requested))
+        {
+            return Err("receiver adapter entry has a different physical receiver");
+        }
+        let execution = requested_execution(&mut facts.types, source, self.requested)?;
+        matching::execution(&facts.types, execution, self.execution)?;
+        Ok((source, execution))
+    }
 }
 #[derive(Clone, Default)]
 pub struct Entries {
     values: HashMap<ValueId, Entry>,
+    adapters: bool,
 }
 impl Entries {
+    pub(crate) const fn has_adapters(&self) -> bool {
+        self.adapters
+    }
     #[must_use]
     pub fn get(&self, value: ValueId) -> Option<Entry> {
         self.values.get(&value).copied()
@@ -86,13 +143,13 @@ pub(crate) fn select(
         if environment == TypeId::UNIT {
             continue;
         }
-        let required = match kind {
-            CallTrait::Fn => CallKind::Shared,
-            CallTrait::FnMut => CallKind::Mutable,
-            CallTrait::FnOnce => CallKind::Once,
-        };
-        if permission != required || facts.types.closure_kind(identity) != Some(required) {
-            return Err("captured closure requires a checked receiver conversion adapter");
+        let required = CallKind::from_trait(kind);
+        let strongest = facts
+            .types
+            .closure_kind(identity)
+            .ok_or("captured closure permission is unresolved")?;
+        if permission != required || !strongest.implements(required) {
+            return Err("captured closure receiver differs from its selected call permission");
         }
         let source = *facts
             .closures
@@ -106,10 +163,7 @@ pub(crate) fn select(
                 "generic captured closure execution requires environment lifetime substitution",
             );
         }
-        let execution = validate_execution(&facts.types, source)?;
-        if execution.receiver != required {
-            return Err("closure execution permission differs from its declaration");
-        }
+        let execution = requested_execution(&mut facts.types, source, kind)?;
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;
         let equalities = matching::execution(&facts.types, execution, selected)?;
         contract
@@ -119,16 +173,99 @@ pub(crate) fn select(
                 kind: Kind::Equality(pair),
             }));
         let index = ValueId(u32::try_from(index).map_err(|_| "too many closure call values")?);
+        let instance = Instance::closure(&facts.types, ty)?;
         let entry = Entry {
-            instance: Instance::closure(&facts.types, ty)?,
+            instance,
             requested: kind,
             execution: selected,
+            adapter: (strongest != required)
+                .then(|| crate::types::closure::Adapter::new(&facts.types, instance, kind))
+                .transpose()?,
         };
-        body.closure_calls
-            .get_or_insert_with(|| Box::new(Entries::default()))
-            .values
-            .insert(index, entry);
+        let entries = body
+            .closure_calls
+            .get_or_insert_with(|| Box::new(Entries::default()));
+        entries.adapters |= entry.adapter.is_some();
+        entries.values.insert(index, entry);
     }
+    Ok(())
+}
+pub(crate) fn requested_execution(
+    types: &mut crate::types::Store,
+    source: crate::sema::closures::Body,
+    requested: CallTrait,
+) -> Result<crate::sema::closures::Execution, &'static str> {
+    let mut execution = validate_execution(types, source)?;
+    let required = CallKind::from_trait(requested);
+    if !execution.receiver.implements(required) {
+        return Err("requested closure entry exceeds its call permission");
+    }
+    if execution.receiver == required {
+        return Ok(execution);
+    }
+    let Some(Type::Function {
+        parameters,
+        result,
+        convention,
+        ..
+    }) = types.kind(execution.signature)
+    else {
+        return Err("closure execution has no callable signature");
+    };
+    let mut parameters = types
+        .list(parameters)
+        .ok_or("missing receiver adapter parameters")?
+        .to_vec();
+    let receiver = if required == CallKind::Once {
+        execution.self_ty
+    } else {
+        types.intern(Type::Reference {
+            referent: execution.self_ty,
+            mutable: required == CallKind::Mutable,
+            region: crate::types::RegionId::bound(
+                0,
+                u16::try_from(source.universals)
+                    .map_err(|_| "adapter receiver lifetime overflow")?,
+            )?,
+        })?
+    };
+    *parameters.first_mut().ok_or("adapter has no receiver")? = receiver;
+    execution.universals = source
+        .universals
+        .checked_add(u32::from(required != CallKind::Once))
+        .ok_or("adapter universal count overflow")?;
+    let parameters = types.intern_list(&parameters)?;
+    execution.signature = types.intern(Type::Function {
+        parameters,
+        result,
+        bound_regions: execution.universals,
+        convention,
+        unsafe_: false,
+    })?;
+    execution.receiver = required;
+    Ok(execution)
+}
+pub(crate) fn validate_instance(
+    types: &crate::types::Store,
+    execution: TypeId,
+    instance: Instance,
+) -> Result<(), &'static str> {
+    let Some(Type::Function {
+        parameters,
+        bound_regions,
+        ..
+    }) = types.kind(execution)
+    else {
+        return Err("adapter original source has no execution signature");
+    };
+    let receiver = *types
+        .list(parameters)
+        .and_then(|p| p.first())
+        .ok_or("adapter original source has no receiver")?;
+    let Some(Type::Reference { referent, .. }) = types.kind(receiver) else {
+        return Err("adapter original source requires a borrowed receiver");
+    };
+    matching::instance(types, bound_regions, referent, instance.ty())?;
     Ok(())
 }
 pub(crate) fn validate_execution(

@@ -23,6 +23,13 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
     for (index, body) in program.bodies.iter().enumerate() {
         write!(out, "body {index} ")?;
         match body.owner {
+            Owner::ClosureAdapter { adapter, signature } => write!(
+                out,
+                "closure-adapter instance={} requested={} signature={}",
+                adapter.instance().ty().0,
+                adapter.requested().name(),
+                signature.0
+            )?,
             Owner::Closure {
                 identity,
                 signature,

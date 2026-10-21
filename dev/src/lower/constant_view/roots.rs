@@ -119,6 +119,11 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
         let mut entries: Vec<_> = promotions.entries().collect();
         entries.sort_unstable_by_key(|(id, _)| id.0);
         let owner = match body.owner {
+            Owner::ClosureAdapter { adapter, .. } => format!(
+                "closure-adapter:{}:{}",
+                adapter.instance().ty().0,
+                adapter.requested().name()
+            ),
             Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                 format!("def:{}", definition.0)
             }
@@ -148,6 +153,9 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
 
 fn owner_key(key: BodyKey) -> (u8, u32, u32) {
     match key {
+        BodyKey::ClosureAdapter(adapter) => {
+            (3, adapter.instance().ty().0, adapter.requested() as u32)
+        }
         BodyKey::Declaration(id) => (0, id.0, 0),
         BodyKey::Closure(id) => (1, id.0, 0),
         BodyKey::Anonymous(node) => (2, node.file.0, node.node.0),

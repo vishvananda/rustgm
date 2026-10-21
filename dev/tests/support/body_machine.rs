@@ -27,6 +27,14 @@ pub struct Machine<'a> {
     pub types: &'a Store,
     pub fuel: usize,
 }
+fn declaration(owner: Owner) -> Option<DefId> {
+    match owner {
+        Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
+            Some(definition)
+        }
+        Owner::AnonymousConstant | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => None,
+    }
+}
 impl Machine<'_> {
     pub fn run(
         &mut self,
@@ -41,11 +49,7 @@ impl Machine<'_> {
         let body = program
             .bodies
             .iter()
-            .find(|body| match body.owner {
-                Owner::AnonymousConstant | Owner::Closure { .. } => false,
-                Owner::Function { definition: id, .. }
-                | Owner::Initializer { definition: id, .. } => id == definition,
-            })
+            .find(|body| declaration(body.owner) == Some(definition))
             .ok_or("missing test function")?;
         let mut frame = Frame {
             body,

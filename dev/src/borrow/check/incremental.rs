@@ -41,42 +41,60 @@ pub(crate) struct Verifier {
     components: LiveRegions,
     drops: Option<crate::types::destruction::regions::Regions>,
 }
-impl Verifier {
-    pub(crate) fn new(methods: Option<&[drops::Method]>) -> Result<Self, &'static str> {
-        Ok(Self {
-            components: LiveRegions::default(),
-            drops: methods
-                .map(|methods| {
-                    crate::types::destruction::regions::Regions::new(methods.iter().map(|m| m.item))
-                })
-                .transpose()?,
-        })
-    }
-    pub(crate) fn prove<S: BuildHasher>(
-        &mut self,
-        environment: &mut Environment<'_, S>,
-        templates: &templates::Checked<'_>,
-        contract: &regions::Body,
-        body: Body,
-        catalog: Option<&mut glue::Catalog<'_>>,
-        factory: Option<crate::body::primitive_methods::Permit>,
-    ) -> Result<Proved, Error> {
+#[derive(Clone, Copy)]
+enum Original<'a> {
+    Ordinary,
+    Factory(crate::body::primitive_methods::Permit),
+    Adapter(&'a Proved, &'a crate::body::adapters::Template),
+}
+impl Original<'_> {
+    fn validate_source(&self, types: &crate::types::Store, body: &Body) -> Result<(), Error> {
         let error = |message: &str| Error {
             node: Some(body.source),
             message: message.into(),
         };
-        super::require_body_promotions(&body)?;
-        if contract.key != body.key()
-            || contract.source != body.source
-            || contract.instance != body.instance
-        {
-            return Err(error("instance proof belongs to another body"));
+        let adapter_source = match self {
+            Original::Ordinary | Original::Factory(_) => None,
+            Original::Adapter(source, template) => Some((source, template)),
+        };
+        match (body.owner, adapter_source) {
+            (Owner::ClosureAdapter { .. }, Some((source, template))) => {
+                template
+                    .validate(types, source.body(), body)
+                    .map_err(error)?;
+            }
+            (Owner::ClosureAdapter { .. }, None) => {
+                return Err(error(
+                    "receiver adapter requires its checked original source proof",
+                ));
+            }
+            (_, Some(_)) => {
+                return Err(error(
+                    "adapter source proof cannot authorize an ordinary owner",
+                ));
+            }
+            (_, None) => {}
         }
-        if factory.is_some() && body.instance.is_none() {
+        Ok(())
+    }
+    fn validate_instance(
+        &self,
+        types: &crate::types::Store,
+        templates: &templates::Checked<'_>,
+        body: &Body,
+    ) -> Result<(), Error> {
+        let error = |message: &str| Error {
+            node: Some(body.source),
+            message: message.into(),
+        };
+        if matches!(self, Self::Factory(_)) && body.instance.is_none() {
             return Err(error("factory proof requires its exact selected instance"));
         }
         if let Some(instance) = body.instance {
-            let selected = match (body.owner, environment.types.kind(instance.ty())) {
+            let selected = match (body.owner, types.kind(instance.ty())) {
+                (Owner::ClosureAdapter { adapter, .. }, Some(Kind::Closure { .. })) => {
+                    adapter.instance() == instance && matches!(self, Self::Adapter(..))
+                }
                 (
                     Owner::Function {
                         definition,
@@ -102,21 +120,93 @@ impl Verifier {
                 ) => identity == actual && signature == selected,
                 _ => false,
             };
-            if !selected || environment.types.contains_parameters(instance.ty()) != Some(false) {
+            if !selected || types.contains_parameters(instance.ty()) != Some(false) {
                 return Err(error(
                     "instance proof has a different owner or unresolved parameters",
                 ));
             }
-            if let Some(factory) = factory {
+            if let Self::Factory(factory) = self {
                 if factory.instance() != instance {
                     return Err(error(
                         "factory proof belongs to a different selected instance",
                     ));
                 }
-            } else if templates.contract(&body).is_none() {
+            } else if !matches!(self, Self::Adapter(..)) && templates.contract(body).is_none() {
                 return Err(error("instance has no checked original template"));
             }
         }
+        Ok(())
+    }
+}
+impl Verifier {
+    pub(crate) fn new(methods: Option<&[drops::Method]>) -> Result<Self, &'static str> {
+        Ok(Self {
+            components: LiveRegions::default(),
+            drops: methods
+                .map(|methods| {
+                    crate::types::destruction::regions::Regions::new(methods.iter().map(|m| m.item))
+                })
+                .transpose()?,
+        })
+    }
+    pub(crate) fn prove<S: BuildHasher>(
+        &mut self,
+        environment: &mut Environment<'_, S>,
+        templates: &templates::Checked<'_>,
+        contract: &regions::Body,
+        body: Body,
+        catalog: Option<&mut glue::Catalog<'_>>,
+        factory: Option<crate::body::primitive_methods::Permit>,
+    ) -> Result<Proved, Error> {
+        self.prove_inner(
+            environment,
+            templates,
+            contract,
+            body,
+            catalog,
+            factory.map_or(Original::Ordinary, Original::Factory),
+        )
+    }
+    pub(crate) fn prove_adapter<S: BuildHasher>(
+        &mut self,
+        environment: &mut Environment<'_, S>,
+        templates: &templates::Checked<'_>,
+        contract: &regions::Body,
+        body: Body,
+        catalog: Option<&mut glue::Catalog<'_>>,
+        source: (&Proved, &crate::body::adapters::Template),
+    ) -> Result<Proved, Error> {
+        self.prove_inner(
+            environment,
+            templates,
+            contract,
+            body,
+            catalog,
+            Original::Adapter(source.0, source.1),
+        )
+    }
+    fn prove_inner<S: BuildHasher>(
+        &mut self,
+        environment: &mut Environment<'_, S>,
+        templates: &templates::Checked<'_>,
+        contract: &regions::Body,
+        body: Body,
+        catalog: Option<&mut glue::Catalog<'_>>,
+        original: Original<'_>,
+    ) -> Result<Proved, Error> {
+        let error = |message: &str| Error {
+            node: Some(body.source),
+            message: message.into(),
+        };
+        original.validate_source(environment.types, &body)?;
+        super::require_body_promotions(&body)?;
+        if contract.key != body.key()
+            || contract.source != body.source
+            || contract.instance != body.instance
+        {
+            return Err(error("instance proof belongs to another body"));
+        }
+        original.validate_instance(environment.types, templates, &body)?;
         let plan = match (&mut self.drops, catalog) {
             (Some(drops), Some(catalog)) => super::prove_cleanup(
                 environment,

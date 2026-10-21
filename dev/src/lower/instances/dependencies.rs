@@ -24,12 +24,14 @@ enum Work {
     Location(LocationId),
 }
 pub(super) struct Demands {
+    pub adapters: Vec<crate::body::invocation_entries::Entry>,
     pub closures: Vec<TypeId>,
     pub calls: Vec<Instance>,
     pub object_types: Vec<TypeId>,
 }
 #[derive(Default)]
 struct Discovered {
+    adapters: Vec<crate::body::invocation_entries::Entry>,
     closures: Vec<TypeId>,
     calls: Vec<Instance>,
     tables: Vec<(TypeId, TypeId)>,
@@ -125,6 +127,7 @@ impl Dependencies {
             object_types.push(table.concrete);
         }
         Ok(Demands {
+            adapters: result.adapters,
             closures: result.closures,
             calls: concrete,
             object_types,
@@ -147,7 +150,7 @@ impl Dependencies {
         let mut result = Discovered::default();
         let mut work = Vec::new();
         self.charge(body.values.len())?;
-        for value in &body.values {
+        for (index, value) in body.values.iter().enumerate() {
             if let Rvalue::Unsize {
                 conversion: crate::types::unsizing::Conversion::Object { concrete, target },
                 ..
@@ -163,18 +166,10 @@ impl Dependencies {
                 result.upcasts.push((source, target));
             }
             if let Rvalue::Invoke { arguments, .. } = value.kind {
-                let receiver = *body
-                    .arguments(arguments)
-                    .first()
-                    .ok_or("missing call operator receiver")?;
-                let mut ty = facts
-                    .types
-                    .storage_head(body.values[receiver.0 as usize].ty)?;
-                while let Some(Kind::Reference { referent, .. }) = facts.types.kind(ty) {
-                    self.charge(1)?;
-                    ty = facts.types.storage_head(referent)?;
-                }
-                result.callable(&facts.types, body, ty)?;
+                let id = crate::body::ir::ValueId(
+                    u32::try_from(index).map_err(|_| "too many callable values")?,
+                );
+                self.invocation(facts, body, id, arguments, &mut result)?;
             }
             let operand = match value.kind {
                 Rvalue::Reify(id)
@@ -239,6 +234,36 @@ impl Dependencies {
         }
         self.follow(facts, layouts, work, &mut result)?;
         Ok(result)
+    }
+    fn invocation(
+        &mut self,
+        facts: &Declarations,
+        body: &Body,
+        id: crate::body::ir::ValueId,
+        arguments: crate::body::ir::ValueList,
+        result: &mut Discovered,
+    ) -> Result<(), &'static str> {
+        if let Some(entry) = body
+            .closure_calls
+            .as_deref()
+            .and_then(|entries| entries.get(id))
+            && entry.adapter().is_some()
+        {
+            result.adapters.push(entry);
+            return Ok(());
+        }
+        let receiver = *body
+            .arguments(arguments)
+            .first()
+            .ok_or("missing call operator receiver")?;
+        let mut ty = facts
+            .types
+            .storage_head(body.values[receiver.0 as usize].ty)?;
+        while let Some(Kind::Reference { referent, .. }) = facts.types.kind(ty) {
+            self.charge(1)?;
+            ty = facts.types.storage_head(referent)?;
+        }
+        result.callable(&facts.types, body, ty)
     }
     fn follow(
         &mut self,

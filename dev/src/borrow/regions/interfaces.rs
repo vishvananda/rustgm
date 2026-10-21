@@ -108,6 +108,16 @@ pub(super) fn validate_body(input: &Contract, cfg: Option<&Body>) -> Result<(), 
             "nested region contract does not match its CFG".into(),
         ));
     }
+    if let Some(Body {
+        owner: crate::body::ir::Owner::ClosureAdapter { signature, .. },
+        ..
+    }) = cfg
+        && input.signature != Some(*signature)
+    {
+        return Err(error(
+            "receiver adapter contract differs from its CFG signature".into(),
+        ));
+    }
     if input.output.is_some() && cfg.is_some_and(|body| body.instance.is_some()) {
         return Err(error(
             "specialized nested output proof is not implemented".into(),

@@ -159,7 +159,7 @@ fn materialize(
     template: &Template,
     instance: Instance,
     substitution: &mut Bound,
-    contract: Option<&mut super::regions::Contract>,
+    mut contract: Option<&mut super::regions::Contract>,
     comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
     context: Context<'_>,
 ) -> Result<(Body, drops::Requirements), &'static str> {
@@ -194,6 +194,19 @@ fn materialize(
         blocks: source.blocks.clone(),
     };
     let projected = substitute(facts, &mut body, substitution)?;
+    if matches!(premises, Premises::Declared)
+        && let Some(contract) = contract.as_deref_mut()
+        && let Some(assumptions) = crate::sema::callee_premises::specialize(
+            facts,
+            definition,
+            substitution,
+            contract.universals,
+        )?
+    {
+        contract.universals = assumptions.universals;
+        contract.assumptions.extend(assumptions.regions);
+        contract.type_assumptions.extend(assumptions.types);
+    }
     if projected
         || comparison.is_some()
         || contract
@@ -204,18 +217,6 @@ fn materialize(
         || projections::needs_field_normalization(facts, &body)?
     {
         let contract = contract.ok_or("projected instance requires its lifetime contract")?;
-        if matches!(premises, Premises::Declared)
-            && let Some(assumptions) = crate::sema::callee_premises::specialize(
-                facts,
-                definition,
-                substitution,
-                contract.universals,
-            )?
-        {
-            contract.universals = assumptions.universals;
-            contract.assumptions.extend(assumptions.regions);
-            contract.type_assumptions.extend(assumptions.types);
-        }
         projections::normalize(facts, &mut body, contract, comparison)?;
     }
     facts.prepare_opaque_storage()?;

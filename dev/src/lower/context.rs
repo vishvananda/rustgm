@@ -1,4 +1,5 @@
 //! Demand and ABI identities are indexed by already selected semantic definitions/types.
+mod adapters;
 use super::{Error, data, function, remainder};
 use crate::{
     abi::layout::{Layout, Layouts},
@@ -42,6 +43,7 @@ pub(super) struct Context<'a> {
     pub storage_mutation: Option<crate::types::interior_mutability::Query<'a>>,
     body_indices: Vec<Option<usize>>,
     closure_indices: HashMap<crate::types::closure::ClosureId, usize>,
+    adapter_indices: HashMap<crate::types::closure::Adapter, usize>,
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
@@ -104,7 +106,9 @@ impl<'a> Context<'a> {
             .bodies
             .iter()
             .map(|body| match body.owner {
-                Owner::AnonymousConstant | Owner::Closure { .. } => 0,
+                Owner::AnonymousConstant | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => {
+                    0
+                }
                 Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                     definition.0 as usize + 1
                 }
@@ -131,6 +135,7 @@ impl<'a> Context<'a> {
             storage_mutation: None,
             body_indices: vec![None; size],
             closure_indices: HashMap::new(),
+            adapter_indices: HashMap::new(),
             instance_indices: HashMap::new(),
             symbols: vec![None; bodies.bodies.len()],
             signatures: HashMap::new(),
@@ -247,6 +252,14 @@ impl<'a> Context<'a> {
     }
     fn index_bodies(&mut self) -> Result<(), &'static str> {
         for (index, body) in self.bodies.bodies.iter().enumerate() {
+            if let Owner::ClosureAdapter { adapter, .. } = body.owner {
+                if body.instance != Some(adapter.instance())
+                    || self.adapter_indices.insert(adapter, index).is_some()
+                {
+                    return Err("duplicate or inconsistent checked receiver adapter");
+                }
+                continue;
+            }
             if let Owner::Closure { identity, .. } = body.owner {
                 if let Some(instance) = body.instance {
                     if !matches!(self.types.kind(instance.ty()), Some(Kind::Closure { identity: selected, .. }) if selected == identity)
@@ -407,6 +420,9 @@ impl<'a> Context<'a> {
         &mut self,
         entry: crate::body::invocation_entries::Entry,
     ) -> Result<SymbolId, &'static str> {
+        if entry.adapter().is_some() {
+            return self.adapter_symbol(entry);
+        }
         let requested = match entry.requested() {
             crate::support::call_traits::CallTrait::Fn => crate::types::closure::CallKind::Shared,
             crate::support::call_traits::CallTrait::FnMut => {
@@ -452,16 +468,7 @@ impl<'a> Context<'a> {
         let signature = match (entry, execution) {
             (None, None) => signature,
             (Some(entry), Some(execution)) => {
-                let actual = self.signature(entry.execution())?;
-                let formal = self.signature(execution)?;
-                let a = &self.output.signatures[actual.0 as usize];
-                let b = &self.output.signatures[formal.0 as usize];
-                if a.result != b.result
-                    || a.noreturn != b.noreturn
-                    || self.output.parameters(actual) != self.output.parameters(formal)
-                {
-                    return Err("proved closure entry ABI differs from execution body");
-                }
+                self.entry_abi(entry.execution(), execution)?;
                 execution
             }
             _ => return Err("closure demand does not match checked receiver contract"),

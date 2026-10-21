@@ -1,4 +1,6 @@
 //! Direct capture endpoints retain ordinary body, borrow and cleanup proofs.
+#[path = "environment_execution/adapters.rs"]
+mod adapters;
 #[path = "environment_execution/adjusted.rs"]
 mod adjusted;
 #[path = "environment_execution/contextual.rs"]

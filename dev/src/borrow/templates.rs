@@ -49,7 +49,7 @@ impl Checked<'_> {
         let &index = match body.key() {
             BodyKey::Declaration(definition) => self.index.get(&ItemId(definition.0)),
             BodyKey::Closure(identity) => self.closures.get(&identity),
-            BodyKey::Anonymous(_) => None,
+            BodyKey::Anonymous(_) | BodyKey::ClosureAdapter(_) => None,
         }?;
         (self.templates.bodies[index].body.key() == body.key()).then(|| &self.regions.bodies[index])
     }
@@ -80,7 +80,7 @@ pub fn verify<'a, S: BuildHasher>(
                 index.insert(ItemId(definition.0), ordinal).is_some()
             }
             Owner::Closure { identity, .. } => closures.insert(identity, ordinal).is_some(),
-            Owner::AnonymousConstant => {
+            Owner::AnonymousConstant | Owner::ClosureAdapter { .. } => {
                 return Err(error("template requires a declared owner"));
             }
         };

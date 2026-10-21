@@ -29,7 +29,7 @@ pub(crate) fn specialize(
     universals: u32,
 ) -> Result<Option<Assumptions>, &'static str> {
     let mut predicates = Vec::new();
-    for predicate in facts.generics.predicates_in_scope(owner) {
+    for predicate in facts.generics.declared_predicates_in_scope(owner) {
         let body = match predicate.value {
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
@@ -49,7 +49,10 @@ pub(crate) fn specialize(
         ) {
             continue;
         }
-        if matches!(body.bound, PredicateBound::Trait(_)) {
+        if matches!(
+            body.bound,
+            PredicateBound::Trait(_) | PredicateBound::ProjectionEqual(_)
+        ) {
             predicates.push(predicate.value);
         }
     }

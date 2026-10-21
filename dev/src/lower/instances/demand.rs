@@ -14,6 +14,7 @@ use crate::{
 use std::collections::{HashMap, HashSet};
 
 enum Work {
+    Adapter(body::invocation_entries::Entry, NodeKey),
     Enter(Instance, NodeKey),
     Leave(BodyKey),
 }
@@ -28,7 +29,28 @@ struct Selected<'a> {
     template: Option<(&'a body::templates::Template, &'a Contract)>,
     ordinary: Option<usize>,
 }
+impl Selected<'_> {
+    fn concrete(&self, visited: &mut HashSet<usize>) -> Result<Option<usize>, &'static str> {
+        let index = self
+            .ordinary
+            .ok_or("demanded callable has no concrete body or checked template")?;
+        Ok(visited.insert(index).then_some(index))
+    }
+}
 impl Ordinary {
+    fn adapter_source(
+        &self,
+        types: &crate::types::Store,
+        adapter: crate::types::closure::Adapter,
+    ) -> Result<usize, &'static str> {
+        let Some(Kind::Closure { identity, .. }) = types.kind(adapter.instance().ty()) else {
+            return Err("adapter demand has no closure identity");
+        };
+        self.closures
+            .get(&identity)
+            .copied()
+            .ok_or("adapter demand requires a proved ordinary source body")
+    }
     fn select<'a>(
         &self,
         facts: &Declarations,
@@ -74,14 +96,51 @@ struct Budget {
     active: HashMap<BodyKey, usize>,
     bytes: usize,
     instances: usize,
+    adapters: HashSet<crate::types::closure::Adapter>,
 }
 impl Budget {
-    fn leave(&mut self, item: BodyKey) -> Result<(), &'static str> {
+    fn adapter(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        ordinary: &Ordinary,
+        request: (body::invocation_entries::Entry, NodeKey),
+    ) -> Result<Option<(usize, BodyKey)>, Error> {
+        let (entry, source) = request;
+        let error = |e: &str| diagnostic(report, Some(source), e.into());
+        let adapter = entry
+            .adapter()
+            .ok_or_else(|| error("missing adapter demand identity"))?;
+        if !self.adapters.insert(adapter) {
+            return Ok(None);
+        }
+        let source = ordinary
+            .adapter_source(&facts.types, adapter)
+            .map_err(error)?;
+        let original = program
+            .body(source)
+            .map_err(|e| diagnostic(report, None, e.into()))?;
+        let prepared = body::adapters::build(facts, entry, original)
+            .map_err(|e| diagnostic(report, Some(original.source), e.into()))?;
+        let family = prepared.body.key();
+        self.enter(family, &prepared.body, &prepared.input)
+            .map_err(|e| diagnostic(report, Some(prepared.body.source), e.into()))?;
+        let index = program
+            .push_adapter(report, facts, templates, source, prepared)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok(Some((index, family)))
+    }
+    fn leave(&mut self, report: &Report, item: BodyKey) -> Result<(), Error> {
+        let error = |message: &str| diagnostic(report, None, message.into());
         let active = self
             .active
             .get_mut(&item)
-            .ok_or("invalid active instance stack")?;
-        *active = active.checked_sub(1).ok_or("unbalanced instance stack")?;
+            .ok_or_else(|| error("invalid active instance stack"))?;
+        *active = active
+            .checked_sub(1)
+            .ok_or_else(|| error("unbalanced instance stack"))?;
         Ok(())
     }
     fn factory(
@@ -145,6 +204,7 @@ pub(super) fn prepare(
     // ordinary lowering already follows calls and selected cleanup dependencies.
     // All source bodies have still been checked before taking this path.
     if templates.is_empty()
+        && !program.has_adapters()
         && !facts.types.has_dynamic_shapes()
         && facts
             .primitive_methods
@@ -171,11 +231,29 @@ fn materialize(
     let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {
         let (instance, source) = match action {
+            Work::Adapter(entry, source) => {
+                if let Some((index, family)) = budget.adapter(
+                    report,
+                    facts,
+                    templates,
+                    &mut program,
+                    ordinary,
+                    (entry, source),
+                )? {
+                    work.push(Work::Leave(family));
+                    dependencies.schedule(
+                        report,
+                        facts,
+                        &mut program,
+                        DependencyRoot::Body(index),
+                        &mut work,
+                    )?;
+                }
+                continue;
+            }
             Work::Enter(instance, source) => (instance, source),
             Work::Leave(item) => {
-                budget
-                    .leave(item)
-                    .map_err(|e| diagnostic(report, None, e.into()))?;
+                budget.leave(report, item)?;
                 continue;
             }
         };
@@ -200,50 +278,36 @@ fn materialize(
             )?;
             continue;
         }
-        let Some(Selected {
-            family,
-            template: selected,
-            ordinary: ordinary_index,
-        }) = ordinary.select(facts, templates, instance).map_err(error)?
-        else {
+        let Some(selected) = ordinary.select(facts, templates, instance).map_err(error)? else {
             continue;
         };
-        let index = if let Some((template, input)) = selected {
+        let index = if let Some((template, input)) = selected.template {
             if !instances.insert(instance) {
                 continue;
             }
-            budget.enter(family, &template.body, input).map_err(error)?;
-            let mut materialized =
-                // Entered dependencies come only from a body sealed by Builder::push.
-                body::instantiate::from_checked_caller(facts, template, instance, input, &mut cleanup)
-                    .map_err(error)?;
-            body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
-                .map_err(|e| error(&e))?;
-            facts.prepare_opaque_storage().map_err(error)?;
-            body::promote::instance(
+            budget
+                .enter(selected.family, &template.body, input)
+                .map_err(error)?;
+            let request = Specialization {
+                template,
+                input,
+                instance,
+                source,
+            };
+            let index = specialize(
                 report,
                 facts,
-                &mut materialized.body,
-                &materialized.destruction,
+                templates,
+                &mut program,
+                &mut cleanup,
+                request,
             )?;
-            body::constants::instance(report, facts, &materialized.body)?;
-            work.push(Work::Leave(family));
-            program
-                .push(
-                    facts,
-                    templates,
-                    materialized.body,
-                    &materialized.contract,
-                    Some(materialized.destruction),
-                )
-                .map_err(|e| diagnostic(report, e.node, e.message))?
+            work.push(Work::Leave(selected.family));
+            index
         } else {
-            let index = ordinary_index.ok_or_else(|| {
-                error("demanded callable has no concrete body or checked template")
-            })?;
-            if !visited.insert(index) {
+            let Some(index) = selected.concrete(&mut visited).map_err(error)? else {
                 continue;
-            }
+            };
             index
         };
         dependencies.schedule(
@@ -255,6 +319,52 @@ fn materialize(
         )?;
     }
     Ok(program)
+}
+
+#[derive(Clone, Copy)]
+struct Specialization<'a> {
+    template: &'a body::templates::Template,
+    input: &'a Contract,
+    instance: Instance,
+    source: NodeKey,
+}
+// Entered dependencies come only from a body sealed by Builder::push.
+fn specialize(
+    report: &Report,
+    facts: &mut Declarations,
+    templates: &Checked<'_>,
+    program: &mut proof::Builder,
+    cleanup: &mut body::instantiate::Cleanup,
+    request: Specialization<'_>,
+) -> Result<usize, Error> {
+    let error = |e: &str| diagnostic(report, Some(request.source), e.into());
+    let mut materialized = body::instantiate::from_checked_caller(
+        facts,
+        request.template,
+        request.instance,
+        request.input,
+        cleanup,
+    )
+    .map_err(error)?;
+    body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
+        .map_err(|e| error(&e))?;
+    facts.prepare_opaque_storage().map_err(error)?;
+    body::promote::instance(
+        report,
+        facts,
+        &mut materialized.body,
+        &materialized.destruction,
+    )?;
+    body::constants::instance(report, facts, &materialized.body)?;
+    program
+        .push(
+            facts,
+            templates,
+            materialized.body,
+            &materialized.contract,
+            Some(materialized.destruction),
+        )
+        .map_err(|e| diagnostic(report, e.node, e.message))
 }
 
 fn initial_work(
@@ -359,6 +469,13 @@ impl Dependencies {
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
+        work.extend(
+            demands
+                .adapters
+                .into_iter()
+                .rev()
+                .map(|entry| Work::Adapter(entry, source)),
+        );
         for ty in demands.closures {
             let instance = Instance::closure(&facts.types, ty).map_err(error)?;
             work.push(Work::Enter(instance, source));

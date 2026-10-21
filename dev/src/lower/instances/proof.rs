@@ -23,8 +23,14 @@ pub(super) struct Builder {
     verifier: incremental::Verifier,
     recipes: Option<glue::Cache>,
     dependencies: Dependencies,
+    adapters: bool,
     original_regions:
         Option<std::collections::HashMap<crate::body::ir::BodyKey, borrow::regions::Body>>,
+}
+enum Original<'a> {
+    Ordinary,
+    Factory(crate::body::primitive_methods::Permit),
+    Adapter(usize, &'a crate::body::adapters::Template),
 }
 impl Builder {
     pub(super) fn new(mut program: Program) -> Result<(Self, Vec<Body>), &'static str> {
@@ -40,6 +46,7 @@ impl Builder {
                 verifier,
                 recipes,
                 dependencies: Dependencies::default(),
+                adapters: false,
                 original_regions: None,
             },
             ordinary,
@@ -50,6 +57,9 @@ impl Builder {
             .get(index)
             .map(incremental::Proved::body)
             .ok_or("missing proved instance body")
+    }
+    pub(super) const fn has_adapters(&self) -> bool {
+        self.adapters
     }
     pub(super) fn prepare_original_regions(
         &mut self,
@@ -133,7 +143,14 @@ impl Builder {
         input: &Contract,
         requirements: Option<drops::Requirements>,
     ) -> Result<usize, borrow::Error> {
-        self.push_inner(facts, templates, body, input, requirements, None)
+        self.push_inner(
+            facts,
+            templates,
+            body,
+            input,
+            requirements,
+            Original::Ordinary,
+        )
     }
     pub(super) fn push_factory(
         &mut self,
@@ -168,7 +185,42 @@ impl Builder {
             body,
             input,
             Some(requirements),
-            Some(permit),
+            Original::Factory(permit),
+        )
+    }
+    pub(super) fn push_adapter(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        source: usize,
+        mut prepared: crate::body::adapters::Prepared,
+    ) -> Result<usize, borrow::Error> {
+        let mut query = crate::types::destruction::NeedsDrop::new(
+            facts
+                .destructors
+                .implementations()
+                .iter()
+                .map(|implementation| implementation.item),
+        );
+        let requirements = crate::body::drops::requirements(facts, &prepared.body, &mut query)
+            .map_err(|message| borrow::Error {
+                node: Some(prepared.body.source),
+                message: message.into(),
+            })?;
+        crate::body::promote::instance(report, facts, &mut prepared.body, &requirements).map_err(
+            |error| borrow::Error {
+                node: Some(prepared.body.source),
+                message: error.to_string(),
+            },
+        )?;
+        self.push_inner(
+            facts,
+            templates,
+            prepared.body,
+            &prepared.input,
+            Some(requirements),
+            Original::Adapter(source, &prepared.template),
         )
     }
     fn push_inner(
@@ -178,8 +230,76 @@ impl Builder {
         body: Body,
         input: &Contract,
         requirements: Option<drops::Requirements>,
-        factory: Option<crate::body::primitive_methods::Permit>,
+        original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
+        let contract = self.regions(facts, &body, input)?;
+        let mut catalog = self
+            .recipes
+            .take()
+            .map(|cache| cache.attach(&facts.types, &facts.aggregates, &facts.members));
+        let mut environment = borrow::Environment {
+            types: &facts.types,
+            definitions: &facts.aggregates,
+            derives: &facts.derives,
+            copies: &mut facts.copies,
+        };
+        let proof = match original {
+            Original::Adapter(index, template) => {
+                let source = self.bodies.get(index).ok_or_else(|| borrow::Error {
+                    node: Some(input.source),
+                    message: "receiver adapter has no proved original source".into(),
+                })?;
+                self.verifier.prove_adapter(
+                    &mut environment,
+                    templates,
+                    &contract,
+                    body,
+                    catalog.as_mut(),
+                    (source, template),
+                )
+            }
+            ordinary => {
+                let factory = if let Original::Factory(permit) = ordinary {
+                    Some(permit)
+                } else {
+                    None
+                };
+                self.verifier.prove(
+                    &mut environment,
+                    templates,
+                    &contract,
+                    body,
+                    catalog.as_mut(),
+                    factory,
+                )
+            }
+        };
+        self.recipes = catalog.map(glue::Catalog::into_cache);
+        let mut proof = proof?;
+        proof
+            .resolve_callables(&mut facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(input.source),
+                message: message.into(),
+            })?;
+        let index = self.bodies.len();
+        self.adapters |= proof
+            .body()
+            .closure_calls
+            .as_deref()
+            .is_some_and(crate::body::invocation_entries::Entries::has_adapters);
+        self.bodies.push(proof);
+        if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
+            pending.bodies.push(requirements);
+        }
+        Ok(index)
+    }
+    fn regions(
+        &mut self,
+        facts: &mut Declarations,
+        body: &Body,
+        input: &Contract,
+    ) -> Result<borrow::regions::Body, borrow::Error> {
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(|message| borrow::Error {
@@ -205,46 +325,14 @@ impl Builder {
                 &facts.lifetimes.variances,
                 &mut queries,
                 input,
-                &body,
+                body,
             )
         });
         self.queries = queries.into_cache();
-        let contract = result.map_err(|e| borrow::Error {
+        result.map_err(|e| borrow::Error {
             node: e.source,
             message: e.message,
-        })?;
-        let mut catalog = self
-            .recipes
-            .take()
-            .map(|cache| cache.attach(&facts.types, &facts.aggregates, &facts.members));
-        let mut environment = borrow::Environment {
-            types: &facts.types,
-            definitions: &facts.aggregates,
-            derives: &facts.derives,
-            copies: &mut facts.copies,
-        };
-        let proof = self.verifier.prove(
-            &mut environment,
-            templates,
-            &contract,
-            body,
-            catalog.as_mut(),
-            factory,
-        );
-        self.recipes = catalog.map(glue::Catalog::into_cache);
-        let mut proof = proof?;
-        proof
-            .resolve_callables(&mut facts.types)
-            .map_err(|message| borrow::Error {
-                node: Some(input.source),
-                message: message.into(),
-            })?;
-        let index = self.bodies.len();
-        self.bodies.push(proof);
-        if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
-            pending.bodies.push(requirements);
-        }
-        Ok(index)
+        })
     }
     pub(super) fn cleanup_dependencies(
         &mut self,

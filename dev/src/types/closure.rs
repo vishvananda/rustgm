@@ -7,6 +7,53 @@ use super::{
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ClosureId(pub u32);
 
+/// One concrete receiver adapter identity, separate from its original body.
+/// Identity validation alone grants no execution or source-proof permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Adapter {
+    instance: super::instance::Instance,
+    requested: crate::support::call_traits::CallTrait,
+}
+impl Adapter {
+    pub(crate) fn new(
+        types: &Store,
+        instance: super::instance::Instance,
+        requested: crate::support::call_traits::CallTrait,
+    ) -> Result<Self, &'static str> {
+        let Some(super::Kind::Closure {
+            identity,
+            environment,
+            ..
+        }) = types.kind(instance.ty())
+        else {
+            return Err("receiver adapter requires a complete closure instance");
+        };
+        let strongest = types
+            .closure_kind(identity)
+            .ok_or("receiver adapter requires complete call permission")?;
+        let required = CallKind::from_trait(requested);
+        if environment == TypeId::UNIT
+            || types.contains_parameters(instance.ty()) != Some(false)
+            || strongest == required
+            || !strongest.implements(required)
+        {
+            return Err("receiver adapter requires a compatible concrete captured closure");
+        }
+        Ok(Self {
+            instance,
+            requested,
+        })
+    }
+    #[must_use]
+    pub const fn instance(self) -> super::instance::Instance {
+        self.instance
+    }
+    #[must_use]
+    pub const fn requested(self) -> crate::support::call_traits::CallTrait {
+        self.requested
+    }
+}
+
 /// The strongest receiver permission required by the body, independent of `move` capture.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CallKind {
@@ -22,6 +69,13 @@ pub enum Declaration {
     Complete(CallKind),
 }
 impl CallKind {
+    pub(crate) const fn from_trait(kind: crate::support::call_traits::CallTrait) -> Self {
+        match kind {
+            crate::support::call_traits::CallTrait::Fn => Self::Shared,
+            crate::support::call_traits::CallTrait::FnMut => Self::Mutable,
+            crate::support::call_traits::CallTrait::FnOnce => Self::Once,
+        }
+    }
     #[must_use]
     pub const fn implements(self, required: Self) -> bool {
         self as u8 <= required as u8

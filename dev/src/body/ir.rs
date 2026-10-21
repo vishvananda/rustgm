@@ -316,6 +316,10 @@ pub struct Block {
 }
 #[derive(Clone, Copy)]
 pub enum Owner {
+    ClosureAdapter {
+        adapter: crate::types::closure::Adapter,
+        signature: TypeId,
+    },
     Closure {
         identity: crate::types::closure::ClosureId,
         signature: TypeId,
@@ -336,6 +340,7 @@ pub enum Owner {
 /// Declaration identity is separate from shared diagnostic provenance.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BodyKey {
+    ClosureAdapter(crate::types::closure::Adapter),
     Declaration(DefId),
     Closure(crate::types::closure::ClosureId),
     Anonymous(NodeKey),
@@ -443,6 +448,7 @@ impl Body {
     #[must_use]
     pub const fn key(&self) -> BodyKey {
         match self.owner {
+            Owner::ClosureAdapter { adapter, .. } => BodyKey::ClosureAdapter(adapter),
             Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                 BodyKey::Declaration(definition)
             }

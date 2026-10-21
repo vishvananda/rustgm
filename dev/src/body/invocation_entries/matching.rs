@@ -41,36 +41,51 @@ pub(super) fn execution(
     if ab != formal.universals || au != bu || av != bv {
         return Err("closure execution binder or ABI differs from its contract");
     }
-    let mut matcher = Matcher {
-        types,
-        universals: formal.universals,
-        slots: HashMap::new(),
-        equalities: Vec::new(),
-        work: vec![(ar, br, 0)],
-        seen: HashSet::new(),
-        steps: 0,
-    };
+    let mut matcher = Matcher::new(types, formal.universals, ar, br);
     if !matcher
         .list(a, b, 0)
         .map_err(|_| "invalid closure execution parameter shape")?
     {
         return Err("closure execution parameter count differs");
     }
-    while let Some((a, b, depth)) = matcher.work.pop() {
-        matcher
-            .charge(1)
-            .map_err(|_| "closure execution matching budget exceeded")?;
-        if !matcher.seen.insert((a, b, depth)) {
-            continue;
-        }
-        if !matcher
-            .compare(a, b, depth)
-            .map_err(|_| "invalid closure execution matching identity")?
-        {
-            return Err("selected closure execution differs structurally from source contract");
+    matcher.finish()
+}
+pub(super) fn instance(
+    types: &Store,
+    universals: u32,
+    formal: TypeId,
+    actual: TypeId,
+) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
+    Matcher::new(types, universals, formal, actual).finish()
+}
+impl<'a> Matcher<'a> {
+    fn new(types: &'a Store, universals: u32, formal: TypeId, actual: TypeId) -> Self {
+        Self {
+            types,
+            universals,
+            slots: HashMap::new(),
+            equalities: Vec::new(),
+            work: vec![(formal, actual, 0)],
+            seen: HashSet::new(),
+            steps: 0,
         }
     }
-    Ok(matcher.equalities)
+    fn finish(mut self) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
+        while let Some((a, b, depth)) = self.work.pop() {
+            self.charge(1)
+                .map_err(|_| "closure execution matching budget exceeded")?;
+            if !self.seen.insert((a, b, depth)) {
+                continue;
+            }
+            if !self
+                .compare(a, b, depth)
+                .map_err(|_| "invalid closure execution matching identity")?
+            {
+                return Err("selected closure execution differs structurally from source contract");
+            }
+        }
+        Ok(self.equalities)
+    }
 }
 impl<'a> Compare<'a> for Matcher<'a> {
     fn types(&self) -> &'a Store {

@@ -136,7 +136,9 @@ impl Context {
                         .inline_constants
                         .as_deref()
                         .is_some_and(|registry| registry.get(body.source).is_some()),
-                    Owner::Initializer { .. } | Owner::Closure { .. } => false,
+                    Owner::Initializer { .. }
+                    | Owner::Closure { .. }
+                    | Owner::ClosureAdapter { .. } => false,
                 };
                 if shared {
                     let key = body.key();

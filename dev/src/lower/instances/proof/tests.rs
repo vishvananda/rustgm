@@ -1,4 +1,6 @@
 //! Exercise the sealed incremental boundary with real semantic and CFG inputs.
+#[path = "../../../../tests/invariants/adapter_contracts.rs"]
+mod adapters;
 use crate::{
     body::{
         self,
