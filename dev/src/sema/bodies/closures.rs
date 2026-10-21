@@ -211,8 +211,12 @@ impl Checker<'_> {
             .stack
             .pop()
             .ok_or_else(|| self.error(body, "missing enclosing closure state"))?;
-        let entry = &mut scheduler.entries[index];
-        let kind = self.collect_capture_environment(entry, parent.body)?;
+        let (entries, descendants) = scheduler.entries.split_at_mut(index + 1);
+        let children = uses::children(descendants, index + 1, &self.state.closure_children)
+            .map_err(|e| self.error(body, e))?;
+        self.facts.body_work.canonical_steps += self.state.closure_children.len();
+        let entry = &mut entries[index];
+        let kind = self.collect_capture_environment(entry, parent.body, children)?;
         let metadata = entry
             .payload
             .closure_mut()

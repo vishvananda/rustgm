@@ -1,0 +1,385 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "shared",
+      "path": "tests/spec/nested-captures/shared.rs",
+      "source_sha256": "42deb3c2803fc42f532e7e3fa37ab6cc2e4ef69e247f9dede6defde284c6409f",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable",
+      "path": "tests/spec/nested-captures/mutable.rs",
+      "source_sha256": "cb361744bd1f9fe89d00be14d138e884b8bf06033703973a2771a7d8cfd7bbba",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-once",
+      "path": "tests/spec/nested-captures/move-once.rs",
+      "source_sha256": "49af5f0cb651f10fcf81c2f211cecab7831afaad01063650751a24e1bca0a5c8",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-copy",
+      "path": "tests/spec/nested-captures/move-copy.rs",
+      "source_sha256": "2bbe19ca5ea4ab734d3b35d4a703c1c8234fd8295b7aa7e589b657dd6d8926bf",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "precise-field",
+      "path": "tests/spec/nested-captures/precise-field.rs",
+      "source_sha256": "28d7e0962ca9b23e634228fef14be67a50d7d537546908fe920afea0a75168c8",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "great-grandchild",
+      "path": "tests/spec/nested-captures/great-grandchild.rs",
+      "source_sha256": "7c587c34b17010129bdb55682303086dece21d074c944f9c0466e528d29084df",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "local-shadow",
+      "path": "tests/spec/nested-captures/local-shadow.rs",
+      "source_sha256": "f53804317a7f3e2854f8b711fdfde87327438fe0c57c45982df438b1f4fe5350",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "local-mutable",
+      "path": "tests/spec/nested-captures/local-mutable.rs",
+      "source_sha256": "1d24df754a3d0b3a8ee8eda5a9c2e6c3482abd92bd1bbdfb2ea8d4187e853beb",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "empty-child",
+      "path": "tests/spec/nested-captures/empty-child.rs",
+      "source_sha256": "9644e472450f8bcaea05469ca13902dae331c1c6417429112938a5a4e7985fc1",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-formation",
+      "path": "tests/spec/nested-captures/mutable-formation.rs",
+      "source_sha256": "14b50b38406c3a59e300a695ae3714921bf8cb791ab157517b0a75ba17b49452",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "immutable-formation-call",
+      "path": "tests/spec/nested-captures/immutable-formation-call.rs",
+      "source_sha256": "2e013dbdee42c6dc2f30fc87813b092e651221b8d11776e66d370daedb4df023",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "tests/spec/nested-captures/borrow-conflict.rs",
+      "source_sha256": "2979fa81d82611f967ec7be9e5bec5bd165ebb5a57f30e2147e1d232c0319a25",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "once-twice",
+      "path": "tests/spec/nested-captures/once-twice.rs",
+      "source_sha256": "00be04e80c74593150e608a0831cb918940abcc410966d151e4d8856daf93815",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "unique-reference",
+      "path": "tests/spec/nested-captures/unique-reference.rs",
+      "source_sha256": "e517382e8b28c98c07155e3d8411e93f0a59668c3f62b4caa707ca6773e16616",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-uninitialized",
+      "path": "tests/spec/nested-captures/wildcard-uninitialized.rs",
+      "source_sha256": "fcd5e13a2a2f716ef64e78ef4aba5c8148386f1564257c8b3f14165f2c047341",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-moved-after",
+      "path": "tests/spec/nested-captures/wildcard-moved-after.rs",
+      "source_sha256": "1315fff8eeda16ce651f9b74fbe778f9ffcbc065e5362f34aa73ce033dc1fb32",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-moved-inside",
+      "path": "tests/spec/nested-captures/wildcard-moved-inside.rs",
+      "source_sha256": "6255374b5ee365917b5f153e53ce918119b4adceaef1fb6d62399644ba44040d",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-disjoint",
+      "path": "tests/spec/nested-captures/wildcard-disjoint.rs",
+      "source_sha256": "45e089c0fef7b9b139c91aec77b7e481fb3cebd0b477fcac3c25da9b27154be5",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-live-loan",
+      "path": "tests/spec/nested-captures/wildcard-live-loan.rs",
+      "source_sha256": "0bc59e45eddc46c480003f05423f28c715b95e385e9372ab02954f204f8cccf3",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-reference-invalid",
+      "path": "tests/spec/nested-captures/wildcard-reference-invalid.rs",
+      "source_sha256": "ef3eb32d7fb12b94473214af1c3552288b55af881be16898d689bbe1d2268fa3",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-reference-ended",
+      "path": "tests/spec/nested-captures/wildcard-reference-ended.rs",
+      "source_sha256": "d4f941f082ba79aada04b63fb458388898d9f94814a466d2d6b7808a9a12288a",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "unique-formation",
+      "path": "tests/spec/nested-captures/unique-formation.rs",
+      "source_sha256": "aead00fee8ffeaefa0c9ac4a5535dc80bf2aa049cd9c535be92687f08d738194",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "unique-conflict",
+      "path": "tests/spec/nested-captures/unique-conflict.rs",
+      "source_sha256": "40ffa3664f2387e2d9f772f2559c2ed5e7d0c1b01cfe48c0c17997cb852e6742",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "move-shared-noncopy",
+      "path": "tests/spec/nested-captures/move-shared-noncopy.rs",
+      "source_sha256": "8664afa18a1ebb11b5c0904ff336afcbc5bdac32d964698f22a76d5bf191f165",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "moving-mutable-child",
+      "path": "tests/spec/nested-captures/moving-mutable-child.rs",
+      "source_sha256": "487aac6ca2f85bd788070c70b049b63642813cc15dfa6d4c1b852eec9a33b38c",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

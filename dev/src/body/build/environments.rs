@@ -239,6 +239,15 @@ impl Builder<'_> {
         environment: &Environment,
         path: PathId,
     ) -> Result<Access, Error> {
+        self.capture_path_place_for(node, environment, path, Formation::Runtime)
+    }
+    fn capture_path_place_for(
+        &mut self,
+        node: NodeId,
+        environment: &Environment,
+        path: PathId,
+        formation: Formation,
+    ) -> Result<Access, Error> {
         let Some(index) = environment.plan.covering_field(path) else {
             return if self
                 .capture_places
@@ -279,20 +288,7 @@ impl Builder<'_> {
                 .path_types
                 .get(path.index())
                 .ok_or_else(|| self.error(node, "missing captured projection type"))?;
-            place = match step {
-                Step::Field(field) => {
-                    self.project(node, expected, place, ProjectionKind::Field(field))?
-                }
-                Step::Dereference { .. } => {
-                    let next = self.dereference_place(node, place)?;
-                    if self.place_type(node, next)? != expected {
-                        return Err(
-                            self.error(node, "captured dereference differs from typed path")
-                        );
-                    }
-                    next
-                }
-            };
+            place = self.formation_projection(node, expected, place, step, formation)?;
         }
         Ok(Access::Place(place))
     }
@@ -304,7 +300,39 @@ impl Builder<'_> {
         environment: &Environment,
         path: PathId,
         formation: Formation,
-    ) -> Result<Place, Error> {
+    ) -> Result<Option<Place>, Error> {
+        let facts = self.facts;
+        if let Owner::Closure { identity, .. } = self.body.owner
+            && let Some(parent) = facts.closures.environment(identity)
+            && let Some(&mapped) = parent.nested_accesses.get(&(
+                NodeKey {
+                    node,
+                    ..self.body.source
+                },
+                path,
+            ))
+        {
+            let expected = environment
+                .formation_types
+                .get(path.index())
+                .copied()
+                .ok_or_else(|| self.error(node, "missing nested capture formation type"))?;
+            if parent.path_types.get(mapped.index()).copied() != Some(expected) {
+                return Err(
+                    self.error(node, "nested capture mapping differs from parent path type")
+                );
+            }
+            return match self.capture_path_place_for(node, parent, mapped, formation)? {
+                Access::Place(place) if self.place_type(node, place)? == expected => {
+                    Ok(Some(place))
+                }
+                Access::Uncaptured if formation == Formation::Initialization => Ok(None),
+                _ => Err(self.error(
+                    node,
+                    "nested capture mapping has no matching physical place",
+                )),
+            };
+        }
         let mut suffix = Vec::new();
         let mut current = path;
         while let Some((parent, step)) = environment.plan.parent(current) {
@@ -345,7 +373,7 @@ impl Builder<'_> {
                 .ok_or_else(|| self.error(node, "missing parent capture projection type"))?;
             place = self.formation_projection(node, expected, place, step, formation)?;
         }
-        Ok(place)
+        Ok(Some(place))
     }
     fn formation_projection(
         &mut self,
@@ -403,9 +431,11 @@ impl Builder<'_> {
                 ));
             }
             for &path in &environment.mentions {
-                let place =
-                    self.formation_place(node, environment, path, Formation::Initialization)?;
-                self.statement(node, super::Action::CheckInitialized(place))?;
+                if let Some(place) =
+                    self.formation_place(node, environment, path, Formation::Initialization)?
+                {
+                    self.statement(node, super::Action::CheckInitialized(place))?;
+                }
             }
         } else if !fields.is_empty() {
             return Err(self.error(node, "missing selected capture environment"));
@@ -413,8 +443,11 @@ impl Builder<'_> {
         let mut values = Vec::with_capacity(fields.len());
         if let Some(environment) = environment {
             for (&field, capture) in fields.iter().zip(environment.plan.captures()) {
-                let place =
-                    self.formation_place(node, environment, capture.path, Formation::Runtime)?;
+                let place = self
+                    .formation_place(node, environment, capture.path, Formation::Runtime)?
+                    .ok_or_else(|| {
+                        self.error(node, "runtime capture formation requires a physical place")
+                    })?;
                 let value = if capture.mode == Mode::Value {
                     if self.place_type(node, place)? != field {
                         return Err(self.error(

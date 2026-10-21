@@ -3,6 +3,8 @@
 mod adjusted;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "environment_execution/nested.rs"]
+mod nested;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]

@@ -1,4 +1,5 @@
 //! Capture requirements consume typed places and the actual expression use context.
+mod nested;
 mod receivers;
 use super::{Checker, Domain, Error, Kind, NodeId, TermId, places::Places};
 use crate::{
@@ -13,6 +14,7 @@ use crate::{
     syntax::ast::{List, Unary},
     types::{closure::CallKind, infer},
 };
+pub(super) use nested::children;
 use std::collections::{HashMap, HashSet};
 
 pub(super) struct Captures {
@@ -21,6 +23,7 @@ pub(super) struct Captures {
     pub accesses: HashMap<NodeKey, PathId>,
     pub adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     pub mentions: Vec<PathId>,
+    pub nested_accesses: HashMap<(NodeKey, PathId), PathId>,
     pub kind: CallKind,
     pub work: usize,
 }
@@ -38,7 +41,9 @@ struct Work {
     dereferences: u32,
     receiver: Option<(NodeId, AccessKind)>,
 }
-struct Collector {
+struct Collector<'a> {
+    children: HashMap<NodeId, Option<&'a Captures>>,
+    nested_accesses: HashMap<(NodeKey, PathId), PathId>,
     places: Places,
     mentions: Vec<PathId>,
     mentioned: HashSet<PathId>,
@@ -57,11 +62,14 @@ impl Checker<'_> {
         source: NodeId,
         root: NodeId,
         bindings: &[(DefId, TermId)],
+        children: HashMap<NodeId, Option<&Captures>>,
     ) -> Result<Captures, Error> {
         let Kind::Closure { moving, .. } = self.kind(source) else {
             return Err(self.error(source, "missing closure capture owner"));
         };
         let mut collector = Collector {
+            children,
+            nested_accesses: HashMap::new(),
             places: Places::new(bindings),
             mentions: Vec::new(),
             mentioned: HashSet::new(),
@@ -118,6 +126,7 @@ impl Checker<'_> {
             accesses: collector.places.accesses,
             adjusted_accesses: collector.adjusted_accesses,
             mentions: collector.mentions,
+            nested_accesses: collector.nested_accesses,
             kind: collector.kind,
             work,
         })
@@ -170,7 +179,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
 }
-impl Collector {
+impl Collector<'_> {
     fn push(&mut self, node: NodeId, usage: Use) {
         self.pending.push(Work {
             node,
@@ -416,9 +425,7 @@ impl Collector {
                     self.push(start, Use::Value);
                 }
             }
-            Kind::Closure { .. } => {
-                return Err(checker.error(node, "nested capture propagation is not implemented"));
-            }
+            Kind::Closure { .. } => self.nested(checker, node)?,
             _ => return Err(checker.error(node, "this typed capture use is not implemented")),
         }
         Ok(())

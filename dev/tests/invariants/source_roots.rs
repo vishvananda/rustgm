@@ -37,6 +37,7 @@ fn environment(depth: usize) -> Result<(Environment, Vec<FormationInput>), &'sta
             field_types: Vec::new(),
             accesses: std::collections::HashMap::new(),
             adjusted_accesses: std::collections::HashMap::new(),
+            nested_accesses: std::collections::HashMap::new(),
             mentions: vec![mentioned, mentioned],
             binding_mutability: std::collections::HashMap::new(),
         },

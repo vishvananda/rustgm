@@ -2,7 +2,7 @@
 use super::{AccessKind, Checker, Collector, Error, NodeId, Use, Work};
 use crate::types::infer::Constructor;
 
-impl Collector {
+impl Collector<'_> {
     pub(super) fn call_receiver(
         &self,
         checker: &mut Checker<'_>,

@@ -31,6 +31,86 @@ pub(super) struct Places {
     work: usize,
 }
 impl Places {
+    pub(super) fn import_root(
+        &mut self,
+        checker: &Checker<'_>,
+        node: NodeId,
+        definition: DefId,
+    ) -> Result<Option<Place>, Error> {
+        self.work += 1;
+        if self.work > 1_000_000 {
+            return Err(checker.error(node, "nested capture place work limit exceeded"));
+        }
+        let Some(&ty) = self.roots.get(&definition) else {
+            return Ok(None);
+        };
+        let path = self
+            .graph
+            .root(definition)
+            .map_err(|e| checker.error(node, e))?;
+        self.retain(path, ty);
+        Ok(Some(Place {
+            path,
+            shared: None,
+            before_dereference: None,
+        }))
+    }
+    pub(super) fn import_step(
+        &mut self,
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        mut place: Place,
+        step: Step,
+    ) -> Result<Place, Error> {
+        self.work += 1;
+        if self.work > 1_000_000 {
+            return Err(checker.error(node, "nested capture place work limit exceeded"));
+        }
+        if let Step::Dereference { mutable } = step {
+            let term = self.types[place.path.index()];
+            if !matches!(checker.head(node, term)?, Some(Constructor::Reference {mutable: actual, ..}) if actual == mutable)
+            {
+                return Err(checker.error(node, "nested capture reference capability changed"));
+            }
+            return self.dereference(checker, node, place);
+        }
+        let Step::Field(selection) = step else {
+            return Err(checker.error(node, "missing nested capture field selection"));
+        };
+        let term = self.types[place.path.index()];
+        let ty = match (selection, checker.head(node, term)?) {
+            (crate::sema::members::Selection::Tuple(index), Some(Constructor::Tuple)) => {
+                checker.child(node, term, index as usize)?
+            }
+            (
+                crate::sema::members::Selection::Nominal(field),
+                Some(Constructor::Adt(owner, _) | Constructor::AdtArgs(owner, _)),
+            ) => {
+                let variant = checker
+                    .facts
+                    .members
+                    .variant(field)
+                    .and_then(|variant| checker.facts.members.variants.get(variant.0 as usize));
+                if !variant.is_some_and(|variant| variant.owner == owner) {
+                    return Err(checker.error(node, "nested capture field owner changed"));
+                }
+                checker.instance_field(node, term, field)?
+            }
+            _ => {
+                return Err(checker.error(
+                    node,
+                    "nested capture projection has a different parent type",
+                ));
+            }
+        };
+        let path = self
+            .graph
+            .project(place.path, step)
+            .map_err(|e| checker.error(node, e))?;
+        self.retain(path, ty);
+        place.path = path;
+        Ok(place)
+    }
     pub fn new(bindings: &[(DefId, TermId)]) -> Self {
         Self {
             roots: bindings.iter().copied().collect(),

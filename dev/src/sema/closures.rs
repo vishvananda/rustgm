@@ -67,6 +67,7 @@ pub struct Environment {
     pub field_types: Vec<TypeId>,
     pub accesses: HashMap<NodeKey, captures::PathId>,
     pub adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
+    pub nested_accesses: HashMap<(NodeKey, captures::PathId), captures::PathId>,
     /// Explicit non-reading uses still require initialized parent places.
     pub mentions: Vec<captures::PathId>,
     pub binding_mutability: HashMap<DefId, bool>,

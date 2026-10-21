@@ -16,6 +16,7 @@ impl Checker<'_> {
         &mut self,
         entry: &mut Entry,
         parent: NodeKey,
+        children: HashMap<NodeId, Option<&super::uses::Captures>>,
     ) -> Result<CallKind, Error> {
         let source = entry.source;
         let metadata = entry
@@ -25,7 +26,8 @@ impl Checker<'_> {
         if metadata.bindings.is_empty() {
             return Ok(CallKind::Shared);
         }
-        let captures = self.closure_uses(source, metadata.root.node, &metadata.bindings)?;
+        let captures =
+            self.closure_uses(source, metadata.root.node, &metadata.bindings, children)?;
         let kind = captures.kind;
         for capture in captures.plan.captures() {
             let mut ty = captures.types[capture.path.index()];
@@ -168,6 +170,7 @@ impl Checker<'_> {
                 field_types,
                 accesses: captures.accesses,
                 adjusted_accesses: captures.adjusted_accesses,
+                nested_accesses: captures.nested_accesses,
                 mentions: captures.mentions,
                 binding_mutability,
             },
