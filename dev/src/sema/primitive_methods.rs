@@ -13,7 +13,9 @@ use crate::{
     },
 };
 mod domains;
+mod ordering;
 use domains::comparison_candidate;
+pub(in crate::sema) use ordering::register_ordering;
 use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../tests/invariants/primitive_factories.rs"]
@@ -34,6 +36,7 @@ pub(crate) enum Rhs {
 pub(crate) enum Operation {
     Arithmetic(Hook),
     Comparison(crate::support::comparisons::Comparison),
+    Ordering(crate::support::comparisons::Comparison),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Descriptor {
@@ -44,6 +47,27 @@ pub(crate) struct Descriptor {
     rhs: Rhs,
 }
 impl Descriptor {
+    pub(crate) fn operand_type(
+        self,
+        facts: &Declarations,
+        primitive: Primitive,
+    ) -> Result<TypeId, &'static str> {
+        if matches!(self.operation, Operation::Ordering(_)) {
+            if self.form != Form::Comparison
+                || self.rhs != Rhs::Owned
+                || self.left != Primitive::I8
+                || self.right != Primitive::I8
+            {
+                return Err("Ordering descriptor has invalid discriminant operation types");
+            }
+            ordering::subject(facts)
+        } else {
+            Ok(TypeId::primitive(primitive))
+        }
+    }
+    pub(crate) fn nominal(self) -> bool {
+        matches!(self.operation, Operation::Ordering(_))
+    }
     pub(crate) const fn form(self) -> Form {
         self.form
     }
@@ -60,7 +84,7 @@ impl Descriptor {
     pub(crate) fn operator(self) -> Result<Punctuation, &'static str> {
         match self.operation {
             Operation::Arithmetic(hook) => operator(hook),
-            Operation::Comparison(_) => Ok(Punctuation::EqualEqual),
+            Operation::Comparison(_) | Operation::Ordering(_) => Ok(Punctuation::EqualEqual),
         }
     }
     fn member(
@@ -78,7 +102,9 @@ impl Descriptor {
             {
                 operator(hook)?
             }
-            Operation::Comparison(kind) if facts.associated.comparison(owner) == Some(kind) => {
+            Operation::Comparison(kind) | Operation::Ordering(kind)
+                if facts.associated.comparison(owner) == Some(kind) =>
+            {
                 use crate::support::comparisons::Method;
                 let method = facts
                     .associated
@@ -116,7 +142,7 @@ impl Descriptor {
         result: TypeId,
         bound_regions: u32,
     ) -> Result<TypeId, &'static str> {
-        let left = TypeId::primitive(self.left);
+        let left = self.operand_type(facts, self.left)?;
         let valid = match self.form {
             Form::Assignment => {
                 matches!(self.operation,Operation::Arithmetic(hook) if hook.assignment())
@@ -129,6 +155,10 @@ impl Descriptor {
                 matches!(
                     self.operation,
                     Operation::Comparison(
+                        crate::support::comparisons::Comparison::PartialEq
+                            | crate::support::comparisons::Comparison::PartialOrd
+                            | crate::support::comparisons::Comparison::Ord
+                    ) | Operation::Ordering(
                         crate::support::comparisons::Comparison::PartialEq
                             | crate::support::comparisons::Comparison::PartialOrd
                             | crate::support::comparisons::Comparison::Ord
@@ -378,13 +408,14 @@ impl Selected {
                 if matches!(
                     self.descriptor.operation,
                     Operation::Comparison(crate::support::comparisons::Comparison::Ord)
+                        | Operation::Ordering(crate::support::comparisons::Comparison::Ord)
                 ) =>
             {
                 (*subject, *subject)
             }
             _ => return Err("primitive method has incorrect generic arguments"),
         };
-        let expected = TypeId::primitive(self.descriptor.right);
+        let expected = self.descriptor.operand_type(facts, self.descriptor.right)?;
         if self.descriptor.form == Form::Comparison
             && !matches!(facts.types.kind(physical_right),Some(Kind::Reference{referent,mutable:false,region}) if referent==right && region==RegionId::bound(0,1)?)
         {

@@ -482,3 +482,229 @@ fn primitive_ordering_factories_keep_exact_member_results_and_slots() -> Result 
     assert_eq!(methods.len(), 6);
     Ok(())
 }
+
+#[test]
+fn descriptor_representation_remains_compact() {
+    assert_eq!(std::mem::size_of::<Operation>(), 2);
+    assert_eq!(std::mem::size_of::<Descriptor>(), 6);
+    assert_eq!(std::mem::size_of::<Selected>(), 12);
+    assert_eq!(
+        std::mem::size_of::<crate::sema::traits::selection::Source>(),
+        16
+    );
+    println!(
+        "language storage: Operation={} Descriptor={} Selected={} Source={}",
+        std::mem::size_of::<Operation>(),
+        std::mem::size_of::<Descriptor>(),
+        std::mem::size_of::<Selected>(),
+        std::mem::size_of::<crate::sema::traits::selection::Source>()
+    );
+}
+
+#[test]
+fn ordering_factory_preserves_nominal_inputs_and_rejects_primitive_tokens() -> Result {
+    let Factory {
+        report,
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "fn main(){let _=core::cmp::Ordering::Less.eq(&core::cmp::Ordering::Greater);let _=1i8.eq(&2i8);}",
+    )?;
+    let nominal = selected
+        .iter()
+        .copied()
+        .find(|s| s.descriptor.nominal())
+        .ok_or("nominal selection")?;
+    let primitive = selected
+        .iter()
+        .copied()
+        .find(|s| !s.descriptor.nominal())
+        .ok_or("primitive selection")?;
+    assert_eq!(selected.len(), 2);
+    for (instance, descriptor) in [
+        (primitive.instance, nominal.descriptor),
+        (nominal.instance, primitive.descriptor),
+    ] {
+        assert!(
+            Selected {
+                instance,
+                descriptor
+            }
+            .validate(&mut facts)
+            .is_err()
+        );
+    }
+    let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, nominal)?;
+    assert_eq!(input.universals, 2);
+    assert_eq!(
+        body.values
+            .iter()
+            .filter(|v| matches!(
+                v.kind,
+                crate::body::ir::Rvalue::Cast {
+                    kind: crate::sema::model::Cast::EnumToInteger,
+                    ..
+                }
+            ))
+            .count(),
+        2
+    );
+    let empty = crate::body::templates::Templates { bodies: Vec::new() };
+    let checked = originals(&mut facts, &empty)?;
+    let permit = crate::body::primitive_methods::validate(&mut facts, nominal, &body, &input)?;
+    prove(&mut facts, &checked, body, &input, Some(permit))?;
+    Ok(())
+}
+#[test]
+fn ordering_factory_revalidates_completed_schema_and_structural_identity() -> Result {
+    let Factory {
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "enum Look{Less,Equal,Greater}fn main(){let _=core::cmp::Ordering::Less.eq(&core::cmp::Ordering::Equal);}",
+    )?;
+    let nominal = selected
+        .iter()
+        .copied()
+        .find(|s| s.descriptor.nominal())
+        .ok_or("nominal selection")?;
+    let item = facts
+        .associated
+        .comparison_ordering()
+        .ok_or("Ordering identity")?;
+    let property = facts
+        .equality_derives
+        .get(&item)
+        .ok_or("structural property")?;
+    assert!(property.partial_eq && property.eq);
+    assert_eq!(
+        facts.equality_derives.len(),
+        1,
+        "lookalike has no structural permission"
+    );
+    assert!(
+        facts
+            .associated
+            .declare_comparison_ordering(crate::types::ItemId(item.0 + 1))
+            .is_err()
+    );
+    let definition = *facts.aggregates.get(item).ok_or("schema")?;
+    let variants = facts.aggregates.variants(&definition).to_vec();
+    for (tag, bits) in [(Primitive::U8, 255), (Primitive::I8, 0)] {
+        let mut malformed = variants.clone();
+        malformed[0].discriminant = bits;
+        let mut repr = definition.repr;
+        repr.tag = Some(tag);
+        let saved = std::mem::take(&mut facts.aggregates);
+        facts
+            .aggregates
+            .insert(item, definition.kind, repr, &malformed)?;
+        assert!(nominal.validate(&mut facts).is_err());
+        let mut context = Context::default();
+        let ty = facts.definitions[item.0 as usize].ok_or("type")?;
+        let term = context.known(&facts.types, ty)?;
+        assert!(
+            ordering::candidate(
+                &facts,
+                &mut context,
+                term,
+                term,
+                crate::support::comparisons::Comparison::PartialEq
+            )
+            .is_err()
+        );
+        facts.aggregates = saved;
+    }
+    let index = facts.members.variants(item)[0].0 as usize;
+    let ordinal = facts.members.variants[index].ordinal;
+    facts.members.variants[index].ordinal = 2;
+    assert!(nominal.validate(&mut facts).is_err());
+    facts.members.variants[index].ordinal = ordinal;
+    nominal.validate(&mut facts)?;
+    Ok(())
+}
+
+#[test]
+fn canonical_ordering_is_lazy_and_its_empty_argument_views_select() -> Result {
+    for source in [
+        "fn main(){}",
+        "enum Ordering{Less,Equal,Greater}fn main(){}",
+        "fn f<T:core::cmp::PartialEq>(_:T){}fn main(){}",
+    ] {
+        let report = crate::test_source::resolve(source, true)?;
+        let crate::pipeline::Analysis { facts, .. } = crate::pipeline::analyze_source(&report)?;
+        assert!(facts.associated.comparison_ordering().is_none());
+        assert!(facts.primitive_methods.is_none());
+    }
+    let report = crate::test_source::resolve("fn main(){let _=core::cmp::Ordering::Less;}", true)?;
+    let crate::pipeline::Analysis { facts, .. } = crate::pipeline::analyze_source(&report)?;
+    let item = facts
+        .associated
+        .comparison_ordering()
+        .ok_or("missing canonical Ordering")?;
+    assert!(facts.primitive_methods.is_none());
+    let ty = facts.definitions[item.0 as usize].ok_or("nominal type")?;
+    for explicit in [false, true] {
+        let mut context = Context::default();
+        let term = if explicit {
+            context.nominal(item, &[])?
+        } else {
+            context.known(&facts.types, ty)?
+        };
+        let head = context.head(&facts.types, term)?;
+        let result = ordering::candidate(
+            &facts,
+            &mut context,
+            term,
+            term,
+            crate::support::comparisons::Comparison::PartialEq,
+        )?;
+        assert!(
+            matches!(result, Some(Candidate::Present(_))),
+            "canonical head {head:?}"
+        );
+        let owner = report
+            .resolution
+            .builtin_traits
+            .comparison(crate::support::comparisons::Comparison::PartialEq)
+            .ok_or("comparison contract")?
+            .definition;
+        let goal = Predicate::trait_application(
+            term,
+            crate::types::ItemId(owner.0),
+            vec![crate::types::infer::arguments::Argument::Type(term)],
+        );
+        assert!(
+            matches!(
+                candidate(&facts, &mut context, &goal)?,
+                Candidate::Present(_)
+            ),
+            "canonical trait candidate"
+        );
+        assert!(crate::sema::traits::selection::may_have_subject(
+            &facts,
+            &mut context,
+            crate::types::ItemId(owner.0),
+            term,
+            None
+        )?);
+        let extra = context.known(&facts.types, TypeId::primitive(Primitive::I8))?;
+        let malformed = context.nominal(
+            item,
+            &[crate::types::infer::arguments::Argument::Type(extra)],
+        )?;
+        assert!(!matches!(
+            ordering::candidate(
+                &facts,
+                &mut context,
+                malformed,
+                malformed,
+                crate::support::comparisons::Comparison::PartialEq
+            )?,
+            Some(Candidate::Present(_))
+        ));
+    }
+    Ok(())
+}

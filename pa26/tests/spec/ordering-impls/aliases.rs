@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use std::cmp as c;type Alias=c::Ordering;fn main(){let a=Alias::Less;let b=c::Ordering::Greater;check(a<b);check(a.cmp(&b) as i8 == -1);}

@@ -75,7 +75,7 @@ impl Resolver<'_> {
         }
         self.prepare_comparison(c, node, method.owner())
     }
-    pub(super) fn prepare_comparison(
+    pub(in crate::resolve) fn prepare_comparison(
         &mut self,
         c: Context,
         node: NodeId,
@@ -94,6 +94,10 @@ impl Resolver<'_> {
                 crate::support::library_types::LibraryType::ComparisonOrdering,
             )?;
             self.prepare_library_type(c, node, crate::support::library_types::LibraryType::Option)?;
+        }
+        // Preparing the result nominal may complete this prerequisite through Ord.
+        if self.facts.builtin_traits.comparison(kind).is_some() {
+            return Ok(());
         }
         let library = self
             .facts

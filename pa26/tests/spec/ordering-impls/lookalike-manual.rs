@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+enum Ordering{Less,Equal,Greater}impl PartialEq for Ordering{fn eq(&self,_:&Self)->bool{false}}impl Eq for Ordering{}impl PartialOrd for Ordering{fn partial_cmp(&self,_:&Self)->Option<core::cmp::Ordering>{None}}impl Ord for Ordering{fn cmp(&self,_:&Self)->core::cmp::Ordering{core::cmp::Ordering::Less}}fn main(){check(!(Ordering::Less==Ordering::Less));check(match Ordering::Greater.partial_cmp(&Ordering::Equal){None=>true,_=>false});check(Ordering::Greater.cmp(&Ordering::Less) as i8 == -1);}

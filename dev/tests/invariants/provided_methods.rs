@@ -141,7 +141,10 @@ fn ordering_defaults_use_original_proof_with_both_collectors() -> Result {
         };
         let mut templates = body::templates::Templates { bodies: Vec::new() };
         super::append(&report, &mut facts, &mut templates, &mut contracts)?;
-        assert_eq!(templates.bodies.len(), 5);
+        // The requested canonical Ordering result also exposes its Ord contract:
+        // ne, four partial relations and three owned helpers are checked originals.
+        assert_eq!(templates.bodies.len(), 8);
+        body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
         verify(&mut facts, &templates, contracts.clone())?;
         let selected=templates.bodies.iter().position(|template| matches!(template.body.owner,body::ir::Owner::Function{definition,..} if facts.associated.comparison_method(definition)==Some(crate::support::comparisons::Method::Lt))).ok_or("provided lt original")?;
         assert_eq!(templates.bodies[selected].body.blocks.len(), 4);

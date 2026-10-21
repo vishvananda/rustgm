@@ -21,6 +21,11 @@ pub(super) fn comparison_candidate(
     };
     let mut left = context.head(&facts.types, goal.subject())?;
     let mut right = context.head(&facts.types, right_term)?;
+    if let Some(candidate) =
+        super::ordering::candidate(facts, context, goal.subject(), right_term, kind)?
+    {
+        return Ok(candidate);
+    }
     if let (Some(Constructor::Primitive(primitive)), None) = (left, right) {
         infer_numeric(facts, context, right_term, primitive)?;
         right = context.head(&facts.types, right_term)?;

@@ -183,6 +183,14 @@ pub(in crate::sema) fn may_have_subject(
         // validated by ordinary complete trait selection.
         return Ok(true);
     }
+    if facts.associated.comparison(DefId(item.0)).is_some()
+        && matches!(subject, super::heads::Subject::Rigid(super::heads::Head::Nominal(owner))
+            if facts.associated.comparison_ordering() == Some(owner))
+    {
+        // Only an exclusion filter; canonical schema and complete RHS proof
+        // remain owned by ordinary comparison selection.
+        return Ok(true);
+    }
     if let super::heads::Subject::Rigid(super::heads::Head::Opaque(id)) = subject {
         return Ok(super::results::may_have_opaque_trait(facts, id, item));
     }

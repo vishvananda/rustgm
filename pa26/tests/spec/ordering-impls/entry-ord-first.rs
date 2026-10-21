@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn compare<T:core::cmp::Ord>(a:&T,b:&T)->core::cmp::Ordering{a.cmp(b)}fn main(){check(compare(&core::cmp::Ordering::Less,&core::cmp::Ordering::Greater) as i8 == -1);}

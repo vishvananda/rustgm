@@ -1,0 +1,3 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering as O;
+fn verify(a:O,b:O,rank:i8){check((a==b)==(rank==0));check((a!=b)==(rank!=0));check((a<b)==(rank<0));check((a<=b)==(rank<=0));check((a>b)==(rank>0));check((a>=b)==(rank>=0));check(a.cmp(&b) as i8==rank);check(match a.partial_cmp(&b){Some(o)=>o as i8==rank,None=>false});}fn main(){verify(O::Less,O::Less,0);verify(O::Less,O::Equal,-1);verify(O::Less,O::Greater,-1);verify(O::Equal,O::Less,1);verify(O::Equal,O::Equal,0);verify(O::Equal,O::Greater,-1);verify(O::Greater,O::Less,1);verify(O::Greater,O::Equal,1);verify(O::Greater,O::Greater,0);}

@@ -1,0 +1,460 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/ordering-impls/all-nine-pairs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "c25bd2238c2e7167fd2acd182c404f623629ca81875ae01a3bb4aeaad2fb2035",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/qualified-methods.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "9a52cc07344a319a5f35163473833e91864a568868ff6e35ee554ce13ccf4bb4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/dot-methods.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "8458fcc3d68a67e01b891df976a810ea603616f7089e7541ad6634d3920e6550",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/reified-methods.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "723463c26513f2da6a746dfc302aed8b14372da19e7c9f9305abb5b268f6741f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/generic-eq.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "d29665142b25a526ab681ee29b2b640a4a5163e11aec4ae5cac248fccf381aeb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/generic-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "3dc657a1637c28682e4ffff51700c5c2962b1ec947b91cfbb90ae7b184f5389e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/generic-ord.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "9b5f2dd54839fcf78a9a46f68741a508ea100e72837292cc0088a1e584dcd33d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/generic-helpers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "9c817fdd2c3cd3f259b6a01aa4b7c1b636dbeba3e0000e2a9a7e2394dcc53078",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/helper-panic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "3e57edb006a69b9924cdf9ede0c647d5bf7a0d70a25a718139c81a47f5fb5c34",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": true
+    },
+    {
+      "path": "tests/spec/ordering-impls/aliases.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "17cbebd31a3e97ba114bfff3d52112416fa478d3581eaa2f7636730ed3057957",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/variant-patterns.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "059cf2e8ec666c8924a4e1bf272717ae7cacf9a50d11214a20e1ab580be5f62a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/signed-casts.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "7a82efacff321e030489a5f5d467829c994a90bd3c87be66acf1ae12681a6a24",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/shared-capture.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "9f7f7ebe2cae391f6fa023c46398827424bbf56675fa444fd8e6fd320585e732",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/local-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "92bc10016f4a7097d73bc792beb7c198d0a7a72eac55bf364105d0a087b61744",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/local-rhs-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "1f70a425401171644938fde7ff28a63989d6c26bf0dfb209adba83e01c98d219",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/lookalike-manual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "bfdbe8d25835c862b300b41a87985a942c331ed62ded4eea3e42b25188689009",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/lookalike-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "cd52967d3cad556cab92482b8622e812a715d0b3f28a3847d9c44d205798f887",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/no-prelude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "a03d284007224098292ebbaaa062b3eb78186954963e1a4aad7acdd667f4e3bf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/no-lookalike-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "d8319750e2ae705ef795f1487a889bb266a9ddc1c33dc94d91229a6e0ec7ecac",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/cross-atomic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "350d93f9156828a409633bbfe641eea5efc2f13946cadd1e7e28ff455abec21c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/atomic-not-ord.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "95376920537bdc76f9529640b14aaea0505010d88f686303b5d21bc1c8085264",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/wrong-rhs.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "8a7c68150884f3be9f23da799b3a776d6893ffa6bba8fb768ef83de3aa0ffb16",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/foreign-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "5b41f82491668fababb609a1a8da801f73916984cddce70ae091d959bfb52750",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/wrong-reified.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "bf046d18c75eac3bb00464ab5ff92b0168a7990d99a62fe29ee08d4083859d07",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/const-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "9beef8d0d4014a0984b0efbdef5966bb799b9c3633335cde0a94153b0cd8bdce",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/reference-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "cf0f65a75ca858b651d2780cd0a191294bf1d6d42685d12162a9e66e7644d382",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/array-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "cbaa719238e3a364f598dc2cf466445e2a68ca993113460207fba473a912efb8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/constant-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "6e4375bae23a8225d028f5703616726f9efe5bc56e475fd201453b9f813082ce",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/entry-ord-first.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "9870bd2f2c98cc9e1bef5bfba5e7526e66020c6c28cdb8a19adc0c286dfac768",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/ordering-impls/entry-partial-first.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.ordering-impls"
+      ],
+      "source_sha256": "5fc21e4cf2d4c8b574c737e7bf1fe6c7ba634f7b7ca969e91c01ff32e9f58cfa",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    }
+  ]
+}

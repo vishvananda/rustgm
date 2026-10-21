@@ -70,7 +70,8 @@ were caught by the original-proof invariant before final qualification.
 
 ## Remaining scope
 
-Ordering's own comparison traits/convenience methods and structural/reference
+The subsequent `docs/pa26-ordering-implementations.md` checkpoint supplies
+Ordering's own comparison traits. Its convenience methods and structural/reference
 comparison implementations remain outstanding, alongside primitive reference,
 unary and Deref hooks, iteration, question-mark, required derives and formatting.
 Unsuffixed assignment-method RHS inference remains an explicit gap. Free cmp

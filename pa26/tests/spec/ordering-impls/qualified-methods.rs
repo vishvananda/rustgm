@@ -1,0 +1,3 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering as O;
+fn main(){check(<O as PartialEq>::eq(&O::Less,&O::Less));check(PartialEq::ne(&O::Less,&O::Equal));check(PartialOrd::lt(&O::Less,&O::Greater));check(PartialOrd::le(&O::Equal,&O::Equal));check(PartialOrd::gt(&O::Greater,&O::Less));check(PartialOrd::ge(&O::Equal,&O::Less));check(Ord::cmp(&O::Less,&O::Greater) as i8 == -1);check(match PartialOrd::partial_cmp(&O::Greater,&O::Equal){Some(O::Greater)=>true,_=>false});}

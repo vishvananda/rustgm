@@ -136,3 +136,6 @@ mod ordering;
 
 #[path = "language_operators/extrema.rs"]
 mod extrema;
+
+#[path = "language_operators/ranks.rs"]
+mod ranks;

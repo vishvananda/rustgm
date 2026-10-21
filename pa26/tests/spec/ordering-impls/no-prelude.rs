@@ -1,0 +1,2 @@
+#![no_implicit_prelude]
+extern crate core;fn main(){let a=core::cmp::Ordering::Less;let b=core::cmp::Ordering::Greater;if !core::cmp::PartialEq::ne(&a,&b){let n=0u8;let _=1/n;}if core::cmp::Ord::cmp(&a,&b) as i8 != -1{let n=0u8;let _=1/n;}}

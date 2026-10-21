@@ -150,7 +150,19 @@ impl Checker<'_> {
                 clone_: declaration.kind != LibraryType::AtomicU32,
             },
         );
-        self.register_library_nominal(item, declaration.origin, kind, repr, &constructors)
+        self.register_library_nominal(item, declaration.origin, kind, repr, &constructors)?;
+        if declaration.kind == LibraryType::ComparisonOrdering {
+            crate::sema::primitive_methods::register_ordering(&mut self.facts, item)
+                .map_err(|e| self.error(declaration.origin, e))?;
+            self.facts.equality_derives.insert(
+                item,
+                crate::types::equality::Properties {
+                    partial_eq: true,
+                    eq: true,
+                },
+            );
+        }
+        Ok(())
     }
     fn library_variant(
         &mut self,

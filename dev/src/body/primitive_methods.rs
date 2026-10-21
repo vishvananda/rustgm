@@ -91,7 +91,7 @@ fn operation(
     };
     let a = value(
         body,
-        TypeId::primitive(descriptor.left()),
+        descriptor.operand_type(facts, descriptor.left())?,
         Rvalue::Read(left),
     )?;
     let right = if descriptor.rhs() == Rhs::SharedReference || descriptor.form() == Form::Comparison
@@ -102,9 +102,31 @@ fn operation(
     };
     let b = value(
         body,
-        TypeId::primitive(descriptor.right()),
+        descriptor.operand_type(facts, descriptor.right())?,
         Rvalue::Read(right),
     )?;
+    let (a, b) = if descriptor.nominal() {
+        let ty = TypeId::primitive(crate::types::Primitive::I8);
+        let a = value(
+            body,
+            ty,
+            Rvalue::Cast {
+                kind: crate::sema::model::Cast::EnumToInteger,
+                operand: a,
+            },
+        )?;
+        let b = value(
+            body,
+            ty,
+            Rvalue::Cast {
+                kind: crate::sema::model::Cast::EnumToInteger,
+                operand: b,
+            },
+        )?;
+        (a, b)
+    } else {
+        (a, b)
+    };
     if matches!(
         source.comparison,
         Some(

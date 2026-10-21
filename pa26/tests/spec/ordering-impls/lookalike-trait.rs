@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait PartialEq{fn eq(&self,o:&Self)->bool;}enum Ordering{Less,Equal}impl PartialEq for Ordering{fn eq(&self,_:&Self)->bool{false}}fn main(){check(!Ordering::Less.eq(&Ordering::Equal));}

@@ -21,10 +21,30 @@ pub(crate) enum LibraryDefault {
 }
 #[derive(Default)]
 pub(super) struct Comparisons {
+    ordering: Option<crate::types::ItemId>,
     owners: [Option<DefId>; 4],
     methods: [Option<BuiltinComparisonMembers>; 4],
 }
 impl Inventory {
+    pub(in crate::sema) fn declare_comparison_ordering(
+        &mut self,
+        item: crate::types::ItemId,
+    ) -> Result<(), &'static str> {
+        let comparisons = self
+            .language
+            .get_or_insert_default()
+            .comparisons
+            .get_or_insert_default();
+        if comparisons.ordering.is_some_and(|old| old != item) {
+            return Err("comparison Ordering identity is already registered");
+        }
+        comparisons.ordering = Some(item);
+        Ok(())
+    }
+    pub(crate) fn comparison_ordering(&self) -> Option<crate::types::ItemId> {
+        self.language.as_deref()?.comparisons.as_deref()?.ordering
+    }
+
     pub(in crate::sema) fn declare_comparison(
         &mut self,
         owner: DefId,

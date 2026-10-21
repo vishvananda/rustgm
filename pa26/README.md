@@ -233,6 +233,25 @@ permission or primitive factory exemption.
 
 `tests/ord-helper-outcomes.json` declares 28 qualified controls with 21 native
 programs, including three checked failures. The earlier unchanged Ord-helper
-boundary is now accepted/native. Ordering's own comparison traits and the other
-remaining families are still required; see `docs/pa26-ord-helpers.md`.
+boundary is now accepted/native. Ordering's own comparison traits are extended
+by the later checkpoint below; the other hook families remain required. See
+`docs/pa26-ord-helpers.md`.
 This checkpoint does not activate PA26.
+
+
+## Maintainer Ordering implementation checkpoint
+
+The exact canonical comparison Ordering type now supplies PartialEq, Eq,
+PartialOrd and Ord evidence through the ordinary selected method factory.
+Validated nominal reads become signed discriminant comparisons; primitive
+operand contracts remain unchanged. Aliases preserve identity, atomic Ordering
+and local lookalikes receive no such implementation. Generic Ord helpers reuse
+the checked provided originals.
+
+Its real derived PartialEq/Eq structural property is published only with the
+validated completed nominal schema. Named constant patterns use the ordinary
+constant/pattern worklist. `tests/ordering-impl-outcomes.json` declares 30
+source controls and 20 selected native programs, including all nine variant
+pairs. Reference/array comparisons remain required Rust-valid implementation
+boundaries. See `docs/pa26-ordering-implementations.md`. This checkpoint does not
+activate PA26 or complete its remaining hook families.

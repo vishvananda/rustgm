@@ -174,6 +174,9 @@ impl Resolver<'_> {
                 variants,
             },
         );
+        if kind == LibraryType::ComparisonOrdering {
+            self.prepare_comparison(c, node, crate::support::comparisons::Comparison::Ord)?;
+        }
         if kind == LibraryType::AtomicU32 {
             self.prepare_library_type(c, node, LibraryType::Ordering)?;
             self.prepare_atomic_intrinsics(c, node, definition, members)?;

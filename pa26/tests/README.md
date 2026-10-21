@@ -56,3 +56,12 @@ programs (three checked failures) and seven rejections. The extrema module of
 native test compares execution with Rust and the external CPPGM backend.
 The unchanged earlier `ordering/ord-helpers.rs` control is now accepted/native.
 See `docs/pa26-ord-helpers.md`; Ordering's own trait implementations remain pending.
+
+
+`ordering-impl-outcomes.json` declares the canonical `spec/ordering-impls`
+family: 21 implemented positive programs, seven language rejections and two
+Rust-valid reference/array boundaries. The ranks module of language_operators
+qualifies all 30 source outcomes; its explicitly ignored native test compares
+20 selected programs with Rust and CPPGM. The no-prelude program also has
+standalone direct-backend qualification. Exact schema/instance and compact
+representation controls live beside the existing primitive factory invariants.
