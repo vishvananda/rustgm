@@ -85,6 +85,86 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ]
+    },
+    {
+      "name": "ref-mut-referent",
+      "path": "tests/spec/receiver-binding/ref-mut-referent.rs",
+      "source_sha256": "11303c7789b5ca2ebe720d9def854fda758f34ea71d120028fe9028e6c2b9406",
+      "expected_status": 0,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "ref-mut-rebind",
+      "path": "tests/spec/receiver-binding/ref-mut-rebind.rs",
+      "source_sha256": "fc119b56f8632c8a90e3c14f9562fdc0a414b275d836505aa90c128157999a72",
+      "expected_status": 1,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "ref-mut-unused-rebind",
+      "path": "tests/spec/receiver-binding/ref-mut-unused-rebind.rs",
+      "source_sha256": "20508b39f6fabcca623cffea88fb6bf38779a59aebee8d8347f875bf9f8ecfbd",
+      "expected_status": 1,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "local-mut-rebind",
+      "path": "tests/spec/receiver-binding/local-mut-rebind.rs",
+      "source_sha256": "73af352c8360ac7753afe37666c4bd02ab68bfb67e9c873b11bf3b9fd74f5197",
+      "expected_status": 0,
+      "expected_binding_mutability": true,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "local-immutable-rebind",
+      "path": "tests/spec/receiver-binding/local-immutable-rebind.rs",
+      "source_sha256": "c4e0c6f7eeec162cf4006d664ceed95b4f857638090bad348dcd157d0d0b0bf5",
+      "expected_status": 1,
+      "expected_binding_mutability": false,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
     }
   ]
 }

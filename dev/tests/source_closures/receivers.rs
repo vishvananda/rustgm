@@ -216,10 +216,15 @@ fn captured_receiver_binding_mutability_is_separate_from_its_referent()
         ("owned-mut", true, true),
         ("explicit-mut", true, true),
         ("named-rebind", false, false),
+        ("ref-mut-referent", false, true),
+        ("ref-mut-rebind", false, false),
+        ("ref-mut-unused-rebind", false, false),
+        ("local-mut-rebind", true, true),
+        ("local-immutable-rebind", false, false),
     ] {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join(format!("../pa24/tests/spec/receiver-binding/{name}.rs"));
-        let source = std::fs::read_to_string(path)?;
+        let source = std::fs::read_to_string(&path)?;
         super::rustc::qualify(&format!("capture-receiver-{name}"), &source, accepted)?;
         let (_, facts) = semantic::analyze(&source).map_err(|error| format!("{name}: {error}"))?;
         assert_eq!(facts.closures.all().len(), 1, "{name}");
@@ -234,6 +239,39 @@ fn captured_receiver_binding_mutability_is_separate_from_its_referent()
             Some(mutable),
             "{name}"
         );
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"))
+            .arg("--emit-lowir")
+            .arg(&path)
+            .output()?;
+        assert_eq!(
+            output.status.code(),
+            Some(i32::from(!accepted)),
+            "{name}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        if !accepted {
+            assert!(
+                String::from_utf8_lossy(&output.stderr)
+                    .contains("cannot assign through an immutable captured binding"),
+                "{name}"
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified CPPGM native backend"]
+fn captured_reference_bindings_preserve_referent_and_replacement_permissions()
+-> Result<(), Box<dyn std::error::Error>> {
+    for name in ["ref-mut-referent", "local-mut-rebind"] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa24/tests/spec/receiver-binding/{name}.rs"));
+        let source = std::fs::read_to_string(path)?;
+        let body = source
+            .strip_prefix(super::native::CHECK)
+            .ok_or("missing check helper")?;
+        super::native::check_cases("parallel/ref-binding/native", &[(name, body, false)])?;
     }
     Ok(())
 }

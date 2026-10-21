@@ -142,7 +142,9 @@ impl Checker<'_> {
                 .node
                 .ok_or_else(|| self.error(source, "capture binding lacks source identity"))?;
             let mutable = match crate::sema::model::Declarations::kind(self.report, key) {
-                crate::syntax::ast::Kind::Binding { mutable, .. } => mutable,
+                crate::syntax::ast::Kind::Binding {
+                    mutable, by_ref, ..
+                } => mutable && !by_ref,
                 // An explicit-lifetime receiver's `mut` qualifies its referent.
                 // Its binding is immutable, as in declaration completion.
                 crate::syntax::ast::Kind::Receiver { .. } => false,
