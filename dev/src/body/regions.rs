@@ -258,19 +258,19 @@ fn closure_contract(
     facts: &Declarations,
     closure: &crate::sema::closures::Body,
 ) -> Result<Contract, &'static str> {
+    let signature = closure
+        .execution
+        .map_or(closure.signature, |execution| execution.signature);
     let mut contract = if let Some(owner) = closure.owner {
-        parameter_contract(
-            facts,
-            owner,
-            closure.semantic_source(),
-            Some(closure.signature),
-        )?
+        parameter_contract(facts, owner, closure.semantic_source(), Some(signature))?
     } else {
         Contract::constant(closure.semantic_source())
     };
     contract.key = super::ir::BodyKey::Closure(closure.identity);
-    contract.signature = Some(closure.signature);
-    contract.universals = closure.universals;
+    contract.signature = Some(signature);
+    contract.universals = closure
+        .execution
+        .map_or(closure.universals, |execution| execution.universals);
     if let Some(scheme) = closure
         .owner
         .and_then(|owner| facts.lifetimes.functions.get(&owner))

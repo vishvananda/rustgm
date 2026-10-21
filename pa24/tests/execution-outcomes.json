@@ -1,0 +1,222 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "reference-return",
+      "path": "tests/spec/captures/reference-return.rs",
+      "source_sha256": "c2188a89f0ab4d46a05b5fd04d385e352e36460d793907da6d0f06fd35f87c09",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "implementation_boundary": "Captured output lifetime closing is not implemented."
+    },
+    {
+      "name": "once-partial-cleanup",
+      "path": "tests/spec/captures/once-partial-cleanup.rs",
+      "source_sha256": "6450ef9b7dc0305e24199ef3babf826266d8b50ce34b8bc19032a8383be65e83",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "implementation_boundary": "Captured output lifetime closing is not implemented."
+    },
+    {
+      "name": "wildcard-initialized",
+      "path": "tests/spec/captures/wildcard-initialized.rs",
+      "source_sha256": "b0020c5cd1fec3f755424f6e1b4eb6d5909a6b79d268739302a038682edc6ea8",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-uninitialized",
+      "path": "tests/spec/captures/wildcard-uninitialized.rs",
+      "source_sha256": "1fbbd4fce8f4dcd3cdbfabf0515c65bfb1163186a58f48c1ee68e389e8edb9a8",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "once-consumed-cleanup",
+      "path": "tests/spec/captures/once-consumed-cleanup.rs",
+      "source_sha256": "f3919a1dfa815816608e9e4fd2a03660088a2b88283cf9b767ec1789d1a95462",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-live-loan",
+      "path": "tests/spec/captures/wildcard-live-loan.rs",
+      "source_sha256": "df2b0c2ebdc0d5fcb08c63ce7c23b26a87d45e205dd8a721fc120f0a91928771",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-moved",
+      "path": "tests/spec/captures/wildcard-moved.rs",
+      "source_sha256": "5032607a4c3547fb56863f8dd8487dbe4aac44bdbc61711858c88a962a40e402",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-plain-uninitialized",
+      "path": "tests/spec/captures/wildcard-plain-uninitialized.rs",
+      "source_sha256": "73f2e95f22f2f45d5422d123b12278684251b385f626c363242c80f48d61b3a7",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-reference-loan",
+      "path": "tests/spec/captures/wildcard-reference-loan.rs",
+      "source_sha256": "dc90d236b9832ef6806ea24063e6cddceb583e10fe7b13ea277ab5d320433221",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-reference",
+      "path": "tests/spec/captures/mutable-reference.rs",
+      "source_sha256": "281f15405d40f88bd86040f017f95ca81482161f8f51e1e233beb6afeb49e6f3",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "mutable-reference-field",
+      "path": "tests/spec/captures/mutable-reference-field.rs",
+      "source_sha256": "71ed8ab55fb9ed825ee08cdabaa505a196ca13d53d930d5bc0a74bf2a9806860",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "shared-reference-mutation",
+      "path": "tests/spec/captures/shared-reference-mutation.rs",
+      "source_sha256": "96fcce6364d3aac0e7261e42140bf6a7a9772ecf53f6be4b5485cdf8978f5800",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "immutable-owned-field",
+      "path": "tests/spec/captures/immutable-owned-field.rs",
+      "source_sha256": "a730da4057c7d17d8c6e777eb776cb8e75078fa9cccc3fbcde68b31fc9fb9abb",
+      "expected_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "name": "wildcard-reference-ended",
+      "path": "tests/spec/captures/wildcard-reference-ended.rs",
+      "source_sha256": "8cd4b4edf4bf20265077310d54971cb488a3a6680e499babe75ab547fda55fde",
+      "expected_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

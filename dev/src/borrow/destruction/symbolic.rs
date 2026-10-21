@@ -76,7 +76,9 @@ pub fn select(
         if let (Some(parent), Some(Component::Field(field))) = (path.parent, path.component) {
             let ty = builder.paths.entries[parent.0 as usize].ty;
             let (variant, ordinal) = match (types.kind(ty), field) {
-                (Some(Kind::Tuple(_)), Selection::Tuple(ordinal)) => (0, ordinal),
+                (Some(Kind::Tuple(_) | Kind::Closure { .. }), Selection::Tuple(ordinal)) => {
+                    (0, ordinal)
+                }
                 (Some(Kind::Adt(_, _)), Selection::Nominal(_)) => {
                     position(ty, field).map_err(error)?
                 }
@@ -199,6 +201,12 @@ impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
             }
             match kind {
                 Kind::Tuple(list) => self.fields(path, 0, list)?,
+                Kind::Closure { environment, .. } => {
+                    let Some(Kind::Tuple(list)) = self.types.kind(environment) else {
+                        return Err("abstract closure cleanup requires a tuple environment");
+                    };
+                    self.fields(path, 0, list)?;
+                }
                 Kind::Adt(_, _) => {
                     for (ordinal, variant) in self
                         .definitions

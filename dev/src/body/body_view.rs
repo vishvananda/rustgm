@@ -164,6 +164,10 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
         for statement in body.statements(block) {
             write!(out, "    ")?;
             match statement.action {
+                Action::CheckInitialized(source) => {
+                    write!(out, "check-initialized ")?;
+                    place(source, out)?;
+                }
                 Action::Mention(source) => {
                     write!(out, "mention ")?;
                     place(source, out)?;

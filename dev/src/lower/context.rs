@@ -392,12 +392,47 @@ impl<'a> Context<'a> {
         }
     }
     pub fn demand_closure(&mut self, ty: TypeId) -> Result<SymbolId, &'static str> {
+        if !matches!(
+            self.types.kind(ty),
+            Some(Kind::Closure {
+                environment: TypeId::UNIT,
+                ..
+            })
+        ) {
+            return Err("closure requires a checked environment adapter");
+        }
+        self.closure_symbol(ty, None)
+    }
+    pub fn demand_closure_entry(
+        &mut self,
+        entry: crate::body::invocation_entries::Entry,
+    ) -> Result<SymbolId, &'static str> {
+        let requested = match entry.requested() {
+            crate::support::call_traits::CallTrait::Fn => crate::types::closure::CallKind::Shared,
+            crate::support::call_traits::CallTrait::FnMut => {
+                crate::types::closure::CallKind::Mutable
+            }
+            crate::support::call_traits::CallTrait::FnOnce => crate::types::closure::CallKind::Once,
+        };
         let Some(Kind::Closure {
             identity,
-            environment: TypeId::UNIT,
+            environment,
             ..
-        }) = self.types.kind(ty)
+        }) = self.types.kind(entry.instance().ty())
         else {
+            return Err("selected closure entry has no canonical identity");
+        };
+        if self.types.closure_kind(identity) != Some(requested) || environment == TypeId::UNIT {
+            return Err("selected closure entry permission or environment differs");
+        }
+        self.closure_symbol(entry.instance().ty(), Some(entry))
+    }
+    fn closure_symbol(
+        &mut self,
+        ty: TypeId,
+        entry: Option<crate::body::invocation_entries::Entry>,
+    ) -> Result<SymbolId, &'static str> {
+        let Some(Kind::Closure { identity, .. }) = self.types.kind(ty) else {
             return Err("closure requires a checked environment adapter");
         };
         let instance = Instance::closure(self.types, ty)?;
@@ -406,12 +441,34 @@ impl<'a> Context<'a> {
             .get(&instance)
             .or_else(|| self.closure_indices.get(&identity))
             .ok_or("missing checked closure body")?;
+        let Owner::Closure {
+            signature,
+            execution,
+            ..
+        } = self.bodies.bodies[index].owner
+        else {
+            return Err("closure body identity mismatch");
+        };
+        let signature = match (entry, execution) {
+            (None, None) => signature,
+            (Some(entry), Some(execution)) => {
+                let actual = self.signature(entry.execution())?;
+                let formal = self.signature(execution)?;
+                let a = &self.output.signatures[actual.0 as usize];
+                let b = &self.output.signatures[formal.0 as usize];
+                if a.result != b.result
+                    || a.noreturn != b.noreturn
+                    || self.output.parameters(actual) != self.output.parameters(formal)
+                {
+                    return Err("proved closure entry ABI differs from execution body");
+                }
+                execution
+            }
+            _ => return Err("closure demand does not match checked receiver contract"),
+        };
         if let Some(symbol) = self.symbols[index] {
             return Ok(symbol);
         }
-        let Owner::Closure { signature, .. } = self.bodies.bodies[index].owner else {
-            return Err("closure body identity mismatch");
-        };
         let signature = self.signature(signature)?;
         let name = if self.bodies.bodies[index].instance.is_some() {
             format!("rg.closure.{}.i{index}", identity.0)

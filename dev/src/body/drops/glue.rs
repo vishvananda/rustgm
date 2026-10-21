@@ -223,16 +223,12 @@ impl<'a> Catalog<'a> {
                 .ok_or("invalid destruction recipe type")?
             {
                 Kind::Array { element, .. } => self.schedule(element)?,
-                Kind::Tuple(list) => {
-                    for &child in self
-                        .types
-                        .list(list)
-                        .ok_or("invalid destruction tuple")?
-                        .iter()
-                        .rev()
-                    {
-                        self.schedule(child)?;
-                    }
+                Kind::Tuple(list) => self.schedule_fields(list)?,
+                Kind::Closure { environment, .. } => {
+                    let Some(Kind::Tuple(list)) = self.types.kind(environment) else {
+                        return Err("closure destruction requires a tuple environment");
+                    };
+                    self.schedule_fields(list)?;
                 }
                 Kind::Adt(item, _) => {
                     if self.definitions.destruction(item)
@@ -242,19 +238,23 @@ impl<'a> Catalog<'a> {
                     }
                     for variant in self.definitions.shape(self.types, ty)?.variants().rev() {
                         self.cache.charge(1)?;
-                        for &child in self
-                            .types
-                            .list(variant.fields)
-                            .ok_or("invalid destruction fields")?
-                            .iter()
-                            .rev()
-                        {
-                            self.schedule(child)?;
-                        }
+                        self.schedule_fields(variant.fields)?;
                     }
                 }
                 _ => return Err("unsized or unsupported owned destruction type"),
             }
+        }
+        Ok(())
+    }
+    fn schedule_fields(&mut self, list: crate::types::ListId) -> Result<(), &'static str> {
+        for &child in self
+            .types
+            .list(list)
+            .ok_or("invalid destruction tuple")?
+            .iter()
+            .rev()
+        {
+            self.schedule(child)?;
         }
         Ok(())
     }
@@ -284,21 +284,12 @@ impl<'a> Catalog<'a> {
                     .ok_or("missing array element destruction")?,
                 length,
             },
-            Kind::Tuple(list) => {
-                let start = compact(self.cache.storage.fields.len())?;
-                for (index, &child) in self
-                    .types
-                    .list(list)
-                    .ok_or("invalid destruction tuple")?
-                    .iter()
-                    .enumerate()
-                {
-                    self.field(child, Selection::Tuple(compact(index)?))?;
-                }
-                Shape::Fields(Range {
-                    start,
-                    end: compact(self.cache.storage.fields.len())?,
-                })
+            Kind::Tuple(list) => self.tuple_fields(list)?,
+            Kind::Closure { environment, .. } => {
+                let Some(Kind::Tuple(list)) = self.types.kind(environment) else {
+                    return Err("closure destruction requires a tuple environment");
+                };
+                self.tuple_fields(list)?
             }
             Kind::Adt(item, args) => {
                 method = self.cache.methods.get(&item).copied().map(|method| {
@@ -316,6 +307,22 @@ impl<'a> Catalog<'a> {
         let id = Id(compact(self.cache.storage.entries.len())?);
         self.cache.storage.entries.push(Recipe { ty, method, kind });
         Ok(id)
+    }
+    fn tuple_fields(&mut self, list: crate::types::ListId) -> Result<Shape, &'static str> {
+        let start = compact(self.cache.storage.fields.len())?;
+        for (index, &child) in self
+            .types
+            .list(list)
+            .ok_or("invalid destruction tuple")?
+            .iter()
+            .enumerate()
+        {
+            self.field(child, Selection::Tuple(compact(index)?))?;
+        }
+        Ok(Shape::Fields(Range {
+            start,
+            end: compact(self.cache.storage.fields.len())?,
+        }))
     }
     fn nominal(&mut self, ty: TypeId, item: ItemId) -> Result<Shape, &'static str> {
         if self.definitions.destruction(item)

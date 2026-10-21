@@ -260,7 +260,9 @@ impl<'a> Flow<'a> {
     fn action(&mut self, action: Action, live: &mut Live) -> Result<(), &'static str> {
         self.charge(1)?;
         match action {
-            Action::Mention(place) => self.use_place(place, live)?,
+            Action::CheckInitialized(place) | Action::Mention(place) => {
+                self.use_place(place, live)?;
+            }
             Action::Evaluate(id) => self.value(id, live)?,
             Action::Store { place, value } => {
                 if let Place::Local(id) = place {

@@ -16,7 +16,7 @@ pub(crate) fn resolve(
     contract: &mut Contract,
 ) -> Result<(), String> {
     if !body.values.iter().any(|value| matches!(value.kind, Rvalue::AssociatedConstant(_)) || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())) {
-        return Ok(());
+        return super::invocation_entries::select(facts, body, contract).map_err(String::from);
     }
     let first = contract
         .obligations
@@ -77,7 +77,7 @@ pub(crate) fn resolve(
         contract
             .proofs
             .push(crate::body::regions::Proof::new(body.source, proof));
-        return Ok(());
+        return super::invocation_entries::select(facts, body, contract).map_err(String::from);
     }
     let mut obligations = proof
         .regions
@@ -103,7 +103,7 @@ pub(crate) fn resolve(
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;
-    Ok(())
+    super::invocation_entries::select(facts, body, contract).map_err(String::from)
 }
 
 fn rewrite(

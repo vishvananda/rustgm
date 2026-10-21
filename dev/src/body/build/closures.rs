@@ -1,7 +1,7 @@
 //! Closure CFGs use source body identities and the same ownership/loan pipeline as functions.
 use super::{
-    Body, Builder, Declarations, Error, Owner, Program, Report, Rvalue, Scratch, Type, TypeId,
-    ValueId, ValueList, scopes,
+    Body, Builder, Declarations, Error, Owner, Program, Report, Scratch, Type, TypeId, ValueId,
+    scopes,
 };
 use crate::{syntax::ast::NodeId, types::destruction::NeedsDrop};
 
@@ -47,7 +47,7 @@ pub(super) fn body(
         Owner::Closure {
             identity: closure.identity,
             signature: closure.signature,
-            execution: None,
+            execution: closure.execution.map(|execution| execution.signature),
         },
         closure.semantic_source(),
         result,
@@ -58,21 +58,6 @@ pub(super) fn body(
 }
 impl Builder<'_> {
     pub(super) fn closure_value(&mut self, node: NodeId, ty: TypeId) -> Result<ValueId, Error> {
-        let Some(Type::Closure {
-            environment: TypeId::UNIT,
-            ..
-        }) = self.facts.types.kind(ty)
-        else {
-            return Err(self.error(node, "closure environment construction is not implemented"));
-        };
-        let start = self.index(node, self.body.arguments.len())?;
-        self.evaluate(
-            node,
-            ty,
-            Rvalue::Aggregate {
-                variant: None,
-                fields: ValueList { start, end: start },
-            },
-        )
+        self.environment_value(node, ty)
     }
 }

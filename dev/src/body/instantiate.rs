@@ -181,6 +181,7 @@ fn materialize(
         storage: source.storage.clone(),
         promotions: None,
         resolved_callables: None,
+        closure_calls: None,
         locals: source.locals.clone(),
         values: source.values.clone(),
         projections: source.projections.clone(),

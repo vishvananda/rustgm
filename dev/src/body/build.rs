@@ -7,6 +7,7 @@ mod constructors;
 pub(super) use constructors::finish_factory;
 mod decisions;
 mod drops;
+mod environments;
 mod guards;
 mod intrinsics;
 mod invocations;
@@ -246,6 +247,7 @@ impl Body {
             storage: None,
             promotions: None,
             resolved_callables: None,
+            closure_calls: None,
             temporaries: Vec::new(),
             guards: Vec::new(),
             guard_places: Vec::new(),
@@ -365,6 +367,7 @@ struct Builder<'a> {
     current: Option<BlockId>,
     scope_plan: scopes::Facts,
     scope_exits: Vec<super::storage::Exit>,
+    capture_places: Option<Box<environments::Places>>,
 }
 impl Scratch {
     fn new(facts: &Declarations) -> Self {
@@ -409,6 +412,7 @@ impl<'a> Builder<'a> {
             current: None,
             scope_plan,
             scope_exits: Vec::new(),
+            capture_places: None,
         }
     }
     fn error(&self, node: NodeId, message: impl Into<String>) -> Error {
@@ -656,7 +660,13 @@ impl<'a> Builder<'a> {
         }
     }
     fn parameters(&mut self, list: List) -> Result<(), Error> {
-        let mut index = 0;
+        let mut index = u32::from(matches!(
+            self.body.owner,
+            Owner::Closure {
+                execution: Some(_),
+                ..
+            }
+        ));
         let nodes = self
             .report
             .package
@@ -733,6 +743,7 @@ impl<'a> Builder<'a> {
         let entry = self.new_block(root)?;
         self.scratch.reach[entry.0 as usize].incoming = true;
         self.switch(root, entry)?;
+        self.prepare_capture_receiver()?;
         if let Some(parameters) = parameters {
             self.parameters(parameters)?;
         }
@@ -1582,7 +1593,13 @@ impl<'a> Builder<'a> {
                 left: ty,
                 ..
             }) => {
-                let place = self.local_place(node, target)?;
+                let place = match self.captured_place(left)? {
+                    environments::Access::Place(place) => place,
+                    environments::Access::Ordinary => self.local_place(node, target)?,
+                    environments::Access::Uncaptured => {
+                        return Err(self.error(left, "assignment has no covering capture"));
+                    }
+                };
                 let value = if let Some(operator) = operator {
                     // Primitive compound assignment evaluates the RHS before reading the place.
                     let left = self.evaluate(node, ty, Rvalue::Read(place))?;

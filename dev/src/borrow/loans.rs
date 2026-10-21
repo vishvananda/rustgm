@@ -326,7 +326,8 @@ impl Flow<'_> {
                     self.access(state, projection.base, Mode::Shared, Depth::Shallow, None)?;
                 }
             }
-            Action::Mention(_)
+            Action::CheckInitialized(_)
+            | Action::Mention(_)
             | Action::BindView { .. }
             | Action::GuardStart(_)
             | Action::GuardUse(_) => {}

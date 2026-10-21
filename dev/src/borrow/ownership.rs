@@ -261,7 +261,8 @@ impl BodyFacts {
                     }
                 }
             }
-            Action::Mention(_)
+            Action::CheckInitialized(_)
+            | Action::Mention(_)
             | Action::GuardStart(_)
             | Action::GuardUse(_)
             | Action::Project(_)
@@ -277,6 +278,14 @@ impl BodyFacts {
         action: Action,
     ) -> Result<(), &'static str> {
         match action {
+            Action::CheckInitialized(place) => {
+                let info = self.paths.place(place)?;
+                if let Some(path) = info.path
+                    && !state.initialized(&self.paths.entries[path.0 as usize])?
+                {
+                    return Err("closure wildcard input may be uninitialized or moved");
+                }
+            }
             Action::GuardUse(id) => {
                 let guard = body
                     .guards

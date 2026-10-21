@@ -8,10 +8,25 @@ use crate::{
 impl Lower<'_, '_> {
     pub(super) fn invoke(
         &mut self,
+        id: crate::body::ir::ValueId,
         signature: TypeId,
         arguments: ValueList,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
+        if let Some(entry) = self
+            .body
+            .closure_calls
+            .as_deref()
+            .and_then(|entries| entries.get(id))
+        {
+            let symbol = self.context.demand_closure_entry(entry)?;
+            return self.call_operand(
+                entry.execution(),
+                crate::lowir::program::Operand::Symbol(symbol),
+                arguments,
+                result,
+            );
+        }
         let receiver = *self
             .body
             .arguments(arguments)

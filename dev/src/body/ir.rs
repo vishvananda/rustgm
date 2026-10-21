@@ -243,6 +243,8 @@ pub struct Temporary {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Action {
+    /// Closure creation requires initialized wildcard inputs without accessing them.
+    CheckInitialized(Place),
     /// A wildcard mentions a place's type without reading, moving or borrowing it.
     Mention(Place),
     /// Start a new guard attempt; previous attempts cannot keep protections live.
@@ -354,6 +356,8 @@ pub struct Body {
     pub promotions: Option<super::promote::Facts>,
     /// Lifetime-equivalent callable identities selected only after a complete body proof.
     pub resolved_callables: Option<Box<ResolvedCallables>>,
+    /// Selected checked environment entries; created before the ordinary body proof.
+    pub closure_calls: Option<Box<super::invocation_entries::Entries>>,
     pub temporaries: Vec<Temporary>,
     pub guards: Vec<Guard>,
     /// Proof-only tested places, including places in inactive variants. Never evaluated.
@@ -391,6 +395,9 @@ impl Body {
     pub(crate) fn allocation_bytes(&self) -> usize {
         use crate::support::retained::{map, sum, vector};
         sum([
+            self.closure_calls
+                .as_ref()
+                .map_or(0, |calls| calls.retained_bytes()),
             vector(&self.temporaries),
             vector(&self.guards),
             vector(&self.guard_places),

@@ -202,7 +202,8 @@ impl Lower<'_, '_> {
             Action::BindView { view, place } => self.bind_view(view, place)?,
             Action::Project(id) => self.project(id)?,
             Action::Select { projection, anchor } => self.select(projection, anchor)?,
-            Action::Mention(_)
+            Action::CheckInitialized(_)
+            | Action::Mention(_)
             | Action::GuardStart(_)
             | Action::GuardUse(_)
             | Action::StorageLive(_)
@@ -685,7 +686,7 @@ impl Lower<'_, '_> {
                 signature,
                 arguments,
                 ..
-            } => return self.invoke(signature, arguments, value.ty),
+            } => return self.invoke(id, signature, arguments, value.ty),
             Rvalue::Call {
                 signature,
                 callee,

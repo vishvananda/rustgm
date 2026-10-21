@@ -218,6 +218,20 @@ fn body(
         source: Some(input.source),
         message,
     };
+    if let Some(crate::body::ir::Body {
+        owner:
+            crate::body::ir::Owner::Closure {
+                execution: Some(signature),
+                ..
+            },
+        ..
+    }) = cfg
+        && input.signature != Some(*signature)
+    {
+        return Err(error(
+            "closure proof does not select its checked execution signature".into(),
+        ));
+    }
     let mut constraints = Constraints::new(types, variances, input.universals, 1_000_000)
         .map_err(|e| error(e.to_string()))?;
     for id in &input.parameters {

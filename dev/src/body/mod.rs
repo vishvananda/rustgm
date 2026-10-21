@@ -5,6 +5,7 @@ pub mod constants;
 pub(crate) mod dispatch;
 pub mod drops;
 pub mod instantiate;
+pub mod invocation_entries;
 pub mod ir;
 pub(crate) mod primitive_methods;
 pub mod promote;

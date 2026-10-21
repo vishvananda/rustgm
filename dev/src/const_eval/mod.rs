@@ -453,7 +453,10 @@ impl<'a, 'b> Machine<'a, 'b> {
                 }
                 frame.locals[view.0 as usize] = Some(location.address);
             }
-            Action::Mention(_) | Action::GuardStart(_) | Action::GuardUse(_) => {}
+            Action::CheckInitialized(_)
+            | Action::Mention(_)
+            | Action::GuardStart(_)
+            | Action::GuardUse(_) => {}
         }
         Ok(None)
     }

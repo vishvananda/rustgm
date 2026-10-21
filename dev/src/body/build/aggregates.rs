@@ -40,6 +40,9 @@ impl Builder<'_> {
         )
     }
     pub(super) fn projected_syntax(&self, mut node: NodeId) -> bool {
+        if self.has_captured_place(node) {
+            return true;
+        }
         while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(node) {
             node = value;
         }
@@ -74,6 +77,17 @@ impl Builder<'_> {
         if self.current.is_none() {
             self.scratch.places.push(None);
             return Ok(());
+        }
+        match self.captured_place(node)? {
+            super::environments::Access::Place(place) => {
+                self.scratch.places.push(Some(place));
+                return Ok(());
+            }
+            super::environments::Access::Uncaptured => {
+                self.scratch.places.push(None);
+                return Ok(());
+            }
+            super::environments::Access::Ordinary => {}
         }
         match self.kind(node) {
             Kind::Group(value) | Kind::Attributed { value, .. } => {
