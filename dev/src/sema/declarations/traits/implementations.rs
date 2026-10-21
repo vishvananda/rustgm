@@ -1,6 +1,7 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod constants;
 mod methods;
+mod orphans;
 mod readiness;
 pub(in crate::sema::declarations) use readiness::Readiness;
 mod validation;
@@ -135,6 +136,7 @@ impl Checker<'_> {
             }
         };
         let predicate = Predicate { ty, bound };
+        self.validate_language_orphan(owner.source, definition, predicate)?;
         self.impl_parameters(owner.self_definition, owner.source, predicate)?;
         self.facts
             .generics

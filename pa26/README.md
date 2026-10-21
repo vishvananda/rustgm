@@ -135,3 +135,8 @@ evaluation and scalar inference. Thirty-five independently qualified outcomes
 and 24 native programs are recorded in `tests/assignment-outcomes.json` and
 `docs/pa26-assignment-checkpoint.md`. Generic primitive trait implementations
 remain an explicit required boundary; this checkpoint does not activate PA26.
+
+Canonical library operator/assignment impl headers now enforce the orphan rule
+using exact local and foreign identities before publication. Nineteen qualified
+declaration controls and eight native programs are recorded in
+`tests/orphan-outcomes.json` and `docs/pa26-orphan-checkpoint.md`.

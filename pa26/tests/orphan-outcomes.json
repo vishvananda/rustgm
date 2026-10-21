@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/primitive-assignment/orphan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/orphan-ref.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-first-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/uncovered.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/uncovered-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/library-wrapper.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/alias-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/alias-library.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/tuple-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/array-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/tuple-covered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/array-covered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/nominal-covered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/empty-local-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-object.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/library-object.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/projected-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    }
+  ]
+}

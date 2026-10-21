@@ -140,3 +140,73 @@ fn assignment_metadata_has_unit_output_and_one_mutable_receiver_binder()
     }
     Ok(())
 }
+
+#[test]
+fn canonical_language_impls_obey_orphan_rules() -> Result<(), Box<dyn std::error::Error>> {
+    for (name, accepted) in [
+        ("orphan", false),
+        ("orphan-ref", false),
+        ("local-reference", true),
+        ("local-first-generic", true),
+        ("uncovered", false),
+        ("uncovered-reference", false),
+        ("library-wrapper", false),
+        ("local-trait", true),
+        ("alias-local", true),
+        ("alias-library", false),
+        ("tuple-local", false),
+        ("array-local", false),
+        ("tuple-covered", true),
+        ("array-covered", true),
+        ("nominal-covered", true),
+        ("empty-local-enum", true),
+        ("local-object", true),
+        ("library-object", false),
+        ("projected-local", true),
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa26/tests/spec/primitive-assignment/{name}.rs"));
+        let source = std::fs::read_to_string(path)?;
+        super::rustc::qualify(&format!("language-orphan-{name}"), &source, accepted)?;
+        let result = frontend::checked(&source);
+        assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn admitted_local_library_trait_implementations_execute() -> Result<(), Box<dyn std::error::Error>>
+{
+    let names = [
+        "local-reference",
+        "local-first-generic",
+        "local-trait",
+        "alias-local",
+        "tuple-covered",
+        "array-covered",
+        "nominal-covered",
+        "empty-local-enum",
+    ];
+    let sources = names
+        .iter()
+        .map(|name| {
+            std::fs::read_to_string(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join(format!("../pa26/tests/spec/primitive-assignment/{name}.rs")),
+            )
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let cases = names
+        .iter()
+        .zip(&sources)
+        .map(|(&name, source)| {
+            Ok((
+                name,
+                source.strip_prefix(native::CHECK).ok_or("check prefix")?,
+                false,
+            ))
+        })
+        .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
+    native::check_cases("parallel/pa26/language-orphans/native", &cases)
+}
