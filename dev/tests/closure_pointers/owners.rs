@@ -8,7 +8,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("grouped", true, true),
     ("attributed", true, true),
     ("block", true, false),
-    ("inline", true, false),
+    ("inline", true, true),
     ("static", true, true),
     ("dangling", false, true),
     ("escaping-input", false, true),
