@@ -495,12 +495,17 @@ impl Checker<'_> {
             }
             Some(Constructor::Slice) => Some(Operation::IndexSlice),
             _ => {
-                return self.language_operator(
-                    node,
-                    crate::support::language_hooks::Hook::Index,
-                    value,
-                    Some(index),
-                );
+                let kind = crate::support::language_hooks::Hook::Index;
+                if self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .language(kind)
+                    .is_none()
+                {
+                    return Err(self.error(node, "indexing requires a known array type"));
+                }
+                return self.language_operator(node, kind, value, Some(index));
             }
         };
         let usize = self.known(node, TypeId::primitive(Primitive::Usize))?;

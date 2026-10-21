@@ -93,8 +93,18 @@ impl Checker<'_> {
     pub(super) fn uses_language_operator(
         &mut self,
         node: NodeId,
+        kind: Hook,
         operand: NodeId,
     ) -> Result<bool, Error> {
+        if self
+            .report
+            .resolution
+            .builtin_traits
+            .language(kind)
+            .is_none()
+        {
+            return Ok(false);
+        }
         let term = self.term(operand)?;
         Ok(!matches!(
             self.head(node, term)?,

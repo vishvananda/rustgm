@@ -1296,15 +1296,12 @@ impl Checker<'_> {
                 )
             }
             Kind::Unary {
-                op: Unary::Negate | Unary::Not,
+                op: op @ (Unary::Negate | Unary::Not),
                 operand,
             } => {
-                if self.uses_language_operator(node, operand)? {
-                    let Kind::Unary { op, .. } = self.kind(node) else {
-                        return Err(self.error(node, "invalid unary operator"));
-                    };
-                    let kind = language_hooks::unary_hook(op)
-                        .ok_or_else(|| self.error(node, "missing unary library hook"))?;
+                let kind = language_hooks::unary_hook(op)
+                    .ok_or_else(|| self.error(node, "missing unary library hook"))?;
+                if self.uses_language_operator(node, kind, operand)? {
                     return self.language_operator(node, kind, operand, None);
                 }
                 if matches!(
@@ -1638,7 +1635,7 @@ impl Checker<'_> {
             return self.assignment(node, op, left, right);
         }
         if let Some(kind) = language_hooks::binary_hook(op)
-            && self.uses_language_operator(node, left)?
+            && self.uses_language_operator(node, kind, left)?
         {
             return self.language_operator(node, kind, left, Some(right));
         }

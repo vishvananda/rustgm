@@ -78,3 +78,34 @@ fn operators_execute_selected_library_methods() -> Result<(), Box<dyn std::error
         ],
     )
 }
+
+#[test]
+fn primitive_invalid_operators_preserve_existing_diagnostics()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (path, diagnostic) in [
+        (
+            "pa12/tests/spec/reject/index-tuple.rs",
+            "indexing requires a known array type",
+        ),
+        (
+            "pa18/tests/spec/functions/reject-arithmetic.rs",
+            "incompatible types",
+        ),
+        (
+            "pa22/tests/spec/pointers/pointer-coercions/cases/pointer-add.rs",
+            "binary operator is not defined for these scalar types",
+        ),
+    ] {
+        let source = std::fs::read_to_string(format!("{}/../{path}", env!("CARGO_MANIFEST_DIR")))?;
+        rustc::qualify(
+            path.rsplit('/').next().ok_or("missing fixture name")?,
+            &source,
+            false,
+        )?;
+        let error = checked(&source)
+            .err()
+            .ok_or("invalid primitive operation was accepted")?;
+        assert!(error.contains(diagnostic), "{path}: {error}");
+    }
+    Ok(())
+}
