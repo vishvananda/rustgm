@@ -121,6 +121,14 @@ fn truncation_profiles_counts_and_body_permissions_fail_before_import()
     let mut trailing = bytes.clone();
     trailing.push(0);
     assert!(crates::decode(&trailing).is_err());
+    let mut unknown_scalar = bytes.clone();
+    if let Some(tag) = unknown_scalar.last_mut() {
+        *tag = 255;
+    }
+    assert_eq!(
+        crates::decode(&unknown_scalar),
+        Err("unknown metadata scalar type")
+    );
     for offset in [0, 8, 10, 11, 12, 17] {
         let mut malformed = bytes.clone();
         malformed[offset] = 255;

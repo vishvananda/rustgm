@@ -1,6 +1,7 @@
 mod anonymous_parameters;
 mod bodies;
 mod builtins;
+pub mod crates;
 pub mod expansion;
 mod hygiene;
 mod imports;

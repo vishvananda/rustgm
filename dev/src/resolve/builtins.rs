@@ -46,6 +46,15 @@ impl Resolver<'_> {
             return Ok(None);
         };
         let name = self.package.name(c.file, span)?;
+        if self.facts.crates.is_some()
+            && let Some(binding) = self.facts.extern_scope.and_then(|scope| {
+                self.facts.scopes[scope.0 as usize]
+                    .bindings
+                    .get(&(name, Namespace::Type))
+            })
+        {
+            return Ok(self.facts.definitions[binding.target.0 as usize].members);
+        }
         if !matches!(self.package.names.get(name), "core" | "std") {
             return Ok(None);
         }
@@ -137,7 +146,11 @@ impl Resolver<'_> {
         Ok(())
     }
     fn prepare_external_traits(&mut self, c: Context, node: NodeId) -> Result<(), Error> {
-        let external = self.new_scope(None, ModuleId(0), true)?;
+        let external = if let Some(external) = self.facts.extern_scope {
+            external
+        } else {
+            self.new_scope(None, ModuleId(0), true)?
+        };
         let library = self.new_scope(None, ModuleId(0), true)?;
         let ops = self.new_scope(None, ModuleId(0), true)?;
         let drop = self.builtin_definition(

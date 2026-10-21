@@ -325,6 +325,7 @@ pub struct UnionWork {
     pub unique_types: usize,
 }
 pub struct Declarations {
+    pub crates: Option<Box<super::crates::Linkage>>,
     pub foreign: Option<Box<super::foreign::Registry>>,
     pub union_work: UnionWork,
     pub(super) safety_policies: super::safety::Policies,
@@ -504,6 +505,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            crates: None,
             foreign: None,
             union_work: UnionWork::default(),
             safety_policies: super::safety::Policies::analyze(report)?,
@@ -587,6 +589,7 @@ impl Declarations {
             functions: Vec::new(),
         };
         value.import_resolution(report)?;
+        super::crates::import(report, &mut value)?;
         Ok(value)
     }
     fn import_resolution(&mut self, report: &Report) -> Result<(), Error> {

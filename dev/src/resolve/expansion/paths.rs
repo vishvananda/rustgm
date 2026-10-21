@@ -29,7 +29,10 @@ pub(super) struct Paths {
     waiting: HashMap<BindingKey, HashSet<usize>>,
 }
 impl Paths {
-    pub fn new(package: &mut Package) -> Result<Self, Error> {
+    pub fn new(
+        package: &mut Package,
+        dependencies: Option<std::sync::Arc<crate::support::crates::Dependencies>>,
+    ) -> Result<Self, Error> {
         let mut state = State::default();
         let scope = state.bind(package).new_scope(None, ModuleId(0), true)?;
         state.facts.module_scopes.push(scope);
@@ -67,6 +70,9 @@ impl Paths {
             });
             state.facts.macro_prelude.insert(name, target);
             macro_targets.insert(target, MacroTarget::Builtin(builtin));
+        }
+        if let Some(dependencies) = dependencies {
+            state.bind(package).import_crates(dependencies)?;
         }
         let mut work = Work::new(&state.facts);
         work.observe();

@@ -5,6 +5,7 @@ pub mod associated;
 pub mod bodies;
 pub mod closures;
 mod constants;
+pub mod crates;
 pub use constants::values;
 mod arguments;
 pub(crate) mod callee_premises;

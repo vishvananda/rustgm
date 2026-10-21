@@ -217,7 +217,7 @@ impl<'a> Checker<'a> {
                 "type checking requires completed name resolution",
             ));
         }
-        Ok(Self {
+        let mut checker = Self {
             call_paths: std::collections::HashSet::new(),
             target_feature_sources: call_traits::target_feature_sources(report)?,
             method_queries: std::collections::HashMap::new(),
@@ -255,7 +255,13 @@ impl<'a> Checker<'a> {
             function_binders: std::collections::HashMap::new(),
             constant_binders: std::collections::HashMap::new(),
             owner_binders: std::collections::HashMap::new(),
-        })
+        };
+        if let Some(imported) = &report.resolution.crates {
+            for (definition, _) in imported.functions() {
+                checker.states[definition.0 as usize] = State::Complete;
+            }
+        }
+        Ok(checker)
     }
 }
 impl Checker<'_> {

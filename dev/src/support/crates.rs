@@ -1,8 +1,10 @@
 //! Stable external identities and bounded scalar metadata never contain local arena IDs.
 mod codec;
+mod dependencies;
 mod identity;
 mod interface;
 pub use codec::{SCHEMA, decode, encode};
+pub use dependencies::{Dependencies, Dependency};
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, Scalar, Signature, Symbol};
 

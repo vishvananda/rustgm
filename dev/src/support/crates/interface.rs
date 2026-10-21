@@ -120,6 +120,8 @@ pub struct Interface {
     identity: CrateIdentity,
     dependencies: Vec<CrateIdentity>,
     functions: Vec<Function>,
+    atoms: usize,
+    names: usize,
 }
 impl Interface {
     /// Publish a bounded canonical table before any resolver/inference allocation.
@@ -185,7 +187,12 @@ impl Interface {
             identity,
             dependencies,
             functions,
+            atoms: components,
+            names: bytes,
         })
+    }
+    pub(super) const fn budget(&self) -> (usize, usize) {
+        (self.atoms, self.names)
     }
     #[must_use]
     pub const fn identity(&self) -> &CrateIdentity {

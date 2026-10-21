@@ -123,7 +123,7 @@ impl ExternalDef {
         out
     }
 }
-fn validate_component(name: &str) -> Result<(), &'static str> {
+pub(super) fn validate_component(name: &str) -> Result<(), &'static str> {
     let mut characters = name.chars();
     if name == "_"
         || name.len() > 256

@@ -247,6 +247,8 @@ pub struct AssociatedBinding {
 
 #[derive(Default)]
 pub struct Resolution {
+    /// Source-free external identities and their explicit local remapping.
+    pub crates: Option<Box<super::crates::Imported>>,
     /// Actual external-block ownership, retained through expansion by declaration identity.
     pub foreign_owners: HashMap<DefId, NodeKey>,
     pub foreign_blocks: std::collections::HashSet<NodeKey>,

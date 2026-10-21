@@ -169,12 +169,25 @@ pub fn analyze_with_crate_name(
     config: &Config,
     crate_name: Option<&str>,
 ) -> Result<Report, Error> {
+    analyze_with_crates(root, sources, config, crate_name, None)
+}
+
+/// Expand with a fully validated external graph before resolving any source path.
+/// # Errors
+/// Reports the ordinary expansion errors and invalid external binding installation.
+pub fn analyze_with_crates(
+    root: InputFile,
+    sources: &mut impl Sources,
+    config: &Config,
+    crate_name: Option<&str>,
+    dependencies: Option<std::sync::Arc<crate::support::crates::Dependencies>>,
+) -> Result<Report, Error> {
     let mut loader = Loader::new(root, sources, config)?;
     loader.package.crate_name = attributes::crate_name(&loader.package, crate_name)?;
     loader.isolate_expansions();
     let root = loader.package.modules[0].root;
     let recursion_limit = attributes::recursion_limit(&loader.package)?;
-    let paths = paths::Paths::new(&mut loader.package)?;
+    let paths = paths::Paths::new(&mut loader.package, dependencies)?;
     let mut engine = Engine {
         loader,
         config,
