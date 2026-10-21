@@ -32,7 +32,10 @@ fn declaration(owner: Owner) -> Option<DefId> {
         Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
             Some(definition)
         }
-        Owner::AnonymousConstant | Owner::AnonymousInstance(_) | Owner::Closure { .. } | Owner::ClosureAdapter { .. } => None,
+        Owner::AnonymousConstant
+        | Owner::AnonymousInstance(_)
+        | Owner::Closure { .. }
+        | Owner::ClosureAdapter { .. } => None,
     }
 }
 impl Machine<'_> {

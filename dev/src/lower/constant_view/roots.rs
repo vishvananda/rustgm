@@ -155,7 +155,14 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
 
 fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
     match key {
-        BodyKey::ClosureAdapter(adapter) => (3, adapter.instance().ty().0, adapter.requested() as u32, 0, 0, 0),
+        BodyKey::ClosureAdapter(adapter) => (
+            3,
+            adapter.instance().ty().0,
+            adapter.requested() as u32,
+            0,
+            0,
+            0,
+        ),
         BodyKey::Declaration(id) => (0, id.0, 0, 0, 0, 0),
         BodyKey::Closure(id) => (1, id.0, 0, 0, 0, 0),
         BodyKey::Anonymous(node) => (2, node.file.0, node.node.0, 0, 0, 0),
