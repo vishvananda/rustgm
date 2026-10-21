@@ -9,10 +9,24 @@ pub(super) fn specialize(
     facts: &mut Declarations,
     original: &Contract,
     inputs: &mut Inputs,
+    premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
     let regions = import_regions(facts, inputs, original.universals)?;
     let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
+    if inputs.connections.is_some() {
+        super::closures::formation(&mut contract);
+        if matches!(premises, super::Premises::Declared) {
+            let crate::body::ir::BodyKey::Closure(identity) = original.key else {
+                return Err("captured instance has a different source owner");
+            };
+            let conditions = facts
+                .closures
+                .conditions(identity)
+                .ok_or("captured instance requires checked source execution conditions")?;
+            contract.assumptions.extend_from_slice(conditions);
+        }
+    }
     if let Some(pending) = &mut contract.builtins {
         let pending = std::sync::Arc::make_mut(pending);
         pending.environment = None;
@@ -60,6 +74,26 @@ pub(super) fn specialize(
     for evidence in &mut contract.proofs {
         evidence.proof.substitute(&mut facts.types, &mut bound)?;
     }
+    if let Some(connections) = &mut inputs.connections
+        && let Some(proof) = connections.proof.take()
+    {
+        super::closures::retain_proof(
+            facts,
+            &mut contract,
+            proof,
+            connections.slots.iter().copied(),
+        )?;
+    }
+    argument_assumptions(facts, inputs, &mut contract)?;
+    Ok((bound, contract))
+}
+
+/// Selected argument formation is caller evidence, including erased arguments.
+fn argument_assumptions(
+    facts: &mut Declarations,
+    inputs: &Inputs,
+    contract: &mut Contract,
+) -> Result<(), &'static str> {
     // Instantiation sites have checked argument well-formedness. Retain those
     // structural relations as assumptions in this separate proof universe,
     // including arguments absent from the signature's runtime parameters.
@@ -107,7 +141,7 @@ pub(super) fn specialize(
             .into(),
         );
     }
-    Ok((bound, contract))
+    Ok(())
 }
 
 /// Import all source identities through one folder before specializing body facts.
@@ -119,6 +153,15 @@ fn import_regions(
     let mut regions = Bound::universals(universals);
     for capture in &mut inputs.captures {
         *capture = regions.region(*capture, 0)?;
+    }
+    if let Some(connections) = &mut inputs.connections {
+        for (_, actual) in &mut connections.slots {
+            *actual = regions.region(*actual, 0)?;
+        }
+        for (a, b) in &mut connections.equalities {
+            *a = regions.region(*a, 0)?;
+            *b = regions.region(*b, 0)?;
+        }
     }
     for (_, argument) in &mut inputs.bindings {
         *argument = regions.apply_argument(&mut facts.types, *argument)?;
@@ -274,6 +317,24 @@ fn connect_inputs(
             u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?,
             actual,
         )?;
+    }
+    if let Some(connections) = &inputs.connections {
+        for &(slot, actual) in &connections.slots {
+            if u32::from(slot) < connections.original {
+                connect(contract, slot, actual)?;
+            }
+        }
+        contract
+            .obligations
+            .extend(
+                connections
+                    .equalities
+                    .iter()
+                    .map(|&pair| crate::body::regions::Obligation {
+                        source: contract.source,
+                        kind: Kind::Equality(pair),
+                    }),
+            );
     }
     Ok(())
 }

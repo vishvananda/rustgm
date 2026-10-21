@@ -53,12 +53,21 @@ impl Checker<'_> {
                 crate::sema::model::Declarations::error(self.report, source, message)
             })?
             .to_vec();
+        let mut regions = crate::types::infer::RegionMapping::default();
         imports
             .into_iter()
             .map(|definition| {
                 let term = self.state.locals[definition.0 as usize].ok_or_else(|| {
                     self.error(node, "closure import is outside its defining body")
                 })?;
+                // Enclosing bound slots belong to the parent's body, whereas
+                // the closure signature introduces its own public binder.
+                // Refresh all lexical roots through the same cached mapping.
+                let term = if self.state.body_binders == 0 {
+                    term
+                } else {
+                    self.alias_inferred_mapped(node, term, &mut regions)?
+                };
                 Ok((definition, term))
             })
             .collect()

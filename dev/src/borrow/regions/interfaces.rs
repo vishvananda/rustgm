@@ -38,7 +38,7 @@ pub(super) fn assume_inputs(
         }
     }
     if let Some(signature) = input.signature {
-        if input.output.is_some() {
+        if input.output.is_some() || input.require_result_formation {
             let Some(crate::types::Kind::Function {
                 parameters, result, ..
             }) = types.kind(signature)

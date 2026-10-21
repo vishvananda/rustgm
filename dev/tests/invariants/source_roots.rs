@@ -35,6 +35,7 @@ fn environment(depth: usize) -> Result<(Environment, Vec<FormationInput>), &'sta
             path_types: child,
             formation_types: parent,
             field_types: Vec::new(),
+            formation_fields: Vec::new(),
             accesses: std::collections::HashMap::new(),
             adjusted_accesses: std::collections::HashMap::new(),
             nested_accesses: std::collections::HashMap::new(),

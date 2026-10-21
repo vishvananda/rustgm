@@ -4,12 +4,12 @@ mod artifacts;
 mod borrowed;
 #[path = "crate_linking/exports.rs"]
 mod exports;
+#[path = "crate_linking/imported_regions.rs"]
+mod imported_regions;
 #[path = "crate_linking/imports.rs"]
 mod imports;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
-#[path = "crate_linking/reference_maps.rs"]
-mod reference_maps;
 use rustgm::support::crates;
 use std::process::Command;
 

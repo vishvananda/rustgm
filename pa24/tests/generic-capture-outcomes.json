@@ -1,0 +1,492 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "copy-shared",
+      "path": "tests/spec/generic-captures/copy-shared.rs",
+      "source_sha256": "e15d76d62314fc77297da5d3fa7751b0ac3aa78b3a5b278b1201b969a38ec8a9",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/copy-shared.rs"
+    },
+    {
+      "name": "move-owned",
+      "path": "tests/spec/generic-captures/move-owned.rs",
+      "source_sha256": "c4f795678243447f8cba053b50dde408fa7a39b0dda2105ec68e466e4d8427e6",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/move-owned.rs"
+    },
+    {
+      "name": "mutable",
+      "path": "tests/spec/generic-captures/mutable.rs",
+      "source_sha256": "d056ac8f3c29f952fa14ed16292fb19bce59d32f6e9fd58b08493d159e651301",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/mutable.rs"
+    },
+    {
+      "name": "const-array",
+      "path": "tests/spec/generic-captures/const-array.rs",
+      "source_sha256": "2cd2eaec227efd88530d6de7dc5dc7b6b877f4d3dbc6afab147f024c8fe1d177",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/const-array.rs"
+    },
+    {
+      "name": "returned-opaque",
+      "path": "tests/spec/generic-captures/returned-opaque.rs",
+      "source_sha256": "11edd807a3694e79882d01113ad3f99feac3907b85c346ddaf6db23a28a9cd42",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/returned-opaque.rs"
+    },
+    {
+      "name": "borrowed-result",
+      "path": "tests/spec/generic-captures/borrowed-result.rs",
+      "source_sha256": "b457c44302e2d7013ee8129737f4faf46bb65adb4c31814d2e6f6db1a98d9847",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/borrowed-result.rs"
+    },
+    {
+      "name": "nested",
+      "path": "tests/spec/generic-captures/nested.rs",
+      "source_sha256": "a460a5426e0e8d7d8ee94588e4df3c3a9294658551c0c759f8a7a59032dad2b7",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/nested.rs"
+    },
+    {
+      "name": "input-binder",
+      "path": "tests/spec/generic-captures/input-binder.rs",
+      "source_sha256": "bb4999b5b65b4b505c14db2f30bb3bccb00a5fbaec036f4c9a7ee926e3238b1c",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/input-binder.rs"
+    },
+    {
+      "name": "unused-arguments",
+      "path": "tests/spec/generic-captures/unused-arguments.rs",
+      "source_sha256": "0350b386d7df81814a29ca7e28bbb8826e6fee6c9f89d76eefd952b1e715267d",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/unused-arguments.rs"
+    },
+    {
+      "name": "reference-type",
+      "path": "tests/spec/generic-captures/reference-type.rs",
+      "source_sha256": "5b48bb9c3547d881d9a4d12aa43b39171d8613a82d7b4fe49befa34d9e288c08",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/reference-type.rs"
+    },
+    {
+      "name": "projected-capture",
+      "path": "tests/spec/generic-captures/projected-capture.rs",
+      "source_sha256": "576fb7b84ed6d6415f4d44032b491463b6ed88900bc6ef526e6e842e95c57e8e",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/projected-capture.rs"
+    },
+    {
+      "name": "cleanup",
+      "path": "tests/spec/generic-captures/cleanup.rs",
+      "source_sha256": "2e2f06bef0128966134c17a8e02f585352b9a46f3cccf0fde4a753ce44974578",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/cleanup.rs"
+    },
+    {
+      "name": "move-twice",
+      "path": "tests/spec/generic-captures/move-twice.rs",
+      "source_sha256": "b7b78276718de04f9e388fa8e1f055032b7fa3eeb65e22bada6cbd97074fc9e7",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "local may be uninitialized or moved at this read",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/move-twice.rs"
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "tests/spec/generic-captures/borrow-conflict.rs",
+      "source_sha256": "1a71a5ab726c4ad8d2760a2810949eea0ab3d4e0e7b5ffebd8fab5323b4a4ae3",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "access conflicts with a live reference loan",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/borrow-conflict.rs"
+    },
+    {
+      "name": "local-output",
+      "path": "tests/spec/generic-captures/local-output.rs",
+      "source_sha256": "ca514e7942dad6248c9d4c5cbaf5d0c3efe4fc06c309afab720078e227766dad",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "required lifetime does not outlive its target",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/local-output.rs"
+    },
+    {
+      "name": "input-output-escape",
+      "path": "tests/spec/generic-captures/input-output-escape.rs",
+      "source_sha256": "5f203a62c05879cc4d9f44a01be258028be4db541e86f32b4c9258fb0f061886",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "required lifetime does not outlive its target",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/input-output-escape.rs"
+    },
+    {
+      "name": "fn-pointer-capture",
+      "path": "tests/spec/generic-captures/fn-pointer-capture.rs",
+      "source_sha256": "7908d008331bd5f7968cd9b60f7df82879d53a793940302d88dc0c47cb0fa174",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "incompatible types",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/fn-pointer-capture.rs"
+    },
+    {
+      "name": "unused-invalid",
+      "path": "tests/spec/generic-captures/unused-invalid.rs",
+      "source_sha256": "0b442ef6365473311659228a200551c63a73c6bf11dfcd19e1aaf6162f3bb321",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "local may be uninitialized or moved at this read",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "/home/vishvananda/rustgm/obj/parallel/pa24/generic-captures/unused-invalid.rs"
+    },
+    {
+      "name": "shared-reference",
+      "path": "tests/spec/generic-captures/shared-reference.rs",
+      "source_sha256": "baa106c619be7b800e5a8569d4b28318976347224463c233d2aa739431568f1a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-captures/followup/shared-reference.rs"
+    },
+    {
+      "name": "mutable-reference",
+      "path": "tests/spec/generic-captures/mutable-reference.rs",
+      "source_sha256": "cf505936449c5226a563fa2b1c2bddb50da4f6cb54873a7bdaa93ecf2e90e6a5",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-captures/followup/mutable-reference.rs"
+    },
+    {
+      "name": "shared-reference-escape",
+      "path": "tests/spec/generic-captures/shared-reference-escape.rs",
+      "source_sha256": "550fa320c9c107222bd559d3a01f1d1dc018d997988661c755df23dfe7ecc66f",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "diagnostic": "required lifetime does not outlive its target",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-captures/followup/shared-reference-escape.rs"
+    }
+  ]
+}

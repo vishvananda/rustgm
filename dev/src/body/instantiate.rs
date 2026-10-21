@@ -2,7 +2,9 @@
 mod anonymous;
 mod initializers;
 pub(crate) use initializers::with_contract as selected_initializer;
+mod closures;
 mod contracts;
+pub(crate) use closures::{execution as closure_execution, retain_proof as retain_closure_proof};
 mod inputs;
 pub(crate) use anonymous::{close_operands as close_inline_operands, with_contract as anonymous};
 use inputs::Inputs;
@@ -61,7 +63,7 @@ pub fn body(
     if inputs.comparison.is_some() {
         return Err("projected instance requires its lifetime contract");
     }
-    if !inputs.captures.is_empty() {
+    if !inputs.captures.is_empty() || inputs.connections.is_some() {
         return Err("inherited closure lifetimes require their checked contract");
     }
     let mut substitution = Bound::parameters(&facts.types, &inputs.bindings)?;
@@ -141,7 +143,8 @@ fn with_premises(
         return Err("instance contract belongs to another template");
     }
     let mut inputs = inputs::select(facts, instance)?;
-    let (mut substitution, mut contract) = contracts::specialize(facts, original, &mut inputs)?;
+    let (mut substitution, mut contract) =
+        contracts::specialize(facts, original, &mut inputs, context.premises)?;
     let (body, destruction) = materialize(
         facts,
         template,
@@ -223,8 +226,20 @@ fn materialize(
             .unwrap_or(false)
         || projections::needs_field_normalization(facts, &body)?
     {
-        let contract = contract.ok_or("projected instance requires its lifetime contract")?;
+        let contract = contract
+            .as_deref_mut()
+            .ok_or("projected instance requires its lifetime contract")?;
         projections::normalize(facts, &mut body, contract, comparison)?;
+    }
+    if let super::ir::Owner::Closure {
+        execution: Some(execution),
+        ..
+    } = &mut body.owner
+    {
+        *execution = contract
+            .as_deref()
+            .and_then(|c| c.signature)
+            .ok_or("captured execution requires its specialized contract")?;
     }
     facts.prepare_opaque_storage()?;
     let needed = &mut cleanup.needed;
@@ -296,7 +311,18 @@ fn substitute(
                 })?;
             }
             Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } => {
-                *signature = bound.apply(&mut facts.types, *signature)?;
+                if !matches!(
+                    facts.types.kind(*signature),
+                    Some(crate::types::Kind::Function {
+                        bound_regions: 0,
+                        ..
+                    })
+                ) {
+                    return Err("instance call signature retains unopened lifetimes");
+                }
+                // These roots already live in the body. The empty call record
+                // introduces no new scope around substituted argument lifetimes.
+                *signature = bound.signature(&mut facts.types, *signature, 0)?;
                 projected |= facts.types.contains_projections(*signature) == Some(true);
             }
             Rvalue::AssociatedConstant(instance) => {

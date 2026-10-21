@@ -20,6 +20,37 @@ pub struct Checked<'a> {
     contracts: Vec<Contract>,
 }
 impl Checked<'_> {
+    /// Publish only conditions from these exact, fully checked source contracts.
+    /// They grant no caller permission; selection must require their actual images.
+    pub(crate) fn visit_closure_conditions(
+        &self,
+        mut publish: impl FnMut(
+            ClosureId,
+            crate::body::ir::NodeKey,
+            Option<&std::sync::Arc<[crate::types::outlives::Pair]>>,
+        ) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        for (&identity, &index) in &self.closures {
+            let contract = &self.contracts[index];
+            if !matches!(
+                self.templates.bodies[index].body.owner,
+                Owner::Closure {
+                    execution: Some(_),
+                    ..
+                }
+            ) {
+                continue;
+            }
+            let conditions = self.regions.bodies[index]
+                .output
+                .as_ref()
+                .map(|summary| summary.execution_conditions(contract))
+                .transpose()?
+                .flatten();
+            publish(identity, contract.source, conditions)?;
+        }
+        Ok(())
+    }
     pub(crate) fn is_empty(&self) -> bool {
         self.templates.bodies.is_empty()
     }

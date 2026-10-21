@@ -19,6 +19,8 @@ mod rustc;
 mod semantic;
 #[path = "environment_execution/signatures.rs"]
 mod signatures;
+#[path = "environment_execution/specialization.rs"]
+mod specialization;
 
 const CASES: &[(&str, &str, bool)] = &[
     ("wildcard-reference-loan", "wildcard-reference-loan", false),

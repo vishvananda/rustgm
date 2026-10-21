@@ -3,7 +3,7 @@ use super::{Bound, Declarations};
 use crate::{
     body::ir::{Body, Owner},
     resolve::model::DefId,
-    types::{ItemId, Kind, TypeId, arguments::Argument, instance::Instance},
+    types::{Kind, TypeId, arguments::Argument, instance::Instance},
 };
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
@@ -12,6 +12,7 @@ pub(super) struct Inputs {
     pub(super) bindings: Vec<Binding>,
     pub(super) captures: Vec<crate::types::RegionId>,
     pub(super) comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
+    pub(super) connections: Option<crate::body::invocation_entries::SourceBindings>,
 }
 pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'static str> {
     if let Some(Kind::Closure { .. }) = facts.types.kind(instance.ty()) {
@@ -38,6 +39,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
             bindings: Vec::new(),
             captures: Vec::new(),
             comparison: None,
+            connections: None,
         });
     };
     let parameters = facts
@@ -77,6 +79,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
         bindings,
         captures: Vec::new(),
         comparison: projected.then_some((expected, signature)),
+        connections: None,
     })
 }
 
@@ -88,63 +91,39 @@ pub(super) fn closure(
     let Some(Kind::Closure {
         identity,
         signature,
-        arguments,
         environment,
+        ..
     }) = facts.types.kind(instance.ty())
     else {
         return Err("closure instance requires an implemented environment adapter");
     };
-    if !anonymous && environment != TypeId::UNIT {
-        return Err("closure instance requires an implemented environment adapter");
-    }
     let body = *facts
         .closures
         .identity(identity)
         .ok_or("missing original closure body")?;
-    let owner = body.owner.ok_or("generic closure has no enclosing owner")?;
-    let parameters = match facts
-        .lifetimes
-        .callables
-        .generic_parameters(ItemId(owner.0))
-    {
-        Some(parameters) => parameters,
-        None if !facts.generics.has_parameters(owner) => &[],
-        None => return Err("missing enclosing closure parameters"),
-    };
-    let arguments = facts
-        .types
-        .arguments(arguments)
-        .ok_or("invalid closure arguments")?
-        .collect::<Vec<_>>();
-    let inherited = body.inherited as usize;
-    if arguments.len() != inherited.saturating_add(parameters.len()) {
-        return Err("closure instance argument count differs from its enclosing template");
+    let mut inputs = super::closures::arguments(facts, instance, body)?;
+    if !anonymous && environment != TypeId::UNIT {
+        let original = crate::body::invocation_entries::validate_execution(&facts.types, body)?;
+        let formal = super::closures::execution(facts, instance, original)?;
+        let mut connections = crate::body::invocation_entries::source_bindings(
+            &facts.types,
+            formal.execution,
+            instance,
+            body.universals,
+        )?;
+        connections.proof = formal.proof;
+        inputs.connections = Some(connections);
+        return Ok(inputs);
     }
-    let captures = arguments[..inherited]
-        .iter()
-        .map(|argument| match argument {
-            Argument::Lifetime(region) => Ok(*region),
-            _ => Err("closure inherited argument is not a lifetime"),
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-    let bindings = parameters
-        .iter()
-        .copied()
-        .zip(arguments[inherited..].iter().copied())
-        .collect::<Vec<_>>();
-    let expected = inherited_signature(&mut facts.types, body, &captures, signature)?;
-    let mut selected = Bound::parameters(&facts.types, &bindings)?;
+    let expected = inherited_signature(&mut facts.types, body, &inputs.captures, signature)?;
+    let mut selected = Bound::parameters(&facts.types, &inputs.bindings)?;
     let expected = selected.apply(&mut facts.types, expected)?;
     let projected = facts.types.contains_projections(expected) == Some(true);
     if !projected && expected != signature {
         return Err("closure signature differs from substituted body template");
     }
-    Ok(Inputs {
-        instance: Some(instance),
-        bindings,
-        captures,
-        comparison: projected.then_some((expected, signature)),
-    })
+    inputs.comparison = projected.then_some((expected, signature));
+    Ok(inputs)
 }
 
 /// Reconstruct the source call binder from the body's distinct proof universe.
@@ -209,7 +188,11 @@ pub(super) fn owner(
             definition,
         )),
         (
-            Owner::Closure { identity, .. },
+            Owner::Closure {
+                identity,
+                execution,
+                ..
+            },
             Some(Kind::Closure {
                 identity: selected,
                 signature,
@@ -230,7 +213,7 @@ pub(super) fn owner(
                 Owner::Closure {
                     identity,
                     signature,
-                    execution: None,
+                    execution,
                 },
                 owner,
             ))

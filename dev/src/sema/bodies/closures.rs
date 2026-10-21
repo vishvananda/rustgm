@@ -88,6 +88,8 @@ impl Checker<'_> {
         } = self.closure_identity(node, signature)?;
         self.save(node, closure);
         self.state.work.push(Work::Exit(node));
+        let imported_bindings: Vec<_> =
+            bindings.iter().map(|&(definition, _)| definition).collect();
         let mut lifetimes = universes::Interface::new(
             &self.state.call_types.universal_arguments(),
             annotations,
@@ -123,6 +125,14 @@ impl Checker<'_> {
             }),
         })?;
         self.closure_parameters(node, signature, nodes, result)?;
+        // Importing a captured type transfers its shape, not the parent's
+        // normalization evidence. Register every selected root in this body
+        // before an expression can inspect its head.
+        for definition in imported_bindings {
+            let term = self.state.locals[definition.0 as usize]
+                .ok_or_else(|| self.error(node, "missing imported closure binding"))?;
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, term)?;
+        }
         self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
         self.advance_projections(node)?;
         self.state.work.push(Work::CollectClosure);

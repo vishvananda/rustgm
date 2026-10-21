@@ -176,7 +176,7 @@ pub(super) fn normalize(
     Ok(())
 }
 
-fn first_region(contract: &Contract) -> Result<u32, &'static str> {
+pub(super) fn first_region(contract: &Contract) -> Result<u32, &'static str> {
     contract
         .obligations
         .iter()

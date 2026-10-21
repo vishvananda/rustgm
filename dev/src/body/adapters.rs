@@ -158,6 +158,7 @@ fn contract(
         proofs: Vec::new(),
         builtins: None,
         output: None,
+        require_result_formation: false,
     }
 }
 

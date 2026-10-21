@@ -1,5 +1,6 @@
 //! Typed closure captures and callable contracts; source inference supplies place uses.
 pub mod captures;
+mod execution_requirements;
 pub mod imports;
 mod source_roots;
 pub use source_roots::FormationInput;
@@ -68,6 +69,8 @@ pub struct Environment {
     pub formation_types: Vec<TypeId>,
     /// Stored value/reference types in selected capture order.
     pub field_types: Vec<TypeId>,
+    /// Values formed from parent places before checked export to field aliases.
+    pub formation_fields: Vec<TypeId>,
     pub accesses: HashMap<NodeKey, captures::PathId>,
     pub adjusted_accesses: HashMap<(NodeKey, AccessKind), AdjustedAccess>,
     pub nested_accesses: HashMap<(NodeKey, captures::PathId), captures::PathId>,
@@ -82,6 +85,7 @@ pub struct Bodies {
     pub(crate) sources: HashMap<NodeKey, usize>,
     identities: Vec<u32>,
     imports: Option<imports::Imports>,
+    conditions: Option<execution_requirements::Catalog>,
     pub(crate) environments: HashMap<ClosureId, Environment>,
 }
 impl Bodies {

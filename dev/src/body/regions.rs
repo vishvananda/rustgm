@@ -64,6 +64,8 @@ pub struct Contract {
     pub proofs: Vec<Proof>,
     pub builtins: Option<std::sync::Arc<crate::sema::model::BuiltinRequirements>>,
     pub output: Option<std::sync::Arc<crate::sema::nested_outputs::Link>>,
+    /// Specialized nested inputs can be discharged without granting output formation.
+    pub require_result_formation: bool,
 }
 impl Contract {
     /// Materialize demanded nominal requirements before borrowing immutable proof facts.
@@ -97,6 +99,7 @@ impl Contract {
             proofs: Vec::new(),
             builtins: None,
             output: None,
+            require_result_formation: false,
         }
     }
 }
@@ -373,6 +376,7 @@ fn parameter_contract(
         proofs: Vec::new(),
         builtins: None,
         output: None,
+        require_result_formation: false,
     })
 }
 

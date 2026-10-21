@@ -97,6 +97,36 @@ impl Interface {
             .collect()
     }
     pub fn closing(&self, calls: &CallTypes, output: bool) -> Result<Bound, &'static str> {
+        Ok(Bound::restore_regions(self.closing_mapping(calls, output)?))
+    }
+
+    /// Export captured storage in the parent's canonical body namespace. Its
+    /// inference aliases remain related by the parent's retained equalities.
+    pub fn closing_in_parent(
+        &self,
+        calls: &CallTypes,
+        parent: &CallTypes,
+    ) -> Result<Bound, &'static str> {
+        let parent = parent
+            .universal_arguments()
+            .into_iter()
+            .enumerate()
+            .map(|(index, alias)| Ok((alias, slot(index)?)))
+            .collect::<Result<HashMap<_, _>, &'static str>>()?;
+        let mut mapping = self.closing_mapping(calls, false)?;
+        for target in mapping.values_mut() {
+            if let Some(&canonical) = parent.get(target) {
+                *target = canonical;
+            }
+        }
+        Ok(Bound::restore_regions(mapping))
+    }
+
+    fn closing_mapping(
+        &self,
+        calls: &CallTypes,
+        output: bool,
+    ) -> Result<HashMap<RegionId, RegionId>, &'static str> {
         let mut mapping = HashMap::new();
         for (source, universal) in self.opening.universal_pairs() {
             if !output
@@ -126,7 +156,7 @@ impl Interface {
                 mapping.insert(annotation, slot(index)?);
             }
         }
-        Ok(Bound::restore_regions(mapping))
+        Ok(mapping)
     }
 }
 fn slot(index: usize) -> Result<RegionId, &'static str> {

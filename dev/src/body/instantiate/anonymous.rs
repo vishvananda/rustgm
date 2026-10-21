@@ -138,7 +138,8 @@ pub(crate) fn with_contract(
     }
     // Anonymous bodies have no callable signature comparison or receiver execution.
     inputs.comparison = None;
-    let (mut substitution, mut contract) = contracts::specialize(facts, original, &mut inputs)?;
+    let (mut substitution, mut contract) =
+        contracts::specialize(facts, original, &mut inputs, super::Premises::Required)?;
     contract.key = BodyKey::AnonymousInstance(instance);
     let mut cleanup = Cleanup::new(facts);
     let (body, destruction) = super::materialize(
@@ -170,6 +171,7 @@ pub(super) fn initializer_inputs(
         bindings: selected.bindings,
         captures: selected.regions,
         comparison: None,
+        connections: None,
     })
 }
 

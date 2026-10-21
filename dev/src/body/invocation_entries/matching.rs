@@ -18,6 +18,13 @@ pub(super) fn execution(
     formal: Execution,
     actual: TypeId,
 ) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
+    execution_bindings(types, formal, actual).map(|bindings| bindings.equalities)
+}
+pub(super) fn execution_bindings(
+    types: &Store,
+    formal: Execution,
+    actual: TypeId,
+) -> Result<Bindings, &'static str> {
     let Some(Kind::Function {
         parameters: a,
         result: ar,
@@ -48,7 +55,7 @@ pub(super) fn execution(
     {
         return Err("closure execution parameter count differs");
     }
-    matcher.finish()
+    matcher.bindings()
 }
 pub(super) fn instance(
     types: &Store,
@@ -60,7 +67,7 @@ pub(super) fn instance(
 }
 pub(super) struct Bindings {
     universals: u32,
-    slots: HashMap<u16, RegionId>,
+    pub slots: HashMap<u16, RegionId>,
     pub equalities: Vec<(RegionId, RegionId)>,
 }
 pub(super) struct Prefix {
@@ -106,6 +113,25 @@ impl Bindings {
         })
     }
 }
+pub(crate) fn source_bindings(
+    types: &Store,
+    formal: Execution,
+    actual: crate::types::instance::Instance,
+    original: u32,
+) -> Result<super::SourceBindings, &'static str> {
+    let bindings = bind_instance(types, formal.universals, formal.self_ty, actual.ty())?;
+    if original > bindings.universals {
+        return Err("closure source slots exceed its execution binder");
+    }
+    let mut slots = bindings.slots.into_iter().collect::<Vec<_>>();
+    slots.sort_unstable_by_key(|&(slot, _)| slot);
+    Ok(super::SourceBindings {
+        original,
+        slots,
+        equalities: bindings.equalities,
+        proof: None,
+    })
+}
 impl<'a> Matcher<'a> {
     fn new(types: &'a Store, universals: u32, formal: TypeId, actual: TypeId) -> Self {
         Self {
@@ -125,6 +151,8 @@ impl<'a> Matcher<'a> {
         while let Some((a, b, depth)) = self.work.pop() {
             self.charge(1)
                 .map_err(|_| "closure execution matching budget exceeded")?;
+            let a = self.types.storage_head(a)?;
+            let b = self.types.storage_head(b)?;
             if !self.seen.insert((a, b, depth)) {
                 continue;
             }

@@ -1,6 +1,13 @@
 //! Sparse execution entries retain canonical closure identity and receiver permission.
 mod borrowed;
 mod matching;
+pub(crate) use matching::source_bindings;
+pub(crate) struct SourceBindings {
+    pub original: u32,
+    pub slots: Vec<(u16, crate::types::RegionId)>,
+    pub equalities: Vec<(crate::types::RegionId, crate::types::RegionId)>,
+    pub proof: Option<crate::types::lifetime_proof::Obligations>,
+}
 #[cfg(test)]
 #[path = "../../tests/invariants/invocation_entries.rs"]
 mod tests;
@@ -149,18 +156,16 @@ pub(crate) fn select(
             .closures
             .identity(identity)
             .ok_or("missing captured closure source")?;
-        if source
+        let generic = source
             .owner
-            .is_some_and(|owner| facts.generics.has_parameters(owner))
-        {
-            return Err(
-                "generic captured closure execution requires environment lifetime substitution",
-            );
-        }
+            .is_some_and(|owner| facts.generics.has_parameters(owner));
         let instance = Instance::closure(&facts.types, ty)?;
         let adapter = borrowed::adapter(&facts.types, instance, subject, kind)?;
+        if generic && adapter.is_some() {
+            return Err("generic receiver adapters require specialized source proofs");
+        }
         let borrowed::Matched {
-            execution,
+            mut execution,
             mut equalities,
         } = if let Some(adapter) = adapter {
             borrowed::execution(&mut facts.types, source, adapter)?
@@ -170,8 +175,26 @@ pub(crate) fn select(
                 equalities: Vec::new(),
             }
         };
+        let mut projection = None;
+        if generic {
+            let prepared = crate::body::instantiate::closure_execution(facts, instance, execution)?;
+            execution = prepared.execution;
+            projection = prepared.proof;
+        }
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;
-        equalities.extend(matching::execution(&facts.types, execution, selected)?);
+        let bindings = matching::execution_bindings(&facts.types, execution, selected)?;
+        if let Some(proof) = projection {
+            crate::body::instantiate::retain_closure_proof(
+                facts,
+                contract,
+                proof,
+                bindings.slots.iter().map(|(&slot, &actual)| (slot, actual)),
+            )?;
+        }
+        if generic {
+            require_conditions(facts, identity, &bindings, body.source, contract)?;
+        }
+        equalities.extend(bindings.equalities);
         contract
             .obligations
             .extend(equalities.into_iter().map(|pair| Obligation {
@@ -415,4 +438,38 @@ fn call_signature(
         unsafe_: false,
         convention,
     })
+}
+
+/// Full Self matching supplies the images, but the caller must prove each condition.
+fn require_conditions(
+    facts: &Declarations,
+    identity: crate::types::closure::ClosureId,
+    bindings: &matching::Bindings,
+    source: crate::resolve::unit::NodeKey,
+    contract: &mut Contract,
+) -> Result<(), &'static str> {
+    let conditions = facts
+        .closures
+        .conditions(identity)
+        .ok_or("generic closure call requires checked source execution conditions")?;
+    let actual = |region: crate::types::RegionId| {
+        if region == crate::types::RegionId::STATIC {
+            return Ok(region);
+        }
+        let Some((0, slot)) = region.bound_parts() else {
+            return Err("closure execution condition has an invalid binder");
+        };
+        bindings
+            .slots
+            .get(&slot)
+            .copied()
+            .ok_or("closure execution condition has no actual input")
+    };
+    for &(a, b) in conditions {
+        contract.obligations.push(Obligation {
+            source,
+            kind: Kind::Outlives((actual(a)?, actual(b)?)),
+        });
+    }
+    Ok(())
 }

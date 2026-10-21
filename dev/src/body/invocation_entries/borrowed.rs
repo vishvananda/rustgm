@@ -9,6 +9,7 @@ pub(super) fn subject(
     receiver: TypeId,
     requested: CallTrait,
 ) -> Result<TypeId, &'static str> {
+    let receiver = types.storage_head(receiver)?;
     if requested == CallTrait::FnOnce {
         return Ok(receiver);
     }
@@ -21,16 +22,17 @@ pub(super) fn subject(
     if mutable != (requested == CallTrait::FnMut) {
         return Err("callable receiver differs from its requested borrow capability");
     }
-    Ok(referent)
+    types.storage_head(referent)
 }
 pub(super) fn leaf(types: &Store, mut subject: TypeId) -> Result<Option<TypeId>, &'static str> {
     let mut references = 0usize;
+    subject = types.storage_head(subject)?;
     while let Some(Type::Reference { referent, .. }) = types.kind(subject) {
         references += 1;
         if references > 1_000_000 {
             return Err("callable reference path exceeds its work budget");
         }
-        subject = referent;
+        subject = types.storage_head(referent)?;
     }
     let Some(Type::Closure { environment, .. }) = types.kind(subject) else {
         return Ok(None);

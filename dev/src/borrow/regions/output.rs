@@ -18,6 +18,7 @@ use std::collections::{HashMap, VecDeque};
 pub struct Summary {
     pub(super) parent: NodeKey,
     pub(super) requirements: Vec<Obligation>,
+    conditions: Option<std::sync::Arc<[crate::types::outlives::Pair]>>,
     source: NodeKey,
     key: crate::body::ir::BodyKey,
     link: std::sync::Arc<crate::body::regions::OutputLink>,
@@ -25,6 +26,15 @@ pub struct Summary {
 impl Summary {
     pub(super) fn requires_parent(&self) -> bool {
         !self.requirements.is_empty() || self.link.formation.is_some()
+    }
+    pub(crate) fn execution_conditions(
+        &self,
+        input: &Contract,
+    ) -> Result<Option<&std::sync::Arc<[crate::types::outlives::Pair]>>, &'static str> {
+        if !self.matches(input) {
+            return Err("execution conditions belong to another source proof");
+        }
+        Ok(self.conditions.as_ref())
     }
     fn matches(&self, input: &Contract) -> bool {
         self.source == input.source
@@ -72,6 +82,8 @@ pub(super) fn finish(
                 .ok_or(region_graph::Error::Identity)
         }
     };
+    let formal =
+        (!conditions.is_empty()).then(|| conditions.iter().map(|&(a, b, _)| (a, b)).collect());
     let mut requirements = conditions
         .into_iter()
         .map(|(longer, shorter, _)| {
@@ -90,6 +102,7 @@ pub(super) fn finish(
     Ok((
         proof,
         Some(Summary {
+            conditions: formal,
             parent: link.parent,
             requirements,
             source: input.source,

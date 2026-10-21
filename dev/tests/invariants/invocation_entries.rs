@@ -231,3 +231,8 @@ fn prefix_mapping_cannot_export_a_local_public_call_binder() -> Result {
     assert!(matching::bind_instance(&types, 3, formal, actual).is_err());
     Ok(())
 }
+
+#[path = "invocation_entries/caller_requirements.rs"]
+mod caller_requirements;
+#[path = "invocation_entries/witness_debts.rs"]
+mod witness_debts;

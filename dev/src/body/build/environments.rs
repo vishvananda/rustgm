@@ -495,24 +495,29 @@ impl Builder<'_> {
         }
         let mut values = Vec::with_capacity(fields.len());
         if let Some(environment) = environment {
-            for (&field, capture) in fields.iter().zip(environment.plan.captures()) {
+            for (index, (&field, capture)) in
+                fields.iter().zip(environment.plan.captures()).enumerate()
+            {
+                let actual = *environment
+                    .formation_fields
+                    .get(index)
+                    .ok_or_else(|| self.error(node, "missing capture formation field"))?;
                 let place = self
                     .formation_place(node, environment, capture.path, Formation::Runtime)?
                     .ok_or_else(|| {
                         self.error(node, "runtime capture formation requires a physical place")
                     })?;
                 let value = if capture.mode == Mode::Value {
-                    if self.place_type(node, place)? != field {
-                        return Err(self.error(
-                            node,
-                            "owned capture differs from selected environment field",
-                        ));
+                    if self.place_type(node, place)? != actual {
+                        return Err(
+                            self.error(node, "owned capture differs from selected formation place")
+                        );
                     }
-                    self.evaluate(node, field, super::Rvalue::Read(place))?
+                    self.evaluate(node, actual, super::Rvalue::Read(place))?
                 } else {
                     let Some(Type::Reference {
                         referent, mutable, ..
-                    }) = facts.types.kind(field)
+                    }) = facts.types.kind(actual)
                     else {
                         return Err(self.error(node, "borrowed capture field is not a reference"));
                     };
@@ -529,7 +534,14 @@ impl Builder<'_> {
                     } else {
                         crate::body::ir::BorrowKind::Immediate
                     };
-                    self.evaluate(node, field, super::Rvalue::Borrow { place, kind })?
+                    self.evaluate(node, actual, super::Rvalue::Borrow { place, kind })?
+                };
+                // Capture publication retains the parent-to-field coercion
+                // for the ordinary lifetime proof, including alias equality.
+                let value = if actual == field {
+                    value
+                } else {
+                    self.evaluate(node, field, super::Rvalue::Constrain(value))?
                 };
                 values.push(value);
             }

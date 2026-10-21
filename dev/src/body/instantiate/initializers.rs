@@ -14,7 +14,8 @@ pub(crate) fn with_contract(
         return Err("selected initializer output interface is not implemented");
     }
     let mut inputs = anonymous::initializer_inputs(facts, instance)?;
-    let (mut substitution, mut contract) = contracts::specialize(facts, original, &mut inputs)?;
+    let (mut substitution, mut contract) =
+        contracts::specialize(facts, original, &mut inputs, super::Premises::Required)?;
     contract.key = BodyKey::InitializerInstance(instance);
     let mut cleanup = Cleanup::new(facts);
     let (body, destruction) = super::materialize(

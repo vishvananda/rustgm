@@ -130,6 +130,7 @@ fn contract(proof: Obligations) -> Contract {
         key: crate::body::ir::BodyKey::Anonymous(source(1)),
         builtins: None,
         output: None,
+        require_result_formation: false,
         source: source(1),
         signature: None,
         universals: 0,
