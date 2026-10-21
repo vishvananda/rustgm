@@ -152,20 +152,29 @@ impl Checker<'_> {
             .aggregates
             .insert(item, kind, repr, &variants)
             .map_err(|e| self.error(key, e))?;
-        if kind == aggregate::Kind::Enum {
-            self.facts
-                .aggregates
-                .mark_discriminants_pending(item)
-                .map_err(|e| self.error(key, e))?;
-        }
-        if kind == aggregate::Kind::Union {
-            self.register_union(item, key)?;
-        }
+        self.register_value_rules(item, key, kind)?;
         self.nominals.entries[index].state = State::Complete;
         if let Some(pending) = &mut self.facts.generics.size_rules {
             pending.active.remove(&item);
         }
         self.publish_constructors(item)
+    }
+    fn register_value_rules(
+        &mut self,
+        item: ItemId,
+        key: NodeKey,
+        kind: aggregate::Kind,
+    ) -> Result<(), Error> {
+        match kind {
+            aggregate::Kind::Enum => self
+                .facts
+                .aggregates
+                .mark_discriminants_pending(item)
+                .map_err(|e| self.error(key, e))?,
+            aggregate::Kind::Union => self.register_union(item, key)?,
+            aggregate::Kind::Struct => {}
+        }
+        Ok(())
     }
     pub(super) fn complete_layouts(&mut self) -> Result<(), Error> {
         // Concrete discriminants are final. Symbolic declarations still prove
