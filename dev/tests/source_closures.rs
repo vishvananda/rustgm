@@ -398,3 +398,6 @@ fn unused_closure_bodies_still_require_ownership_and_lifetime_proofs()
     }
     Ok(())
 }
+
+#[path = "source_closures/polymorphic.rs"]
+mod polymorphic;

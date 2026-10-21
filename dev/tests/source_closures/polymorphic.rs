@@ -1,8 +1,5 @@
 //! Unused generic closures still owe independent ownership, loan and lifetime proofs.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use super::{rustc, semantic};
 
 const CASES: &[(&str, &str, bool)] = &[
     (
