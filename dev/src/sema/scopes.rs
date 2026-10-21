@@ -142,9 +142,10 @@ pub(crate) fn closure_with_scratch(
     closure: &crate::sema::closures::Body,
     scratch: Scratch,
 ) -> Result<Facts, Error> {
-    analyze(
+    analyze_at(
         report,
         facts,
+        closure.semantic_source(),
         closure.body,
         Some(closure.parameters),
         scratch,
@@ -208,18 +209,35 @@ fn analyze(
     parameters: Option<List>,
     scratch: Scratch,
 ) -> Result<Facts, Error> {
+    analyze_at(report, types, source, source, parameters, scratch)
+}
+fn analyze_at(
+    report: &Report,
+    types: &Declarations,
+    source: NodeKey,
+    root: NodeKey,
+    parameters: Option<List>,
+    scratch: Scratch,
+) -> Result<Facts, Error> {
+    if source.file != root.file {
+        return Err(Error::at(
+            source.file,
+            0,
+            "scope owner and executable root belong to different files",
+        ));
+    }
     let mut walker = Walker {
         report,
         types,
         source,
-        facts: Facts::with_scratch(source.node, scratch),
+        facts: Facts::with_scratch(root.node, scratch),
     };
     let context = Context {
         scope: Id(0),
         block: Id(0),
         temporary: Lifetime::Scope(Id(0)),
     };
-    walker.push(Work::Expression(source.node, context))?;
+    walker.push(Work::Expression(root.node, context))?;
     if let Some(parameters) = parameters {
         for index in (parameters.start..parameters.end).rev() {
             let mut parameter = walker.child(index);
@@ -242,7 +260,7 @@ fn analyze(
             walker.push(Work::Pattern(pattern, Id(0)))?;
         }
     } else {
-        walker.push(Work::ExtendExpression(source.node, Lifetime::Static))?;
+        walker.push(Work::ExtendExpression(root.node, Lifetime::Static))?;
     }
     while let Some(work) = walker.facts.scratch.pending.pop() {
         walker.visit(work).map_err(|e| report.diagnostic(e))?;

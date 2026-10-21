@@ -21,6 +21,7 @@ pub(super) type Scheduler = super::nested::Scheduler<super::nested::Payload>;
 type Entry = super::nested::Entry<super::nested::Payload>;
 use super::nested::{InputRefresh, Payload};
 pub(super) struct Metadata {
+    root: crate::resolve::unit::NodeKey,
     identity: ClosureId,
     parameters: List,
     signature: TermId,
@@ -49,7 +50,6 @@ impl Checker<'_> {
         if asynchronous {
             return Err(self.error(node, "async closure bodies are not implemented"));
         }
-        self.check_closure_body_owner(body)?;
         let (nodes, terms) = self.closure_signature_inputs(node, parameters)?;
         let count =
             u32::try_from(nodes.len()).map_err(|_| self.error(node, "too many closure inputs"))?;
@@ -105,45 +105,27 @@ impl Checker<'_> {
             expected,
         )?;
         let signature = imported.signature;
-        self.switch_closure_body(
-            body,
-            Entry {
-                source: node,
-                inputs,
-                state: None,
-                payload: Payload::Closure(Metadata {
-                    identity,
-                    parameters,
-                    signature,
-                    self_ty: imported.self_ty,
-                    bindings: imported.bindings,
-                    captures: None,
-                    fields: Vec::new(),
-                    lifetimes,
-                }),
-            },
-        )?;
+        self.switch_closure_body(Entry {
+            source: node,
+            inputs,
+            state: None,
+            payload: Payload::Closure(Metadata {
+                root: self.key(body),
+                identity,
+                parameters,
+                signature,
+                self_ty: imported.self_ty,
+                bindings: imported.bindings,
+                captures: None,
+                fields: Vec::new(),
+                lifetimes,
+            }),
+        })?;
         self.closure_parameters(node, signature, nodes, result)?;
         self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
         self.advance_projections(node)?;
         self.state.work.push(Work::CollectClosure);
         self.start_body(body)
-    }
-
-    fn check_closure_body_owner(&self, body: NodeId) -> Result<(), Error> {
-        if matches!(
-            self.kind(body),
-            Kind::Block {
-                flavor: crate::syntax::ast::BlockFlavor::Const,
-                ..
-            }
-        ) {
-            return Err(self.error(
-                body,
-                "inline constant as a closure body requires distinct checked body ownership",
-            ));
-        }
-        Ok(())
     }
 
     fn closure_parameters(
@@ -177,12 +159,12 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn switch_closure_body(&mut self, body: NodeId, mut entry: Entry) -> Result<(), Error> {
+    fn switch_closure_body(&mut self, mut entry: Entry) -> Result<(), Error> {
         let mut scratch = Scratch::default();
         scratch.resumable();
         let mut child = Checker::with_scratch(self.report, self.facts, scratch).state;
         child.infer = std::mem::take(&mut entry.inputs.context);
-        child.body = self.key(body);
+        child.body = self.key(entry.source);
         child.module = self.state.module;
         child.in_function = true;
         child.safety = self.state.safety;

@@ -31,7 +31,7 @@ impl Body {
     /// Semantic ownership remains distinct from the syntax root executed by the CFG.
     #[must_use]
     pub const fn semantic_source(&self) -> NodeKey {
-        self.body
+        self.source
     }
 }
 #[derive(Clone, Copy)]

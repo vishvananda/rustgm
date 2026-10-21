@@ -81,18 +81,39 @@ fn closed_inline_sources_reach_the_complete_checked_pipeline() -> Result<(), Str
 }
 
 #[test]
-fn direct_inline_closure_body_preserves_the_explicit_owner_boundary() {
+fn direct_inline_closure_body_has_distinct_semantic_owner_and_execution_root() -> Result<(), String>
+{
+    let text = "pub fn run()->u8{let f=||const{7};f()}";
+    let (_, analysis) = analyze(text)?;
+    let closure = analysis
+        .facts
+        .closures
+        .all()
+        .first()
+        .ok_or("missing closure")?;
+    assert_ne!(closure.source, closure.body);
+    assert_eq!(closure.semantic_source(), closure.source);
+    let inline = analysis
+        .facts
+        .inline_constants
+        .as_deref()
+        .and_then(|registry| registry.get(closure.body))
+        .ok_or("missing direct inline child")?;
+    assert_eq!(inline.parent_body, closure.source);
+    inspect(text)?;
     for text in [
-        "pub fn run()->u8{let f=||const{7};f()}",
         "fn value()->u8{7}pub fn run()->u8{let f=||const{value()};f()}",
         "pub fn run()->u8{let f=||const{return 7};f()}",
+        "pub fn run(x:u8)->u8{let f=||const{x};f()}",
+        "const fn divide(n:u8)->u8{1/n}pub fn run(){let _f=||const{divide(0)};}",
     ] {
         let error = inspect(text).err().unwrap_or_default();
         assert!(
-            error.contains("distinct checked body ownership"),
+            !error.is_empty() && !error.contains("distinct checked body ownership"),
             "{text}: {error}"
         );
     }
+    Ok(())
 }
 
 #[test]
@@ -303,6 +324,16 @@ fn inline_values_execute_through_checked_native_lowering() -> Result<(), Box<dyn
             (
                 "static-reference",
                 "fn f()->&'static u8{const{&7}}fn main(){check(*f()==7);}",
+                false,
+            ),
+            (
+                "direct-root-context",
+                "fn main(){let f=||const{let mut n=0;while n<7{n+=1;}n};let x:u16=f();check(x==7);}",
+                false,
+            ),
+            (
+                "direct-root-reference",
+                "fn main(){let f:fn()->&'static u8=||const{&7u8};check(*f()==7);}",
                 false,
             ),
             (

@@ -1,0 +1,1 @@
+const fn divide(n:u8)->u8{1/n}pub fn run()->[fn()->u8;0]{[const{||const{divide(0)}};0]}

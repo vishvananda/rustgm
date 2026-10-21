@@ -146,6 +146,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(entry.source, e))?;
         let source = entry.source;
         let identity = metadata.identity;
+        let root = metadata.root;
         let parameters = metadata.parameters;
         let inherited = metadata
             .lifetimes
@@ -161,7 +162,7 @@ impl Checker<'_> {
         let body = Body {
             identity,
             source: self.key(source),
-            body: self.state.body,
+            body: root,
             parameters,
             signature,
             owner: self.state.environment_owner,

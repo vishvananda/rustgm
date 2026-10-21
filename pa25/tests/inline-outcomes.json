@@ -259,7 +259,7 @@
     },
     {
       "path": "tests/spec/inline/nested-closure-inline.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa25.inline-const"
       ],
@@ -269,8 +269,7 @@
         "status": 0,
         "default_lints": true,
         "emit": "obj"
-      },
-      "boundary": "valid Rust: direct inline-const closure body requires distinct checked owner identity"
+      }
     },
     {
       "path": "tests/spec/inline/inline-closure-pointer.rs",
@@ -484,6 +483,166 @@
         "emit": "obj"
       },
       "boundary": "valid Rust; lifetime-parameter owners also require generic anonymous-body specialization"
+    },
+    {
+      "path": "tests/spec/inline/direct-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "a800d9bc8d0a2bf43b7fd2dc82632646733b6a40b33c89ffd4c013a8a3102b85",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "c5c48cccfdc008bdca872d010c96c3878e4e5281d48c053c75e2b15f85b0eab8",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-mutable-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fbee7fc32c72681a1853922eece29c8666249dab8df03c5a95eb2662d186a12d",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-nonconst.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fd774af59895b07f3290e7d342e5b0ab1d826525f897b122a4c8c2b3e4a47606",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-return.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "826b2346078924db6ddbdb84956d38230196ae8718a4f724dd8d00c0ff79b630",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-parameter-capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "2401ae38e9e5b9919fac43de6492639fd68a503f21b0d139befd52ca21673f8b",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-unused-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "38d80961df412c82eeb1823cf19f4329041d101cb2a67a754605b736520a4018",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/direct-owner-zero-repeat.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fd85fb5ec2c79e082877c586e2fbbd605b3753ba53239281eb85424d9a298209",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/inferred-direct.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "70bd3463e437ff0ae9913aa4d263b50adf60ed1f0c439d1acbad2f1e3fa25e6f",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "uncovered shared nested-result lifetime transport; valid Rust, never a stable language-negative oracle",
+      "coverage": "uncovered"
+    },
+    {
+      "path": "tests/spec/inline/inline-local-annotation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fbf1f961f74665bb8ad9205e2df4dfba81c84b172c620b9db9cf20bb74d9eae2",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "uncovered inline written-lifetime annotation ownership; valid Rust, never a stable language-negative oracle",
+      "coverage": "uncovered"
+    },
+    {
+      "path": "tests/spec/inline/inferred-return-context.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "dfda7ab65fbc3bf8abf964388dad8d0aeb7441e1ff8d18c4586ffa79f30f6b09",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "uncovered shared nested-result lifetime transport; valid Rust, never a stable language-negative oracle",
+      "coverage": "uncovered"
     }
   ]
 }

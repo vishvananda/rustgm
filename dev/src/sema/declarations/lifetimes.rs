@@ -8,9 +8,9 @@ impl Checker<'_> {
         key: NodeKey,
         inherited: regions::Context,
     ) -> regions::Context {
-        if let super::Kind::Closure { body, .. } = self.kind(key) {
+        if let super::Kind::Closure { .. } = self.kind(key) {
             return regions::Context {
-                position: regions::Position::Local(body),
+                position: regions::Position::Local(key.node),
                 ..inherited
             };
         }

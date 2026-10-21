@@ -1,0 +1,1 @@
+pub fn run()->u16{let f=||const{7};f()}

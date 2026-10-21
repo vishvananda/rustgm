@@ -1,0 +1,1 @@
+pub fn run()->u8{let f=||const{let mut n=0u8;while n<7{n+=1;}n};f()}

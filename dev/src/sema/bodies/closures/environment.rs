@@ -25,7 +25,7 @@ impl Checker<'_> {
         if metadata.bindings.is_empty() {
             return Ok(CallKind::Shared);
         }
-        let captures = self.closure_uses(source, &metadata.bindings)?;
+        let captures = self.closure_uses(source, metadata.root.node, &metadata.bindings)?;
         let kind = captures.kind;
         for capture in captures.plan.captures() {
             let mut ty = captures.types[capture.path.index()];

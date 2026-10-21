@@ -51,6 +51,7 @@ impl Checker<'_> {
     pub(super) fn closure_uses(
         &mut self,
         source: NodeId,
+        root: NodeId,
         bindings: &[(DefId, TermId)],
     ) -> Result<Captures, Error> {
         let Kind::Closure { moving, .. } = self.kind(source) else {
@@ -91,7 +92,7 @@ impl Checker<'_> {
             moving,
             work: 0,
         };
-        collector.push(self.state.body.node, Use::Value);
+        collector.push(root, Use::Value);
         while let Some(work) = collector.pending.pop() {
             collector.work += 1;
             if collector.work > 1_000_000 {

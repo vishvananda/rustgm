@@ -40,10 +40,10 @@ remain the authority. Scalar metadata or an unsafe context cannot grant executio
 
 The first source slice targets closed nongeneric inline bodies and non-Copy
 constant repeats. Generic anonymous-body specialization, including lifetime-parameter owners,
-remains an explicit valid-Rust boundary. A direct closure body `|| const { ... }` also has an explicit
-unsupported ownership diagnostic: its executable root currently aliases the
-closure's semantic body identity. The wrapped form `|| { const { ... } }` is
-supported; it retains a distinct inline child. Neither boundary is flattened
+remains an explicit valid-Rust boundary. Direct closure bodies `|| const { ... }`
+and wrapped bodies `|| { const { ... } }` retain distinct checked inline children;
+[owner/root migration](pa25-owner-root.md) records their qualified support and
+the remaining shared inferred-output lifetime gaps. Neither form is flattened
 into runtime execution. Required, suppressed-zero-repeat, deferred-template and
 deferred-unreachable states never substitute for one another. Only a completed
 required value may become an inspection value root.
@@ -89,7 +89,7 @@ typed value/allocation sharing and FIFO graph numbering are preserved. Non-inlin
 output must remain byte-identical. No row treats declaration permission, result
 readiness or an unevaluated template as an executed value.
 
-## Qualified closed-body checkpoint
+## Historical closed-body checkpoint
 
 The frozen source hash is
 `c0e1f539bb5d4fb751220077149b9cd87b702e80e037dfc1604891d200b671e0`;
