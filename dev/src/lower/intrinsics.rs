@@ -115,7 +115,11 @@ impl Context<'_> {
         builder.terminate(Terminator::Return(result))?;
         let body = builder.finish()?;
         let symbol = self.output.declare(
-            format!("rg.intrinsic.{}.t{}", intrinsic.name(), instance.ty().0),
+            self.internal_name(format!(
+                "rg.intrinsic.{}.t{}",
+                intrinsic.name(),
+                instance.ty().0
+            )),
             signature,
             false,
         )?;
