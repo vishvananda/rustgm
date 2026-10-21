@@ -1,0 +1,383 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "owned-once",
+      "path": "tests/spec/generic-receivers/owned-once.rs",
+      "source_sha256": "e3236914f16e9e01d538f0a13a80efb9d3857c8e3c826e0acd99dbffec0adea9",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "owned-mutable",
+      "path": "tests/spec/generic-receivers/owned-mutable.rs",
+      "source_sha256": "13d933d9186e23a619d0475898141f2a13646136cbe89f2ba478981ee1d5a72b",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "mutable-once",
+      "path": "tests/spec/generic-receivers/mutable-once.rs",
+      "source_sha256": "f9cabb89380683e88e9a936ab023ed5667dd232247a51324a7d2630da6b0954e",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "reference-once",
+      "path": "tests/spec/generic-receivers/reference-once.rs",
+      "source_sha256": "d10944ec966c4989a93cb8f5b4c484b2f15e95e9bed8c0a5280e13ea58173895",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "reference-mutable",
+      "path": "tests/spec/generic-receivers/reference-mutable.rs",
+      "source_sha256": "e9eadffa76048bd463986a92b8b7ac5728ff86c9bc2a0adb02fa6c7149b498bd",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "mutable-reference-once",
+      "path": "tests/spec/generic-receivers/mutable-reference-once.rs",
+      "source_sha256": "c08bed48e97bf8f9d3aadcc52e0781836c1f40872140fffdc3c764d40cc9bed3",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "external-result",
+      "path": "tests/spec/generic-receivers/external-result.rs",
+      "source_sha256": "40c59f1c6cb63d327f475c8d5503577b64bcc1efbd56afc93cc5244bc9bb590f",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "reference-result",
+      "path": "tests/spec/generic-receivers/reference-result.rs",
+      "source_sha256": "f4f8c80b4569c5b769b36053effe28b0fefa899d1d87cc696a4d315286fba860",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "late-argument",
+      "path": "tests/spec/generic-receivers/late-argument.rs",
+      "source_sha256": "58351d62f35db8a3fde9515106596d78c647a042465959d94e293f7fd93dd53e",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/trace.json"
+    },
+    {
+      "name": "const-array",
+      "path": "tests/spec/generic-receivers/const-array.rs",
+      "source_sha256": "622f47b8d17e41fe7698459f76a62757fe57bcffcd5d600e9d5cbebdeada3b39",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "unused-arguments",
+      "path": "tests/spec/generic-receivers/unused-arguments.rs",
+      "source_sha256": "a800eefcab3e34641cf6238dc648a50f90cc7b94b6b8aebee6ea76397d15737b",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "projected-output",
+      "path": "tests/spec/generic-receivers/projected-output.rs",
+      "source_sha256": "ffc71fe571af005c6b30c0f8b7db8ab3cd131bbab958284f2d874e53cbe8019c",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "projected-reference",
+      "path": "tests/spec/generic-receivers/projected-reference.rs",
+      "source_sha256": "996dae0e4fd6789c7b0d6b712bb1726535deaed9c4c9844e7995725585b74758",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "drop-once",
+      "path": "tests/spec/generic-receivers/drop-once.rs",
+      "source_sha256": "2bd6729b32df623e7ccb83aff77b68a135873b905c070d2b9313da7ae219001d",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "nested-callable",
+      "path": "tests/spec/generic-receivers/nested-callable.rs",
+      "source_sha256": "b6c2c82495d7e6650cf148db44213ffd92e38c46d45863367c29dff2c15959ab",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/trace.json"
+    },
+    {
+      "name": "unused-binder",
+      "path": "tests/spec/generic-receivers/unused-binder.rs",
+      "source_sha256": "eba2cec21082086c81adfbdf9479fd788444244d34877289b2668be3a0cbb41a",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/trace.json"
+    },
+    {
+      "name": "move-twice",
+      "path": "tests/spec/generic-receivers/move-twice.rs",
+      "source_sha256": "05cb78acb26faf6a30e9f782567110aa7492ea2dbd7252a0262e8601883a1d06",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "shared-mut-reject",
+      "path": "tests/spec/generic-receivers/shared-mut-reject.rs",
+      "source_sha256": "92643e9fc3396898060e5898ab4e8cebf32f8cb9983b7f58895e7257b2d9df0f",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "tests/spec/generic-receivers/borrow-conflict.rs",
+      "source_sha256": "0a0c0394110c8913bdfb851e9a1aa6791e3ca78e692936076b0a99bcffae70d8",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "owned-result-escape",
+      "path": "tests/spec/generic-receivers/owned-result-escape.rs",
+      "source_sha256": "8f2690551e440df883dfe2678674ac8e0ef2ccf221e30ec02185c5531d5525e1",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "false-output",
+      "path": "tests/spec/generic-receivers/false-output.rs",
+      "source_sha256": "42c9b53372805f96b9f67595e358469332b6707fc366e1f0e01e72c561df2aca",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/qualification.json"
+    },
+    {
+      "name": "quantified-input",
+      "path": "tests/spec/generic-receivers/quantified-input.rs",
+      "source_sha256": "d23242b730b65a2751c1d3efb791e59be245342118d1a3e42f7934dadd05d73c",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "qualification_origin": "obj/parallel/pa24/generic-receivers/trace.json"
+    }
+  ]
+}

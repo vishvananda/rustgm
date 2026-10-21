@@ -7,6 +7,8 @@ mod adjusted;
 mod checked_sources;
 #[path = "environment_execution/contextual.rs"]
 mod contextual;
+#[path = "environment_execution/hierarchy.rs"]
+mod hierarchy;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "environment_execution/nested.rs"]

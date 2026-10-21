@@ -12,6 +12,130 @@ use crate::{
 };
 const SOURCE: &str =
     "fn call<F:FnOnce()->u8>(f:F)->u8{f()}fn main(){let n=7u8;let f=||n;let _=call(f);}";
+fn generic_entry(
+    facts: &mut Declarations,
+    checked: &templates::Checked<'_>,
+    outer: Instance,
+) -> TestResult<body::invocation_entries::Entry> {
+    let Some(types::Kind::FunctionItem { item, .. }) = facts.types.kind(outer.ty()) else {
+        return Err("outer identity".into());
+    };
+    let mut cleanup = body::instantiate::Cleanup::new(facts);
+    let mut outer = body::instantiate::from_checked_caller(
+        facts,
+        checked.get(item).ok_or("outer template")?,
+        outer,
+        checked.input(item).ok_or("outer contract")?,
+        &mut cleanup,
+    )?;
+    body::dispatch::resolve(facts, &mut outer.body, &mut outer.contract)?;
+    let caller = outer
+        .body
+        .values
+        .iter()
+        .find_map(|value| {
+            let types::Kind::FunctionItem { item, .. } = facts.types.kind(value.ty)? else {
+                return None;
+            };
+            checked
+                .get(item)?
+                .body
+                .values
+                .iter()
+                .any(|v| matches!(v.kind, body::ir::Rvalue::Invoke { .. }))
+                .then_some(value.ty)
+        })
+        .ok_or("selected nested caller")?;
+    selected(facts, checked, Instance::new(&facts.types, caller)?)
+}
+
+#[test]
+fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
+    let source = "fn once<F:FnOnce()->u8>(f:F)->u8{f()}fn outer<T:Copy>(x:u8)->u8{let f=move||x;once(f)}fn main(){let _=outer::<u8>(7);let _=outer::<u16>(9);}";
+    let Fixture {
+        mut facts,
+        templates,
+        inputs,
+        instances,
+        program,
+    } = fixture(source)?;
+    let checked = originals(&mut facts, &templates, &inputs)?;
+    assert_eq!(instances.len(), 2);
+    let error = generic_entry(&mut facts, &checked, instances[0])
+        .err()
+        .ok_or("missing source conditions authorized an adapter")?;
+    assert!(
+        error
+            .to_string()
+            .contains("checked source execution conditions")
+    );
+    checked.visit_closure_conditions(|identity, source, conditions| {
+        facts
+            .closures
+            .retain_conditions(identity, source, conditions)
+    })?;
+    let mut entries = Vec::new();
+    for outer in instances {
+        entries.push(generic_entry(&mut facts, &checked, outer)?);
+    }
+    assert_ne!(entries[0].instance(), entries[1].instance());
+    let (mut builder, _) = super::super::Builder::new(program)?;
+    let mut indices = Vec::new();
+    for entry in &entries {
+        let Some(types::Kind::Closure { identity, .. }) = facts.types.kind(entry.instance().ty())
+        else {
+            return Err("closure instance".into());
+        };
+        let (template, input) = checked.closure(identity).ok_or("checked source template")?;
+        let mut cleanup = body::instantiate::Cleanup::new(&facts);
+        let mut original = body::instantiate::from_checked_caller(
+            &mut facts,
+            template,
+            entry.instance(),
+            input,
+            &mut cleanup,
+        )?;
+        body::dispatch::resolve(&mut facts, &mut original.body, &mut original.contract)?;
+        let mut forged = original.body.clone();
+        if let Owner::Closure { execution, .. } = &mut forged.owner {
+            *execution = Some(types::TypeId::UNIT);
+        }
+        assert!(
+            builder
+                .push(&mut facts, &checked, forged, &original.contract, None)
+                .is_err()
+        );
+        indices.push(builder.push(
+            &mut facts,
+            &checked,
+            original.body,
+            &original.contract,
+            Some(original.destruction),
+        )?);
+    }
+    let report = crate::test_source::resolve(source, true)?;
+    assert!(body::adapters::build(&mut facts, entries[0], builder.body(indices[1])?).is_err());
+    let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    assert!(
+        builder
+            .push_adapter(&report, &mut facts, &checked, indices[1], prepared)
+            .is_err()
+    );
+    let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    let mut unpaid = prepared;
+    unpaid.input.obligations.push(Obligation {
+        source: unpaid.body.source,
+        kind: Kind::Outlives((RegionId(1), RegionId::STATIC)),
+    });
+    assert!(
+        builder
+            .push_adapter(&report, &mut facts, &checked, indices[0], unpaid)
+            .is_err()
+    );
+    let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    builder.push_adapter(&report, &mut facts, &checked, indices[0], prepared)?;
+    Ok(())
+}
 fn selected(
     facts: &mut Declarations,
     checked: &templates::Checked<'_>,

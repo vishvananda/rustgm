@@ -2,6 +2,7 @@
 mod borrowed;
 mod candidates;
 mod matching;
+mod shaping;
 pub(crate) use candidates::select_execution;
 pub(crate) use matching::source_bindings;
 pub(crate) struct SourceBindings {
@@ -52,13 +53,7 @@ impl Entry {
     pub(crate) fn validate_adapter(
         self,
         facts: &mut Declarations,
-    ) -> Result<
-        (
-            crate::sema::closures::Body,
-            crate::sema::closures::Execution,
-        ),
-        &'static str,
-    > {
+    ) -> Result<(crate::sema::closures::Body, shaping::Prepared), &'static str> {
         let adapter = self
             .adapter
             .ok_or("entry does not select a receiver adapter")?;
@@ -73,12 +68,6 @@ impl Entry {
             .closures
             .identity(identity)
             .ok_or("missing adapter source")?;
-        if source
-            .owner
-            .is_some_and(|owner| facts.generics.has_parameters(owner))
-        {
-            return Err("receiver adapter requires a nongeneric original body");
-        }
         let Some(Type::Function { parameters, .. }) = facts.types.kind(self.execution) else {
             return Err("receiver adapter entry has no selected signature");
         };
@@ -90,10 +79,9 @@ impl Entry {
         if borrowed::subject(&facts.types, receiver, self.requested)? != adapter.receiver() {
             return Err("receiver adapter entry has a different physical receiver");
         }
-        let borrowed::Matched { execution, .. } =
-            borrowed::execution(&mut facts.types, source, adapter)?;
-        matching::execution(&facts.types, execution, self.execution)?;
-        Ok((source, execution))
+        let prepared = shaping::prepare(facts, source, self.instance, Some(adapter))?;
+        matching::execution(&facts.types, prepared.execution, self.execution)?;
+        Ok((source, prepared))
     }
 }
 #[derive(Clone, Default)]
@@ -155,12 +143,13 @@ pub(crate) fn select(
     }
     Ok(())
 }
-pub(crate) fn requested_execution(
+fn shape_execution(
     types: &mut crate::types::Store,
-    source: crate::sema::closures::Body,
+    mut execution: crate::sema::closures::Execution,
+    receiver_slot: u32,
     requested: CallTrait,
+    preserve_slots: bool,
 ) -> Result<crate::sema::closures::Execution, &'static str> {
-    let mut execution = validate_execution(types, source)?;
     let required = CallKind::from_trait(requested);
     if !execution.receiver.implements(required) {
         return Err("requested closure entry exceeds its call permission");
@@ -189,16 +178,16 @@ pub(crate) fn requested_execution(
             mutable: required == CallKind::Mutable,
             region: crate::types::RegionId::bound(
                 0,
-                u16::try_from(source.universals)
-                    .map_err(|_| "adapter receiver lifetime overflow")?,
+                u16::try_from(receiver_slot).map_err(|_| "adapter receiver lifetime overflow")?,
             )?,
         })?
     };
     *parameters.first_mut().ok_or("adapter has no receiver")? = receiver;
-    execution.universals = source
-        .universals
-        .checked_add(u32::from(required != CallKind::Once))
-        .ok_or("adapter universal count overflow")?;
+    if !preserve_slots {
+        execution.universals = receiver_slot
+            .checked_add(u32::from(required != CallKind::Once))
+            .ok_or("adapter universal count overflow")?;
+    }
     let parameters = types.intern_list(&parameters)?;
     execution.signature = types.intern(Type::Function {
         parameters,

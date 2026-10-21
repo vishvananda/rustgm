@@ -19,6 +19,7 @@ pub(crate) struct Template {
     source: crate::resolve::unit::NodeKey,
     public: TypeId,
     original: TypeId,
+    instance: Option<crate::types::instance::Instance>,
     receiver: TypeId,
     signature: TypeId,
 }
@@ -38,7 +39,7 @@ impl Template {
             return Err("adapter template has no canonical closure instance");
         };
         self.adapter.validate(types)?;
-        if original.instance.is_some()
+        if original.instance != self.instance
             || original.source != self.source
             || !matches!(original.owner, Owner::Closure { identity: actual, signature, execution: Some(execution) }
                 if identity == actual && signature == self.public && execution == self.original)
@@ -75,16 +76,43 @@ pub(crate) fn build(
     let adapter = selected
         .adapter()
         .ok_or("missing selected receiver adapter")?;
-    let (source, execution) = selected.validate_adapter(facts)?;
-    let canonical = super::invocation_entries::validate_execution(&facts.types, source)?;
-    if original.instance.is_some()
+    let (source, prepared) = selected.validate_adapter(facts)?;
+    let execution = prepared.execution;
+    let canonical = prepared.canonical;
+    let generic = source
+        .owner
+        .is_some_and(|owner| facts.generics.has_parameters(owner));
+    let instance = generic.then_some(adapter.instance());
+    let public = if generic {
+        let Some(Kind::Closure { signature, .. }) = facts.types.kind(adapter.instance().ty())
+        else {
+            return Err("adapter source has no closure signature");
+        };
+        signature
+    } else {
+        source.signature
+    };
+    let Owner::Closure {
+        identity,
+        signature,
+        execution: Some(original_execution),
+    } = original.owner
+    else {
+        return Err("receiver adapter requires a proved closure source");
+    };
+    if original.instance != instance
         || original.source != source.semantic_source()
-        || !matches!(original.owner, Owner::Closure { identity, signature, execution: Some(body) }
-            if identity == source.identity && signature == source.signature
-                && body == canonical.signature)
+        || identity != source.identity
+        || signature != public
+        || (!generic && original_execution != canonical.signature)
     {
         return Err("receiver adapter selects a different original source body");
     }
+    super::invocation_entries::validate_instance(
+        &facts.types,
+        original_execution,
+        adapter.instance(),
+    )?;
     let Some(Kind::Function {
         parameters,
         result,
@@ -101,6 +129,20 @@ pub(crate) fn build(
         .to_vec();
     let mut writer = Writer::new(source, adapter, execution, &parameters, result)?;
     let mut contract = contract(source.semantic_source(), adapter, execution);
+    for proof in prepared.proofs {
+        crate::body::instantiate::retain_closure_proof(
+            facts,
+            &mut contract,
+            proof,
+            (0..execution.universals)
+                .map(|slot| {
+                    let slot = u16::try_from(slot).map_err(|_| "too many adapter lifetimes")?;
+                    Ok((slot, RegionId::bound(0, slot)?))
+                })
+                .collect::<Result<Vec<_>, &'static str>>()?
+                .into_iter(),
+        )?;
+    }
     let result = writer.invoke(
         &mut facts.types,
         canonical,
@@ -114,8 +156,9 @@ pub(crate) fn build(
     let template = Template {
         adapter,
         source: source.semantic_source(),
-        public: source.signature,
-        original: canonical.signature,
+        public,
+        original: original_execution,
+        instance,
         receiver: execution.self_ty,
         signature: execution.signature,
     };

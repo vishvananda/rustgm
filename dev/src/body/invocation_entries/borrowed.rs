@@ -72,13 +72,30 @@ pub(super) fn execution(
     adapter: Adapter,
 ) -> Result<Matched, &'static str> {
     adapter.validate(types)?;
+    let canonical = super::validate_execution(types, source)?;
+    prepared(types, canonical, source.universals, adapter, false)
+}
+/// A specialized source keeps its obsolete receiver slot before generic slots.
+pub(super) fn prepared(
+    types: &mut Store,
+    canonical: Execution,
+    original_receiver: u32,
+    adapter: Adapter,
+    preserve_slots: bool,
+) -> Result<Matched, &'static str> {
+    adapter.validate(types)?;
     if adapter.receiver() == adapter.instance().ty() {
         return Ok(Matched {
-            execution: super::requested_execution(types, source, adapter.requested())?,
+            execution: super::shape_execution(
+                types,
+                canonical,
+                original_receiver,
+                adapter.requested(),
+                preserve_slots,
+            )?,
             equalities: Vec::new(),
         });
     }
-    let canonical = super::validate_execution(types, source)?;
     let Some(Type::Reference {
         referent,
         mutable,
@@ -90,8 +107,13 @@ pub(super) fn execution(
     if referent != adapter.instance().ty() {
         return Err("reference adapter selects another closure Self");
     }
-    let prefix = matching::bind_instance(types, source.universals, canonical.self_ty, referent)?
-        .prefix(region)?;
+    let base = if preserve_slots {
+        canonical.universals
+    } else {
+        original_receiver
+    };
+    let prefix =
+        matching::bind_instance(types, base, canonical.self_ty, referent)?.prefix(region)?;
     let self_ty = types.intern(Type::Reference {
         referent: canonical.self_ty,
         mutable,

@@ -1,5 +1,5 @@
 //! Shared typed entry selection precedes source proof, runtime erasure and lowering.
-use super::{Entry, borrowed, matching, require_conditions, validate_execution};
+use super::{Entry, borrowed, matching, require_conditions};
 use crate::{
     body::regions::{Contract, Kind, Obligation},
     resolve::unit::NodeKey,
@@ -32,14 +32,8 @@ impl Candidate {
             .closures
             .identity(identity)
             .ok_or("missing captured closure source")?;
-        let generic = source
-            .owner
-            .is_some_and(|owner| facts.generics.has_parameters(owner));
         let instance = Instance::closure(&facts.types, ty)?;
         let adapter = borrowed::adapter(&facts.types, instance, subject, kind)?;
-        if generic && adapter.is_some() {
-            return Err("generic receiver adapters require specialized source proofs");
-        }
         Ok(Some(Self {
             source,
             instance,
@@ -67,25 +61,14 @@ impl Candidate {
         let generic = source
             .owner
             .is_some_and(|owner| facts.generics.has_parameters(owner));
-        let borrowed::Matched {
-            mut execution,
+        let super::shaping::Prepared {
+            execution,
             mut equalities,
-        } = if let Some(adapter) = adapter {
-            borrowed::execution(&mut facts.types, source, adapter)?
-        } else {
-            borrowed::Matched {
-                execution: validate_execution(&facts.types, source)?,
-                equalities: Vec::new(),
-            }
-        };
-        let mut projection = None;
-        if generic {
-            let prepared = crate::body::instantiate::closure_execution(facts, instance, execution)?;
-            execution = prepared.execution;
-            projection = prepared.proof;
-        }
+            proofs,
+            ..
+        } = super::shaping::prepare(facts, source, instance, adapter)?;
         let bindings = matching::execution_bindings(&facts.types, execution, selected)?;
-        if let Some(proof) = projection {
+        for proof in proofs {
             crate::body::instantiate::retain_closure_proof(
                 facts,
                 contract,

@@ -239,3 +239,5 @@ mod witness_debts;
 
 #[path = "invocation_entries/entry_headers.rs"]
 mod entry_headers;
+#[path = "invocation_entries/vacancies.rs"]
+mod vacancies;
