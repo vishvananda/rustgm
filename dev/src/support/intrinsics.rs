@@ -16,6 +16,8 @@ pub enum Intrinsic {
     AtomicFetchNand,
     Read,
     Write,
+    AtomicFetchMin,
+    AtomicFetchMax,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -33,7 +35,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 15] = [
+    pub const ALL: [Self; 17] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -49,6 +51,8 @@ impl Intrinsic {
         Self::AtomicFetchNand,
         Self::Read,
         Self::Write,
+        Self::AtomicFetchMin,
+        Self::AtomicFetchMax,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -68,6 +72,8 @@ impl Intrinsic {
             Self::AtomicFetchNand => 12,
             Self::Read => 13,
             Self::Write => 14,
+            Self::AtomicFetchMin => 15,
+            Self::AtomicFetchMax => 16,
         }
     }
     #[must_use]
@@ -88,6 +94,8 @@ impl Intrinsic {
             Self::AtomicFetchNand => "fetch_nand",
             Self::Read => "read",
             Self::Write => "write",
+            Self::AtomicFetchMin => "fetch_min",
+            Self::AtomicFetchMax => "fetch_max",
         }
     }
     #[must_use]
@@ -117,6 +125,8 @@ impl Intrinsic {
                 | Self::AtomicFetchOr
                 | Self::AtomicFetchXor
                 | Self::AtomicFetchNand
+                | Self::AtomicFetchMin
+                | Self::AtomicFetchMax
         )
     }
     #[must_use]
@@ -136,7 +146,9 @@ impl Intrinsic {
             | Self::AtomicFetchAnd
             | Self::AtomicFetchOr
             | Self::AtomicFetchXor
-            | Self::AtomicFetchNand => true,
+            | Self::AtomicFetchNand
+            | Self::AtomicFetchMin
+            | Self::AtomicFetchMax => true,
             Self::ReadVolatile | Self::WriteVolatile | Self::Read | Self::Write => false,
         }
     }
@@ -149,6 +161,14 @@ impl Intrinsic {
                 | Self::AtomicFetchXor
                 | Self::AtomicFetchNand
         )
+    }
+    #[must_use]
+    pub const fn is_extremum(self) -> bool {
+        matches!(self, Self::AtomicFetchMin | Self::AtomicFetchMax)
+    }
+    #[must_use]
+    pub const fn uses_retry_loop(self) -> bool {
+        self.is_bitwise() || self.is_extremum()
     }
     #[must_use]
     pub const fn is_compare_exchange(self) -> bool {

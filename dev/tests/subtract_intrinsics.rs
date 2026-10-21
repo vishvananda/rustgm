@@ -148,7 +148,7 @@ fn subtraction_shares_one_typed_effectful_shim() -> Result<(), Box<dyn std::erro
             true,
         )?;
         let (mut report, mut facts) = semantic::analyze(&text)?;
-        assert_eq!(facts.intrinsics.iter().count(), 11);
+        assert_eq!(facts.intrinsics.iter().count(), 13);
         let method = facts
             .intrinsics
             .get(Intrinsic::AtomicFetchSub)

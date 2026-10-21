@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};struct W{a:AtomicU32}static S:W=W{a:AtomicU32::new(7)};fn main(){check(S.a.fetch_min(3,Ordering::Acquire)==7);check(S.a.fetch_max(37,Ordering::Release)==3);check(S.a.load(Ordering::SeqCst)==37);}

@@ -1,0 +1,117 @@
+{
+  "stage": "predeclared-before-controlled-backend-execution",
+  "profile": "test-only typed LowIR store after each initial seed; not unmodified-source or concurrency evidence",
+  "ordinary_source_comparison": false,
+  "original_shim_validated_before_mutation": true,
+  "backend_unchanged": true,
+  "cases": [
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 37,
+      "stale_return_fault": false,
+      "expected_backend_status": 0,
+      "expected_return": 2147483648,
+      "final_min": 37,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ]
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 37,
+      "stale_return_fault": true,
+      "expected_backend_status": 134,
+      "expected_return": 2147483648,
+      "final_min": 37,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ]
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483647,
+      "operand": 2147483648,
+      "stale_return_fault": false,
+      "expected_backend_status": 0,
+      "expected_return": 2147483647,
+      "final_min": 2147483647,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ]
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483647,
+      "operand": 2147483648,
+      "stale_return_fault": true,
+      "expected_backend_status": 134,
+      "expected_return": 2147483647,
+      "final_min": 2147483647,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ]
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 2147483648,
+      "stale_return_fault": false,
+      "expected_backend_status": 0,
+      "expected_return": 2147483648,
+      "final_min": 2147483648,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ]
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 2147483648,
+      "stale_return_fault": true,
+      "expected_backend_status": 134,
+      "expected_return": 2147483648,
+      "final_min": 2147483648,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ]
+    }
+  ]
+}

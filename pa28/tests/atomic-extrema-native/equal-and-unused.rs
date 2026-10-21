@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};fn main(){let a=AtomicU32::new(7);check(a.fetch_min(7,Ordering::AcqRel)==7);check(a.fetch_max(7,Ordering::Release)==7);a.fetch_min(3,Ordering::Acquire);a.fetch_max(37,Ordering::SeqCst);check(a.load(Ordering::Relaxed)==37);}

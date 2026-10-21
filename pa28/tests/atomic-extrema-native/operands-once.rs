@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};fn receiver<'a>(a:&'a AtomicU32,n:&mut u32)->&'a AtomicU32{*n+=1;a}fn value(n:&mut u32)->u32{*n+=1;37}fn order(n:&mut u32)->Ordering{*n+=1;Ordering::Release}fn main(){let a=AtomicU32::new(7);let mut n=0u32;check(receiver(&a,&mut n).fetch_max(value(&mut n),order(&mut n))==7);check(n==3&&a.load(Ordering::Relaxed)==37);}

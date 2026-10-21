@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};fn take(a:&AtomicU32,v:u32,o:Ordering,f:fn(&AtomicU32,u32,Ordering)->u32)->u32{f(a,v,o)}fn main(){let a=AtomicU32::new(7);check(take(&a,3,Ordering::Relaxed,AtomicU32::fetch_min)==7);check(take(&a,37,Ordering::AcqRel,AtomicU32::fetch_max)==3);check(a.load(Ordering::Relaxed)==37);}

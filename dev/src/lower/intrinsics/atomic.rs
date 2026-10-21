@@ -1,6 +1,8 @@
 //! A bounded ordering switch translates Rust tags and aborts invalid dynamic orders.
 mod bitwise;
 mod comparison;
+mod extremum;
+mod retry;
 use crate::{
     lower::context::Context,
     lowir::{
@@ -88,7 +90,7 @@ impl Context<'_> {
         let entry = builder.block()?;
         let invalid = builder.block()?;
         builder.enter(entry)?;
-        let expected_slot = if intrinsic.is_bitwise() {
+        let expected_slot = if intrinsic.uses_retry_loop() {
             Some(builder.slot(Type::U32)?)
         } else {
             None
@@ -187,7 +189,7 @@ fn atomic_operation(
                 // result supplies the old value without another atomic read.
                 builder.binary(Binary::Add, updated, value)?
             }
-            kind if kind.is_bitwise() => bitwise::operation(
+            kind if kind.uses_retry_loop() => retry::operation(
                 builder,
                 kind,
                 value,

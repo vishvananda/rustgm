@@ -187,7 +187,7 @@ fn bitwise_loops_and_registry_have_bounded_growth() -> Result<(), Box<dyn std::e
             true,
         )?;
         let (mut report, mut facts) = semantic::analyze(&source)?;
-        assert_eq!(facts.intrinsics.iter().count(), 11);
+        assert_eq!(facts.intrinsics.iter().count(), 13);
         assert!(facts.body_work.steps < 4096 * (count + 1));
         for intrinsic in [
             Intrinsic::AtomicFetchAnd,
@@ -219,7 +219,7 @@ fn bitwise_loops_and_registry_have_bounded_growth() -> Result<(), Box<dyn std::e
             .collect::<Vec<_>>();
         assert_eq!(shims.len(), 4);
         for body in shims {
-            loops::check(body)?;
+            loops::check(body, None)?;
         }
     }
     Ok(())

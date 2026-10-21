@@ -1,0 +1,1248 @@
+{
+  "stage": "qualified-development-checkpoint-not-activation",
+  "snapshot": {
+    "base": "3c1a9ce0",
+    "source_sha256": "bc75502e461e503f25e836f21cf8b0a26a22ba27d612779c6a7f8f0741ebfcde",
+    "compiler_sha256": "76690c60980bbab062674c386eb2adadd745a565425ddab13286e80d04c13e50",
+    "contract_sha256": "f20c633e603b4c0fc4843b7635b43aa93bf878780defd1debf1687916e5bb867",
+    "source_cases": 28
+  },
+  "source_cases": [
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-relaxed.rs",
+      "sha256": "75431f29c179288122c6bd1d8917cf4833ec953c25f50b910d157ff9f5a20d23",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "ad8670e5f28e1d8b0d6eafb45a91b3000ada1af6317192e197c8a60902357291",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "4e85545a73e0b85ee2c15da17e8dc482e0572bb379f05bb43eb7897ba6917223",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-release.rs",
+      "sha256": "be0adb1d646ba38da7bfb87c7d3db2dee259ba321a9d23fe1e8a64efd672cc63",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "b62e4fd9e97e452988c9393a6c4bbaaab5edbe23991a0c82d451f92b8fc6e9ea",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "172427406168e9491473353d9bf06aa78a6612009d57a7c5caf59f974bfab1bf",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-acquire.rs",
+      "sha256": "48c9ab1449025a1e06e31ba8108a6699251c91fe18462ef9d03898f974d3ed9f",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "48d30b202b1288c5bb0d5f2ad6300f6488bc7e1204568c93427656fe9e58f1fe",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "d7df1d008d8a56fb9f8b126d6ed8d1ae649baf2b154d8c1858d5908631715d92",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-acqrel.rs",
+      "sha256": "a69b5b3671dda80903fe37e236ac8011bdb092a558cd2087665c4f8f13eb86cd",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "bdba13cbe58fd33839f01d566542c1282004c42516d54a5516a4e4530f0ce5d0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "186d478ffa490be96d2c3ae6febc28893fd68f9530e679b1c855d360d3c78312",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-seqcst.rs",
+      "sha256": "28e9117c725a17aeb715c3f8b15f45797d8d1ef6486ee7614a8ae502a3f0e5c7",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "647b24afff3c4d732629b5708b3125a50665eae5da9b0535780cb385634b2503",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "2cab3dd00bebe3735d2a91472cabeed357f770c9f9d8fc7ecded544ceb273ee6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-relaxed.rs",
+      "sha256": "ccab63762bed36353f55b2fcbb6ccec308684f889139c0a74192363d65749c4c",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "ad8670e5f28e1d8b0d6eafb45a91b3000ada1af6317192e197c8a60902357291",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "1cc7855df81ea2b92aaede2077c9cdade353a44a5310206eb89de0e8092fc985",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-release.rs",
+      "sha256": "e713e8a7c2dc2ffc31343145817430f5f81d33f013028039ce6e41c9587d4c49",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "b62e4fd9e97e452988c9393a6c4bbaaab5edbe23991a0c82d451f92b8fc6e9ea",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "321c6129ecac3b3d400da8f325aa550419d486f7df1949d3aecdb244080e1578",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-acquire.rs",
+      "sha256": "02dfe30ff3830b45d4ce9a40af21e64f9c733182667cdff802b800f4d92337b1",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "48d30b202b1288c5bb0d5f2ad6300f6488bc7e1204568c93427656fe9e58f1fe",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0816cf13ccdabcf53c68f7d99d5fe4a0880bcb4cdc533a8bcde34ebed73bc60b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-acqrel.rs",
+      "sha256": "23450dd100e383ae9dc49334ff4860457090b66a3311114ba5407ac026509f6d",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "bdba13cbe58fd33839f01d566542c1282004c42516d54a5516a4e4530f0ce5d0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "d9243f89d03950d2fd4865a9154e54faba14dc1345d0ad83d6b13ca167348862",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-seqcst.rs",
+      "sha256": "6c514e2d4c56663e29a8b921a1928a077b3cfbb331c023725c8aac9c8b18a8f8",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "647b24afff3c4d732629b5708b3125a50665eae5da9b0535780cb385634b2503",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "6887a74b2b03de0f72f00dc6cc21a9f49296c3003bb903fd2f4577d195f636af",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/variable-order.rs",
+      "sha256": "11ab286c6bfa1d89db7153b9539bc56331ec305963dc472c2a32d24866ea2366",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "dd0cc55cfcef721268aed8d36eac78d75d7f6fec28ea89416b74b6e226b86650",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "27777269961bb4086d683818c6cf65414bd497ab516d2d29a54c2a2b93997d23",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "804abe8405aa8569ac6cdeff2bf34e1808863654809fa11e2a061cae3dbbf0c4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/reified.rs",
+      "sha256": "2c8e56d09f63b06b773637659966feafd9d5d03adb9cd73aee5ec88ea2f45f77",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "e29147a7ba1f9c5f2abe5a272b55b9a2a92812a5b8434146649e8477f320e104",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "017e833f1bc994cc2767e2d0c4f08bc607ca1904ad35e6d3b747418f7fc29cef",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/ufcs.rs",
+      "sha256": "3183df93fa8413ddfba025c7091afe78729d08f85e3f25a8996d18b1932aa0f0",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "5d601ffb545080ec734211696b65b1de4ddebc1c869805e79be79bca3582e275",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "b20fc831317f06cb0eeb74ab79ccfe331e33b1ed2800445c09f505c77168a1c9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/std-import.rs",
+      "sha256": "a9c460822239750d12931f99ddc238aa4c84aa1e1db542d3ff795292eb583090",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "eabd6f92ceca0be0c7a0e047aac5a615571b43af705a7ffca1a0924b5bae48c3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "50feeef7ea30a39e2c750b4b054eaaba6f554b910859a60f1e818b41f162cf2e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6f6f8319270a19bd280fdc4b84f32846c5053499546fe7260718f8fc18666f34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/no-prelude.rs",
+      "sha256": "f63a8a54dfa3a69576f3da3c7e6425cb931f9c3e7b4c1113820d86ca5ee754e9",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f55536bb079a86b125f64f486bb6d2e4be5cf8f4d2282554bbe6f645ccd50646",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a8b1e52e18a89acd02307d169b7b758c73e18adfda26241bd2b14fd8a814e7df",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "662822a7fdf98ee3c473c32e1f89a71975c14d1ec52769a8b4a97c97261ba9bd",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/shared-static.rs",
+      "sha256": "21b4e08cdfcf9612c1276f830f8890708946c8fdb4af94bea97af72ccb8b9ddd",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a69298b7543b219c641f27a407fa1017b10413cb48d78f8d022bbadf1d9511d2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "ec750a0a410dd23459eaabfe024c94e3a7ce228739b971045672a0eb266e584a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "2e8bc1ac9f8b808e01a7896304f17d1d8809dac4dd2d313f254272b9274dee76",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/local-shadow.rs",
+      "sha256": "7a368f3253575928e7e4f963e2a61d1b7b722777b420808200e32f0afbf67e41",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "fede2a711ae3c8378f563d1ed0179cc2d93a525852eef06dbf1829bd091aa455",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "66a2d619191714c86330dec1e015494b3d669ac0381911e6d67a074a14693113",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "b89e8ca063674d783dea7c34853e0b17b9444126c9ebf356155a94b0b032796f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-min.rs",
+      "sha256": "28b045fc5d8884917d7aa382ccd15a9f0c3d7a9c46a5387e8305d292a89b629b",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-max.rs",
+      "sha256": "b02f812ff8efa31e807fc78b55f363239148eaa0c91a2da0fe76aaed7bdbee74",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-skipped.rs",
+      "sha256": "a9c3207cfef9a6605fcf997ada9831800c2fa68a68dcb408e109e82f8a99393f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        0,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "7b0d9e1f8f2688e871540909aa2bae79befecc0ad0757fdf1de5cae3298e5e2a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "923e28a52870061a7b15df41e01e53b35d0a27125b9ea2cbd1df8e191a930c3e",
+          "stderr": "ERROR: file 0: 69: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "923e28a52870061a7b15df41e01e53b35d0a27125b9ea2cbd1df8e191a930c3e",
+          "stderr": "ERROR: file 0: 69: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-alias.rs",
+      "sha256": "cdbb0cfef5bf8757e79be791749abf97064e3b1e631fb40b1b7b91e44506982f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "61398eb253982572c0aadef43356bdf7a557b726dadc70bbef415bdab110a6be",
+          "stderr": "ERROR: file 0: 57: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-reified.rs",
+      "sha256": "0363412117767937adeecf78b13595a0310e569affd0aba9b9aa87a503014d56",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "non-const calls are not allowed in constant initializers",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a9fece599e6ae5338c84b7554926dcc564d3031fbcb6017e4297585116806120",
+          "stderr": "ERROR: file 0: 57: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a9fece599e6ae5338c84b7554926dcc564d3031fbcb6017e4297585116806120",
+          "stderr": "ERROR: file 0: 57: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a9fece599e6ae5338c84b7554926dcc564d3031fbcb6017e4297585116806120",
+          "stderr": "ERROR: file 0: 57: non-const calls are not allowed in constant initializers\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/packed-receiver.rs",
+      "sha256": "58d65ff050ed8052e49ed5795c25a1da15ce9737dedf3404064793ab0281ce57",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        0,
+        1,
+        1
+      ],
+      "reason": "reference to an unaligned packed field",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "d1c55d4d0a3f27cc80707408b7916e81723ee79b4f06553d1d5344be735d13f3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5d88ebaee5c9e970f946785ecf4eec4ea4b2723339a2bd5cb2b2b0116ca48503",
+          "stderr": "ERROR: file 0: 137: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5d88ebaee5c9e970f946785ecf4eec4ea4b2723339a2bd5cb2b2b0116ca48503",
+          "stderr": "ERROR: file 0: 137: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/packed-address.rs",
+      "sha256": "3e325b9b752fde047876be7691996163652020821dac79209a3db6d7eb0c345b",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "rustc_actual_status": 0,
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "51d6d2397abf735441cb74948a449f9f54eb55a990482be826651d3619a0f708",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "960b532eadd9ab7a12dd71da02c72810e8a01418e0bb07b407be6ac278064881",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "9d8189024d9fc01390c4089abeb1a0beef16d4bbf09f334337bd6a41d3672aac",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/wrong-value.rs",
+      "sha256": "69252b8eb73ab106fa3efeeee92d27dff5474eaaf9dd7b1901a12fe663b2cb16",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "83c7fc2534a45e32dad1df80c9cbe47b0fa3fc5eecccfb2082dcc94cc072e15c",
+          "stderr": "ERROR: file 0: 97: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "83c7fc2534a45e32dad1df80c9cbe47b0fa3fc5eecccfb2082dcc94cc072e15c",
+          "stderr": "ERROR: file 0: 97: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "83c7fc2534a45e32dad1df80c9cbe47b0fa3fc5eecccfb2082dcc94cc072e15c",
+          "stderr": "ERROR: file 0: 97: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/wrong-order.rs",
+      "sha256": "c2ba758a4bf6b1efd13a7fab7f8058247c23d47600e7ff3fb55acb729bbeb29a",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7dcedb70cc2ad885edce1578ede75eacd09c575951e88cdaaf4e1866d63b5ff4",
+          "stderr": "ERROR: file 0: 100: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7dcedb70cc2ad885edce1578ede75eacd09c575951e88cdaaf4e1866d63b5ff4",
+          "stderr": "ERROR: file 0: 100: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7dcedb70cc2ad885edce1578ede75eacd09c575951e88cdaaf4e1866d63b5ff4",
+          "stderr": "ERROR: file 0: 100: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/wrong-arity.rs",
+      "sha256": "06ec9e46df6b0928c7294c7d1140c9836e808f90231c43b2a8394becd4e382ec",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "call argument count mismatch",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3713bfb13ec9c39facbe703d5232e0959dd2c8188ee17f4a8ee88bd729425f9e",
+          "stderr": "ERROR: file 0: 85: call argument count mismatch\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3713bfb13ec9c39facbe703d5232e0959dd2c8188ee17f4a8ee88bd729425f9e",
+          "stderr": "ERROR: file 0: 85: call argument count mismatch\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3713bfb13ec9c39facbe703d5232e0959dd2c8188ee17f4a8ee88bd729425f9e",
+          "stderr": "ERROR: file 0: 85: call argument count mismatch\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/generic-argument.rs",
+      "sha256": "3deea9492585028abf748b2c0ddd6b4a2babf01ae2f032a06858dc2c4363d3e3",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incorrect number of type and const arguments",
+      "rustc_actual_status": 1,
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "08a3b8c987c230967e4c70a0ed5a49e28377e460dca33b8d427c9cdc1e60f487",
+          "stderr": "ERROR: file 0: 85: incorrect number of type and const arguments\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "08a3b8c987c230967e4c70a0ed5a49e28377e460dca33b8d427c9cdc1e60f487",
+          "stderr": "ERROR: file 0: 85: incorrect number of type and const arguments\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "08a3b8c987c230967e4c70a0ed5a49e28377e460dca33b8d427c9cdc1e60f487",
+          "stderr": "ERROR: file 0: 85: incorrect number of type and const arguments\n"
+        }
+      }
+    }
+  ],
+  "native_cases": [
+    {
+      "path": "pa28/tests/atomic-extrema-native/all-orders-unsigned.rs",
+      "sha256": "c6cac596030aaa8166c2138764a2a613e5c1d0403fd305b92b81825212c4d9de",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "qualified_source_sha256": "25307259f997e84b15532c29ce88869a5742890b356739abcd77356d8398276c",
+      "lowir_sha256": "2c00399bac40edbb6fafd8f162d359b55cb1a5e539874b4b7cfa60847217f04c",
+      "rustc_actual_status": 0,
+      "backend_actual_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/equal-and-unused.rs",
+      "sha256": "b94d95f0e1f92c9e43c8d7893d6ca86e01030b230be7d8b6895496e920e5467d",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "qualified_source_sha256": "188bf899223fbf98cdf0c759423de8b9ac73cf140d25696a2e476903c7a5d6a1",
+      "lowir_sha256": "241be555752aaa06c23b7236feccc44c46e2844941e616b2bc5fe6b90ebfa850",
+      "rustc_actual_status": 0,
+      "backend_actual_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/operands-once.rs",
+      "sha256": "e15a652270da48523893f56d1d31834522fac9686f2dda598abcdddf225d8209",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "qualified_source_sha256": "29ea4c96880bbba66bff3071bf831614cd8093c5120a3143443fd73e9ce28a43",
+      "lowir_sha256": "4a48d897c0575bf4ea20ef8a1ea188f09b05c84dc2781aeb1a662c0ea8f024f3",
+      "rustc_actual_status": 0,
+      "backend_actual_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/reified.rs",
+      "sha256": "bc3d40868d69f87a804034fe4cd6eb1b40de3b0eccedac40e656e60ef8099897",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "qualified_source_sha256": "ab0d6e629d3e9c31dc6ada22df4b87e9199eb7a39b52e25159fcbcca54115707",
+      "lowir_sha256": "7a09c80bcbbfd15784f4939fba4462a5fc425aa2087cf37e2577119c46b2d0f0",
+      "rustc_actual_status": 0,
+      "backend_actual_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/static-nested.rs",
+      "sha256": "09cdc9148a53aa798de2feddfaabcdede710e3080e1107adb704fdb1c067376b",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "qualified_source_sha256": "02798d43669d52b1bd3872d52c66389479015699e771d8f46ce8b26995aea999",
+      "lowir_sha256": "a9ea6acf2ab11b80ad7a6073ee4d3f6c4e3060796cdfddf941618da5817dfdfb",
+      "rustc_actual_status": 0,
+      "backend_actual_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/aliased-order.rs",
+      "sha256": "0193dc4d9aeaa93c203101d960c133ec087b9d3c92c29b1ba629ed8e1a44067e",
+      "rustc_status": 0,
+      "execution_status": 0,
+      "qualified_source_sha256": "d3c290af6f019fca8ccf270f43e6259303191c76191fbb221232bd47c39547d9",
+      "lowir_sha256": "9b50b79242033488a52827b3c0a96d0888194b382f98efcb58c506bfb7d00719",
+      "rustc_actual_status": 0,
+      "backend_actual_status": 0
+    }
+  ],
+  "controlled_interference": [
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 37,
+      "stale_return_fault": false,
+      "expected_backend_status": 0,
+      "expected_return": 2147483648,
+      "final_min": 37,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ],
+      "actual_status": 0,
+      "original_lowir_sha256": "ddfa5a7573e4b84087b36a8b7f9ce080ab4a3c514ce5425bcf7c6324052659bd",
+      "instrumented_lowir_sha256": "8e7ba3a0d5b2e8faf9bd063ca7d2a5fb120d0c40c3766d327ca8f076390a8d41",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 37,
+      "stale_return_fault": true,
+      "expected_backend_status": 134,
+      "expected_return": 2147483648,
+      "final_min": 37,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ],
+      "actual_status": 134,
+      "original_lowir_sha256": "ddfa5a7573e4b84087b36a8b7f9ce080ab4a3c514ce5425bcf7c6324052659bd",
+      "instrumented_lowir_sha256": "734317dbede0941201c9050fe2e07bf0eda3bb69bc93824319f30e5193b423d8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483647,
+      "operand": 2147483648,
+      "stale_return_fault": false,
+      "expected_backend_status": 0,
+      "expected_return": 2147483647,
+      "final_min": 2147483647,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ],
+      "actual_status": 0,
+      "original_lowir_sha256": "e17e8f9671fe91d201ae4764e775301a901b5b0a3fae86f8cd8d45ddd85d1074",
+      "instrumented_lowir_sha256": "bf023049aa8284fb1fed9ec92d9348cd5d4718998dba99e865e223705556a946",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483647,
+      "operand": 2147483648,
+      "stale_return_fault": true,
+      "expected_backend_status": 134,
+      "expected_return": 2147483647,
+      "final_min": 2147483647,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ],
+      "actual_status": 134,
+      "original_lowir_sha256": "e17e8f9671fe91d201ae4764e775301a901b5b0a3fae86f8cd8d45ddd85d1074",
+      "instrumented_lowir_sha256": "ebfbcc578d59a0e772aa082d00f8ebf58e2dee94f30a69ff4bdcd626d88b7ea1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 2147483648,
+      "stale_return_fault": false,
+      "expected_backend_status": 0,
+      "expected_return": 2147483648,
+      "final_min": 2147483648,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ],
+      "actual_status": 0,
+      "original_lowir_sha256": "464faa71a9a0c5f95f3f888e102f73492e50e026e1ddf091c7208b857344a9c5",
+      "instrumented_lowir_sha256": "040a029f31485cdd0846a7e7bef36463b37bffa1cb6f48423e5dae7023d32532",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "initial_seed": 7,
+      "injected": 2147483648,
+      "operand": 2147483648,
+      "stale_return_fault": true,
+      "expected_backend_status": 134,
+      "expected_return": 2147483648,
+      "final_min": 2147483648,
+      "final_max": 2147483648,
+      "dynamic_injections_per_operation": 1,
+      "orders": [
+        "Relaxed",
+        "Release",
+        "Acquire",
+        "AcqRel",
+        "SeqCst"
+      ],
+      "actual_status": 134,
+      "original_lowir_sha256": "464faa71a9a0c5f95f3f888e102f73492e50e026e1ddf091c7208b857344a9c5",
+      "instrumented_lowir_sha256": "6a0cd063a92ed00118c8e107262b7b614e62dc2173bee21d27fb1c6cefb4a8f6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "controlled_profile": "Original shim validated/preserved; test-only single store in each selected preheader; no loop insertion. Not unmodified-source or concurrency evidence.",
+  "scaling": {
+    "callers": [
+      8,
+      32,
+      128
+    ],
+    "body_steps": [
+      267,
+      1035,
+      4107
+    ],
+    "canonical_atomic_methods": 13,
+    "demanded_shims": 2,
+    "instructions_per_shim": 62,
+    "blocks_per_shim": 22,
+    "scratch_slots_per_shim": 1,
+    "static_seed_loads_per_shim": 5,
+    "static_cas_operations_per_shim": 5,
+    "success_backend_encodings": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "failure_backend_encoding": 0
+  },
+  "ordinary_equality": {
+    "baseline": "30bc44cd and89b5d7a2",
+    "all_views_byte_identical": true,
+    "views": {
+      "--emit-types": "a580adc95a0a3f970ec4bf812c128164391e1c86ad5c8d0c1d0a138263a37269",
+      "--emit-lowir": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+      "--emit-constants": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e"
+    }
+  },
+  "active_text": [
+    {
+      "stage": "pa1",
+      "status": 0
+    },
+    {
+      "stage": "pa2",
+      "status": 0
+    },
+    {
+      "stage": "pa3",
+      "status": 0
+    },
+    {
+      "stage": "pa4",
+      "status": 0
+    },
+    {
+      "stage": "pa5",
+      "status": 0
+    },
+    {
+      "stage": "pa6",
+      "status": 0
+    },
+    {
+      "stage": "pa7",
+      "status": 0
+    },
+    {
+      "stage": "pa8",
+      "status": 0
+    },
+    {
+      "stage": "pa9",
+      "status": 0
+    },
+    {
+      "stage": "pa10",
+      "status": 0
+    },
+    {
+      "stage": "pa11",
+      "status": 0
+    },
+    {
+      "stage": "pa12",
+      "status": 0
+    },
+    {
+      "stage": "pa13",
+      "status": 0
+    },
+    {
+      "stage": "pa14",
+      "status": 0
+    },
+    {
+      "stage": "pa15",
+      "status": 0
+    },
+    {
+      "stage": "pa16",
+      "status": 0
+    },
+    {
+      "stage": "pa17",
+      "status": 0
+    },
+    {
+      "stage": "pa18",
+      "status": 0
+    },
+    {
+      "stage": "pa19",
+      "status": 0
+    },
+    {
+      "stage": "pa20",
+      "status": 0
+    },
+    {
+      "stage": "pa21",
+      "status": 0
+    },
+    {
+      "stage": "pa22",
+      "status": 0
+    },
+    {
+      "stage": "pa23",
+      "status": 0
+    }
+  ],
+  "evidence": [
+    "obj/parallel/pa28/atomic-extrema-investigation",
+    "obj/parallel/pa28/atomic-extrema-third",
+    "obj/parallel/pa28/atomic-extrema-strict2",
+    "obj/parallel/pa28/atomic-extrema-finish"
+  ],
+  "native_evidence": "obj/parallel/pa28/extrema-native-3736346",
+  "controlled_evidence": "obj/parallel/pa28/extrema-interference-3736346",
+  "retained_failed_gates": [
+    "obj/parallel/pa28/atomic-extrema-first",
+    "obj/parallel/pa28/atomic-extrema-second",
+    "obj/parallel/pa28/atomic-extrema-strict"
+  ]
+}

@@ -1,0 +1,369 @@
+{
+  "stage": "planned-qualified-development-contract-no-oracles",
+  "base": "3c1a9ce0",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "identities": {
+    "AtomicFetchMin": 15,
+    "AtomicFetchMax": 16
+  },
+  "safety": "Safe",
+  "constant": "RuntimeOnly",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-relaxed.rs",
+      "sha256": "75431f29c179288122c6bd1d8917cf4833ec953c25f50b910d157ff9f5a20d23",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-release.rs",
+      "sha256": "be0adb1d646ba38da7bfb87c7d3db2dee259ba321a9d23fe1e8a64efd672cc63",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-acquire.rs",
+      "sha256": "48c9ab1449025a1e06e31ba8108a6699251c91fe18462ef9d03898f974d3ed9f",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-acqrel.rs",
+      "sha256": "a69b5b3671dda80903fe37e236ac8011bdb092a558cd2087665c4f8f13eb86cd",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_min-seqcst.rs",
+      "sha256": "28e9117c725a17aeb715c3f8b15f45797d8d1ef6486ee7614a8ae502a3f0e5c7",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-relaxed.rs",
+      "sha256": "ccab63762bed36353f55b2fcbb6ccec308684f889139c0a74192363d65749c4c",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-release.rs",
+      "sha256": "e713e8a7c2dc2ffc31343145817430f5f81d33f013028039ce6e41c9587d4c49",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-acquire.rs",
+      "sha256": "02dfe30ff3830b45d4ce9a40af21e64f9c733182667cdff802b800f4d92337b1",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-acqrel.rs",
+      "sha256": "23450dd100e383ae9dc49334ff4860457090b66a3311114ba5407ac026509f6d",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/fetch_max-seqcst.rs",
+      "sha256": "6c514e2d4c56663e29a8b921a1928a077b3cfbb331c023725c8aac9c8b18a8f8",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/variable-order.rs",
+      "sha256": "11ab286c6bfa1d89db7153b9539bc56331ec305963dc472c2a32d24866ea2366",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/reified.rs",
+      "sha256": "2c8e56d09f63b06b773637659966feafd9d5d03adb9cd73aee5ec88ea2f45f77",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/ufcs.rs",
+      "sha256": "3183df93fa8413ddfba025c7091afe78729d08f85e3f25a8996d18b1932aa0f0",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/std-import.rs",
+      "sha256": "a9c460822239750d12931f99ddc238aa4c84aa1e1db542d3ff795292eb583090",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/no-prelude.rs",
+      "sha256": "f63a8a54dfa3a69576f3da3c7e6425cb931f9c3e7b4c1113820d86ca5ee754e9",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/shared-static.rs",
+      "sha256": "21b4e08cdfcf9612c1276f830f8890708946c8fdb4af94bea97af72ccb8b9ddd",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/local-shadow.rs",
+      "sha256": "7a368f3253575928e7e4f963e2a61d1b7b722777b420808200e32f0afbf67e41",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-min.rs",
+      "sha256": "28b045fc5d8884917d7aa382ccd15a9f0c3d7a9c46a5387e8305d292a89b629b",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-max.rs",
+      "sha256": "b02f812ff8efa31e807fc78b55f363239148eaa0c91a2da0fe76aaed7bdbee74",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-skipped.rs",
+      "sha256": "a9c3207cfef9a6605fcf997ada9831800c2fa68a68dcb408e109e82f8a99393f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        0,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-alias.rs",
+      "sha256": "cdbb0cfef5bf8757e79be791749abf97064e3b1e631fb40b1b7b91e44506982f",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/const-reified.rs",
+      "sha256": "0363412117767937adeecf78b13595a0310e569affd0aba9b9aa87a503014d56",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "non-const calls are not allowed in constant initializers"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/packed-receiver.rs",
+      "sha256": "58d65ff050ed8052e49ed5795c25a1da15ce9737dedf3404064793ab0281ce57",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        0,
+        1,
+        1
+      ],
+      "reason": "reference to an unaligned packed field"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/packed-address.rs",
+      "sha256": "3e325b9b752fde047876be7691996163652020821dac79209a3db6d7eb0c345b",
+      "rustc_status": 0,
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/wrong-value.rs",
+      "sha256": "69252b8eb73ab106fa3efeeee92d27dff5474eaaf9dd7b1901a12fe663b2cb16",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/wrong-order.rs",
+      "sha256": "c2ba758a4bf6b1efd13a7fab7f8058247c23d47600e7ff3fb55acb729bbeb29a",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/wrong-arity.rs",
+      "sha256": "06ec9e46df6b0928c7294c7d1140c9836e808f90231c43b2a8394becd4e382ec",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "call argument count mismatch"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-extrema/generic-argument.rs",
+      "sha256": "3deea9492585028abf748b2c0ddd6b4a2babf01ae2f032a06858dc2c4363d3e3",
+      "rustc_status": 1,
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incorrect number of type and const arguments"
+    }
+  ],
+  "native_cases": [
+    {
+      "path": "pa28/tests/atomic-extrema-native/all-orders-unsigned.rs",
+      "sha256": "c6cac596030aaa8166c2138764a2a613e5c1d0403fd305b92b81825212c4d9de",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/equal-and-unused.rs",
+      "sha256": "b94d95f0e1f92c9e43c8d7893d6ca86e01030b230be7d8b6895496e920e5467d",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/operands-once.rs",
+      "sha256": "e15a652270da48523893f56d1d31834522fac9686f2dda598abcdddf225d8209",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/reified.rs",
+      "sha256": "bc3d40868d69f87a804034fe4cd6eb1b40de3b0eccedac40e656e60ef8099897",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/static-nested.rs",
+      "sha256": "09cdc9148a53aa798de2feddfaabcdede710e3080e1107adb704fdb1c067376b",
+      "rustc_status": 0,
+      "execution_status": 0
+    },
+    {
+      "path": "pa28/tests/atomic-extrema-native/aliased-order.rs",
+      "sha256": "0193dc4d9aeaa93c203101d960c133ec087b9d3c92c29b1ba629ed8e1a44067e",
+      "rustc_status": 0,
+      "execution_status": 0
+    }
+  ],
+  "controlled_interference": "atomic-extrema-interference-plan.json",
+  "limitations": [
+    "Only canonical AtomicU32; other widths and remaining families are separate.",
+    "Six ordinary source/native comparisons are uncontended.",
+    "Controlled typed-LowIR interference is a separate deterministic backend test, not source/concurrency evidence.",
+    "Type inspection deliberately defers packed-borrow and unused const-function obligations to checked lowering."
+  ]
+}

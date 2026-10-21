@@ -138,6 +138,17 @@ and unchanged desired values still perform CAS. Nand complements at U32 width.
 `tests/atomic-bitwise-outcomes.json` records source/native and typed loop
 invariants; the native evidence is uncontended. No direct bitwise atomic opcode
 or backend change is introduced.
+The extrema slice adds canonical safe runtime `fetch_min` and `fetch_max` for
+U32 and all five orderings. Explicit unsigned comparisons select desired bits
+through a wrapping U32 mask; the same CAS retry scaffold serves bitwise updates.
+Success returns the captured previous value, while failure reloads only the
+backend-updated expected scratch. Unchanged desired bits still perform CAS.
+Source operands are evaluated once, reified calls share canonical shims and
+constant eligibility remains RuntimeOnly. The six ordinary source/native
+comparisons are uncontended. Separate controlled LowIR tests inject one store
+after the seed to force a failure; expected old/final values and stale-return
+negative controls check retries on both sides of the high bit and at equality.
+See `tests/atomic-extrema-contract.json` and `docs/pa28-atomic-extrema.md`.
 Additional atomic widths and intrinsic families remain separate work.
 
 External-open coverage keeps an unknown case separate from real variant IDs and

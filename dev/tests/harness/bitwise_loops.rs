@@ -3,10 +3,10 @@ use rustgm::lowir::{
     program::{
         BlockId, Function, Instruction, Literal, Operand, Operation, ResultId, Storage, Terminator,
     },
-    vocabulary::{Binary, Type},
+    vocabulary::{Binary, Convert, Predicate, Type},
 };
 type Error = Box<dyn std::error::Error>;
-pub fn check(body: &Function) -> Result<(), Error> {
+pub fn check(body: &Function, maximum: Option<bool>) -> Result<(), Error> {
     assert_eq!(body.slots.len(), 1);
     assert!(matches!(body.slots[0], Storage::Scalar(Type::U32)));
     let (mut seeds, mut exchanges, mut scratch, mut tags, mut stores) = (0, 0, 0, 0, 0);
@@ -72,7 +72,7 @@ pub fn check(body: &Function) -> Result<(), Error> {
             .last()
             .is_some_and(|i| matches!(i.operation, Operation::AtomicCompareExchange { .. }))
         {
-            check_loop(body, BlockId(u32::try_from(index)?), instructions)?;
+            check_loop(body, BlockId(u32::try_from(index)?), instructions, maximum)?;
             loops += 1;
         }
     }
@@ -82,33 +82,19 @@ pub fn check(body: &Function) -> Result<(), Error> {
 fn temporary(operand: Operand, result: Option<ResultId>) -> bool {
     matches!((operand, result), (Operand::Temporary(id), Some(ResultId::Scalar(actual))) if id == actual)
 }
-fn check_loop(body: &Function, id: BlockId, code: &[Instruction]) -> Result<(), Error> {
-    assert!(matches!(code.len(), 3 | 4));
+fn check_loop(
+    body: &Function,
+    id: BlockId,
+    code: &[Instruction],
+    maximum: Option<bool>,
+) -> Result<(), Error> {
     assert!(
         matches!(code[0].operation, Operation::Load { ty: Type::U32, address: Operand::Slot(slot), .. } if slot.0 == 0)
     );
-    let Operation::Binary { op, left, right } = code[1].operation else {
-        return Err("missing bitwise operand operation".into());
-    };
-    assert!(matches!(op, Binary::And | Binary::Or | Binary::Xor));
-    assert_eq!(left.ty, Type::U32);
-    assert!(temporary(left.operand, code[0].result));
-    assert!(matches!(right, Operand::Parameter(1)));
-    if code.len() == 4 {
-        assert!(matches!(op, Binary::And));
-        let Operation::Binary {
-            op: Binary::Xor,
-            left,
-            right: Operand::Literal(mask),
-        } = code[2].operation
-        else {
-            return Err("missing nand complement".into());
-        };
-        assert_eq!(left.ty, Type::U32);
-        assert!(temporary(left.operand, code[1].result));
-        assert!(
-            matches!(body.literals[mask.0 as usize], Literal::Integer(value) if value == u128::from(u32::MAX))
-        );
+    if let Some(maximum) = maximum {
+        check_extremum(body, code, maximum)?;
+    } else {
+        check_bitwise(body, code)?;
     }
     let exchange = code.last().ok_or("missing CAS")?;
     let Operation::AtomicCompareExchange {
@@ -154,5 +140,109 @@ fn check_seed(body: &Function, retry: BlockId) -> Result<(), Error> {
     assert!(temporary(value.operand, code[0].result));
     assert!(matches!(address, Operand::Slot(slot) if slot.0 == 0));
     assert!(matches!(code[2].operation, Operation::Address(Operand::Slot(slot)) if slot.0 == 0));
+    Ok(())
+}
+
+fn check_bitwise(body: &Function, code: &[Instruction]) -> Result<(), Error> {
+    assert!(matches!(code.len(), 3 | 4));
+    let Operation::Binary { op, left, right } = code[1].operation else {
+        return Err("missing bitwise operand operation".into());
+    };
+    assert!(matches!(op, Binary::And | Binary::Or | Binary::Xor));
+    assert_eq!(left.ty, Type::U32);
+    assert!(temporary(left.operand, code[0].result));
+    assert!(matches!(right, Operand::Parameter(1)));
+    if code.len() == 4 {
+        assert!(matches!(op, Binary::And));
+        let Operation::Binary {
+            op: Binary::Xor,
+            left,
+            right: Operand::Literal(mask),
+        } = code[2].operation
+        else {
+            return Err("missing nand complement".into());
+        };
+        assert_eq!(left.ty, Type::U32);
+        assert!(temporary(left.operand, code[1].result));
+        assert!(
+            matches!(body.literals[mask.0 as usize], Literal::Integer(value) if value == u128::from(u32::MAX))
+        );
+    }
+    Ok(())
+}
+fn check_extremum(body: &Function, code: &[Instruction], maximum: bool) -> Result<(), Error> {
+    assert_eq!(code.len(), 8);
+    let Operation::Compare {
+        predicate,
+        left,
+        right,
+    } = code[1].operation
+    else {
+        return Err("missing unsigned extremum comparison".into());
+    };
+    assert!(matches!(
+        (maximum, predicate),
+        (true, Predicate::Ult) | (false, Predicate::Ugt)
+    ));
+    assert_eq!(left.ty, Type::U32);
+    assert!(temporary(left.operand, code[0].result));
+    assert!(matches!(right, Operand::Parameter(1)));
+    let Operation::Convert {
+        op: Convert::Trunc,
+        value,
+    } = code[2].operation
+    else {
+        return Err("missing compare-result truncation".into());
+    };
+    assert_eq!(value.ty, Type::I64);
+    assert!(temporary(value.operand, code[1].result));
+    for instruction in &code[2..7] {
+        let Some(ResultId::Scalar(id)) = instruction.result else {
+            return Err("missing u32 update value".into());
+        };
+        assert_eq!(body.temporaries[id.0 as usize], Type::U32);
+    }
+    let Operation::Binary {
+        op: Binary::Sub,
+        left,
+        right,
+    } = code[3].operation
+    else {
+        return Err("missing wrapping comparison mask".into());
+    };
+    assert_eq!(left.ty, Type::U32);
+    let Operand::Literal(zero) = left.operand else {
+        return Err("missing mask zero".into());
+    };
+    assert!(matches!(
+        body.literals[zero.0 as usize],
+        Literal::Integer(0)
+    ));
+    assert!(temporary(right, code[2].result));
+    for (index, op, left, right) in [
+        (4, Binary::Xor, 0, None),
+        (5, Binary::And, 4, Some(3)),
+        (6, Binary::Xor, 0, Some(5)),
+    ] {
+        let Operation::Binary {
+            op: actual,
+            left: value,
+            right: operand,
+        } = code[index].operation
+        else {
+            return Err("missing extremum selection dataflow".into());
+        };
+        assert!(matches!(
+            (actual, op),
+            (Binary::Xor, Binary::Xor) | (Binary::And, Binary::And)
+        ));
+        assert_eq!(value.ty, Type::U32);
+        assert!(temporary(value.operand, code[left].result));
+        if let Some(right) = right {
+            assert!(temporary(operand, code[right].result));
+        } else {
+            assert!(matches!(operand, Operand::Parameter(1)));
+        }
+    }
     Ok(())
 }

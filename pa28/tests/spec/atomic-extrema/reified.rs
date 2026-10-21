@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32,Ordering};fn main(){let a=AtomicU32::new(7);let f:fn(&AtomicU32,u32,Ordering)->u32=AtomicU32::fetch_min;let g:fn(&AtomicU32,u32,Ordering)->u32=AtomicU32::fetch_max;let _=f(&a,3,Ordering::Release);let _=g(&a,37,Ordering::Acquire);}
