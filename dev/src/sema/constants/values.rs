@@ -11,6 +11,7 @@ pub use structure::FieldTypes;
 mod inline;
 mod union_storage;
 mod validation;
+pub(crate) use super::instances::Completed;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
 pub use super::references::{Metadata, WritePermission};
@@ -106,8 +107,15 @@ impl<'a> Reader<'a> {
         self.facts
             .constant_instances
             .get(&instance)
-            .copied()
-            .map(Constant)
+            .map(|completed| completed.value)
+    }
+    pub(crate) fn associated_values(
+        self,
+    ) -> impl Iterator<Item = (Instance, TypeId, Constant)> + 'a {
+        self.facts
+            .constant_instances
+            .iter()
+            .map(|(&instance, value)| (instance, value.ty, value.value))
     }
     /// # Errors
     /// Rejects missing or malformed constant arena entries.
@@ -375,21 +383,16 @@ impl<'a> Evaluator<'a> {
             return Ok(value);
         }
         let ty = self
-            .facts()
-            .definitions
-            .get(instance.definition.0 as usize)
-            .copied()
-            .flatten()
+            .queries
+            .typing
+            .facts
+            .constant_instances
+            .get(&instance)
             .ok_or_else(|| {
                 self.queries
-                    .error(query, "missing associated constant result type")
-            })?;
-        let mut substitution = instance
-            .substitution(self.facts())
-            .map_err(|e| self.queries.error(query, e))?;
-        let ty = substitution
-            .apply(&mut self.queries.typing.facts.types, ty)
-            .map_err(|e| self.queries.error(query, e))?;
+                    .error(query, "missing completed associated value type")
+            })?
+            .ty;
         self.checked_reference_result(query, ty, value)
     }
     /// Demand a static's initializer without reading or moving its storage.

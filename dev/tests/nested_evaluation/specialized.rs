@@ -45,12 +45,6 @@ fn complete_inline_instances_reach_checked_execution() -> Result<(), Box<dyn std
     for &(name, accepted) in CASES {
         let text = format!("{}fn main(){{let _=run();}}", fixture(name)?);
         let result = checked(&text);
-        if name == "associated" {
-            assert!(result.err().is_some_and(|e| {
-                e.contains("associated constant execution needs a specialized body")
-            }));
-            continue;
-        }
         if name == "captured-context" {
             assert!(result.err().is_some_and(|e| e.contains(
                 "generic captured closure execution requires environment lifetime substitution"
@@ -65,7 +59,7 @@ fn complete_inline_instances_reach_checked_execution() -> Result<(), Box<dyn std
 #[ignore = "requires qualified CPPGM native backend"]
 fn specialized_inline_values_execute() -> Result<(), Box<dyn std::error::Error>> {
     for &(name, accepted) in CASES {
-        if accepted && name != "captured-context" && name != "associated" {
+        if accepted && name != "captured-context" {
             let text = format!("{}fn main(){{check(run());}}", fixture(name)?);
             native::check_cases(
                 "parallel/pa25-inline-specialized/native",

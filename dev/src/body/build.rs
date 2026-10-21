@@ -190,7 +190,12 @@ impl Body {
         Self {
             mutable_statics: None,
             static_types: None,
-            const_context: matches!(owner, Owner::Initializer { .. } | Owner::AnonymousConstant),
+            const_context: matches!(
+                owner,
+                Owner::Initializer { .. }
+                    | Owner::InitializerInstance { .. }
+                    | Owner::AnonymousConstant
+            ),
             instance: None,
             owned: None,
             storage: None,

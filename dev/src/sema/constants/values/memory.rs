@@ -99,6 +99,17 @@ impl Evaluator<'_> {
             .map(Constant)
             .map_err(Failure::Invalid)
     }
+    /// Publish only the complete selected instance after checking its canonical result.
+    pub(crate) fn complete_associated(
+        &mut self,
+        instance: super::Instance,
+        result: TypeId,
+        value: Constant,
+    ) -> Result<(), Failure> {
+        instance
+            .publish(self.queries.typing.facts, Some(result), value)
+            .map_err(Failure::Invalid)
+    }
     /// Publish one checked demanded initializer, preserving its declaration identity.
     pub fn complete_definition(&mut self, definition: DefId, value: Constant) {
         self.queries

@@ -22,6 +22,14 @@ impl Machine<'_, '_> {
             self.validate_result(result, result_ty)?;
             self.evaluator.complete_definition(definition, result);
         }
+        if let Owner::InitializerInstance { instance, .. } = body.owner {
+            if !self.active_associated.remove(&(instance, body.result)) {
+                return Err("selected initializer return lost active identity".into());
+            }
+            self.validate_result(result, result_ty)?;
+            self.evaluator
+                .complete_associated(instance, body.result, result)?;
+        }
         if self.active_inline.remove(&body.source) {
             self.validate_result(result, result_ty)?;
             self.evaluator.complete_inline(body.source, result)?;

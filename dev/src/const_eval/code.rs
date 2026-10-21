@@ -129,6 +129,7 @@ type AnonymousIndex = HashMap<
     ),
     usize,
 >;
+type AssociatedIndex = HashMap<(crate::sema::values::Instance, crate::types::TypeId), usize>;
 #[derive(Default)]
 pub(crate) struct Catalog {
     pub bytes: usize,
@@ -137,6 +138,7 @@ pub(crate) struct Catalog {
     pub definitions: HashMap<DefId, usize>,
     pub expressions: HashMap<NodeKey, usize>,
     pub anonymous: Option<Box<AnonymousIndex>>,
+    pub associated: Option<Box<AssociatedIndex>>,
 }
 impl Catalog {
     pub(crate) fn initializer(
@@ -171,6 +173,16 @@ impl Catalog {
                     >(1)
                     .saturating_add(if self.anonymous.is_none() {
                         size_of::<AnonymousIndex>()
+                    } else {
+                        0
+                    })
+                } else if matches!(body.owner, Owner::InitializerInstance { .. }) {
+                    crate::support::retained::new_map::<
+                        (crate::sema::values::Instance, crate::types::TypeId),
+                        usize,
+                    >(1)
+                    .saturating_add(if self.associated.is_none() {
+                        size_of::<AssociatedIndex>()
                     } else {
                         0
                     })
@@ -210,6 +222,15 @@ impl Catalog {
                 .is_some()
         {
             return Err("duplicate anonymous constant instance body");
+        }
+        if let Owner::InitializerInstance { instance, .. } = body.owner
+            && self
+                .associated
+                .get_or_insert_with(Default::default)
+                .insert((instance, body.result), index)
+                .is_some()
+        {
+            return Err("duplicate selected initializer execution body");
         }
         self.bodies.push(std::rc::Rc::new(Code::snapshot(body)));
         self.bytes = bytes;

@@ -480,6 +480,11 @@ impl Queries<'_> {
                 Work::Enter(query) => self.enter(query)?,
                 Work::Forward(query, dependency) => {
                     let value = self.value(dependency)?;
+                    if let Query::Instance(instance) = query {
+                        instance
+                            .publish(self.typing.facts, None, values::Constant(value))
+                            .map_err(|e| self.error(query, e))?;
+                    }
                     self.complete_query(query, value)?;
                     if let Query::Contents(_, id) = query {
                         self.typing
@@ -487,9 +492,6 @@ impl Queries<'_> {
                             .constant_references
                             .complete(id, value)
                             .map_err(|e| self.error(query, e))?;
-                    }
-                    if let Query::Instance(instance) = query {
-                        self.typing.facts.constant_instances.insert(instance, value);
                     }
                     if let Query::Constant(index) | Query::Static(index) = query {
                         let definition = self.typing.facts.initializers[index].definition;
@@ -559,7 +561,7 @@ impl Queries<'_> {
             && let Some(&value) = self.typing.facts.constant_instances.get(&instance)
         {
             self.states
-                .insert(self.state_key(query), State::Ready(value));
+                .insert(self.state_key(query), State::Ready(value.value.0));
             return Ok(());
         }
         self.states.insert(self.state_key(query), State::Active);

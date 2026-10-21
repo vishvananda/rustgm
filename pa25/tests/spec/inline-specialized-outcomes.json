@@ -101,8 +101,6 @@
     {
       "source": "inline-specialized/associated.rs",
       "accepted": true,
-      "supported": false,
-      "boundary": "associated constant execution needs a specialized body",
       "source_sha256": "5e6625c18999ce41549912d2878ff758ff1045a3266092bf7114e725cefd2962"
     },
     {

@@ -89,6 +89,20 @@ impl Prepared {
         facts: &Declarations,
         initializer: &crate::sema::model::Initializer,
     ) -> Result<Template, Error> {
+        if let Some(template) = self.bodies.remove(&initializer.definition) {
+            if template.body.source != initializer.semantic_source()
+                || template.body.result != initializer.ty
+                || !matches!(template.body.owner,crate::body::ir::Owner::Initializer {definition,..} if definition==initializer.definition)
+            {
+                return Err(Declarations::error(
+                    report,
+                    initializer.semantic_source(),
+                    "retained initializer template changed",
+                ));
+            }
+            self.reused += 1;
+            return Ok(template);
+        }
         let environment = environment(
             report,
             facts,
@@ -223,8 +237,10 @@ impl Prepared {
             }
             return Ok(());
         }
-        let crate::body::ir::Owner::Function { definition, .. } = template.body.owner else {
-            return Err("retained defining template requires a function owner");
+        let (crate::body::ir::Owner::Function { definition, .. }
+        | crate::body::ir::Owner::Initializer { definition, .. }) = template.body.owner
+        else {
+            return Err("retained defining template requires a declaration owner");
         };
         match self.bodies.entry(definition) {
             std::collections::hash_map::Entry::Vacant(entry) => {
@@ -256,25 +272,7 @@ impl Prepared {
             {
                 continue;
             }
-            let environment =
-                environment(report, facts, initializer.definition, initializer.value)?;
-            let query = self.query.get_or_insert_with(|| {
-                NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
-            });
-            let mut scoped = query.scoped(Arc::clone(&environment));
-            let scratch = self
-                .scratch
-                .get_or_insert_with(|| Box::new(Scratch::new(facts)));
-            let body =
-                super::initializer_body(report, facts, scratch, initializer, Some(&mut scoped))?;
-            crate::body::constants::eligibility(report, facts, &body)?;
-            let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
-                .map_err(|message| Declarations::error(report, body.source, message))?;
-            bodies.push(Template {
-                body,
-                destruction,
-                environment,
-            });
+            bodies.push(self.initializer(report, facts, initializer)?);
         }
         for closure in facts.closures.all() {
             if let Some(owner) = closure.owner

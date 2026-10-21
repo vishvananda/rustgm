@@ -108,6 +108,7 @@ impl<'a> Context<'a> {
             .map(|body| match body.owner {
                 Owner::AnonymousConstant
                 | Owner::AnonymousInstance(_)
+                | Owner::InitializerInstance { .. }
                 | Owner::Closure { .. }
                 | Owner::ClosureAdapter { .. } => 0,
                 Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {

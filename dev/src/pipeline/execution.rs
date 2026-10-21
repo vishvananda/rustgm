@@ -3,6 +3,7 @@ mod anonymous;
 mod expressions;
 mod initializers;
 mod inputs;
+mod selected;
 #[cfg(test)]
 #[path = "../../tests/invariants/execution_storage.rs"]
 mod storage_tests;
@@ -60,6 +61,7 @@ struct Session {
     state: Option<const_eval::State>,
     waiting: Option<Requirement>,
 }
+type InitializerTemplates = HashMap<DefId, (Template, Contract)>;
 #[derive(Default)]
 pub(super) struct Engine {
     catalog: Catalog,
@@ -72,6 +74,7 @@ pub(super) struct Engine {
     construction: body::templates::Prepared,
     contracts: Collector,
     promotions: body::promote::Scratch,
+    associated: Option<Box<InitializerTemplates>>,
     originals: HashMap<DefId, Template>,
     anonymous: HashMap<crate::resolve::unit::NodeKey, (Template, Contract)>,
     concrete: HashMap<BodyKey, Body>,
@@ -97,6 +100,12 @@ impl Engine {
                 ));
             }
             prepared.concrete.insert(key, body);
+        }
+        for (template, _) in self.associated.iter().flat_map(|map| map.values()) {
+            prepared
+                .templates
+                .retain(template.clone())
+                .map_err(|e| Declarations::error(report, template.body.source, e))?;
         }
         for (template, _) in self.anonymous.values() {
             prepared
@@ -296,10 +305,8 @@ impl Engine {
                     .map_err(|e| Declarations::error(report, initializer.value, e))?;
                 Ok(true)
             }
-            Requirement::AssociatedBody(instance) => {
-                let mut evaluator = Evaluator::new(report, facts);
-                evaluator.associated(instance)?;
-                Ok(true)
+            Requirement::AssociatedBody { instance, result } => {
+                self.associated_ready(report, facts, instance, result)
             }
         }
     }

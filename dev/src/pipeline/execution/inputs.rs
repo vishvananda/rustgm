@@ -107,7 +107,9 @@ impl Context {
             .map_err(|_| "constant provider is still executing during template publication")?;
         engine.runtime_template_indices.clear();
         for (index, template) in templates.bodies.iter().enumerate() {
-            if let Owner::Function { definition, .. } = template.body.owner {
+            if let Owner::Function { definition, .. } | Owner::Initializer { definition, .. } =
+                template.body.owner
+            {
                 engine.runtime_template_indices.insert(definition, index);
             }
         }
@@ -150,7 +152,8 @@ impl Context {
                     Owner::Initializer { .. }
                     | Owner::Closure { .. }
                     | Owner::ClosureAdapter { .. }
-                    | Owner::AnonymousInstance(_) => false,
+                    | Owner::AnonymousInstance(_)
+                    | Owner::InitializerInstance { .. } => false,
                 };
                 if shared {
                     let key = body.key();

@@ -331,6 +331,10 @@ pub enum Owner {
     /// A declaration-time constant requiring lifetime/loan proof, never a native function.
     AnonymousConstant,
     AnonymousInstance(crate::sema::inline_constants::InlineInstance),
+    InitializerInstance {
+        instance: crate::sema::values::Instance,
+        kind: InitializerKind,
+    },
     Function {
         definition: DefId,
         signature: TypeId,
@@ -348,6 +352,7 @@ pub enum BodyKey {
     Closure(crate::types::closure::ClosureId),
     Anonymous(NodeKey),
     AnonymousInstance(crate::sema::inline_constants::InlineInstance),
+    InitializerInstance(crate::sema::values::Instance),
 }
 #[derive(Clone)]
 pub struct Body {
@@ -458,6 +463,7 @@ impl Body {
             }
             Owner::AnonymousConstant => BodyKey::Anonymous(self.source),
             Owner::AnonymousInstance(instance) => BodyKey::AnonymousInstance(instance),
+            Owner::InitializerInstance { instance, .. } => BodyKey::InitializerInstance(instance),
             Owner::Closure { identity, .. } => BodyKey::Closure(identity),
         }
     }

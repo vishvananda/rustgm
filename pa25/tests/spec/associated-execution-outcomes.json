@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "cases": [
+    {
+      "source": "associated-execution/statements.rs",
+      "accepted": true,
+      "source_sha256": "25acd3eac51f7a8b22f7f2c52a7afd6dcc1333ea2f714dca54ee4c76c75f2e93"
+    },
+    {
+      "source": "associated-execution/erased-type.rs",
+      "accepted": true,
+      "source_sha256": "2339ed59044a70093d1cff6207205d05a28ba3b34b9ec28dabc9e0dfb1841aec"
+    },
+    {
+      "source": "associated-execution/forward-callee.rs",
+      "accepted": true,
+      "source_sha256": "9701b9a38f7e0aeff533824a5894fcfd453dc33303f1f268dfd8f8f8bdad5604"
+    },
+    {
+      "source": "associated-execution/const-machine.rs",
+      "accepted": true,
+      "source_sha256": "2235682caf38b12b5cb03e8ec0a51befb73f7dab68b9197b7f1b24ee3ccdbdcc"
+    },
+    {
+      "source": "associated-execution/distinct-recursion.rs",
+      "accepted": false,
+      "source_sha256": "6cfa126e7e606df11024d48ba3bbcc99790fc1bc67b5dca2c355b34a272f11b8"
+    },
+    {
+      "source": "associated-execution/nested-inline.rs",
+      "accepted": true,
+      "source_sha256": "94ad76a8f05464b660bf23e4a722f48635d840d5497f4c4dd12875efab93c53b"
+    },
+    {
+      "source": "associated-execution/static-suspension.rs",
+      "accepted": true,
+      "source_sha256": "6d0d463b4146a4268e72def13ee25a2e17ce6b35dc6fed4997c42b42b805dc4d"
+    },
+    {
+      "source": "associated-execution/qualified-trait.rs",
+      "accepted": true,
+      "source_sha256": "8869bc7bb1ddc5e74f98525bbc77b975816001cccf9c2d2f1f373f616c194be1"
+    },
+    {
+      "source": "associated-execution/cycle.rs",
+      "accepted": false,
+      "source_sha256": "9459005e6c5e1b5a02c45c26fd64c79b4242610d7959a6ccc6ee8dbc4904042e"
+    },
+    {
+      "source": "associated-execution/fault.rs",
+      "accepted": false,
+      "source_sha256": "6a1175c5508c500cef6f155c378f06dc133909e55618c551bf39eeb16c278a65"
+    },
+    {
+      "source": "associated-execution/unused-nonconst.rs",
+      "accepted": false,
+      "source_sha256": "5d12714ce405c5b0d2f2cc34cfa06f7f30cec7d8a0a78f7a144fb928d11ae4ec"
+    },
+    {
+      "source": "associated-execution/skipped-nonconst.rs",
+      "accepted": false,
+      "source_sha256": "952dd6e5d766a33afb8d36d46df4e3549c135d558cf3be4b3f0b1f0fc7fb0d98"
+    },
+    {
+      "source": "associated-execution/mutable-static.rs",
+      "accepted": false,
+      "source_sha256": "c2ddf283f047ebbf576c43e6c81e57998a5a171453013e2aa236f5fc7c8cb7cb"
+    },
+    {
+      "source": "associated-execution/cross-definition.rs",
+      "accepted": true,
+      "source_sha256": "21a3f2e26e2db5027a7cf25d003ad28849acf6563fc42dc791f8f26062365039"
+    },
+    {
+      "source": "associated-execution/projected-result.rs",
+      "accepted": true,
+      "source_sha256": "93189b4c4625187c63295aa6950160c8a912b3f4a48845e0718e27b60d0977a5"
+    },
+    {
+      "source": "associated-execution/shared-reference.rs",
+      "accepted": true,
+      "source_sha256": "40218997fea51c620fef8217d765bd7782176f219c7168f025d9c27ca177bc34"
+    },
+    {
+      "source": "associated-execution/dangling.rs",
+      "accepted": false,
+      "source_sha256": "961631da44273faf4425b955429428b7b3db4e24f5b64b0bff1315070606e02b"
+    }
+  ],
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "unwind",
+  "overflow_checks": true,
+  "profile": "full pinned object qualification and CPPGM native value checks"
+}

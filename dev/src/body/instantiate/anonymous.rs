@@ -18,6 +18,7 @@ use crate::{
 pub(super) enum Selection {
     Callable(Instance),
     Anonymous(InlineInstance),
+    Initializer(crate::sema::values::Instance),
 }
 impl Selection {
     pub(super) fn owner(
@@ -29,6 +30,26 @@ impl Selection {
             Self::Callable(instance) => {
                 let (owner, definition) = inputs::owner(facts, source, instance)?;
                 Ok((owner, definition, Some(instance)))
+            }
+            Self::Initializer(instance) => {
+                let original = facts
+                    .initializer_index(instance.definition)
+                    .and_then(|index| facts.initializers.get(index))
+                    .ok_or("selected initializer has no original declaration")?;
+                if source.instance.is_some()
+                    || source.source != original.semantic_source()
+                    || !matches!(source.owner, Owner::Initializer { definition, kind: crate::sema::model::InitializerKind::Const } if definition==instance.definition)
+                {
+                    return Err("selected initializer selects another original body");
+                }
+                Ok((
+                    Owner::InitializerInstance {
+                        instance,
+                        kind: original.kind,
+                    },
+                    instance.definition,
+                    None,
+                ))
             }
             Self::Anonymous(instance) => {
                 let selected = InlineInstance::select(facts, source.source, instance.enclosing())?;
@@ -52,6 +73,7 @@ impl Selection {
         match self {
             Self::Callable(instance) => Context::Callable(instance),
             Self::Anonymous(instance) => instance.enclosing(),
+            Self::Initializer(instance) => Context::Initializer(instance),
         }
     }
 }
@@ -138,7 +160,7 @@ pub(crate) fn with_contract(
     })
 }
 
-fn initializer_inputs(
+pub(super) fn initializer_inputs(
     facts: &Declarations,
     instance: crate::sema::values::Instance,
 ) -> Result<Inputs, &'static str> {

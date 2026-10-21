@@ -1,4 +1,7 @@
 //! Evaluation work and dependency states belong to the selected initializer instance.
+#[cfg(test)]
+#[path = "../../../tests/invariants/selected_constants.rs"]
+mod tests;
 use super::{Error, NodeKey, Queries, Query, Work};
 use crate::{
     resolve::model::DefId,
@@ -12,6 +15,12 @@ use std::collections::HashMap;
 pub struct Instance {
     pub definition: DefId,
     pub arguments: GenericArgs,
+}
+/// One completed value retains its canonical selected type without another cache.
+#[derive(Clone, Copy)]
+pub(crate) struct Completed {
+    pub(crate) ty: TypeId,
+    pub(crate) value: super::values::Constant,
 }
 /// Initializer dependencies retain complete identities before owner substitution.
 #[derive(Clone, Copy)]
@@ -50,6 +59,54 @@ pub(crate) struct InstanceArguments {
     pub regions: Vec<crate::types::RegionId>,
 }
 impl Instance {
+    /// Uniquely selected result type; cached values never supply type authority.
+    pub(crate) fn result_type(self, facts: &mut Declarations) -> Result<TypeId, &'static str> {
+        if !facts.types.arguments_are_concrete(self.arguments)? {
+            return Err("selected constant arguments are not concrete");
+        }
+        let declared = facts
+            .definitions
+            .get(self.definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or("selected constant lacks a declared result")?;
+        let mut substitution = self.substitution(facts)?;
+        let result = substitution.apply(&mut facts.types, declared)?;
+        if facts.types.contains_parameters(result) != Some(false)
+            || facts.types.contains_projections(result) != Some(false)
+        {
+            return Err("selected constant result is not closed and normalized");
+        }
+        Ok(result)
+    }
+    pub(crate) fn publish(
+        self,
+        facts: &mut Declarations,
+        expected: Option<TypeId>,
+        value: super::values::Constant,
+    ) -> Result<(), &'static str> {
+        let ty = self.result_type(facts)?;
+        if expected.is_some_and(|expected| expected != ty) {
+            return Err("selected initializer result changed at completion");
+        }
+        if let Some(previous) = facts.constant_instances.get(&self) {
+            if previous.ty != ty || previous.value != value {
+                return Err("selected initializer value changed after publication");
+            }
+        } else {
+            let bytes = facts
+                .constant_work
+                .associated_value_bytes
+                .checked_add(crate::support::retained::new_map::<Instance, Completed>(1))
+                .filter(|&bytes| bytes <= 64 * 1024 * 1024)
+                .ok_or("completed associated value storage exceeds 64 MiB budget")?;
+            facts
+                .constant_instances
+                .insert(self, Completed { ty, value });
+            facts.constant_work.associated_value_bytes = bytes;
+        }
+        Ok(())
+    }
     /// Substitute captured arguments without rewriting the shared declaration.
     /// # Errors
     /// Rejects malformed argument identities and exhausted substitution work.

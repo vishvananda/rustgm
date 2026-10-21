@@ -11,6 +11,22 @@ impl Engine {
         facts: &mut Declarations,
         target: Target,
     ) -> Result<usize, Error> {
+        if let Target::Associated { instance, result } = target {
+            let canonical = instance
+                .result_type(facts)
+                .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+            if canonical != result {
+                return Err(Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "selected initializer request result differs from canonical result",
+                ));
+            }
+            if let Some(&index) = self.roots.get(&target) {
+                return Ok(index);
+            }
+            return self.associated_root(report, facts, instance, result);
+        }
         if let Some(&index) = self.roots.get(&target) {
             return Ok(index);
         }

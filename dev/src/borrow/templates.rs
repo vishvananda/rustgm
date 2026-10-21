@@ -51,7 +51,9 @@ impl Checked<'_> {
             BodyKey::Declaration(definition) => self.index.get(&ItemId(definition.0)),
             BodyKey::Closure(identity) => self.closures.get(&identity),
             key @ BodyKey::Anonymous(_) => self.anonymous.get(&key),
-            BodyKey::AnonymousInstance(_) | BodyKey::ClosureAdapter(_) => None,
+            BodyKey::InitializerInstance(_)
+            | BodyKey::AnonymousInstance(_)
+            | BodyKey::ClosureAdapter(_) => None,
         }?;
         (self.templates.bodies[index].body.key() == body.key()).then(|| &self.regions.bodies[index])
     }
@@ -84,7 +86,9 @@ pub fn verify<'a, S: BuildHasher>(
             }
             Owner::Closure { identity, .. } => closures.insert(identity, ordinal).is_some(),
             Owner::AnonymousConstant => anonymous.insert(body.key(), ordinal).is_some(),
-            Owner::AnonymousInstance(_) | Owner::ClosureAdapter { .. } => {
+            Owner::InitializerInstance { .. }
+            | Owner::AnonymousInstance(_)
+            | Owner::ClosureAdapter { .. } => {
                 return Err(error("template requires a declared owner"));
             }
         };

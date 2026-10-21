@@ -370,7 +370,7 @@ pub struct Declarations {
         std::collections::HashMap<DefId, Vec<super::values::Dependency>>,
     pub constant_uses: std::collections::HashMap<NodeKey, super::values::Instance>,
     pub(super) constant_instances:
-        std::collections::HashMap<super::values::Instance, super::constants::Value>,
+        std::collections::HashMap<super::values::Instance, super::values::Completed>,
     pub associated: super::associated::Inventory,
     pub(crate) stored_fields: Option<Box<super::stored_fields::Registry>>,
     pub methods: super::methods::Methods,

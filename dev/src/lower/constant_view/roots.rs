@@ -10,6 +10,7 @@ pub(super) fn collect(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<()
     declarations(graph)?;
     let inline = super::inline::declarations(graph)?;
     initializers(graph)?;
+    associated(graph)?;
     super::inline::roots(graph, inline)?;
     super::inline::instances(graph)?;
     promotions(graph, checked)
@@ -130,6 +131,10 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
                 format!("def:{}", definition.0)
             }
             Owner::Closure { identity, .. } => format!("closure:{}", identity.0),
+            Owner::InitializerInstance { instance, .. } => format!(
+                "initializer-instance:{}:{}",
+                instance.definition.0, instance.arguments.0
+            ),
             Owner::AnonymousInstance(instance) => format!("anonymous-instance:{instance}"),
             Owner::AnonymousConstant => {
                 format!("anonymous:{}:{}", body.source.file.0, body.source.node.0)
@@ -154,6 +159,22 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
     Ok(())
 }
 
+fn associated(graph: &mut Graph<'_>) -> Result<(), &'static str> {
+    let count = graph.reader.associated_values().count();
+    graph.charge(count)?;
+    graph.storage(count.saturating_mul(128))?;
+    let mut values = graph.reader.associated_values().collect::<Vec<_>>();
+    values.sort_unstable_by_key(|(instance, _, _)| (instance.definition.0, instance.arguments.0));
+    for (instance, ty, value) in values {
+        let value = graph.value(ty, value)?;
+        graph.root(format!(
+            "root associated-instance instance={}:{} type={} value=v{value}",
+            instance.definition.0, instance.arguments.0, ty.0
+        ))?;
+    }
+    Ok(())
+}
+
 fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
     match key {
         BodyKey::ClosureAdapter(adapter) => (
@@ -164,6 +185,9 @@ fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
             adapter.receiver().0,
             0,
         ),
+        BodyKey::InitializerInstance(instance) => {
+            (5, instance.definition.0, instance.arguments.0, 0, 0, 0)
+        }
         BodyKey::Declaration(id) => (0, id.0, 0, 0, 0, 0),
         BodyKey::Closure(id) => (1, id.0, 0, 0, 0, 0),
         BodyKey::Anonymous(node) => (2, node.file.0, node.node.0, 0, 0, 0),

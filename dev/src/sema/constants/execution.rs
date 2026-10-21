@@ -9,6 +9,16 @@ impl Queries<'_> {
         result: crate::types::TypeId,
     ) -> Result<Target, Error> {
         let context = self.execution_context();
+        if let Some(instance) = context
+            && self
+                .typing
+                .facts
+                .initializer_index(instance.definition)
+                .and_then(|index| self.typing.facts.initializers.get(index))
+                .is_some_and(|initializer| initializer.value == source)
+        {
+            return Ok(Target::Associated { instance, result });
+        }
         if let Some(initializer) = context
             && self
                 .typing

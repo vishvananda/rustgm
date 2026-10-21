@@ -41,6 +41,11 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
                     write!(out, " execution={}", execution.0)?;
                 }
             }
+            Owner::InitializerInstance { instance, .. } => write!(
+                out,
+                "initializer-instance def={} arguments={}",
+                instance.definition.0, instance.arguments.0
+            )?,
             Owner::AnonymousConstant => write!(out, "anonymous-const")?,
             Owner::AnonymousInstance(instance) => write!(out, "anonymous-instance {instance}")?,
             Owner::Function {

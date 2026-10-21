@@ -138,6 +138,7 @@ impl Engine<'_, '_> {
                         crate::body::ir::Owner::AnonymousConstant
                         | crate::body::ir::Owner::ClosureAdapter { .. }
                         | crate::body::ir::Owner::AnonymousInstance(_)
+                        | crate::body::ir::Owner::InitializerInstance { .. }
                         | crate::body::ir::Owner::Closure { .. } => false,
                     }
                 {

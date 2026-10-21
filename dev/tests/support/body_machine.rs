@@ -34,6 +34,7 @@ fn declaration(owner: Owner) -> Option<DefId> {
         }
         Owner::AnonymousConstant
         | Owner::AnonymousInstance(_)
+        | Owner::InitializerInstance { .. }
         | Owner::Closure { .. }
         | Owner::ClosureAdapter { .. } => None,
     }

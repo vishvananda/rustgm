@@ -20,7 +20,10 @@ pub enum Target {
     },
     Function(instance::Instance),
     Initializer(DefId),
-    Associated(Instance),
+    Associated {
+        instance: Instance,
+        result: TypeId,
+    },
 }
 
 /// A value demand is distinct from a declaration's const permission.
@@ -43,7 +46,10 @@ pub enum Requirement {
         instance: crate::sema::inline_constants::InlineInstance,
         result: TypeId,
     },
-    AssociatedBody(Instance),
+    AssociatedBody {
+        instance: Instance,
+        result: TypeId,
+    },
 }
 
 pub enum Progress {
@@ -79,6 +85,10 @@ pub struct Work {
     pub expression_bytes: usize,
     pub anonymous_templates: usize,
     pub anonymous_instances: usize,
+    pub associated_templates: usize,
+    pub associated_instances: usize,
+    /// Conservative retained allocation for typed completed instance values.
+    pub associated_value_bytes: usize,
 }
 
 /// The orchestrator supplies checked CFG execution without a semantic dependency

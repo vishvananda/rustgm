@@ -121,7 +121,7 @@ impl Checker<'_> {
                 })?;
                 (definition, Some(index))
             }
-            Requirement::AssociatedBody(instance) => {
+            Requirement::AssociatedBody { instance, .. } => {
                 let source = self.report.resolution.definitions[instance.definition.0 as usize]
                     .node
                     .ok_or_else(|| Error::at(FileId(0), 0, "missing associated constant source"))?;

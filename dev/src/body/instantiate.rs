@@ -1,5 +1,7 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
 mod anonymous;
+mod initializers;
+pub(crate) use initializers::with_contract as selected_initializer;
 mod contracts;
 mod inputs;
 pub(crate) use anonymous::{close_operands as close_inline_operands, with_contract as anonymous};

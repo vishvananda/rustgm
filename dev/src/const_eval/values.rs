@@ -124,8 +124,18 @@ impl Machine<'_, '_> {
             Rvalue::AssociatedConstant(instance) => {
                 if let Some(value) = Reader::new(self.evaluator.facts()).associated(instance) {
                     value
+                } else if let Some(&index) = self
+                    .bodies
+                    .associated
+                    .as_deref()
+                    .and_then(|map| map.get(&(instance, ty)))
+                {
+                    return Ok(Some((index, Vec::new(), id)));
                 } else {
-                    self.waiting = Some(super::Requirement::AssociatedBody(instance));
+                    self.waiting = Some(super::Requirement::AssociatedBody {
+                        instance,
+                        result: ty,
+                    });
                     return Ok(None);
                 }
             }

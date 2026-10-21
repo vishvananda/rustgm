@@ -65,6 +65,7 @@ pub struct Machine<'a, 'b> {
     work: Work,
     slots: usize,
     active_initializers: HashSet<DefId>,
+    active_associated: HashSet<(crate::sema::values::Instance, crate::types::TypeId)>,
     active_inline: HashSet<NodeKey>,
     active_anonymous: HashSet<(
         crate::sema::inline_constants::InlineInstance,
@@ -78,6 +79,7 @@ pub(crate) struct State {
     work: Work,
     slots: usize,
     active_initializers: HashSet<DefId>,
+    active_associated: HashSet<(crate::sema::values::Instance, crate::types::TypeId)>,
     active_inline: HashSet<NodeKey>,
     active_anonymous: HashSet<(
         crate::sema::inline_constants::InlineInstance,
@@ -128,6 +130,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             work: Work::default(),
             slots: 0,
             active_initializers: HashSet::new(),
+            active_associated: HashSet::new(),
             active_inline: HashSet::new(),
             active_anonymous: HashSet::new(),
             waiting: None,
@@ -178,6 +181,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         self.work = state.work;
         self.slots = state.slots;
         self.active_initializers = state.active_initializers;
+        self.active_associated = state.active_associated;
         self.active_inline = state.active_inline;
         self.active_anonymous = state.active_anonymous;
     }
@@ -188,6 +192,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             work: self.work,
             slots: self.slots,
             active_initializers: self.active_initializers,
+            active_associated: self.active_associated,
             active_inline: self.active_inline,
             active_anonymous: self.active_anonymous,
         };
@@ -255,6 +260,11 @@ impl<'a, 'b> Machine<'a, 'b> {
             return Err(Failure::Fault(
                 "cycle in anonymous constant instance values",
             ));
+        }
+        if let Owner::InitializerInstance { instance, .. } = body.owner
+            && !self.active_associated.insert((instance, body.result))
+        {
+            return Err(Failure::Fault("cycle in selected initializer values"));
         }
         let slots = body
             .locals

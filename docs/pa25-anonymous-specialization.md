@@ -83,8 +83,12 @@ failures remain recorded separately. The source digest is
 `67e8d4f2aeb049f6d7079645370dbfd7d71b8dc4dd90d7fd7725d269e37e2edc`.
 
 This is a coherent scalar/owned-value specialization slice, not PA25 completion.
-The original associated-initializer and generic captured-environment fixtures
-remain unchanged, independently accepted by Rust, and explicitly unsupported.
+At this checkpoint the original associated-initializer and generic captured-
+environment fixtures remained unchanged, independently accepted by Rust, and
+explicitly unsupported. The associated initializer fixture is now promoted by
+[selected initializer execution](pa25-selected-initializers.md), with its original
+bytes and independent object/native controls preserved. The generic captured-
+environment frontier remains separately owned by the closure implementation.
 Specialized conditional reference/output interfaces also remain unsupported;
 no borrowed summary is reused as execution proof. General selected initializer
 CFG execution, dynamic pattern/enum continuations, remaining slice/reference/
