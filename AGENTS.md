@@ -73,3 +73,11 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   replacement. Keep only current baselines; historical receipts and hashes do
   not require retaining every old executable. Do not treat a pruned binary as
   available evidence for a new run: rebuild or restore it and verify its hash.
+
+## Parallel implementation
+
+When the local shared resource controller is configured, follow
+[docs/parallel-work.md](docs/parallel-work.md). Every build, test, probe and
+benchmark must use the storage/resource wrapper. Worktree isolation does not
+provide a separate CPU, RAM or filesystem budget. Worker ownership, model
+settings, queued assignments and integration requirements are in that document.

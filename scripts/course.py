@@ -197,7 +197,7 @@ def main():
     parser.add_argument("stage")
     parser.add_argument("--app", default=str(ROOT / "dev/rustgm"))
     parser.add_argument("--bless", action="store_true")
-    parser.add_argument("--jobs", type=int, default=4)
+    parser.add_argument("--jobs", type=int, default=int(os.environ.get("RUSTGM_TEST_JOBS", "4")))
     parser.add_argument("--timeout", type=float, default=10)
     parser.add_argument("--evidence-root", type=Path,
                         help="store run evidence under this directory inside obj (default: obj/tests)")
