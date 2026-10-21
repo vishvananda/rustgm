@@ -351,6 +351,11 @@ fn substitute(
     }
     for value in &mut body.values {
         match &mut value.kind {
+            Rvalue::Intrinsic { instance, .. } => {
+                let ty = bound.apply(&mut facts.types, instance.ty())?;
+                projected |= facts.types.contains_projections(ty) == Some(true);
+                *instance = crate::types::instance::Instance::new(&facts.types, ty)?;
+            }
             Rvalue::Unsize { conversion, .. } => {
                 *conversion = conversion.try_map(|ty| {
                     let ty = bound.apply(&mut facts.types, ty)?;

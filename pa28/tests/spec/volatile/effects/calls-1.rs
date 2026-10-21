@@ -1,0 +1,1 @@
+const R:unsafe fn(*const u32)->u32=core::ptr::read_volatile::<u32>;fn main(){let mut x:u32=7;unsafe{let _=core::ptr::read_volatile(&raw const x);core::ptr::write_volatile(&raw mut x,9);let f0:unsafe fn(*const u32)->u32=R;let _=f0(&raw const x);}}

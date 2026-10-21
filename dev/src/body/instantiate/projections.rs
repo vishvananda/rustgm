@@ -150,6 +150,10 @@ pub(super) fn normalize(
     }
     for value in &mut body.values {
         value.ty = ty(facts, &mut session, &mut storage, value.ty)?;
+        if let Rvalue::Intrinsic { instance, .. } = &mut value.kind {
+            let actual = ty(facts, &mut session, &mut storage, instance.ty())?;
+            *instance = crate::types::instance::Instance::new(&facts.types, actual)?;
+        }
         if let Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } = &mut value.kind {
             *signature = ty(facts, &mut session, &mut storage, *signature)?;
         }

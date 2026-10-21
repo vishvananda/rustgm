@@ -1,8 +1,8 @@
 //! Function construction emits contiguous block ranges and diagnoses invalid state.
 use super::{
     program::{
-        self, Block, BlockId, Function, Instruction, Literal, LiteralId, MemorySpan, Operand,
-        Operation, Range, SignatureId, SlotId, SpanId, Storage, TempId, Terminator, Value,
+        self, Access, Block, BlockId, Function, Instruction, Literal, LiteralId, MemorySpan,
+        Operand, Operation, Range, SignatureId, SlotId, SpanId, Storage, TempId, Terminator, Value,
     },
     vocabulary::{Binary, Convert, Predicate, Type, Unary},
 };
@@ -179,15 +179,55 @@ impl Builder {
     /// # Errors
     /// Rejects invalid construction state or void loads.
     pub fn load(&mut self, ty: Type, address: Operand) -> Result<Value, &'static str> {
-        self.value(ty, Operation::Load { ty, address })
+        self.memory_load(Access::Ordinary, ty, address)
+    }
+    /// # Errors
+    /// Rejects invalid construction state or void loads.
+    pub fn volatile_load(&mut self, ty: Type, address: Operand) -> Result<Value, &'static str> {
+        self.memory_load(Access::Volatile, ty, address)
+    }
+    fn memory_load(
+        &mut self,
+        access: Access,
+        ty: Type,
+        address: Operand,
+    ) -> Result<Value, &'static str> {
+        self.value(
+            ty,
+            Operation::Load {
+                access,
+                ty,
+                address,
+            },
+        )
     }
     /// # Errors
     /// Rejects invalid construction state or void stores.
     pub fn store(&mut self, value: Value, address: Operand) -> Result<(), &'static str> {
+        self.memory_store(Access::Ordinary, value, address)
+    }
+    /// # Errors
+    /// Rejects invalid construction state or void stores.
+    pub fn volatile_store(&mut self, value: Value, address: Operand) -> Result<(), &'static str> {
+        self.memory_store(Access::Volatile, value, address)
+    }
+    fn memory_store(
+        &mut self,
+        access: Access,
+        value: Value,
+        address: Operand,
+    ) -> Result<(), &'static str> {
         if value.ty == Type::Void {
             return Err("void LowIR store");
         }
-        self.emit(Operation::Store { value, address }, None)
+        self.emit(
+            Operation::Store {
+                access,
+                value,
+                address,
+            },
+            None,
+        )
     }
     /// # Errors
     /// Rejects invalid construction state or void operations.

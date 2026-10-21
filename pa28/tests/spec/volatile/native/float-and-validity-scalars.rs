@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn main(){let mut b=false;let mut c='a';let mut x=1.0f32;let mut y=2.0f64;unsafe{core::ptr::write_volatile(&raw mut b,true);core::ptr::write_volatile(&raw mut c,'z');core::ptr::write_volatile(&raw mut x,3.5f32);core::ptr::write_volatile(&raw mut y,7.25f64);check(core::ptr::read_volatile(&raw const b));check(core::ptr::read_volatile(&raw const c)=='z');check(core::ptr::read_volatile(&raw const x)==3.5f32);check(core::ptr::read_volatile(&raw const y)==7.25f64);}}

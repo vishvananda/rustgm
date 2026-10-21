@@ -1,6 +1,7 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
 mod cleanup;
+mod intrinsics;
 mod invocations;
 mod pointers;
 mod references;
@@ -662,6 +663,11 @@ impl Lower<'_, '_> {
                 let value = self.value(operand)?.runtime()?;
                 casts::cast(&mut self.builder, kind, source, target, value, ty)?
             }
+            Rvalue::Intrinsic {
+                intrinsic,
+                instance,
+                arguments,
+            } => return self.intrinsic(intrinsic, instance, arguments),
             Rvalue::Invoke {
                 signature,
                 arguments,

@@ -20,6 +20,7 @@ mod heads;
 mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
+mod intrinsics;
 mod language_hooks;
 mod library_types;
 mod lifetimes;
@@ -273,6 +274,7 @@ impl Checker<'_> {
         self.validate_foreign_blocks()?;
         self.reserve_member_parents();
         self.prepare_library_types()?;
+        self.prepare_intrinsics()?;
         self.reserve_nominals()?;
         self.reserve_implementation_candidates()?;
         self.reserve_inherent_headers()?;

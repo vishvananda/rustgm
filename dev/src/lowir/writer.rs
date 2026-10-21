@@ -1,7 +1,7 @@
 //! Serialize the typed scalar model using the pinned CPPGM `LowIR` vocabulary.
 use super::{
     program::{
-        Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Storage,
+        Access, Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Storage,
         Terminator,
     },
     vocabulary::Type,
@@ -235,12 +235,20 @@ fn instruction(
             write!(out, ", ")?;
             destination
         }
-        Operation::Load { ty, address } => {
-            write!(out, "load {} ", ty.name())?;
+        Operation::Load {
+            access,
+            ty,
+            address,
+        } => {
+            write!(out, "load{} {} ", access_modifier(access), ty.name())?;
             address
         }
-        Operation::Store { value, address } => {
-            write!(out, "store {} ", value.ty.name())?;
+        Operation::Store {
+            access,
+            value,
+            address,
+        } => {
+            write!(out, "store{} {} ", access_modifier(access), value.ty.name())?;
             operand(program, function, value.operand, out)?;
             write!(out, ", ")?;
             address
@@ -349,6 +357,12 @@ fn operand(
                 Literal::F64(bits) => floating(f64::from_bits(bits), out),
             }
         }
+    }
+}
+fn access_modifier(access: Access) -> &'static str {
+    match access {
+        Access::Ordinary => "",
+        Access::Volatile => " volatile",
     }
 }
 fn floating(value: f64, out: &mut impl Write) -> io::Result<()> {

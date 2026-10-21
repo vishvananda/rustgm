@@ -420,7 +420,16 @@ impl Resolver<'_> {
                 && path.iter().any(|name| {
                     matches!(
                         self.package.names.get(*name),
-                        "Option" | "Some" | "None" | "Result" | "Ok" | "Err" | "ManuallyDrop"
+                        "Option"
+                            | "Some"
+                            | "None"
+                            | "Result"
+                            | "Ok"
+                            | "Err"
+                            | "ManuallyDrop"
+                            | "ptr"
+                            | "read_volatile"
+                            | "write_volatile"
                     )
                 })
         {

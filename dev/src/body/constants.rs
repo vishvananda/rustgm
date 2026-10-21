@@ -86,6 +86,12 @@ pub(crate) fn eligibility(
     // unconditional transfer. Const permission is checked before value demand.
     for value in &body.values {
         let message = match value.kind {
+            Rvalue::Intrinsic { intrinsic, .. }
+                if intrinsic.descriptor().constant
+                    == crate::support::intrinsics::ConstPermission::RuntimeOnly =>
+            {
+                Some("runtime-only intrinsic is not allowed during constant evaluation")
+            }
             Rvalue::Call { .. } | Rvalue::Invoke { .. }
                 if matches!(value.kind, Rvalue::Invoke { .. })
                     || function_call(facts, body, value.kind) =>

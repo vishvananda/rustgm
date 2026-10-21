@@ -51,6 +51,11 @@ pub enum Literal {
     F64(u64),
     Null,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Access {
+    Ordinary,
+    Volatile,
+}
 #[derive(Clone, Copy, Debug)]
 pub enum Operation {
     Copy(Value),
@@ -66,10 +71,12 @@ pub enum Operation {
         destination: Operand,
     },
     Load {
+        access: Access,
         ty: Type,
         address: Operand,
     },
     Store {
+        access: Access,
         value: Value,
         address: Operand,
     },

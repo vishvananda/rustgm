@@ -7,6 +7,7 @@ mod constructors;
 mod decisions;
 mod drops;
 mod guards;
+mod intrinsics;
 mod invocations;
 mod matches;
 mod methods;
@@ -1538,6 +1539,9 @@ impl<'a> Builder<'a> {
             return Err(self.error(node, "missing call signature"));
         };
         let arguments = self.call_inputs(node, arguments, receiver)?;
+        if let Some(operation) = self.intrinsic_call(node, callee, arguments)? {
+            return self.evaluate(node, self.ty(node)?, operation);
+        }
         self.evaluate(
             node,
             self.ty(node)?,

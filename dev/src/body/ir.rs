@@ -202,6 +202,12 @@ pub enum Rvalue {
         callee: ValueId,
         arguments: ValueList,
     },
+    /// A canonical language operation, with independent unsafe and const permissions.
+    Intrinsic {
+        intrinsic: crate::support::intrinsics::Intrinsic,
+        instance: crate::types::instance::Instance,
+        arguments: ValueList,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BorrowKind {

@@ -8,6 +8,7 @@ mod context;
 mod data;
 mod function;
 pub mod instances;
+mod intrinsics;
 pub mod linkage;
 mod remainder;
 mod roots;

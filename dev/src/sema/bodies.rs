@@ -612,6 +612,11 @@ impl Checker<'_> {
                 .associated
                 .trait_owner(function.definition)
                 .is_some()
+                || self
+                    .facts
+                    .intrinsics
+                    .identify(function.definition)
+                    .is_some()
             {
                 return Ok(None);
             }

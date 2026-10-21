@@ -327,6 +327,7 @@ pub struct UnionWork {
 pub struct Declarations {
     pub crates: Option<Box<super::crates::Linkage>>,
     pub foreign: Option<Box<super::foreign::Registry>>,
+    pub intrinsics: crate::resolve::model::Intrinsics,
     pub union_work: UnionWork,
     pub(super) safety_policies: super::safety::Policies,
     /// Immutable declaration permissions, shared by checked bodies and instances.
@@ -507,6 +508,7 @@ impl Declarations {
         let mut value = Self {
             crates: None,
             foreign: None,
+            intrinsics: report.resolution.intrinsics,
             union_work: UnionWork::default(),
             safety_policies: super::safety::Policies::analyze(report)?,
             mutable_statics: None,

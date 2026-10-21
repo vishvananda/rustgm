@@ -339,8 +339,9 @@ impl Flow<'_> {
         id: ValueId,
         inspect: bool,
     ) -> Result<(), &'static str> {
-        let (Rvalue::Call { arguments, .. } | Rvalue::Invoke { arguments, .. }) =
-            self.body.values[id.0 as usize].kind
+        let (Rvalue::Call { arguments, .. }
+        | Rvalue::Invoke { arguments, .. }
+        | Rvalue::Intrinsic { arguments, .. }) = self.body.values[id.0 as usize].kind
         else {
             return Ok(());
         };

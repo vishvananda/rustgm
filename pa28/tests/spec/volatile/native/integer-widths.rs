@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+unsafe fn replace<T>(p:*mut T,v:T)->T{unsafe{core::ptr::write_volatile(p,v);core::ptr::read_volatile(p)}}fn main(){let mut a:i8=0;let mut b:u16=0;let mut c:i32=0;let mut d:u64=0;let mut e:u128=0;unsafe{check(replace(&raw mut a,-7)==-7);check(replace(&raw mut b,65001)==65001);check(replace(&raw mut c,-123456)==-123456);check(replace(&raw mut d,18446744073709551610)==18446744073709551610);check(replace(&raw mut e,340282366920938463463374607431768211450)==340282366920938463463374607431768211450);}}

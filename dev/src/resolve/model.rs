@@ -1,7 +1,7 @@
 //! Stable name-resolution facts; lexical bindings point directly at definitions.
 pub use super::builtins::{
-    BuiltinTrait, Callable as BuiltinCallable, Language as BuiltinLanguage, LibraryNominal,
-    LibraryTypes, Traits as BuiltinTraits,
+    BuiltinIntrinsic, BuiltinTrait, Callable as BuiltinCallable, Intrinsics,
+    Language as BuiltinLanguage, LibraryNominal, LibraryTypes, Traits as BuiltinTraits,
 };
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
 use crate::syntax::ast::NodeId;
@@ -256,6 +256,7 @@ pub struct Resolution {
     pub anonymous_parameters: HashMap<NodeKey, Vec<NodeKey>>,
     pub builtin_traits: BuiltinTraits,
     pub library_types: LibraryTypes,
+    pub intrinsics: Intrinsics,
     /// Language-owned identity, distinct from any user declaration named `Drop`.
     pub drop_trait: Option<DefId>,
     /// Supported external crate metadata, separate from the crate's lexical root.

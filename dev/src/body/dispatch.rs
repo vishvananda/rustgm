@@ -131,6 +131,10 @@ fn rewrite(
             Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } => {
                 *signature = fold.apply(&mut facts.types, *signature)?;
             }
+            Rvalue::Intrinsic { instance, .. } => {
+                let ty = fold.apply(&mut facts.types, instance.ty())?;
+                *instance = crate::types::instance::Instance::new(&facts.types, ty)?;
+            }
             Rvalue::Unsize { conversion, .. } => {
                 *conversion = conversion.try_map(|ty| fold.apply(&mut facts.types, ty))?;
             }

@@ -1,5 +1,7 @@
 //! Independently declared capabilities of the pinned external `LowIR` backend.
 use std::{path::Path, process::Command};
+#[path = "harness/elf_code.rs"]
+mod elf_code;
 
 const CASES: &[(&str, usize)] = &[
     ("volatile-i8", 2),
@@ -19,7 +21,10 @@ fn scalar_volatile_and_u32_atomic_capabilities() -> Result<(), Box<dyn std::erro
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;
-    let folder = root.join(format!("obj/intrinsic-backend-{}", std::process::id()));
+    let folder = root.join(format!(
+        "obj/parallel/pa28/intrinsic-backend-{}",
+        std::process::id()
+    ));
     std::fs::create_dir_all(&folder)?;
     for &(name, volatile) in CASES {
         let input = root.join(format!("pa28/tests/backend/{name}.lowir"));
@@ -44,14 +49,21 @@ fn scalar_volatile_and_u32_atomic_capabilities() -> Result<(), Box<dyn std::erro
         assert_eq!(run.status.code(), Some(42), "{name}");
         assert!(run.stdout.is_empty() && run.stderr.is_empty(), "{name}");
         if name == "atomic-u32" {
-            // The backend writes an ELF without section headers. Disassemble its
-            // raw bytes so section-table absence cannot hide the actual opcodes.
-            let disassembly = Command::new("objdump")
-                .args(["-D", "-b", "binary", "-m", "i386:x86-64"])
-                .arg(&executable)
-                .output()?;
-            assert!(disassembly.status.success());
-            let text = String::from_utf8(disassembly.stdout)?;
+            let mut text = String::new();
+            for (index, segment) in elf_code::extract(&std::fs::read(&executable)?)?
+                .iter()
+                .enumerate()
+            {
+                let path = executable.with_extension(format!("code-{index}.bin"));
+                std::fs::write(&path, &segment.bytes)?;
+                let disassembly = Command::new("objdump")
+                    .args(["-D", "-b", "binary", "-m", "i386:x86-64"])
+                    .arg(format!("--adjust-vma={}", segment.address))
+                    .arg(path)
+                    .output()?;
+                assert!(disassembly.status.success());
+                text.push_str(&String::from_utf8(disassembly.stdout)?);
+            }
             for operation in ["xchg", "lock cmpxchg", "lock xadd"] {
                 assert!(text.contains(operation), "missing {operation}");
             }

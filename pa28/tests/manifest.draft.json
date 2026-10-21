@@ -1,0 +1,831 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/volatile/source/reference-result-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/reference-pointee-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/unsafe-loaded-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/unsafe-loaded-function-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/unsafe-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/unsafe-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/safe-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/safe-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/implicit-unsafe-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/denied-unsafe-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/explicit-unsafe-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/mutable-read-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/immutable-write-pointer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/pointer-type-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/stored-type-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/import-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/glob-import.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/crate-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/local-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/module-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/item-formation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/unsafe-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/safe-pointer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/pointer-safe-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/constant-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/const-initializer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/const-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/const-skipped-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/generic-const-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/generic-const-skipped-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/uninitialized-callee.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/const-skipped-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/source/no-std.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/generic-wrapper.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/closure-inheritance.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+      }
+    },
+    {
+      "path": "tests/spec/volatile/source/nested-item-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:CASES"
+    },
+    {
+      "path": "tests/spec/volatile/unsupported/aggregate-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile",
+        "pa28.volatile-aggregate-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust aggregate, wide-pointer and zero-sized volatile operations are explicitly unsupported by the initial scalar frontend slice."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:BOUNDARIES"
+    },
+    {
+      "path": "tests/spec/volatile/unsupported/aggregate-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile",
+        "pa28.volatile-aggregate-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust aggregate, wide-pointer and zero-sized volatile operations are explicitly unsupported by the initial scalar frontend slice."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:BOUNDARIES"
+    },
+    {
+      "path": "tests/spec/volatile/unsupported/zero-sized-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile",
+        "pa28.volatile-aggregate-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust aggregate, wide-pointer and zero-sized volatile operations are explicitly unsupported by the initial scalar frontend slice."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:BOUNDARIES"
+    },
+    {
+      "path": "tests/spec/volatile/unsupported/wide-pointer-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile",
+        "pa28.volatile-aggregate-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust aggregate, wide-pointer and zero-sized volatile operations are explicitly unsupported by the initial scalar frontend slice."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:BOUNDARIES"
+    },
+    {
+      "path": "tests/spec/volatile/unsupported/aggregate-pointer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.volatile",
+        "pa28.volatile-aggregate-unsupported"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust aggregate, wide-pointer and zero-sized volatile operations are explicitly unsupported by the initial scalar frontend slice."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:BOUNDARIES"
+    },
+    {
+      "path": "tests/spec/volatile/native/function-pointer-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/mutable-reference-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/read-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/function-pointers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/integer-widths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/float-and-validity-scalars.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/pointer-values.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/reference-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/native/unused-result-effect.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:scalar_volatile_operations_execute"
+    },
+    {
+      "path": "tests/spec/volatile/effects/calls-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile.effects"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:unused_volatile_reads_and_reified_shims_remain_explicit"
+    },
+    {
+      "path": "tests/spec/volatile/effects/calls-8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile.effects"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:unused_volatile_reads_and_reified_shims_remain_explicit"
+    },
+    {
+      "path": "tests/spec/volatile/effects/calls-32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.volatile.effects"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
+      },
+      "maintainer_origin": "dev/tests/volatile_intrinsics.rs:unused_volatile_reads_and_reified_shims_remain_explicit"
+    }
+  ]
+}

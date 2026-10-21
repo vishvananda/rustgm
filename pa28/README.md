@@ -17,13 +17,33 @@ add-and-fetch. Run the ignored `intrinsic_backend` maintainer test with the
 configured backend and GNU objdump to execute these controls and inspect the
 atomic machine instructions. This establishes backend capabilities only.
 
-The first frontend slice is canonical scalar `read_volatile` and `write_volatile`.
-Use exact library definition identities and typed intrinsic descriptors; track
-unsafe permission independently of constant-operation eligibility. Volatile
-operations are runtime-only, including in skipped const branches. Aggregate
-volatile transfers remain explicitly unsupported initially: ordinary object
-copies or zero initialization cannot substitute for volatile accesses or padding.
-Atomic library methods and the remaining intrinsic families are later slices.
+The initial frontend checkpoint implements canonical `core::ptr` and `std::ptr`
+`read_volatile` and `write_volatile` for primitive scalars and thin raw-pointer,
+reference and function-pointer values. Imports and reified unsafe function
+pointers retain their canonical callable identity. Reification shares a shim per
+selected instance; unused direct reads retain their volatile access. Ordinary
+loads and stores keep their existing LowIR spelling.
+
+Typed intrinsic descriptors track unsafe permission independently of constant
+operation eligibility. Volatile calls require the ordinary unsafe context and
+are runtime-only, including skipped branches in ordinary and generic const
+functions. Forming an intrinsic function-pointer constant is permitted; calling
+that pointer during constant evaluation remains forbidden. As for raw reads and
+writes, the source program must meet the selected type's validity and alignment
+requirements; an unsafe block does not validate a pointer or its contents.
+
+Aggregate, zero-sized and wide-pointer volatile transfers remain explicitly
+unsupported. Ordinary object copies or zero initialization cannot substitute for
+volatile accesses or padding. Atomic library methods and the remaining intrinsic
+families are later slices. The independent `u32` atomic capability controls do
+not claim source-language atomic support.
+
+The draft `tests/manifest.draft.json` declares 53 independently qualified source
+outcomes, including nine native comparisons and five valid Rust inputs that
+exercise the explicit unsupported boundary. The maintainer tests
+`volatile_intrinsics` and `intrinsic_backend` retain their new outputs under
+`obj/parallel/pa28/`. These checkpoints do not activate PA28 or provide generated
+text references.
 
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned

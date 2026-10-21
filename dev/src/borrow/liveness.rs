@@ -213,6 +213,9 @@ impl<'a> Flow<'a> {
             | Rvalue::IsVariant { place, .. }
             | Rvalue::Validate(place) => self.use_place(place, live)?,
             Rvalue::Aggregate { fields, .. }
+            | Rvalue::Intrinsic {
+                arguments: fields, ..
+            }
             | Rvalue::Invoke {
                 arguments: fields, ..
             }

@@ -281,7 +281,10 @@ impl Generics {
         report: &crate::resolve::expansion::Report,
         functions: &[super::model::Function],
     ) -> Result<(), crate::resolve::package::Error> {
-        if let Some(function) = functions.iter().find(|f| self.has_parameters(f.definition)) {
+        if let Some(function) = functions
+            .iter()
+            .find(|f| f.body.is_some() && self.has_parameters(f.definition))
+        {
             return Err(super::model::Declarations::error(
                 report,
                 function.node,

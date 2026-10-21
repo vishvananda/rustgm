@@ -1,4 +1,5 @@
 //! Demand-created language trait metadata, resolved through ordinary namespaces.
+mod intrinsics;
 mod library;
 mod traits;
 use super::{
@@ -11,6 +12,7 @@ use crate::syntax::{
     ast::NodeId,
     item::{Item, ItemKind},
 };
+pub use intrinsics::{Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal};
 pub use traits::{BuiltinTrait, Callable, Language, Traits};
 
@@ -112,7 +114,9 @@ impl Resolver<'_> {
             && path.first().is_some_and(|&name| {
                 let namespace = if path.len() > 1 { Namespace::Type } else { namespace };
                 matches!(self.lexical(c.scope, name, namespace), crate::resolve::lookup::Lookup::Found(binding)
-                    if self.facts.definitions[binding.target.0 as usize].node.is_some())
+                    if self.facts.definitions[binding.target.0 as usize].node.is_some()
+                        && !self.facts.definitions[binding.target.0 as usize].members.is_some_and(|scope|
+                            self.facts.builtin_traits.library == Some(scope)))
             });
         if self.facts.drop_trait.is_none()
             && path.first().is_some_and(|name| {
@@ -142,6 +146,7 @@ impl Resolver<'_> {
         self.prepare_trait_metadata(c, node, absolute, path)?;
         if !library_shadowed {
             self.prepare_library_metadata(c, node, path)?;
+            self.prepare_intrinsic_metadata(c, node, path)?;
         }
         Ok(())
     }

@@ -181,6 +181,9 @@ fn operands<'a>(
         .ok_or("invalid owned evaluation")?;
     match &value.kind {
         Rvalue::Aggregate { fields, .. }
+        | Rvalue::Intrinsic {
+            arguments: fields, ..
+        }
         | Rvalue::Invoke {
             arguments: fields, ..
         }

@@ -49,6 +49,17 @@ impl Machine<'_, '_> {
             .ok_or("missing constant rvalue")?;
         let ty = value.ty;
         let result = match value.kind {
+            Rvalue::Intrinsic { intrinsic, .. } => {
+                return Err(match intrinsic.descriptor().constant {
+                    crate::support::intrinsics::ConstPermission::RuntimeOnly => {
+                        "runtime-only intrinsic is not allowed during constant evaluation"
+                    }
+                    crate::support::intrinsics::ConstPermission::Allowed => {
+                        "constant intrinsic execution is not implemented"
+                    }
+                }
+                .into());
+            }
             Rvalue::Scalar(id) => Constant::scalar(
                 *body
                     .scalars

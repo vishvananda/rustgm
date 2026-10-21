@@ -148,6 +148,7 @@ impl Machine<'_> {
             | Rvalue::Text(_)
             | Rvalue::Aggregate { .. }
             | Rvalue::Union { .. }
+            | Rvalue::Intrinsic { .. }
             | Rvalue::Length(_)
             | Rvalue::TextEquals { .. }
             | Rvalue::IsVariant { .. }

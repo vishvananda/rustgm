@@ -301,13 +301,33 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             right,
         } => write!(out, "binary {operator:?} v{} v{}", left.0, right.0),
         Rvalue::Cast { kind, operand } => write!(out, "cast {kind:?} v{}", operand.0),
+        Rvalue::Invoke { .. } | Rvalue::Intrinsic { .. } | Rvalue::Call { .. } => {
+            call_value(body, value, out)
+        }
+    }
+}
+fn call_value(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
+    let arguments = match value {
         Rvalue::Invoke {
             kind,
             signature,
             arguments,
         } => {
             write!(out, "invoke {} signature={} ", kind.name(), signature.0)?;
-            value_list(body, arguments, out)
+            arguments
+        }
+        Rvalue::Intrinsic {
+            intrinsic,
+            instance,
+            arguments,
+        } => {
+            write!(
+                out,
+                "intrinsic {} instance={} ",
+                intrinsic.name(),
+                instance.ty().0
+            )?;
+            arguments
         }
         Rvalue::Call {
             signature,
@@ -315,9 +335,11 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             arguments,
         } => {
             write!(out, "call signature={} v{} ", signature.0, callee.0)?;
-            value_list(body, arguments, out)
+            arguments
         }
-    }
+        _ => return Err(io::Error::other("non-call rvalue passed to call view")),
+    };
+    value_list(body, arguments, out)
 }
 
 fn value_list(body: &Body, list: super::ir::ValueList, out: &mut impl Write) -> io::Result<()> {

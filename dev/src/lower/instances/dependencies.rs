@@ -66,6 +66,11 @@ impl Dependencies {
         let result = result?;
         let mut concrete = Vec::new();
         for instance in result.calls {
+            if matches!(facts.types.kind(instance.ty()), Some(Kind::FunctionItem { item, .. })
+                if facts.intrinsics.identify(crate::resolve::model::DefId(item.0)).is_some())
+            {
+                continue;
+            }
             if !crate::sema::vtable_plans::prepare_call(report, facts, instance)? {
                 concrete.push(instance);
             }

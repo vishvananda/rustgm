@@ -78,6 +78,7 @@ impl Engine<'_, '_> {
                     ..
                 }
                 | Rvalue::Invoke { .. }
+                | Rvalue::Intrinsic { .. }
                 | Rvalue::Address(_)
                 | Rvalue::IsVariant { .. }
                 | Rvalue::Length(_)

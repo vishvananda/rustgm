@@ -23,6 +23,8 @@ use crate::{
 use std::collections::HashMap;
 
 pub(super) struct Context<'a> {
+    pub intrinsics: &'a crate::resolve::model::Intrinsics,
+    pub intrinsic_symbols: HashMap<Instance, SymbolId>,
     pub types: &'a Store,
     pub aggregates: &'a Definitions,
     pub members: &'a Members,
@@ -108,6 +110,8 @@ impl<'a> Context<'a> {
             .max()
             .unwrap_or(0);
         let mut context = Self {
+            intrinsics: &facts.intrinsics,
+            intrinsic_symbols: HashMap::new(),
             types: &facts.types,
             aggregates: &facts.aggregates,
             members: &facts.members,
@@ -432,6 +436,9 @@ impl<'a> Context<'a> {
             let symbol = self.output.declare(name, signature, false)?;
             self.imported_symbols.insert(definition, symbol);
             return Ok(symbol);
+        }
+        if let Some(intrinsic) = self.intrinsics.identify(definition) {
+            return self.demand_intrinsic(intrinsic, instance);
         }
         let index = if let Some(&index) = self.instance_indices.get(&instance) {
             index
