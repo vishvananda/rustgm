@@ -38,7 +38,11 @@ impl Checker<'_> {
             .functions
             .iter()
             .map(|function| {
-                if self.facts.typed_function_bodies.contains(&function.definition) {
+                if self
+                    .facts
+                    .typed_function_bodies
+                    .contains(&function.definition)
+                {
                     Status::Complete
                 } else {
                     Status::Unseen

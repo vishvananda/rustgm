@@ -257,6 +257,9 @@ impl Machine<'_, '_> {
         while let Some((id, projection)) = pending.pop() {
             address = match projection.kind {
                 ProjectionKind::Dereference { .. } => self.read(address)?,
+                ProjectionKind::RawDereference { .. } => {
+                    return Err("raw pointer dereference in constant execution is not implemented".into());
+                }
                 ProjectionKind::Field(field) => {
                     let index = match field {
                         crate::sema::members::Selection::Tuple(index) => index,

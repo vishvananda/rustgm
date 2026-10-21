@@ -2,7 +2,10 @@
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]
-#[expect(dead_code, reason = "this lane checks resolution before semantic inference")]
+#[expect(
+    dead_code,
+    reason = "this lane checks resolution before semantic inference"
+)]
 mod semantic;
 use rustgm::{
     resolve::model::{DefId, Resolution, Scope, ScopeId},
@@ -167,7 +170,12 @@ fn deep_scope_storage_and_parent_resolution_are_iterative() -> Result<(), &'stat
     for count in [64_u32, 256, 1024, 16_384] {
         let resolution = Resolution {
             scopes: (0..count)
-                .map(|index| scope((index + 1 < count).then_some(ScopeId(index + 1)), index == 0))
+                .map(|index| {
+                    scope(
+                        (index + 1 < count).then_some(ScopeId(index + 1)),
+                        index == 0,
+                    )
+                })
                 .collect(),
             ..Resolution::default()
         };
