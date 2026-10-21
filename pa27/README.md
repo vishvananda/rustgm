@@ -74,6 +74,13 @@ escape through that array. The operand still executes and retains every const
 eligibility and validity check. Nonzero repeats retain their dangling-pointer
 checks, and discarded transient raw pointers do not become stored results.
 
+Typed raw constant reads use symbolic allocation origins and existing initialized
+cells. They check storage lifetime, requested type, bounds and physical alignment
+from retained layout facts. Direct raw-address cancellation does not read its
+referent. Byte reinterpretation, raw writes and reference creation through raw
+places remain explicit unsupported boundaries; unsafe permission grants none of
+those constant capabilities. Foreign and mutable static contents remain forbidden.
+
 Packed by-value copies, primitive compound assignment and raw address formation
 remain distinct from creating a field reference. The qualified let-reference
 and match-reference controls reject in the executable pipeline. Earlier type

@@ -15,6 +15,12 @@ enum Cell {
     },
     Empty,
 }
+#[derive(Clone, Copy)]
+pub(super) struct Resolved {
+    pub address: Constant,
+    pub ty: TypeId,
+    pub raw: bool,
+}
 #[derive(Default)]
 pub(super) struct Memory {
     cells: Vec<Cell>,
@@ -54,6 +60,7 @@ impl Machine<'_, '_> {
             self.bodies[frame.body].locals[id.0 as usize].kind,
             crate::body::ir::LocalKind::Guard(_)
         ) {
+            frame.raw_views.remove(&id);
             frame.locals[id.0 as usize] = None;
             return Ok(());
         }
@@ -63,7 +70,7 @@ impl Machine<'_, '_> {
         }
         Ok(())
     }
-    fn path(&mut self, address: Constant) -> Result<(LocationId, Vec<u64>), Failure> {
+    pub(super) fn path(&mut self, address: Constant) -> Result<(LocationId, Vec<u64>), Failure> {
         let mut location = address.location().ok_or(Failure::Fault(
             "constant pointer has no allocation provenance",
         ))?;
@@ -176,21 +183,34 @@ impl Machine<'_, '_> {
             .copied()
             .ok_or("missing constant snapshot".into())
     }
-    pub(super) fn read(&mut self, address: Constant) -> Result<Constant, Failure> {
-        let (root, path) = self.path(address)?;
+    pub(super) fn read(&mut self, place: Resolved) -> Result<Option<Constant>, Failure> {
+        let (root, path) = self.path(place.address)?;
+        if place.raw {
+            self.check_raw_read(place, root, &path)?;
+        }
         if self.memory.roots.contains_key(&root) {
             let cell = self.cell(root, &path)?;
-            return self.freeze(cell);
+            return self.freeze(cell).map(Some);
         }
         let reader = Reader::new(self.evaluator.facts());
         let location = reader.location(root)?;
-        let mut value = location
-            .value
-            .ok_or("constant allocation has no completed contents")?;
+        let mut value = if let Origin::Static(id) = location.origin {
+            self.check_static_read(id)?;
+            let Some(value) = reader.definition(id) else {
+                self.waiting = Some(super::Requirement::InitializerBody(id));
+                return Ok(None);
+            };
+            value
+        } else {
+            location
+                .value
+                .ok_or("constant allocation has no completed contents")?
+        };
         for index in path {
+            self.charge(1)?;
             value = self.evaluator.field(value, index)?;
         }
-        Ok(value)
+        Ok(Some(value))
     }
     pub(super) fn write(&mut self, address: Constant, value: Constant) -> Result<(), Failure> {
         let (root, path) = self.path(address)?;
@@ -213,7 +233,11 @@ impl Machine<'_, '_> {
         frame.temporaries.insert(id, address);
         Ok(address)
     }
-    pub(super) fn place(&mut self, frame: &mut Frame, root: Place) -> Result<Constant, Failure> {
+    pub(super) fn place(
+        &mut self,
+        frame: &mut Frame,
+        root: Place,
+    ) -> Result<Option<Resolved>, Failure> {
         let body = self.bodies[frame.body].clone();
         let mut current = root;
         let mut pending = Vec::new();
@@ -221,12 +245,16 @@ impl Machine<'_, '_> {
             self.charge(1)?;
             match current {
                 Place::Local(id) => {
-                    break frame
-                        .locals
-                        .get(id.0 as usize)
-                        .copied()
-                        .flatten()
-                        .ok_or("constant local is outside its storage lifetime")?;
+                    break Resolved {
+                        address: frame
+                            .locals
+                            .get(id.0 as usize)
+                            .copied()
+                            .flatten()
+                            .ok_or("constant local is outside its storage lifetime")?,
+                        ty: body.locals[id.0 as usize].ty,
+                        raw: frame.raw_views.contains(&id),
+                    };
                 }
                 Place::Static(id) => {
                     let ty = self
@@ -237,10 +265,18 @@ impl Machine<'_, '_> {
                         .copied()
                         .flatten()
                         .ok_or("missing static type")?;
-                    break self.evaluator.static_address(id, ty)?;
+                    break Resolved {
+                        address: self.evaluator.static_address(id, ty)?,
+                        ty,
+                        raw: false,
+                    };
                 }
                 Place::Temporary(id) => {
-                    break self.temporary(frame, id)?;
+                    break Resolved {
+                        address: self.temporary(frame, id)?,
+                        ty: body.values[id.0 as usize].ty,
+                        raw: false,
+                    };
                 }
                 Place::Projection(id) => {
                     if let Some(&address) = frame.projections.get(&id) {
@@ -256,59 +292,83 @@ impl Machine<'_, '_> {
             }
         };
         while let Some((id, projection)) = pending.pop() {
-            address = match projection.kind {
-                ProjectionKind::CaptureBoundary { .. } => {
-                    return Err("captured closure execution is not implemented in constants".into());
-                }
-                ProjectionKind::Dereference { .. } => self.read(address)?,
-                ProjectionKind::RawDereference { .. } => {
-                    return Err(
-                        "raw pointer dereference in constant execution is not implemented".into(),
-                    );
-                }
-                ProjectionKind::Field(field) => {
-                    let index = match field {
-                        crate::sema::members::Selection::Tuple(index) => index,
-                        crate::sema::members::Selection::Nominal(field) => self
-                            .evaluator
-                            .facts()
-                            .members
-                            .ordinal(field)
-                            .ok_or("missing constant field ordinal")?,
-                    };
-                    self.evaluator
-                        .projection(address, u64::from(index), projection.ty)?
-                }
-                ProjectionKind::UnionField(_) => {
-                    return Err(
-                        "union field reinterpretation in constant execution is not implemented"
-                            .into(),
-                    );
-                }
-                ProjectionKind::ConstantIndex(index) => {
-                    self.evaluator.projection(address, index, projection.ty)?
-                }
-                ProjectionKind::Index { index, length } => {
-                    let index = super::values::integer(Self::value(frame, index)?)?;
-                    let index = u64::try_from(index)
-                        .ok()
-                        .filter(|i| *i < length)
-                        .ok_or(Failure::Fault("constant index is out of bounds"))?;
-                    self.evaluator.projection(address, index, projection.ty)?
-                }
-                ProjectionKind::IndexParameter { .. } => {
-                    return Err("constant body retains an unresolved array length".into());
-                }
-                ProjectionKind::SliceIndex { .. }
-                | ProjectionKind::FromEnd { .. }
-                | ProjectionKind::Subslice { .. }
-                | ProjectionKind::Subarray { .. } => {
-                    return Err("constant slice projection is not implemented".into());
-                }
+            let Some(result) = self.project(frame, address, projection)? else {
+                return Ok(None);
             };
+            address = result;
             frame.projections.insert(id, address);
         }
-        Ok(address)
+        Ok(Some(address))
+    }
+    fn project(
+        &mut self,
+        frame: &Frame,
+        address: Resolved,
+        projection: crate::body::ir::Projection,
+    ) -> Result<Option<Resolved>, Failure> {
+        let result = match projection.kind {
+            ProjectionKind::CaptureBoundary { .. } => {
+                return Err("captured closure execution is not implemented in constants".into());
+            }
+            ProjectionKind::Dereference { .. } | ProjectionKind::RawDereference { .. } => {
+                let Some(value) = self.read(address)? else {
+                    return Ok(None);
+                };
+                return Ok(Some(Resolved {
+                    address: value,
+                    ty: projection.ty,
+                    raw: matches!(projection.kind, ProjectionKind::RawDereference { .. }),
+                }));
+            }
+            ProjectionKind::Field(field) => {
+                let index = match field {
+                    crate::sema::members::Selection::Tuple(index) => index,
+                    crate::sema::members::Selection::Nominal(field) => self
+                        .evaluator
+                        .facts()
+                        .members
+                        .ordinal(field)
+                        .ok_or("missing constant field ordinal")?,
+                };
+                self.project_raw_type(address)?;
+                self.evaluator
+                    .projection(address.address, u64::from(index), projection.ty)?
+            }
+            ProjectionKind::UnionField(_) => {
+                return Err(
+                    "union field reinterpretation in constant execution is not implemented".into(),
+                );
+            }
+            ProjectionKind::ConstantIndex(index) => {
+                self.project_raw_type(address)?;
+                self.evaluator
+                    .projection(address.address, index, projection.ty)?
+            }
+            ProjectionKind::Index { index, length } => {
+                let index = super::values::integer(Self::value(frame, index)?)?;
+                let index = u64::try_from(index)
+                    .ok()
+                    .filter(|i| *i < length)
+                    .ok_or(Failure::Fault("constant index is out of bounds"))?;
+                self.project_raw_type(address)?;
+                self.evaluator
+                    .projection(address.address, index, projection.ty)?
+            }
+            ProjectionKind::IndexParameter { .. } => {
+                return Err("constant body retains an unresolved array length".into());
+            }
+            ProjectionKind::SliceIndex { .. }
+            | ProjectionKind::FromEnd { .. }
+            | ProjectionKind::Subslice { .. }
+            | ProjectionKind::Subarray { .. } => {
+                return Err("constant slice projection is not implemented".into());
+            }
+        };
+        Ok(Some(Resolved {
+            address: result,
+            ty: projection.ty,
+            raw: address.raw,
+        }))
     }
     pub(super) fn validate_result(&mut self, root: Constant, ty: TypeId) -> Result<(), Failure> {
         let mut pending = vec![root];

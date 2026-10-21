@@ -18,7 +18,8 @@
       "purpose": "Zero-length repeat still evaluates its operand and must reject an expired-storage read.",
       "expected_status": 1,
       "frontend_types_status": 1,
-      "frontend_boundary": "raw pointer dereference in constant execution is not implemented; rejection does not prove expired-read validity"
+      "previous_frontend_boundary": "raw pointer dereference in constant execution is not implemented; rejection does not prove expired-read validity",
+      "frontend_rejection": "constant pointer refers to expired storage; reached raw read now checks allocation lifetime"
     },
     {
       "name": "integer-raw-address",

@@ -210,7 +210,18 @@ impl Queries<'_> {
                     Some(Expression::Address(child(operand)))
                 }
                 (Kind::Unary { operand, .. }, Some(Operation::Dereference)) => {
-                    Some(Expression::Dereference(child(operand)))
+                    if self
+                        .typing
+                        .facts
+                        .node(child(operand))
+                        .and_then(|f| f.ty)
+                        .and_then(|ty| self.typing.facts.types.kind(ty))
+                        .is_some_and(|kind| matches!(kind, crate::types::Kind::Pointer { .. }))
+                    {
+                        None
+                    } else {
+                        Some(Expression::Dereference(child(operand)))
+                    }
                 }
                 (Kind::Field { value, .. }, Some(Operation::Field { field })) => {
                     let index = match field {

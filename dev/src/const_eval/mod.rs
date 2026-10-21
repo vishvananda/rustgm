@@ -1,6 +1,7 @@
 //! Bounded constant execution consumes selected typed CFGs, never source syntax.
 pub(crate) mod code;
 mod memory;
+mod raw_reads;
 mod readiness;
 mod returns;
 mod values;
@@ -49,7 +50,8 @@ struct Frame {
     locals: Vec<Option<Constant>>,
     values: Vec<Option<Constant>>,
     temporaries: HashMap<ValueId, Constant>,
-    projections: HashMap<crate::body::ir::ProjectionId, Constant>,
+    projections: HashMap<crate::body::ir::ProjectionId, memory::Resolved>,
+    raw_views: HashSet<crate::body::ir::LocalId>,
     allocations: Vec<crate::sema::values::LocationId>,
 }
 /// All CFGs are immutable and already checked by their defining-body pipeline.
@@ -271,6 +273,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             values: vec![None; body.values.len()],
             temporaries: HashMap::new(),
             projections: HashMap::new(),
+            raw_views: HashSet::new(),
             allocations: Vec::new(),
         };
         let mut parameters = 0;
@@ -329,6 +332,12 @@ impl<'a, 'b> Machine<'a, 'b> {
                 if let Some(requirement) = self.waiting.take() {
                     frame.next -= 1;
                     self.frames.push(frame);
+                    if self
+                        .initialize_storage(requirement)
+                        .map_err(|e| (index, e))?
+                    {
+                        continue;
+                    }
                     return Ok(Progress::Prepare(requirement));
                 }
                 self.frames.push(frame);
@@ -391,8 +400,15 @@ impl<'a, 'b> Machine<'a, 'b> {
             Action::Evaluate(id) => return self.evaluate(frame, id),
             Action::Store { place, value } => {
                 let value = Self::value(frame, value)?;
-                let location = self.place(frame, place)?;
-                self.write(location, value)?;
+                let Some(location) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                if location.raw {
+                    return Err(
+                        "raw pointer writes in constant execution are not implemented".into(),
+                    );
+                }
+                self.write(location.address, value)?;
             }
             Action::StorageLive(id) => {
                 let ty = self.bodies[frame.body].locals[id.0 as usize].ty;
@@ -420,7 +436,15 @@ impl<'a, 'b> Machine<'a, 'b> {
                 self.place(frame, crate::body::ir::Place::Projection(projection))?;
             }
             Action::BindView { view, place } => {
-                frame.locals[view.0 as usize] = Some(self.place(frame, place)?);
+                let Some(location) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                if location.raw {
+                    frame.raw_views.insert(view);
+                } else {
+                    frame.raw_views.remove(&view);
+                }
+                frame.locals[view.0 as usize] = Some(location.address);
             }
             Action::Mention(_) | Action::GuardStart(_) | Action::GuardUse(_) => {}
         }

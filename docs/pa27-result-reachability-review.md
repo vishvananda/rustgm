@@ -38,3 +38,5 @@ The zero-repeat invalid-read control still evaluates its operand. Pinned Rust re
 - A nonexistent make test-layout target stopped the initial shell batch after its successful audit; only the missing layout/upstream checks were rerun using check_layout.py and make test-upstream. Passing compiler checks were not repeated.
 
 No active reference sidecars changed and no assignment was activated. Constant union byte initialization, pointer provenance, scalar validity and raw dereference remain separate unfinished PA27 work.
+
+The subsequent symbolic raw-read slice replaces the expired-read unsupported boundary with the existing allocation-liveness check. The original zero-repeat invalid-read input is unchanged; it still evaluates the operand and now rejects because its storage has expired. The unsupported result above records the original reachability checkpoint.

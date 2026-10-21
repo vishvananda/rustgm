@@ -128,10 +128,32 @@ impl Machine<'_, '_> {
                 }
             }
             Rvalue::Read(place) => {
-                let address = self.place(frame, place)?;
-                self.read(address)?
+                let Some(address) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                let Some(value) = self.read(address)? else {
+                    return Ok(None);
+                };
+                value
             }
-            Rvalue::Address(place) | Rvalue::Borrow { place, .. } => self.place(frame, place)?,
+            Rvalue::Address(place) => {
+                let Some(place) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                place.address
+            }
+            Rvalue::Borrow { place, .. } => {
+                let Some(place) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                if place.raw {
+                    return Err(
+                        "references through raw pointers in constant execution are not implemented"
+                            .into(),
+                    );
+                }
+                place.address
+            }
             Rvalue::Unary {
                 operator,
                 operand,
@@ -225,13 +247,21 @@ impl Machine<'_, '_> {
                 }
             }
             Rvalue::Validate(place) => {
-                let address = self.place(frame, place)?;
-                self.read(address)?;
+                let Some(address) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                let Some(_) = self.read(address)? else {
+                    return Ok(None);
+                };
                 self.evaluator.fields(&[], None)?
             }
             Rvalue::IsVariant { place, variant } => {
-                let address = self.place(frame, place)?;
-                let value = self.read(address)?;
+                let Some(address) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                let Some(value) = self.read(address)? else {
+                    return Ok(None);
+                };
                 let actual = match Reader::new(self.evaluator.facts()).view(value)? {
                     View::Product { variant, .. } => variant,
                     _ => None,
@@ -239,8 +269,12 @@ impl Machine<'_, '_> {
                 Constant::scalar(Scalar::Boolean(actual == Some(variant)))
             }
             Rvalue::Length(place) => {
-                let address = self.place(frame, place)?;
-                let value = self.read(address)?;
+                let Some(address) = self.place(frame, place)? else {
+                    return Ok(None);
+                };
+                let Some(value) = self.read(address)? else {
+                    return Ok(None);
+                };
                 let length = match Reader::new(self.evaluator.facts()).view(value)? {
                     View::Product { length, .. } | View::Repeat { length, .. } => length,
                     _ => value.length().ok_or("constant value has no length")?,

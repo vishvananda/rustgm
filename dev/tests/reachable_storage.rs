@@ -75,10 +75,8 @@ fn logical_result_storage_matches_independent_objects() -> Result<(), Box<dyn st
             if !expected {
                 assert!(output.stdout.is_empty(), "{name}/{mode}");
                 let reason = match name {
-                    "dangling-raw-repeat" => "constant pointer refers to expired storage",
-                    // This remains an explicit capability boundary, not proof of the read's validity.
-                    "expired-raw-read" => {
-                        "raw pointer dereference in constant execution is not implemented"
+                    "dangling-raw-repeat" | "expired-raw-read" => {
+                        "constant pointer refers to expired storage"
                     }
                     _ => "reference to an unaligned packed field",
                 };

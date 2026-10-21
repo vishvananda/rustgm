@@ -1,5 +1,7 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
 mod callables;
+mod footprints;
+pub(crate) use footprints::StorageLayout;
 pub mod execution;
 mod memory;
 mod mutation;

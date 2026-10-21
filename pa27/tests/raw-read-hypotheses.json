@@ -1,0 +1,123 @@
+{
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/local.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/mutable-pointer.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/field.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/array.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/function.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/static.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/static-projected.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-unaligned.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-nested-aligned.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/null.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/expired.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/uninitialized.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/address-cancellation.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/cast-address-cancellation.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/reinterpret-boundary.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/mutable-static.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/raw-write-boundary.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/raw-base-field.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/raw-base-array.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/static-indirect.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/static-cycle.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/nonnull-numeric.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/raw-borrow-boundary.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/direct-static.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/direct-packed-static.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/direct-cancellation.rs",
+      "expected_rustc_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/array-bounds.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/static-mutable-indirect.rs",
+      "expected_rustc_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/raw-constant-reads/packed-nested-offset.rs",
+      "expected_rustc_status": 1
+    }
+  ]
+}
