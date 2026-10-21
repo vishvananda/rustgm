@@ -152,6 +152,12 @@ impl Checker<'_> {
             .aggregates
             .insert(item, kind, repr, &variants)
             .map_err(|e| self.error(key, e))?;
+        if kind == aggregate::Kind::Enum {
+            self.facts
+                .aggregates
+                .mark_discriminants_pending(item)
+                .map_err(|e| self.error(key, e))?;
+        }
         if kind == aggregate::Kind::Union {
             self.register_union(item, key)?;
         }

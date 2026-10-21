@@ -163,29 +163,65 @@ impl Checker<'_> {
                     },
                 );
                 self.work.push(Work::EvaluateConstant(request, true));
-                match dependency {
-                    constants::ArgumentDependency::Body(dependency) => {
-                        self.work
-                            .push(Work::body_dependency(dependency.requirement));
-                    }
-                    constants::ArgumentDependency::Initializer(definition) => {
-                        self.require_initializer_readiness(key, definition)?;
-                    }
-                    constants::ArgumentDependency::Members(members) => {
-                        self.work.extend(
-                            members
-                                .into_iter()
-                                .rev()
-                                .map(|request| Work::ConstantMember(request, false)),
-                        );
-                    }
-                    constants::ArgumentDependency::Execution(requirement) => {
-                        self.work.push(Work::Execution(requirement, false));
-                    }
-                }
+                self.constant_dependency(key, dependency)?;
             }
         }
         Ok(())
+    }
+
+    pub(super) fn constant_dependency(
+        &mut self,
+        key: NodeKey,
+        dependency: constants::ArgumentDependency,
+    ) -> Result<(), Error> {
+        match dependency {
+            constants::ArgumentDependency::Body(dependency) => {
+                self.work
+                    .push(Work::body_dependency(dependency.requirement));
+            }
+            constants::ArgumentDependency::Initializer(definition) => {
+                self.require_initializer_readiness(key, definition)?;
+            }
+            constants::ArgumentDependency::Members(members) => {
+                self.work.extend(
+                    members
+                        .into_iter()
+                        .rev()
+                        .map(|request| Work::ConstantMember(request, false)),
+                );
+            }
+            constants::ArgumentDependency::Execution(requirement) => {
+                self.work.push(Work::Execution(requirement, false));
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn complete_discriminants(
+        &mut self,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        let mut continuation = None;
+        loop {
+            match constants::advance_discriminants(
+                self.report,
+                &mut self.facts,
+                &mut self.discriminants,
+                &mut self.constant_scratch,
+                continuation,
+            )? {
+                constants::DiscriminantProgress::Complete => return Ok(()),
+                constants::DiscriminantProgress::Prepare {
+                    source,
+                    dependency,
+                    continuation: saved,
+                } => {
+                    continuation = Some(saved);
+                    self.constant_dependency(source, dependency)?;
+                    self.drain(steps, limit)?;
+                }
+            }
+        }
     }
 
     pub(super) fn require_initializer_readiness(

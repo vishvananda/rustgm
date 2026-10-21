@@ -329,12 +329,7 @@ impl Checker<'_> {
         self.complete_alias_normalizations(&mut steps, work_limit)?;
         self.validate_projection_regions()?;
         self.validate_objects()?;
-        super::constants::finish_discriminants(
-            self.report,
-            &mut self.facts,
-            &mut self.discriminants,
-            &mut self.constant_scratch,
-        )?;
+        self.complete_discriminants(&mut steps, work_limit)?;
         if !self.method_queries.is_empty() {
             return Err(Error::at(
                 FileId(0),

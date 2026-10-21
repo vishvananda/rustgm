@@ -6,7 +6,8 @@ mod discriminants;
 mod drops;
 mod execution;
 pub(super) use discriminants::{
-    Discriminant, Pending as Discriminants, finish as finish_discriminants,
+    Discriminant, Pending as Discriminants, Progress as DiscriminantProgress,
+    advance as advance_discriminants,
 };
 mod generics;
 pub(super) use generics::{

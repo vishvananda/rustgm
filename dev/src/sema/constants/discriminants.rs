@@ -23,6 +23,9 @@ pub(in crate::sema) struct Pending {
     entries: Vec<Entry>,
     index: HashMap<VariantId, usize>,
     captures: crate::sema::generics::captures::Captures,
+    cursor: usize,
+    explicit_values: usize,
+    used: HashSet<(crate::types::ItemId, u128)>,
 }
 impl Pending {
     pub(in crate::sema) fn push(&mut self, spec: Discriminant) -> Result<(), &'static str> {
@@ -33,6 +36,7 @@ impl Pending {
         {
             return Err("enum discriminant already declared");
         }
+        self.explicit_values += usize::from(spec.value.is_some());
         self.entries.push(Entry { spec, value: None });
         Ok(())
     }
@@ -56,23 +60,30 @@ impl Pending {
     }
 }
 
-pub(in crate::sema) fn finish(
+pub(in crate::sema) enum Progress {
+    Complete,
+    Prepare {
+        source: NodeKey,
+        dependency: super::suspension::Dependency,
+        continuation: Box<super::suspension::Continuation>,
+    },
+}
+
+pub(in crate::sema) fn advance(
     report: &Report,
     facts: &mut Declarations,
     pending: &mut Pending,
     scratch: &mut Scratch,
-) -> Result<(), Error> {
+    continuation: Option<Box<super::suspension::Continuation>>,
+) -> Result<Progress, Error> {
     if pending.entries.is_empty() {
-        return Ok(());
+        return Ok(Progress::Complete);
     }
-    if pending
-        .entries
-        .iter()
-        .all(|entry| entry.spec.value.is_none())
-    {
-        // Preserve the linear, allocation-free completion path for implicit tags.
+    if pending.explicit_values == 0 {
+        // Preserve the linear, query-free completion path for implicit tags.
         let mut previous = 0;
         for entry in &mut pending.entries {
+            visit(facts)?;
             let spec = entry.spec;
             let member = facts.members.variants[spec.variant.0 as usize];
             let error = |message| Declarations::error(report, member.node, message);
@@ -92,12 +103,17 @@ pub(in crate::sema) fn finish(
                 .map_err(error)?;
             previous = value;
         }
-        return Ok(());
+        return Ok(Progress::Complete);
     }
     let count = pending.len();
+    let cursor = pending.cursor;
     let mut queries = Queries::with_scratch(report, facts, Some(pending), std::mem::take(scratch));
-    let mut used = HashSet::new();
-    for index in 0..count {
+    let mut resumed = continuation.is_some();
+    if let Some(continuation) = continuation {
+        queries.resume(*continuation);
+    }
+    for index in cursor..count {
+        visit(queries.typing.facts)?;
         let spec = queries
             .discriminants
             .as_ref()
@@ -107,18 +123,51 @@ pub(in crate::sema) fn finish(
         let variant = spec.variant;
         queries.value_scope = spec.value.map(|key| (key, TypeId::primitive(spec.tag)));
         let query = Query::Variant(variant);
-        queries.work.push(Work::Enter(query));
-        queries.drain()?;
+        if !resumed {
+            queries.work.push(Work::Enter(query));
+        }
+        resumed = false;
+        if let Some(dependency) = queries.drain_until(None)? {
+            let source = queries.typing.facts.members.variants[variant.0 as usize].node;
+            let (saved, continuation) = queries.suspend();
+            *scratch = saved;
+            return Ok(Progress::Prepare {
+                source,
+                dependency,
+                continuation,
+            });
+        }
         let value = queries
             .value(query)?
             .integer()
             .map_err(|e| queries.error(query, e))?;
         let member = queries.typing.facts.members.variants[variant.0 as usize];
-        if !used.insert((member.owner, value)) {
+        let pending = queries
+            .discriminants
+            .as_mut()
+            .ok_or_else(|| Error::at(super::FileId(0), 0, "missing pending discriminants"))?;
+        if !pending.used.insert((member.owner, value)) {
             return Err(queries.error(query, "duplicate enum discriminant"));
         }
+        pending.cursor = index + 1;
     }
     *scratch = queries.into_scratch();
+    Ok(Progress::Complete)
+}
+
+fn visit(facts: &mut Declarations) -> Result<(), Error> {
+    facts.constant_work.discriminant_visits = facts
+        .constant_work
+        .discriminant_visits
+        .checked_add(1)
+        .filter(|&visits| visits <= 1_000_000)
+        .ok_or_else(|| {
+            Error::at(
+                super::FileId(0),
+                0,
+                "enum discriminant scheduling budget exceeded",
+            )
+        })?;
     Ok(())
 }
 
@@ -163,6 +212,17 @@ impl Queries<'_> {
         let query = Query::Variant(variant);
         let Some(pending) = &self.discriminants else {
             let member = self.typing.facts.members.variants[variant.0 as usize];
+            if !self
+                .typing
+                .facts
+                .aggregates
+                .discriminant_ready(member.owner, member.ordinal)
+            {
+                return Err(self.error(
+                    query,
+                    "enum discriminant requires completed declaration evaluation",
+                ));
+            }
             let shape = self
                 .typing
                 .facts

@@ -51,6 +51,9 @@ pub struct Definition {
 }
 #[derive(Default)]
 pub struct Definitions {
+    pending_discriminants: HashMap<ItemId, std::collections::HashSet<u32>>,
+    discriminant_indexing: usize,
+    discriminant_publications: usize,
     unions: bool,
     packing_checked: bool,
     projected_templates: bool,
@@ -63,6 +66,38 @@ pub struct Definitions {
     suppressed_fields: std::collections::HashSet<ItemId>,
 }
 impl Definitions {
+    pub(crate) fn mark_discriminants_pending(&mut self, item: ItemId) -> Result<(), &'static str> {
+        let definition = self.get(item).ok_or("missing pending enum declaration")?;
+        if definition.kind != Kind::Enum || self.pending_discriminants.contains_key(&item) {
+            return Err("invalid pending enum discriminants");
+        }
+        let count = definition.end - definition.start;
+        self.discriminant_indexing = self
+            .discriminant_indexing
+            .checked_add(count as usize)
+            .filter(|&work| work <= 1_000_000)
+            .ok_or("enum discriminant indexing budget exceeded")?;
+        if count != 0 {
+            self.pending_discriminants
+                .insert(item, (0..count).collect());
+        }
+        Ok(())
+    }
+    #[must_use]
+    pub(crate) fn discriminants_ready(&self, item: ItemId) -> bool {
+        !self.pending_discriminants.contains_key(&item)
+    }
+    #[must_use]
+    pub(crate) fn discriminant_ready(&self, item: ItemId, ordinal: u32) -> bool {
+        self.pending_discriminants
+            .get(&item)
+            .is_none_or(|pending| !pending.contains(&ordinal))
+    }
+    /// Actual indexed variant ordinals and first completed publications.
+    #[must_use]
+    pub fn discriminant_work(&self) -> (usize, usize) {
+        (self.discriminant_indexing, self.discriminant_publications)
+    }
     #[must_use]
     pub const fn has_unions(&self) -> bool {
         self.unions
@@ -218,6 +253,12 @@ impl Definitions {
         }
         let index = definition.start + ordinal;
         self.variants[index as usize].discriminant = bits;
+        if let Some(pending) = self.pending_discriminants.get_mut(&item) {
+            self.discriminant_publications += usize::from(pending.remove(&ordinal));
+            if pending.is_empty() {
+                self.pending_discriminants.remove(&item);
+            }
+        }
         Ok(())
     }
     pub fn iter(&self) -> std::slice::Iter<'_, Definition> {
@@ -232,3 +273,7 @@ impl<'a> IntoIterator for &'a Definitions {
         self.iter()
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/enum_tag_readiness.rs"]
+mod readiness_tests;
