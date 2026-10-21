@@ -1,4 +1,5 @@
 pub mod call_traits;
+pub mod crates;
 pub(crate) mod intern_slice;
 pub mod language_hooks;
 pub mod library_types;
