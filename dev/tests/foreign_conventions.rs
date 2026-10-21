@@ -220,7 +220,7 @@ fn conventions_preserve_independent_abi_and_safety() -> Result<(), Box<dyn std::
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn conventions_execute_selected_scalar_calls() -> Result<(), Box<dyn std::error::Error>> {
     native::check_cases(
-        "foreign-conventions",
+        "parallel/foreign-conventions/cases",
         &[
             (
                 "constant-c",

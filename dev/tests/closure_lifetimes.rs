@@ -63,6 +63,61 @@ fn closure_interfaces_require_their_own_lifetime_proof() {
 mod native;
 const CONTEXTUAL_CASES: &[(&str, &str, bool)] = &[
     (
+        "partial-input-hole",
+        "fn main(){let f:fn(&_)->&u8=|x|x;let a=7;check(*f(&a)==7);}",
+        true,
+    ),
+    (
+        "partial-output-hole",
+        "fn main(){let f:fn(&u8)->&_=|x|x;let a=7;check(*f(&a)==7);}",
+        true,
+    ),
+    (
+        "partial-both-holes",
+        "fn main(){let f:fn(&_)->&_=|x|x;let a=7u8;check(*f(&a)==7);}",
+        true,
+    ),
+    (
+        "partial-outer-lifetime",
+        "fn run<'a>(a:&'a u8)->&'a u8{let f:fn(&'a _)->&'a _=|x|x;f(a)}fn main(){let a=7;check(*run(&a)==7);}",
+        true,
+    ),
+    (
+        "partial-generic-argument",
+        "fn run<T>(f:fn(&T)->&T,x:&T)->&T{f(x)}fn main(){let a=7u8;check(*run(|x|x,&a)==7);}",
+        true,
+    ),
+    (
+        "partial-nested-pointer",
+        "fn id(x:&u8)->&u8{x}fn main(){let f:fn(fn(&_)->&_)->fn(&u8)->&u8=|g|g;let a=7;check(*f(id)(&a)==7);}",
+        true,
+    ),
+    (
+        "partial-mutable-hole",
+        "fn main(){let f:fn(&mut _)->&mut _=|x|x;let mut a=7u8;*f(&mut a)=9;check(a==9);}",
+        true,
+    ),
+    (
+        "partial-crossed-output",
+        "fn main(){let _f:for<'a,'b>fn(&'a _,&'b u8)->&'a u8=|x,y|{let _: &u8=x;y};}",
+        false,
+    ),
+    (
+        "partial-local-output",
+        "fn main(){let _f:fn(&u8)->&_=|_x|{let a=7u8;&a};}",
+        false,
+    ),
+    (
+        "partial-static-output",
+        "fn main(){let _f:fn(&_)->&'static u8=|x|x;}",
+        false,
+    ),
+    (
+        "partial-contradictory-input",
+        "fn main(){let f:fn(&_)->&_=|x|x;let a=7u8;let b=9u16;let _=f(&a);let _=f(&b);}",
+        false,
+    ),
+    (
         "shared-inputs",
         "fn main(){let f:for<'a>fn(&'a u8,&'a u8)->&'a u8=|_x,y|y;let a=7;let b=9;check(*f(&a,&b)==9);}",
         true,

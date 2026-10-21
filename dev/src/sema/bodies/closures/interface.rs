@@ -23,18 +23,29 @@ impl Checker<'_> {
         terms: &[TermId],
         parameters: u32,
         lifetimes: &mut universes::Interface,
-        expected: Option<contextual::Expected>,
+        mut expected: Option<contextual::Expected>,
     ) -> Result<(Refinement, TermId), Error> {
-        let (mut inputs, roots) = Refinement::new(
-            &self.facts.types,
-            &mut self.state.infer,
-            &terms
-                .iter()
-                .copied()
-                .map(Argument::Type)
-                .collect::<Vec<_>>(),
-        )
-        .map_err(|e| self.error(node, e))?;
+        let mut roots: Vec<_> = terms.iter().copied().map(Argument::Type).collect();
+        if let Some(contextual::Expected {
+            signature: contextual::Signature::Inferred(signature),
+            ..
+        }) = expected
+        {
+            roots.push(Argument::Type(signature));
+        }
+        let (mut inputs, mut roots) =
+            Refinement::new(&self.facts.types, &mut self.state.infer, &roots)
+                .map_err(|e| self.error(node, e))?;
+        if let Some(contextual::Expected {
+            signature: contextual::Signature::Inferred(signature),
+            ..
+        }) = &mut expected
+        {
+            let Some(Argument::Type(imported)) = roots.pop() else {
+                return Err(self.error(node, "missing contextual signature transport"));
+            };
+            *signature = imported;
+        }
         let terms = roots
             .into_iter()
             .map(|root| match root {

@@ -257,6 +257,21 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
 
+    pub(super) fn alias_inferred_type(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<TermId, Error> {
+        self.prepare_universals(node)?;
+        let Some(substitution) = self.state.call_types.universals.as_mut() else {
+            return Err(self.error(node, "missing universal substitution"));
+        };
+        self.state
+            .infer
+            .map_regions(&mut self.facts.types, term, substitution)
+            .map_err(|e| self.error(node, e))
+    }
+
     pub(super) fn alias_predicate(
         &mut self,
         node: NodeId,
@@ -298,9 +313,8 @@ impl Checker<'_> {
         } else {
             let ty = match self.state.infer.resolved(&mut self.facts.types, root) {
                 Ok(ty) => ty,
-                // Without a late binder, argument checking can retain the graph.
-                // Otherwise instantiate its regions without solving type holes.
-                Err(infer::Error::Unresolved) if bound_regions == 0 => return Ok(term),
+                // Even an empty binder can enclose outer lifetime references.
+                // Open it before checking arguments without solving type holes.
                 Err(infer::Error::Unresolved) => return self.instantiate_call_term(node, term),
                 Err(error) => return Err(self.error(node, error)),
             };

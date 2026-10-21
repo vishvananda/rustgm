@@ -201,13 +201,23 @@ impl Checker<'_> {
         }
         let mut children = Vec::with_capacity(parameters as usize + 1);
         for index in 0..=parameters {
-            let child = self.child(node, term, index as usize)?;
-            let child = self
-                .state
-                .infer
-                .substitute_regions(&mut self.facts.types, child, &arguments)
-                .map_err(|e| self.error(node, e))?;
-            children.push(self.alias_argument(node, child)?);
+            children.push(self.child(node, term, index as usize)?);
+        }
+        // One fold per signature preserves shared partial graphs across all
+        // inputs and the result, including references outside an empty binder.
+        let bundle = self
+            .state
+            .infer
+            .construct(Constructor::Tuple, &children)
+            .map_err(|e| self.error(node, e))?;
+        let bundle = self
+            .state
+            .infer
+            .substitute_regions(&mut self.facts.types, bundle, &arguments)
+            .map_err(|e| self.error(node, e))?;
+        let bundle = self.alias_argument(node, bundle)?;
+        for (index, child) in children.iter_mut().enumerate() {
+            *child = self.child(node, bundle, index)?;
         }
         self.state
             .infer
