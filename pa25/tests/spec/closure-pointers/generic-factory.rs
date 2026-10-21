@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+const fn make<const N:u8>()->fn(u8)->u8{|x|x+N}const F:fn(u8)->u8=make::<2>();const G:fn(u8)->u8=make::<3>();fn main(){check(F(7)==9);check(G(7)==10);}

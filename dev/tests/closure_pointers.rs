@@ -1,4 +1,6 @@
 //! Noncapturing closures reify their checked source body through the ordinary call ABI.
+#[path = "closure_pointers/reification.rs"]
+mod constants;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "helpers/qualify.rs"]

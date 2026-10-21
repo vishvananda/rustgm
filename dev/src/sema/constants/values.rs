@@ -1,4 +1,5 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
+mod callables;
 pub mod execution;
 mod memory;
 mod mutation;
@@ -580,8 +581,8 @@ impl<'a> Evaluator<'a> {
         target: TypeId,
         value: Constant,
     ) -> Result<Constant, Failure> {
-        if kind == Cast::FunctionPointer && value.as_function().is_some() {
-            return Ok(value);
+        if kind == Cast::FunctionPointer {
+            return self.reify(source, value);
         }
         let primitive = match self.facts().types.kind(source) {
             Some(Type::Primitive(p)) => Some(p),

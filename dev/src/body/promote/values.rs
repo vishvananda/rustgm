@@ -146,6 +146,17 @@ impl Engine<'_, '_> {
         };
         Ok(Some(Evaluated::Constant(value)))
     }
+    fn reify_value(&mut self, operand: ValueId) -> Result<Option<Evaluated>, Error> {
+        let Some(value) = self.ready(Key::Value(operand))? else {
+            return Ok(None);
+        };
+        Ok(Some(match value.value {
+            Evaluated::Constant(value) => {
+                Evaluated::Constant(self.evaluator.reify(self.value(operand)?.ty, value)?)
+            }
+            Evaluated::Deferred => Evaluated::Deferred,
+        }))
+    }
     pub(super) fn finish_value(&mut self, id: ValueId) -> Result<Option<Ready>, Error> {
         let value = self.value(id)?;
         let (ty, kind) = (value.ty, value.kind);
@@ -176,7 +187,7 @@ impl Engine<'_, '_> {
                     self.object_upcasting(value, target)?
                 }
             },
-            Rvalue::Reify(operand) => self.ready(Key::Value(operand))?.map(|v| v.value),
+            Rvalue::Reify(operand) => self.reify_value(operand)?,
             Rvalue::Unary {
                 operator,
                 operand,

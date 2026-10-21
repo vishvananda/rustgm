@@ -435,6 +435,9 @@ impl<'a> Context<'a> {
         self.demand(Instance::new(self.types, ty)?)
     }
     pub fn demand(&mut self, instance: Instance) -> Result<SymbolId, &'static str> {
+        if matches!(self.types.kind(instance.ty()), Some(Kind::Closure { .. })) {
+            return self.demand_closure(instance.ty());
+        }
         if let Some(call) = self.objects.call(instance) {
             return self.virtual_method(instance, call);
         }

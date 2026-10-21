@@ -82,7 +82,10 @@ impl Machine<'_, '_> {
                 };
                 self.evaluator.repeat(Self::value(frame, value)?, length)?
             }
-            Rvalue::Constrain(value) | Rvalue::Reify(value) => Self::value(frame, value)?,
+            Rvalue::Constrain(value) => Self::value(frame, value)?,
+            Rvalue::Reify(value) => self
+                .evaluator
+                .reify(body.values[value.0 as usize].ty, Self::value(frame, value)?)?,
             Rvalue::ConstArgument(id) => Constant::argument(&self.evaluator.facts().types, id)?
                 .ok_or("constant value retains an unresolved const parameter")?,
             Rvalue::Function(_) => Constant::function(
