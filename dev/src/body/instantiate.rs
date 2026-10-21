@@ -57,6 +57,9 @@ pub fn body(
     if inputs.comparison.is_some() {
         return Err("projected instance requires its lifetime contract");
     }
+    if !inputs.captures.is_empty() {
+        return Err("inherited closure lifetimes require their checked contract");
+    }
     let mut substitution = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut cleanup = Cleanup::new(facts);
     materialize(

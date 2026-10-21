@@ -74,21 +74,30 @@ impl Context {
         self.generalization = scratch;
         result
     }
+    // Closure arguments, call signature and environment are one invariant
+    // nominal identity. Freshening occurrences independently would sever the
+    // link between an inherited lifetime and its uses in the callable body.
     fn closed(&self, store: &Store, id: TermId, depth: u16) -> Result<bool, Error> {
         Ok(match self.terms[id.0 as usize].value {
             Value::Known(ty) => {
                 store.has_free_regions(ty, depth) == Some(false)
                     || matches!(
                         store.kind(ty),
-                        Some(Kind::FunctionItem {
-                            arguments: GenericArgs::EMPTY,
-                            ..
-                        })
+                        Some(
+                            Kind::Closure { .. }
+                                | Kind::FunctionItem {
+                                    arguments: GenericArgs::EMPTY,
+                                    ..
+                                }
+                        )
                     )
             }
             Value::Variable(_)
             | Value::Construct(
-                Constructor::Primitive(_) | Constructor::Parameter(_) | Constructor::Never,
+                Constructor::Primitive(_)
+                | Constructor::Parameter(_)
+                | Constructor::Never
+                | Constructor::Closure(..),
             ) => true,
             Value::Construct(Constructor::Adt(_, args) | Constructor::FunctionItem(_, args)) => {
                 store
@@ -184,10 +193,6 @@ impl Context {
                     }
                     let term = self.terms[id.0 as usize];
                     let kind = match original {
-                        Constructor::Closure(id, args) => Constructor::Closure(
-                            id,
-                            self.argument_regions(args, |r| fresh(r, depth, &mut next))?,
-                        ),
                         Constructor::Opaque(id, args) => Constructor::Opaque(
                             id,
                             self.argument_regions(args, |r| fresh(r, depth, &mut next))?,

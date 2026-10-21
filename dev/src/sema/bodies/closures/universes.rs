@@ -16,8 +16,10 @@ impl Interface {
         contextual: Option<u32>,
     ) -> Result<Self, &'static str> {
         let mut opening = Bound::universals(0);
-        for &region in enclosing {
-            opening.region(region, 0)?;
+        for (index, &region) in enclosing.iter().enumerate() {
+            if opening.region(region, 0)? != slot(index)? {
+                return Err("closure inherited lifetimes do not retain their enclosing order");
+            }
         }
         let inputs = contextual.map_or(annotations.len(), |count| count as usize);
         if contextual.is_some() {
@@ -37,6 +39,9 @@ impl Interface {
     }
     pub fn count(&self) -> Result<u32, &'static str> {
         u32::try_from(self.opening.universal_count()).map_err(|_| "too many closure lifetimes")
+    }
+    pub fn inherited(&self) -> Result<u32, &'static str> {
+        u32::try_from(self.inherited).map_err(|_| "too many inherited closure lifetimes")
     }
     pub fn equations(&self) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
         self.annotations

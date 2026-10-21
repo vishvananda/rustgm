@@ -19,6 +19,8 @@ pub struct Body {
     pub signature: TypeId,
     pub owner: Option<DefId>,
     pub universals: u32,
+    /// Leading body universals inherited from the immediate enclosing body.
+    pub inherited: u32,
 }
 #[derive(Default)]
 pub struct Bodies {

@@ -404,3 +404,6 @@ mod polymorphic;
 
 #[path = "source_closures/specializations.rs"]
 mod specializations;
+
+#[path = "source_closures/identity.rs"]
+mod identity;

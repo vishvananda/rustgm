@@ -10,14 +10,7 @@ pub(super) fn specialize(
     original: &Contract,
     inputs: &mut Inputs,
 ) -> Result<(Bound, Contract), &'static str> {
-    let mut regions = Bound::universals(original.universals);
-    for (_, argument) in &mut inputs.bindings {
-        *argument = regions.apply_argument(&mut facts.types, *argument)?;
-    }
-    if let Some((expected, actual)) = &mut inputs.comparison {
-        *expected = regions.apply(&mut facts.types, *expected)?;
-        *actual = regions.apply(&mut facts.types, *actual)?;
-    }
+    let regions = import_regions(facts, inputs, original.universals)?;
     let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
     if let Some(pending) = &mut contract.builtins {
@@ -29,6 +22,13 @@ pub(super) fn specialize(
         }
     }
     early_identities(facts, inputs.instance, &regions, &mut contract)?;
+    for (index, &actual) in inputs.captures.iter().enumerate() {
+        connect(
+            &mut contract,
+            u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?,
+            actual,
+        )?;
+    }
     contract.universals = original
         .universals
         .checked_add(
@@ -117,6 +117,26 @@ pub(super) fn specialize(
     Ok((bound, contract))
 }
 
+/// Import all source identities through one folder before specializing body facts.
+fn import_regions(
+    facts: &mut Declarations,
+    inputs: &mut Inputs,
+    universals: u32,
+) -> Result<Bound, &'static str> {
+    let mut regions = Bound::universals(universals);
+    for capture in &mut inputs.captures {
+        *capture = regions.region(*capture, 0)?;
+    }
+    for (_, argument) in &mut inputs.bindings {
+        *argument = regions.apply_argument(&mut facts.types, *argument)?;
+    }
+    if let Some((expected, actual)) = &mut inputs.comparison {
+        *expected = regions.apply(&mut facts.types, *expected)?;
+        *actual = regions.apply(&mut facts.types, *actual)?;
+    }
+    Ok(regions)
+}
+
 /// Reconnect imported argument lifetimes with the template's original early slots.
 /// The call already supplies these exact identities; its late binders remain local.
 fn early_identities(
@@ -129,8 +149,8 @@ fn early_identities(
         return Ok(());
     }
     if matches!(facts.types.kind(instance.ty()), Some(Type::Closure { .. })) {
-        // This executable slice has no inherited lifetime arguments. Lifetimes
-        // inside selected type arguments become fresh instance universals above.
+        // Closure captures carry the immediate enclosing body's complete prefix,
+        // including late lifetimes; they are connected separately above.
         return Ok(());
     }
     let Some(Type::FunctionItem {

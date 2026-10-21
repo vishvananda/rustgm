@@ -32,9 +32,10 @@ annotations and nested closures while still rejecting incompatible projected
 results. Declared opaque callable bounds also supply contextual parameter types;
 the original bound obligations must subsequently be proved.
 
-Inherited enclosing lifetime arguments retain an explicit unsupported diagnostic.
-Concrete references supplied through a type parameter work. Captures, environment
-receivers and dynamic callable adapters remain unfinished. PA24 is not active.
+Inherited enclosing lifetime arguments now retain an explicit prefix in the
+closure body proof. Concrete references supplied through type parameters also
+work. Captures, environment receivers and dynamic callable adapters remain
+unfinished. PA24 is not active.
 
 The focused `closure-templates-v2` batch passed 30 tests across generic closure
 templates, source closures, closure lifetimes/pointers and template loan/region/
@@ -66,3 +67,39 @@ Combined publication checks remain pending. No assignment release claim is made.
 Evidence remains under `obj/parallel/closure-templates-v*/` and the earlier
 v1/v2 logs. Ordinary native and active text coverage for the preceding compiler
 snapshot is recorded separately in the publication checkpoint.
+
+## Inherited lifetime specialization
+
+The source callable and its body proof use separate binders. Each closure records
+how many leading body universals come from its immediate enclosing body. Instance
+selection reconstructs the call signature with the actual inherited arguments,
+then applies type/const substitution. The body imports those arguments and any
+reference-bearing type arguments through one fresh lifetime folder, connecting
+the original inherited slots to their actual identities in its checked contract.
+Nested closure input binders remain distinct. The unproved body-only API rejects
+instances that need this inherited lifetime contract.
+
+Inference preserves a closure's invariant nominal identity across inferred value
+bindings. Previously, freshening its captured arguments and signature separately
+could give the same inherited lifetime two independent IDs. The ordinary source
+coercion retained their equality, but instance selection correctly rejected the
+inconsistent callable identity. Keeping the original closure graph retains that
+relationship without extra lifetime allocations or a later whole-body equality
+scan. A focused invariant covers both canonical and materialized inference roots,
+including constant work and preserved arguments/signature identity.
+
+Seven additional independently accepted source/native programs cover late and
+early inherited lifetimes, nested closures, inherited plus elided inputs,
+returned function pointers, reference-bearing type arguments and unused inherited
+parameters. Two additional independently rejected programs cover escaping an
+inherited reference and moving from a borrowed generic value. The specialization
+matrix now has 28 positive programs and eight semantic rejection controls.
+
+The combined gate in `obj/parallel/closure-inherited-gate-v4/` passes formatting,
+strict release all-target/all-feature Clippy, the 1,272-file zero-finding audit,
+86 focused release groups and six native groups. It includes the integrated
+scalar named-constant metadata tests. The compiler SHA-256 is
+`5d62c74e1046eb4aa04c821f08b1fbb38459424981ee4686ec0813fcfd277dc9`.
+The earlier failing v1/v2 signature checks and passing focused v3 remain in the
+logs. These checks do not constitute full publication or assignment release;
+matched performance qualification of this newer snapshot remains pending.

@@ -3,6 +3,41 @@ use super::{native, rustc, semantic};
 
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "inherited-late",
+        "fn copy<'a,T:Copy>(x:&'a T)->T{let f=|x:&'a T|*x;f(x)}fn main(){let x=7u8;check(copy(&x)==7);}",
+        false,
+    ),
+    (
+        "inherited-early",
+        "fn copy<'a,T:Copy+'a>(x:&'a T)->T{let f=|x:&'a T|*x;f(x)}fn main(){let x=900u16;check(copy(&x)==900);}",
+        false,
+    ),
+    (
+        "inherited-nested",
+        "fn copy<'a,T:Copy>(x:&'a T)->T{let f=|x:&'a T|{let g=|x:&'a T|*x;g(x)};f(x)}fn main(){let x=7u8;check(copy(&x)==7);}",
+        false,
+    ),
+    (
+        "inherited-and-elided",
+        "fn copy<'a,T:Copy>(x:&'a T)->T{let f=|pair:(&'a T,&u8)|*pair.0;let local=1u8;f((x,&local))}fn main(){let x=7u8;check(copy(&x)==7);}",
+        false,
+    ),
+    (
+        "inherited-pointer",
+        "fn pointer<'a,T:Copy+'a>()->fn(&'a T)->T{|x|*x}fn main(){let f=pointer::<u8>();let x=7;check(f(&x)==7);}",
+        false,
+    ),
+    (
+        "inherited-reference-argument",
+        "fn copy<'a,T:Copy>(x:&'a T)->T{let f=|x:&'a T|*x;f(x)}fn main(){let x=7u8;let r=&x;check(*copy(&r)==7);}",
+        false,
+    ),
+    (
+        "inherited-unused",
+        "fn value<'a,T>()->u8{let f=||7;f()}fn main(){check(value::<u8>()==7);check(value::<u16>()==7);}",
+        false,
+    ),
+    (
         "repeat",
         "fn repeat<T:Copy>(v:T)->[T;2]{let f=|x:T|[x;2];f(v)}fn main(){let a=repeat(7u8);check(a[0]==7&&a[1]==7);}",
         false,
@@ -161,6 +196,14 @@ fn generic_closures_must_prove_their_own_permissions_and_results()
 -> Result<(), Box<dyn std::error::Error>> {
     for (name, text) in [
         (
+            "inherited-reference-escape",
+            "fn bad<'a,'b,T>(x:&'a T)->&'b T{let f=|x:&'a T|x;f(x)}fn main(){}",
+        ),
+        (
+            "inherited-borrowed-move",
+            "fn bad<'a,T>(x:&'a T)->T{let f=|x:&'a T|*x;f(x)}fn main(){}",
+        ),
+        (
             "different-projection-results",
             "trait Pick{type Out;}fn owner<T:Pick,U:Pick>(x:T::Out)->U::Out{let f=|x:T::Out|x;f(x)}fn main(){}",
         ),
@@ -212,17 +255,14 @@ fn generic_closure_growth_remains_bounded() -> Result<(), Box<dyn std::error::Er
 }
 
 #[test]
-fn inherited_lifetimes_retain_an_explicit_specialization_boundary()
--> Result<(), Box<dyn std::error::Error>> {
-    let source = "fn copy<'a,T:Copy>(x:&'a T)->T{let f=|x:&'a T|*x;f(x)}fn main(){let x=7u8;let _=copy(&x);}";
-    rustc::qualify("closure-instance-inherited-lifetime", source, true)?;
-    let error = lower(source)
-        .err()
-        .ok_or("inherited lifetime mapping was bypassed")?;
-    assert!(
-        error.contains("generic closure inherited lifetime specialization is not implemented"),
-        "{error}"
-    );
+fn inherited_lifetime_frames_keep_late_closure_inputs_distinct() -> Result<(), String> {
+    let source = "fn copy<'a,T:Copy>(x:&'a T)->T{let f=|pair:(&'a T,&u8)|*pair.0;let local=1u8;f((x,&local))}fn main(){let x=7u8;let _=copy(&x);}";
+    let (_, facts) = semantic::analyze(source)?;
+    let bodies = facts.closures.all();
+    assert_eq!(bodies.len(), 1);
+    assert_eq!(bodies[0].inherited, 1);
+    assert_eq!(bodies[0].universals, 2);
+    lower(source)?;
     Ok(())
 }
 

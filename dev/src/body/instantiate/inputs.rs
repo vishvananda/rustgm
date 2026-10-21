@@ -10,6 +10,7 @@ type Binding = (crate::types::parameters::ParameterId, Argument);
 pub(super) struct Inputs {
     pub(super) instance: Instance,
     pub(super) bindings: Vec<Binding>,
+    pub(super) captures: Vec<crate::types::RegionId>,
     pub(super) comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
 }
 pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'static str> {
@@ -35,6 +36,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
         return Ok(Inputs {
             instance,
             bindings: Vec::new(),
+            captures: Vec::new(),
             comparison: None,
         });
     };
@@ -73,6 +75,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
     Ok(Inputs {
         instance,
         bindings,
+        captures: Vec::new(),
         comparison: projected.then_some((expected, signature)),
     })
 }
@@ -102,22 +105,25 @@ fn closure(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'sta
         .arguments(arguments)
         .ok_or("invalid closure arguments")?
         .collect::<Vec<_>>();
-    if arguments
-        .iter()
-        .any(|arg| matches!(arg, Argument::Lifetime(_)))
-    {
-        return Err("generic closure inherited lifetime specialization is not implemented");
-    }
-    if arguments.len() != parameters.len() {
+    let inherited = body.inherited as usize;
+    if arguments.len() != inherited.saturating_add(parameters.len()) {
         return Err("closure instance argument count differs from its enclosing template");
     }
+    let captures = arguments[..inherited]
+        .iter()
+        .map(|argument| match argument {
+            Argument::Lifetime(region) => Ok(*region),
+            _ => Err("closure inherited argument is not a lifetime"),
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     let bindings = parameters
         .iter()
         .copied()
-        .zip(arguments)
+        .zip(arguments[inherited..].iter().copied())
         .collect::<Vec<_>>();
+    let expected = inherited_signature(&mut facts.types, body, &captures, signature)?;
     let mut selected = Bound::parameters(&facts.types, &bindings)?;
-    let expected = selected.apply(&mut facts.types, body.signature)?;
+    let expected = selected.apply(&mut facts.types, expected)?;
     let projected = facts.types.contains_projections(expected) == Some(true);
     if !projected && expected != signature {
         return Err("closure signature differs from substituted body template");
@@ -125,8 +131,49 @@ fn closure(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'sta
     Ok(Inputs {
         instance,
         bindings,
+        captures,
         comparison: projected.then_some((expected, signature)),
     })
+}
+
+/// Reconstruct the source call binder from the body's distinct proof universe.
+fn inherited_signature(
+    types: &mut crate::types::Store,
+    body: crate::sema::closures::Body,
+    captures: &[crate::types::RegionId],
+    actual: TypeId,
+) -> Result<TypeId, &'static str> {
+    use crate::types::RegionId;
+    if captures.is_empty() {
+        return Ok(body.signature);
+    }
+    let Some(Kind::Function { bound_regions, .. }) = types.kind(actual) else {
+        return Err("closure instance has no call signature");
+    };
+    if body.universals.checked_sub(body.inherited) != Some(bound_regions) {
+        return Err("closure signature lifetime interface differs from its body");
+    }
+    let mut mapping = std::collections::HashMap::new();
+    for (index, &capture) in captures.iter().enumerate() {
+        let index = u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?;
+        let capture = match capture.bound_parts() {
+            Some((depth, slot)) => RegionId::bound(
+                depth
+                    .checked_add(1)
+                    .ok_or("closure lifetime binder depth exhausted")?,
+                slot,
+            )?,
+            None => capture,
+        };
+        mapping.insert(RegionId::bound(0, index)?, capture);
+    }
+    for index in 0..bound_regions {
+        let source =
+            u16::try_from(body.inherited + index).map_err(|_| "too many closure body lifetimes")?;
+        let target = u16::try_from(index).map_err(|_| "too many closure call lifetimes")?;
+        mapping.insert(RegionId::bound(0, source)?, RegionId::bound(0, target)?);
+    }
+    Bound::restore_regions(mapping).signature(types, body.signature, bound_regions)
 }
 
 pub(super) fn owner(

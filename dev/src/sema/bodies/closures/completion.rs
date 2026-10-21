@@ -218,6 +218,10 @@ impl Checker<'_> {
         let source = entry.source;
         let identity = entry.identity;
         let parameters = entry.parameters;
+        let inherited = entry
+            .lifetimes
+            .inherited()
+            .map_err(|e| self.error(source, e))?;
         let signature = solved.types[entry.signature.0 as usize];
         let signature = self.closure_contract_signature(source, signature, solved)?;
         let Some(Kind::Function { result, .. }) = self.facts.types.kind(signature) else {
@@ -232,6 +236,7 @@ impl Checker<'_> {
             signature,
             owner: self.state.environment_owner,
             universals: self.state.body_binders,
+            inherited,
         };
         self.facts
             .closures
