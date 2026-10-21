@@ -18,6 +18,11 @@ use std::collections::HashMap;
 mod tests;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Form {
+    Assignment,
+    ValueBinary,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Rhs {
     Owned,
     SharedReference,
@@ -25,11 +30,15 @@ pub(crate) enum Rhs {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Descriptor {
     hook: Hook,
+    form: Form,
     left: Primitive,
     right: Primitive,
     rhs: Rhs,
 }
 impl Descriptor {
+    pub(crate) const fn form(self) -> Form {
+        self.form
+    }
     pub(crate) const fn hook(self) -> Hook {
         self.hook
     }
@@ -45,10 +54,95 @@ impl Descriptor {
     pub(crate) fn operator(self) -> Result<Punctuation, &'static str> {
         operator(self.hook)
     }
+    fn validate_receiver(
+        self,
+        facts: &Declarations,
+        receiver: TypeId,
+        result: TypeId,
+        bound_regions: u32,
+    ) -> Result<TypeId, &'static str> {
+        let left = TypeId::primitive(self.left);
+        let valid = match self.form {
+            Form::Assignment => {
+                self.hook.assignment()
+                    && bound_regions == 1
+                    && result == TypeId::UNIT
+                    && matches!(facts.types.kind(receiver), Some(Kind::Reference { referent, mutable:true, region })
+                    if referent == left && region == RegionId::bound(0,0)?)
+            }
+            Form::ValueBinary => {
+                self.hook == Hook::Add
+                    && self.rhs == Rhs::Owned
+                    && bound_regions == 0
+                    && receiver == left
+                    && result == left
+            }
+        };
+        if !valid {
+            return Err("primitive method receiver or result differs from descriptor");
+        }
+        Ok(left)
+    }
+    pub(in crate::sema) fn output(
+        self,
+        facts: &Declarations,
+        item: crate::types::ItemId,
+        family: crate::types::GenericArgs,
+    ) -> Result<TypeId, &'static str> {
+        let owner = facts
+            .types
+            .projection_schema(item)
+            .ok_or("primitive result requires a declared projection")?
+            .trait_item;
+        if self.form != Form::ValueBinary
+            || self.hook != Hook::Add
+            || self.rhs != Rhs::Owned
+            || family != crate::types::GenericArgs::EMPTY
+            || facts.associated.member_owner(DefId(item.0)) != Some(DefId(owner.0))
+            || !facts
+                .associated
+                .operation(DefId(owner.0))
+                .is_some_and(|(hook, _)| hook == self.hook)
+            || !super::scalar::binary(self.operator()?, self.left, self.right)
+        {
+            return Err("primitive evidence applies only to its canonical Output member");
+        }
+        Ok(TypeId::primitive(self.left))
+    }
+    fn signature(
+        self,
+        facts: &mut Declarations,
+        signature: TypeId,
+    ) -> Result<TypeId, &'static str> {
+        if self.form == Form::Assignment {
+            return Ok(signature);
+        }
+        let Some(Kind::Function {
+            parameters,
+            result,
+            unsafe_,
+            convention,
+            bound_regions,
+        }) = facts.types.kind(signature)
+        else {
+            return Err("primitive template is not callable");
+        };
+        let Some(Kind::Projection(application)) = facts.types.kind(result) else {
+            return Err("primitive template has no canonical Output projection");
+        };
+        let result = self.output(facts, application.item, application.arguments)?;
+        facts.types.intern(Kind::Function {
+            parameters,
+            result,
+            unsafe_,
+            convention,
+            bound_regions,
+        })
+    }
 }
 fn operator(hook: Hook) -> Result<Punctuation, &'static str> {
     Ok(match hook {
-        Hook::AddAssign => Punctuation::Plus,
+        Hook::Add | Hook::AddAssign => Punctuation::Plus,
         Hook::SubAssign => Punctuation::Minus,
         Hook::MulAssign => Punctuation::Star,
         Hook::DivAssign => Punctuation::Slash,
@@ -58,8 +152,12 @@ fn operator(hook: Hook) -> Result<Punctuation, &'static str> {
         Hook::BitXorAssign => Punctuation::Caret,
         Hook::ShlAssign => Punctuation::ShiftLeft,
         Hook::ShrAssign => Punctuation::ShiftRight,
-        _ => return Err("primitive descriptor is not an assignment operation"),
+        _ => return Err("primitive descriptor is not a supported operation"),
     })
+}
+
+pub(in crate::sema) const fn supported(hook: Hook) -> bool {
+    hook.assignment() || matches!(hook, Hook::Add)
 }
 
 pub(in crate::sema) enum Candidate {
@@ -78,7 +176,7 @@ pub(in crate::sema) fn candidate(
     let Some((hook, _)) = facts
         .associated
         .operation(DefId(item.0))
-        .filter(|(kind, _)| kind.assignment())
+        .filter(|(kind, _)| supported(*kind))
     else {
         return Ok(Candidate::Unrelated);
     };
@@ -108,10 +206,19 @@ pub(in crate::sema) fn candidate(
     let (Some(left), Some(right)) = (left, right) else {
         return Ok(Candidate::Deferred);
     };
+    let form = if hook.assignment() {
+        Form::Assignment
+    } else {
+        Form::ValueBinary
+    };
+    if form == Form::ValueBinary && rhs != Rhs::Owned {
+        return Ok(Candidate::Unrelated);
+    }
     let op = operator(hook).map_err(|_| infer::Error::InvalidIdentity)?;
     Ok(if super::scalar::binary(op, left, right) {
         Candidate::Present(Descriptor {
             hook,
+            form,
             left,
             right,
             rhs,
@@ -132,6 +239,7 @@ pub(crate) struct Validated {
     pub signature: TypeId,
     pub receiver: TypeId,
     pub right: TypeId,
+    pub result: TypeId,
 }
 impl Selected {
     pub(crate) const fn instance(self) -> Instance {
@@ -166,7 +274,7 @@ impl Selected {
             result,
             unsafe_: false,
             convention: Convention::RUST,
-            bound_regions: 1,
+            bound_regions,
         }) = facts.types.kind(signature)
         else {
             return Err("primitive method signature permissions differ from its contract");
@@ -179,20 +287,9 @@ impl Selected {
             return Err("primitive method has incorrect arity");
         };
         let receiver = *receiver;
-        let Some(Kind::Reference {
-            referent,
-            mutable: true,
-            region,
-        }) = facts.types.kind(receiver)
-        else {
-            return Err("primitive method requires a mutable receiver");
-        };
-        if referent != TypeId::primitive(self.descriptor.left)
-            || region != RegionId::bound(0, 0)?
-            || result != TypeId::UNIT
-        {
-            return Err("primitive method receiver or result differs from descriptor");
-        }
+        let subject_type =
+            self.descriptor
+                .validate_receiver(facts, receiver, result, bound_regions)?;
         let arguments = facts
             .types
             .arguments(arguments)
@@ -215,7 +312,7 @@ impl Selected {
             },
         };
         if actual != expected
-            || subject != referent
+            || subject != subject_type
             || !super::scalar::binary(
                 self.descriptor.operator()?,
                 self.descriptor.left,
@@ -224,18 +321,20 @@ impl Selected {
         {
             return Err("primitive method arguments differ from selected descriptor");
         }
-        validate_substitution(facts, item, signature, &arguments)?;
+        validate_substitution(facts, self.descriptor, item, signature, &arguments)?;
         Ok(Validated {
             definition,
             source,
             signature,
             receiver,
             right,
+            result,
         })
     }
 }
 fn validate_substitution(
     facts: &mut Declarations,
+    descriptor: Descriptor,
     item: crate::types::ItemId,
     signature: TypeId,
     arguments: &[Argument],
@@ -260,7 +359,9 @@ fn validate_substitution(
         .zip(arguments.iter().copied())
         .collect::<Vec<_>>();
     let mut substitution = crate::types::substitute::Bound::parameters(&facts.types, &bindings)?;
-    if substitution.apply(&mut facts.types, template)? != signature {
+    let substituted = substitution.apply(&mut facts.types, template)?;
+    let substituted = descriptor.signature(facts, substituted)?;
+    if substituted != signature {
         return Err("primitive method signature differs from canonical scoped substitution");
     }
     Ok(())

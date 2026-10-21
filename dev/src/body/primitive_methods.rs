@@ -10,7 +10,7 @@ use crate::{
     resolve::{expansion::Report, package::Error},
     sema::{
         model::Declarations,
-        primitive_methods::{Rhs, Selected, Validated},
+        primitive_methods::{Form, Rhs, Selected, Validated},
     },
     types::{Kind, TypeId, substitute::Bound},
 };
@@ -42,7 +42,7 @@ pub(crate) fn build(
             signature: source.signature,
         },
         source.source,
-        TypeId::UNIT,
+        source.result,
     );
     body.instance = Some(selected.instance());
     body.storage = Some(super::storage::Facts::new(super::scopes::Facts::synthetic(
@@ -61,52 +61,61 @@ pub(crate) fn build(
         });
         statement(&mut body, Action::StorageLive(LocalId(ordinal)));
     }
-    let left = dereference(
-        &mut body,
-        Place::Local(LocalId(0)),
-        source.receiver,
-        &facts.types,
-    )
-    .map_err(error)?;
+    let result = operation(&mut body, &facts.types, selected, &source, right).map_err(error)?;
+    super::build::finish_factory(&mut body, result).map_err(error)?;
+    validate(facts, selected, &body, &contract).map_err(error)?;
+    Ok((body, contract))
+}
+fn operation(
+    body: &mut Body,
+    types: &crate::types::Store,
+    selected: Selected,
+    source: &Validated,
+    right: TypeId,
+) -> Result<ValueId, &'static str> {
     let descriptor = selected.descriptor();
+    let left = if descriptor.form() == Form::Assignment {
+        dereference(body, Place::Local(LocalId(0)), source.receiver, types)?
+    } else {
+        Place::Local(LocalId(0))
+    };
     let a = value(
-        &mut body,
+        body,
         TypeId::primitive(descriptor.left()),
         Rvalue::Read(left),
-    )
-    .map_err(error)?;
+    )?;
     let right = if descriptor.rhs() == Rhs::SharedReference {
-        dereference(&mut body, Place::Local(LocalId(1)), right, &facts.types).map_err(error)?
+        dereference(body, Place::Local(LocalId(1)), right, types)?
     } else {
         Place::Local(LocalId(1))
     };
     let b = value(
-        &mut body,
+        body,
         TypeId::primitive(descriptor.right()),
         Rvalue::Read(right),
-    )
-    .map_err(error)?;
+    )?;
     let result = value(
-        &mut body,
+        body,
         TypeId::primitive(descriptor.left()),
         Rvalue::Binary {
-            operator: descriptor.operator().map_err(error)?,
+            operator: descriptor.operator()?,
             left: a,
             right: b,
         },
-    )
-    .map_err(error)?;
-    statement(
-        &mut body,
-        Action::Store {
-            place: left,
-            value: result,
-        },
-    );
-    let result = value(&mut body, TypeId::UNIT, Rvalue::Unit).map_err(error)?;
-    super::build::finish_factory(&mut body, result).map_err(error)?;
-    validate(facts, selected, &body, &contract).map_err(error)?;
-    Ok((body, contract))
+    )?;
+    let result = if descriptor.form() == Form::Assignment {
+        statement(
+            body,
+            Action::Store {
+                place: left,
+                value: result,
+            },
+        );
+        value(body, TypeId::UNIT, Rvalue::Unit)?
+    } else {
+        result
+    };
+    Ok(result)
 }
 fn contract(
     facts: &mut Declarations,
@@ -114,9 +123,16 @@ fn contract(
 ) -> Result<(Contract, TypeId), &'static str> {
     // The receiver keeps its own late slot. RHS argument lifetimes belong to
     // the caller and become distinct universals in this factory's body proof.
-    let mut regions = Bound::universals(1);
+    let Some(Kind::Function {
+        bound_regions: base,
+        ..
+    }) = facts.types.kind(source.signature)
+    else {
+        return Err("primitive method has no callable signature");
+    };
+    let mut regions = Bound::universals(base);
     let right = regions.apply(&mut facts.types, source.right)?;
-    let universals = 1_u32
+    let universals = base
         .checked_add(
             u32::try_from(regions.universal_count()).map_err(|_| "too many factory lifetimes")?,
         )
@@ -124,7 +140,7 @@ fn contract(
     let parameters = facts.types.intern_list(&[source.receiver, right])?;
     let signature = facts.types.intern(Kind::Function {
         parameters,
-        result: TypeId::UNIT,
+        result: source.result,
         unsafe_: false,
         convention: crate::types::callable::Convention::RUST,
         bound_regions: universals,
@@ -189,14 +205,14 @@ pub(crate) fn validate(
         || input.source != body.source
         || body.source != source.source
         || !matches!(body.owner,Owner::Function{definition,signature} if definition==source.definition && signature==source.signature)
-        || body.result != TypeId::UNIT
+        || body.result != source.result
         || !input.parameters.is_empty()
     {
         return Err("primitive factory body or contract differs from selected instance");
     }
     let Some(Kind::Function {
         parameters,
-        result: TypeId::UNIT,
+        result,
         bound_regions,
         unsafe_: false,
         convention: crate::types::callable::Convention::RUST,
@@ -208,7 +224,8 @@ pub(crate) fn validate(
         .types
         .list(parameters)
         .ok_or("missing factory contract parameters")?;
-    if bound_regions != input.universals
+    if result != source.result
+        || bound_regions != input.universals
         || body.locals.len() != 2
         || parameters.len() != 2
         || body
@@ -219,8 +236,9 @@ pub(crate) fn validate(
     {
         return Err("primitive factory parameters differ from lifetime contract");
     }
+    let base = u32::from(selected.descriptor().form() == Form::Assignment);
     let (right, count) = match selected.descriptor().rhs() {
-        Rhs::Owned => (source.right, 1),
+        Rhs::Owned => (source.right, base),
         Rhs::SharedReference => {
             let Some(Kind::Reference { region, .. }) = facts.types.kind(source.right) else {
                 return Err("missing selected reference RHS");
@@ -228,7 +246,10 @@ pub(crate) fn validate(
             let expected = if region == crate::types::RegionId::STATIC {
                 region
             } else {
-                crate::types::RegionId::bound(0, 1)?
+                crate::types::RegionId::bound(
+                    0,
+                    u16::try_from(base).map_err(|_| "invalid factory lifetime base")?,
+                )?
             };
             let Some(Kind::Reference {
                 referent,
@@ -244,9 +265,9 @@ pub(crate) fn validate(
             (
                 parameters[1],
                 if expected == crate::types::RegionId::STATIC {
-                    1
+                    base
                 } else {
-                    2
+                    base + 1
                 },
             )
         }

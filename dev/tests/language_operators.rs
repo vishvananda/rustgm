@@ -121,3 +121,6 @@ mod primitives;
 
 #[path = "language_operators/methods.rs"]
 mod methods;
+
+#[path = "language_operators/addition.rs"]
+mod addition;

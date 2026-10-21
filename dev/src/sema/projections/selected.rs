@@ -13,7 +13,7 @@ enum Value {
         family: GenericArgs,
         result: Option<OpaqueId>,
     },
-    Callable(TypeId),
+    Ready(TypeId),
 }
 impl Definition {
     pub fn select(
@@ -22,6 +22,12 @@ impl Definition {
         family: GenericArgs,
         source: Source,
     ) -> Result<Self, &'static str> {
+        if let Source::LanguageOperation { descriptor } = source {
+            return Ok(Self {
+                id: DefId(item.0),
+                value: Value::Ready(descriptor.output(facts, item, family)?),
+            });
+        }
         if let Source::Callable { output } = source {
             if facts.associated.callable_output() != Some(DefId(item.0))
                 || family != GenericArgs::EMPTY
@@ -30,7 +36,7 @@ impl Definition {
             }
             return Ok(Self {
                 id: DefId(item.0),
-                value: Value::Callable(output),
+                value: Value::Ready(output),
             });
         }
         let Source::Implementation { owner, arguments } = source else {
@@ -93,7 +99,7 @@ impl Definition {
 
     pub fn result(&self, facts: &mut Declarations) -> Result<Option<TypeId>, &'static str> {
         let (owner, arguments, family, result) = match self.value {
-            Value::Callable(ty) => return Ok(Some(ty)),
+            Value::Ready(ty) => return Ok(Some(ty)),
             Value::Implementation {
                 owner,
                 arguments,

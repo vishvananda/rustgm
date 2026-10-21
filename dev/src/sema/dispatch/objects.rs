@@ -53,7 +53,7 @@ impl Dispatcher {
                 .types
                 .trait_application(id)
                 .and_then(|application| facts.associated.operation(DefId(application.item.0)))
-                .is_some_and(|(kind, _)| kind.assignment()),
+                .is_some_and(|(kind, _)| crate::sema::primitive_methods::supported(kind)),
             _ => false,
         };
         if !language && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. })) {

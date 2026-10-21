@@ -1,0 +1,370 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/primitive-add/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "3b126b73e51bc07d01008ae5d9b99c59380934a001d3701019e5410b8eb6237a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/rhs-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "005448a9da2d84b8064aed0127c8052157757b902f27ddc25a88c7df728bfe9f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/projected-output.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "05e0e525d8c8f0d7f773143f848a0c466068d9cd1d939fc00998dc91eecf6eb2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "bb4889841b3a2c08d6a38f83bd5aac752d4cb55d9824f21137638a0945713526",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/dot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "65909227b02e3ff91c6cf66446100cb7576ff4480035460486cd23801abe2783",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "104651cda8604d8ecf656586cbafbd03c4f50befbdf9a7f55a22dc1e40a45ea5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "1ba9bd7e4844fb9a32c1921bd1889dbeb7a13894d342f4c357507509415252f7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/float.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "1ec484478c484109fd1bc96d4f42a341d41550de18ebf79dbed46be9e00b4eb7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/u128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "f52dc9c85eee1d0a41604684004d8698fa648873d92e1c3edc7f36f5657fa021",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/i128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "56f6bedb4bc815bfd8dce2a4497602d2c290d73f2784b2bbe6fbfb51950de9cf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "6fb15adf4c842a7a5c6fc43ccdbc0aea8a79af0fd4489e1c06dbe07e2e1486c8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "98b5fd02c2d1f6f7a3c7575e195feb1cbdaf0346b40018282bfc5612f2e441db",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": true
+    },
+    {
+      "path": "tests/spec/primitive-add/mixed-width.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "64525328146290945d5f517e9faf83acee0b26fb685c36d468f8dca2f74f74b9",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/bool.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "e4f10483a43263d6676c20aea22f51b56fb6126d7c2b1e950cdab5e0ef70da24",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/char.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "24c2c97a6ada2c1f253f193e35a03966e382a081c24bda64f3f738ebbada1214",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/wrong-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "79e43ea7e0a549e90bbd2caaf8daa14fdbf0470ae6ece8b65b42f24b68867c97",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/const-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "f6f97f07dd8f311f2954cf057486122aae077d70d8cbd6ac299331f231517381",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/unsafe-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "76252c6f7800d4df5ce27c622080ee01e3f7906e81607e7e67790a0f7900c14e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/mutable-rhs.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "485b3856b65b455fd1997a4a1efa3782be9d89a2ba56648a1b771f72ed2d22bd",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/reference-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "6f3f18c1524bee64c23f068f6f0a76e735bcb7deaf3b8bc8871a964cd62aaecf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/sub-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "7efed732784699fe56917b2b417a7da465f23b82b35024802af1ebe46fd21093",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/projection-not-injective.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "0c8a1c293c28dc3a4b14fd11f1e9eab51a7621266d100263a77c36eaaa840c61",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/formation-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "c23d88ddf9fcdb8889fafe707f2ebb3ab672e5ba948e4055c5f2c51d5adb8da9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "panic": false
+    },
+    {
+      "path": "tests/spec/primitive-add/projected-static-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-value-add"
+      ],
+      "source_sha256": "ab823192c8dd4797b178deb0a248dd73903839b0df3a7d482622797e0b5c28bf",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "panic": false
+    }
+  ]
+}

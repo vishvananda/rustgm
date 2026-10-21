@@ -168,3 +168,14 @@ candidates. The visibility index is built once and cached by scope and name;
 widths 8, 32 and 128 retain linear work. See `docs/pa26-dot-methods.md` for the
 typed contract and qualifications. This does not activate PA26 or supply the
 remaining comparison/Deref, iteration, question-mark, derive or formatting hooks.
+
+## Maintainer primitive Add checkpoint
+
+Owned primitive `Add` methods now use the existing canonical selection and checked
+factory for generic, qualified, dot and reified calls. Typed descriptors distinguish
+value-returning binary methods from mutable assignment methods; canonical Output
+normalization retains ordinary selection and formation evidence. Overflow checks
+remain the existing arithmetic contract. Twenty-four declared controls and thirteen
+native programs are recorded in `tests/primitive-add-outcomes.json` and
+`docs/pa26-primitive-add.md`. Shared-reference RHS and other primitive value methods
+remain explicit boundaries. This checkpoint does not activate PA26.

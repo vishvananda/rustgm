@@ -305,7 +305,9 @@ impl Search<'_> {
             .source
             .ok_or("missing equality premise evidence")?;
         let resolution = match source {
-            Source::Implementation { .. } | Source::Callable { .. } => {
+            Source::Implementation { .. }
+            | Source::Callable { .. }
+            | Source::LanguageOperation { .. } => {
                 if let Some(application) = opened.application.associated() {
                     Resolution::Type(crate::sema::projections::implementation_result(
                         facts,
@@ -371,9 +373,6 @@ impl Search<'_> {
             }
             Source::Equality => return Err("equality evidence cannot prove a trait premise".into()),
             Source::Builtin => return Err("builtin evidence cannot prove a trait premise".into()),
-            Source::LanguageOperation { .. } => {
-                return Err("primitive assignment evidence has no associated result".into());
-            }
         };
         Ok((Some(resolution), node))
     }

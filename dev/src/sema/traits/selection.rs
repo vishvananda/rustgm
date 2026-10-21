@@ -173,7 +173,7 @@ pub(in crate::sema) fn may_have_subject(
     if facts
         .associated
         .operation(DefId(item.0))
-        .is_some_and(|(hook, _)| hook.assignment())
+        .is_some_and(|(hook, _)| crate::sema::primitive_methods::supported(hook))
         && subject
             .heads()
             .any(|head| matches!(head, super::heads::Head::Primitive(_)))
