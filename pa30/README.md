@@ -22,8 +22,15 @@ real declarations for selected imports. Five C-linked native controls cover
 scalar imports, callbacks and ordinary/generic/constant pointer demand paths.
 Draft outcomes are in `tests/import-outcomes.json`.
 
-Foreign statics, linkage attributes and export roots, C aggregate classification
-and variadic calls remain unfinished. The reviewed optional object backend
+The maintainer exact-function-linkage checkpoint consumes retained `link_name`,
+`unsafe(no_mangle)` and `unsafe(export_name)` attributes through typed registry
+records. Shared roots retain otherwise unused exports; compatible exact import
+and export aliases share one canonical LowIR symbol. Collision controls prevent
+multiple bodies from replacing each other, including generated helper names.
+Draft outcomes are in `tests/linkage-outcomes.json`; qualification and boundaries
+are recorded in `docs/pa30-linkage-checkpoint.md`.
+
+Foreign statics, C aggregate classification and variadic calls remain unfinished. The reviewed optional object backend
 profile is selected explicitly; its native tests use the test-only
 `object-interop-tests` Cargo feature and fail if the profile is missing. PA30's
 release target and CI must configure that profile and run those tests before

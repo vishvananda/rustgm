@@ -107,7 +107,7 @@ impl Context<'_> {
         } else {
             Terminator::Return(value)
         })?;
-        self.output.symbols[symbol.0 as usize].body = Some(builder.finish()?);
+        self.output.define(symbol, builder.finish()?)?;
         self.virtual_symbols.insert(key, symbol);
         Ok(symbol)
     }

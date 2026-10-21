@@ -147,6 +147,7 @@ struct Signature {
 }
 struct Checker<'a> {
     call_paths: std::collections::HashSet<NodeKey>,
+    linkage_sources: std::collections::HashMap<NodeKey, foreign::Attributes>,
     target_feature_sources: std::collections::HashSet<NodeKey>,
     method_queries: std::collections::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
     inherent_headers: inherent_headers::Pending,
@@ -217,7 +218,10 @@ impl<'a> Checker<'a> {
                 "type checking requires completed name resolution",
             ));
         }
+        let mut facts = Declarations::new(report)?;
+        let linkage_sources = foreign::collect(report, &mut facts.foreign)?;
         let mut checker = Self {
+            linkage_sources,
             call_paths: std::collections::HashSet::new(),
             target_feature_sources: call_traits::target_feature_sources(report)?,
             method_queries: std::collections::HashMap::new(),
@@ -245,7 +249,7 @@ impl<'a> Checker<'a> {
             constant_captures: generics::Captures::default(),
             parameter_uses: crate::types::parameters::uses::Uses::default(),
             report,
-            facts: Declarations::new(report)?,
+            facts,
             states: vec![State::Unseen; report.resolution.definitions.len()],
             work: Vec::new(),
             children: Vec::new(),

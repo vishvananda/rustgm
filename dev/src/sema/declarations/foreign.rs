@@ -1,9 +1,11 @@
 //! Foreign ABI and safety come from the retained declaration's actual block.
+mod linkage_attributes;
 use super::{Checker, DefId, Error, Item, ItemKind, Kind, NodeKey, Safety, callable_convention};
 use crate::{
     syntax::item::Abi,
     types::{TypeId, callable::Convention},
 };
+pub(super) use linkage_attributes::{Attributes, collect};
 
 impl Checker<'_> {
     pub(super) fn validate_foreign_blocks(&self) -> Result<(), Error> {
@@ -81,20 +83,56 @@ impl Checker<'_> {
         signature: TypeId,
         safety: Safety,
     ) -> Result<(), Error> {
-        if !self
+        use crate::support::linkage::{Linkage, Naming};
+        let imported = self
             .report
             .resolution
             .foreign_owners
-            .contains_key(&definition)
-        {
+            .contains_key(&definition);
+        let attributes = self.linkage_sources.get(&key).copied().unwrap_or_default();
+        let export = attributes.no_mangle || attributes.export.is_some();
+        if !imported && !export {
             return Ok(());
+        }
+        if imported && export {
+            return Err(self.error(key, "linkage attribute does not match function ownership"));
+        }
+        if export
+            && (self.facts.generics.parameters.contains_key(&definition)
+                || self.facts.associated.schema(definition).is_some())
+        {
+            return Err(self.error(
+                key,
+                "generic function exports require a stable external argument identity",
+            ));
         }
         let name = self.report.resolution.definitions[definition.0 as usize].name;
         let spelling = self.report.package.names.get(name);
+        let registry = self.facts.foreign.get_or_insert_default();
+        let exact = if imported {
+            attributes.link
+        } else {
+            attributes.export
+        };
+        let exact = exact
+            .map_or_else(|| registry.names_mut().intern(spelling), Ok)
+            .map_err(|e| self.error(key, e))?;
         self.facts
             .foreign
             .get_or_insert_default()
-            .import_function(definition, signature, safety, spelling)
+            .insert_function(
+                definition,
+                crate::sema::foreign::Function {
+                    signature,
+                    safety,
+                    naming: Naming::Exact(exact),
+                    linkage: if imported {
+                        Linkage::Import
+                    } else {
+                        Linkage::Export
+                    },
+                },
+            )
             .map_err(|e| self.error(key, e))
     }
 }

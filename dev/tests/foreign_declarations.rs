@@ -1,10 +1,10 @@
 //! Foreign ownership survives expansion and produces genuine runtime declarations.
-use rustgm::{
-    expand::config::Config,
-    resolve::{self, load::InputFile},
-    sema,
-    support::source::SourceFile,
-};
+#[path = "harness/foreign_frontend.rs"]
+mod frontend;
+#[cfg(feature = "object-interop-tests")]
+#[path = "harness/host_objects.rs"]
+mod objects;
+use frontend::checked;
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -95,29 +95,6 @@ const CASES: &[(&str, &str, bool)] = &[
 fn fixture(path: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join(path))
 }
-struct NoFiles;
-impl resolve::load::Sources for NoFiles {
-    fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
-        Ok(None)
-    }
-}
-fn checked(source: &str) -> Result<rustgm::lowir::program::Program, String> {
-    let input = InputFile {
-        identity: "lib.rs".into(),
-        path: "lib.rs".into(),
-        source: SourceFile::new(source.as_bytes().to_vec())?,
-    };
-    let expanded = resolve::expansion::analyze(input, &mut NoFiles, &Config::default())
-        .map_err(|e| e.to_string())?;
-    let mut report = resolve::analyze_expanded(expanded).map_err(|e| e.to_string())?;
-    let rustgm::pipeline::Analysis {
-        mut facts,
-        prepared,
-    } = rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
-    let entry = sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
-    rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
-        .map_err(|e| e.to_string())
-}
 fn directory() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -185,100 +162,18 @@ fn demanded_imports_have_declarations_without_bodies() -> Result<(), Box<dyn std
     }
     Ok(())
 }
-#[cfg(feature = "object-interop-tests")]
-fn successful(
-    name: &str,
-    output: std::process::Output,
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    if !output.status.success() || !output.stderr.is_empty() {
-        return Err(format!(
-            "{name}: {}\n{}",
-            output.status,
-            String::from_utf8_lossy(&output.stderr)
-        )
-        .into());
-    }
-    Ok(output.stdout)
-}
 #[test]
 #[cfg(feature = "object-interop-tests")]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn imports_and_callbacks_link_with_independent_c() -> Result<(), Box<dyn std::error::Error>> {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .ok_or("root")?;
-    let folder = directory()?;
-    let provider = folder.join("provider.o");
-    successful(
-        "C provider",
-        Command::new("cc")
-            .args(["-std=c11", "-Wall", "-Wextra", "-Werror", "-c"])
-            .arg(root.join("pa30/tests/spec/imports/provider.c"))
-            .arg("-o")
-            .arg(&provider)
-            .output()?,
-    )?;
-    for &(name, path, accepted) in CASES.iter().take(5) {
-        let source = fixture(path)?;
-        assert!(accepted);
-        let input = folder.join(format!("{name}.native.rs"));
-        std::fs::write(&input, &source)?;
-        let independent = folder.join(format!("{name}.rustc"));
-        successful(
-            name,
-            Command::new("rustc")
-                .args([
-                    "+1.98.0",
-                    "--edition=2024",
-                    "--crate-name=foreign_native",
-                    "--cap-lints=allow",
-                    "-C",
-                    "overflow-checks=yes",
-                    "-C",
-                    "panic=abort",
-                ])
-                .arg("-C")
-                .arg(format!("link-arg={}", provider.display()))
-                .arg(&input)
-                .arg("-o")
-                .arg(&independent)
-                .output()?,
-        )?;
-        let expected = successful(name, Command::new(&independent).output()?)?;
-        let lowir = successful(
-            name,
-            Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .arg("--emit-lowir")
-                .args(["--crate-name", "foreign_native"])
-                .arg(&input)
-                .output()?,
-        )?;
-        let path = folder.join(format!("{name}.lowir"));
-        std::fs::write(&path, &lowir)?;
-        let object = folder.join(format!("{name}.rustgm.o"));
-        successful(
-            name,
-            Command::new("python3")
-                .arg(root.join("scripts/backend.py"))
-                .arg("--emit-object")
-                .arg(&path)
-                .arg("-o")
-                .arg(&object)
-                .output()?,
-        )?;
-        let executable = folder.join(format!("{name}.rustgm"));
-        successful(
-            name,
-            Command::new("cc")
-                .arg(&object)
-                .arg(&provider)
-                .arg("-o")
-                .arg(&executable)
-                .output()?,
-        )?;
-        let actual = successful(name, Command::new(&executable).output()?)?;
-        assert_eq!(actual, expected, "{name}");
-        assert!(actual.is_empty());
-    }
-    Ok(())
+    let cases: Vec<_> = CASES
+        .iter()
+        .take(5)
+        .map(|&(name, path, _)| (name, path))
+        .collect();
+    objects::check_cases(
+        "foreign-declarations",
+        "pa30/tests/spec/imports/provider.c",
+        &cases,
+    )
 }

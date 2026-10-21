@@ -1,0 +1,236 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "path": "tests/spec/linkage/no-mangle.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/export-name.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/alias.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/collision.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/missing-unsafe.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/generic.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/generic-export.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/generic-const.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/empty.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/nul.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/unicode.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ],
+      "reason": "Exact spelling is retained; the pinned LowIR token vocabulary cannot represent it."
+    },
+    {
+      "path": "tests/spec/linkage/unsupported-byte.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ],
+      "reason": "Exact spelling is retained; the pinned LowIR token vocabulary cannot represent it."
+    },
+    {
+      "path": "tests/spec/linkage/duplicate-export.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/both-export.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/wrong-owner.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/foreign-export.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa30.function-linkage"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/helper-first.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ],
+      "reason": "An exact exported name collides with a generated compiler helper definition; the typed LowIR definition boundary rejects it."
+    },
+    {
+      "path": "tests/spec/linkage/export-first.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ],
+      "reason": "An exact exported name collides with a generated compiler helper definition; the typed LowIR definition boundary rejects it."
+    },
+    {
+      "path": "tests/spec/linkage/exports.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ],
+      "auxiliary": [
+        "tests/spec/linkage/provider.c"
+      ]
+    },
+    {
+      "path": "tests/spec/linkage/import-alias.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.function-linkage"
+      ],
+      "auxiliary": [
+        "tests/spec/imports/provider.c"
+      ]
+    }
+  ]
+}

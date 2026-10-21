@@ -188,7 +188,12 @@ impl<'a> Context<'a> {
                         node: source,
                         message: "missing demanded cleanup symbol",
                     })?;
-                    self.output.symbols[symbol.0 as usize].body = Some(lowered);
+                    self.output
+                        .define(symbol, lowered)
+                        .map_err(|message| Error {
+                            node: source,
+                            message,
+                        })?;
                     next_drop += 1;
                     continue;
                 }
@@ -216,7 +221,12 @@ impl<'a> Context<'a> {
             let body = &bodies.bodies[index];
             let plan = destruction.and_then(|proof| proof.plan(index));
             let lowered = function::lower(self, index, body, plan)?;
-            self.output.symbols[symbol.0 as usize].body = Some(lowered);
+            self.output
+                .define(symbol, lowered)
+                .map_err(|message| Error {
+                    node: body.source,
+                    message,
+                })?;
             next += 1;
         }
         Ok(())
@@ -449,8 +459,10 @@ impl<'a> Context<'a> {
         };
         let signature = self.signature(signature)?;
         let name = super::linkage::select(
-            None,
-            crate::support::linkage::Naming::Rust,
+            self.foreign.map(crate::sema::foreign::Registry::names),
+            self.foreign
+                .and_then(|r| r.function(definition))
+                .map_or(crate::support::linkage::Naming::Rust, |f| f.naming),
             super::linkage::Identity::Callable(instance),
             |_| {
                 Ok(if self.bodies.bodies[index].instance.is_some() {
@@ -487,7 +499,7 @@ impl<'a> Context<'a> {
         let symbol = self
             .output
             .declare(format!("rg.rem.{}", ty.name()), signature, false)?;
-        self.output.symbols[symbol.0 as usize].body = Some(remainder::build(ty)?);
+        self.output.define(symbol, remainder::build(ty)?)?;
         self.remainders[index] = Some(symbol);
         Ok(symbol)
     }
@@ -506,7 +518,7 @@ impl<'a> Context<'a> {
             let zero = builder.integer(Type::I64, 0)?;
             builder.terminate(Terminator::Return(Some(zero)))?;
         }
-        self.output.symbols[symbol.0 as usize].body = Some(builder.finish()?);
+        self.output.define(symbol, builder.finish()?)?;
         Ok(())
     }
 }

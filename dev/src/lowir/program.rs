@@ -146,8 +146,27 @@ pub struct Program {
     pub parameters: Vec<Type>,
     pub signatures: Vec<Signature>,
     pub symbols: Vec<Symbol>,
+    names: std::collections::HashMap<String, SymbolId>,
 }
 impl Program {
+    /// Install exactly one function body for a canonical symbol declaration.
+    ///
+    /// # Errors
+    /// Rejects invalid or noncanonical identities and repeated installation.
+    pub fn define(&mut self, symbol: SymbolId, body: Function) -> Result<(), &'static str> {
+        let target = self
+            .symbols
+            .get(symbol.0 as usize)
+            .ok_or("invalid LowIR definition symbol")?;
+        if self.names.get(&target.name) != Some(&symbol) {
+            return Err("noncanonical LowIR definition symbol");
+        }
+        if target.body.is_some() {
+            return Err("multiple function definitions for one LowIR symbol");
+        }
+        self.symbols[symbol.0 as usize].body = Some(body);
+        Ok(())
+    }
     #[must_use]
     pub fn parameters(&self, signature: SignatureId) -> &[Type] {
         let list = self.signatures[signature.0 as usize].parameters;
@@ -181,7 +200,7 @@ impl Program {
         Ok(id)
     }
     /// # Errors
-    /// Rejects an invalid signature or exhausted symbol identities.
+    /// Rejects invalid signatures, incompatible aliases and exhausted identities.
     pub fn declare(
         &mut self,
         name: String,
@@ -191,7 +210,21 @@ impl Program {
         if signature.0 as usize >= self.signatures.len() {
             return Err("invalid LowIR signature");
         }
+        if let Some(&id) = self.names.get(&name) {
+            let previous = &self.symbols[id.0 as usize];
+            let a = &self.signatures[previous.signature.0 as usize];
+            let b = &self.signatures[signature.0 as usize];
+            if previous.entry != entry
+                || a.result != b.result
+                || a.noreturn != b.noreturn
+                || self.parameters(previous.signature) != self.parameters(signature)
+            {
+                return Err("incompatible LowIR symbol declarations");
+            }
+            return Ok(id);
+        }
         let id = SymbolId(index(self.symbols.len())?);
+        self.names.insert(name.clone(), id);
         self.symbols.push(Symbol {
             name,
             signature,

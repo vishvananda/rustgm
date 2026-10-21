@@ -1,7 +1,7 @@
 //! Foreign records use canonical definitions; bodies and const permissions stay separate.
 use crate::{
     resolve::model::DefId,
-    support::linkage::{Linkage, Naming, SymbolNames},
+    support::linkage::{Linkage, Naming, SymbolNameId, SymbolNames},
     syntax::item::Safety,
     types::TypeId,
 };
@@ -18,6 +18,7 @@ pub struct Function {
 pub struct Registry {
     names: SymbolNames,
     functions: HashMap<DefId, Function>,
+    export_names: HashMap<SymbolNameId, DefId>,
 }
 impl Registry {
     #[must_use]
@@ -84,6 +85,18 @@ impl Registry {
                 return Err("conflicting foreign function identity");
             }
             return Ok(());
+        }
+        if function.linkage == Linkage::Export
+            && let Naming::Exact(name) = function.naming
+        {
+            if self
+                .export_names
+                .get(&name)
+                .is_some_and(|&owner| owner != definition)
+            {
+                return Err("multiple definitions export the same exact symbol");
+            }
+            self.export_names.insert(name, definition);
         }
         self.functions.insert(definition, function);
         Ok(())
