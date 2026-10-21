@@ -36,6 +36,10 @@ impl Names {
         self.scratch = scratch;
         result
     }
+    /// Exact linkage strings share the existing arena without identifier normalization.
+    pub(crate) fn intern_exact(&mut self, spelling: &str) -> Result<NameId, &'static str> {
+        self.canonical(spelling)
+    }
     fn canonical(&mut self, spelling: &str) -> Result<NameId, &'static str> {
         if self.slots.is_empty() {
             self.slots.resize(16, None);

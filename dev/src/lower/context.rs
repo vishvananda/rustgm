@@ -412,11 +412,18 @@ impl<'a> Context<'a> {
             return Err("call target is not a function");
         };
         let signature = self.signature(signature)?;
-        let name = if self.bodies.bodies[index].instance.is_some() {
-            format!("rg.{}.i{index}", definition.0)
-        } else {
-            format!("rg.{}", definition.0)
-        };
+        let name = super::linkage::select(
+            None,
+            crate::support::linkage::Naming::Rust,
+            super::linkage::Identity::Callable(instance),
+            |_| {
+                Ok(if self.bodies.bodies[index].instance.is_some() {
+                    format!("rg.{}.i{index}", definition.0)
+                } else {
+                    format!("rg.{}", definition.0)
+                })
+            },
+        )?;
         let symbol = self.output.declare(name, signature, false)?;
         self.symbols[index] = Some(symbol);
         self.queue.push(index);
