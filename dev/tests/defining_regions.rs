@@ -98,6 +98,12 @@ const CASES: &[(&str, &str, bool)] = &[
     ),
 ];
 fn build(source: &str) -> ResultTest<(rustgm::lowir::program::Program, rustgm::pipeline::Work)> {
+    build_observed(source, |_| {})
+}
+fn build_observed(
+    source: &str,
+    observe: impl FnOnce(&rustgm::sema::model::Declarations),
+) -> ResultTest<(rustgm::lowir::program::Program, rustgm::pipeline::Work)> {
     let mut report = semantic::resolve(source)?;
     let facts = rustgm::sema::declarations::analyze(&report)?;
     let rustgm::pipeline::Analysis {
@@ -107,6 +113,7 @@ fn build(source: &str) -> ResultTest<(rustgm::lowir::program::Program, rustgm::p
     let work = prepared.work();
     let entry = rustgm::sema::entry::select(&mut report, &facts)?;
     let program = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
+    observe(&facts);
     Ok((program, work))
 }
 #[test]
@@ -189,17 +196,30 @@ fn unrelated_constants_are_indexed_once_across_defining_bodies() -> ResultTest {
             source.push_str("W(x)}");
         }
         rustc::qualify(&format!("defining-constant-growth-{count}"), &source, true)?;
-        let (_, work) = build(&source)?;
+        let (_, work) = build_observed(&source, |facts| {
+            let constants = &facts.constant_work;
+            println!(
+                "initializers={count}: indexed={} lookups={} visits={} validations={}",
+                constants.initializer_indexed,
+                constants.initializer_lookups.get(),
+                constants.initializer_visits,
+                constants.initializer_validations,
+            );
+            assert_eq!(constants.initializer_indexed, count);
+            assert_eq!(constants.initializer_visits, count);
+            assert_eq!(constants.initializer_validations, count);
+            assert!(constants.initializer_lookups.get() <= 8 * count);
+            assert_eq!(facts.initializer_index_bytes(), 4 * facts.definitions.len());
+        })?;
         println!("unrelated constants={count}: {work:?}");
         assert_eq!(work.templates, 32);
         assert!(work.constant_preparation < count * 3 + 400);
-        if let Some((prior_count, prior_steps)) = previous {
-            assert_eq!(
-                work.constant_preparation - prior_steps,
-                (count - prior_count) * 2
-            );
+        // The declaration index is charged above. Retained promotion/query
+        // scratch setup must not revisit it for each defining body or width.
+        if let Some(prior_steps) = previous {
+            assert_eq!(work.constant_preparation, prior_steps);
         }
-        previous = Some((count, work.constant_preparation));
+        previous = Some(work.constant_preparation);
     }
     Ok(())
 }
