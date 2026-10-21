@@ -2849,6 +2849,74 @@
         "reason": "Valid union byte reinterpretation is explicitly unsupported until const memory tracks initialized bytes and provenance."
       },
       "maintainer_origin": "dev/tests/unsafe_unions.rs:union_constant_initialization_has_an_explicit_boundary"
+    },
+    {
+      "path": "tests/spec/callable-safety/unsafe-closure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.callable-safety"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      },
+      "maintainer_origin": "dev/tests/foreign_conventions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/callable-safety/nested-safety.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.callable-safety"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      },
+      "maintainer_origin": "dev/tests/foreign_conventions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/callable-safety/captured-unsafe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.callable-safety"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      },
+      "maintainer_origin": "dev/tests/foreign_conventions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/callable-safety/zero-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.callable-safety"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+      },
+      "maintainer_origin": "dev/tests/foreign_conventions.rs:CASES"
     }
   ]
 }
