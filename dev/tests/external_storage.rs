@@ -39,6 +39,7 @@ const CASES: &[(&str, bool, i32)] = &[
     ("alias", true, 0),
     ("callback", true, 0),
     ("pointer-constant", true, 0),
+    ("interior-storage", true, 0),
 ];
 fn root() -> Result<&'static Path, Box<dyn std::error::Error>> {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -131,6 +132,24 @@ fn imported_storage_has_no_local_initializer_or_definition()
         1
     );
     assert!(imports.iter().all(|g| g.items.is_none()));
+    Ok(())
+}
+
+#[test]
+fn imported_shared_storage_uses_its_owned_mutation_contract()
+-> Result<(), Box<dyn std::error::Error>> {
+    let program = frontend::checked(&std::fs::read_to_string(fixture("interior-storage")?)?)?;
+    for (name, readonly) in [("foreign_atomic", false), ("foreign_ordinary", true)] {
+        let global = program
+            .globals
+            .iter()
+            .find(|global| global.name == name)
+            .ok_or("missing imported storage")?;
+        assert_eq!(global.kind, rustgm::lowir::data::GlobalKind::Declaration);
+        assert_eq!(global.span.bytes, 4);
+        assert_eq!(global.span.align, 4);
+        assert_eq!(global.readonly, readonly);
+    }
     Ok(())
 }
 #[test]

@@ -348,6 +348,18 @@
       "auxiliary": [
         "tests/spec/statics/imports.c"
       ]
+    },
+    {
+      "path": "tests/spec/statics/interior-storage.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa30.foreign-statics",
+        "pa28.atomic-storage"
+      ]
     }
   ]
 }
