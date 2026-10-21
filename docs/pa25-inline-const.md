@@ -122,8 +122,8 @@ inline operand arrays and source indexes are charged separately to the existing
 code budget. Shared immutable facts keep their existing ownership exclusions.
 These are deterministic logical bounds, not exact allocator bytes or RSS.
 
-The bounded immutable performance follow-up is pending. The earlier unexplained
-scalar RSS increase remains unresolved; this checkpoint does not attribute or
-hide it. This implementation slice does
+The [bounded immutable performance follow-up](pa25-inline-performance.md)
+retains all 427 observations and exact linear graph/index counters. Wall timing
+is noisy; the earlier unexplained scalar RSS increase remains unresolved. This implementation slice does
 not complete PA25's remaining dynamic pattern/enum continuations, slice execution,
 raw/union validity, full promotions/statics or release fixture/oracle review.
