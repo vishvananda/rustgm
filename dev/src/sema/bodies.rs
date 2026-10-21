@@ -15,6 +15,7 @@ mod generics;
 mod hidden_results;
 mod invocations;
 mod item_values;
+mod language_hooks;
 mod lifetimes;
 mod matches;
 mod methods;
@@ -1282,6 +1283,14 @@ impl Checker<'_> {
                 op: Unary::Negate | Unary::Not,
                 operand,
             } => {
+                if self.uses_language_operator(node, operand)? {
+                    let Kind::Unary { op, .. } = self.kind(node) else {
+                        return Err(self.error(node, "invalid unary operator"));
+                    };
+                    let kind = language_hooks::unary_hook(op)
+                        .ok_or_else(|| self.error(node, "missing unary library hook"))?;
+                    return self.language_operator(node, kind, operand, None);
+                }
                 if matches!(
                     self.kind(node),
                     Kind::Unary {
@@ -1593,6 +1602,11 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         if op == Op::Equal || scalar::compound_operator(op).is_some() {
             return self.assignment(node, op, left, right);
+        }
+        if let Some(kind) = language_hooks::binary_hook(op)
+            && self.uses_language_operator(node, left)?
+        {
+            return self.language_operator(node, kind, left, Some(right));
         }
         let a = self.term(left)?;
         let b = self.term(right)?;

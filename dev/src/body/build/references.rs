@@ -168,3 +168,28 @@ impl Builder<'_> {
         )
     }
 }
+
+impl Builder<'_> {
+    pub(super) fn materialize_place(
+        &mut self,
+        node: NodeId,
+        value: ValueId,
+    ) -> Result<Option<Place>, Error> {
+        let Some(block) = self.current else {
+            return Ok(None);
+        };
+        self.body.temporaries.push(crate::body::ir::Temporary {
+            lifetime: self
+                .scope_plan
+                .node(node)
+                .ok_or_else(|| self.error(node, "missing temporary scope"))?
+                .temporary,
+            value,
+            source: node,
+            block,
+            before: self.index(node, self.body.statements.len())?,
+            exits_before: self.index(node, self.scope_exits.len())?,
+        });
+        Ok(Some(Place::Temporary(value)))
+    }
+}

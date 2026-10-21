@@ -176,6 +176,10 @@ impl Checker<'_> {
                 self.facts.node(key).and_then(|facts| facts.reference)
             {
                 return if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Trait
+                    || matches!(
+                        self.report.resolution.builtin_traits.identify(id),
+                        Some(crate::resolve::model::BuiltinTrait::Language(_))
+                    )
                     || auto
                         && matches!(
                             self.report.resolution.builtin_traits.identify(id),

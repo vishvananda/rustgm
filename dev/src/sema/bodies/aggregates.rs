@@ -494,7 +494,14 @@ impl Checker<'_> {
                 None
             }
             Some(Constructor::Slice) => Some(Operation::IndexSlice),
-            _ => return Err(self.error(node, "indexing requires a known array type")),
+            _ => {
+                return self.language_operator(
+                    node,
+                    crate::support::language_hooks::Hook::Index,
+                    value,
+                    Some(index),
+                );
+            }
         };
         let usize = self.known(node, TypeId::primitive(Primitive::Usize))?;
         self.coerce(index, usize)?;
@@ -532,7 +539,8 @@ impl Checker<'_> {
         node: NodeId,
         left: NodeId,
     ) -> Result<Option<DefId>, Error> {
-        if self.state.pending_indexes.contains_key(&left)
+        if matches!(self.kind(left), Kind::Index { .. })
+            || self.state.pending_indexes.contains_key(&left)
             || self.facts.node(self.key(left)).is_some_and(|f| {
                 matches!(
                     f.operation,

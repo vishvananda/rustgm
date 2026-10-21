@@ -9,6 +9,9 @@ pub(super) struct Declarations {
     pub members: HashMap<DefId, DefId>,
     callables: HashMap<DefId, (CallTrait, crate::resolve::unit::NodeKey)>,
     output: Option<DefId>,
+    pub hooks: Vec<super::super::model::Function>,
+    pub hook_members: Vec<(DefId, DefId)>,
+    pub origins: HashMap<DefId, crate::resolve::unit::NodeKey>,
     callable_definitions: [Option<DefId>; 3],
 }
 impl Inventory {
@@ -39,11 +42,12 @@ impl Inventory {
         &self,
         definition: DefId,
     ) -> Option<crate::resolve::unit::NodeKey> {
-        self.language
-            .as_ref()?
+        let language = self.language.as_ref()?;
+        language
             .callables
             .get(&definition)
             .map(|&(_, origin)| origin)
+            .or_else(|| language.origins.get(&definition).copied())
     }
 
     pub(in crate::sema) fn callable_definition(&self, kind: CallTrait) -> Option<DefId> {
@@ -71,5 +75,68 @@ impl Inventory {
             language.members.insert(member, definition);
         }
         Ok(())
+    }
+}
+
+impl Inventory {
+    pub(in crate::sema) fn register_language_members(
+        &mut self,
+        definition: DefId,
+        origin: crate::resolve::unit::NodeKey,
+        method: super::super::model::Function,
+        output: (DefId, crate::resolve::names::NameId),
+    ) {
+        let language = self.language.get_or_insert_with(Default::default);
+        language.origins.insert(definition, origin);
+        language.members.insert(method.definition, definition);
+        language.members.insert(output.0, definition);
+        language
+            .hook_members
+            .extend([(method.definition, definition), (output.0, definition)]);
+        language.hooks.push(method);
+        self.type_names.insert(output.0, output.1);
+    }
+    pub(in crate::sema) fn language_functions(
+        &self,
+    ) -> impl Iterator<Item = &super::super::model::Function> {
+        self.language
+            .iter()
+            .flat_map(|language| language.hooks.iter())
+    }
+    pub(in crate::sema) fn member_owner(&self, definition: DefId) -> Option<DefId> {
+        self.language
+            .as_ref()
+            .and_then(|language| language.members.get(&definition).copied())
+            .or_else(|| {
+                self.get(self.owner(definition)?)
+                    .map(|owner| owner.self_definition)
+            })
+    }
+    pub(in crate::sema) fn declaration_members(&self) -> impl Iterator<Item = (DefId, DefId)> + '_ {
+        self.members
+            .iter()
+            .map(|member| {
+                (
+                    member.definition,
+                    self.owners[member.owner.0 as usize].self_definition,
+                )
+            })
+            .chain(
+                self.language
+                    .iter()
+                    .flat_map(|language| language.hook_members.iter().copied()),
+            )
+    }
+    pub(in crate::sema) fn declaration_owner(&self, definition: DefId) -> Option<DefId> {
+        if self
+            .language
+            .as_ref()
+            .is_some_and(|language| language.schemas.contains_key(&definition))
+        {
+            Some(definition)
+        } else {
+            self.get(self.owner(definition)?)
+                .map(|owner| owner.self_definition)
+        }
     }
 }

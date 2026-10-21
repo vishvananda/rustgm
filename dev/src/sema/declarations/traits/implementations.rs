@@ -160,6 +160,9 @@ impl Checker<'_> {
             use crate::types::auto_traits::AutoTrait;
             return Ok(matches!(marker, AutoTrait::Send | AutoTrait::Sync));
         }
+        if self.facts.associated.language_origin(definition).is_some() {
+            return Ok(false);
+        }
         let trait_owner = self
             .facts
             .associated

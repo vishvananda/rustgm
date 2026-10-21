@@ -43,3 +43,25 @@ the eager argument worklist and explicit environment provider, but must not
 fabricate core/std paths while those library identities are unavailable.
 Formatting, assertion and panic-related macro hooks similarly need explicit
 library/runtime contracts and tests at their owning stage.
+
+## Maintainer operator checkpoint
+
+The first implementation checkpoint admits the `Neg`, `Not`, arithmetic,
+bitwise, shift and shared `Index` library contracts. Demand-loaded metadata
+registers distinct trait, parameter, method and `Output` declaration identities
+for `core::ops` and `std::ops`. Ordinary namespace lookup selects aliases and
+shadowed names; a user trait with the same spelling grants no operator behavior.
+
+Operator operands retain their actual types. Selection proves the complete
+trait application, normalizes its associated `Output`, and checks implementation
+methods through the existing trait conformance machinery. Lowering consumes the
+selected ordinary method callable. Owned operators consume their operands in
+source order. Shared indexing borrows its receiver before evaluating the index,
+then dereferences the method's returned reference as a place; the ordinary
+ownership and region checks enforce its loan and mutability.
+
+This checkpoint is not an assignment release. Mutable indexing, assignment and
+comparison hooks, iteration, question-mark, additional derives, formatting and
+the nominal Option/Result library boundary remain implementation work. The
+existing scalar operations, built-in array/slice indexing and earlier derives
+retain their earlier owning contracts.

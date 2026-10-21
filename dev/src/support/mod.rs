@@ -1,5 +1,6 @@
 pub mod call_traits;
 pub(crate) mod intern_slice;
+pub mod language_hooks;
 pub mod marker_traits;
 pub mod names;
 pub(crate) mod quoted;

@@ -15,6 +15,7 @@ mod heads;
 mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
+mod language_hooks;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
@@ -244,6 +245,7 @@ impl Checker<'_> {
             })
             .saturating_mul(16);
         self.prepare_call_contracts()?;
+        self.prepare_language_contracts()?;
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;

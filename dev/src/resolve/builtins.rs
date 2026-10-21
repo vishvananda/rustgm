@@ -10,7 +10,7 @@ use crate::syntax::{
     ast::NodeId,
     item::{Item, ItemKind},
 };
-pub use traits::{BuiltinTrait, Callable, Traits};
+pub use traits::{BuiltinTrait, Callable, Language, Traits};
 
 impl Resolver<'_> {
     pub(super) fn builtin_crate(
@@ -160,7 +160,11 @@ impl Resolver<'_> {
         self.define(
             Definition {
                 name,
-                namespace: Namespace::Type,
+                namespace: if kind == DefKind::Function {
+                    Namespace::Value
+                } else {
+                    Namespace::Type
+                },
                 kind,
                 scope: c.scope,
                 node: None,

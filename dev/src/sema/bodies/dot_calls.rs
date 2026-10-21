@@ -192,3 +192,53 @@ impl Checker<'_> {
         }
     }
 }
+
+impl Checker<'_> {
+    pub(super) fn retain_language_method(
+        &mut self,
+        node: NodeId,
+        method: DefId,
+        callable: TermId,
+        receiver: TermId,
+    ) {
+        self.state.call_types.methods.push((
+            node,
+            Pending {
+                method,
+                callable,
+                dereferences: 0,
+                borrow: None,
+                actual: receiver,
+                expected: receiver,
+                unsize: false,
+            },
+        ));
+    }
+}
+
+impl Checker<'_> {
+    pub(super) fn retain_language_index(
+        &mut self,
+        node: NodeId,
+        source: NodeId,
+        method: DefId,
+        callable: TermId,
+        subject: TermId,
+        receiver: TermId,
+    ) {
+        self.state.call_types.field_receivers.push(subject);
+        self.state.alignment.borrows.push((node, source));
+        self.state.call_types.methods.push((
+            node,
+            Pending {
+                method,
+                callable,
+                dereferences: 0,
+                borrow: Some(receiver),
+                actual: receiver,
+                expected: receiver,
+                unsize: false,
+            },
+        ));
+    }
+}

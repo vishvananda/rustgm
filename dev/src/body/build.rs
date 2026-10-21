@@ -257,6 +257,7 @@ enum Work {
     EnterUnadjusted(NodeId),
     Reborrow(NodeId),
     MethodReceiver(NodeId),
+    LanguageReceiver(NodeId),
     InvocationReceiver(NodeId, NodeId),
     Finish(NodeId),
     EndBlock {
@@ -751,21 +752,9 @@ impl<'a> Builder<'a> {
             Work::Place(node) => self.enter_place(node)?,
             Work::FinishPlace(node) => self.finish_place(node)?,
             Work::TemporaryPlace(node) => {
-                let place = if let Some(block) = self.current {
+                let place = if self.current.is_some() {
                     let value = self.value(node)?;
-                    self.body.temporaries.push(super::ir::Temporary {
-                        lifetime: self
-                            .scope_plan
-                            .node(node)
-                            .ok_or_else(|| self.error(node, "missing temporary scope"))?
-                            .temporary,
-                        value,
-                        source: node,
-                        block,
-                        before: self.index(node, self.body.statements.len())?,
-                        exits_before: self.index(node, self.scope_exits.len())?,
-                    });
-                    Some(Place::Temporary(value))
+                    self.materialize_place(node, value)?
                 } else {
                     None
                 };
@@ -784,6 +773,7 @@ impl<'a> Builder<'a> {
             }
             Work::Reborrow(node) => self.finish_reborrow(node)?,
             Work::MethodReceiver(node) => self.method_receiver(node)?,
+            Work::LanguageReceiver(node) => self.language_index_receiver(node)?,
             Work::InvocationReceiver(node, callee) => self.invocation_receiver(node, callee)?,
             Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
                 self.enter(node)?;
@@ -1423,6 +1413,9 @@ impl<'a> Builder<'a> {
         Ok(())
     }
     fn binary(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<ValueId, Error> {
+        if let Some(value) = self.language_call(node, &[left, right])? {
+            return Ok(value);
+        }
         let right = self.value(right)?;
         match self.fact(node)?.operation {
             Some(Operation::AssignPlace {

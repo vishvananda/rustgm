@@ -66,6 +66,9 @@ impl Builder<'_> {
             Kind::Index { value, index } => {
                 self.scratch.work.push(Work::FinishPlace(node));
                 self.scratch.work.push(Work::Enter(index));
+                if matches!(self.fact(node)?.operation, Some(Operation::Call { .. })) {
+                    self.scratch.work.push(Work::LanguageReceiver(node));
+                }
                 self.scratch.work.push(Work::Place(value));
             }
             Kind::Path { .. } | Kind::Name(_) => {
@@ -125,6 +128,11 @@ impl Builder<'_> {
         let place = if let Some(base) = base
             && self.current.is_some()
         {
+            if matches!(self.fact(node)?.operation, Some(Operation::Call { .. })) {
+                let place = self.language_index_place(node)?;
+                self.scratch.places.push(Some(place));
+                return Ok(());
+            }
             let base = self.automatic_dereferences(node, base)?;
             if self.fact(node)?.operation == Some(Operation::Dereference) {
                 let place = self.dereference_place(node, base)?;

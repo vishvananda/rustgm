@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{
     resolve::{expansion::Report, model::DefKind, names::NameId},
-    sema::{associated::OwnerId, model::Declarations, traits::conformance::Definitions},
+    sema::{model::Declarations, traits::conformance::Definitions},
     syntax::item::ItemKind,
     types::{
         TypeId,
@@ -24,8 +24,8 @@ pub(super) struct Contract {
 
 #[derive(Default)]
 pub(super) struct Members {
-    owners: HashMap<OwnerId, Vec<DefId>>,
-    names: HashMap<(OwnerId, NameId), DefId>,
+    owners: HashMap<DefId, Vec<DefId>>,
+    names: HashMap<(DefId, NameId), DefId>,
 }
 impl Members {
     pub(super) fn selected(
@@ -37,24 +37,18 @@ impl Members {
     ) -> Result<Option<DefId>, &'static str> {
         let owner = facts
             .associated
-            .owner(owner)
+            .declaration_owner(owner)
             .ok_or("missing constant implementation owner")?;
         let name = report.resolution.definitions[declaration.0 as usize].name;
         Ok(self.names.get(&(owner, name)).copied())
     }
     pub(super) fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
-        for member in facts.associated.members() {
-            let definition = &report.resolution.definitions[member.definition.0 as usize];
+        for (member, owner) in facts.associated.declaration_members() {
+            let definition = &report.resolution.definitions[member.0 as usize];
             if definition.kind == DefKind::Const {
-                result
-                    .owners
-                    .entry(member.owner)
-                    .or_default()
-                    .push(member.definition);
-                result
-                    .names
-                    .insert((member.owner, definition.name), member.definition);
+                result.owners.entry(owner).or_default().push(member);
+                result.names.insert((owner, definition.name), member);
             }
         }
         result
@@ -81,12 +75,12 @@ impl Checker<'_> {
         let trait_owner = self
             .facts
             .associated
-            .owner(DefId(app.item.0))
+            .declaration_owner(DefId(app.item.0))
             .ok_or_else(|| self.error(source, "missing constant trait owner"))?;
         let impl_owner = self
             .facts
             .associated
-            .owner(owner)
+            .declaration_owner(owner)
             .ok_or_else(|| self.error(source, "missing constant impl owner"))?;
         for &actual in members.owners.get(&impl_owner).into_iter().flatten() {
             let definition = &self.report.resolution.definitions[actual.0 as usize];
