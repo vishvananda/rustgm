@@ -1,4 +1,5 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
+mod export;
 use super::{foreign, model::Declarations};
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
@@ -9,14 +10,33 @@ use crate::{
     syntax::item::Safety,
     types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId, callable::Convention},
 };
+pub use export::{Exports, export};
 use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct Linkage {
     identity: Option<CrateIdentity>,
+    prefix: Option<String>,
     symbols: HashMap<DefId, String>,
 }
 impl Linkage {
+    /// Install one explicit local identity without changing imported contracts.
+    /// # Errors
+    /// Rejects a different identity after naming has been published.
+    pub fn set_identity(&mut self, identity: CrateIdentity) -> Result<(), &'static str> {
+        if self.identity.as_ref().is_some_and(|old| old != &identity) {
+            return Err("conflicting local crate linkage identity");
+        }
+        if self.identity.is_none() {
+            self.prefix = Some(identity.symbol_prefix());
+            self.identity = Some(identity);
+        }
+        Ok(())
+    }
+    #[must_use]
+    pub fn prefix(&self) -> Option<&str> {
+        self.prefix.as_deref()
+    }
     #[must_use]
     pub fn rust_symbol(&self, definition: DefId) -> Option<&str> {
         self.symbols.get(&definition).map(String::as_str)

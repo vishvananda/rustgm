@@ -40,7 +40,7 @@ impl Context<'_> {
             .and_then(|n| n.checked_add(HEADER_BYTES))
             .ok_or("object table exceeds target address space")?;
         let global = self.output.global(
-            format!("rg.vtable.{}", id.0),
+            self.internal_name(format!("rg.vtable.{}", id.0)),
             MemorySpan { bytes, align: 8 },
             true,
         )?;

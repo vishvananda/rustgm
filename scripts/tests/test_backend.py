@@ -58,5 +58,58 @@ class ObjectBridge(unittest.TestCase):
                 backend.load_tools()
 
 
+class MultipleUnits(unittest.TestCase):
+    def test_multiple_units_without_object_profile_fail_before_execution(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source.lowir"
+            source.write_text("serialized unit")
+            with mock.patch.object(backend, "load_tools", side_effect=ValueError("missing object profile")), mock.patch.object(backend, "invoke") as invoke:
+                with self.assertRaisesRegex(ValueError, "missing object profile"):
+                    backend.build_many([source, source], Path(temporary) / "output")
+                invoke.assert_not_called()
+
+    def test_missing_or_empty_input_fails_before_tool_loading(self):
+        with mock.patch.object(backend, "load_tools") as tools:
+            for sources in ([], [Path("missing.lowir")]):
+                with self.assertRaises(ValueError):
+                    backend.build_many(sources, Path("output"))
+            tools.assert_not_called()
+
+    def test_single_input_preserves_the_existing_command_and_validated_path(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, output = root / "source.lowir", root / "program"
+            source.write_text("serialized unit")
+            tools = {"lowir": "validator", "lowir2native": "linker"}
+            with mock.patch.object(backend, "load_tools", return_value=tools), mock.patch.object(
+                    backend, "invoke") as invoke:
+                backend.build(source, output)
+                validated = str(output.with_suffix(".validated.lowir"))
+                self.assertEqual(invoke.call_args_list, [
+                    mock.call(["validator", "-o", validated, str(source)]),
+                    mock.call(["linker", "-O0", "-o", str(output), validated])])
+
+    def test_multiple_units_require_the_reviewed_object_profile(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sources = [root / "one.lowir", root / "two.lowir"]
+            for source in sources:
+                source.write_text("serialized unit")
+            output = root / "program"
+            tools = {"lowir": "validator", "cppgm++": "object-compiler"}
+            with mock.patch.object(backend, "load_tools", return_value=tools), mock.patch.object(
+                    backend, "invoke") as invoke, mock.patch.object(backend, "emit_object") as emit:
+                backend.build_many(sources, output)
+                validated = [str(output.with_suffix(f".unit-{index}.validated.lowir"))
+                             for index in range(2)]
+                objects = [output.with_suffix(f".unit-{index}.o") for index in range(2)]
+                self.assertEqual(emit.call_args_list, [mock.call(Path(unit), target, tools)
+                                                     for unit, target in zip(validated, objects)])
+                self.assertEqual(invoke.call_args_list, [
+                    mock.call(["validator", "-o", validated[0], str(sources[0])]),
+                    mock.call(["validator", "-o", validated[1], str(sources[1])]),
+                    mock.call(["cc", *map(str, objects), "-lm", "-o", str(output)])])
+
+
 if __name__ == "__main__":
     unittest.main()

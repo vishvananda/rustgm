@@ -66,7 +66,7 @@ impl Context<'_> {
         ));
         let signature = self.signature(signature)?;
         let symbol = self.output.declare(
-            format!("rg.virtual.{}.{}", call.shape.0, call.slot),
+            self.internal_name(format!("rg.virtual.{}.{}", call.shape.0, call.slot)),
             signature,
             false,
         )?;

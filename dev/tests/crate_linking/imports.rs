@@ -147,6 +147,9 @@ fn external_aliases_respect_explicit_imports_privacy_and_safety()
                 .map_err(|error| error.to_string())
         });
         assert!(rejected.is_err(), "accepted {text}");
+        if text.starts_with("const") {
+            assert!(rejected.is_err_and(|message| message.contains("non-const")));
+        }
     }
     Ok(())
 }

@@ -1,3 +1,4 @@
+mod crates;
 mod modules;
 use rustgm::{
     expand::{self, config::Config},
@@ -21,7 +22,7 @@ struct Options {
     count: bool,
     mode: String,
     config: Config,
-    crate_name: Option<String>,
+    crates: crates::Options,
 }
 
 fn options() -> Result<Options, String> {
@@ -31,7 +32,7 @@ fn options() -> Result<Options, String> {
         count: false,
         mode: String::new(),
         config: Config::default(),
-        crate_name: None,
+        crates: crates::Options::default(),
     };
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -69,7 +70,26 @@ fn options() -> Result<Options, String> {
         }
         match arg.as_str() {
             "--crate-name" => {
-                options.crate_name = Some(args.next().ok_or("--crate-name requires a name")?);
+                options.crates.name = Some(args.next().ok_or("--crate-name requires a name")?);
+            }
+            "--crate-disambiguator" => {
+                options.crates.disambiguator =
+                    Some(args.next().ok_or("--crate-disambiguator requires an ID")?);
+            }
+            "--metadata-output" => {
+                options.crates.metadata =
+                    Some(args.next().ok_or("--metadata-output requires a path")?);
+            }
+            "--crate-type=lib" => options.crates.library = true,
+            "--crate-type=bin" => options.crates.library = false,
+            "--extern" => {
+                if options.crates.externs.len() >= 1024 {
+                    return Err("external crate arguments exceed profile budget".into());
+                }
+                options
+                    .crates
+                    .externs
+                    .push(args.next().ok_or("--extern requires ALIAS=METADATA")?);
             }
             "--cfg" => {
                 let setting = args.next().ok_or("--cfg requires an option")?;
@@ -89,6 +109,9 @@ fn options() -> Result<Options, String> {
     if options.mode.is_empty() {
         return Err("usage: rustgm --emit-tokens|--emit-literals [-o OUTPUT] [SOURCE|-]".into());
     }
+    options
+        .crates
+        .validate(&options.mode, options.count, options.output.as_deref())?;
     Ok(options)
 }
 
@@ -130,7 +153,7 @@ fn compile(options: &Options) -> Result<(), String> {
             source,
             options.input.as_deref(),
             &options.config,
-            options.crate_name.as_deref(),
+            &options.crates,
             options.count,
             if options.mode == "--emit-names" {
                 modules::Mode::Names

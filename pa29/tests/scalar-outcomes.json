@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "status": "maintainer checkpoint; PA29 remains planned",
+  "language": "Rust 1.98.0, edition 2024",
+  "target": "Linux x86-64",
+  "overflow_checks": true,
+  "panic": "abort",
+  "crates": [
+    {"source": "spec/scalar/first.rs", "kind": "lib", "name": "shared", "disambiguator": "first", "externs": {}, "rustc": "accept"},
+    {"source": "spec/scalar/second.rs", "kind": "lib", "name": "shared", "disambiguator": "second", "externs": {"one": "first"}, "rustc": "accept"},
+    {"source": "spec/scalar/client.rs", "kind": "bin", "externs": {"one": "first", "two": "second"}, "rustc": "accept", "native_exit": 0},
+    {"source": "spec/scalar/imported-main.rs", "kind": "bin", "externs": {"one": "first", "two": "second"}, "rustc": "accept", "native_exit": 0}
+  ],
+  "checks": ["complete dependency graph", "duplicate crate and private helper names", "distinct disambiguators", "two private generic instances", "private data symbols", "nested public paths", "imported Rust main", "reordered extern arguments", "reproducible metadata and LowIR"]
+}

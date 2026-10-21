@@ -85,17 +85,53 @@ def invoke(command):
 
 
 def build(source, output):
+    build_many([source], output)
+
+
+def build_many(sources, output):
+    if not sources:
+        raise ValueError("executable bridge requires at least one LowIR input")
+    if any(not source.is_file() for source in sources):
+        raise ValueError("LowIR input does not exist")
+    if len(sources) > 1025:
+        raise ValueError("LowIR input count exceeds crate profile budget")
+    if len(sources) > 1:
+        build_objects(sources, output)
+        return
     tools = load_tools()
     output.parent.mkdir(parents=True, exist_ok=True)
-    validated = output.with_suffix(".validated.lowir")
-    invoke([tools["lowir"], "-o", str(validated), str(source)])
-    invoke([tools["lowir2native"], "-O0", "-o", str(output), str(validated)])
+    units = []
+    for index, source in enumerate(sources):
+        suffix = ".validated.lowir" if len(sources) == 1 else f".unit-{index}.validated.lowir"
+        validated = output.with_suffix(suffix)
+        invoke([tools["lowir"], "-o", str(validated), str(source)])
+        units.append(str(validated))
+    invoke([tools["lowir2native"], "-O0", "-o", str(output), *units])
+
+
+def build_objects(sources, output):
+    # The executable reader concatenates symbols instead of merging declarations.
+    # Separate units therefore require the explicit reviewed ELF object profile.
+    tools = load_tools(("lowir", "cppgm++"))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    objects = []
+    for index, source in enumerate(sources):
+        validated = output.with_suffix(f".unit-{index}.validated.lowir")
+        invoke([tools["lowir"], "-o", str(validated), str(source)])
+        object_file = output.with_suffix(f".unit-{index}.o")
+        emit_object(validated, object_file, tools)
+        objects.append(str(object_file))
+    invoke(["cc", *objects, "-lm", "-o", str(output)])
 
 
 def build_object(source, output):
     if source.suffix != ".lowir":
         raise ValueError("object bridge accepts only serialized .lowir input")
     tools = load_tools(("cppgm++",))
+    emit_object(source, output, tools)
+
+
+def emit_object(source, output, tools):
     output.parent.mkdir(parents=True, exist_ok=True)
     # This mode validates serialized LowIR with the host-object ABI facts enabled.
     # The suffix gate prevents the multi-input driver from selecting a frontend.
@@ -138,7 +174,7 @@ def main():
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--test-object", action="store_true")
     parser.add_argument("--emit-object", action="store_true")
-    parser.add_argument("source", nargs="?", type=Path)
+    parser.add_argument("source", nargs="*", type=Path)
     parser.add_argument("-o", type=Path)
     args = parser.parse_args()
     try:
@@ -152,9 +188,11 @@ def main():
             test_object()
         elif args.source and args.o:
             if args.emit_object:
-                build_object(args.source.resolve(), args.o.resolve())
+                if len(args.source) != 1:
+                    raise ValueError("object bridge requires exactly one LowIR input")
+                build_object(args.source[0].resolve(), args.o.resolve())
             else:
-                build(args.source.resolve(), args.o.resolve())
+                build_many([source.resolve() for source in args.source], args.o.resolve())
         else:
             parser.error("use --configure, --configure-object, --test, --test-object, or SOURCE -o OUTPUT")
         return 0

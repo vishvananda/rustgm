@@ -106,7 +106,7 @@ impl Context<'_> {
         let layout = self.layout(ty)?;
         self.data.charge(1)?;
         let global = self.output.global(
-            format!("rg.data.{}", self.output.globals.len()),
+            self.internal_name(format!("rg.data.{}", self.output.globals.len())),
             MemorySpan {
                 bytes: layout.size.max(u64::from(layout.align)),
                 align: layout.align,

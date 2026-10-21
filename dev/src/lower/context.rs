@@ -31,7 +31,8 @@ pub(super) struct Context<'a> {
     pub constants: Reader<'a>,
     pub definitions: &'a [Option<TypeId>],
     pub initializers: &'a [Initializer],
-    foreign: Option<&'a crate::sema::foreign::Registry>,
+    pub(super) foreign: Option<&'a crate::sema::foreign::Registry>,
+    pub(super) crates: Option<&'a crate::sema::crates::Linkage>,
     imported_symbols: HashMap<DefId, SymbolId>,
     pub layouts: &'a mut Layouts,
     pub bodies: &'a ir::Program,
@@ -119,6 +120,7 @@ impl<'a> Context<'a> {
             definitions: &facts.definitions,
             initializers: &facts.initializers,
             foreign: facts.foreign.as_deref(),
+            crates: facts.crates.as_deref(),
             imported_symbols: HashMap::new(),
             layouts,
             bodies,
@@ -408,7 +410,11 @@ impl<'a> Context<'a> {
         } else {
             format!("rg.closure.{}", identity.0)
         };
-        let symbol = self.output.declare(name, signature, false)?;
+        let symbol = self.output.declare(
+            self.internal_name(name),
+            signature,
+            false,
+        )?;
         self.symbols[index] = Some(symbol);
         self.queue.push(index);
         Ok(symbol)
@@ -441,7 +447,7 @@ impl<'a> Context<'a> {
                 self.foreign.map(crate::sema::foreign::Registry::names),
                 function.naming,
                 super::linkage::Identity::Callable(instance),
-                |_| Err("foreign import is missing exact symbol spelling"),
+                |identity| self.rust_name(identity, None),
             )?;
             let symbol = self.output.declare(name, signature, false)?;
             self.imported_symbols.insert(definition, symbol);
@@ -481,13 +487,7 @@ impl<'a> Context<'a> {
                 .and_then(|r| r.function(definition))
                 .map_or(crate::support::linkage::Naming::Rust, |f| f.naming),
             super::linkage::Identity::Callable(instance),
-            |_| {
-                Ok(if self.bodies.bodies[index].instance.is_some() {
-                    format!("rg.{}.i{index}", definition.0)
-                } else {
-                    format!("rg.{}", definition.0)
-                })
-            },
+            |identity| self.rust_name(identity, self.bodies.bodies[index].instance.map(|_| index)),
         )?;
         let symbol = self.output.declare(name, signature, false)?;
         self.symbols[index] = Some(symbol);
@@ -513,9 +513,11 @@ impl<'a> Context<'a> {
             return Ok(symbol);
         }
         let signature = self.output.signature(&[ty, ty], ty, false)?;
-        let symbol = self
-            .output
-            .declare(format!("rg.rem.{}", ty.name()), signature, false)?;
+        let symbol = self.output.declare(
+            self.internal_name(format!("rg.rem.{}", ty.name())),
+            signature,
+            false,
+        )?;
         self.output.define(symbol, remainder::build(ty)?)?;
         self.remainders[index] = Some(symbol);
         Ok(symbol)

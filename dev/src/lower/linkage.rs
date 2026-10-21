@@ -37,3 +37,50 @@ pub fn select(
     }
     Ok(spelling.to_owned())
 }
+
+impl super::context::Context<'_> {
+    pub(super) fn internal_name(&self, legacy: String) -> String {
+        if let Some(prefix) = self.crates.and_then(crate::sema::crates::Linkage::prefix) {
+            format!("{prefix}internal${legacy}")
+        } else {
+            legacy
+        }
+    }
+    pub(super) fn rust_name(
+        &self,
+        identity: Identity,
+        specialization: Option<usize>,
+    ) -> Result<String, &'static str> {
+        let definition = match identity {
+            Identity::Callable(instance) => {
+                let Some(crate::types::Kind::FunctionItem { item, .. }) =
+                    self.types.kind(instance.ty())
+                else {
+                    return Err("invalid callable Rust symbol identity");
+                };
+                DefId(item.0)
+            }
+            Identity::Static(definition) => definition,
+        };
+        if let Some(base) = self
+            .crates
+            .and_then(|crates| crates.rust_symbol(definition))
+        {
+            return Ok(
+                specialization.map_or_else(|| base.to_owned(), |index| format!("{base}.i{index}"))
+            );
+        }
+        if self
+            .foreign
+            .and_then(|registry| registry.function(definition))
+            .is_some_and(|function| function.linkage == crate::support::linkage::Linkage::Import)
+        {
+            return Err("Rust import is missing external symbol identity");
+        }
+        let legacy = specialization.map_or_else(
+            || format!("rg.{}", definition.0),
+            |index| format!("rg.{}.i{index}", definition.0),
+        );
+        Ok(self.internal_name(legacy))
+    }
+}

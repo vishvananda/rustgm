@@ -66,9 +66,11 @@ impl Context<'_> {
             .and_then(|proof| proof.recipes().get(id))
             .ok_or("missing proved destructor recipe")?;
         let signature = self.output.signature(&[Type::Ptr], Type::Void, false)?;
-        let symbol = self
-            .output
-            .declare(format!("rg.drop.{}", id.0), signature, false)?;
+        let symbol = self.output.declare(
+            self.internal_name(format!("rg.drop.{}", id.0)),
+            signature,
+            false,
+        )?;
         *self
             .drop_symbols
             .get_mut(id.0 as usize)

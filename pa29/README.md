@@ -15,6 +15,30 @@ Do not introduce rendered text as transport between compiler phases.
 
 ## Tool surface
 
+The current maintainer scalar checkpoint supports separate RustGM libraries:
+
+```sh
+dev/rustgm --emit-lowir --crate-type=lib --crate-name shared \
+  --crate-disambiguator first --metadata-output first.rgm -o first.lowir first.rs
+dev/rustgm --emit-lowir --extern one=first.rgm -o client.lowir client.rs
+python3 scripts/backend.py first.lowir client.lowir -o client
+```
+
+Multi-unit native linking requires the explicitly configured reviewed ELF object
+backend profile. Ordinary single-unit builds retain the existing executable
+bridge. Supply metadata for every dependency; repeat `--extern ALIAS=FILE` for
+the complete graph. Metadata is written only after the ordinary semantic, body,
+ownership and lowering gates succeed. `--crate-name` alone retains legacy names.
+
+This profile exports public nongeneric, nonconst Rust functions with scalar
+parameters/results, nested public module paths and explicit unsafe permission.
+Private checked generic instances remain local to each crate. Exposed nominals,
+references, generic/const/async functions, target-feature contracts, other ABIs,
+public reexports and empty public modules diagnose profile boundaries. Generic
+body exports, constants/allocation graphs and the full assignment contract remain
+unfinished. See `docs/pa29-scalar-metadata.md`, `docs/pa29-import-remapping.md` and
+`docs/pa29-scalar-linking.md`. The assignment remains planned.
+
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error
 contract and example outputs before declaring this assignment active.

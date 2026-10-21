@@ -63,7 +63,7 @@ pub fn run(
     source: SourceFile,
     path: Option<&str>,
     config: &Config,
-    crate_name: Option<&str>,
+    crates: &crate::crates::Options,
     count: bool,
     mode: Mode,
     out: &mut impl Write,
@@ -92,10 +92,15 @@ pub fn run(
             | Mode::Loans
             | Mode::Lowir
     ) {
-        let report =
-            resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
-                .and_then(resolve::analyze_expanded)
-                .map_err(|e| e.to_string())?;
+        let report = resolve::expansion::analyze_with_crates(
+            root,
+            &mut Files,
+            config,
+            crates.name.as_deref(),
+            crates.dependencies()?,
+        )
+        .and_then(resolve::analyze_expanded)
+        .map_err(|e| e.to_string())?;
         if matches!(
             mode,
             Mode::Types
@@ -110,7 +115,7 @@ pub fn run(
                 | Mode::Loans
                 | Mode::Lowir
         ) {
-            return semantic(report, count, mode, out);
+            return semantic(report, count, mode, crates, out);
         }
         return if count {
             resolve::render::count_expanded(&report, out)
@@ -226,9 +231,10 @@ fn ownership_view(
     .map_err(|e| e.to_string())
 }
 fn semantic(
-    mut report: resolve::expansion::Report,
+    report: resolve::expansion::Report,
     count: bool,
     mode: Mode,
+    crates: &crate::crates::Options,
     out: &mut impl Write,
 ) -> Result<(), String> {
     let rustgm::pipeline::Analysis {
@@ -281,18 +287,7 @@ fn semantic(
         .map_err(|e| e.to_string());
     }
     if matches!(mode, Mode::Lowir) {
-        let entry = rustgm::sema::entry::select(&mut report, &facts)
-            .map_err(|e| report.diagnostic(e).to_string())?;
-        let lowir = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
-            .map_err(|e| e.to_string())?;
-        drop(facts);
-        drop(report);
-        return if count {
-            rustgm::lowir::writer::count(&lowir, out)
-        } else {
-            rustgm::lowir::writer::write(&lowir, out)
-        }
-        .map_err(|e| e.to_string());
+        return emit_lowir(report, facts, prepared, crates, count, out);
     }
     if matches!(
         mode,
@@ -331,4 +326,72 @@ fn semantic(
         rustgm::sema::type_view::write(&report, &facts, out)
     }
     .map_err(|e| e.to_string())
+}
+
+fn emit_lowir(
+    mut report: resolve::expansion::Report,
+    mut facts: rustgm::sema::model::Declarations,
+    prepared: rustgm::pipeline::Prepared,
+    crates: &crate::crates::Options,
+    count: bool,
+    out: &mut impl Write,
+) -> Result<(), String> {
+    let exports = if crates.library {
+        Some(
+            rustgm::sema::crates::export(
+                &report,
+                &mut facts,
+                crates.identity()?.ok_or("missing library identity")?,
+            )
+            .map_err(|error| error.to_string())?,
+        )
+    } else {
+        if let Some(identity) = crates.identity()? {
+            facts
+                .crates
+                .get_or_insert_default()
+                .set_identity(identity)
+                .map_err(str::to_owned)?;
+        }
+        None
+    };
+    let entry = if crates.library {
+        None
+    } else {
+        Some(
+            rustgm::sema::entry::select(&mut report, &facts)
+                .map_err(|e| report.diagnostic(e).to_string())?,
+        )
+    };
+    let lowir = rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry,
+            exports: exports
+                .as_ref()
+                .map_or(&[], |exports| exports.roots.as_slice()),
+        },
+        prepared,
+    )
+    .map_err(|e| e.to_string())?;
+    if let Some(path) = &crates.metadata {
+        let interface = &exports
+            .as_ref()
+            .ok_or("metadata requires library exports")?
+            .interface;
+        fs::write(
+            path,
+            rustgm::support::crates::encode(interface).map_err(str::to_owned)?,
+        )
+        .map_err(|error| error.to_string())?;
+    }
+    drop(facts);
+    drop(report);
+    if count {
+        rustgm::lowir::writer::count(&lowir, out)
+    } else {
+        rustgm::lowir::writer::write(&lowir, out)
+    }
+    .map_err(|error| error.to_string())
 }

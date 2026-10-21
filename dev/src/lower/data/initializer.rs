@@ -257,7 +257,7 @@ impl Context<'_> {
         self.data.charge(bytes.len().saturating_add(1))?;
         let size = (bytes.len() as u64).max(1);
         let global = self.output.global(
-            format!("rg.data.{}", self.output.globals.len()),
+            self.internal_name(format!("rg.data.{}", self.output.globals.len())),
             crate::lowir::program::MemorySpan {
                 bytes: size,
                 align: 1,
