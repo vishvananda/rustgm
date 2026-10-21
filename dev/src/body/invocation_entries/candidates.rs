@@ -18,11 +18,11 @@ pub(super) struct Candidate {
 }
 impl Candidate {
     pub(super) fn select(
-        facts: &Declarations,
+        facts: &mut Declarations,
         receiver: TypeId,
         kind: CallTrait,
     ) -> Result<Option<Self>, &'static str> {
-        let Some((subject, ty)) = captured(&facts.types, receiver, kind)? else {
+        let Some((subject, ty)) = captured(facts, receiver, kind)? else {
             return Ok(None);
         };
         let Some(Type::Closure { identity, .. }) = facts.types.kind(ty) else {
@@ -144,16 +144,18 @@ fn validate_opened(
 }
 
 pub(super) fn captured(
-    types: &Store,
+    facts: &mut Declarations,
     receiver: TypeId,
     requested: CallTrait,
 ) -> Result<Option<(TypeId, TypeId)>, &'static str> {
-    let subject = borrowed::subject(types, receiver, requested)?;
-    let Some(ty) = borrowed::leaf(types, subject)? else {
+    let subject = borrowed::subject(&facts.types, receiver, requested)?;
+    let (leaf, visits) = crate::types::closure::reference_leaf(&facts.types, subject)?;
+    facts.body_work.canonical_steps += visits;
+    let Some(ty) = leaf else {
         return Ok(None);
     };
     Ok(
-        matches!(types.kind(ty),Some(Type::Closure {environment,..}) if environment!=TypeId::UNIT)
+        matches!(facts.types.kind(ty),Some(Type::Closure {environment,..}) if environment!=TypeId::UNIT)
             .then_some((subject, ty)),
     )
 }

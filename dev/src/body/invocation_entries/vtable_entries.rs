@@ -24,11 +24,16 @@ pub(super) fn select(
     operand: TypeId,
     proofs: &mut crate::body::instantiate::ProofCursor,
 ) -> Result<Option<[Option<Entry>; 2]>, &'static str> {
+    let (leaf, visits) = crate::types::closure::reference_leaf(&facts.types, concrete)?;
+    facts.body_work.canonical_steps += visits;
+    let Some(leaf) = leaf else {
+        return Ok(None);
+    };
     let Some(Kind::Closure {
         signature,
         environment,
         ..
-    }) = facts.types.kind(concrete)
+    }) = facts.types.kind(leaf)
     else {
         return Ok(None);
     };

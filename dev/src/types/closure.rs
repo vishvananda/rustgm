@@ -1,8 +1,10 @@
 //! Closure identity is nominal; callable contracts and stored captures are separate edges.
+mod referenced_leaf;
 use super::{
     GenericArgs, Store, TypeId,
     properties::{Properties, Property},
 };
+pub(crate) use referenced_leaf::leaf as reference_leaf;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ClosureId(pub u32);

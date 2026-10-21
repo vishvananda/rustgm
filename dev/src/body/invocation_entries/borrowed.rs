@@ -24,21 +24,6 @@ pub(super) fn subject(
     }
     types.storage_head(referent)
 }
-pub(super) fn leaf(types: &Store, mut subject: TypeId) -> Result<Option<TypeId>, &'static str> {
-    let mut references = 0usize;
-    subject = types.storage_head(subject)?;
-    while let Some(Type::Reference { referent, .. }) = types.kind(subject) {
-        references += 1;
-        if references > 1_000_000 {
-            return Err("callable reference path exceeds its work budget");
-        }
-        subject = types.storage_head(referent)?;
-    }
-    let Some(Type::Closure { .. }) = types.kind(subject) else {
-        return Ok(None);
-    };
-    Ok(Some(subject))
-}
 pub(super) fn adapter(
     types: &Store,
     instance: crate::types::instance::Instance,

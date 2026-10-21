@@ -5,6 +5,8 @@ mod checked;
 mod native;
 #[path = "captured_dispatch/quantifiers.rs"]
 mod quantifiers;
+#[path = "captured_dispatch/referenced_self.rs"]
+mod reference_objects;
 use std::path::PathBuf;
 
 const ACCEPTED: &[&str] = &[

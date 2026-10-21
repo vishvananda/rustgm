@@ -177,7 +177,7 @@ pub(crate) fn select(
             .ok_or("invalid closure call receiver")?
             .ty;
         // Keep the noncaptured path free of additional interned call signatures.
-        if candidates::captured(&facts.types, receiver, kind)?.is_none() {
+        if candidates::captured(facts, receiver, kind)?.is_none() {
             continue;
         }
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;

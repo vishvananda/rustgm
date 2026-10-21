@@ -1,4 +1,6 @@
 //! Complete trait inputs choose slots; runtime sharing never supplies source permission.
+#[path = "referenced_objects.rs"]
+mod references;
 use super::*;
 use crate::{sema, support::call_traits::CallTrait};
 use std::fmt::Write;

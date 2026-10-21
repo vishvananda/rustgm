@@ -32,3 +32,12 @@ regression belongs to PA23, and no PA24 text oracles are generated yet.
 move/call-kind/lifetime rules. The typed outer-shape contract and qualified
 source/native evidence are in
 [reference capture classification](../../docs/pa24-reference-copy-inputs.md).
+
+Reference-Self captured objects are predeclared in
+`reference-objects-hypotheses.json`; qualified hashes and results are recorded in
+`reference-objects-outcomes.json`. Their exact frozen bytes live in
+`spec/reference-objects/`; ten positive programs exercise shared/mutable nested
+references, generic and quantified calls, outer results and unused FnOnce views.
+Four opposing permission/loan/escape inputs retain rejection. This draft has no
+released manifest or generated oracle. See
+[the implementation review](../../docs/pa24-reference-objects.md).

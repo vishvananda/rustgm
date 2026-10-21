@@ -1,0 +1,175 @@
+{
+  "base": "1857ac39",
+  "source": "predeclared root hypotheses; byte-identical copies",
+  "profile": "Rust 1.98.0 / edition2024 / Linux x86-64 / panic abort",
+  "cases": [
+    {
+      "name": "shared",
+      "path": "pa24/tests/spec/reference-objects/shared.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "9db99113c310df79f79a534f592a4f79525fe937f54d027f9dd38532c8fedd2b",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "shared-weaker",
+      "path": "pa24/tests/spec/reference-objects/shared-weaker.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "f68af3a8741850824a471711b3ee28d499f082985350061055490f62c23d9fee",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mutable",
+      "path": "pa24/tests/spec/reference-objects/mutable.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "ec3327b87695f89394bdb0a5665318580a8cb999f1df5ac345465d6ec5c551ba",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "nested-shared",
+      "path": "pa24/tests/spec/reference-objects/nested-shared.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "4b8543d6df4ae7a73ff6615bac92d90984951d5981f49d054d08a2d5a71b2d12",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "nested-mutable",
+      "path": "pa24/tests/spec/reference-objects/nested-mutable.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "ca82530f2ab32ad75f2935178251eadd1c645fd18c12aba00f15aabc6454e6be",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mixed",
+      "path": "pa24/tests/spec/reference-objects/mixed.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "f65b19f90d6e9cc5e87f659c761bc5f272cedf64639285cfb357ca11c6747d19",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "generic",
+      "path": "pa24/tests/spec/reference-objects/generic.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "a70c166e3c2242a38227c864085c9d43e2b0db44638aca1ef5cd67d43073795a",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "quantified",
+      "path": "pa24/tests/spec/reference-objects/quantified.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "88654c12e5679350435ee2e8a6cfdef0bef9a31dc4e20ab0b23ce0cccdb4b575",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "outer-result",
+      "path": "pa24/tests/spec/reference-objects/outer-result.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "142400b0025b1f1b4637d1657214fe46f83e3e6731822335acd6ff18d359507d",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "once-view",
+      "path": "pa24/tests/spec/reference-objects/once-view.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "088230dc64c16acb72a0d4c81afc39b59a091a85ff0c71e6d6977a8dbe8ff2c3",
+      "frontend": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mutable-as-shared",
+      "path": "pa24/tests/spec/reference-objects/mutable-as-shared.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "5129687645bc0fa4eae6a161d19769f94d2c13e628d92bd66d39540fd3f9b983",
+      "frontend": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "shared-mutable-leaf",
+      "path": "pa24/tests/spec/reference-objects/shared-mutable-leaf.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "103f8036b802635d1f9627294418050a375b6b9b6f46816d1ad971d23337ab8f",
+      "frontend": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "loan-conflict",
+      "path": "pa24/tests/spec/reference-objects/loan-conflict.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "bc75436e62158f4882c4e2822a267a7ccd40771899b618d864b8c694bb51485f",
+      "frontend": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "local-escape",
+      "path": "pa24/tests/spec/reference-objects/local-escape.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "f776d859e2118378e8d21faf3439433589a208e15b43848b5fc9fb09cb613bac",
+      "frontend": [
+        0,
+        1,
+        1
+      ]
+    }
+  ]
+}

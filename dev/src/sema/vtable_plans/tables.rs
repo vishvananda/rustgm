@@ -64,6 +64,19 @@ fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<
         .get(shape.0 as usize)
         .ok_or("missing table shape")?
         .clone();
+    // A table hit above never supplies source permission. Classification is only
+    // for choosing physical targets and runs once for each new callable table.
+    let captured = if slots
+        .slots
+        .iter()
+        .any(|slot| matches!(slot.method, super::Method::Callable(_)))
+    {
+        let (leaf, visits) = crate::types::closure::reference_leaf(&facts.types, concrete)?;
+        storage.charge(visits)?;
+        leaf.is_some_and(|ty| matches!(facts.types.kind(ty), Some(crate::types::Kind::Closure { environment, .. }) if environment != TypeId::UNIT))
+    } else {
+        false
+    };
     facts.aggregates.prepare(&mut facts.types, concrete)?;
     let mut methods = Vec::with_capacity(slots.slots.len());
     for &slot in &slots.slots {
@@ -73,10 +86,12 @@ fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<
                     .map(super::Target::Function)
             }
             super::Method::Callable(_) => {
-                if matches!(facts.types.kind(concrete), Some(crate::types::Kind::Closure { environment, .. }) if environment != TypeId::UNIT) {
+                if captured {
                     super::captured::target(facts, concrete, slot.method)?
                 } else {
-                    Some(super::Target::Callable(super::operators::target(facts, concrete)?))
+                    Some(super::Target::Callable(super::operators::target(
+                        facts, concrete,
+                    )?))
                 }
             }
         });

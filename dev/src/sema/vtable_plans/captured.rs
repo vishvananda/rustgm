@@ -50,14 +50,27 @@ pub(crate) fn prepare_captured(
     concrete: TypeId,
     entries: [Option<Captured>; 2],
 ) -> Result<(), &'static str> {
+    // Validate every descriptor before publishing any physical target. Its leaf
+    // instance and complete reference Self are intentionally distinct identities.
+    for entry in entries.iter().flatten() {
+        let checked = if let Some(adapter) = entry.adapter {
+            adapter.validate(&facts.types)?;
+            if adapter.instance() != entry.instance || adapter.requested() != entry.requested {
+                return Err("captured table adapter differs from its checked entry");
+            }
+            adapter.receiver()
+        } else {
+            entry.instance.ty()
+        };
+        if checked != concrete || entry.requested == CallTrait::FnOnce {
+            return Err("captured table entry differs from its checked source conversion");
+        }
+    }
     let storage = facts.objects.storage.get_or_insert_with(Default::default);
     let before = storage.erase.steps;
     let erased = storage.erase.apply(&mut facts.types, concrete)?;
     storage.charge(storage.erase.steps.saturating_sub(before).saturating_add(1))?;
     for entry in entries.into_iter().flatten() {
-        if entry.instance.ty() != concrete || entry.requested == CallTrait::FnOnce {
-            return Err("captured table entry differs from its checked source conversion");
-        }
         storage
             .captured_targets
             .entry((erased, entry.requested))

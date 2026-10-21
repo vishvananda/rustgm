@@ -1,0 +1,973 @@
+{
+  "base": "1857ac39",
+  "source_sha256": "550d235b939cd8fb6044a099b1c2e7ac685fda5d88e801075e9787a1e896cc87",
+  "compiler_sha256": "fee48477fdc7aeecdd5de03e06581e0ebf6c6cf22e8436cd68104bc383ebc68c",
+  "profile": "Rust 1.98.0 / edition2024 / Linux x86-64 / panic abort",
+  "source_evidence": "obj/parallel/pa24/reference-objects/source/677124",
+  "native_evidence": "obj/parallel/pa24/reference-objects/native-677124",
+  "source_verified_by": "final3 captured-source-native passed all source status/diagnostic assertions",
+  "gates": [
+    {
+      "name": "format",
+      "status": 0,
+      "seconds": 5.649477005004883
+    },
+    {
+      "name": "lint",
+      "status": 0,
+      "seconds": 32.45084857940674
+    },
+    {
+      "name": "audit",
+      "status": 0,
+      "seconds": 29.04043197631836
+    },
+    {
+      "name": "table-invariants",
+      "status": 0,
+      "seconds": 75.7838864326477
+    },
+    {
+      "name": "entry-proofs",
+      "status": 0,
+      "seconds": 0.08213257789611816
+    },
+    {
+      "name": "captured-source-native",
+      "status": 0,
+      "seconds": 74.27624344825745
+    },
+    {
+      "name": "environment-chains",
+      "status": 0,
+      "seconds": 7.1254377365112305
+    },
+    {
+      "name": "environment-adapters",
+      "status": 0,
+      "seconds": 6.256940841674805
+    },
+    {
+      "name": "environment-references",
+      "status": 0,
+      "seconds": 3.234412908554077
+    },
+    {
+      "name": "upstream",
+      "status": 0,
+      "seconds": 0.1605992317199707
+    }
+  ],
+  "cases": [
+    {
+      "name": "shared",
+      "path": "pa24/tests/spec/reference-objects/shared.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "9db99113c310df79f79a534f592a4f79525fe937f54d027f9dd38532c8fedd2b",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "287dcd4a6fcd5e8486c208300604a70a0c5c8273fcf348feee0dc7526a544923",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "3657b04f90ebbdbea1d2bd5fbfa2dee798d450c74c45697530bfadcc72c59c52",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "9db99113c310df79f79a534f592a4f79525fe937f54d027f9dd38532c8fedd2b",
+        "lowir_sha256": "3657b04f90ebbdbea1d2bd5fbfa2dee798d450c74c45697530bfadcc72c59c52",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "shared-weaker",
+      "path": "pa24/tests/spec/reference-objects/shared-weaker.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "f68af3a8741850824a471711b3ee28d499f082985350061055490f62c23d9fee",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "f8eb4f135a03d4a89bf4163b4462a2622321c0ce672b446a92d82db3bc8b7247",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "96626ca03d2844923c09124fdadb3014da1a72ae2057c214ddeffcf77159e313",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "f68af3a8741850824a471711b3ee28d499f082985350061055490f62c23d9fee",
+        "lowir_sha256": "96626ca03d2844923c09124fdadb3014da1a72ae2057c214ddeffcf77159e313",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "mutable",
+      "path": "pa24/tests/spec/reference-objects/mutable.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "ec3327b87695f89394bdb0a5665318580a8cb999f1df5ac345465d6ec5c551ba",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "4751a3cf9a85c9f09592943a3de2ea764d93e4d89ebf7b5539ffca3427956812",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "a7811f376c1a5e22f38364cd584c3dc8337b12459b95a76d90b3e08104b34847",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "ec3327b87695f89394bdb0a5665318580a8cb999f1df5ac345465d6ec5c551ba",
+        "lowir_sha256": "a7811f376c1a5e22f38364cd584c3dc8337b12459b95a76d90b3e08104b34847",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "nested-shared",
+      "path": "pa24/tests/spec/reference-objects/nested-shared.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "4b8543d6df4ae7a73ff6615bac92d90984951d5981f49d054d08a2d5a71b2d12",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "0216e2f639500a0c5c42cbe02c02570499bd47830035c0a6dce2d3fdc77d6280",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "1e8bda13d2fd0d20b2df06ad686716f0f04ef42d33a1d1430e1b509792e7de3f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "4b8543d6df4ae7a73ff6615bac92d90984951d5981f49d054d08a2d5a71b2d12",
+        "lowir_sha256": "1e8bda13d2fd0d20b2df06ad686716f0f04ef42d33a1d1430e1b509792e7de3f",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "nested-mutable",
+      "path": "pa24/tests/spec/reference-objects/nested-mutable.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "ca82530f2ab32ad75f2935178251eadd1c645fd18c12aba00f15aabc6454e6be",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "6ba8f1383241c74c81c2d4dce7d1f2a30c58d364e43069ec3d27d15be2ca5f3a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "ac4cadd4dcf089218bd117503bc591c8234bdc1827063ae85a5045f81c3339ae",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "ca82530f2ab32ad75f2935178251eadd1c645fd18c12aba00f15aabc6454e6be",
+        "lowir_sha256": "ac4cadd4dcf089218bd117503bc591c8234bdc1827063ae85a5045f81c3339ae",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "mixed",
+      "path": "pa24/tests/spec/reference-objects/mixed.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "f65b19f90d6e9cc5e87f659c761bc5f272cedf64639285cfb357ca11c6747d19",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "2f2684ad11f27d335561ddc3089eed940ac930d6af57b04bf7ce6dbde50a7b2b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "8b0eac5fb928cb80b00064d6eae37337d3d801ee59ed5cb8a3a392efddc928ae",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "f65b19f90d6e9cc5e87f659c761bc5f272cedf64639285cfb357ca11c6747d19",
+        "lowir_sha256": "8b0eac5fb928cb80b00064d6eae37337d3d801ee59ed5cb8a3a392efddc928ae",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "generic",
+      "path": "pa24/tests/spec/reference-objects/generic.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "a70c166e3c2242a38227c864085c9d43e2b0db44638aca1ef5cd67d43073795a",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "0a00697c39f75aad367da43875ae9b66c24fab21555f46dd2ab36b99e6d26686",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "4dd141c4f516303c6ff7c8c8f946e9770db54653d7a6f1dee5603815f784240c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "4defdbddb8ed1bfebb316ee404a9d4dfa2b6b44377adc90239d3a0b64892f6a4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "a70c166e3c2242a38227c864085c9d43e2b0db44638aca1ef5cd67d43073795a",
+        "lowir_sha256": "4dd141c4f516303c6ff7c8c8f946e9770db54653d7a6f1dee5603815f784240c",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "quantified",
+      "path": "pa24/tests/spec/reference-objects/quantified.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "88654c12e5679350435ee2e8a6cfdef0bef9a31dc4e20ab0b23ce0cccdb4b575",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "9452179b613b645c5c359994495338cf43a7da4e74259863dac8af51b4704dac",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "1ff0e8a0b4b013fa0cda61a501328f8f823047b3ccf01e9bb46155a4f8703b39",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "3c1a9762fba808ddb97041950fa7a093e27257262e2d2792eba4087d7fb352e0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "88654c12e5679350435ee2e8a6cfdef0bef9a31dc4e20ab0b23ce0cccdb4b575",
+        "lowir_sha256": "1ff0e8a0b4b013fa0cda61a501328f8f823047b3ccf01e9bb46155a4f8703b39",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "outer-result",
+      "path": "pa24/tests/spec/reference-objects/outer-result.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "142400b0025b1f1b4637d1657214fe46f83e3e6731822335acd6ff18d359507d",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "25eac830de82534c049ac55ae718aeea691c5b709c585b850ad280c6a5d58205",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "2b06c7807c99ebc6356e6f837c52ccb3601c2be9eba69487dc7677d053ff18c5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "0b50f0092b5a4878e9e20ef1072591a94ddd5d1e3cc09e039297ca0a65843397",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "142400b0025b1f1b4637d1657214fe46f83e3e6731822335acd6ff18d359507d",
+        "lowir_sha256": "2b06c7807c99ebc6356e6f837c52ccb3601c2be9eba69487dc7677d053ff18c5",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "once-view",
+      "path": "pa24/tests/spec/reference-objects/once-view.rs",
+      "rust": 0,
+      "native": true,
+      "sha256": "088230dc64c16acb72a0d4c81afc39b59a091a85ff0c71e6d6977a8dbe8ff2c3",
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "af52472b21319d02a03f8fa9fd955083275af701295d71c8450239bcfbb0b7c8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "a76c2b3f37fb61923835db1983cdeb3274ad4b9e161236926f6e5a7ac320328d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "8bef6f873608f7b30d34af81a21217772e49b82fa6039d0453f0fe9194fc6f71",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_evidence": {
+        "source_sha256": "088230dc64c16acb72a0d4c81afc39b59a091a85ff0c71e6d6977a8dbe8ff2c3",
+        "lowir_sha256": "a76c2b3f37fb61923835db1983cdeb3274ad4b9e161236926f6e5a7ac320328d",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing reference_objects_execute assertions"
+      }
+    },
+    {
+      "name": "mutable-as-shared",
+      "path": "pa24/tests/spec/reference-objects/mutable-as-shared.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "5129687645bc0fa4eae6a161d19769f94d2c13e628d92bd66d39540fd3f9b983",
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d898a134de61b61afabf00300a01aa48cc1507131ece3b6a796c6d176578f473",
+          "stderr": "ERROR: file 0: 148: trait obligation requires an unambiguous matching assumption or implementation\n"
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d898a134de61b61afabf00300a01aa48cc1507131ece3b6a796c6d176578f473",
+          "stderr": "ERROR: file 0: 148: trait obligation requires an unambiguous matching assumption or implementation\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d898a134de61b61afabf00300a01aa48cc1507131ece3b6a796c6d176578f473",
+          "stderr": "ERROR: file 0: 148: trait obligation requires an unambiguous matching assumption or implementation\n"
+        }
+      },
+      "rustc_stderr_sha256": "d6350c8a7c72ad7df1d3e3a5594480040afc1e353f87d2ab43f80a32f05a5bc9"
+    },
+    {
+      "name": "shared-mutable-leaf",
+      "path": "pa24/tests/spec/reference-objects/shared-mutable-leaf.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "103f8036b802635d1f9627294418050a375b6b9b6f46816d1ad971d23337ab8f",
+      "frontend": [
+        1,
+        1,
+        1
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4448327409fdfd7c4ae3762888025f8ab9304693739b7e9c491bfaecaf1dc8d8",
+          "stderr": "ERROR: file 0: 155: associated type requires an unambiguous validated implementation\n"
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4448327409fdfd7c4ae3762888025f8ab9304693739b7e9c491bfaecaf1dc8d8",
+          "stderr": "ERROR: file 0: 155: associated type requires an unambiguous validated implementation\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4448327409fdfd7c4ae3762888025f8ab9304693739b7e9c491bfaecaf1dc8d8",
+          "stderr": "ERROR: file 0: 155: associated type requires an unambiguous validated implementation\n"
+        }
+      },
+      "rustc_stderr_sha256": "df50e7136c3be3386a3fdd121c80cd07e29bcd5820754f0e8b91c6f7eadb815f"
+    },
+    {
+      "name": "loan-conflict",
+      "path": "pa24/tests/spec/reference-objects/loan-conflict.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "bc75436e62158f4882c4e2822a267a7ccd40771899b618d864b8c694bb51485f",
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "14637040584f41765a10db38ae412f1ac2153510608c1c01f196e753c413a941",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "30f8612079a69342cba49d21a3457626be84525878118d7377ffc74e0d47a37c",
+          "stderr": "ERROR: file 0: 172: access conflicts with a live reference loan\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "30f8612079a69342cba49d21a3457626be84525878118d7377ffc74e0d47a37c",
+          "stderr": "ERROR: file 0: 172: access conflicts with a live reference loan\n"
+        }
+      },
+      "rustc_stderr_sha256": "74598352de66b95140a3e832f27ae22c69ee938f1948e3fbbfb268efde029387"
+    },
+    {
+      "name": "local-escape",
+      "path": "pa24/tests/spec/reference-objects/local-escape.rs",
+      "rust": 1,
+      "native": false,
+      "sha256": "f776d859e2118378e8d21faf3439433589a208e15b43848b5fc9fb09cb613bac",
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "outputs": {
+        "types": {
+          "stdout_sha256": "0d0067f017e4ec5ca6fc4465da5a00fd6c4ba9916a4ef6455a6a011b2c860261",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b446a142198cc8e5b536b2a0de827d7dcb73afd7c313488d3b9bd7e952b125c",
+          "stderr": "ERROR: file 0: 96: access conflicts with a live reference loan\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b446a142198cc8e5b536b2a0de827d7dcb73afd7c313488d3b9bd7e952b125c",
+          "stderr": "ERROR: file 0: 96: access conflicts with a live reference loan\n"
+        }
+      },
+      "rustc_stderr_sha256": "62bdec40ffaee6d94b14792f41472742a1665a8c93780855bfa1680aa27fe91a"
+    }
+  ],
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "repeated_conversions": {
+      "planning_steps": [
+        198,
+        678,
+        2598
+      ],
+      "canonical_steps": [
+        504,
+        1968,
+        7824
+      ]
+    },
+    "reference_depth": {
+      "planning_steps": [
+        79,
+        151,
+        439
+      ],
+      "canonical_steps": [
+        98,
+        170,
+        458
+      ]
+    },
+    "shared_tables": 1,
+    "captured_targets": 2
+  },
+  "final_snapshot": {
+    "base": "1857ac39",
+    "source_sha256": "550d235b939cd8fb6044a099b1c2e7ac685fda5d88e801075e9787a1e896cc87",
+    "compiler_sha256": "fee48477fdc7aeecdd5de03e06581e0ebf6c6cf22e8436cd68104bc383ebc68c",
+    "layout_status": 0
+  },
+  "active_text": [
+    {
+      "stage": "pa1",
+      "status": 0
+    },
+    {
+      "stage": "pa2",
+      "status": 0
+    },
+    {
+      "stage": "pa3",
+      "status": 0
+    },
+    {
+      "stage": "pa4",
+      "status": 0
+    },
+    {
+      "stage": "pa5",
+      "status": 0
+    },
+    {
+      "stage": "pa6",
+      "status": 0
+    },
+    {
+      "stage": "pa7",
+      "status": 0
+    },
+    {
+      "stage": "pa8",
+      "status": 0
+    },
+    {
+      "stage": "pa9",
+      "status": 0
+    },
+    {
+      "stage": "pa10",
+      "status": 0
+    },
+    {
+      "stage": "pa11",
+      "status": 0
+    },
+    {
+      "stage": "pa12",
+      "status": 0
+    },
+    {
+      "stage": "pa13",
+      "status": 0
+    },
+    {
+      "stage": "pa14",
+      "status": 0
+    },
+    {
+      "stage": "pa15",
+      "status": 0
+    },
+    {
+      "stage": "pa16",
+      "status": 0
+    },
+    {
+      "stage": "pa17",
+      "status": 0
+    },
+    {
+      "stage": "pa18",
+      "status": 0
+    },
+    {
+      "stage": "pa19",
+      "status": 0
+    },
+    {
+      "stage": "pa20",
+      "status": 0
+    },
+    {
+      "stage": "pa21",
+      "status": 0
+    },
+    {
+      "stage": "pa22",
+      "status": 0
+    },
+    {
+      "stage": "pa23",
+      "status": 0
+    }
+  ],
+  "layout": "Assignment layout: 38 stages; no orphan fixtures in active suites\n",
+  "independent_scaling": [
+    {
+      "axis": "depth",
+      "width": 8,
+      "path": "obj/parallel/pa24/reference-objects/close-recursion512/depth-8.rs",
+      "sha256": "0149247810b201528fb48c8f49ba5d476b3e88904f4556051f89c1f9639aafed",
+      "rust": 0,
+      "frontend": 0,
+      "rust_recursion_limit": 512,
+      "rustc_actual": 0,
+      "lowir_actual": 0
+    },
+    {
+      "axis": "depth",
+      "width": 32,
+      "path": "obj/parallel/pa24/reference-objects/close-recursion512/depth-32.rs",
+      "sha256": "c9bda40a0902166bc2500e3bc1e84e1af6881cfce23ca985c5b93bba05b9f1ba",
+      "rust": 0,
+      "frontend": 0,
+      "rust_recursion_limit": 512,
+      "rustc_actual": 0,
+      "lowir_actual": 0
+    },
+    {
+      "axis": "depth",
+      "width": 128,
+      "path": "obj/parallel/pa24/reference-objects/close-recursion512/depth-128.rs",
+      "sha256": "3a407c26b8f18d175fd582e529ebf89a8fcebc68d5f67d932ad4f46a52a6a728",
+      "rust": 0,
+      "frontend": 0,
+      "rust_recursion_limit": 512,
+      "rustc_actual": 0,
+      "lowir_actual": 0
+    },
+    {
+      "axis": "repeat",
+      "width": 8,
+      "path": "obj/parallel/pa24/reference-objects/close-recursion512/repeat-8.rs",
+      "sha256": "9de052de9c92a28698f72b069078eeaf94f8568bc16f24f6ef6a9c5b20610c8d",
+      "rust": 0,
+      "frontend": 0,
+      "rust_recursion_limit": 512,
+      "rustc_actual": 0,
+      "lowir_actual": 0
+    },
+    {
+      "axis": "repeat",
+      "width": 32,
+      "path": "obj/parallel/pa24/reference-objects/close-recursion512/repeat-32.rs",
+      "sha256": "6fbce196b0339e2ebb93f7494df010f4fd10a680e5ef30804397f17bf981c567",
+      "rust": 0,
+      "frontend": 0,
+      "rust_recursion_limit": 512,
+      "rustc_actual": 0,
+      "lowir_actual": 0
+    },
+    {
+      "axis": "repeat",
+      "width": 128,
+      "path": "obj/parallel/pa24/reference-objects/close-recursion512/repeat-128.rs",
+      "sha256": "6f6d8179fde93945b8320945adca2150b20f0fffd514bcf1b71ccb4188eccee4",
+      "rust": 0,
+      "frontend": 0,
+      "rust_recursion_limit": 512,
+      "rustc_actual": 0,
+      "lowir_actual": 0
+    }
+  ],
+  "default_budget_scaling": [
+    {
+      "axis": "depth",
+      "width": 8,
+      "path": "obj/parallel/pa24/reference-objects/close/depth-8.rs",
+      "sha256": "3b16ba9e37fa9f61e98be0dc0797a058f8b5b17b30789f5b81ff303e30d53e16",
+      "rust": 0,
+      "frontend": 0,
+      "rust_observed": 0,
+      "reason": "accepted"
+    },
+    {
+      "axis": "depth",
+      "width": 32,
+      "path": "obj/parallel/pa24/reference-objects/close/depth-32.rs",
+      "sha256": "40118c32c6dfb4d8b9ec430e72604613259c868e9ab88831a81afe8e9242eb1d",
+      "rust": 0,
+      "frontend": 0,
+      "rust_observed": 0,
+      "reason": "accepted"
+    },
+    {
+      "axis": "depth",
+      "width": 128,
+      "path": "obj/parallel/pa24/reference-objects/close/depth-128.rs",
+      "sha256": "ff021a8bb02ef72f36eed8a527fa002d56aea186bd306ad5cad47ae507ed19d1",
+      "rust": 0,
+      "frontend": 0,
+      "rust_observed": 1,
+      "reason": "pinned rustc default recursion-budget exhaustion"
+    },
+    {
+      "axis": "repeat",
+      "width": 8,
+      "path": "obj/parallel/pa24/reference-objects/close/repeat-8.rs",
+      "sha256": "b2f059053b8bfcde8355cede0db11011e5b6eee81a1b52c6e2c01c8b825461a3",
+      "rust": 0,
+      "frontend": 0,
+      "rust_observed": null,
+      "reason": "not run"
+    },
+    {
+      "axis": "repeat",
+      "width": 32,
+      "path": "obj/parallel/pa24/reference-objects/close/repeat-32.rs",
+      "sha256": "b49e925cf14f80d8f7da676893bb3fb9084eb63e72fc126bf5a8ba5d1df894bc",
+      "rust": 0,
+      "frontend": 0,
+      "rust_observed": null,
+      "reason": "not run"
+    },
+    {
+      "axis": "repeat",
+      "width": 128,
+      "path": "obj/parallel/pa24/reference-objects/close/repeat-128.rs",
+      "sha256": "8214fe413964c0ccdafb59a45244ec571a96fe5aea100b71ec114df438eb99e6",
+      "rust": 0,
+      "frontend": 0,
+      "rust_observed": null,
+      "reason": "not run"
+    }
+  ],
+  "development_runs": {
+    "first": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 5.521198987960815
+      },
+      {
+        "name": "check",
+        "status": 101,
+        "seconds": 26.63051676750183
+      }
+    ],
+    "second": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 5.774546146392822
+      },
+      {
+        "name": "check",
+        "status": 101,
+        "seconds": 28.010265350341797
+      }
+    ],
+    "third": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 6.1563661098480225
+      },
+      {
+        "name": "check",
+        "status": 0,
+        "seconds": 43.088480949401855
+      },
+      {
+        "name": "source-native",
+        "status": 101,
+        "seconds": 69.6714735031128
+      }
+    ],
+    "fourth": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 5.965406894683838
+      },
+      {
+        "name": "source",
+        "status": 0,
+        "seconds": 1.5671937465667725
+      },
+      {
+        "name": "private",
+        "status": 0,
+        "seconds": 71.24550342559814
+      },
+      {
+        "name": "lint",
+        "status": 0,
+        "seconds": 52.16236972808838
+      },
+      {
+        "name": "audit",
+        "status": 1,
+        "seconds": 24.554479837417603
+      }
+    ],
+    "final": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 9.08043885231018
+      },
+      {
+        "name": "lint",
+        "status": 0,
+        "seconds": 50.89116168022156
+      },
+      {
+        "name": "audit",
+        "status": 1,
+        "seconds": 24.223510026931763
+      }
+    ],
+    "final2": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 6.022543907165527
+      },
+      {
+        "name": "lint",
+        "status": 0,
+        "seconds": 1.0308210849761963
+      },
+      {
+        "name": "audit",
+        "status": 1,
+        "seconds": 24.5092511177063
+      }
+    ],
+    "final3": [
+      {
+        "name": "format",
+        "status": 0,
+        "seconds": 5.649477005004883
+      },
+      {
+        "name": "lint",
+        "status": 0,
+        "seconds": 32.45084857940674
+      },
+      {
+        "name": "audit",
+        "status": 0,
+        "seconds": 29.04043197631836
+      },
+      {
+        "name": "table-invariants",
+        "status": 0,
+        "seconds": 75.7838864326477
+      },
+      {
+        "name": "entry-proofs",
+        "status": 0,
+        "seconds": 0.08213257789611816
+      },
+      {
+        "name": "captured-source-native",
+        "status": 0,
+        "seconds": 74.27624344825745
+      },
+      {
+        "name": "environment-chains",
+        "status": 0,
+        "seconds": 7.1254377365112305
+      },
+      {
+        "name": "environment-adapters",
+        "status": 0,
+        "seconds": 6.256940841674805
+      },
+      {
+        "name": "environment-references",
+        "status": 0,
+        "seconds": 3.234412908554077
+      },
+      {
+        "name": "upstream",
+        "status": 0,
+        "seconds": 0.1605992317199707
+      }
+    ]
+  }
+}
