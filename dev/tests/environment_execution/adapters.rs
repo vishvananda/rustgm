@@ -11,7 +11,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("once-keeps-external-reference", true, true),
     ("once-drops-owned-environment", true, true),
     ("mutable-borrow-preserves-environment", true, false),
-    ("contextual-quantified-identity", true, false),
+    ("contextual-quantified-identity", true, true),
     ("quantified-identity", false, false),
     ("shared-rejects-mutable", false, false),
     ("mutable-rejects-once", false, false),

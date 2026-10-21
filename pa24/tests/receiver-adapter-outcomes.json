@@ -281,19 +281,28 @@
       "name": "contextual-quantified-identity",
       "path": "tests/spec/receiver-adapters/contextual-quantified-identity.rs",
       "source_sha256": "10f5c7500069184324b240379cd026952fccfb14e71cf268f93abb71a6374ef1",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
         "emit": "obj",
         "default_lints": true
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
       "qualification_origin": "obj/parallel/receiver-adapters/captured-v1/contextual-quantified-identity.rs",
-      "boundary_reason": "Existing producer inference identity failure, reproduced on independently pinned f8939df8; owned adapter not reached."
+      "supersedes": {
+        "baseline": "f8939df8",
+        "producer": "33f10048",
+        "previous": {
+          "exit_status": 1,
+          "boundary": true,
+          "boundary_reason": "Existing producer inference identity failure, reproduced on independently pinned f8939df8; owned adapter not reached."
+        },
+        "fixture_unchanged": true
+      }
     },
     {
       "name": "false-output",

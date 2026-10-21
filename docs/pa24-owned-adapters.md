@@ -81,3 +81,16 @@ contextual producer checkpoint will supersede only its accepted fixture's
 frontend boundary and add that unchanged source to native execution. Assignment
 activation, complete release qualification and reference publication remain with
 the integrator.
+
+## Contextual producer integration
+
+After merging root `33f10048`, the unchanged contextual quantified-identity
+fixture is accepted and joins the native group. Its draft record explicitly
+supersedes the frozen `f8939df8` producer boundary; the earlier failed receipt
+and original Rust acceptance remain intact. The matrix now has ten implemented
+native positives and three accepted reference-forwarding boundaries.
+
+`contextual-merge.json` records all ten affected adapter/contextual/reference
+source/native groups passing on the combined source, with layout38 and file
+audit1363/0. The contextual fixture itself retains SHA-256
+`10f5c7500069184324b240379cd026952fccfb14e71cf268f93abb71a6374ef1`.
