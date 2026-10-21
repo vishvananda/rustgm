@@ -1,0 +1,540 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "notes": [
+    "Declared hypotheses and opposing object/native observations retained in obj/parallel/pa24/captured-objects.",
+    "Initial result fixture is invalid without a named output lifetime; initial wildcard higher-ranked control does not capture its local. Both original inputs and observations remain unchanged.",
+    "No assignment activation or oracle generation."
+  ],
+  "cases": [
+    {
+      "name": "shared",
+      "path": "tests/spec/captured-dispatch/shared.rs",
+      "source_sha256": "61f419ef74cbf607bb927a829c8a719d8ea58b4d049ab26d5c82360d3f847718",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "mutable",
+      "path": "tests/spec/captured-dispatch/mutable.rs",
+      "source_sha256": "b12716da43372181e421bf58d9e6e7cff9fdb8c9f2338f414daf8d8b9bf99869",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "weaker",
+      "path": "tests/spec/captured-dispatch/weaker.rs",
+      "source_sha256": "2243325ee0455cb4cd7d27f409eef9c27490c17c898b10f9c7fdf9f32e458c6b",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "borrowed",
+      "path": "tests/spec/captured-dispatch/borrowed.rs",
+      "source_sha256": "d5f330c7dc208cff5e2762e6b72e93345aa12db7397d28987a761b8db26af2dc",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "result",
+      "path": "tests/spec/captured-dispatch/result.rs",
+      "source_sha256": "89617741ddd6d1f46ebee66c6a1746162637132ec1d9788db384fde000699aff",
+      "exit_status": 1,
+      "views": {
+        "types": 1,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "missing explicit output lifetime; independently rejected by rustc",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic",
+      "path": "tests/spec/captured-dispatch/generic.rs",
+      "source_sha256": "f962f86f82a38d1b3f52e81ada311e0b2b1ba44aae1f1d3646c1d5b17b932389",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic-weaker",
+      "path": "tests/spec/captured-dispatch/generic-weaker.rs",
+      "source_sha256": "dab730b9bf2c1231eea44d57daad266c7aa0bfd3f52bcd9ec438af901650dd87",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "upcast",
+      "path": "tests/spec/captured-dispatch/upcast.rs",
+      "source_sha256": "e285a44737c58ce00c5c37c25596dcdb5587407d189d69b90d001edf94b81c25",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "inherited",
+      "path": "tests/spec/captured-dispatch/inherited.rs",
+      "source_sha256": "d05c9f519a185311f99c9d0a527077e5b2a80a00bcc241c690374cc493500ce8",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "aggregate",
+      "path": "tests/spec/captured-dispatch/aggregate.rs",
+      "source_sha256": "ec49c7e8f6c3a12bce67895bb9efafa3191fb795571a91a220dfbf581013cc25",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "once-view",
+      "path": "tests/spec/captured-dispatch/once-view.rs",
+      "source_sha256": "aff2366220e75ff8b58315ccdcba3adbd9e917b82428e3d237f008ef08a387c3",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "generic-consumer",
+      "path": "tests/spec/captured-dispatch/generic-consumer.rs",
+      "source_sha256": "4b49034a83a4249c5b2b1ef1d5e410eb9b57c70cefb3419019a0eb3ca0d3f9da",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "higher-ranked",
+      "path": "tests/spec/captured-dispatch/higher-ranked.rs",
+      "source_sha256": "24982b80e348ba614f93c6724bd49b3dc3e9626d029d0b37cdbadadaeb30718f",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "wildcard does not capture n; empty closure already supported",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "result-lifetime",
+      "path": "tests/spec/captured-dispatch/result-lifetime.rs",
+      "source_sha256": "1276afa0c6aeed9b045d1565b1d319788e948a5411292f38613fbadd61ae4938",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "explicit result lifetime",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "quantified-capture",
+      "path": "tests/spec/captured-dispatch/quantified-capture.rs",
+      "source_sha256": "0debb2f6647d2854eb9be9cf7f94f3fbf591ed547926c72faee0c19ec375bb06",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "quantified captured call proof transport remains unimplemented",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "mutable-to-shared",
+      "path": "tests/spec/captured-dispatch/mutable-to-shared.rs",
+      "source_sha256": "bacd5d92c254c5f360ea6db7020dccaa75eb1ffd98fb66fd12c1e8bb7f260f85",
+      "exit_status": 1,
+      "views": {
+        "types": 1,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "owned-object",
+      "path": "tests/spec/captured-dispatch/owned-object.rs",
+      "source_sha256": "e9c336b8a7e7f80e9a669f418df073c59b432607e126e20942e67977f58908ae",
+      "exit_status": 1,
+      "views": {
+        "types": 1,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "borrow-escape",
+      "path": "tests/spec/captured-dispatch/borrow-escape.rs",
+      "source_sha256": "43f79c9960c9269cacd2cd525776860973db59cabb068dbf8a7f57686aa8de96",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "late-permission",
+      "path": "tests/spec/captured-dispatch/late-permission.rs",
+      "source_sha256": "fd04ba5ef5a1273dd45c874c0d5c68ad794bfada7aa8044529468c650a242c3d",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "loan-conflict",
+      "path": "tests/spec/captured-dispatch/loan-conflict.rs",
+      "source_sha256": "84ab2f196cf827146fbd337f3ef509067a56d6c8f90207197f09ba5bf4d64b66",
+      "exit_status": 1,
+      "views": {
+        "types": 0,
+        "constants": 1,
+        "lowir": 1
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "destruction",
+      "path": "tests/spec/captured-dispatch/destruction.rs",
+      "source_sha256": "363b8805eda210ed9e4011da3a1c07c1d1cd90d9313b3f484e5c8cd29c68706e",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "captured-zst",
+      "path": "tests/spec/captured-dispatch/captured-zst.rs",
+      "source_sha256": "2d6eb01e05b8c869fc362956a6ba7a3db0523837216879dcc9624ed350b28c52",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    },
+    {
+      "name": "multiple-lifetimes",
+      "path": "tests/spec/captured-dispatch/multiple-lifetimes.rs",
+      "source_sha256": "f0da01e9b137d59b9ea6eea440b12093cb5bea6bf8d1d788893268d81bd4f518",
+      "exit_status": 0,
+      "views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "reason": "checked captured conversion or opposing semantic control",
+      "features": [
+        "pa24.closures",
+        "pa23.objects"
+      ]
+    }
+  ]
+}

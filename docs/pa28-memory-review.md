@@ -94,8 +94,9 @@ The unchanged `pa28/tests/spec/pointer-memory/wide-value.rs` reaches
 cut. The retained original native source
 `obj/parallel/pa28/pointer-memory-native-2914072/arrays-and-wide-values.rs`
 reaches `ERROR: file 0: 321: receiver has no inherent nominal method` for `.len()`;
-its original log is `pointer-memory-sixth/source-native.log`. The integrator will
-verify these consumers on current main. Separately qualified whole-wide transfers
+its original log is `pointer-memory-sixth/source-native.log`. The combined
+integrator confirms both diagnostics in all three views under
+`obj/parallel/pa24/captured-objects/checks-sixth/`. Separately qualified whole-wide transfers
 and runtime index/bounds controls do not implement either missing slice consumer.
 
 Non-Copy transfers, counted copies/overlap APIs/byte fills, unaligned operations,

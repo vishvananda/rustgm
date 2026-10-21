@@ -1,4 +1,5 @@
 //! Executable object plans are demanded from bodies whose source proofs have passed.
+mod captured;
 mod operators;
 mod shapes;
 mod tables;
@@ -10,6 +11,7 @@ use crate::{
     resolve::model::DefId,
     types::{TypeId, instance::Instance, substitute::Bound, traits::ApplicationId},
 };
+pub(crate) use captured::{Captured, captured_permissions, prepare_captured};
 pub(crate) use operators::{Operator, prepare_operator};
 use std::{collections::HashMap, sync::Arc};
 pub(crate) use tables::{complete_tables, prepare_table};
@@ -31,6 +33,7 @@ pub(crate) struct Table {
 pub(crate) enum Target {
     Function(Instance),
     Callable(Callable),
+    Captured(Captured),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct Callable {
@@ -79,6 +82,7 @@ struct Storage {
     calls: HashMap<Instance, Option<Virtual>>,
     operators: HashMap<(TypeId, crate::support::call_traits::CallTrait, TypeId), Operator>,
     callable_targets: HashMap<TypeId, Callable>,
+    captured_targets: HashMap<(TypeId, crate::support::call_traits::CallTrait), Captured>,
     tables: Vec<Table>,
     table_ids: HashMap<(TypeId, ShapeId), TableId>,
     conversions: HashMap<(TypeId, TypeId), TableId>,
@@ -99,6 +103,7 @@ impl Default for Storage {
             calls: HashMap::new(),
             operators: HashMap::new(),
             callable_targets: HashMap::new(),
+            captured_targets: HashMap::new(),
             tables: Vec::new(),
             table_ids: HashMap::new(),
             conversions: HashMap::new(),

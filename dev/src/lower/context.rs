@@ -430,10 +430,16 @@ impl<'a> Context<'a> {
         &mut self,
         entry: crate::body::invocation_entries::Entry,
     ) -> Result<SymbolId, &'static str> {
-        if entry.adapter().is_some() {
+        self.demand_captured(entry.target())
+    }
+    pub(in crate::lower) fn demand_captured(
+        &mut self,
+        entry: crate::sema::vtable_plans::Captured,
+    ) -> Result<SymbolId, &'static str> {
+        if entry.adapter.is_some() {
             return self.adapter_symbol(entry);
         }
-        let requested = match entry.requested() {
+        let requested = match entry.requested {
             crate::support::call_traits::CallTrait::Fn => crate::types::closure::CallKind::Shared,
             crate::support::call_traits::CallTrait::FnMut => {
                 crate::types::closure::CallKind::Mutable
@@ -444,19 +450,19 @@ impl<'a> Context<'a> {
             identity,
             environment,
             ..
-        }) = self.types.kind(entry.instance().ty())
+        }) = self.types.kind(entry.instance.ty())
         else {
             return Err("selected closure entry has no canonical identity");
         };
         if self.types.closure_kind(identity) != Some(requested) || environment == TypeId::UNIT {
             return Err("selected closure entry permission or environment differs");
         }
-        self.closure_symbol(entry.instance().ty(), Some(entry))
+        self.closure_symbol(entry.instance.ty(), Some(entry.execution))
     }
     fn closure_symbol(
         &mut self,
         ty: TypeId,
-        entry: Option<crate::body::invocation_entries::Entry>,
+        entry: Option<TypeId>,
     ) -> Result<SymbolId, &'static str> {
         let Some(Kind::Closure { identity, .. }) = self.types.kind(ty) else {
             return Err("closure requires a checked environment adapter");
@@ -478,7 +484,7 @@ impl<'a> Context<'a> {
         let signature = match (entry, execution) {
             (None, None) => signature,
             (Some(entry), Some(execution)) => {
-                self.entry_abi(entry.execution(), execution)?;
+                self.entry_abi(entry, execution)?;
                 execution
             }
             _ => return Err("closure demand does not match checked receiver contract"),

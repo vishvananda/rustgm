@@ -96,6 +96,9 @@ impl Context<'_> {
                         crate::sema::vtable_plans::Target::Callable(callable) => {
                             self.callable_target(callable)?
                         }
+                        crate::sema::vtable_plans::Target::Captured(entry) => {
+                            self.demand_captured(entry)?
+                        }
                     }),
                     addend: 0,
                 }

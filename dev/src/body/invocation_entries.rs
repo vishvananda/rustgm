@@ -3,6 +3,7 @@ mod borrowed;
 mod candidates;
 mod matching;
 mod shaping;
+mod vtable_entries;
 pub(crate) use candidates::select_execution;
 pub(crate) use matching::source_bindings;
 pub(crate) struct SourceBindings {
@@ -34,6 +35,16 @@ pub struct Entry {
     adapter: Option<crate::types::closure::Adapter>,
 }
 impl Entry {
+    /// Mechanical runtime identity; the selected caller debts and sealed bodies
+    /// remain the authority for execution, not this descriptor.
+    pub(crate) const fn target(self) -> crate::sema::vtable_plans::Captured {
+        crate::sema::vtable_plans::Captured {
+            instance: self.instance,
+            requested: self.requested,
+            execution: self.execution,
+            adapter: self.adapter,
+        }
+    }
     #[must_use]
     pub const fn instance(self) -> Instance {
         self.instance
@@ -87,6 +98,7 @@ impl Entry {
 #[derive(Clone, Default)]
 pub struct Entries {
     values: HashMap<ValueId, Entry>,
+    conversions: HashMap<ValueId, [Option<Entry>; 2]>,
     adapters: bool,
 }
 impl Entries {
@@ -97,8 +109,13 @@ impl Entries {
     pub fn get(&self, value: ValueId) -> Option<Entry> {
         self.values.get(&value).copied()
     }
+    pub(crate) fn conversion(&self, value: ValueId) -> Option<[Option<Entry>; 2]> {
+        self.conversions.get(&value).copied()
+    }
     pub(crate) fn retained_bytes(&self) -> usize {
-        size_of::<Self>().saturating_add(crate::support::retained::map(&self.values))
+        size_of::<Self>()
+            .saturating_add(crate::support::retained::map(&self.values))
+            .saturating_add(crate::support::retained::map(&self.conversions))
     }
 }
 pub(crate) fn select(
@@ -110,6 +127,30 @@ pub(crate) fn select(
         return Err("closure entries were selected twice");
     }
     for (index, value) in body.values.iter().enumerate() {
+        if let Rvalue::Unsize {
+            value: operand,
+            conversion: crate::types::unsizing::Conversion::Object { concrete, target },
+        } = value.kind
+        {
+            let operand = body
+                .values
+                .get(operand.0 as usize)
+                .ok_or("captured conversion has an invalid input")?
+                .ty;
+            if let Some(selected) =
+                vtable_entries::select(facts, body, contract, concrete, target, operand)?
+            {
+                let index =
+                    ValueId(u32::try_from(index).map_err(|_| "too many conversion values")?);
+                let entries = body.closure_calls.get_or_insert_with(Default::default);
+                entries.adapters |= selected
+                    .iter()
+                    .flatten()
+                    .any(|entry| entry.adapter.is_some());
+                entries.conversions.insert(index, selected);
+            }
+            continue;
+        }
         let Rvalue::Invoke {
             kind,
             signature,

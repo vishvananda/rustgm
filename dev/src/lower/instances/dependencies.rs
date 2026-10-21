@@ -35,10 +35,38 @@ struct Discovered {
     closures: Vec<TypeId>,
     calls: Vec<Instance>,
     tables: Vec<(TypeId, TypeId)>,
+    captured: Vec<(TypeId, [Option<crate::body::invocation_entries::Entry>; 2])>,
     upcasts: Vec<(TypeId, TypeId)>,
     operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
 }
 impl Discovered {
+    fn conversion(
+        &mut self,
+        body: &Body,
+        index: usize,
+        conversion: crate::types::unsizing::Conversion<TypeId>,
+    ) -> Result<(), &'static str> {
+        match conversion {
+            crate::types::unsizing::Conversion::Object { concrete, target } => {
+                self.tables.push((concrete, target));
+                let id = crate::body::ir::ValueId(
+                    u32::try_from(index).map_err(|_| "too many conversion dependencies")?,
+                );
+                if let Some(entries) = body
+                    .closure_calls
+                    .as_deref()
+                    .and_then(|entries| entries.conversion(id))
+                {
+                    self.captured.push((concrete, entries));
+                }
+            }
+            crate::types::unsizing::Conversion::Upcast { source, target } => {
+                self.upcasts.push((source, target));
+            }
+            crate::types::unsizing::Conversion::Slice(_) => {}
+        }
+        Ok(())
+    }
     fn callable(
         &mut self,
         types: &crate::types::Store,
@@ -113,6 +141,20 @@ impl Dependencies {
             }
         }
         let mut object_types = Vec::new();
+        for (concrete, entries) in result.captured {
+            for entry in entries.into_iter().flatten() {
+                if entry.adapter().is_some() {
+                    result.adapters.push(entry);
+                } else {
+                    result.closures.push(entry.instance().ty());
+                }
+            }
+            crate::sema::vtable_plans::prepare_captured(
+                facts,
+                concrete,
+                entries.map(|entry| entry.map(crate::body::invocation_entries::Entry::target)),
+            )?;
+        }
         for (receiver, kind, signature) in result.operators {
             crate::sema::vtable_plans::prepare_operator(report, facts, receiver, kind, signature)?;
         }
@@ -141,6 +183,7 @@ impl Dependencies {
                             _ => {}
                         }
                     }
+                    crate::sema::vtable_plans::Target::Captured(_) => {}
                 }
             }
             object_types.push(table.concrete);
@@ -170,19 +213,8 @@ impl Dependencies {
         let mut work = Vec::new();
         self.charge(body.values.len())?;
         for (index, value) in body.values.iter().enumerate() {
-            if let Rvalue::Unsize {
-                conversion: crate::types::unsizing::Conversion::Object { concrete, target },
-                ..
-            } = value.kind
-            {
-                result.tables.push((concrete, target));
-            }
-            if let Rvalue::Unsize {
-                conversion: crate::types::unsizing::Conversion::Upcast { source, target },
-                ..
-            } = value.kind
-            {
-                result.upcasts.push((source, target));
+            if let Rvalue::Unsize { conversion, .. } = value.kind {
+                result.conversion(body, index, conversion)?;
             }
             if let Rvalue::Invoke {
                 kind,

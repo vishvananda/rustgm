@@ -72,9 +72,13 @@ fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<
                 crate::sema::dispatch::table_method(facts, concrete, slot)?
                     .map(super::Target::Function)
             }
-            super::Method::Callable(_) => Some(super::Target::Callable(super::operators::target(
-                facts, concrete,
-            )?)),
+            super::Method::Callable(_) => {
+                if matches!(facts.types.kind(concrete), Some(crate::types::Kind::Closure { environment, .. }) if environment != TypeId::UNIT) {
+                    super::captured::target(facts, concrete, slot.method)?
+                } else {
+                    Some(super::Target::Callable(super::operators::target(facts, concrete)?))
+                }
+            }
         });
     }
     let storage = facts

@@ -3,11 +3,11 @@ use super::{Context, Owner, SymbolId, TypeId};
 impl Context<'_> {
     pub(super) fn adapter_symbol(
         &mut self,
-        entry: crate::body::invocation_entries::Entry,
+        entry: crate::sema::vtable_plans::Captured,
     ) -> Result<SymbolId, &'static str> {
-        let adapter = entry.adapter().ok_or("missing selected receiver adapter")?;
+        let adapter = entry.adapter.ok_or("missing selected receiver adapter")?;
         adapter.validate(self.types)?;
-        if adapter.instance() != entry.instance() || adapter.requested() != entry.requested() {
+        if adapter.instance() != entry.instance || adapter.requested() != entry.requested {
             return Err("receiver adapter demand differs from selected identity");
         }
         let &index = self
@@ -24,7 +24,7 @@ impl Context<'_> {
         if selected != adapter {
             return Err("receiver adapter body has another selected instance");
         }
-        self.entry_abi(entry.execution(), signature)?;
+        self.entry_abi(entry.execution, signature)?;
         if let Some(symbol) = self.symbols[index] {
             return Ok(symbol);
         }
