@@ -1242,7 +1242,7 @@ impl Checker<'_> {
                 let ty = self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(node, "missing value type"))?;
                 self.select_unit_constructor(node, id)?;
-                if let Some(&variant) = self.facts.members.constructors.get(&id)
+                if let Some(variant) = self.facts.members.constructor(id)
                     && self.facts.generics.parameters.contains_key(&DefId(
                         self.facts.members.variants[variant.0 as usize].owner.0,
                     ))
@@ -1981,7 +1981,7 @@ impl Checker<'_> {
         let mut term = self.term(callee)?;
         let constructor = matches!(self.head(node, term)?,
         Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _))
-            if self.facts.members.constructors.get(&DefId(item.0)).is_some_and(|variant| {
+            if self.facts.members.constructor(DefId(item.0)).is_some_and(|variant| {
                 let owner = self.facts.members.variants[variant.0 as usize].owner;
                 self.facts.generics.parameters.contains_key(&DefId(owner.0))
             }));

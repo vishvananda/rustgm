@@ -1,6 +1,11 @@
 //! Independent language checks with the repository-pinned Rust toolchain.
 use std::{path::Path, process::Command};
 pub fn qualify(name: &str, source: &str, accepted: bool) -> Result<(), Box<dyn std::error::Error>> {
+    if name.starts_with("parallel/") {
+        let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../obj/{name}/{}", std::process::id()));
+        return qualify_at(&folder, "case", source, accepted);
+    }
     let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
         "../obj/language-qualification/{}",
         std::process::id()

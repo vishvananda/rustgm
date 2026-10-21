@@ -25,7 +25,10 @@ impl Engine<'_, '_> {
             .members
             .constructors
             .get(&definition)
-            .map(|&variant| (definition, variant)))
+            .filter(|constructor| {
+                constructor.kind == crate::sema::members::ConstructorKind::Variant
+            })
+            .map(|constructor| (definition, constructor.variant)))
     }
     pub(super) fn empty_repeat(&self, id: ValueId) -> Result<bool, Error> {
         match self.evaluator.facts().types.kind(self.value(id)?.ty) {

@@ -95,3 +95,10 @@ The option_env checkpoint and explicit remaining PA26 responsibilities are
 recorded in `docs/pa26-environment-checkpoint.md`. PA26 remains planned while
 later independently accepted work proceeds; partial checkpoints do not complete
 this assignment's full hook families.
+
+The maintainer constructor correction retains genuine variant construction
+separately from const-function factories such as `ManuallyDrop::new`. Constant
+evaluation remains eligible; runtime calls cannot acquire static promotion
+merely from aggregate storage. Draft controls are in
+`tests/constructor-promotion-outcomes.json`, with qualification recorded in
+`docs/pa26-constructor-promotion.md`. This does not activate PA26.

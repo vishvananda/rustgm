@@ -201,7 +201,17 @@ impl Checker<'_> {
             .into_iter()
             .chain(std::iter::once(variant.constructor))
         {
-            self.facts.members.constructors.insert(definition, id);
+            self.facts.members.constructors.insert(
+                definition,
+                crate::sema::members::Constructor {
+                    variant: id,
+                    kind: if declaration.kind == LibraryType::ManuallyDrop {
+                        crate::sema::members::ConstructorKind::ConstFunction
+                    } else {
+                        crate::sema::members::ConstructorKind::Variant
+                    },
+                },
+            );
             self.facts
                 .generics
                 .parents

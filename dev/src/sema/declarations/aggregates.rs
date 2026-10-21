@@ -404,7 +404,13 @@ impl Checker<'_> {
             return Ok(());
         };
         let variant = self.facts.members.variants[variant_id.0 as usize];
-        self.facts.members.constructors.insert(id, variant_id);
+        self.facts.members.constructors.insert(
+            id,
+            crate::sema::members::Constructor {
+                variant: variant_id,
+                kind: crate::sema::members::ConstructorKind::Variant,
+            },
+        );
         if definition.namespace != Namespace::Value
             || self.facts.definitions[id.0 as usize].is_some()
         {

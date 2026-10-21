@@ -100,7 +100,13 @@ impl Checker<'_> {
                 .members
                 .at_node(key)
                 .ok_or_else(|| self.error(key, "missing completed constructor fields"))?;
-            self.facts.members.constructors.insert(id, variant);
+            self.facts.members.constructors.insert(
+                id,
+                crate::sema::members::Constructor {
+                    variant,
+                    kind: crate::sema::members::ConstructorKind::Variant,
+                },
+            );
         }
         Ok(())
     }

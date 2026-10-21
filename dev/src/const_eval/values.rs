@@ -160,8 +160,7 @@ impl Machine<'_, '_> {
                 };
                 let definition = crate::resolve::model::DefId(item.0);
                 let arguments = self.arguments(frame, arguments)?;
-                if let Some(&variant) = self.evaluator.facts().members.constructors.get(&definition)
-                {
+                if let Some(variant) = self.evaluator.facts().members.constructor(definition) {
                     self.evaluator.fields(&arguments, Some(variant))?
                 } else {
                     if !self.evaluator.facts().is_const_function(definition)

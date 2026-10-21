@@ -107,9 +107,7 @@ impl Queries<'_> {
                 self.typing
                     .facts
                     .members
-                    .constructors
-                    .get(&DefId(item.0))
-                    .copied()
+                    .constructor(DefId(item.0))
                     .map(|variant| Expression::Positional {
                         variant,
                         callee: child(callee),
@@ -136,13 +134,9 @@ impl Queries<'_> {
                 let selected = match self.value(Query::Node(callee))? {
                     Value::Function(instance) => {
                         match self.typing.facts.types.kind(instance.ty()) {
-                            Some(Type::FunctionItem { item, .. }) => self
-                                .typing
-                                .facts
-                                .members
-                                .constructors
-                                .get(&DefId(item.0))
-                                .copied(),
+                            Some(Type::FunctionItem { item, .. }) => {
+                                self.typing.facts.members.constructor(DefId(item.0))
+                            }
                             _ => None,
                         }
                     }

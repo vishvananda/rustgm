@@ -1,0 +1,138 @@
+{
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "path": "tests/spec/constructor-promotion/runtime-u32.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/const-u32.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/runtime-option.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/runtime-unit.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/named-const-u32.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/variant-control.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/user-const-function-control.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/lookalike-control.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/result-control.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/tuple-control.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/alias-runtime.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    },
+    {
+      "path": "tests/spec/constructor-promotion/const-runtime-value.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "features": [
+        "pa26.library-types"
+      ]
+    }
+  ]
+}

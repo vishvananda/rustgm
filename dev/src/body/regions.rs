@@ -214,8 +214,7 @@ fn constructors(
         }
         let Some(variant) = facts
             .members
-            .constructors
-            .get(&crate::resolve::model::DefId(item.0))
+            .constructor(crate::resolve::model::DefId(item.0))
         else {
             continue;
         };

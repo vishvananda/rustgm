@@ -31,9 +31,7 @@ impl Checker<'_> {
         let variant = self
             .facts
             .members
-            .constructors
-            .get(&constructor)
-            .copied()
+            .constructor(constructor)
             .ok_or_else(|| self.error(node, "missing Option library member"))?;
         if self.facts.members.variants[variant.0 as usize].owner != ItemId(definition.0) {
             return Err(self.error(node, "Option constructor belongs to another declaration"));

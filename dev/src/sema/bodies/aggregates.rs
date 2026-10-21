@@ -246,7 +246,7 @@ impl Checker<'_> {
         node: NodeId,
         definition: DefId,
     ) -> Result<(), Error> {
-        let Some(variant) = self.facts.members.constructors.get(&definition).copied() else {
+        let Some(variant) = self.facts.members.constructor(definition) else {
             return Ok(());
         };
         if self.facts.members.variants[variant.0 as usize].shape == Shape::Unit {
@@ -260,8 +260,8 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "aggregate path requires a resolved constructor"));
         };
-        if let Some(variant) = self.facts.members.constructors.get(&definition) {
-            return Ok(*variant);
+        if let Some(variant) = self.facts.members.constructor(definition) {
+            return Ok(variant);
         }
         if let Some(Type::Adt(item, _)) =
             self.facts.definitions[definition.0 as usize].and_then(|ty| self.facts.types.kind(ty))

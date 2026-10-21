@@ -12,6 +12,16 @@ use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct VariantId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ConstructorKind {
+    Variant,
+    ConstFunction,
+}
+#[derive(Clone, Copy, Debug)]
+pub struct Constructor {
+    pub variant: VariantId,
+    pub kind: ConstructorKind,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct FieldId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -63,7 +73,7 @@ impl Provenance {
 #[derive(Default)]
 pub struct Members {
     pub names: Names,
-    pub constructors: HashMap<DefId, VariantId>,
+    pub constructors: HashMap<DefId, Constructor>,
     pub variants: Vec<Variant>,
     pub fields: Vec<Field>,
     field_ordinals: Vec<u32>,
@@ -73,6 +83,11 @@ pub struct Members {
     by_name: HashMap<(VariantId, Name), FieldId>,
 }
 impl Members {
+    /// Selected construction storage is independent of promotion eligibility.
+    #[must_use]
+    pub fn constructor(&self, definition: DefId) -> Option<VariantId> {
+        self.constructors.get(&definition).map(|c| c.variant)
+    }
     /// Publish one source-ordered field group and its lookup index.
     ///
     /// # Errors

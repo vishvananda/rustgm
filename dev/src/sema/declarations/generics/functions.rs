@@ -28,7 +28,7 @@ impl Checker<'_> {
         let crate::resolve::model::Target::Definition(mut owner) = fact.reference? else {
             return None;
         };
-        if let Some(&variant) = self.facts.members.constructors.get(&owner) {
+        if let Some(variant) = self.facts.members.constructor(owner) {
             owner = DefId(self.facts.members.variants[variant.0 as usize].owner.0);
         }
         matches!(

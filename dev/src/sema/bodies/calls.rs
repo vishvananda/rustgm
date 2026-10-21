@@ -418,7 +418,7 @@ impl Checker<'_> {
                 "explicit destructor calls or function values are forbidden",
             ));
         }
-        if let Some(&variant) = self.facts.members.constructors.get(&owner) {
+        if let Some(variant) = self.facts.members.constructor(owner) {
             return self.constructor_item(node, ty, variant);
         }
         let Some(Type::FunctionItem {

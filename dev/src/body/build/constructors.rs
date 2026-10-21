@@ -28,7 +28,7 @@ fn selected(facts: &Declarations) -> impl Iterator<Item = (DefId, TypeId, Varian
                 return None;
             }
             let definition = DefId(item.0);
-            let variant = *facts.members.constructors.get(&definition)?;
+            let variant = facts.members.constructor(definition)?;
             Some((definition, signature, variant))
         })
 }
