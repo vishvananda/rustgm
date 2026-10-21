@@ -16,6 +16,14 @@ assignment activation and final text-oracle publication.
 | Worker B | PA26 language/library hooks | PA30 foreign interfaces | [PA26/PA30](parallel/pa26-pa30.md) |
 | Worker C | PA27 unsafe language | PA28 intrinsics and atomics | [PA27/PA28](parallel/pa27-pa28.md) |
 
+After Worker B's canonical operator dot-call checkpoint, its next implementation
+slice is PA24 receiver adapters, ahead of PA30. This moves work on the earliest
+unfinished assignment off the integrator while combined qualification runs.
+The integrator continues to own adapter identity/proof decisions and PA24 release;
+Worker B returns to the PA26/PA30 lane after that adapter slice is integrated.
+Worker A retains anonymous instance identities and Worker C retains unsafe capture
+replay, so changes to shared body enums must be coordinated before editing them.
+
 The course release order remains cumulative. Future work can be developed
 without marking an unfinished prerequisite or assignment active. A worker
 moves to its queued assignment after the integrator accepts its checkpoint;
