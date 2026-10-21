@@ -261,6 +261,7 @@ fn closure_contract(
     } else {
         Contract::constant(closure.body)
     };
+    contract.key = super::ir::BodyKey::Closure(closure.identity);
     contract.signature = Some(closure.signature);
     contract.universals = closure.universals;
     if let Some(scheme) = closure

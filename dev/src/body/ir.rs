@@ -378,6 +378,7 @@ impl Body {
                 BodyKey::Declaration(definition)
             }
             Owner::AnonymousConstant => BodyKey::Anonymous(self.source),
+            Owner::Closure { identity, .. } => BodyKey::Closure(identity),
         }
     }
     #[must_use]
