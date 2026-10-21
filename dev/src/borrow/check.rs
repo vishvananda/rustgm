@@ -144,8 +144,8 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }
-    let by_source: HashMap<_, _> = if templates.is_none() {
-        contracts.bodies.iter().map(|b| (b.source, b)).collect()
+    let by_key: HashMap<_, _> = if templates.is_none() {
+        contracts.bodies.iter().map(|b| (b.key, b)).collect()
     } else {
         HashMap::new()
     };
@@ -158,14 +158,13 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
                     message: "instance has no checked original template".into(),
                 });
             }
-            contracts
-                .bodies
-                .get(ordinal)
-                .filter(|c| c.source == body.source && c.instance == body.instance)
+            contracts.bodies.get(ordinal).filter(|c| {
+                c.key == body.key() && c.source == body.source && c.instance == body.instance
+            })
         } else if body.instance.is_some() {
             None
         } else {
-            by_source.get(&body.source).copied()
+            by_key.get(&body.key()).copied()
         }
         .ok_or_else(|| Error {
             node: Some(body.source),
@@ -204,7 +203,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
         crate::types::destruction::regions::Regions::new(pending.methods.iter().map(|m| m.item))
             .map_err(|e| error(Some(pending.source), e))?;
     let mut components = LiveRegions::default();
-    let by_source: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.source, b)).collect();
+    let by_key: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.key, b)).collect();
     let mut plans = Vec::with_capacity(program.bodies.len());
     for body in &program.bodies {
         if body.instance.is_some() {
@@ -213,8 +212,8 @@ pub fn verify_destruction<'a, S: BuildHasher>(
                 "specialized destruction requires checked instance contracts",
             ));
         }
-        let contract = by_source
-            .get(&body.source)
+        let contract = by_key
+            .get(&body.key())
             .ok_or_else(|| error(Some(body.source), "body has no lifetime proof"))?;
         plans.push(prove_cleanup(
             environment,

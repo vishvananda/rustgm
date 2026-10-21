@@ -49,6 +49,7 @@ pub struct Obligation {
 }
 #[derive(Clone)]
 pub struct Contract {
+    pub key: super::ir::BodyKey,
     pub source: NodeKey,
     pub signature: Option<TypeId>,
     pub universals: u32,
@@ -80,6 +81,7 @@ impl Contract {
     }
     fn constant(source: NodeKey) -> Self {
         Self {
+            key: super::ir::BodyKey::Anonymous(source),
             source,
             signature: None,
             universals: 0,
@@ -226,10 +228,15 @@ fn constructors(
             continue;
         }
         let source = variant.node;
-        if index.insert(source, bodies.len()).is_some() {
+        if facts.members.at_node(source).is_some() && index.insert(source, bodies.len()).is_some() {
             return Err("duplicate constructor lifetime owner");
         }
-        bodies.push(constructor(facts, variant, signature)?);
+        bodies.push(constructor(
+            facts,
+            crate::resolve::model::DefId(item.0),
+            variant,
+            signature,
+        )?);
     }
     Ok(())
 }
@@ -269,7 +276,9 @@ fn initializer_contract(
     initializer: &crate::sema::model::Initializer,
 ) -> Result<Contract, &'static str> {
     let Some(schema) = facts.associated.schema(initializer.definition) else {
-        return Ok(Contract::constant(initializer.value));
+        let mut contract = Contract::constant(initializer.value);
+        contract.key = super::ir::BodyKey::Declaration(initializer.definition);
+        return Ok(contract);
     };
     let mut contract = parameter_contract(facts, initializer.definition, initializer.value, None)?;
     contract.universals = schema.captures;
@@ -278,6 +287,7 @@ fn initializer_contract(
 }
 pub(super) fn constructor(
     facts: &Declarations,
+    definition: crate::resolve::model::DefId,
     variant: crate::sema::members::Variant,
     signature: TypeId,
 ) -> Result<Contract, &'static str> {
@@ -291,6 +301,7 @@ pub(super) fn constructor(
         variant.node,
         Some(signature),
     )?;
+    contract.key = super::ir::BodyKey::Declaration(definition);
     contract.universals = bound_regions;
     // Signature well-formedness contributes the completed nominal requirements.
     Ok(contract)
@@ -317,6 +328,7 @@ fn parameter_contract(
         }
     }
     Ok(Contract {
+        key: super::ir::BodyKey::Declaration(owner),
         source,
         signature,
         universals: 0,

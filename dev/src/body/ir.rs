@@ -307,6 +307,13 @@ pub enum Owner {
         kind: InitializerKind,
     },
 }
+/// Declaration identity is separate from shared diagnostic provenance.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum BodyKey {
+    Declaration(DefId),
+    Closure(crate::types::closure::ClosureId),
+    Anonymous(NodeKey),
+}
 pub struct Body {
     /// Canonical types of static places actually referenced by this CFG.
     pub static_types: Option<std::sync::Arc<std::collections::HashMap<DefId, TypeId>>>,
@@ -362,6 +369,15 @@ impl Body {
             Place::Temporary(id) => self.values.get(id.0 as usize).map(|v| v.ty),
             Place::Projection(id) => self.projections.get(id.0 as usize).map(|p| p.ty),
             Place::Static(id) => self.static_types.as_ref()?.get(&id).copied(),
+        }
+    }
+    #[must_use]
+    pub const fn key(&self) -> BodyKey {
+        match self.owner {
+            Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
+                BodyKey::Declaration(definition)
+            }
+            Owner::AnonymousConstant => BodyKey::Anonymous(self.source),
         }
     }
     #[must_use]

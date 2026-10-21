@@ -43,7 +43,7 @@ pub fn verify<S: std::hash::BuildHasher>(
     }
     let mut index = HashMap::with_capacity(contracts.bodies.len());
     for contract in &contracts.bodies {
-        if index.insert(contract.source, contract).is_some() {
+        if index.insert(contract.key, contract).is_some() {
             return Err(error("duplicate template cleanup contract"));
         }
     }
@@ -60,7 +60,7 @@ pub fn verify<S: std::hash::BuildHasher>(
         };
         validate(template).map_err(error)?;
         let contract = index
-            .remove(&body.source)
+            .remove(&body.key())
             .ok_or_else(|| error("template cleanup contract is missing or repeated"))?;
         let parameters = crate::borrow::permissions::check(environment, contract)?
             .unwrap_or_else(|| std::sync::Arc::clone(&template.environment));
@@ -165,7 +165,7 @@ pub fn check(
     }
     let mut index = HashMap::with_capacity(contracts.bodies.len());
     for contract in &contracts.bodies {
-        if index.insert(contract.source, contract).is_some() {
+        if index.insert(contract.key, contract).is_some() {
             return Err(Error {
                 node: Some(contract.source),
                 message: "duplicate template loan contract".into(),
@@ -193,7 +193,7 @@ pub fn check(
             ));
         }
         let contract = index
-            .remove(&body.source)
+            .remove(&body.key())
             .ok_or_else(|| error("template loan contract is missing or repeated"))?;
         let storage = storage::check(body).map_err(|e| Error {
             node: Some(e.node),

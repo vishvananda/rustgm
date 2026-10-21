@@ -44,8 +44,7 @@ impl Checked<'_> {
             return None;
         };
         let &index = self.index.get(&ItemId(definition.0))?;
-        (self.templates.bodies[index].body.source == body.source)
-            .then(|| &self.regions.bodies[index])
+        (self.templates.bodies[index].body.key() == body.key()).then(|| &self.regions.bodies[index])
     }
 }
 
@@ -95,13 +94,13 @@ pub fn verify<'a, S: BuildHasher>(
             message: e.message,
         })?;
     let loans = loans::templates::verify(environment, templates, &regions, custom, position)?;
-    let mut inputs: HashMap<_, _> = contracts.bodies.iter().map(|c| (c.source, c)).collect();
+    let mut inputs: HashMap<_, _> = contracts.bodies.iter().map(|c| (c.key, c)).collect();
     let contracts = templates
         .bodies
         .iter()
         .map(|template| {
             inputs
-                .remove(&template.body.source)
+                .remove(&template.body.key())
                 .cloned()
                 .ok_or_else(|| Error {
                     node: Some(template.body.source),

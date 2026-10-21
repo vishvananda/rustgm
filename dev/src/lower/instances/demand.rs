@@ -197,9 +197,9 @@ fn prepare_ordinary(
     let mut program = body::concrete_except(report, facts, |owner| {
         templates.get(ItemId(owner.0)).is_some()
     })?;
-    let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.source, c)).collect();
+    let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.key, c)).collect();
     for body in &mut program.bodies {
-        let input = inputs.get_mut(&body.source).ok_or_else(|| {
+        let input = inputs.get_mut(&body.key()).ok_or_else(|| {
             diagnostic(
                 report,
                 Some(body.source),
@@ -226,7 +226,7 @@ fn prepare_ordinary(
         } else {
             None
         };
-        let input = inputs.remove(&source).ok_or_else(|| {
+        let input = inputs.remove(&body.key()).ok_or_else(|| {
             diagnostic(
                 report,
                 Some(source),

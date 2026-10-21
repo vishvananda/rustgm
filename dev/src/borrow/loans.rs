@@ -586,7 +586,7 @@ pub(crate) fn check_schedule(
         node: body.source,
         message,
     };
-    if contract.source != body.source {
+    if contract.key != body.key() || contract.source != body.source {
         return Err(error("drop loan contract belongs to another body"));
     }
     if body.const_context && plan.cleanups().any(|cleanup| cleanup.access) {
@@ -622,7 +622,10 @@ pub(super) fn analyze<const RECORD: bool>(
         node: body.source,
         message,
     };
-    if contract.source != body.source || owned.uses.len() != body.values.len() {
+    if contract.key != body.key()
+        || contract.source != body.source
+        || owned.uses.len() != body.values.len()
+    {
         return Err(error("loan analysis facts belong to another body"));
     }
     if !body

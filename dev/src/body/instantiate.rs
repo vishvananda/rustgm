@@ -128,7 +128,7 @@ fn with_premises(
     original: &super::regions::Contract,
     context: Context<'_>,
 ) -> Result<Materialized, &'static str> {
-    if original.source != template.body.source {
+    if original.key != template.body.key() || original.source != template.body.source {
         return Err("instance contract belongs to another template");
     }
     let mut inputs = parameters(facts, instance)?;

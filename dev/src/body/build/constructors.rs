@@ -113,8 +113,10 @@ pub fn templates(
         )?;
         let destruction =
             crate::body::drops::requirements(facts, &body, &mut scoped).map_err(error)?;
-        contracts
-            .push(crate::body::regions::constructor(facts, declaration, signature).map_err(error)?);
+        contracts.push(
+            crate::body::regions::constructor(facts, definition, declaration, signature)
+                .map_err(error)?,
+        );
         templates.bodies.push(Template {
             body,
             destruction,
