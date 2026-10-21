@@ -56,10 +56,11 @@ their existing internal ABI. Default-release pins are prepared for baseline `84f
 all seven shared/aggregate inputs pass independent Rust and candidate native
 execution. The disposable baseline Cargo target was removed. Provenance,
 hashes and frozen outputs are under
-`obj/parallel/pa30/aggregate-performance/complete.json`; no measurements ran.
-Exclusive measurement remains reserved for the integrator window: at least
-four A/A observations and five ABBA paired blocks, three executions per
-observation, RSS and instruction observations, preserving every result.
+`obj/parallel/pa30/aggregate-performance/complete.json`. The integrator's frozen
+exclusive comparison is complete: all 594 observations preserve their frozen
+outputs. [The measurement review](pa30-aggregate-performance.md) records the
+small ordinary instruction/RSS increases, noisy wall observations and new
+aggregate scaling, with all A/A, ABBA, RSS and instruction evidence retained.
 
 The separately qualified validator follow-up rejects `addr` on an object
 temporary even when its object and scalar IDs are otherwise valid. Production
