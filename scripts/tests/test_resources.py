@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from resource_locks import active_records, inherited, lease, try_lock
 from resource_policy import DEFAULTS, GIB, UsageScan, atomic_json, output_roots, validate
 from resource_runner import run, scope_command, supervise
+from resources import set_jobs
 
 
 def contender(directory, root, kind, queue, release):
@@ -30,7 +31,8 @@ def contender(directory, root, kind, queue, release):
 class ResourceTests(unittest.TestCase):
     def test_reviewed_policy_and_output_boundaries(self):
         validate(DEFAULTS)
-        for key, value in [("jobs", 3), ("reserve_gib", 149), ("worker_gib", 51),
+        validate({**DEFAULTS, "jobs": 3})
+        for key, value in [("jobs", 4), ("reserve_gib", 149), ("worker_gib", 51),
                            ("cpu_percent", 801), ("memory_gib", 13), ("tasks", 257)]:
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate({**DEFAULTS, key: value})
@@ -73,6 +75,47 @@ class ResourceTests(unittest.TestCase):
                     with lease(directory, Path(root), DEFAULTS, 'ordinary', wait=0):
                         self.fail('exceeded concurrency')
         # ExitStack closes all kernel leases even when a command fails.
+
+    def test_three_slots_keep_worktree_and_exclusive_limits(self):
+        policy = {**DEFAULTS, 'jobs': 3}
+        with tempfile.TemporaryDirectory() as folder, ExitStack() as stack:
+            directory = Path(folder)
+            for root in ['/first', '/second', '/third']:
+                stack.enter_context(lease(directory, Path(root), policy, 'ordinary', wait=0))
+            self.assertEqual(len(active_records(directory, 3)), 3)
+            for root, kind in [('/fourth', 'ordinary'), ('/first', 'ordinary'),
+                               ('/exclusive', 'exclusive')]:
+                with self.subTest(root=root), self.assertRaisesRegex(ValueError, 'timed out'):
+                    with lease(directory, Path(root), policy, kind, wait=0):
+                        self.fail('exceeded concurrency or exclusivity')
+
+    def test_slot_change_requires_idle_controller_and_preserves_other_limits(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            directory = root / 'control'
+            directory.mkdir()
+            path = root / 'rustgm-resources.json'
+            atomic_json(path, DEFAULTS)
+            with patch('resources.discover', return_value=(directory, DEFAULTS)):
+                with lease(directory, Path('/worker'), DEFAULTS, 'ordinary', wait=0):
+                    with self.assertRaisesRegex(ValueError, 'finish guarded'):
+                        set_jobs(root, 3)
+                    self.assertEqual(json.loads(path.read_text()), DEFAULTS)
+                set_jobs(root, 3)
+            self.assertEqual(json.loads(path.read_text()), {**DEFAULTS, 'jobs': 3})
+
+    def test_waiting_job_cannot_launch_with_stale_policy(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            directory = root / 'control'
+            policy = {**DEFAULTS, 'worktrees': {str(root): {'name': 'test', 'outputs': ['obj']}}}
+            with patch('resource_runner.discover', side_effect=[
+                (directory, policy), (directory, {**policy, 'jobs': 3})
+            ]), patch('resource_runner.supervise') as launch:
+                with self.assertRaisesRegex(ValueError, 'policy changed'):
+                    run(root, ['not-launched'], {})
+                launch.assert_not_called()
+            self.assertEqual(active_records(directory, 3), [])
 
     def test_exclusive_waiter_blocks_new_ordinary_admission(self):
         context = multiprocessing.get_context('spawn')
@@ -128,6 +171,12 @@ class ResourceTests(unittest.TestCase):
             atomic_json(path, record)
             env = {'RUSTGM_RESOURCE_LEASE': str(path), 'RUSTGM_RESOURCE_TOKEN': 'nonce'}
             self.assertTrue(inherited(directory, Path('/work'), env, 'ordinary'))
+            third = directory / 'slot-2.json'
+            atomic_json(third, record)
+            third_env = {**env, 'RUSTGM_RESOURCE_LEASE': str(third)}
+            self.assertTrue(inherited(directory, Path('/work'), third_env, 'ordinary', 3))
+            with self.assertRaisesRegex(ValueError, 'invalid inherited'):
+                inherited(directory, Path('/work'), third_env, 'ordinary', 2)
             for root, kind in [('/other', 'ordinary'), ('/work', 'exclusive')]:
                 with self.assertRaises(ValueError):
                     inherited(directory, Path(root), env, kind)

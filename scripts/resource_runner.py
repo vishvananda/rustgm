@@ -121,9 +121,11 @@ def run(root, command, environment=None, *, kind="ordinary", wait=3600):
         raise ValueError("worktree is not registered with the shared resource controller")
     environment.update(CARGO_BUILD_JOBS="2", RUST_TEST_THREADS="2", CARGO_INCREMENTAL="0",
                        RUSTGM_TEST_JOBS="2", CARGO_TARGET_DIR=str(root / "obj/rust"))
-    if inherited(directory, root, environment, kind):
+    if inherited(directory, root, environment, kind, policy["jobs"]):
         return subprocess.run(command, cwd=root, env=environment, check=False).returncode
     with lease(directory, root, policy, kind, wait) as (record, path, descriptors):
+        if discover(root) != (directory, policy):
+            raise ValueError("resource policy changed while waiting; retry the command")
         used = usage(root, entry, policy)
         # Reserve the unused allowance of this job and full allowances of peers.
         # This is conservative when another worker already has a warm cache.

@@ -28,8 +28,8 @@ def discover(root):
 
 
 def validate(policy):
-    if policy.get("schema") != 1 or policy.get("jobs") != 2:
-        raise ValueError("resource policy requires schema 1 and two job slots")
+    if policy.get("schema") != 1 or policy.get("jobs") not in (2, 3):
+        raise ValueError("resource policy requires schema 1 and two or three job slots")
     for key in ("reserve_gib", "worker_gib", "cpu_percent", "memory_gib", "tasks"):
         if not isinstance(policy.get(key), int) or policy[key] <= 0:
             raise ValueError(f"invalid resource policy: {key}")

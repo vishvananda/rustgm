@@ -1,4 +1,4 @@
-"""Cross-worktree leases: two heavy jobs or one exclusive validation batch."""
+"""Cross-worktree leases: bounded heavy jobs or one exclusive validation batch."""
 from contextlib import contextmanager, ExitStack
 import fcntl
 import hashlib
@@ -87,13 +87,13 @@ def lease(directory, root, policy, kind, wait=3600):
         yield record, path, tuple(handle.fileno() for handle in held)
 
 
-def inherited(directory, root, environment, kind):
+def inherited(directory, root, environment, kind, slots=2):
     path = environment.get("RUSTGM_RESOURCE_LEASE")
     token = environment.get("RUSTGM_RESOURCE_TOKEN")
     if not path and not token:
         return False
     path = Path(path or "")
-    if path.parent != directory or path.name not in {"slot-0.json", "slot-1.json"}:
+    if path.parent != directory or path.name not in {f"slot-{i}.json" for i in range(slots)}:
         raise ValueError("invalid inherited resource lease")
     record = json.loads(path.read_text())
     if record.get("token") != token or record.get("root") != str(root):

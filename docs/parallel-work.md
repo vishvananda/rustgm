@@ -36,8 +36,9 @@ ordinary storage guard unless explicitly configured.
 
 Initial reviewed limits:
 
-- At most two heavy commands across all worktrees, one command per worktree.
-- Functional validation shares the two-command budget with focused worker checks.
+- Two heavy commands by default, with an explicitly enabled three-job trial;
+  one command per worktree.
+- Functional validation shares this budget with focused worker checks.
   Benchmarks use an exclusive lease, which excludes every other guarded heavy
   command. A waiting exclusive job blocks new ordinary admission.
 - Each process tree has a systemd user scope: CPU quota 800% (eight CPU cores),
@@ -70,6 +71,13 @@ Registration is an integrator operation, performed before workers start:
 python3 scripts/resources.py register /absolute/worktree --name pa25
 python3 scripts/resources.py status
 ```
+
+The user authorized a three-job trial on 2026-10-21. At an idle boundary, after
+updating the controller in every participating worktree, select it with
+`python3 scripts/resources.py set-jobs 3`. Use `set-jobs 2` to restore the
+default at another idle boundary. This changes no CPU, RAM, task, disk reserve,
+worker quota, Cargo thread or exclusive-measurement limit. A command queued
+under a changed policy fails before launching and must be retried.
 
 The existing storage wrapper automatically joins the shared controller:
 
