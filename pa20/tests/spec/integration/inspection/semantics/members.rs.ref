@@ -110,8 +110,10 @@ impl-constant owner=23 declaration=18 selected=18 default=true
 impl-constant owner=25 declaration=18 selected=27 default=false
 constant-use source=0:85 definition=18 arguments=[type:19]
 constant-use source=0:97 definition=18 arguments=[type:20]
+constant-dispatch declaration=18 arguments=[type:19] selected=18 arguments=[type:19]
+constant-dispatch declaration=18 arguments=[type:20] selected=27 arguments=[]
 normalized-node source=0:108 original=28 result=28
 normalized-node source=0:109 original=28 result=28
 normalized-node source=0:113 original=28 result=28
 normalized-node source=0:114 original=28 result=28
-eof owners=3 members=5 parameters=2 predicates=2 impls=2 calls=0 paths=2 impl-uses=4 type-members=3 constant-members=2 result-contracts=1 result-bounds=2 impl-constants=2 constant-uses=2 constant-dispatches=0 normalized-nodes=4 normalized-definitions=0
+eof owners=3 members=5 parameters=2 predicates=2 impls=2 calls=0 paths=2 impl-uses=4 type-members=3 constant-members=2 result-contracts=1 result-bounds=2 impl-constants=2 constant-uses=2 constant-dispatches=2 normalized-nodes=4 normalized-definitions=0

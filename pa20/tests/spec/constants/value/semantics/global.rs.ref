@@ -54,4 +54,5 @@ implementation-use source=0:23 owner=16 arguments=[]
 associated-constant def=15 type=11
 impl-constant owner=16 declaration=15 selected=15 default=true
 constant-use source=0:23 definition=15 arguments=[type:11]
-eof owners=2 members=1 parameters=1 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=1 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0
+constant-dispatch declaration=15 arguments=[type:11] selected=15 arguments=[type:11]
+eof owners=2 members=1 parameters=1 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

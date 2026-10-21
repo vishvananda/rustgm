@@ -85,3 +85,22 @@ final zero-finding audit.
   representation; associated initializer dispatch now retains its actual owner.
 - Finish owning fixtures, manifest/handout contracts and integrated release
   qualification. PA25 remains planned and incomplete.
+
+The combined `7249dce9` validation in `rustgm-validation-work` passes 32 focused
+release groups and six native groups. PA9, PA19 and PA22 retain their existing
+bytes after their separately reviewed boundary/diagnostic repairs. PA20's three
+inspection fixtures now retain the dispatches proved during required initializer
+evaluation: the default global, default/override pair, and mixed lifetime/type/
+const application add one, two and one records respectively. Every prior row and
+identity remains unchanged; the matching three LowIR outputs remain byte-identical.
+All six source copies independently compile with pinned rustc before regeneration.
+The generator changes only those three stdout sidecars and its source provenance
+receipt; outcomes, fixtures and the other 1,378 PA20 oracles are unchanged.
+
+Evidence is retained in `obj/parallel/integration-7249/` and
+`obj/parallel/integration-7249-recovered/`. The first native attempt stopped when
+the shared CPPGM executable no longer matched the locked hash. Exact original
+bytes were recovered into checkout-owned immutable pins; the backend smoke test
+and all three interrupted native groups then passed. The failed attempt remains
+recorded as infrastructure drift. No backend lock was changed. Combined full
+publication checks and PA24–PA30 assignment completion remain outstanding.

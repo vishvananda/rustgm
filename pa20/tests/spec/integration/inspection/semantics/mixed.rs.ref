@@ -108,9 +108,10 @@ associated-constant def=18 type=16
 associated-type def=22 type=28
 impl-constant owner=21 declaration=18 selected=18 default=true
 constant-use source=0:114 definition=18 arguments=[region:static,type:19,type:11,const:16:0x00000000000000000000000000000003]
+constant-dispatch declaration=18 arguments=[region:static,type:19,type:11,const:16:0x00000000000000000000000000000003] selected=18 arguments=[region:static,type:19,type:11,const:16:0x00000000000000000000000000000003]
 normalized-node source=0:95 original=29 result=31
 normalized-node source=0:96 original=29 result=31
 normalized-node source=0:125 original=29 result=31
 normalized-node source=0:126 original=29 result=31
 normalized-definition def=23 original=29 result=31
-eof owners=2 members=3 parameters=7 predicates=3 impls=1 calls=0 paths=1 impl-uses=1 type-members=2 constant-members=1 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=0 normalized-nodes=4 normalized-definitions=1
+eof owners=2 members=3 parameters=7 predicates=3 impls=1 calls=0 paths=1 impl-uses=1 type-members=2 constant-members=1 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=4 normalized-definitions=1
