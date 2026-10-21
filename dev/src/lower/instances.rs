@@ -148,19 +148,7 @@ fn inspect_roots<R>(
     )
     .map_err(|e| diagnostic(report, e.node, e.message))?;
     let inputs = contracts.bodies;
-    let condition_steps = checked
-        .visit_closure_conditions(
-            &facts.types,
-            &facts.lifetimes.nominal_requirements,
-            &facts.lifetimes.callables,
-            |identity, source, conditions| {
-                facts
-                    .closures
-                    .retain_conditions(identity, source, conditions)
-            },
-        )
-        .map_err(|e| diagnostic(report, None, e.into()))?;
-    facts.body_work.canonical_steps += condition_steps;
+    publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
     if !facts.opaques.owners.is_empty() {
         let owners: std::collections::HashMap<_, _> = facts
             .functions
@@ -191,6 +179,24 @@ fn inspect_roots<R>(
     program
         .with_checked(|checked| inspect(facts, checked, roots))
         .map_err(|e| diagnostic(report, e.node, e.message))
+}
+
+fn publish_closure_conditions(
+    facts: &mut Declarations,
+    checked: &borrow::templates::Checked<'_>,
+) -> Result<(), &'static str> {
+    let condition_steps = checked.visit_closure_conditions(
+        &facts.types,
+        &facts.lifetimes.nominal_requirements,
+        &facts.lifetimes.callables,
+        |identity, source, conditions| {
+            facts
+                .closures
+                .retain_conditions(identity, source, conditions)
+        },
+    )?;
+    facts.body_work.canonical_steps += condition_steps;
+    Ok(())
 }
 
 fn diagnostic(report: &Report, node: Option<NodeKey>, message: String) -> Error {
