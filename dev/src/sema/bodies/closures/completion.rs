@@ -59,7 +59,9 @@ impl Checker<'_> {
         )?;
         self.state
             .work
-            .push(Work::BodyInputs(Box::new(InputRefresh { source, pairs })));
+            .push(Work::BodyInputs(Box::new(InputRefresh::incoming(
+                source, pairs,
+            ))));
         Ok(None)
     }
 
@@ -121,10 +123,12 @@ impl Checker<'_> {
         let pairs = inputs
             .outgoing_regions(&mut self.facts.types, &mut parent.infer, &mut identity)
             .map_err(|e| self.error(body, e))?;
-        parent.work.push(Work::BodyInputs(Box::new(InputRefresh {
-            source: entry.source,
-            pairs,
-        })));
+        parent
+            .work
+            .push(Work::BodyInputs(Box::new(InputRefresh::outgoing(
+                entry.source,
+                pairs,
+            ))));
         std::mem::swap(&mut inputs.context, &mut self.state.infer);
         Ok(())
     }

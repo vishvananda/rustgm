@@ -141,6 +141,23 @@ impl FamilyInputs {
 }
 
 impl Checker<'_> {
+    /// A retained written type keeps body-bound slots; inferred call inputs use
+    /// free aliases. Select one matching caller namespace for this query only.
+    pub(super) fn resolved_projection_environment(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+    ) -> Result<Option<Arc<Environment>>, Error> {
+        if self.facts.types.escaping_binders(ty) == Some(0) {
+            self.projection_environment(node)
+        } else {
+            Ok(self
+                .state
+                .environment_owner
+                .and_then(|owner| self.facts.generics.environments.get(&owner))
+                .cloned())
+        }
+    }
     pub(super) fn projection_subject_known(
         &mut self,
         node: NodeId,
@@ -155,7 +172,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
 
-    pub(super) fn projection_environment(
+    pub(in crate::sema::bodies) fn projection_environment(
         &mut self,
         node: NodeId,
     ) -> Result<Option<Arc<Environment>>, Error> {
@@ -169,10 +186,14 @@ impl Checker<'_> {
             return Ok(environment.clone());
         }
         let mut fold = Bound::new(self.state.call_types.universal_arguments());
-        let environment = self
+        let original = self
             .state
-            .method_environment
+            .projections
+            .data
             .as_ref()
+            .and_then(|data| data.source_environment.as_ref())
+            .or(self.state.method_environment.as_ref());
+        let environment = original
             .map(|env| {
                 if self.state.body_binders == 0 || env.has_only_parameters() {
                     Ok(Arc::clone(env))

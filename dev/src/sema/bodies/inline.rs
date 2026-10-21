@@ -133,7 +133,9 @@ impl Checker<'_> {
         self.state.closures = Some(scheduler);
         self.state
             .work
-            .push(Work::BodyInputs(Box::new(InputRefresh { source, pairs })));
+            .push(Work::BodyInputs(Box::new(InputRefresh::outgoing(
+                source, pairs,
+            ))));
         self.defer_normalization(
             source,
             crate::types::lifetime_proof::ScopeId::ROOT,

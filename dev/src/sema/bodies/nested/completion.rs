@@ -1,5 +1,5 @@
 //! Common interface equations and parked-state restoration are independent of body kind.
-use super::{Checker, Error, InputRefresh, Work};
+use super::{Checker, Direction, Error, InputRefresh, Work};
 use crate::{sema::bodies::Dependency, types::infer::arguments::Argument};
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn resume_body_inputs(
@@ -17,8 +17,22 @@ impl Checker<'_> {
     }
     pub(in crate::sema::bodies) fn finish_body_inputs(
         &mut self,
-        inputs: InputRefresh,
+        mut inputs: InputRefresh,
     ) -> Result<Option<Dependency>, Error> {
+        // Only inward roots belong to the child's complete lifetime namespace.
+        // Outward roots have already closed through their exact Interface;
+        // standalone public input roots must keep that callable's own binder.
+        if matches!(inputs.direction, Direction::Inward) && !inputs.prepared {
+            let mut mapping = crate::types::infer::RegionMapping::default();
+            for (left, right) in &mut inputs.pairs {
+                for argument in [left, right] {
+                    if let Argument::Type(term) = argument {
+                        *term = self.alias_inferred_mapped(inputs.source, *term, &mut mapping)?;
+                    }
+                }
+            }
+            inputs.prepared = true;
+        }
         for &(left, right) in &inputs.pairs {
             for argument in [left, right] {
                 if let Argument::Type(term) = argument {

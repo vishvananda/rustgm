@@ -1,4 +1,7 @@
 //! Committed body interfaces transport constraints before their receiving-body proof.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/interface_views.rs"]
+mod tests;
 use super::{Argument, Bound, Context, Error, Import, Refinement, Store, Value, import};
 
 impl Refinement {

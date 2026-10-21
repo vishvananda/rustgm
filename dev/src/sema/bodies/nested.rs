@@ -8,9 +8,33 @@ use crate::{
 };
 use std::collections::HashMap;
 
+enum Direction {
+    Inward,
+    Outward,
+}
 pub(super) struct InputRefresh {
     pub source: NodeId,
     pub pairs: Vec<(Argument, Argument)>,
+    direction: Direction,
+    prepared: bool,
+}
+impl InputRefresh {
+    pub fn incoming(source: NodeId, pairs: Vec<(Argument, Argument)>) -> Self {
+        Self {
+            source,
+            pairs,
+            direction: Direction::Inward,
+            prepared: false,
+        }
+    }
+    pub fn outgoing(source: NodeId, pairs: Vec<(Argument, Argument)>) -> Self {
+        Self {
+            source,
+            pairs,
+            direction: Direction::Outward,
+            prepared: true,
+        }
+    }
 }
 
 pub(super) enum Payload {

@@ -54,7 +54,11 @@ impl Checker<'_> {
         {
             return self.publish_projection_query(&query, Evidence::new(proof), result, false);
         }
-        let environment = self.projection_environment(node)?;
+        let environment = if let Some(ty) = ty {
+            self.resolved_projection_environment(node, ty)?
+        } else {
+            self.projection_environment(node)?
+        };
         let mut cursor = Cursor::new(environment, &proof, scope, self.availability)
             .map_err(|e| self.error(node, e))?;
         if let Some(ty) = ty {

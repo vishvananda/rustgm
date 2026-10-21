@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn infer<'a,F:for<'b>Fn(&'b u8)->&'a u8>(f:F)->F{f}fn take<'a>(r:&'a u8)->&'a u8{let f=infer(move|_|r);let n=3;f(&n)}fn main(){let n=7;check(*take(&n)==7);}

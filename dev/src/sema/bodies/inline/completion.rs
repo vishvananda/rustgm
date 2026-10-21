@@ -54,7 +54,9 @@ impl Checker<'_> {
         self.defer_normalization(source, crate::types::lifetime_proof::ScopeId::ROOT, result)?;
         self.state
             .work
-            .push(Work::BodyInputs(Box::new(InputRefresh { source, pairs })));
+            .push(Work::BodyInputs(Box::new(InputRefresh::incoming(
+                source, pairs,
+            ))));
         Ok(None)
     }
 
@@ -88,10 +90,12 @@ impl Checker<'_> {
             .outgoing_regions(&mut self.facts.types, &mut parent.infer, &mut closing)
             .map_err(|e| self.error(entry.source, e))?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
-        parent.work.push(Work::BodyInputs(Box::new(InputRefresh {
-            source: entry.source,
-            pairs,
-        })));
+        parent
+            .work
+            .push(Work::BodyInputs(Box::new(InputRefresh::outgoing(
+                entry.source,
+                pairs,
+            ))));
         Ok(())
     }
 

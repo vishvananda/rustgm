@@ -81,7 +81,66 @@ All failed observations remain in `focused/`, `focused-second/` through
 
 `extras-declared.json` and `extras-second/` retain the independently valid
 `Pick<'a>::Out = &'a u8` captured-reference program and its escaping counterpart.
-An ordinary function using the same projection passes. The captured variant
-currently fails source normalization before its intended lifetime proof, so its
-negative result is not counted as semantic validation. It remains work to complete
-PA24, with no generated oracle or reclassification as a supported rejection.
+An ordinary function using the same projection passes. Before the scoped correction below, the captured variant failed source
+normalization before its intended lifetime proof; that earlier negative result
+was not counted as semantic validation. No generated oracle or reclassification
+as a supported rejection accompanied the probe.
+
+## Projected captured-reference transport
+
+The scoped query fix retains the original `Pick<'a>::Out = &'a u8` captured
+result and escape sources in `pa24/tests/spec/projected-captures/`. The positive
+now passes all three checked views and native value execution. The escape reaches
+the ordinary lifetime proof. `projected-capture-outcomes.json` declares each
+independent full-object Rust outcome and the separate frontend modes.
+
+A canonical written projection uses the canonical caller clauses, while a resolved
+free-alias projection uses the current body's query environment. A closure's query
+environment transports parent premises through the same `Interface.opening` as its
+inputs. This imports no selection witnesses, parent proof, or execution permission.
+Imported parent bindings already use the parent's established aliases. Their
+existing incoming transport opens readonly views through the child Interface.
+Only an inward equation batch belongs to the child's complete lifetime namespace;
+it folds both roots into that body's existing alias namespace before normalization.
+Outward batches retain the existing exact Interface.closing path, including public
+signature roots whose binder does not belong to the parent body.
+Original bindings, closure metadata and source roots remain intact; every resulting
+equation still requires the receiving body's normalization and ordinary proof.
+The common refresh retains a typed inward/outward direction and one prepared
+inward batch across dependency waits. Each inward batch shares a `RegionMapping`
+and the body's cached `Bound` fold across all roots.
+Distinct slots and nested callable binders remain distinct.
+
+The expanded fixtures retain three frontiers. A written projected closure parameter
+(`written-input`) remains valid Rust but fails the lifetime proof. Creating a
+nested quantified function pointer from a closure (`nested-binder`) remains valid
+Rust but hits the conditional nested output shape boundary. Its invalid escaping
+counterpart (`nested-input-escape`) hits that same boundary and is not counted as a
+validated semantic negative. The named-function nested-binder control succeeds.
+No generated references or assignment activation change with this fix.
+
+The first broad fold attempted to align outward and parent-source roots too. The
+existing quantified-input output tests exposed an invalid inference identity:
+a parent with no body binder received a standalone root owned by the nested
+callable's public binder. The correction uses the typed interface direction,
+not a numeric-slot heuristic. Parent-source folding proved redundant and was
+removed. The quantified-input controls and the additional generic-parent/public-
+child-binder fixture retain their independent acceptance expectations.
+
+Focused qualification retains eleven independently compiled Rust fixture objects:
+five supported positives, three intended semantic negatives and three explicitly
+uncovered frontiers. The five supported positives also execute independently and
+through pinned CPPGM. Three private interface tests cover readonly source roots,
+canonical/alias views, distinct slots, local callable binders and shared mapping
+work at 16/64/256/1,024 roots. At 8/32/128 projected captures, the changed-path
+family records 8,938/34,810/138,298 inference, canonicalization and projection steps.
+These are instrumented work counts for this family, not total heap, wall time or
+a general complexity claim. Existing adjusted-place, public-output signature,
+generic-capture, source receiver and inline-constant suites pass on the scoped fix.
+Evidence, including failed broad-fold observations, is retained under
+`obj/parallel/pa24-projected-repair/`.
+
+The unchanged ordinary-function control is retained only in generated evidence
+(`controls/ordinary.rs` and the earlier probe directory), rather than adding a
+closure-free required fixture to PA24. Its independent object, three-view and
+native observations remain preserved with the superseded twelve-case batch.

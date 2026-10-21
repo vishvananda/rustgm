@@ -171,6 +171,12 @@ impl Checker<'_> {
     }
 
     fn switch_closure_body(&mut self, mut entry: Entry) -> Result<(), Error> {
+        let metadata = entry
+            .payload
+            .closure_mut()
+            .map_err(|e| self.error(entry.source, e))?;
+        let environment =
+            self.closure_projection_environment(entry.source, &mut metadata.lifetimes)?;
         let mut scratch = Scratch::default();
         scratch.resumable();
         let mut child = Checker::with_scratch(self.report, self.facts, scratch).state;
@@ -179,6 +185,12 @@ impl Checker<'_> {
         child.module = self.state.module;
         child.in_function = true;
         child.safety = self.state.safety;
+        if let Some(environment) = environment {
+            child
+                .projections
+                .inherit_environment(environment)
+                .map_err(|e| self.error(entry.source, e))?;
+        }
         let metadata = entry
             .payload
             .closure()
@@ -254,7 +266,9 @@ impl Checker<'_> {
         self.state.closures = Some(scheduler);
         self.state
             .work
-            .push(Work::BodyInputs(Box::new(InputRefresh { source, pairs })));
+            .push(Work::BodyInputs(Box::new(InputRefresh::outgoing(
+                source, pairs,
+            ))));
         // Importing interface constraints grants no normalization proof in the
         // receiving body. Register the new occurrences under this owner.
         self.defer_normalization(

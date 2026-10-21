@@ -16,6 +16,38 @@ pub(super) struct Imported {
     pub bindings: Vec<(DefId, TermId)>,
 }
 impl Checker<'_> {
+    pub(super) fn closure_projection_environment(
+        &mut self,
+        node: NodeId,
+        lifetimes: &mut universes::Interface,
+    ) -> Result<Option<std::sync::Arc<crate::types::parameters::environment::Environment>>, Error>
+    {
+        if self
+            .state
+            .method_environment
+            .as_ref()
+            .is_none_or(|environment| !environment.requires_region_mapping())
+        {
+            return Ok(None);
+        }
+        let Some(parent) = self.projection_environment(node)? else {
+            return Ok(None);
+        };
+        let before = lifetimes.opening.steps;
+        let count = lifetimes.count().map_err(|e| self.error(node, e))?;
+        let environment = parent
+            .substitute_regions(&mut self.facts.types, &mut lifetimes.opening)
+            .map_err(|e| self.error(node, e))?;
+        self.state
+            .infer
+            .account_work(lifetimes.opening.steps - before)
+            .map_err(|e| self.error(node, e))?;
+        if lifetimes.count().map_err(|e| self.error(node, e))? != count {
+            return Err(self.error(node, "projection caller introduces an unimported lifetime"));
+        }
+        Ok(Some(std::sync::Arc::new(environment)))
+    }
+
     pub(super) fn closure_signature_inputs(
         &mut self,
         node: NodeId,

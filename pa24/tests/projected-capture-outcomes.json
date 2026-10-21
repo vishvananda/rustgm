@@ -1,0 +1,251 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "borrowed-result",
+      "path": "tests/spec/projected-captures/borrowed-result.rs",
+      "source_sha256": "954b21299fd68d61d1517310eadfc69da043a5b07990b6120cfda8c21cafdbab",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "borrowed-escape",
+      "path": "tests/spec/projected-captures/borrowed-escape.rs",
+      "source_sha256": "00c4365a0c57d8b74d7c067f2a68e01c22657dafd1413e6382f928e54c5b942b",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "written-input",
+      "path": "tests/spec/projected-captures/written-input.rs",
+      "source_sha256": "50135ed6ddee876135c11e9249a4f8ac388899d0247b1fd5d1e972613fde9aa6",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "nested-child",
+      "path": "tests/spec/projected-captures/nested-child.rs",
+      "source_sha256": "19e3f4c9ff4c2bbceec80150a1f16b11303c4f3b30826554bde57551c8cf0f96",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "nested-binder",
+      "path": "tests/spec/projected-captures/nested-binder.rs",
+      "source_sha256": "74e14b4d4c39144c66f00403bc441836c621d243f92424379b1a9f96cee75dfe",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "conditional nested output shape is not implemented"
+    },
+    {
+      "name": "distinct-clauses",
+      "path": "tests/spec/projected-captures/distinct-clauses.rs",
+      "source_sha256": "0bdfba876dac5be857f72b2570e792d0fc48bd9c8b07623c2f03faeda969e75a",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "associated type requires an unambiguous implementation"
+    },
+    {
+      "name": "distinct-output",
+      "path": "tests/spec/projected-captures/distinct-output.rs",
+      "source_sha256": "58bd4d58488672f500a3917c6a519f6e94bba340451e0527822fc1f4b3180dfa",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "nested-input-escape",
+      "path": "tests/spec/projected-captures/nested-input-escape.rs",
+      "source_sha256": "54f74e6cc49f7566dcc3850cc13372399614a021a2dfc56f85750572d881046d",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "conditional nested output shape is not implemented"
+    },
+    {
+      "name": "named-binder",
+      "path": "tests/spec/projected-captures/named-binder.rs",
+      "source_sha256": "8064eef30cbda9a22935e86862aa161e8dc9e2f76ac09b43dff6c806e529bc5b",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "repeated-clause",
+      "path": "tests/spec/projected-captures/repeated-clause.rs",
+      "source_sha256": "8628c6074a79c40e7247f5464e88c948eedb5a8ec1be06371979511ad30d0df5",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    },
+    {
+      "name": "parent-public-binder",
+      "path": "tests/spec/projected-captures/parent-public-binder.rs",
+      "source_sha256": "332b340501cf06c0d586a66f3e0bb545ef69361ab2bb9d9daa061adfb57d6547",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "diagnostic": "",
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ]
+    }
+  ]
+}

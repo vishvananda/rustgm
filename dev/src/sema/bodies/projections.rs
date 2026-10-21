@@ -66,6 +66,7 @@ impl Continuation {
     }
 }
 struct Data {
+    source_environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     completed: Option<Box<crate::sema::projections::Completed>>,
     scopes: Obligations,
     continuation: Option<Continuation>,
@@ -82,6 +83,7 @@ struct Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
+            source_environment: None,
             completed: None,
             scopes: Obligations::new(1),
             continuation: None,
@@ -100,6 +102,17 @@ pub(super) struct Pending {
     data: Option<Box<Data>>,
 }
 impl Pending {
+    pub(super) fn inherit_environment(
+        &mut self,
+        environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
+    ) -> Result<(), &'static str> {
+        let data = self.data.get_or_insert_with(Default::default);
+        if data.source_environment.is_some() || data.environment.get().is_some() {
+            return Err("projection caller environment is already installed");
+        }
+        data.source_environment = Some(environment);
+        Ok(())
+    }
     /// Finishing the worklist does not remove the caller aliases introduced by
     /// projected field/call instantiation from subsequent shape equations.
     pub fn has_context(&self) -> bool {
@@ -157,14 +170,7 @@ impl Checker<'_> {
         // Call arguments already use free aliases for caller universals. Their
         // environment must use the same representation, without duplicate
         // original/aliased assumptions. Written body types keep their binders.
-        let environment = if self.facts.types.escaping_binders(ty) == Some(0) {
-            self.projection_environment(node)?
-        } else {
-            self.state
-                .environment_owner
-                .and_then(|owner| self.facts.generics.environments.get(&owner))
-                .cloned()
-        };
+        let environment = self.resolved_projection_environment(node, ty)?;
         let (ty, steps) = crate::sema::projections::normalize(
             self.facts,
             environment.as_ref(),
@@ -670,8 +676,10 @@ impl Checker<'_> {
         {
             return Ok(result);
         }
-        let environment = self.projection_environment(node)?;
+        let environment = self.resolved_projection_environment(node, ty)?;
         let reusable = cacheable
+            // This cache belongs to the body's aliased caller environment.
+            && self.facts.types.escaping_binders(ty) == Some(0)
             && matches!(
                 self.availability,
                 crate::sema::traits::implementations::Availability::Validated
