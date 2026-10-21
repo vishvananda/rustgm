@@ -52,8 +52,9 @@ Commands, logs, fixture hashes and status receipts are retained under
 mechanical field omissions, a test-only default-construction lint and a test
 helper without the ordinary constant execution provider; these were corrected
 before this final gate. Broad cumulative and performance gates remain
-integration/release responsibilities; this checkpoint makes no performance
-claim.
+integration/release responsibilities. The separate bounded check in
+`pa30-callable-performance.md` retains release A/A and ABBA/RSS observations;
+its short inputs do not establish a tight percentage bound.
 
 The read-only C capability handshake independently passed integer and floating
 exports, direct imports, indirect callbacks, and imported/exported globals.
