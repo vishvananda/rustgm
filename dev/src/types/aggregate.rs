@@ -127,6 +127,11 @@ impl Definitions {
             SharedMutation::Ordinary
         })
     }
+    /// Avoid constructing storage queries when no nominal family permits shared mutation.
+    #[must_use]
+    pub fn has_shared_mutation(&self) -> bool {
+        !self.interior_storage.is_empty()
+    }
     /// Declaration policy suppresses implicit field cleanup, preserving an explicit destructor.
     #[must_use]
     pub fn destruction(&self, item: ItemId) -> Option<FieldDestruction> {

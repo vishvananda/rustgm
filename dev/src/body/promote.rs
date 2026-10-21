@@ -289,12 +289,34 @@ impl<'a, 'b> Engine<'a, 'b> {
                 continue;
             }
             if let Some(value) = self.demand(Key::Value(root))? {
+                if !self.storage_allowed(root, value.value)? {
+                    continue;
+                }
                 facts.index.insert(root, facts.entries.len());
                 facts.entries.push((root, value.value));
             }
         }
         facts.steps = self.steps;
         Ok(facts)
+    }
+    fn storage_allowed(&mut self, root: ValueId, value: Evaluated) -> Result<bool, Error> {
+        use crate::types::interior_mutability::{Answer, Query};
+        let declarations = self.evaluator.facts();
+        if !declarations.aggregates.has_shared_mutation() {
+            return Ok(true);
+        }
+        let ty = self.value(root)?.ty;
+        let (answer, work) = match value {
+            Evaluated::Constant(value) => {
+                crate::sema::values::Reader::new(declarations).shared_mutation_work(ty, value)?
+            }
+            Evaluated::Deferred => {
+                let mut query = Query::new(&declarations.types, &declarations.aggregates);
+                (query.contains(ty)?, query.work().steps)
+            }
+        };
+        self.charge(work)?;
+        Ok(answer == Answer::Ordinary)
     }
     fn charge(&mut self, count: usize) -> Result<(), Error> {
         self.steps = self

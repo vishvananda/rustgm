@@ -1,6 +1,7 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
 pub mod execution;
 mod memory;
+mod mutation;
 mod session;
 mod validation;
 pub(crate) use super::instances::Dependency;
