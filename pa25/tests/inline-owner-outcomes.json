@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-constants",
+  "cases": [
+    {
+      "path": "tests/spec/inline-owner-context/static-inline-scalar.rs",
+      "source_sha256": "07468d88254801fd2fe8682dc06f3c39045b50714fa0a9df8889a3645218dabc",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.inline-const"
+      ],
+      "native": {
+        "kind": "codegen",
+        "reason": "Scalar initializer ownership control; no runtime value assertion."
+      },
+      "declared_origin": "pa28/tests/owned-memory-owner-hypotheses.json"
+    },
+    {
+      "path": "tests/spec/inline-owner-context/const-inline-scalar.rs",
+      "source_sha256": "353e280997fe0c79aa5be3259bd895ad34b1ad1c99648a5bc46f885c8b8b10da",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.inline-const"
+      ],
+      "native": {
+        "kind": "codegen",
+        "reason": "Scalar initializer ownership control; no runtime value assertion."
+      },
+      "declared_origin": "pa28/tests/owned-memory-owner-hypotheses.json"
+    }
+  ]
+}

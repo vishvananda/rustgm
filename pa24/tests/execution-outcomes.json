@@ -10,7 +10,7 @@
       "name": "reference-return",
       "path": "tests/spec/captures/reference-return.rs",
       "source_sha256": "c2188a89f0ab4d46a05b5fd04d385e352e36460d793907da6d0f06fd35f87c09",
-      "expected_status": 1,
+      "expected_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -20,13 +20,15 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ],
-      "implementation_boundary": "Captured output lifetime closing is not implemented."
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "name": "once-partial-cleanup",
       "path": "tests/spec/captures/once-partial-cleanup.rs",
       "source_sha256": "6450ef9b7dc0305e24199ef3babf826266d8b50ce34b8bc19032a8383be65e83",
-      "expected_status": 1,
+      "expected_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -36,7 +38,9 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ],
-      "implementation_boundary": "Captured output lifetime closing is not implemented."
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "name": "wildcard-initialized",
