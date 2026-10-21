@@ -1,5 +1,6 @@
 //! Typed closure captures and callable contracts; source inference supplies place uses.
 pub mod captures;
+pub mod imports;
 
 use crate::{
     resolve::{model::DefId, unit::NodeKey},

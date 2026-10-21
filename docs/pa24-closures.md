@@ -479,3 +479,31 @@ in PA19/PA22 and three operator/index rejections in PA12/PA18/PA22. Independent
 review and reference regeneration are pending; no unexpected accepted-program
 output change was observed. This comparison is a failed byte gate until those
 reviewed diagnostics are published and the affected suites pass.
+
+
+## Diagnostic review and lexical capture inputs
+
+Operator interception without demanded library metadata was an integration
+regression. Commit `961a727c` restores the existing PA12 tuple-index, PA18
+arithmetic and PA22 pointer-add diagnostics; pinned rustc object generation
+independently rejects all three inputs. The three PA19/PA22 unsafe inputs also
+remain independently rejected, now with implemented unsafe-context diagnostics.
+Only those three stderr sidecars were regenerated. Receipt changes are confined
+to compiler-source hashes; input bytes and declared outcomes are unchanged.
+
+The frozen `b65fa7d3` compiler (SHA-256
+`9dc6bb417d7c6c4e6b8bac89d5233553e1651fcd2d165d373da47f16a332f848`)
+passes all 7,784 active text comparisons with the reviewed references. Evidence
+is in `rustgm-validation-work/obj/parallel/unsafe-diagnostics-v1/`. Later
+mutable-static and worker integrations require their own combined qualification.
+
+The next capture component indexes resolved free bindings across closure scopes.
+It resolves each scope owner once, deduplicates each binding/boundary edge and
+shares ancestor traversal across repeated mentions. Forward parent links from
+hygiene are supported; malformed parents, cycles and exhausted work fail.
+These are lexical type inputs, not capture permissions: a wildcard mention does
+not establish a read, and actual typed uses still determine capture precision,
+receiver kind, loans, moves and environment storage. The index is not yet wired
+into source capture construction. Initial focused checks cover nested scopes,
+shadowed definitions, macro hygiene and repeated-use scaling; final lint and
+combined validation remain pending.
