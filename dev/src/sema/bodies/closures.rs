@@ -133,10 +133,23 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(node, "missing imported closure binding"))?;
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, term)?;
         }
-        self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
+        self.normalize_closure_inputs(node, signature)?;
         self.advance_projections(node)?;
         self.state.work.push(Work::CollectClosure);
         self.start_body(body)
+    }
+
+    /// This signature binds the current body's universals, not another callable.
+    /// Its inputs and result are already in this body's lifetime namespace.
+    fn normalize_closure_inputs(&mut self, node: NodeId, signature: TermId) -> Result<(), Error> {
+        let Some(Constructor::Function { parameters, .. }) = self.head(node, signature)? else {
+            return Err(self.error(node, "missing closure body signature"));
+        };
+        for index in 0..=parameters as usize {
+            let term = self.child(node, signature, index)?;
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, term)?;
+        }
+        Ok(())
     }
 
     fn closure_parameters(

@@ -53,7 +53,7 @@
       "name": "written-input",
       "path": "tests/spec/projected-captures/written-input.rs",
       "source_sha256": "50135ed6ddee876135c11e9249a4f8ac388899d0247b1fd5d1e972613fde9aa6",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -62,14 +62,14 @@
       },
       "modes": {
         "--emit-types": 0,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "required lifetime does not outlive its target"
+      "diagnostic": ""
     },
     {
       "name": "nested-child",
@@ -97,7 +97,7 @@
       "name": "nested-binder",
       "path": "tests/spec/projected-captures/nested-binder.rs",
       "source_sha256": "74e14b4d4c39144c66f00403bc441836c621d243f92424379b1a9f96cee75dfe",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -106,14 +106,14 @@
       },
       "modes": {
         "--emit-types": 0,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "conditional nested output shape is not implemented"
+      "diagnostic": ""
     },
     {
       "name": "distinct-clauses",
@@ -175,11 +175,11 @@
         "--emit-lowir": 1,
         "--emit-constants": 1
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "conditional nested output shape is not implemented"
+      "diagnostic": "required lifetime does not outlive its target"
     },
     {
       "name": "named-binder",
@@ -246,6 +246,28 @@
       "features": [
         "pa24.closures"
       ]
+    },
+    {
+      "name": "two-nested",
+      "path": "tests/spec/projected-captures/two-nested.rs",
+      "source_sha256": "09d729ea687aa34bf1292ad03c7d7b32a6bda2d6628e3d53e6b9e7a15155b0c7",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
     }
   ]
 }

@@ -4,6 +4,16 @@ use std::path::PathBuf;
 // Rust object outcome, type view outcome, executable outcome, expected diagnostic.
 const CASES: &[(&str, i32, i32, i32, &str)] = &[
     ("borrowed-result", 0, 0, 0, ""),
+    ("written-input", 0, 0, 0, ""),
+    ("nested-binder", 0, 0, 0, ""),
+    ("two-nested", 0, 0, 0, ""),
+    (
+        "nested-input-escape",
+        1,
+        0,
+        1,
+        "required lifetime does not outlive its target",
+    ),
     ("nested-child", 0, 0, 0, ""),
     ("named-binder", 0, 0, 0, ""),
     ("repeated-clause", 0, 0, 0, ""),
@@ -30,23 +40,6 @@ const CASES: &[(&str, i32, i32, i32, &str)] = &[
         "associated type requires an unambiguous implementation",
     ),
 ];
-const FRONTIERS: &[(&str, i32, &str)] = &[
-    (
-        "written-input",
-        0,
-        "required lifetime does not outlive its target",
-    ),
-    (
-        "nested-binder",
-        0,
-        "conditional nested output shape is not implemented",
-    ),
-    (
-        "nested-input-escape",
-        1,
-        "conditional nested output shape is not implemented",
-    ),
-];
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join(format!("../pa24/tests/spec/projected-captures/{name}.rs"))
@@ -66,19 +59,6 @@ fn captured_projection_views_match_independent_object_outcomes()
             name,
             (rust, [types, execution, execution], reason),
         )?;
-    }
-    Ok(())
-}
-#[test]
-fn retained_projection_frontiers_are_not_semantic_negative_controls()
--> Result<(), Box<dyn std::error::Error>> {
-    let evidence = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
-        "../obj/parallel/pa24-projected-repair/frontiers/{}",
-        std::process::id()
-    ));
-    std::fs::create_dir_all(&evidence)?;
-    for &(name, rust, reason) in FRONTIERS {
-        checked_sources::check_modes(&fixture(name), &evidence, name, (rust, [0, 1, 1], reason))?;
     }
     Ok(())
 }
@@ -123,5 +103,47 @@ fn projected_captures_reuse_owner_environment_and_shared_input_views()
         observations[2] - observations[1] <= 5 * (observations[1] - observations[0]),
         "{observations:?}"
     );
+    Ok(())
+}
+
+#[test]
+fn written_projection_inputs_keep_binder_work_proportional_to_closure_count()
+-> Result<(), Box<dyn std::error::Error>> {
+    use std::fmt::Write;
+    for nested in [false, true] {
+        let mut observations = Vec::new();
+        for width in [8, 32, 128] {
+            let mut source="trait Pick<'a>{type Out:Copy;}impl<'a> Pick<'a> for u8{type Out=&'a u8;}fn take<'a,T:Pick<'a>>(x:T::Out)->T::Out{".to_owned();
+            if nested {
+                source.push_str("let outer=move||{");
+            }
+            for index in 0..width {
+                if nested {
+                    write!(
+                        source,
+                        "let f{index}:for<'b> fn(&'b T::Out)->&'b T::Out=|v|v;let _=f{index}(&x);"
+                    )?;
+                } else {
+                    write!(source, "let f{index}=|y:T::Out|y;let _=f{index}(x);")?;
+                }
+            }
+            source.push('x');
+            if nested {
+                source.push_str("};outer()");
+            }
+            source.push_str("}fn main(){let n=7;let _=take::<u8>(&n);}");
+            let (_, facts) = super::semantic::analyze(&source)?;
+            assert_eq!(facts.closures.all().len(), width + usize::from(nested));
+            let work = facts.body_work.inference_steps
+                + facts.body_work.canonical_steps
+                + facts.body_work.projection_steps;
+            eprintln!("written-projection nested={nested} width={width} work={work}");
+            observations.push(work);
+        }
+        assert!(
+            observations[2] - observations[1] <= 5 * (observations[1] - observations[0]),
+            "nested={nested}: {observations:?}"
+        );
+    }
     Ok(())
 }

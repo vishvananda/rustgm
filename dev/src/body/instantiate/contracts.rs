@@ -1,4 +1,7 @@
 //! Specialize typed obligations while separating caller and callee lifetime scopes.
+#[cfg(test)]
+#[path = "../../../tests/invariants/uncaptured_debts.rs"]
+mod tests;
 use super::{Bound, Declarations, Inputs};
 use crate::{
     body::regions::{Contract, Kind},
@@ -14,18 +17,18 @@ pub(super) fn specialize(
     let regions = import_regions(facts, inputs, original.universals)?;
     let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
-    if inputs.connections.is_some() {
+    if matches!(original.key, crate::body::ir::BodyKey::Closure(_)) {
         super::closures::formation(&mut contract);
-        if matches!(premises, super::Premises::Declared) {
-            let crate::body::ir::BodyKey::Closure(identity) = original.key else {
-                return Err("captured instance has a different source owner");
-            };
-            let conditions = facts
-                .closures
-                .conditions(identity)
-                .ok_or("captured instance requires checked source execution conditions")?;
-            contract.assumptions.extend_from_slice(conditions);
-        }
+    }
+    if inputs.connections.is_some() && matches!(premises, super::Premises::Declared) {
+        let crate::body::ir::BodyKey::Closure(identity) = original.key else {
+            return Err("captured instance has a different source owner");
+        };
+        let conditions = facts
+            .closures
+            .conditions(identity)
+            .ok_or("captured instance requires checked source execution conditions")?;
+        contract.assumptions.extend_from_slice(conditions);
     }
     if let Some(pending) = &mut contract.builtins {
         let pending = std::sync::Arc::make_mut(pending);

@@ -52,11 +52,7 @@ impl Checker<'_> {
         scheduler.stack.push((scheduler.active, Box::new(parent)));
         scheduler.active = Some(index);
         self.state.closures = Some(scheduler);
-        self.defer_normalization(
-            source,
-            crate::types::lifetime_proof::ScopeId::ROOT,
-            signature,
-        )?;
+        self.normalize_closure_inputs(source, signature)?;
         self.state
             .work
             .push(Work::BodyInputs(Box::new(InputRefresh::incoming(

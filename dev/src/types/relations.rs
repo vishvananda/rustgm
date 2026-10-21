@@ -762,10 +762,7 @@ impl<'a> Constraints<'a> {
         mut self,
         interface: &[RegionId],
     ) -> Result<(Proof, OutputConditions), super::region_graph::OutputError> {
-        use super::region_graph::OutputError;
-        if self.projected.is_some() {
-            return Err(OutputError::Unsupported);
-        }
+        self.verify_projections()?;
         let mut regions = Vec::with_capacity(interface.len());
         let mut names = HashMap::from([(Region::STATIC, RegionId::STATIC)]);
         for &id in interface {

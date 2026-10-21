@@ -19,7 +19,7 @@ impl Graph {
     /// Reprove all obligations under exactly the exported hypotheses before
     /// returning evidence. The caller must independently discharge every pair.
     pub(crate) fn prove_output(mut self, interface: &[Region]) -> Result<Conditional, OutputError> {
-        if self.verifications.is_some() || self.members.is_some() {
+        if self.members.is_some() {
             return Err(OutputError::Unsupported);
         }
         self.capacity(interface.len())?;
@@ -63,6 +63,8 @@ impl Graph {
         for &(longer, shorter, _) in &conditions {
             self.assume(longer, shorter)?;
         }
+        // Alternatives remain tests of the complete proof. Export only scalar
+        // interface debts; do not assume a branch of a projected type bound.
         let solution = self.solve_charged(prior)?;
         Ok(Conditional {
             solution,
@@ -109,6 +111,65 @@ mod tests {
                 graph.prove_output(&[output]),
                 Err(OutputError::Constraint(Error::Unsatisfied { .. }))
             ));
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn conditional_scalar_debts_must_also_prove_every_verification() -> Result<(), Error> {
+        for alternatives in [false, true] {
+            let mut graph = Graph::new(4096);
+            let input = graph.region(Kind::Universal { universe: 0 })?;
+            let unrelated = graph.region(Kind::Universal { universe: 0 })?;
+            let output = graph.region(Kind::Universal { universe: 0 })?;
+            graph.require(input, output, 1)?;
+            let required = graph.verify_outlives(input, output)?;
+            let absent = graph.verify_outlives(unrelated, output)?;
+            let test = if alternatives {
+                graph.verify_any(&[required, absent])?
+            } else {
+                graph.verify_all(&[required, absent])?
+            };
+            graph.require_verification(test, 2)?;
+            let result = graph.prove_output(&[input, output]);
+            if alternatives {
+                let Ok(conditional) = result else {
+                    return Err(Error::Identity);
+                };
+                assert_eq!(conditional.conditions, [(input, output, 1)]);
+            } else {
+                assert!(matches!(
+                    result,
+                    Err(OutputError::Constraint(Error::Verification { source: 2 }))
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn output_verification_cannot_create_its_own_interface_assumption() -> Result<(), Error> {
+        for assumed in [false, true] {
+            let mut graph = Graph::new(4096);
+            let input = graph.region(Kind::Universal { universe: 0 })?;
+            let output = graph.region(Kind::Universal { universe: 0 })?;
+            if assumed {
+                graph.assume(input, output)?;
+            }
+            let test = graph.verify_outlives(input, output)?;
+            graph.require_verification(test, 7)?;
+            let result = graph.prove_output(&[input, output]);
+            if assumed {
+                let Ok(conditional) = result else {
+                    return Err(Error::Identity);
+                };
+                assert!(conditional.conditions.is_empty());
+            } else {
+                assert!(matches!(
+                    result,
+                    Err(OutputError::Constraint(Error::Verification { source: 7 }))
+                ));
+            }
         }
         Ok(())
     }
