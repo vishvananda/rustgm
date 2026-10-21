@@ -1,0 +1,1 @@
+pub fn run()->fn()->u8{const{||7}}

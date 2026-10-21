@@ -1,0 +1,489 @@
+{
+  "schema": 1,
+  "mode": "--emit-constants",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/inline/context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "ed2485e621878d9e8d6339e21dcd24a0dbfa9faa1eafe7280596c0070807d8e7",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/unused-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "1c66fc5f2325a13e47d624be4281d6aa7100362b49b87cc6f08dfa19206e4b67",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/false-branch-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "7e7e97e720a4624007c71f0d136143f298f15ce003f37c17b1e70fe0fb0e9a0b",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/noncopy-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "960275f75c61685ce1a4d1826429065219ef781bc247f97c8f42533647b51cb8",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/zero-repeat-fault.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "3a397e293e130693c60cd586d91d6eecb4b3478426c08d1517799a71899af77c",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/nested-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "7a795ff5faa16b3a9d734e2aa108cfe4a3ada2a14fe904939993fff57c791acd",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/parenthesized-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "79c78f486e0194a3c12b590a7e569e9d0d22305296b91a11d4c46b9ce4184266",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/local-capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "e0af5c6e76bbb21a7150e865ab8046f5f8122bf2f1963696366b121d19a58baa",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/return-control.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "3534fc8016b233b356ebe9e85b3524f249c1b14d82586c0e6edef905abea80f1",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/loop-control.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "703ca87c6a53c6d1ab39a72d3a261a35fafb4a857533cebe03a68786b3539357",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/local-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "97b6e65616a158f5bbd1393c6564a7307bc31b92d49d707748b27e91db6f54f9",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/local-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "72be7f8ea43f03c4a05f9d258fec7f59e174d030ea85466ba65cc2d6a974b711",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/after-return-nonconst.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "e9527012ee015afc1c7de2c41daac51d5adbdeaf7714c1962df6e8b14c33c10c",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/after-return-invalid-control.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "f4ec4e549c282bce49ad0aeff30828b4767b3d59cd45642f605343dce35af0de",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/zero-nested-nonconst.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "ff9db125c8ceb02900f699c5b41c99759dfcfbbccdfeab489d63ae23547bc81a",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/zero-capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "14702fd940945bab563379f2e961d02b2a6588e7ba9efc78ecaf07ae1aa6d89c",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/zero-return-control.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "83640f23c4d820ba9ade888d0f00f5fba3c2941bd9655014c82267f7227f529c",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/unreachable-inline.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "e61eeacb8ee6c7fd878f497e0317708b4c9b2b5125c75cfa0c5f5563c989f5cf",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/nested-closure-inline.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "cbd6b88d992428a2f217b35c3578899529931598510863daad0c1f29a40d0945",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "valid Rust: direct inline-const closure body requires distinct checked owner identity"
+    },
+    {
+      "path": "tests/spec/inline/inline-closure-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "5fda0993cfea10a86d549f97d2e79279f2df768e2c4659160172b15faffcec4e",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/generic-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "52d43ddae3b08f84d986bc6ad7786a62654828acfb3ac3d7b7d52c2880e2d157",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "valid Rust; generic anonymous-body execution is not implemented"
+    },
+    {
+      "path": "tests/spec/inline/nested-generic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "96f04d53cfe367e227a85a06283c91eaa5a84f392b852de6e1ad01914cf23733",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "valid Rust; generic anonymous-body execution is not implemented"
+    },
+    {
+      "path": "tests/spec/inline/unused-wrapped-closure-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "0c52e0151a7a1ed3054376ad47c303da8f5f016bd5c767eddf798776ab3e7ca0",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/called-wrapped-closure-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "5255ea239dce3197373f9b9fabd6b5358f4846944c50aea76da848009aed7e8d",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/false-called-wrapped-closure-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "78628fb5c57b665a70db2b01a6c5cc02f813d214311b0f4c3a3d4271c65b5899",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/unused-direct-closure-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "38d80961df412c82eeb1823cf19f4329041d101cb2a67a754605b736520a4018",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/called-direct-closure-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "1e60157bb4e73ea150f8746e286a96c0f50733160589341ffe58e0e494d096b0",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/called-direct-closure-nonconst.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "fd774af59895b07f3290e7d342e5b0ab1d826525f897b122a4c8c2b3e4a47606",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/called-direct-closure-return.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "826b2346078924db6ddbdb84956d38230196ae8718a4f724dd8d00c0ff79b630",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/wrapped-closure-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "1ce833ac5ec5b35f1c122701e88af5c816bce40bebc6504b47fb9ac08fb756bf",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/zero-with-closure-inline-fault.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "5b8b46007b44604ba1e0ae2387782dd2ca15c07d764ce19aad3bc591fa75bc8f",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/zero-with-inline-type-length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "9f35a179190d4d9eed53270829377bf1d9c525f36b5c64d91f1141927d503b3d",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/inferred-reference-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "88f326d7f3372effafbb1951b68f3efddb2c91bbfda5f07452e7cdee96e3e330",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/inline/borrowed-parent-closed-inline.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.inline-const"
+      ],
+      "source_sha256": "d28cde5e4895f05d307432da5285c054c16eeccca994fa3783c4fba35e6b0bc8",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "boundary": "valid Rust; lifetime-parameter owners also require generic anonymous-body specialization"
+    }
+  ]
+}

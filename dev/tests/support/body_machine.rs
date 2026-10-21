@@ -229,6 +229,9 @@ impl Machine<'_> {
             Rvalue::Invoke { .. } => {
                 return Err("call operators are outside the PA10 scalar executor".into());
             }
+            Rvalue::InlineConstant(_) => {
+                return Err("inline constants are outside the PA10 scalar executor".into());
+            }
             Rvalue::Call {
                 callee, arguments, ..
             } => {

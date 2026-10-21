@@ -1,0 +1,1 @@
+pub fn run(){return;let _=const{return 7};}

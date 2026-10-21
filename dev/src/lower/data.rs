@@ -24,6 +24,7 @@ use std::collections::HashMap;
 pub(super) enum Key {
     Definition(DefId),
     Associated(crate::sema::values::Instance),
+    Inline(crate::resolve::unit::NodeKey),
     Location(LocationId),
     Temporary(usize, ValueId),
     Bytes(crate::sema::text::Id),

@@ -1,6 +1,8 @@
 //! Bounded constant execution consumes selected typed CFGs, never source syntax.
 pub(crate) mod code;
 mod memory;
+mod readiness;
+mod returns;
 mod values;
 
 use crate::sema::values::execution::{Progress, Requirement};
@@ -42,6 +44,7 @@ struct Frame {
     body: usize,
     block: BlockId,
     next: u32,
+    inline_cursor: usize,
     return_to: Option<ValueId>,
     locals: Vec<Option<Constant>>,
     values: Vec<Option<Constant>>,
@@ -59,6 +62,7 @@ pub struct Machine<'a, 'b> {
     work: Work,
     slots: usize,
     active_initializers: HashSet<DefId>,
+    active_inline: HashSet<NodeKey>,
     waiting: Option<Requirement>,
 }
 pub(crate) struct State {
@@ -67,6 +71,7 @@ pub(crate) struct State {
     work: Work,
     slots: usize,
     active_initializers: HashSet<DefId>,
+    active_inline: HashSet<NodeKey>,
 }
 impl State {
     pub(crate) fn retained_slots(&self) -> usize {
@@ -112,6 +117,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             work: Work::default(),
             slots: 0,
             active_initializers: HashSet::new(),
+            active_inline: HashSet::new(),
             waiting: None,
         }
     }
@@ -160,6 +166,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         self.work = state.work;
         self.slots = state.slots;
         self.active_initializers = state.active_initializers;
+        self.active_inline = state.active_inline;
     }
     pub(crate) fn suspend(self) -> (State, crate::sema::values::Scratch) {
         let state = State {
@@ -168,6 +175,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             work: self.work,
             slots: self.slots,
             active_initializers: self.active_initializers,
+            active_inline: self.active_inline,
         };
         (state, self.evaluator.into_scratch())
     }
@@ -214,6 +222,19 @@ impl<'a, 'b> Machine<'a, 'b> {
         {
             return Err(Failure::Fault("cycle in constant initializer values"));
         }
+        if matches!(body.owner, Owner::AnonymousConstant)
+            && self
+                .evaluator
+                .facts()
+                .inline_constants
+                .as_deref()
+                .is_some_and(|registry| registry.get(body.source).is_some())
+        {
+            self.evaluator.require_inline(body.source, body.result)?;
+            if !self.active_inline.insert(body.source) {
+                return Err(Failure::Fault("cycle in inline constant values"));
+            }
+        }
         let slots = body
             .locals
             .len()
@@ -240,6 +261,11 @@ impl<'a, 'b> Machine<'a, 'b> {
             body: index,
             block: BlockId(0),
             next: first.start,
+            inline_cursor: if body.inline.is_empty() {
+                usize::MAX
+            } else {
+                0
+            },
             return_to,
             locals: vec![None; body.locals.len()],
             values: vec![None; body.values.len()],
@@ -270,10 +296,21 @@ impl<'a, 'b> Machine<'a, 'b> {
     }
     fn run(&mut self) -> Result<Progress, (usize, Failure)> {
         loop {
-            let Some(mut frame) = self.frames.pop() else {
+            let Some(frame) = self.frames.pop() else {
                 return Err((0, "missing constant execution frame".into()));
             };
             let index = frame.body;
+            let mut frame = if frame.inline_cursor == usize::MAX {
+                frame
+            } else {
+                let Some(frame) = self.prepare_inline(frame).map_err(|e| (index, e))? else {
+                    if let Some(requirement) = self.waiting.take() {
+                        return Ok(Progress::Prepare(requirement));
+                    }
+                    continue;
+                };
+                frame
+            };
             self.charge(1).map_err(|e| (index, e))?;
             let body = self.bodies[index].clone();
             let block = body
@@ -313,34 +350,13 @@ impl<'a, 'b> Machine<'a, 'b> {
                     }
                 }
                 Terminator::Return(value) => {
-                    let result_ty = body
-                        .values
-                        .get(value.0 as usize)
-                        .ok_or((
-                            index,
-                            Failure::Invalid("constant return lacks a typed value"),
-                        ))?
-                        .ty;
-                    let result = Self::value(&frame, value).map_err(|e| (index, e))?;
-                    self.slots -= frame.locals.len() + frame.values.len();
-                    self.memory.expire(&frame.allocations);
-                    if let Owner::Initializer { definition, .. } = body.owner {
-                        self.active_initializers.remove(&definition);
-                        self.validate_result(result, result_ty)
-                            .map_err(|e| (index, e))?;
-                        self.evaluator.complete_definition(definition, result);
+                    if let Some(result) = self
+                        .returned(&frame, &body, value)
+                        .map_err(|e| (index, e))?
+                    {
+                        return Ok(Progress::Complete(result));
                     }
-                    if let Some(parent) = self.frames.last_mut() {
-                        let target = frame.return_to.ok_or((
-                            index,
-                            Failure::Invalid("constant return has no destination"),
-                        ))?;
-                        parent.values[target.0 as usize] = Some(result);
-                        continue;
-                    }
-                    self.validate_result(result, result_ty)
-                        .map_err(|e| (index, e))?;
-                    return Ok(Progress::Complete(result));
+                    continue;
                 }
                 Terminator::Unreachable => {
                     return Err((

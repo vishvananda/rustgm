@@ -860,6 +860,15 @@ impl Queries<'_> {
         reason = "One typed expression dispatch validates constant eligibility and retains its selected dependencies"
     )]
     fn classify(&mut self, key: NodeKey) -> Result<Expression, Error> {
+        if self
+            .typing
+            .facts
+            .inline_constants
+            .as_deref()
+            .is_some_and(|registry| registry.has_children(key))
+        {
+            return Ok(Expression::Execute);
+        }
         let query = Query::Node(key);
         let facts = self
             .typing

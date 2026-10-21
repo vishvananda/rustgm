@@ -117,6 +117,11 @@ impl Engine<'_, '_> {
                     Ok(true)
                 }
 
+                Rvalue::InlineConstant(source) => {
+                    Ok(crate::sema::values::Reader::new(self.evaluator.facts())
+                        .inline(source)
+                        .is_some())
+                }
                 Rvalue::Unit
                 | Rvalue::Scalar(_)
                 | Rvalue::Text(_)

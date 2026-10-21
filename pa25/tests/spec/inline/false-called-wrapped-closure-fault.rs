@@ -1,0 +1,1 @@
+const fn divide(n:u8)->u8{1/n}pub fn run()->u8{let f=||{const{divide(0)}};if false{f()}else{7}}

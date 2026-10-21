@@ -1,0 +1,1 @@
+pub fn run(_: &u8)->u8{const{7}}

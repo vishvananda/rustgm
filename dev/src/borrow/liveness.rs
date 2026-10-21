@@ -251,6 +251,7 @@ impl<'a> Flow<'a> {
             | Rvalue::Text(_)
             | Rvalue::Constant(_)
             | Rvalue::AssociatedConstant(_)
+            | Rvalue::InlineConstant(_)
             | Rvalue::ConstArgument(_)
             | Rvalue::Function(_) => {}
         }

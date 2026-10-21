@@ -129,7 +129,7 @@ pub(super) fn prepare(
     roots: crate::lower::roots::Selected<'_>,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
-    concrete: HashMap<DefId, Body>,
+    concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
 ) -> Result<proof::Builder, Error> {
     let (program, ordinary) = prepare_ordinary(
@@ -380,7 +380,7 @@ fn prepare_ordinary(
     facts: &mut Declarations,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
-    concrete: HashMap<DefId, Body>,
+    concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
     globals: &[DefId],
 ) -> Result<(proof::Builder, Ordinary), Error> {

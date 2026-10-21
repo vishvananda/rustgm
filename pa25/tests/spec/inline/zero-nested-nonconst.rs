@@ -1,0 +1,1 @@
+fn value()->u8{7}pub fn run()->[u8;0]{[const{const{value()}};0]}

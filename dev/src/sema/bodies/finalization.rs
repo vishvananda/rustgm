@@ -42,14 +42,14 @@ impl Checker<'_> {
             super::trait_goals::Progress::Ready(evidence) => evidence,
             super::trait_goals::Progress::Prepare(dependency) => return Ok(Some(dependency)),
         };
-        self.finish_closures(evidence)
+        self.finish_nested(evidence)
     }
     pub(super) fn finish_inference(
         &mut self,
         evidence: HashMap<usize, Source>,
     ) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
-        self.publish_closure_progress()?;
+        self.publish_nested_progress()?;
         let (solved, predicates, arguments) = std::mem::take(&mut self.state.infer)
             .finish_with_arguments(
                 &mut self.facts.types,
@@ -65,7 +65,7 @@ impl Checker<'_> {
                     .map(|pending| pending.arguments.as_slice()),
             )
             .map_err(|e| self.error(body, e))?;
-        self.publish_closure_body(&solved)?;
+        self.publish_nested_body(&solved)?;
         let hidden = self.check_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;
         self.advance_publication(Publication {
@@ -95,7 +95,7 @@ impl Checker<'_> {
         finalization: Finalization,
     ) -> Result<Option<Dependency>, Error> {
         match finalization {
-            Finalization::Closures(evidence) => self.finish_closures(evidence),
+            Finalization::Closures(evidence) => self.finish_nested(evidence),
             Finalization::Storage(publication) => self.advance_publication(*publication),
             Finalization::Requirements(hidden) => self.complete_requirements(hidden),
         }

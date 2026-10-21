@@ -3,7 +3,7 @@
 #[path = "../../tests/invariants/retained_cfg_storage.rs"]
 mod storage_tests;
 use crate::{
-    body::ir::{Block, Body, Local, Owner, Projection, Statement, Value, ValueId},
+    body::ir::{Block, Body, Local, Owner, Projection, Rvalue, Statement, Value, ValueId},
     resolve::{model::DefId, unit::NodeKey},
     sema::{model::Scalar, values::Constant},
     types::instance::Instance,
@@ -12,6 +12,7 @@ use std::{collections::HashMap, ops::Index};
 
 pub(crate) struct Code {
     pub source: NodeKey,
+    pub result: crate::types::TypeId,
     pub owner: Owner,
     pub const_context: bool,
     pub locals: Vec<Local>,
@@ -22,6 +23,7 @@ pub(crate) struct Code {
     pub projections: Vec<Projection>,
     pub blocks: Vec<Block>,
     pub promotions: HashMap<ValueId, Constant>,
+    pub inline: Vec<(ValueId, NodeKey, crate::types::TypeId)>,
     callables: HashMap<Instance, Instance>,
 }
 
@@ -40,13 +42,30 @@ impl Code {
                 crate::support::retained::new_map::<ValueId, Constant>(facts.entries().count())
             }),
             body.callable_allocation_bytes(),
+            body.values
+                .iter()
+                .filter(|value| matches!(value.kind, Rvalue::InlineConstant(_)))
+                .count()
+                .saturating_mul(size_of::<(ValueId, NodeKey, crate::types::TypeId)>()),
         ]
         .into_iter()
         .fold(0, usize::saturating_add)
     }
     pub(crate) fn snapshot(body: &Body) -> Self {
+        let count = body
+            .values
+            .iter()
+            .filter(|value| matches!(value.kind, Rvalue::InlineConstant(_)))
+            .count();
+        let mut inline = Vec::with_capacity(count);
+        for (index, value) in (0u32..).zip(&body.values) {
+            if let Rvalue::InlineConstant(source) = value.kind {
+                inline.push((ValueId(index), source, value.ty));
+            }
+        }
         Self {
             source: body.source,
+            result: body.result,
             owner: body.owner,
             const_context: body.const_context,
             locals: body.locals.clone(),
@@ -61,6 +80,7 @@ impl Code {
                 .as_ref()
                 .map_or_else(HashMap::new, |facts| facts.entries().collect()),
             callables: body.callable_targets(),
+            inline,
         }
     }
     pub(crate) fn callable_target(&self, original: Instance) -> Instance {
@@ -81,6 +101,7 @@ pub(crate) struct Catalog {
     bodies: Vec<std::rc::Rc<Code>>,
     pub functions: HashMap<Instance, usize>,
     pub definitions: HashMap<DefId, usize>,
+    pub expressions: HashMap<NodeKey, usize>,
 }
 impl Catalog {
     pub(crate) fn initializer(
@@ -102,9 +123,19 @@ impl Catalog {
         let bytes = self
             .bytes
             .checked_add(Code::storage_bytes(body))
+            .and_then(|bytes| {
+                bytes.checked_add(if matches!(body.owner, Owner::AnonymousConstant) {
+                    crate::support::retained::new_map::<NodeKey, usize>(1)
+                } else {
+                    0
+                })
+            })
             .filter(|n| *n <= 64 * 1024 * 1024)
             .ok_or("constant execution code exceeds 64 MiB budget")?;
         let index = self.bodies.len();
+        if u32::try_from(body.values.len()).is_err() {
+            return Err("constant CFG value identity limit exceeded");
+        }
         if let Some(instance) = body.instance {
             if self.functions.contains_key(&instance) {
                 return Err("duplicate constant function instance");
@@ -117,6 +148,11 @@ impl Catalog {
                 return Err("duplicate constant body definition");
             }
             self.definitions.insert(definition, index);
+        } else if matches!(body.owner, Owner::AnonymousConstant) {
+            if self.expressions.contains_key(&body.source) {
+                return Err("duplicate anonymous constant body");
+            }
+            self.expressions.insert(body.source, index);
         }
         self.bodies.push(std::rc::Rc::new(Code::snapshot(body)));
         self.bytes = bytes;

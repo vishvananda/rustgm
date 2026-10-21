@@ -1,0 +1,1 @@
+pub fn run()->&'static u8{const{let x=7;&x}}

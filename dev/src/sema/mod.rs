@@ -16,6 +16,7 @@ pub mod dyn_compat;
 pub mod entry;
 pub mod foreign;
 pub mod generics;
+pub mod inline_constants;
 pub(crate) mod invocations;
 pub mod layout_view;
 pub mod lifetimes;

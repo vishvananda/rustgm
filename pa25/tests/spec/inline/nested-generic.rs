@@ -1,0 +1,1 @@
+pub fn run<const N:u8>()->u8{const{const{N+1}}}

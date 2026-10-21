@@ -7,7 +7,11 @@ impl Walker<'_> {
         self.record(node, context)?;
         match self.kind(node) {
             Syntax::Block {
-                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
+                flavor: BlockFlavor::Const,
+                ..
+            } if node != self.source.node => {}
+            Syntax::Block {
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 statements,
                 tail,
             } => {

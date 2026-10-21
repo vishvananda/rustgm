@@ -3,7 +3,7 @@ use super::{Bound, Error};
 use crate::{sema::bodies::calls::CallTypes, types::RegionId};
 use std::collections::HashMap;
 
-pub(super) struct Interface {
+pub(in crate::sema::bodies) struct Interface {
     pub opening: Bound,
     annotations: Vec<RegionId>,
     inherited: usize,

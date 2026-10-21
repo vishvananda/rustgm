@@ -1,0 +1,1 @@
+const fn divide(n:u8)->u8{1/n}pub struct Value(u8);pub fn run()->[Value;0]{[const{Value(divide(0))};0]}

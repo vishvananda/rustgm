@@ -210,14 +210,33 @@ impl Checker<'_> {
         while let Kind::Group(child) = self.kind(value) {
             value = child;
         }
-        let constant = self
-            .facts
-            .node(self.key(value))
-            .and_then(|f| f.reference)
-            .is_some_and(|reference| {
-                matches!(reference, Target::Definition(id)
+        let inline = matches!(
+            self.kind(value),
+            Kind::Block {
+                flavor: crate::syntax::ast::BlockFlavor::Const,
+                ..
+            }
+        );
+        if inline
+            && matches!(
+                self.facts.types.kind(self.ty(node)?),
+                Some(Type::Array { length: 0, .. })
+            )
+        {
+            let source = self.key(value);
+            if let Some(registry) = self.facts.inline_constants.as_mut() {
+                registry.suppress(source);
+            }
+        }
+        let constant = inline
+            || self
+                .facts
+                .node(self.key(value))
+                .and_then(|f| f.reference)
+                .is_some_and(|reference| {
+                    matches!(reference, Target::Definition(id)
                 if self.report.resolution.definitions[id.0 as usize].kind == super::DefKind::Const)
-            });
+                });
         if constant {
             self.facts.constant_repeats.insert(self.key(node));
         }

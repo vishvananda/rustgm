@@ -1,0 +1,1 @@
+pub fn run<const N:u8>()->u8{const{10/N}}

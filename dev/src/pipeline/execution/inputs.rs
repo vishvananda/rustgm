@@ -3,7 +3,7 @@ use super::{Engine, Proxy};
 use crate::{
     body::{
         self,
-        ir::{Owner, Program},
+        ir::{BodyKey, Owner, Program},
         templates::Templates,
     },
     resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
@@ -17,7 +17,7 @@ pub(crate) struct Context {
 }
 enum Slot {
     Local(usize),
-    Shared(DefId),
+    Shared(BodyKey),
 }
 impl Context {
     #[cfg(test)]
@@ -31,6 +31,47 @@ impl Context {
     }
     pub(crate) fn executor(&self) -> Box<dyn Executor> {
         Box::new(Proxy(Rc::clone(&self.engine)))
+    }
+    pub(crate) fn check_inline_bodies(
+        &self,
+        report: &Report,
+        facts: &mut Declarations,
+    ) -> Result<(), Error> {
+        let count = facts
+            .inline_constants
+            .as_deref()
+            .map_or(0, crate::sema::inline_constants::Registry::len);
+        if count == 0 {
+            return Ok(());
+        }
+        let mut engine = self.engine.try_borrow_mut().map_err(|_| {
+            Error::at(
+                FileId(0),
+                0,
+                "constant provider is active during inline body checking",
+            )
+        })?;
+        for index in 0..count {
+            let (source, result) = facts
+                .inline_constants
+                .as_deref()
+                .and_then(|registry| registry.at(index))
+                .and_then(|body| body.result.map(|result| (body.source, result)))
+                .ok_or_else(|| Error::at(FileId(0), 0, "inline body type did not complete"))?;
+            if let Some(registry) = facts.inline_constants.as_mut() {
+                registry.preparation_visits += 1;
+            }
+            engine.root(
+                report,
+                facts,
+                crate::sema::values::execution::Target::Expression {
+                    source,
+                    result,
+                    context: None,
+                },
+            )?;
+        }
+        Ok(())
     }
     pub(crate) fn transfer(
         &self,
@@ -89,11 +130,25 @@ impl Context {
                 .try_borrow_mut()
                 .map_err(|_| Error::at(FileId(0), 0, "constant CFG store is already borrowed"))?;
             for body in program.bodies.drain(..) {
-                if let Owner::Function { definition, .. } = body.owner
-                    && facts.is_const_function(definition)
-                {
-                    store.insert(definition, body);
-                    slots.push(Slot::Shared(definition));
+                let shared = match body.owner {
+                    Owner::Function { definition, .. } => facts.is_const_function(definition),
+                    Owner::AnonymousConstant => facts
+                        .inline_constants
+                        .as_deref()
+                        .is_some_and(|registry| registry.get(body.source).is_some()),
+                    Owner::Initializer { .. } | Owner::Closure { .. } => false,
+                };
+                if shared {
+                    let key = body.key();
+                    if store.contains_key(&key) {
+                        return Err(Error::at(
+                            body.source.file,
+                            0,
+                            "duplicate lent constant CFG owner",
+                        ));
+                    }
+                    store.insert(key, body);
+                    slots.push(Slot::Shared(key));
                 } else {
                     slots.push(Slot::Local(local.len()));
                     local.push(body);

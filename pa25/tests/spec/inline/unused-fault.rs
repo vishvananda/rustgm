@@ -1,0 +1,1 @@
+const fn divide(n:u8)->u8{1/n}fn unused(){let _=const{divide(0)};}

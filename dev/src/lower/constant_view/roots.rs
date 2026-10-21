@@ -8,7 +8,9 @@ use crate::{
 
 pub(super) fn collect(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'static str> {
     declarations(graph)?;
+    let inline = super::inline::declarations(graph)?;
     initializers(graph)?;
+    super::inline::roots(graph, inline)?;
     promotions(graph, checked)
 }
 fn declarations(graph: &mut Graph<'_>) -> Result<(), &'static str> {

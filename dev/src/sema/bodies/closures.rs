@@ -2,7 +2,7 @@
 mod completion;
 mod contextual;
 mod interface;
-mod universes;
+pub(super) mod universes;
 use super::{Checker, Constructor, Domain, Error, Kind, NodeId, Scratch, TermId, TypeId, Work};
 use crate::{
     syntax::ast::List,
@@ -13,12 +13,9 @@ use crate::{
     },
 };
 
-pub(super) type Scheduler = super::nested::Scheduler<Metadata>;
-type Entry = super::nested::Entry<Metadata>;
-pub(super) struct InputRefresh {
-    source: NodeId,
-    pairs: Vec<(Argument, Argument)>,
-}
+pub(super) type Scheduler = super::nested::Scheduler<super::nested::Payload>;
+type Entry = super::nested::Entry<super::nested::Payload>;
+use super::nested::{InputRefresh, Payload};
 pub(super) struct Metadata {
     identity: ClosureId,
     parameters: List,
@@ -44,6 +41,7 @@ impl Checker<'_> {
         if asynchronous {
             return Err(self.error(node, "async closure bodies are not implemented"));
         }
+        self.check_closure_body_owner(body)?;
         let nodes: Vec<_> = self
             .report
             .package
@@ -116,12 +114,12 @@ impl Checker<'_> {
                 source: node,
                 inputs,
                 state: None,
-                payload: Metadata {
+                payload: Payload::Closure(Metadata {
                     identity,
                     parameters,
                     signature,
                     lifetimes,
-                },
+                }),
             },
         )?;
         self.closure_parameters(node, signature, nodes, result)?;
@@ -129,6 +127,22 @@ impl Checker<'_> {
         self.advance_projections(node)?;
         self.state.work.push(Work::CollectClosure);
         self.start_body(body)
+    }
+
+    fn check_closure_body_owner(&self, body: NodeId) -> Result<(), Error> {
+        if matches!(
+            self.kind(body),
+            Kind::Block {
+                flavor: crate::syntax::ast::BlockFlavor::Const,
+                ..
+            }
+        ) {
+            return Err(self.error(
+                body,
+                "inline constant as a closure body requires distinct checked body ownership",
+            ));
+        }
+        Ok(())
     }
 
     fn closure_parameters(
@@ -171,14 +185,16 @@ impl Checker<'_> {
         child.module = self.state.module;
         child.in_function = true;
         child.safety = self.state.safety;
-        child.body_binders = entry
+        let metadata = entry
             .payload
+            .closure()
+            .map_err(|e| self.error(entry.source, e))?;
+        child.body_binders = metadata
             .lifetimes
             .count()
             .map_err(|e| self.error(entry.source, e))?;
         child.infer.region_equalities.extend(
-            entry
-                .payload
+            metadata
                 .lifetimes
                 .equations()
                 .map_err(|e| self.error(entry.source, e))?,
@@ -192,20 +208,7 @@ impl Checker<'_> {
             .trait_environment
             .clone_from(&self.state.trait_environment);
         child.completion = super::readiness::Completion::Ordinary;
-        let mut scheduler = self.state.closures.take().unwrap_or_default();
-        if scheduler.entries.len() >= 1_000_000 {
-            return Err(self.error(entry.source, "closure body work limit exceeded"));
-        }
-        let index = scheduler.entries.len();
-        scheduler.entries.push(entry);
-        self.state.closure_children.push(index);
-        self.state.retain_sparse();
-        let parent = std::mem::replace(&mut self.state, child);
-        scheduler.stack.push((scheduler.active, Box::new(parent)));
-        scheduler.active = Some(index);
-        self.state.closures = Some(scheduler);
-        self.prepare_file(self.state.body.file);
-        Ok(())
+        self.park_nested(child, entry)
     }
 
     pub(super) fn collect_closure(&mut self) -> Result<(), Error> {
@@ -223,16 +226,19 @@ impl Checker<'_> {
             .pop()
             .ok_or_else(|| self.error(body, "missing enclosing closure state"))?;
         let entry = &mut scheduler.entries[index];
+        let metadata = entry
+            .payload
+            .closure_mut()
+            .map_err(|e| self.error(entry.source, e))?;
         // Until capture lowering is connected, any outer local use fails ordinary
         // value lookup in this isolated body. Reaching here proves an empty environment.
         self.facts
             .types
-            .complete_closure(entry.payload.identity, CallKind::Shared)
+            .complete_closure(metadata.identity, CallKind::Shared)
             .map_err(|e| self.error(body, e))?;
-        self.closure_result_boundary(&entry.payload.lifetimes)?;
+        self.closure_result_boundary(&metadata.lifetimes)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
-        let mut identity = entry
-            .payload
+        let mut identity = metadata
             .lifetimes
             .closing(&self.state.call_types, false)
             .map_err(|e| self.error(body, e))?;
@@ -247,10 +253,7 @@ impl Checker<'_> {
         self.state.closures = Some(scheduler);
         self.state
             .work
-            .push(Work::ClosureInputs(Box::new(InputRefresh {
-                source,
-                pairs,
-            })));
+            .push(Work::BodyInputs(Box::new(InputRefresh { source, pairs })));
         // Importing interface constraints grants no normalization proof in the
         // receiving body. Register the new occurrences under this owner.
         self.defer_normalization(

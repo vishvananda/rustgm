@@ -1,0 +1,1 @@
+pub struct Value(u8);pub fn run()->[Value;2]{[const{Value(7)};2]}

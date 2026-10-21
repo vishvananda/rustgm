@@ -1,0 +1,1 @@
+fn take(_:u8){}pub fn run(){take(const{7});let x=const{7};let _:u16=x;}

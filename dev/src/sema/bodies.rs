@@ -15,6 +15,7 @@ mod field_storage;
 mod finalization;
 mod generics;
 mod hidden_results;
+mod inline;
 mod invocations;
 mod item_values;
 mod language_hooks;
@@ -140,7 +141,7 @@ struct PendingAdjustment {
     reset: bool,
 }
 enum Work {
-    ClosureInputs(Box<closures::InputRefresh>),
+    BodyInputs(Box<nested::InputRefresh>),
     Conditional {
         node: NodeId,
         pattern: NodeId,
@@ -170,6 +171,7 @@ enum Work {
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
     CollectClosure,
+    CollectInline,
 }
 /// Cleared storage can be reused between short declaration-time constants.
 /// Successful checks clear touched slots; caller evidence is cleared before reuse.
@@ -700,14 +702,14 @@ impl Checker<'_> {
             if let Some(dependency) = self.advance_current_body()? {
                 return Ok(Some(dependency));
             }
-            if !self.continue_closure_bodies()? {
+            if !self.continue_nested_bodies()? {
                 return Ok(None);
             }
         }
     }
     fn advance_current_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
-        if let Some(dependency) = self.resume_closure_inputs()? {
+        if let Some(dependency) = self.resume_body_inputs()? {
             return Ok(Some(dependency));
         }
         if let Some(finalization) = self.state.finalization.take() {
@@ -734,12 +736,13 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
-                Work::ClosureInputs(inputs) => {
-                    if let Some(dependency) = self.finish_closure_inputs(*inputs)? {
+                Work::BodyInputs(inputs) => {
+                    if let Some(dependency) = self.finish_body_inputs(*inputs)? {
                         return Ok(Some(dependency));
                     }
                 }
                 Work::CollectClosure => self.collect_closure()?,
+                Work::CollectInline => self.collect_inline()?,
                 Work::Conditional {
                     node,
                     pattern,
@@ -1040,6 +1043,16 @@ impl Checker<'_> {
         {
             frame.in_condition = false;
         }
+        if matches!(
+            self.kind(node),
+            Kind::Block {
+                flavor: BlockFlavor::Const,
+                ..
+            }
+        ) && self.key(node) != self.state.body
+        {
+            return self.enter_inline(node, expected);
+        }
         if matches!(self.kind(node), Kind::Closure { .. }) {
             return self.enter_closure(node, expected);
         }
@@ -1313,7 +1326,7 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::Block {
-                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 statements,
                 tail,
             }

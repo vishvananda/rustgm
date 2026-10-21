@@ -1,5 +1,6 @@
 //! Bounded inspection of completed values. Rendering never starts semantic queries.
 mod graph;
+mod inline;
 mod roots;
 use crate::borrow::Checked;
 use crate::sema::model::Declarations;

@@ -79,6 +79,12 @@ impl Checker<'_> {
         resume: bool,
     ) -> Result<Option<(DefId, Option<usize>)>, Error> {
         let owner = match requirement {
+            Requirement::InlineBody { source, .. } => {
+                return Err(self.error(
+                    source,
+                    "inline constant body must complete with its owning declaration",
+                ));
+            }
             Requirement::FunctionBody(instance) => {
                 let Some(Kind::FunctionItem { item, .. }) = self.facts.types.kind(instance.ty())
                 else {

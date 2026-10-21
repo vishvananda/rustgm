@@ -6,6 +6,7 @@ mod mutation;
 mod session;
 mod structure;
 pub use structure::FieldTypes;
+mod inline;
 mod validation;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
@@ -77,6 +78,10 @@ impl<'a> Reader<'a> {
     #[must_use]
     pub fn definition(self, id: DefId) -> Option<Constant> {
         self.facts.constant_values.get(&id).copied().map(Constant)
+    }
+    #[must_use]
+    pub fn inline(self, source: crate::resolve::unit::NodeKey) -> Option<Constant> {
+        self.facts.inline_constants.as_deref()?.get(source)?.value
     }
     #[must_use]
     pub fn associated(self, instance: crate::sema::values::Instance) -> Option<Constant> {

@@ -66,7 +66,7 @@ pub(crate) fn concrete_prepared(
     report: &Report,
     facts: &Declarations,
     template: impl Fn(DefId) -> bool,
-    mut prepared: HashMap<DefId, Body>,
+    mut prepared: HashMap<super::ir::BodyKey, Body>,
 ) -> Result<Program, Error> {
     let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
         crate::types::destruction::NeedsDrop::new(
@@ -89,7 +89,7 @@ pub(crate) fn concrete_prepared(
         {
             continue;
         }
-        if let Some(body) = prepared.remove(&function.definition) {
+        if let Some(body) = prepared.remove(&super::ir::BodyKey::Declaration(function.definition)) {
             program.bodies.push(body);
             continue;
         }
@@ -116,6 +116,20 @@ pub(crate) fn concrete_prepared(
         )?);
     }
     for (source, ty) in facts.constant_bodies() {
+        if let Some(body) = prepared.remove(&super::ir::BodyKey::Anonymous(source)) {
+            if body.source != source
+                || body.result != ty
+                || !matches!(body.owner, Owner::AnonymousConstant)
+            {
+                return Err(Declarations::error(
+                    report,
+                    source,
+                    "retained inline CFG identity or result changed",
+                ));
+            }
+            program.bodies.push(body);
+            continue;
+        }
         let scope_plan = scopes::constant_with_scratch(
             report,
             facts,
@@ -144,6 +158,13 @@ pub(crate) fn concrete_prepared(
         drop_query.as_mut(),
     )?;
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
+    if let Some(body) = prepared.values().next() {
+        return Err(Declarations::error(
+            report,
+            body.source,
+            "retained constant CFG owner was not consumed",
+        ));
+    }
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
 }
@@ -753,6 +774,26 @@ impl<'a> Builder<'a> {
             scopes,
             exits: self.scope_exits,
         });
+        if matches!(self.body.owner, Owner::AnonymousConstant) {
+            self.facts
+                .body_work
+                .cfg_expressions
+                .set(self.facts.body_work.cfg_expressions.get().saturating_add(1));
+            if self
+                .facts
+                .inline_constants
+                .as_deref()
+                .is_some_and(|registry| registry.get(self.body.source).is_some())
+            {
+                self.facts.body_work.cfg_inline_expressions.set(
+                    self.facts
+                        .body_work
+                        .cfg_inline_expressions
+                        .get()
+                        .saturating_add(1),
+                );
+            }
+        }
         Ok(self.body)
     }
     #[expect(
@@ -954,6 +995,45 @@ impl<'a> Builder<'a> {
         reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
     )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
+        let source = NodeKey {
+            node,
+            ..self.body.source
+        };
+        if matches!(
+            self.kind(node),
+            Kind::Block {
+                flavor: BlockFlavor::Const,
+                ..
+            }
+        ) && source != self.body.source
+        {
+            if self.current.is_some() {
+                let value = self.evaluate(node, self.ty(node)?, Rvalue::InlineConstant(source))?;
+                self.save(node, value)?;
+            }
+            return Ok(());
+        }
+        if matches!(self.kind(node), Kind::Repeat { .. })
+            && self.facts.constant_repeats.contains(&source)
+            && matches!(
+                self.facts.types.kind(self.ty(node)?),
+                Some(Type::Array { length: 0, .. })
+            )
+        {
+            if self.current.is_some() {
+                let start = self.index(node, self.body.arguments.len())?;
+                let value = self.evaluate(
+                    node,
+                    self.ty(node)?,
+                    Rvalue::Aggregate {
+                        variant: None,
+                        fields: ValueList { start, end: start },
+                    },
+                )?;
+                self.save(node, value)?;
+            }
+            return Ok(());
+        }
         if let Kind::Let {
             value: Some(value),
             otherwise: Some(_),
@@ -988,7 +1068,7 @@ impl<'a> Builder<'a> {
                 self.scratch.work.push(Work::Place(value));
             }
             Kind::Block {
-                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 statements,
                 tail,
             }

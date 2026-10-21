@@ -1,4 +1,5 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
+mod expressions;
 mod inputs;
 #[cfg(test)]
 #[path = "../../tests/invariants/execution_storage.rs"]
@@ -7,7 +8,7 @@ use super::Prepared;
 use crate::{
     body::{
         self,
-        ir::{Body, Owner},
+        ir::{Body, BodyKey, Owner},
         regions::{Collector, Contract},
         templates::{Template, Templates},
     },
@@ -70,11 +71,12 @@ pub(super) struct Engine {
     contracts: Collector,
     promotions: body::promote::Scratch,
     originals: HashMap<DefId, Template>,
-    concrete: HashMap<DefId, Body>,
+    concrete: HashMap<BodyKey, Body>,
     loans: Option<(usize, borrow::loans::templates::Verifier)>,
-    inputs: Rc<RefCell<HashMap<DefId, Body>>>,
+    inputs: Rc<RefCell<HashMap<BodyKey, Body>>>,
     runtime_templates: Option<Rc<Templates>>,
     runtime_template_indices: HashMap<DefId, usize>,
+    retained_expressions: usize,
     charged_templates: std::collections::HashSet<DefId>,
 }
 impl Engine {
@@ -83,7 +85,16 @@ impl Engine {
         report: &Report,
         prepared: &mut Prepared,
     ) -> Result<(), Error> {
-        prepared.concrete.extend(std::mem::take(&mut self.concrete));
+        for (key, body) in std::mem::take(&mut self.concrete) {
+            if prepared.concrete.contains_key(&key) {
+                return Err(Declarations::error(
+                    report,
+                    body.source,
+                    "duplicate retained constant CFG owner",
+                ));
+            }
+            prepared.concrete.insert(key, body);
+        }
         for (&definition, template) in &self.originals {
             if matches!(template.body.owner, Owner::Function { .. }) {
                 prepared
@@ -221,69 +232,6 @@ impl Engine {
         facts.constant_work.value_preparation += scratch.preparation_steps() - preparation;
         self.values = scratch;
     }
-    fn root(
-        &mut self,
-        report: &Report,
-        facts: &mut Declarations,
-        target: Target,
-    ) -> Result<usize, Error> {
-        if let Some(&index) = self.roots.get(&target) {
-            return Ok(index);
-        }
-        let Target::Expression {
-            source,
-            result,
-            context,
-        } = target
-        else {
-            return Err(Error::at(
-                FileId(0),
-                0,
-                "constant root is not a typed expression",
-            ));
-        };
-        if context.is_some() {
-            return Err(Declarations::error(
-                report,
-                source,
-                "associated constant execution needs a specialized body",
-            ));
-        }
-        let (mut body, destruction) = self
-            .construction
-            .expression(report, facts, source, result)?;
-        body::promote::instance_reusing(
-            report,
-            facts,
-            &mut body,
-            &destruction,
-            &mut self.promotions,
-        )?;
-        let mut contract = self
-            .contracts
-            .expression(facts, source)
-            .map_err(|e| Declarations::error(report, source, e))?;
-        body::dispatch::resolve(facts, &mut body, &mut contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
-        let template = Template {
-            body,
-            destruction,
-            environment: Arc::new(
-                Environment::new(&facts.types, &[])
-                    .map_err(|e| Declarations::error(report, source, e))?,
-            ),
-        };
-        let templates = Templates {
-            bodies: vec![template],
-        };
-        self.prove(report, facts, &templates.bodies[0], &contract)?;
-        let index = self
-            .catalog
-            .insert(&templates.bodies[0].body)
-            .map_err(|e| Declarations::error(report, source, e))?;
-        self.roots.insert(target, index);
-        Ok(index)
-    }
     fn prepare(
         &mut self,
         report: &Report,
@@ -292,6 +240,26 @@ impl Engine {
     ) -> Result<bool, Error> {
         match requirement {
             Requirement::FunctionBody(instance) => self.function(report, facts, instance),
+            Requirement::InlineBody { source, result } => {
+                facts
+                    .inline_constants
+                    .as_mut()
+                    .ok_or_else(|| {
+                        Declarations::error(report, source, "missing required inline constant")
+                    })?
+                    .require(source, result)
+                    .map_err(|e| Declarations::error(report, source, e))?;
+                self.root(
+                    report,
+                    facts,
+                    Target::Expression {
+                        source,
+                        result,
+                        context: None,
+                    },
+                )?;
+                Ok(true)
+            }
             Requirement::InitializerBody(definition) => {
                 let index = facts
                     .initializer_index(definition)
@@ -353,7 +321,7 @@ impl Engine {
                 "constant CFG lender is preparing another body",
             )
         })?;
-        if let Some(body) = stored.get(&definition) {
+        if let Some(body) = stored.get(&BodyKey::Declaration(definition)) {
             body::constants::eligibility(report, facts, body)?;
             let mut needed = crate::types::destruction::NeedsDrop::new(
                 facts.destructors.implementations().iter().map(|i| i.item),
@@ -407,7 +375,8 @@ impl Engine {
                 .insert(&template.body)
                 .map_err(|e| Declarations::error(report, source, e))?;
             self.catalog.functions.insert(instance, index);
-            self.concrete.insert(definition, template.body);
+            self.concrete
+                .insert(BodyKey::Declaration(definition), template.body);
         }
         Ok(true)
     }

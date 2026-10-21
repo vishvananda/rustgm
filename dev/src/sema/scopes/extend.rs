@@ -86,6 +86,17 @@ impl Walker<'_> {
         node: NodeId,
         lifetime: Lifetime,
     ) -> Result<(), Error> {
+        if node != self.source.node
+            && matches!(
+                self.kind(node),
+                Syntax::Block {
+                    flavor: BlockFlavor::Const,
+                    ..
+                }
+            )
+        {
+            return Ok(());
+        }
         match self.kind(node) {
             Syntax::Unary {
                 op: Unary::Borrow | Unary::BorrowMut | Unary::RawConst | Unary::RawMut,
@@ -108,7 +119,7 @@ impl Walker<'_> {
                 self.push(Work::ExtendExpression(value, lifetime))?;
             }
             Syntax::Block {
-                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe,
+                flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 tail,
                 ..
             }

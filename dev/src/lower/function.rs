@@ -551,6 +551,19 @@ impl Lower<'_, '_> {
             Rvalue::Constant(definition) => {
                 return self.constant(definition, value.ty, representation);
             }
+            Rvalue::InlineConstant(source) => {
+                let constant = self
+                    .context
+                    .constants
+                    .inline(source)
+                    .ok_or("inline constant was not evaluated")?;
+                return self.constant_value(
+                    super::data::Key::Inline(source),
+                    constant,
+                    value.ty,
+                    representation,
+                );
+            }
             Rvalue::AssociatedConstant(instance) => {
                 let constant = self
                     .context

@@ -1,0 +1,1 @@
+pub fn run()->u8{const{let x=7;let p=&x;*p}}

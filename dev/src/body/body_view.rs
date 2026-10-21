@@ -285,6 +285,11 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         }
         Rvalue::Function(id) => write!(out, "function def={}", id.0),
         Rvalue::Constant(id) => write!(out, "constant def={}", id.0),
+        Rvalue::InlineConstant(source) => write!(
+            out,
+            "inline-constant source={}:{}",
+            source.file.0, source.node.0
+        ),
         Rvalue::AssociatedConstant(instance) => write!(
             out,
             "associated-constant def={} args={}",

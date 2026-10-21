@@ -111,6 +111,11 @@ impl Engine<'_, '_> {
                 .evaluator
                 .definition(definition)
                 .map_err(Error::Constant)?,
+            Rvalue::InlineConstant(source) => {
+                crate::sema::values::Reader::new(self.evaluator.facts())
+                    .inline(source)
+                    .ok_or("inline promotion value is not complete")?
+            }
             Rvalue::AssociatedConstant(instance) => {
                 if self.body.instance.is_none()
                     && match self.body.owner {
@@ -242,6 +247,7 @@ impl Engine<'_, '_> {
             | Rvalue::Scalar(_)
             | Rvalue::Constant(_)
             | Rvalue::AssociatedConstant(_)
+            | Rvalue::InlineConstant(_)
             | Rvalue::ConstArgument(_)
             | Rvalue::Function(_) => return Err("missing immediate promotion value".into()),
         };

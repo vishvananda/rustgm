@@ -1,0 +1,1 @@
+pub fn run()->u8{loop{const{break 7};}}

@@ -274,6 +274,9 @@ pub struct ReferenceAlignment {
 pub struct BodyWork {
     /// Actual successful function CFG constructions, before specialization copies.
     pub cfg_functions: std::cell::Cell<usize>,
+    /// Actual anonymous CFG constructions, including demanded inline bodies.
+    pub cfg_expressions: std::cell::Cell<usize>,
+    pub cfg_inline_expressions: std::cell::Cell<usize>,
     /// Actual typed unsizing DAG inputs and reuse, separate from eligibility queries.
     pub unsizing_inputs: usize,
     pub unsizing_fields: usize,
@@ -345,6 +348,7 @@ pub struct Declarations {
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
     pub unreduced: super::unreduced::Types,
+    pub inline_constants: Option<Box<super::inline_constants::Registry>>,
     pub(super) anonymous_constants: std::collections::HashMap<NodeKey, TypeId>,
     pub(super) constant_annotation_bodies: std::collections::HashSet<NodeKey>,
     pub generics: super::generics::Generics,
@@ -525,6 +529,7 @@ impl Declarations {
             array_lengths: std::collections::HashMap::new(),
             alias_requirements: super::alias_requirements::Requirements::default(),
             unreduced: super::unreduced::Types::default(),
+            inline_constants: None,
             anonymous_constants: std::collections::HashMap::new(),
             constant_annotation_bodies: std::collections::HashSet::new(),
             generics: super::generics::Generics::default(),

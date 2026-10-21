@@ -1,0 +1,1 @@
+pub fn run()->[u8;0]{[const{let _:[u8;{const{3}}]=[0;3];7};0]}

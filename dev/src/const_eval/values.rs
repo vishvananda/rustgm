@@ -101,6 +101,16 @@ impl Machine<'_, '_> {
                     return Ok(None);
                 }
             }
+            Rvalue::InlineConstant(source) => {
+                if let Some(value) = Reader::new(self.evaluator.facts()).inline(source) {
+                    value
+                } else if let Some(&index) = self.bodies.expressions.get(&source) {
+                    return Ok(Some((index, Vec::new(), id)));
+                } else {
+                    self.waiting = Some(super::Requirement::InlineBody { source, result: ty });
+                    return Ok(None);
+                }
+            }
             Rvalue::AssociatedConstant(instance) => {
                 if let Some(value) = Reader::new(self.evaluator.facts()).associated(instance) {
                     value

@@ -1,0 +1,1 @@
+pub fn run()->&'static u8{const{&7u8}}

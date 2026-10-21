@@ -173,6 +173,8 @@ pub enum Rvalue {
     Function(DefId),
     Constant(DefId),
     AssociatedConstant(crate::sema::values::Instance),
+    /// A typed anonymous body, evaluated independently of runtime branch selection.
+    InlineConstant(NodeKey),
     /// A canonical scalar const argument; rigid parameters remain unevaluated.
     ConstArgument(crate::types::arguments::ConstId),
     Reify(ValueId),

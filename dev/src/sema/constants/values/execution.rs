@@ -31,6 +31,7 @@ pub struct Request {
 pub enum Requirement {
     FunctionBody(instance::Instance),
     InitializerBody(DefId),
+    InlineBody { source: NodeKey, result: TypeId },
     AssociatedBody(Instance),
 }
 
@@ -63,6 +64,8 @@ pub struct Work {
     pub peak_slots: usize,
     pub code_bytes: usize,
     pub template_bytes: usize,
+    /// Owned checked inline bodies retained before ordinary CFG handoff.
+    pub expression_bytes: usize,
 }
 
 /// The orchestrator supplies checked CFG execution without a semantic dependency

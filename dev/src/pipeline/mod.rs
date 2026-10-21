@@ -16,7 +16,7 @@ use std::collections::HashMap;
 #[derive(Default)]
 pub struct Prepared {
     pub(crate) constants: Option<execution::Context>,
-    pub(crate) concrete: HashMap<DefId, body::ir::Body>,
+    pub(crate) concrete: HashMap<body::ir::BodyKey, body::ir::Body>,
     pub(crate) templates: templates::Prepared,
     pub(crate) contracts: Option<Collector>,
     pub(crate) promotions: body::promote::Scratch,
@@ -71,6 +71,7 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
     let context = execution::Context::default();
     let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
     let mut analysis = analyze(report, facts)?;
+    context.check_inline_bodies(report, &mut analysis.facts)?;
     if !analysis.facts.initializers.is_empty() {
         sema::values::Evaluator::new(report, &mut analysis.facts)
             .validate_ordinary_initializers()?;

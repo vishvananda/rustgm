@@ -33,7 +33,9 @@ Private product/reference arena IDs and host addresses never appear.
 constants 1
 declaration def=D kind=function type=T const=BOOL status=STATUS
 declaration def=D kind=KIND type=T const=true status=STATUS
+declaration source=FILE:NODE kind=inline type=T const=true status=STATUS parent=FILE:NODE
 root initializer def=D type=T value=vV storage=none|aA
+root inline source=FILE:NODE type=T value=vV
 root promotion owner=OWNER instance=none|T expression=E type=T value=vV
 value vV type=T PAYLOAD metadata=METADATA
 allocation aA type=T STORAGE
@@ -46,6 +48,9 @@ is `checked-body`, `deferred-template`, or `declaration-only`. Initializer kind 
 `static`, or `static-mut`; its `const=true` means its initializer requires constant
 execution, not that reading or mutating static storage is a permitted constant
 operation. Initializer status is `checked-value` or `deferred-initializer`.
+Inline rows follow definition rows in source-key order; their status is
+`checked-value`, `deferred-template`, `deferred-unreachable` or
+`suppressed-zero-repeat`. Type readiness alone grants no value root.
 A deferred row is a declaration, never a checked root/value. Associated values
 selected in closed contexts are visible through the completed containing root.
 
@@ -107,7 +112,8 @@ Declaration rows enumerate retained source function and initializer declarations
 then sort by canonical definition ID. Foreign declarations with no initializer
 acquire a graph row only when reached as external backing; they do not invent
 initializer roots. Ordinary closed initializer roots
-follow in definition order, then proved promotions in body-key order
+follow in definition order, then completed inline roots in source-key order,
+then proved promotions in body-key order
 (declaration, closure, anonymous source), specialization type, and body value ID.
 Deferred initializers add no root. Values and backing nodes receive IDs on first
 discovery: seed all roots in this order, then process one iterative FIFO frontier;
@@ -146,7 +152,8 @@ row. `add` has `const=true status=checked-body`. The count mode equals the final
 `eof` fields byte for byte. Concrete IDs and full candidate output are retained
 in maintainer evidence rather than hand-edited reference files.
 
-Remaining PA25 work includes inline-const source integration, dynamic pattern
+Inline-const integration and its qualification boundary are described in
+[the inline body draft](pa25-inline-const.md). Remaining PA25 work includes dynamic pattern
 and enum readiness continuations, slice/text projection execution, raw/union
 validity and complete promotion/static allocation coverage. This view does not
 claim those execution boundaries are implemented.

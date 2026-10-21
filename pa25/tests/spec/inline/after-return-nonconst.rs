@@ -1,0 +1,1 @@
+fn value()->u8{7}pub fn run(){return;let _=const{value()};}
