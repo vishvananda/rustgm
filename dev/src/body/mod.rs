@@ -6,6 +6,7 @@ pub(crate) mod dispatch;
 pub mod drops;
 pub mod instantiate;
 pub mod ir;
+pub(crate) mod primitive_methods;
 pub mod promote;
 pub mod regions;
 pub use crate::sema::scopes;

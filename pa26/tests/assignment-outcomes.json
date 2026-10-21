@@ -404,7 +404,7 @@
     },
     {
       "path": "tests/spec/assignment/generic-primitive-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.assignment-traits"
       ],
@@ -412,10 +412,6 @@
         "kind": "program",
         "status": 0,
         "emit": "obj"
-      },
-      "native": {
-        "kind": "codegen",
-        "reason": "Generic primitive assignment-trait implementations require a typed builtin method descriptor, separate from this custom-implementation checkpoint."
       }
     },
     {

@@ -56,6 +56,53 @@ impl Builder {
         input: &Contract,
         requirements: Option<drops::Requirements>,
     ) -> Result<usize, borrow::Error> {
+        self.push_inner(facts, templates, body, input, requirements, None)
+    }
+    pub(super) fn push_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        selected: crate::sema::primitive_methods::Selected,
+        body: Body,
+        input: &Contract,
+    ) -> Result<usize, borrow::Error> {
+        let permit = crate::body::primitive_methods::validate(facts, selected, &body, input)
+            .map_err(|message| borrow::Error {
+                node: Some(body.source),
+                message: message.into(),
+            })?;
+        let mut query = crate::types::destruction::NeedsDrop::new(
+            facts
+                .destructors
+                .implementations()
+                .iter()
+                .map(|implementation| implementation.item),
+        );
+        let requirements =
+            crate::body::drops::requirements(facts, &body, &mut query).map_err(|message| {
+                borrow::Error {
+                    node: Some(body.source),
+                    message: message.into(),
+                }
+            })?;
+        self.push_inner(
+            facts,
+            templates,
+            body,
+            input,
+            Some(requirements),
+            Some(permit),
+        )
+    }
+    fn push_inner(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        body: Body,
+        input: &Contract,
+        requirements: Option<drops::Requirements>,
+        factory: Option<crate::body::primitive_methods::Permit>,
+    ) -> Result<usize, borrow::Error> {
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(|message| borrow::Error {
@@ -95,6 +142,7 @@ impl Builder {
             &contract,
             body,
             catalog.as_mut(),
+            factory,
         );
         self.recipes = catalog.map(glue::Catalog::into_cache);
         let mut proof = proof?;

@@ -4,6 +4,20 @@ use crate::{
     resolve::model::DefId,
     types::{GenericArgs, Kind, TypeId, parameters::predicates::Predicate},
 };
+pub(super) enum Method {
+    Implementation {
+        owner: DefId,
+        arguments: GenericArgs,
+        proof: Obligations,
+    },
+    Object {
+        proof: Obligations,
+    },
+    Language {
+        descriptor: crate::sema::primitive_methods::Descriptor,
+        proof: Obligations,
+    },
+}
 
 /// Read a complete trait method's Self/application from its retained arguments.
 /// This identifies a potential virtual method; it does not grant dispatch permission.
@@ -33,9 +47,23 @@ impl Dispatcher {
         &mut self,
         facts: &mut Declarations,
         predicate: Predicate,
-    ) -> Result<Option<(DefId, GenericArgs, Obligations)>, String> {
-        if !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. })) {
-            return self.implementation(facts, predicate).map(Some);
+    ) -> Result<Method, String> {
+        let language = match predicate.bound {
+            crate::types::parameters::predicates::Bound::Trait(id) => facts
+                .types
+                .trait_application(id)
+                .and_then(|application| facts.associated.operation(DefId(application.item.0)))
+                .is_some_and(|(kind, _)| kind.assignment()),
+            _ => false,
+        };
+        if !language && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. })) {
+            return self
+                .implementation(facts, predicate)
+                .map(|(owner, arguments, proof)| Method::Implementation {
+                    owner,
+                    arguments,
+                    proof,
+                });
         }
         let before = self.normalize.steps;
         let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
@@ -63,13 +91,20 @@ impl Dispatcher {
         )?;
         self.provisional_size |= evidence.provisional_size;
         match evidence.source {
-            selection::Source::Implementation { owner, arguments } => {
-                Ok(Some((owner, arguments, evidence.proof)))
-            }
+            selection::Source::Implementation { owner, arguments } => Ok(Method::Implementation {
+                owner,
+                arguments,
+                proof: evidence.proof,
+            }),
             selection::Source::ResultBound(_) | selection::Source::QuantifiedResultBound { .. } => {
-                self.obligations.extend(evidence.proof)?;
-                Ok(None)
+                Ok(Method::Object {
+                    proof: evidence.proof,
+                })
             }
+            selection::Source::LanguageOperation { descriptor } => Ok(Method::Language {
+                descriptor,
+                proof: evidence.proof,
+            }),
             _ => Err("object dispatch requires intrinsic object or implementation evidence".into()),
         }
     }

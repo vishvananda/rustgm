@@ -38,12 +38,12 @@ controls cover missing or lookalike traits, incompatible contracts, immutable
 places, move reuse and overlapping mutable loans. Ten metadata checks verify
 unit output and the one mutable receiver binder.
 
-Generic primitive trait implementations remain a required implementation
-boundary: `fn apply<T:AddAssign<u32>>(x:&mut T){*x+=4u32}` instantiated with u32
-needs a typed primitive implementation descriptor and factory. Ordinary scalar
-compound syntax remains implemented. The former custom compound-assignment
-IndexMut boundary now accepts its unchanged fixture bytes; its draft outcome
-is updated without generating references.
+The later primitive-method checkpoint implements the generic primitive assignment
+case through canonical selection evidence and a checked ordinary body factory;
+see `docs/pa26-primitive-assignment.md`. Its unchanged former boundary fixture
+now accepts and executes, bringing this suite to 25 accepted programs and ten
+language rejections. The former custom compound-assignment IndexMut boundary
+also accepts its unchanged fixture bytes. No references were regenerated.
 
 Strict all-target/all-feature Clippy and all seventeen focused test groups pass
 across language operators, call operators, static permissions and syntax
@@ -57,7 +57,7 @@ object outcomes in `qualification.json`, focused/native results in
 is retained as `initial-check-failure.json` and its diagnostic log. No language
 or native failure was hidden by the correction.
 
-This remains a partial PA26 checkpoint. Primitive trait implementations,
+This remains a partial PA26 checkpoint. Other primitive operator implementations,
 comparison/Deref hooks, iteration, question-mark residual/control flow,
 additional derives, formatting/runtime contracts and remaining library methods
 still require implementation. Direct library-trait dot-call lookup remains an

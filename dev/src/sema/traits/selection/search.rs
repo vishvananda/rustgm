@@ -15,6 +15,7 @@ mod marker_evidence_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/marker_readiness.rs"]
 mod marker_readiness_tests;
+mod primitive_methods;
 pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
@@ -279,13 +280,7 @@ impl Search<'_> {
             frame.inference = frames::Inference::Committed;
             return Ok(Action::Yield);
         }
-        Ok(Action::Complete(
-            if frame.deferred || frame.partial.is_some() {
-                Decision::Deferred
-            } else {
-                frame.selected.map_or(Decision::Absent, Decision::Proven)
-            },
-        ))
+        self.language_result(facts, frame)
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         frame.started = true;
@@ -391,7 +386,7 @@ impl Search<'_> {
             return Ok(action);
         }
         let Some(registry) = &mut facts.generics.implementations else {
-            return Ok(Action::Complete(Decision::Absent));
+            return self.language_result(facts, frame);
         };
         let candidates = registry
             .candidates(

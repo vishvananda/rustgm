@@ -195,7 +195,7 @@ fn prove(
             node: None,
             message: e.into(),
         })?
-        .prove(&mut environment, checked, contract, body, None)
+        .prove(&mut environment, checked, contract, body, None, None)
 }
 
 #[test]

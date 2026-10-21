@@ -172,12 +172,29 @@ impl Dispatcher {
             facts.prepare_opaque_storage()?;
             predicate.ty = facts.types.storage_head(predicate.ty)?;
         }
-        let Some((owner, implementation, evidence)) =
-            self.method_implementation(facts, predicate)?
-        else {
-            self.selected.insert(ty, ty);
-            return Ok(ty);
-        };
+        let (owner, implementation, evidence) =
+            match self.method_implementation(facts, predicate)? {
+                objects::Method::Implementation {
+                    owner,
+                    arguments,
+                    proof,
+                } => (owner, arguments, proof),
+                objects::Method::Object { proof } => {
+                    self.obligations.extend(proof)?;
+                    self.selected.insert(ty, ty);
+                    return Ok(ty);
+                }
+                objects::Method::Language { descriptor, proof } => {
+                    super::primitive_methods::retain(
+                        facts,
+                        crate::types::instance::Instance::new(&facts.types, ty)?,
+                        descriptor,
+                    )?;
+                    self.obligations.extend(proof)?;
+                    self.selected.insert(ty, ty);
+                    return Ok(ty);
+                }
+            };
         let target = facts
             .generics
             .implementations

@@ -4,6 +4,7 @@ mod aggregates;
 mod closures;
 mod conditions;
 mod constructors;
+pub(super) use constructors::finish_factory;
 mod decisions;
 mod drops;
 mod guards;
@@ -214,7 +215,7 @@ fn function_body(
     Ok(body)
 }
 impl Body {
-    fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
+    pub(super) fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
             mutable_statics: None,
             static_types: None,

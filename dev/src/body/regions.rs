@@ -291,16 +291,26 @@ pub(super) fn constructor(
     variant: crate::sema::members::Variant,
     signature: TypeId,
 ) -> Result<Contract, &'static str> {
+    callable(
+        facts,
+        crate::resolve::model::DefId(variant.owner.0),
+        definition,
+        variant.node,
+        signature,
+    )
+}
+pub(crate) fn callable(
+    facts: &Declarations,
+    owner: crate::resolve::model::DefId,
+    definition: crate::resolve::model::DefId,
+    source: NodeKey,
+    signature: TypeId,
+) -> Result<Contract, &'static str> {
     let Some(crate::types::Kind::Function { bound_regions, .. }) = facts.types.kind(signature)
     else {
         return Err("constructor has no lifetime signature");
     };
-    let mut contract = parameter_contract(
-        facts,
-        crate::resolve::model::DefId(variant.owner.0),
-        variant.node,
-        Some(signature),
-    )?;
+    let mut contract = parameter_contract(facts, owner, source, Some(signature))?;
     contract.key = super::ir::BodyKey::Declaration(definition);
     contract.universals = bound_regions;
     // Signature well-formedness contributes the completed nominal requirements.

@@ -111,6 +111,9 @@ impl Checker<'_> {
                 declaration.output.declared(),
             )
             .map_err(|e| self.error(origin, e))?;
+        self.facts
+            .associated
+            .declare_operation(definition, kind, declaration.method);
         Ok((subject, parameters))
     }
     fn language_output(

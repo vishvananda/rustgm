@@ -59,6 +59,7 @@ impl Verifier {
         contract: &regions::Body,
         body: Body,
         catalog: Option<&mut glue::Catalog<'_>>,
+        factory: Option<crate::body::primitive_methods::Permit>,
     ) -> Result<Proved, Error> {
         let error = |message: &str| Error {
             node: Some(body.source),
@@ -70,6 +71,9 @@ impl Verifier {
             || contract.instance != body.instance
         {
             return Err(error("instance proof belongs to another body"));
+        }
+        if factory.is_some() && body.instance.is_none() {
+            return Err(error("factory proof requires its exact selected instance"));
         }
         if let Some(instance) = body.instance {
             let selected = match (body.owner, environment.types.kind(instance.ty())) {
@@ -102,7 +106,13 @@ impl Verifier {
                     "instance proof has a different owner or unresolved parameters",
                 ));
             }
-            if templates.contract(&body).is_none() {
+            if let Some(factory) = factory {
+                if factory.instance() != instance {
+                    return Err(error(
+                        "factory proof belongs to a different selected instance",
+                    ));
+                }
+            } else if templates.contract(&body).is_none() {
                 return Err(error("instance has no checked original template"));
             }
         }

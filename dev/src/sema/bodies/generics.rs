@@ -296,7 +296,11 @@ impl Checker<'_> {
             }
             let predicate = match evidence.get(&index) {
                 Some(Source::Assumption(actual) | Source::ResultBound(actual)) => *actual,
-                Some(Source::Implementation { .. } | Source::Callable { .. }) => continue,
+                Some(
+                    Source::Implementation { .. }
+                    | Source::Callable { .. }
+                    | Source::LanguageOperation { .. },
+                ) => continue,
                 Some(Source::QuantifiedAssumption {
                     clause,
                     subject,

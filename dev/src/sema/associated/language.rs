@@ -1,6 +1,7 @@
 //! Typed language contracts have no source owner or generated AST declaration.
 use super::{DefId, Inventory, Schema};
 use crate::support::call_traits::CallTrait;
+use crate::support::language_hooks::Hook;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -14,8 +15,23 @@ pub(super) struct Declarations {
     pub hook_members: Vec<(DefId, DefId)>,
     pub origins: HashMap<DefId, crate::resolve::unit::NodeKey>,
     callable_definitions: [Option<DefId>; 3],
+    operations: HashMap<DefId, (Hook, DefId)>,
 }
 impl Inventory {
+    pub(in crate::sema) fn declare_operation(
+        &mut self,
+        definition: DefId,
+        kind: Hook,
+        method: DefId,
+    ) {
+        self.language
+            .get_or_insert_with(Default::default)
+            .operations
+            .insert(definition, (kind, method));
+    }
+    pub(in crate::sema) fn operation(&self, definition: DefId) -> Option<(Hook, DefId)> {
+        self.language.as_ref()?.operations.get(&definition).copied()
+    }
     pub(in crate::sema) fn declare_callable(
         &mut self,
         definition: DefId,

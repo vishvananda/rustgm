@@ -196,7 +196,7 @@ fn finish_constructor(
     body: &mut super::Body,
     variant_id: crate::sema::members::VariantId,
 ) -> Result<(), &'static str> {
-    use super::{Block, LocalId, Statement, Terminator, Value};
+    use super::{Statement, Value};
     let count =
         u32::try_from(body.arguments.len()).map_err(|_| "too many constructor arguments")?;
     let value = ValueId(count);
@@ -214,6 +214,12 @@ fn finish_constructor(
         source: body.source.node,
         action: Action::Evaluate(value),
     });
+    finish_factory(body, value)
+}
+
+pub(in crate::body) fn finish_factory(body: &mut Body, value: ValueId) -> Result<(), &'static str> {
+    use super::{Block, LocalId, Statement, Terminator};
+    let count = u32::try_from(body.locals.len()).map_err(|_| "too many factory parameters")?;
     let before =
         u32::try_from(body.statements.len()).map_err(|_| "too many constructor statements")?;
     body.storage

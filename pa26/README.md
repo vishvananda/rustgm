@@ -132,11 +132,22 @@ receiver contracts with unit output. Selected ordinary calls preserve trait
 assignment's LHS-first evaluation and two-phase receiver reservation, including
 generic custom implementations. Primitive compound syntax retains RHS-first
 evaluation and scalar inference. Thirty-five independently qualified outcomes
-and 24 native programs are recorded in `tests/assignment-outcomes.json` and
-`docs/pa26-assignment-checkpoint.md`. Generic primitive trait implementations
-remain an explicit required boundary; this checkpoint does not activate PA26.
+and 25 native programs are recorded in `tests/assignment-outcomes.json` and
+`docs/pa26-assignment-checkpoint.md` after the primitive-method checkpoint below.
+This checkpoint does not activate PA26.
 
 Canonical library operator/assignment impl headers now enforce the orphan rule
 using exact local and foreign identities before publication. Nineteen qualified
 declaration controls and eight native programs are recorded in
 `tests/orphan-outcomes.json` and `docs/pa26-orphan-checkpoint.md`.
+
+## Maintainer primitive-assignment checkpoint
+
+Canonical trait selection can supply typed primitive method evidence for all ten
+assignment families, including shared-reference RHS forwarding and generic or
+reified calls. A private validated selection token demands an ordinary checked
+body through the existing region, ownership, loan and arithmetic pipeline.
+`tests/primitive-assignment-outcomes.json` declares the independent source
+controls; `docs/pa26-primitive-assignment.md` records the implementation and
+remaining boundaries. Implicit hook availability and direct library-trait
+method lookup remain unfinished. PA26 remains planned.

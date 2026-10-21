@@ -1,0 +1,722 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/primitive-assignment/add.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/add-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/sub.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/sub-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/mul.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/mul-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/div.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/div-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/rem.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/rem-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/and.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/and-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/or.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/or-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/xor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/xor-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/shl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/shl-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/shr.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/shr-ref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/float-add.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/float-rem.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/bool-and.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/bool-xor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/u128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/i128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/generic-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/inferred.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/ufcs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/bool-add.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/float-bit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/char-add.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/mixed-width.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/mutable-rhs.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/orphan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/orphan-ref.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-first-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/uncovered.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/uncovered-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/library-wrapper.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/alias-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/alias-library.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/tuple-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/array-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/tuple-covered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/array-covered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/nominal-covered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/empty-local-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/local-object.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/library-object.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/projected-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.language-orphan-admission"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/named-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/static-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/alias-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/explicit-forwarding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-assignment/implicit-forwarding-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-assignment-traits"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Implicit canonical language-hook availability is not yet implemented; explicit trait demand supplies the validated identity."
+      }
+    }
+  ]
+}

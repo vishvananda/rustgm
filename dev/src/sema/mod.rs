@@ -26,6 +26,7 @@ mod nominals;
 pub mod opaque;
 pub mod pattern_view;
 pub mod patterns;
+pub(crate) mod primitive_methods;
 pub(crate) mod projections;
 mod regions;
 mod representation;

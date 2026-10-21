@@ -65,6 +65,9 @@ pub(in crate::sema) enum Source {
     Callable {
         output: TypeId,
     },
+    LanguageOperation {
+        descriptor: crate::sema::primitive_methods::Descriptor,
+    },
     Assumption(Predicate),
     /// Original caller clause and this use's complete instantiated application.
     QuantifiedAssumption {

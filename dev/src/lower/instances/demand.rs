@@ -76,6 +76,31 @@ struct Budget {
     instances: usize,
 }
 impl Budget {
+    fn leave(&mut self, item: BodyKey) -> Result<(), &'static str> {
+        let active = self
+            .active
+            .get_mut(&item)
+            .ok_or("invalid active instance stack")?;
+        *active = active.checked_sub(1).ok_or("unbalanced instance stack")?;
+        Ok(())
+    }
+    fn factory(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        selected: crate::sema::primitive_methods::Selected,
+    ) -> Result<(usize, BodyKey), Error> {
+        let (body, input) = body::primitive_methods::build(report, facts, selected)?;
+        let family = body.key();
+        self.enter(family, &body, &input)
+            .map_err(|e| diagnostic(report, Some(body.source), e.into()))?;
+        let index = program
+            .push_factory(facts, templates, selected, body, &input)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok((index, family))
+    }
     fn enter(&mut self, item: BodyKey, body: &Body, input: &Contract) -> Result<(), &'static str> {
         let active = self.active.entry(item).or_default();
         if *active >= 128 {
@@ -107,7 +132,7 @@ pub(super) fn prepare(
     concrete: HashMap<DefId, Body>,
     constants: Option<crate::pipeline::execution::Context>,
 ) -> Result<proof::Builder, Error> {
-    let (mut program, ordinary) = prepare_ordinary(
+    let (program, ordinary) = prepare_ordinary(
         report,
         facts,
         templates,
@@ -119,10 +144,27 @@ pub(super) fn prepare(
     // Discovery includes implicit constructor factories. With no templates,
     // ordinary lowering already follows calls and selected cleanup dependencies.
     // All source bodies have still been checked before taking this path.
-    if templates.is_empty() && !facts.types.has_dynamic_shapes() {
+    if templates.is_empty()
+        && !facts.types.has_dynamic_shapes()
+        && facts
+            .primitive_methods
+            .as_deref()
+            .is_none_or(crate::sema::primitive_methods::Registry::is_empty)
+    {
         return Ok(program);
     }
-    let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, &ordinary)?;
+    materialize(report, facts, roots, templates, program, &ordinary)
+}
+
+fn materialize(
+    report: &Report,
+    facts: &mut Declarations,
+    roots: crate::lower::roots::Selected<'_>,
+    templates: &Checked<'_>,
+    mut program: proof::Builder,
+    ordinary: &Ordinary,
+) -> Result<proof::Builder, Error> {
+    let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
     let mut instances = HashSet::new();
     let mut visited = HashSet::new();
     let mut budget = Budget::default();
@@ -131,16 +173,33 @@ pub(super) fn prepare(
         let (instance, source) = match action {
             Work::Enter(instance, source) => (instance, source),
             Work::Leave(item) => {
-                let active = budget.active.get_mut(&item).ok_or_else(|| {
-                    diagnostic(report, None, "invalid active instance stack".into())
-                })?;
-                *active = active
-                    .checked_sub(1)
-                    .ok_or_else(|| diagnostic(report, None, "unbalanced instance stack".into()))?;
+                budget
+                    .leave(item)
+                    .map_err(|e| diagnostic(report, None, e.into()))?;
                 continue;
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
+        if let Some(selected) = facts
+            .primitive_methods
+            .as_deref()
+            .and_then(|registry| registry.get(instance))
+        {
+            if !instances.insert(instance) {
+                continue;
+            }
+            let (index, family) =
+                budget.factory(report, facts, templates, &mut program, selected)?;
+            work.push(Work::Leave(family));
+            dependencies.schedule(
+                report,
+                facts,
+                &mut program,
+                DependencyRoot::Body(index),
+                &mut work,
+            )?;
+            continue;
+        }
         let Some(Selected {
             family,
             template: selected,

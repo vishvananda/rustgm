@@ -5,6 +5,7 @@ fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("../pa26/tests/spec/assignment/{name}.rs"))
 }
 const ACCEPTED: &[&str] = &[
+    "generic-primitive-boundary",
     "add",
     "sub",
     "mul",
@@ -41,7 +42,6 @@ const REJECTED: &[&str] = &[
     "lookalike",
     "move",
     "borrow-conflict",
-    "generic-primitive-boundary",
 ];
 #[test]
 fn assignment_contracts_match_independent_outcomes() -> Result<(), Box<dyn std::error::Error>> {
@@ -52,11 +52,7 @@ fn assignment_contracts_match_independent_outcomes() -> Result<(), Box<dyn std::
         .chain(REJECTED.iter().map(|n| (n, false)))
     {
         let source = std::fs::read_to_string(fixture(name))?;
-        super::rustc::qualify(
-            &format!("assignment-{name}"),
-            &source,
-            accepted || name == "generic-primitive-boundary",
-        )?;
+        super::rustc::qualify(&format!("assignment-{name}"), &source, accepted)?;
         let result = frontend::checked(&source);
         if result.is_ok() != accepted {
             failures.push(format!("{name}: {:?}", result.err()));
