@@ -124,3 +124,6 @@ mod methods;
 
 #[path = "language_operators/addition.rs"]
 mod addition;
+
+#[path = "language_operators/binary.rs"]
+mod binary;

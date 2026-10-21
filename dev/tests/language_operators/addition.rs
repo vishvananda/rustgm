@@ -15,6 +15,7 @@ const ACCEPTED: &[&str] = &[
     "order",
     "overflow",
     "formation-reference",
+    "sub-boundary",
 ];
 const REJECTED: &[&str] = &[
     "mixed-width",
@@ -27,7 +28,7 @@ const REJECTED: &[&str] = &[
     "projection-not-injective",
     "projected-static-escape",
 ];
-const BOUNDARIES: &[&str] = &["reference-boundary", "sub-boundary"];
+const BOUNDARIES: &[&str] = &["reference-boundary"];
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(format!("../pa26/tests/spec/primitive-add/{name}.rs"))

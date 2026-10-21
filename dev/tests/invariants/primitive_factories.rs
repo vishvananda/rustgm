@@ -260,3 +260,43 @@ fn repeated_generic_add_callers_share_one_primitive_factory() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn every_owned_binary_family_retains_nonempty_exact_primitive_selection() -> Result {
+    let operations = [
+        (Hook::Sub, "Sub", "sub", 9, 2),
+        (Hook::Mul, "Mul", "mul", 3, 4),
+        (Hook::Div, "Div", "div", 9, 2),
+        (Hook::Rem, "Rem", "rem", 9, 2),
+        (Hook::BitAnd, "BitAnd", "bitand", 6, 3),
+        (Hook::BitOr, "BitOr", "bitor", 6, 3),
+        (Hook::BitXor, "BitXor", "bitxor", 6, 3),
+        (Hook::Shl, "Shl", "shl", 3, 2),
+        (Hook::Shr, "Shr", "shr", 12, 2),
+    ];
+    for (hook, name, method, left, right) in operations {
+        let source =
+            format!("fn main(){{let _=<u8 as core::ops::{name}>::{method}({left},{right});}}");
+        let Factory {
+            report,
+            mut facts,
+            selected,
+            ..
+        } = fixture_for(&source)?;
+        assert_eq!(selected.len(), 1, "{name}");
+        let selected = selected[0];
+        assert_eq!(selected.descriptor.hook, hook);
+        assert_eq!(selected.descriptor.form, Form::ValueBinary);
+        let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selected)?;
+        crate::body::primitive_methods::validate(&mut facts, selected, &body, &input)?;
+        let forged = Selected {
+            descriptor: Descriptor {
+                hook: Hook::Add,
+                ..selected.descriptor
+            },
+            ..selected
+        };
+        assert!(forged.validate(&mut facts).is_err());
+    }
+    Ok(())
+}

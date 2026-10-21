@@ -179,3 +179,11 @@ remain the existing arithmetic contract. Twenty-four declared controls and thirt
 native programs are recorded in `tests/primitive-add-outcomes.json` and
 `docs/pa26-primitive-add.md`. Shared-reference RHS and other primitive value methods
 remain explicit boundaries. This checkpoint does not activate PA26.
+
+The later owned binary-family checkpoint extends that same descriptor and checked
+factory to subtraction, multiplication, division, remainder, bitwise operations
+and shifts. Forty-four independently qualified controls and 31 native programs
+cover mixed shift RHS types, Boolean/float domains, same-named user traits and
+checked traps. See `tests/primitive-binary-outcomes.json` and
+`docs/pa26-primitive-binary.md`. Primitive reference/unary forms and the other
+required hook families remain separate work; PA26 stays planned.

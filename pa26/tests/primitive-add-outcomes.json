@@ -308,7 +308,7 @@
     },
     {
       "path": "tests/spec/primitive-add/sub-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.primitive-value-add"
       ],
@@ -318,8 +318,15 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
-      "panic": false
+      "native": true,
+      "panic": false,
+      "supersedes": [
+        {
+          "checkpoint": "a8dcf79f",
+          "exit_status": 1,
+          "reason": "owned primitive Sub factory was not implemented"
+        }
+      ]
     },
     {
       "path": "tests/spec/primitive-add/projection-not-injective.rs",

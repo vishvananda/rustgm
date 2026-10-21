@@ -71,7 +71,7 @@ impl Descriptor {
                     if referent == left && region == RegionId::bound(0,0)?)
             }
             Form::ValueBinary => {
-                self.hook == Hook::Add
+                value_binary(self.hook)
                     && self.rhs == Rhs::Owned
                     && bound_regions == 0
                     && receiver == left
@@ -95,7 +95,7 @@ impl Descriptor {
             .ok_or("primitive result requires a declared projection")?
             .trait_item;
         if self.form != Form::ValueBinary
-            || self.hook != Hook::Add
+            || !value_binary(self.hook)
             || self.rhs != Rhs::Owned
             || family != crate::types::GenericArgs::EMPTY
             || facts.associated.member_owner(DefId(item.0)) != Some(DefId(owner.0))
@@ -143,21 +143,36 @@ impl Descriptor {
 fn operator(hook: Hook) -> Result<Punctuation, &'static str> {
     Ok(match hook {
         Hook::Add | Hook::AddAssign => Punctuation::Plus,
-        Hook::SubAssign => Punctuation::Minus,
-        Hook::MulAssign => Punctuation::Star,
-        Hook::DivAssign => Punctuation::Slash,
-        Hook::RemAssign => Punctuation::Percent,
-        Hook::BitAndAssign => Punctuation::And,
-        Hook::BitOrAssign => Punctuation::Or,
-        Hook::BitXorAssign => Punctuation::Caret,
-        Hook::ShlAssign => Punctuation::ShiftLeft,
-        Hook::ShrAssign => Punctuation::ShiftRight,
+        Hook::Sub | Hook::SubAssign => Punctuation::Minus,
+        Hook::Mul | Hook::MulAssign => Punctuation::Star,
+        Hook::Div | Hook::DivAssign => Punctuation::Slash,
+        Hook::Rem | Hook::RemAssign => Punctuation::Percent,
+        Hook::BitAnd | Hook::BitAndAssign => Punctuation::And,
+        Hook::BitOr | Hook::BitOrAssign => Punctuation::Or,
+        Hook::BitXor | Hook::BitXorAssign => Punctuation::Caret,
+        Hook::Shl | Hook::ShlAssign => Punctuation::ShiftLeft,
+        Hook::Shr | Hook::ShrAssign => Punctuation::ShiftRight,
         _ => return Err("primitive descriptor is not a supported operation"),
     })
 }
 
-pub(in crate::sema) const fn supported(hook: Hook) -> bool {
-    hook.assignment() || matches!(hook, Hook::Add)
+fn value_binary(hook: Hook) -> bool {
+    matches!(
+        hook,
+        Hook::Add
+            | Hook::Sub
+            | Hook::Mul
+            | Hook::Div
+            | Hook::Rem
+            | Hook::BitAnd
+            | Hook::BitOr
+            | Hook::BitXor
+            | Hook::Shl
+            | Hook::Shr
+    )
+}
+pub(in crate::sema) fn supported(hook: Hook) -> bool {
+    hook.assignment() || value_binary(hook)
 }
 
 pub(in crate::sema) enum Candidate {
