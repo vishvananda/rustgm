@@ -43,7 +43,7 @@ repository with pinned reference tools. It has not been built yet.
 - PA15 proves lifetime contracts and exposes region identities, assumptions and
   requirements, with 202 independently checked text-oracle cases.
 - PA16 checks loans, storage and non-lexical lifetimes and lowers checked
-  references, with 307 cases including 121 native executions.
+  references, with 308 cases including 122 native executions.
 - PA17 proves destructor lifetimes and lowers ordered conditional cleanup, with
   205 course cases, 135 native programs and 33 independently observed drop-order
   traces.

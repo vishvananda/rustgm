@@ -121,7 +121,7 @@ Runtime regions cap retained sparse words/pending deltas at 500,000. Optional
 inspection snapshots cap at 2,000,000 nonzero words (48 MB). Executable
 verification runs the same proof without allocating inspection traces.
 
-The release suite declares 307 cases, including 121 LowIR executions. It covers
+The release suite declares 308 cases, including 122 LowIR executions. It covers
 last-use and conflicting access, reborrows/two-phase activation, disjoint fields
 and patterns, loops, guards, temporary extension, promotion, thin/wide reference
 execution and persistent backing. Outcomes are declared before oracle generation
