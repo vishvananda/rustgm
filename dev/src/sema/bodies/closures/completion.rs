@@ -240,6 +240,7 @@ impl Checker<'_> {
             owner: self.state.environment_owner,
             universals: self.state.body_binders,
             inherited,
+            execution: None,
         };
         self.facts
             .closures

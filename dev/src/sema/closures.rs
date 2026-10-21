@@ -5,7 +5,10 @@ pub mod imports;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     syntax::ast::List,
-    types::{RegionId, TypeId, closure::ClosureId},
+    types::{
+        RegionId, TypeId,
+        closure::{CallKind, ClosureId},
+    },
 };
 use std::collections::HashMap;
 
@@ -21,6 +24,25 @@ pub struct Body {
     pub universals: u32,
     /// Leading body universals inherited from the immediate enclosing body.
     pub inherited: u32,
+    /// Captured bodies have a distinct checked receiver prefix; public inputs stay unchanged.
+    pub execution: Option<Execution>,
+}
+#[derive(Clone, Copy)]
+pub struct Execution {
+    pub self_ty: TypeId,
+    pub signature: TypeId,
+    pub universals: u32,
+    pub receiver: CallKind,
+}
+/// Typed capture paths retain their source bindings and physical projections.
+pub struct Environment {
+    pub plan: captures::Plan,
+    /// Types in interned path order, in the checked closure body's lifetime context.
+    pub path_types: Vec<TypeId>,
+    /// Stored value/reference types in selected capture order.
+    pub field_types: Vec<TypeId>,
+    pub accesses: HashMap<NodeKey, captures::PathId>,
+    pub binding_mutability: HashMap<DefId, bool>,
 }
 #[derive(Default)]
 pub struct Bodies {
@@ -28,8 +50,13 @@ pub struct Bodies {
     pub(crate) values: Vec<Body>,
     pub(crate) sources: HashMap<NodeKey, usize>,
     identities: Vec<u32>,
+    pub(crate) environments: HashMap<ClosureId, Environment>,
 }
 impl Bodies {
+    #[must_use]
+    pub fn environment(&self, identity: ClosureId) -> Option<&Environment> {
+        self.environments.get(&identity)
+    }
     #[must_use]
     pub fn identity(&self, identity: ClosureId) -> Option<&Body> {
         let index = self.identities.get(identity.0 as usize)?.checked_sub(1)?;

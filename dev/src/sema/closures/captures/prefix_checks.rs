@@ -7,8 +7,11 @@ fn ancestor_uses_inherit_the_strongest_descendant_mode() -> Result<(), &'static 
     for ancestor_first in [false, true] {
         let mut graph = Graph::default();
         let root = graph.root(DefId(7))?;
-        let field = graph.project(root, Step::Field(0))?;
-        let leaf = graph.project(field, Step::Field(1))?;
+        let field = graph.project(root, Step::Field(crate::sema::members::Selection::Tuple(0)))?;
+        let leaf = graph.project(
+            field,
+            Step::Field(crate::sema::members::Selection::Tuple(1)),
+        )?;
         if ancestor_first {
             graph.require(root, Mode::Shared)?;
         }
@@ -31,8 +34,8 @@ fn ancestor_uses_inherit_the_strongest_descendant_mode() -> Result<(), &'static 
 fn disjoint_places_keep_unique_immutable_permission() -> Result<(), &'static str> {
     let mut graph = Graph::default();
     let root = graph.root(DefId(7))?;
-    let first = graph.project(root, Step::Field(0))?;
-    let second = graph.project(root, Step::Field(1))?;
+    let first = graph.project(root, Step::Field(crate::sema::members::Selection::Tuple(0)))?;
+    let second = graph.project(root, Step::Field(crate::sema::members::Selection::Tuple(1)))?;
     let other = graph.root(DefId(8))?;
     graph.require(first, Mode::Shared)?;
     graph.require(second, Mode::UniqueImmutable)?;
@@ -43,7 +46,10 @@ fn disjoint_places_keep_unique_immutable_permission() -> Result<(), &'static str
     assert_eq!(plan.captures[0].mode, Mode::Shared);
     assert_eq!(plan.captures[1].mode, Mode::UniqueImmutable);
     assert_eq!(plan.captures[2].mode, Mode::Mutable);
-    assert_eq!(plan.parent(second), Some((root, Step::Field(1))));
+    assert_eq!(
+        plan.parent(second),
+        Some((root, Step::Field(crate::sema::members::Selection::Tuple(1))))
+    );
     assert_eq!(plan.root(first), Some(DefId(7)));
     Ok(())
 }
@@ -55,7 +61,7 @@ fn deep_paths_and_repeated_uses_do_not_repeat_ancestor_scans() -> Result<(), &'s
         let root = graph.root(DefId(7))?;
         let mut leaf = root;
         for _ in 0..depth {
-            leaf = graph.project(leaf, Step::Field(0))?;
+            leaf = graph.project(leaf, Step::Field(crate::sema::members::Selection::Tuple(0)))?;
         }
         for _ in 0..depth {
             graph.require(leaf, Mode::UniqueImmutable)?;
@@ -94,9 +100,13 @@ fn a_covering_reference_borrow_retains_unique_immutable_permission() -> Result<(
     for ancestor_first in [false, true] {
         let mut graph = Graph::default();
         let root = graph.root(DefId(7))?;
-        let reference = graph.project(root, Step::Field(0))?;
+        let reference =
+            graph.project(root, Step::Field(crate::sema::members::Selection::Tuple(0)))?;
         let referent = graph.project(reference, Step::Dereference { mutable: true })?;
-        let field = graph.project(referent, Step::Field(1))?;
+        let field = graph.project(
+            referent,
+            Step::Field(crate::sema::members::Selection::Tuple(1)),
+        )?;
         if ancestor_first {
             graph.require(root, Mode::Shared)?;
         }
@@ -134,7 +144,7 @@ fn narrower_referent_capture_keeps_its_mutable_permission() -> Result<(), &'stat
     let mut graph = Graph::default();
     let root = graph.root(DefId(7))?;
     let referent = graph.project(root, Step::Dereference { mutable: true })?;
-    let unused = graph.project(root, Step::Field(0))?;
+    let unused = graph.project(root, Step::Field(crate::sema::members::Selection::Tuple(0)))?;
     graph.require(referent, Mode::Mutable)?;
     let plan = graph.finish()?;
     assert_eq!(plan.captures[0].mode, Mode::Mutable);
@@ -153,7 +163,10 @@ fn covering_a_deep_use_does_not_copy_or_rescan_its_prefix() -> Result<(), &'stat
         let mut paths = vec![root];
         let mut parent = root;
         for _ in 0..depth {
-            parent = graph.project(parent, Step::Field(0))?;
+            parent = graph.project(
+                parent,
+                Step::Field(crate::sema::members::Selection::Tuple(0)),
+            )?;
             paths.push(parent);
         }
         graph.require(parent, Mode::Mutable)?;

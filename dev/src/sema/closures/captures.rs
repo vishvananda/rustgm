@@ -1,5 +1,6 @@
 //! Canonical capture prefixes are selected in two passes over a flat place forest.
 use crate::resolve::model::DefId;
+use crate::sema::members::Selection;
 use std::collections::HashMap;
 
 /// Required capture strength, independent of the closure's eventual call trait.
@@ -13,7 +14,7 @@ pub enum Mode {
 /// Projection identities come from typed places after precision/truncation rules.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Step {
-    Field(u32),
+    Field(Selection),
     /// Preserve reference capability when a required ancestor covers this place.
     Dereference {
         mutable: bool,
@@ -21,6 +22,12 @@ pub enum Step {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PathId(u32);
+impl PathId {
+    #[must_use]
+    pub const fn index(self) -> usize {
+        self.0 as usize
+    }
+}
 #[derive(Clone, Copy)]
 struct Path {
     root: DefId,
@@ -57,7 +64,7 @@ impl Default for Graph {
 /// Selected prefixes share their paths; no capture owns a copied ancestor chain.
 pub struct Plan {
     paths: Vec<Path>,
-    covering: Vec<Option<usize>>,
+    covering: Vec<Option<u32>>,
     captures: Vec<Capture>,
     /// Actual place operations and finalization node visits, including cache hits.
     pub work: usize,
@@ -83,8 +90,12 @@ impl Plan {
     /// its ancestors. An unused prefix of narrower captures has no such owner.
     #[must_use]
     pub fn covering(&self, path: PathId) -> Option<&Capture> {
-        self.captures
-            .get(self.covering.get(path.0 as usize).copied().flatten()?)
+        self.captures.get(self.covering_field(path)? as usize)
+    }
+    /// Environment field selected for a typed place, preserving physical ownership.
+    #[must_use]
+    pub fn covering_field(&self, path: PathId) -> Option<u32> {
+        self.covering.get(path.index()).copied().flatten()
     }
 }
 impl Graph {
@@ -189,7 +200,10 @@ impl Graph {
             if covering[index].is_none() && path.used {
                 let mode = path.mode.ok_or("required capture lacks a mode")?;
                 let id = u32::try_from(index).map_err(|_| "closure capture identity overflow")?;
-                covering[index] = Some(captures.len());
+                covering[index] = Some(
+                    u32::try_from(captures.len())
+                        .map_err(|_| "closure capture field identity overflow")?,
+                );
                 captures.push(Capture {
                     path: PathId(id),
                     mode,
