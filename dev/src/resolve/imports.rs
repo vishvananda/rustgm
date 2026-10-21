@@ -272,7 +272,7 @@ impl Resolver<'_> {
         );
         if ns == Namespace::Type {
             let before = self.facts.definitions.len();
-            self.prepare_builtin_path(c, import.node.node, import.absolute, path)?;
+            self.prepare_builtin_path(c, import.node.node, import.absolute, Namespace::Type, path)?;
             if self.facts.definitions.len() != before {
                 work.extend(self.facts);
                 for definition in &self.facts.definitions[before..] {
@@ -566,8 +566,10 @@ impl Resolver<'_> {
     }
     fn can_reexport(&self, target: Access, requested: Access) -> bool {
         match (target, requested) {
+            (Access::ExternalPrivate, _)
+            | (_, Access::ExternalPrivate)
+            | (Access::Within(_), Access::Public) => false,
             (Access::Public, _) => true,
-            (Access::Within(_), Access::Public) => false,
             (Access::Within(target), Access::Within(requested)) => {
                 self.package.is_descendant(requested, target)
             }
@@ -575,6 +577,7 @@ impl Resolver<'_> {
     }
     fn access_union(&self, a: Access, b: Access) -> Access {
         match (a, b) {
+            (Access::ExternalPrivate, _) | (_, Access::ExternalPrivate) => Access::ExternalPrivate,
             (Access::Public, _) | (_, Access::Public) => Access::Public,
             (Access::Within(a), Access::Within(b)) => {
                 if self.package.is_descendant(a, b) {

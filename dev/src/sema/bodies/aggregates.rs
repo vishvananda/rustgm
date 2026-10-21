@@ -274,10 +274,10 @@ impl Checker<'_> {
         if definition.kind != DefKind::Struct {
             return Err(self.error(node, "enum fields require a selected variant"));
         }
-        definition
-            .node
-            .and_then(|key| self.facts.members.at_node(key))
-            .ok_or_else(|| self.error(node, "missing struct member facts"))
+        let [variant] = self.facts.members.variants(item) else {
+            return Err(self.error(node, "missing struct member facts"));
+        };
+        Ok(*variant)
     }
     pub(super) fn member_name(&mut self, node: NodeId, span: Span) -> Result<Name, Error> {
         let spelling = self
@@ -306,6 +306,9 @@ impl Checker<'_> {
     }
     pub(super) fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
         let access = self.facts.members.fields[field.0 as usize].access;
+        if access == Access::ExternalPrivate {
+            return Err(self.error(node, "aggregate field is private"));
+        }
         if let Access::Within(module) = access
             && !self.report.package.is_descendant(self.state.module, module)
         {

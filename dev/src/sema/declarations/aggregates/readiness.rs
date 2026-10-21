@@ -199,3 +199,39 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+impl Checker<'_> {
+    pub(in super::super) fn register_library_nominal(
+        &mut self,
+        item: ItemId,
+        key: NodeKey,
+        kind: aggregate::Kind,
+        repr: Repr,
+        constructors: &[DefId],
+    ) -> Result<(), Error> {
+        if self
+            .nominals
+            .index
+            .insert(item, self.nominals.entries.len())
+            .is_some()
+        {
+            return Err(self.error(key, "nominal metadata is already registered"));
+        }
+        for &constructor in constructors {
+            self.nominals.constructors.insert(constructor, item);
+        }
+        self.nominals.entries.push(Entry {
+            item,
+            key,
+            kind,
+            repr,
+            groups: Vec::new(),
+            state: State::Complete,
+            contract: State::Complete,
+            constructors: constructors.to_vec(),
+        });
+        self.facts.generics.nominal_contracts.insert(DefId(item.0));
+        self.facts.generics.has_nominal_requirements = true;
+        Ok(())
+    }
+}

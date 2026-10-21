@@ -1,0 +1,284 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/library-types/option.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/option-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-new.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-private-pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-lookalike.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-not-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-drop-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/ordinary-drop-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/option-value-namespace.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/option-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/some-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-private-literal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-private-rest.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    },
+    {
+      "path": "tests/spec/library-types/manual-not-tuple.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.library-types"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Nominal identity, ownership, privacy and lifetime contract."
+      }
+    }
+  ]
+}

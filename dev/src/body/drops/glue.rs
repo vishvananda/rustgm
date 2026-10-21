@@ -234,7 +234,12 @@ impl<'a> Catalog<'a> {
                         self.schedule(child)?;
                     }
                 }
-                Kind::Adt(_, _) => {
+                Kind::Adt(item, _) => {
+                    if self.definitions.destruction(item)
+                        == Some(crate::types::aggregate::FieldDestruction::Suppressed)
+                    {
+                        continue;
+                    }
                     for variant in self.definitions.shape(self.types, ty)?.variants().rev() {
                         self.cache.charge(1)?;
                         for &child in self
@@ -313,6 +318,12 @@ impl<'a> Catalog<'a> {
         Ok(id)
     }
     fn nominal(&mut self, ty: TypeId, item: ItemId) -> Result<Shape, &'static str> {
+        if self.definitions.destruction(item)
+            == Some(crate::types::aggregate::FieldDestruction::Suppressed)
+        {
+            let start = compact(self.cache.storage.fields.len())?;
+            return Ok(Shape::Fields(Range { start, end: start }));
+        }
         let shape = self.definitions.shape(self.types, ty)?;
         let definition = shape.definition;
         let ids = self.members.variants(item);

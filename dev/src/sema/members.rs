@@ -41,6 +41,25 @@ pub struct Variant {
     pub start: u32,
     pub end: u32,
 }
+#[derive(Clone, Copy)]
+enum Provenance {
+    Source(NodeKey),
+    Metadata(NodeKey),
+}
+impl Provenance {
+    fn origin(self) -> NodeKey {
+        match self {
+            Self::Source(key) | Self::Metadata(key) => key,
+        }
+    }
+    fn source(self) -> Option<NodeKey> {
+        if let Self::Source(key) = self {
+            Some(key)
+        } else {
+            None
+        }
+    }
+}
 #[derive(Default)]
 pub struct Members {
     pub names: Names,
@@ -66,7 +85,34 @@ impl Members {
         shape: Shape,
         fields: &[Field],
     ) -> Result<VariantId, &'static str> {
-        if self.by_node.contains_key(&node) {
+        self.publish(owner, ordinal, Provenance::Source(node), shape, fields)
+    }
+    /// Register completed library fields without inventing source syntax identities.
+    /// # Errors
+    /// Rejects duplicate fields and exhausted compact identities.
+    pub(crate) fn insert_metadata(
+        &mut self,
+        owner: ItemId,
+        ordinal: u32,
+        origin: NodeKey,
+        shape: Shape,
+        fields: &[Field],
+    ) -> Result<VariantId, &'static str> {
+        self.publish(owner, ordinal, Provenance::Metadata(origin), shape, fields)
+    }
+    fn publish(
+        &mut self,
+        owner: ItemId,
+        ordinal: u32,
+        provenance: Provenance,
+        shape: Shape,
+        fields: &[Field],
+    ) -> Result<VariantId, &'static str> {
+        let node = provenance.origin();
+        if provenance
+            .source()
+            .is_some_and(|node| self.by_node.contains_key(&node))
+        {
             return Err("aggregate variant already complete");
         }
         let id = VariantId(u32::try_from(self.variants.len()).map_err(|_| "too many variants")?);
@@ -96,7 +142,9 @@ impl Members {
             start,
             end,
         });
-        self.by_node.insert(node, id);
+        if let Some(source) = provenance.source() {
+            self.by_node.insert(source, id);
+        }
         self.by_owner.entry(owner).or_default().push(id);
         Ok(id)
     }

@@ -17,6 +17,7 @@ mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
 mod language_hooks;
+mod library_types;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
@@ -253,6 +254,7 @@ impl<'a> Checker<'a> {
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
         self.reserve_member_parents();
+        self.prepare_library_types()?;
         self.reserve_nominals()?;
         self.reserve_implementation_candidates()?;
         self.reserve_inherent_headers()?;

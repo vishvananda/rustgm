@@ -1,4 +1,5 @@
 //! Demand-created language trait metadata, resolved through ordinary namespaces.
+mod library;
 mod traits;
 use super::{
     index::{Context, Resolver},
@@ -10,6 +11,7 @@ use crate::syntax::{
     ast::NodeId,
     item::{Item, ItemKind},
 };
+pub use library::{LibraryTypes, Nominal as LibraryNominal};
 pub use traits::{BuiltinTrait, Callable, Language, Traits};
 
 impl Resolver<'_> {
@@ -29,7 +31,7 @@ impl Resolver<'_> {
         if !matches!(self.package.names.get(name), "core" | "std") {
             return Ok(None);
         }
-        self.prepare_builtin_path(c, node, false, &[name])?;
+        self.prepare_builtin_path(c, node, false, Namespace::Type, &[name])?;
         let external = self
             .facts
             .extern_scope
@@ -76,8 +78,15 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
+        namespace: Namespace,
         path: &[NameId],
     ) -> Result<(), Error> {
+        let library_shadowed = !absolute
+            && path.first().is_some_and(|&name| {
+                let namespace = if path.len() > 1 { Namespace::Type } else { namespace };
+                matches!(self.lexical(c.scope, name, namespace), crate::resolve::lookup::Lookup::Found(binding)
+                    if self.facts.definitions[binding.target.0 as usize].node.is_some())
+            });
         if self.facts.drop_trait.is_none()
             && path.first().is_some_and(|name| {
                 matches!(
@@ -94,12 +103,20 @@ impl Resolver<'_> {
                         | "Fn"
                         | "FnMut"
                         | "FnOnce"
-                )
+                ) || !library_shadowed
+                    && matches!(
+                        self.package.names.get(*name),
+                        "Option" | "Some" | "None" | "Result" | "Ok" | "Err" | "ManuallyDrop"
+                    )
             })
         {
             self.prepare_external_traits(c, node)?;
         }
-        self.prepare_trait_metadata(c, node, absolute, path)
+        self.prepare_trait_metadata(c, node, absolute, path)?;
+        if !library_shadowed {
+            self.prepare_library_metadata(c, node, path)?;
+        }
+        Ok(())
     }
     fn prepare_external_traits(&mut self, c: Context, node: NodeId) -> Result<(), Error> {
         let external = self.new_scope(None, ModuleId(0), true)?;
@@ -195,11 +212,23 @@ impl Resolver<'_> {
         &self,
         module: ModuleId,
         name: NameId,
+        namespace: Namespace,
     ) -> Option<(ScopeId, Binding)> {
         if !self.package.modules[module.0 as usize].implicit_prelude {
             return None;
         }
         let external = self.facts.extern_scope?;
+        if let Some(target) = self.facts.library_types.prelude(name, namespace) {
+            let scope = self.facts.definitions[target.0 as usize].scope;
+            return self.facts.scopes[scope.0 as usize]
+                .bindings
+                .get(&(name, namespace))
+                .copied()
+                .map(|binding| (scope, binding));
+        }
+        if namespace != Namespace::Type {
+            return None;
+        }
         let builtin = self
             .facts
             .drop_trait

@@ -81,7 +81,7 @@ impl Resolver<'_> {
             && let Some(hygiene) = self.hygiene.as_ref()
         {
             let context = self.package.expansion_context(c.file, offset)?;
-            return hygiene
+            let found = hygiene
                 .lookup(
                     self.facts,
                     super::hygiene::Query {
@@ -92,7 +92,8 @@ impl Resolver<'_> {
                         visible: self.facts.definitions.len(),
                     },
                 )
-                .map_err(|e| Error::at(c.file, offset, e));
+                .map_err(|e| Error::at(c.file, offset, e))?;
+            return Ok(found.or_else(|| self.builtin_binding(c.module, name, namespace)));
         }
         Ok(self.lexical_binding(c.scope, name, namespace))
     }
@@ -112,6 +113,7 @@ impl Resolver<'_> {
     pub fn visible(&self, access: Access, module: ModuleId) -> bool {
         match access {
             Access::Public => true,
+            Access::ExternalPrivate => false,
             Access::Within(ancestor) => self.package.is_descendant(module, ancestor),
         }
     }
@@ -191,9 +193,7 @@ impl Resolver<'_> {
                 },
             ));
         }
-        (namespace == Namespace::Type)
-            .then(|| self.builtin_binding(self.facts.scopes[scope.0 as usize].module, name))
-            .flatten()
+        self.builtin_binding(self.facts.scopes[scope.0 as usize].module, name, namespace)
     }
     #[expect(
         clippy::too_many_lines,

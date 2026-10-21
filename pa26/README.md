@@ -62,6 +62,27 @@ ownership and region checks enforce its loan and mutability.
 
 This checkpoint is not an assignment release. Mutable indexing, assignment and
 comparison hooks, iteration, question-mark, additional derives, formatting and
-the nominal Option/Result library boundary remain implementation work. The
+the remaining library method boundary remain implementation work. The
 existing scalar operations, built-in array/slice indexing and earlier derives
 retain their earlier owning contracts.
+
+## Maintainer nominal checkpoint
+
+Demand-loaded `Option`, `Result` and `ManuallyDrop` metadata supplies canonical
+nominal and constructor identities through ordinary type and value namespaces.
+Aliases retain those identities; local lookalikes retain ordinary declarations.
+`Option` and `Result` have ordinary enum fields, constructors and pattern checks.
+This supplies the nominal foundation for `option_env!` and question-mark; those
+entry points require separate typed expansion and control-flow work.
+
+`ManuallyDrop<T>` preserves T's transparent layout and formation requirements.
+Its private field cannot be constructed or destructured by callers. Its explicit
+aggregate policy suppresses automatic field destruction and the corresponding
+drop lifetime duties; enclosing ordinary aggregates still destroy their ordinary
+fields. Copy and Clone remain conditional on T's capabilities. This checkpoint
+does not expose manual extraction, dereference or explicit destruction methods.
+
+Body lifetime and ownership contracts pair by declaration or anonymous body
+identity, independently of shared diagnostic provenance. Metadata variants and
+constructors never receive invented source nodes. See
+`docs/pa26-nominal-checkpoint.md` for the typed boundary and integration notes.
