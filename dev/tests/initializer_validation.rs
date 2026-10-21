@@ -43,7 +43,7 @@ fn unused_initializer_outcomes_match_independent_object_qualification()
         .parent()
         .ok_or("repository root")?;
     let folder = root.join(format!(
-        "obj/pa25-initializer-outcomes/{}",
+        "obj/parallel/pa25-initializer-outcomes/{}",
         std::process::id()
     ));
     std::fs::create_dir_all(&folder)?;
@@ -100,7 +100,7 @@ fn unused_initializer_outcomes_match_independent_object_qualification()
 fn required_initializers_preserve_lazy_paths_and_runtime_values()
 -> Result<(), Box<dyn std::error::Error>> {
     native::check_cases(
-        "pa25-initializer-values",
+        "parallel/pa25-initializer-values",
         &[
             (
                 "ordinary-static",
