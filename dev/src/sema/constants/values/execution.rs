@@ -47,6 +47,8 @@ pub struct Work {
     pub resumes: usize,
     /// Actual append-only definition-index and source-budget preparation visits.
     pub value_preparation: usize,
+    /// Discriminant finish entry visits, including every suspended entry resume.
+    pub discriminant_visits: usize,
     /// Combined frame/value/cell slots retained by all suspended requests.
     pub peak_suspended_slots: usize,
     pub peak_frames: usize,

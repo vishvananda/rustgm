@@ -541,6 +541,14 @@ impl<'a> Evaluator<'a> {
                 .variants
                 .get(id.0 as usize)
                 .ok_or("missing constant variant")?;
+            if !facts
+                .aggregates
+                .discriminant_ready(member.owner, member.ordinal)
+            {
+                return Err(Failure::Invalid(
+                    "enum cast requires a completed discriminant",
+                ));
+            }
             let shape = facts
                 .aggregates
                 .get(member.owner)

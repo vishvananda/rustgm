@@ -151,6 +151,12 @@ impl Checker<'_> {
             .aggregates
             .insert(item, kind, repr, &variants)
             .map_err(|e| self.error(key, e))?;
+        if kind == aggregate::Kind::Enum {
+            self.facts
+                .aggregates
+                .mark_discriminants_pending(item)
+                .map_err(|e| self.error(key, e))?;
+        }
         self.nominals.entries[index].state = State::Complete;
         if let Some(pending) = &mut self.facts.generics.size_rules {
             pending.active.remove(&item);

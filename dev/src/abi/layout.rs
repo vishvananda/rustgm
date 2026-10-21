@@ -283,6 +283,11 @@ impl Layouts {
             _ => {}
         }
         let kind = types.kind(ty).ok_or("invalid layout type")?;
+        if let Kind::Adt(item, _) = kind
+            && !definitions.discriminants_ready(item)
+        {
+            return Err("enum layout requires completed discriminants");
+        }
         if finish {
             let variant_mark = self.variants.len();
             let offset_mark = self.offsets.len();
