@@ -1,1 +1,1 @@
-ERROR: file 0: 36: nonliteral array lengths require constant evaluation
+ERROR: file 0: 42: nonliteral array lengths require constant evaluation

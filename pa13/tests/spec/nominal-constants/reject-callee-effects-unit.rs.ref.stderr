@@ -1,1 +1,1 @@
-ERROR: file 0: 55: constant statements require the general constant evaluation assignment
+ERROR: file 0: 54: non-const calls are not allowed in constant initializers
