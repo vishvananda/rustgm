@@ -49,6 +49,42 @@ pub fn build_roots_prepared(
     .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
 }
 
+/// Prove source originals before forming the library's transport interface and roots.
+/// # Errors
+/// Preserves source proof failures ahead of metadata profile restrictions; demanded
+/// instances and lowering still complete before either artifact is returned.
+pub fn build_library_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+) -> Result<
+    (
+        crate::lowir::program::Program,
+        crate::support::crates::Interface,
+    ),
+    Error,
+> {
+    let mut interface = None;
+    let program = inspect_selected(
+        report,
+        facts,
+        prepared,
+        |facts| {
+            let exported = crate::sema::crates::export(report, facts, identity)?;
+            let roots = super::roots::exports(facts, &exported.roots)
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            interface = Some(exported.interface);
+            Ok((None, roots))
+        },
+        super::build_exact_roots,
+    )?
+    .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))?;
+    let interface = interface
+        .ok_or_else(|| diagnostic(report, None, "missing checked library exports".into()))?;
+    Ok((program, interface))
+}
+
 /// Inspect the complete checked source program without requiring an executable entry.
 /// The observer cannot retain the borrowed proof or start mutable semantic queries.
 /// # Errors
@@ -87,12 +123,29 @@ fn inspect_roots<R>(
     report: &Report,
     facts: &mut Declarations,
     roots: super::Roots<'_>,
-    mut prepared: crate::pipeline::Prepared,
+    prepared: crate::pipeline::Prepared,
     inspect: impl FnOnce(&mut Declarations, &borrow::Checked<'_>, super::roots::Selected<'_>) -> R,
 ) -> Result<R, Error> {
-    let exports = super::roots::exports(facts, roots.exports)
-        .map_err(|e| diagnostic(report, None, e.into()))?;
-    let roots = exports.selected(roots.entry);
+    inspect_selected(
+        report,
+        facts,
+        prepared,
+        |facts| {
+            let exports = super::roots::exports(facts, roots.exports)
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((roots.entry, exports))
+        },
+        inspect,
+    )
+}
+
+fn inspect_selected<R>(
+    report: &Report,
+    facts: &mut Declarations,
+    mut prepared: crate::pipeline::Prepared,
+    select: impl FnOnce(&mut Declarations) -> Result<(Option<DefId>, super::roots::Exports), Error>,
+    inspect: impl FnOnce(&mut Declarations, &borrow::Checked<'_>, super::roots::Selected<'_>) -> R,
+) -> Result<R, Error> {
     let mut templates = prepared.templates.finish(report, facts)?;
     let mut inputs = if let Some(collector) = prepared.contracts {
         collector.finish(facts)
@@ -167,6 +220,8 @@ fn inspect_roots<R>(
     facts
         .prepare_opaque_storage()
         .map_err(|e| diagnostic(report, None, e.into()))?;
+    let (entry, exports) = select(facts)?;
+    let roots = exports.selected(entry);
     let program = demand::prepare(
         report,
         facts,

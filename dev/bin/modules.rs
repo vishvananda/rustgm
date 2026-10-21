@@ -365,15 +365,15 @@ fn emit_lowir(
     count: bool,
     out: &mut impl Write,
 ) -> Result<(), String> {
-    let exports = if crates.library {
-        Some(
-            rustgm::sema::crates::export(
-                &report,
-                &mut facts,
-                crates.identity()?.ok_or("missing library identity")?,
-            )
-            .map_err(|error| error.to_string())?,
+    let (lowir, interface) = if crates.library {
+        let (lowir, interface) = rustgm::lower::instances::build_library_prepared(
+            &report,
+            &mut facts,
+            crates.identity()?.ok_or("missing library identity")?,
+            prepared,
         )
+        .map_err(|error| error.to_string())?;
+        (lowir, Some(interface))
     } else {
         if let Some(identity) = crates.identity()? {
             facts
@@ -382,33 +382,16 @@ fn emit_lowir(
                 .set_identity(identity)
                 .map_err(str::to_owned)?;
         }
-        None
+        let entry = rustgm::sema::entry::select(&mut report, &facts)
+            .map_err(|e| report.diagnostic(e).to_string())?;
+        let lowir = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
+            .map_err(|e| e.to_string())?;
+        (lowir, None)
     };
-    let entry = if crates.library {
-        None
-    } else {
-        Some(
-            rustgm::sema::entry::select(&mut report, &facts)
-                .map_err(|e| report.diagnostic(e).to_string())?,
-        )
-    };
-    let lowir = rustgm::lower::instances::build_roots_prepared(
-        &report,
-        &mut facts,
-        rustgm::lower::Roots {
-            entry,
-            exports: exports
-                .as_ref()
-                .map_or(&[], |exports| exports.roots.as_slice()),
-        },
-        prepared,
-    )
-    .map_err(|e| e.to_string())?;
     if let Some(path) = &crates.metadata {
-        let interface = &exports
+        let interface = interface
             .as_ref()
-            .ok_or("metadata requires library exports")?
-            .interface;
+            .ok_or("metadata requires library exports")?;
         fs::write(
             path,
             rustgm::support::crates::encode(interface).map_err(str::to_owned)?,

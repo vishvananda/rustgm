@@ -2,7 +2,7 @@
 #[path = "../helpers/resolve.rs"]
 mod source;
 use rustgm::{
-    lower::{self, Roots},
+    lower,
     support::crates::{self, CrateIdentity, Symbol},
 };
 use std::fmt::Write;
@@ -15,21 +15,39 @@ fn compile(
         mut facts,
         prepared,
     } = rustgm::pipeline::analyze_source(&report)?;
-    let exports = rustgm::sema::crates::export(
+    Ok(lower::instances::build_library_prepared(
         &report,
         &mut facts,
         CrateIdentity::new("library", disambiguator)?,
-    )?;
-    let program = lower::instances::build_roots_prepared(
-        &report,
-        &mut facts,
-        Roots {
-            entry: None,
-            exports: &exports.roots,
-        },
         prepared,
+    )?)
+}
+
+#[test]
+fn escaping_closure_results_fail_proof_before_export_profile_selection()
+-> Result<(), Box<dyn std::error::Error>> {
+    let invalid = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa24/tests/spec/output-interfaces/escape-outer.rs"),
     )?;
-    Ok((program, exports.interface))
+    let Err(error) = compile(&invalid, "escaping") else {
+        return Err("escaping closure result was exported".into());
+    };
+    assert!(
+        error
+            .to_string()
+            .contains("required lifetime does not outlive")
+    );
+    let valid = "pub fn run()->impl Fn()->u8{||7}";
+    let Err(error) = compile(valid, "opaque") else {
+        return Err("opaque metadata boundary was silently removed".into());
+    };
+    assert!(
+        error
+            .to_string()
+            .contains("outside the scalar metadata profile")
+    );
+    Ok(())
 }
 #[test]
 fn library_symbols_scope_private_instances_closures_and_data()

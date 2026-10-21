@@ -120,3 +120,42 @@ fn proof_failures_publish_no_artifact_and_crate_name_alone_keeps_legacy_output()
     assert_eq!(ordinary.stdout, named.stdout);
     Ok(())
 }
+
+#[test]
+fn entry_free_escaping_closure_reports_lifetime_failure_without_publishing_metadata()
+-> Result<(), Box<dyn std::error::Error>> {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("missing root")?;
+    let folder = root.join(format!(
+        "obj/parallel/pa24-library-proofs/escape-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let metadata = folder.join("escaping.rgm");
+    let fixture = root.join("pa24/tests/spec/output-interfaces/escape-outer.rs");
+    for publish in [false, true] {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+        command.args([
+            "--emit-lowir",
+            "--crate-type=lib",
+            "--crate-name",
+            "escaping",
+            "--crate-disambiguator",
+            "closure",
+        ]);
+        if publish {
+            command.arg("--metadata-output").arg(&metadata);
+        }
+        let output = command.arg(&fixture).output()?;
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert!(!metadata.exists());
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("required lifetime does not outlive"),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    Ok(())
+}

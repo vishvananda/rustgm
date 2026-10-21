@@ -1,0 +1,104 @@
+# PA24 release review
+
+PA24 remains planned. This review consolidates the current closure contract and
+release evidence; historical checkpoint documents describe their own snapshots.
+The required feature set has not been reduced to the passing inventory.
+
+## Contract and coverage
+
+The source profile is Rust 1.98.0, edition 2024, Linux x86-64, checked integer
+overflow and aborting panics. The grading surface remains `--emit-lowir`, using
+the existing deterministic LowIR vocabulary, typed calling convention and CPPGM
+backend. Earlier inspection modes retain their existing proof boundaries.
+
+| Required behavior | Owning fixture families and additional proof controls |
+| --- | --- |
+| Distinct anonymous types, contextual inference, generic inputs and nested bodies | `generic-context`, `generic-captures`, `initializer-owners`, `nested-captures`; closure type and inference invariants |
+| Typed capture paths, prefix merging, shared/mutable/unique/value permissions | `captures`, `typed-capture-uses`, `typed-capture-native`, `adjusted-places`, `capture-copy-shape`; indexed capture forest invariants |
+| Field precision, wildcards, discriminants, shared-reference truncation and source formation | `captures`, `formation-truncation`, `capture-inputs`, `pattern-policies`; source-condition and exact bridge-seal controls |
+| Actual environment layout, Copy/Clone/auto-trait queries, moves and destruction | `captures`, `generic-captures`, `nested-captures`, `output-interfaces`; closure property and ordinary ownership/drop invariants |
+| Fn/FnMut/FnOnce hierarchy, complete inputs/Output and receiver adjustments | `callable-dispatch`, `receiver-adapters`, `receiver-binding`, `execution-self`, `generic-receivers`, `nested-receivers` |
+| Noncapturing function-pointer coercion and opposing captured/unsafe cases | `closure-pointers`, `reference-conversions`; callable declaration and selection invariants |
+| Borrowed callable objects, quantifiers, projected inputs and output lifetimes | `erased-callables`, `captured-dispatch`, `object-input-context`, `pending-object-inputs`, `projected-captures`, `quantified-dispatch`, `reference-objects`, `signature-slot-ownership` |
+| Original and demanded-body proof, returned references and unused children | `output-interfaces`, `formation-truncation`, `capture-inputs`; nested evaluation and original-template proof tests |
+
+Capture fields determine storage and applicable structural abilities; unused
+signature or owner parameters do not become stored fields. A move closure can
+still implement Fn or FnMut. Shared, mutable and consuming adapters retain the
+actual receiver permission. Quantified public slots, enclosing captures and
+body-local lifetimes retain separate ownership through inference and proof.
+Object or callable selection alone cannot discharge the source lifetime contract.
+
+Packed/raw operations with their additional validity requirements are qualified
+at PA27; owning library pointers and additional library methods belong to PA26.
+Async closure execution belongs to PA32/PA33. Cross-crate transport of exposed
+closure and opaque types belongs to PA29. These boundaries do not excuse a
+failed ordinary closure proof or a missing PA24 capture/call operation.
+
+## Frozen inventory and oracle review
+
+Compiler snapshot `1b93560f110c67c706a69c6748538289ab3bb028`, default-feature
+release binary SHA-256
+`e6308578034792cd915c95a7564f96abbbd3cb5b13284a6056c06eeac9dd1db2`,
+qualified all 467 existing PA24 source files without rewriting them. Their
+previous independently declared Rust outcomes consolidate to 323 accepted and
+144 rejected sources. Fifteen inputs are complete entry-free libraries, of
+which ten accept and produce independently validated relocatable objects.
+
+The first complete inventory executed all 313 accepted programs with rustc and
+RustGM/CPPGM. Review identified two intentionally unused-body controls with empty
+entrypoints. Their final contracts are code-generation-only, leaving 311 runtime
+comparisons, two code-generation controls and ten object controls. The revised
+contracts passed the independent source/native checks again before generation.
+The `deny(unreachable_patterns)` library input was independently confirmed with
+default lints enabled; no synthetic main was added.
+
+Evidence is in `obj/parallel/pa24/release-inventory-v1/` and
+`obj/parallel/pa24/release-oracles-v1/`. The latter contains generated candidate
+sidecars and their compiler/fixture/case-contract provenance, followed by a second
+467-case byte comparison. Those oracles are staged for review, not installed in
+the course. Successful LowIR cases have empty diagnostics; the 144 rejections
+have empty output and exit 1.
+
+Review found one invalid semantic inference in this otherwise passing inventory:
+`output-interfaces/escape-outer.rs` was rejected by the scalar metadata export
+profile before its ordinary lifetime proof. Its source and language expectation
+remain unchanged. The library driver now performs the original body proof before
+export selection, using the same retained templates and proof pass. Both CLI and
+typed API regressions require the actual lifetime failure, and metadata must not
+be published. A valid public opaque result still retains its separately owned
+PA29 transport boundary. The staged oracle for this case must be regenerated and
+reviewed against the corrected compiler before activation.
+
+The correction's default-feature binary SHA-256 is
+`ece395550188b349a3d9dae9b98b03616d7b362334c5179d8bbd7d6c5872e80a`.
+`obj/parallel/pa24-library-proofs/qualification-v2/` records the complete
+crate-linking, library-root and nested-evaluation tests, including their native
+controls. Its subsequent audit rejected a test's compile-time fixture include.
+The test now reads the same course source through the established runtime fixture
+loader pattern; production sources were unchanged. `qualification-v3/` binds that
+single test change to the earlier evidence and records the affected regressions,
+formatting, strict all-target/all-feature release Clippy, file/architecture and
+layout audits, and all 7,787 PA1–PA23 text outcomes passing. The corrected compiler
+still requires the next combined full publication qualification.
+
+## Remaining release gates
+
+- Complete the frozen combined release Cargo and native maintainer suites and
+  all earlier independent suites. Formatting, strict all-target/all-feature
+  Clippy, architecture/layout/harness audits, upstream/backend checks and all
+  PA1–PA23 text comparisons passed preflight on the frozen snapshot.
+- Recheck the PA24 library programs and changed rejection using the qualified
+  library proof-order correction before installing any oracle. Carry its
+  compiler-source identity into the next coherent publication checkpoint.
+- Finish the broad frozen-binary performance comparison, including ordinary
+  controls, distinct/repeated captures, projected and quantified objects, and
+  receiver-depth growth. The existing receiver-depth superlinear observation
+  remains an open performance issue, not a linearity claim.
+- Publish the reviewed handout, complete manifest, generated sidecars and
+  provenance together. Update `assignments.json`, the roadmap and root text,
+  independent-source and native-suite selection together; rerun their layout
+  and harness checks. A planned assignment must not report an empty-suite pass.
+
+PA25–PA30 keep their full independent responsibilities and queued work. This
+review is neither PA24 activation nor evidence that those later stages are done.
