@@ -11,6 +11,50 @@ pub(in crate::sema::bodies) struct Interface {
     pub(in crate::sema::bodies) outputs: Option<Box<super::super::nested::output::Ports>>,
 }
 impl Interface {
+    /// The receiver's public callable has its own binder. Only declared callable
+    /// input slots are local to it; every other body slot is captured beneath it.
+    pub fn execution_self(
+        &self,
+        store: &mut crate::types::Store,
+        self_ty: crate::types::TypeId,
+        body_signature: crate::types::TypeId,
+    ) -> Result<(crate::types::TypeId, usize), &'static str> {
+        use crate::types::Kind;
+        let Some(Kind::Closure {
+            identity,
+            arguments,
+            signature,
+            environment,
+        }) = store.kind(self_ty)
+        else {
+            return Err("closure execution Self lacks its canonical identity");
+        };
+        let Some(Kind::Function { bound_regions, .. }) = store.kind(signature) else {
+            return Err("closure execution Self lacks its public binder");
+        };
+        let mut mapping = HashMap::new();
+        for (source, universal) in self.opening.universal_pairs() {
+            let Some((0, slot)) = universal.bound_parts() else {
+                return Err("closure body slot has a different binder");
+            };
+            let public = match source.bound_parts() {
+                Some((0, input)) if u32::from(input) < bound_regions => source,
+                _ => crate::types::RegionId::bound(1, slot)?,
+            };
+            mapping.insert(universal, public);
+        }
+        let count = mapping.len();
+        let mut fold = Bound::restore_regions(mapping);
+        let signature = fold.signature(store, body_signature, bound_regions)?;
+        let ty = store.intern(Kind::Closure {
+            identity,
+            arguments,
+            signature,
+            environment,
+        })?;
+        Ok((ty, count + fold.steps))
+    }
+
     pub fn new(
         enclosing: &[RegionId],
         mut annotations: Vec<RegionId>,

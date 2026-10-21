@@ -3,6 +3,8 @@
 mod adapters;
 #[path = "environment_execution/adjusted.rs"]
 mod adjusted;
+#[path = "harness/checked_sources.rs"]
+mod checked_sources;
 #[path = "environment_execution/contextual.rs"]
 mod contextual;
 #[path = "harness/native_references.rs"]
@@ -15,6 +17,8 @@ mod references;
 mod rustc;
 #[path = "support/semantic.rs"]
 mod semantic;
+#[path = "environment_execution/signatures.rs"]
+mod signatures;
 
 const CASES: &[(&str, &str, bool)] = &[
     ("wildcard-reference-loan", "wildcard-reference-loan", false),

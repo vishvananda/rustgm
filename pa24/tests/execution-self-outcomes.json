@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "modes": [
+    "--emit-types",
+    "--emit-lowir",
+    "--emit-constants"
+  ],
+  "cases": [
+    {
+      "name": "move-output",
+      "path": "tests/spec/execution-self/move-output.rs",
+      "source_sha256": "c1747df58c8a16a04e56aba2b19aa5660b03159872cfe5b43f9e8b4038df48b0",
+      "diagnostic": "",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "shared-output",
+      "path": "tests/spec/execution-self/shared-output.rs",
+      "source_sha256": "7a4e1ed56780e2bf2bd0b14a51bf0215a3f453a55cce83dc9eb481382058ed4e",
+      "diagnostic": "",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "tuple-output",
+      "path": "tests/spec/execution-self/tuple-output.rs",
+      "source_sha256": "56e98b23a6da93a9e1fb7d77867f323f0db6fe5152655dcb76de77d77ba3a48e",
+      "diagnostic": "",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "quantified-input",
+      "path": "tests/spec/execution-self/quantified-input.rs",
+      "source_sha256": "7abab37a26c78bd63e8dd17e6be2d54dca517e07ec069098b94e789c0922d644",
+      "diagnostic": "",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "mixed-output",
+      "path": "tests/spec/execution-self/mixed-output.rs",
+      "source_sha256": "c8bb214f9d914dd3f7d232d81c2ca64030337caeef7c41399f1dca8ef4356f77",
+      "diagnostic": "",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "nested-callable",
+      "path": "tests/spec/execution-self/nested-callable.rs",
+      "source_sha256": "c35e1bee0e06b5e9ddd217bf25707b75bd695525f10e173125fd09b9ad0e77d0",
+      "diagnostic": "",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "local-output",
+      "path": "tests/spec/execution-self/local-output.rs",
+      "source_sha256": "d3e004f1c5725a6964269f3ad9893b59ff678abf2dd223260484c5b536fba203",
+      "diagnostic": "required lifetime does not outlive its target",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "phase_reason": "PA9 type inference retains lifetime/loan obligations; executable views must prove them. Initial uniform phase expectation corrected after focused failure; language and executable expectations unchanged."
+    },
+    {
+      "name": "static-escape",
+      "path": "tests/spec/execution-self/static-escape.rs",
+      "source_sha256": "d1c9ee2335a99f659f3959f928ccb96709ef35e79e07a2dc2a64cbd5adf0b5f5",
+      "diagnostic": "required lifetime does not outlive its target",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "phase_reason": "PA9 type inference retains lifetime/loan obligations; executable views must prove them. Initial uniform phase expectation corrected after focused failure; language and executable expectations unchanged."
+    },
+    {
+      "name": "captured-escape",
+      "path": "tests/spec/execution-self/captured-escape.rs",
+      "source_sha256": "95785ab8f85a724d2ad74d35571bfe1a178dbfc88dddce4766c94a3a835e5ec2",
+      "diagnostic": "access conflicts with a live reference loan",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "phase_reason": "PA9 type inference retains lifetime/loan obligations; executable views must prove them. Initial uniform phase expectation corrected after focused failure; language and executable expectations unchanged."
+    },
+    {
+      "name": "input-escape",
+      "path": "tests/spec/execution-self/input-escape.rs",
+      "source_sha256": "2de90f884077af4e3c1c7d5a767b7259c86917592d0c8d141f57affbaab735eb",
+      "diagnostic": "required lifetime does not outlive its target",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "phase_reason": "PA9 type inference retains lifetime/loan obligations; executable views must prove them. Initial uniform phase expectation corrected after focused failure; language and executable expectations unchanged."
+    },
+    {
+      "name": "parent-binder-collision",
+      "path": "tests/spec/execution-self/parent-binder-collision.rs",
+      "source_sha256": "46098cc136abbcb646a1d736571bf51b485ef9bd16b6250401df95fc93a6a3ef",
+      "diagnostic": "required lifetime does not outlive its target",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "expected_by_mode": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "phase_reason": "PA9 type inference retains lifetime/loan obligations; executable views must prove them. Initial uniform phase expectation corrected after focused failure; language and executable expectations unchanged."
+    }
+  ]
+}

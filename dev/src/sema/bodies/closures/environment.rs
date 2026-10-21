@@ -138,6 +138,11 @@ impl Checker<'_> {
                 solved.types[metadata.self_ty.0 as usize],
             )
             .map_err(|e| self.error(source, e))?;
+        let (self_ty, signature_work) = metadata
+            .lifetimes
+            .execution_self(&mut self.facts.types, self_ty, signature)
+            .map_err(|e| self.error(source, e))?;
+        self.facts.body_work.canonical_steps += signature_work;
         let mut binding_mutability = HashMap::new();
         for &(definition, _) in &metadata.bindings {
             let key = self.report.resolution.definitions[definition.0 as usize]

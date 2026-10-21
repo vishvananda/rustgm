@@ -89,10 +89,27 @@ impl Checker<'_> {
             .infer
             .map_regions(&mut self.facts.types, result, &mut observe)
             .map_err(|e| self.error(source.node, e))?;
+        let imported: HashMap<_, _> = interface
+            .opening
+            .universal_pairs()
+            .filter(|(caller, _)| {
+                caller.bound_parts().is_none()
+                    && caller.0 != 0
+                    && self
+                        .facts
+                        .body_regions
+                        .get(caller.0 as usize - 1)
+                        .is_some_and(|fact| fact.body == parent)
+            })
+            .map(|(caller, private)| (private, caller))
+            .collect();
         let mut regions: Vec<_> = observe
             .observed_regions()
-            .filter(|region| {
-                region.bound_parts().is_none()
+            .filter_map(|region| {
+                if let Some(&caller) = imported.get(&region) {
+                    return Some((region, Some(caller)));
+                }
+                (region.bound_parts().is_none()
                     && region.0 != 0
                     && self
                         .facts
@@ -101,12 +118,13 @@ impl Checker<'_> {
                         .is_some_and(|fact| {
                             fact.body == source
                                 && !matches!(fact.origin, BodyRegionOrigin::UniversalAlias)
-                        })
+                        }))
+                .then_some((region, None))
             })
             .collect();
-        regions.sort_unstable_by_key(|region| region.0);
-        self.facts.body_work.canonical_steps += observe.steps;
-        for private in regions {
+        regions.sort_unstable_by_key(|(region, _)| region.0);
+        self.facts.body_work.canonical_steps += observe.steps + interface.opening.universal_count();
+        for (private, caller) in regions {
             if interface
                 .outputs
                 .as_ref()
@@ -119,11 +137,17 @@ impl Checker<'_> {
                 .get_or_insert_with(Default::default)
                 .reserve_port()
                 .map_err(|e| self.error(source.node, e))?;
-            let caller = self.body_region_for(source.node, parent, BodyRegionOrigin::Inference)?;
-            interface
-                .opening
-                .region(caller, 0)
-                .map_err(|e| self.error(source.node, e))?;
+            let caller = if let Some(caller) = caller {
+                caller
+            } else {
+                let caller =
+                    self.body_region_for(source.node, parent, BodyRegionOrigin::Inference)?;
+                interface
+                    .opening
+                    .region(caller, 0)
+                    .map_err(|e| self.error(source.node, e))?;
+                caller
+            };
             let ports = interface.outputs.get_or_insert_with(|| {
                 Box::new(Ports {
                     pairs: HashMap::new(),
@@ -198,7 +222,10 @@ impl Checker<'_> {
             .universal_pairs()
             .filter(|_| !outputs.is_empty())
         {
-            if closing.region(slot, 0).is_err() {
+            // Public quantified inputs belong to this closure's callable binder,
+            // even when the public result can mention them. They are not parent
+            // proof identities and cannot discharge a captured output condition.
+            if parent.bound_parts().is_some() || closing.region(slot, 0).is_err() {
                 continue;
             }
             let (_, slot) = slot
