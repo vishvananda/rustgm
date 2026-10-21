@@ -29,6 +29,7 @@ impl Builder<'_> {
             selected.dereferences,
             selected.borrow,
             selected.receiver,
+            crate::body::ir::BorrowKind::TwoPhase,
         )?;
         self.scratch.receivers.insert(node, value);
         Ok(())

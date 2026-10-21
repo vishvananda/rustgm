@@ -79,8 +79,14 @@ impl Builder<'_> {
         let base = self.scratch.places.last().copied().flatten();
         if let Some(base) = base.filter(|_| self.current.is_some()) {
             let base = self.automatic_dereferences(node, base)?;
-            let receiver =
-                self.receiver_value(node, base, 0, selected.borrow, selected.receiver)?;
+            let receiver = self.receiver_value(
+                node,
+                base,
+                0,
+                selected.borrow,
+                selected.receiver,
+                crate::body::ir::BorrowKind::Immediate,
+            )?;
             self.scratch.receivers.insert(node, receiver);
         }
         Ok(())

@@ -14,6 +14,39 @@ pub(in crate::sema::bodies) struct Places {
     selected: HashMap<NodeId, Selected>,
 }
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn prepare_language_receiver(
+        &mut self,
+        mut node: NodeId,
+    ) -> Result<(), Error> {
+        if self
+            .report
+            .resolution
+            .builtin_traits
+            .language(Hook::Index)
+            .is_none()
+        {
+            return Ok(());
+        }
+        for _ in 0..1_000_000 {
+            match self.kind(node) {
+                Kind::Index { .. } => {
+                    self.state
+                        .language_places
+                        .get_or_insert_with(Default::default);
+                    return Ok(());
+                }
+                Kind::Group(base)
+                | Kind::Attributed { value: base, .. }
+                | Kind::Field { value: base, .. }
+                | Kind::Unary {
+                    op: Unary::Dereference,
+                    operand: base,
+                } => node = base,
+                _ => return Ok(()),
+            }
+        }
+        Err(self.error(node, "language receiver place work budget exceeded"))
+    }
     pub(in crate::sema::bodies) fn mutable_language_place(&self, node: NodeId) -> bool {
         self.state
             .language_places

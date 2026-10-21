@@ -74,6 +74,14 @@ impl Checker<'_> {
         let expected = self.child(node, signature, 0)?;
         let (dereferences, borrow, actual) =
             self.adjust_method_receiver(node, site.receiver, term, selected)?;
+        if let Some(borrow) = borrow
+            && matches!(
+                self.head(node, borrow)?,
+                Some(Constructor::Reference { mutable: true, .. })
+            )
+        {
+            self.mark_mutable_language_place(site.receiver)?;
+        }
         let converted = if selected.unsize {
             self.unsize_method_receiver(node, actual)?
         } else {

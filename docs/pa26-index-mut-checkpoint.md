@@ -18,30 +18,42 @@ reference requires mutable indexing, while copying a raw pointer from a shared
 index does not. A later mutable-reference consumer refines the original pending
 method/call slots in place. It keeps the same canonical Output type and emits
 no duplicate selected call facts. Ordinary shared reads need no mutation index
-allocation. Isolated closure bodies keep their own facts.
+allocation. Isolated closure bodies keep their own facts. Method receiver
+selection also propagates mutable demand through an indexed place when its
+selected receiver requires a mutable reference. This refinement preserves the
+raw-pointer stop: a mutable method called through an indexed raw pointer still
+permits the pointer to be read with shared Index.
 
 The existing selected-call and receiver-borrow pipeline performs lowering. The
 method's returned reference becomes an ordinary place, retaining normal
 mutability, ownership and lifetime checks. There is no new IR dispatch or raw
 pointer permission bypass. Plain assignment and primitive compound assignment
 retain right-before-left runtime evaluation; index receiver borrowing still
-precedes index-argument evaluation. Native side-effect controls distinguish the
+precedes index-argument evaluation. Mutable square-index receivers use an
+immediate borrow; ordinary method receivers retain their two-phase reservation.
+Thus an index argument cannot inspect an already mutably borrowed container,
+while an ordinary method argument can use the shared receiver before activation.
+Native side-effect controls distinguish the
 shared getter from the mutable getter and verify this ordering.
 
-The 33 declared Rust 1.98.0 object-qualified cases are in
-`pa26/tests/index-mut-outcomes.json`: nineteen accepted cases, twelve language
-rejections and two explicitly valid Rust boundaries. Capturing closures remain
+The 44 declared Rust 1.98.0 object-qualified cases are in
+`pa26/tests/index-mut-outcomes.json`: twenty-five accepted cases, sixteen language
+rejections and three explicitly valid Rust boundaries. Capturing closures remain
 an unfinished PA24 prerequisite, so their mutation is retained as a boundary;
 a noncapturing closure taking an explicit mutable parameter executes correctly.
 Custom compound assignment still needs the pending AddAssign family. Primitive
 compound assignment through a mutable index is implemented. Neither boundary
-is described as a Rust language rejection.
+is described as a Rust language rejection. Direct library-trait dot-method
+lookup, such as `w.index_mut(...)`, remains a separate required PA26 surface
+boundary; the paired inherent-method reservation control executes correctly.
 
-Fourteen independently compared native programs cover replacement, borrowing,
+Twenty independently compared native programs cover replacement, borrowing,
 primitive compound mutation, nested indexes, generic inherited output, tied
 lifetimes, mutable raw addresses, mutable-reference dereference chains, shared
 raw-pointer dereferences, side-effect order, unsized slice outputs and mutation
-through an explicit closure parameter. Tests also assert that IndexMut's output
+through an explicit closure parameter, immediate index borrowing, ordinary method
+reservation, mutable and read-only methods, and reference/raw-pointer method
+receiver chains. Tests also assert that IndexMut's output
 is exactly the canonical Index member and that its receiver/result are mutable
 references tied by one callable binder. Negatives cover immutable receivers,
 shared references, missing IndexMut, overlapping loans, receiver/index conflicts,
@@ -61,7 +73,13 @@ cargo test --manifest-path dev/Cargo.toml --test language_operators \
 
 Evidence is under `obj/parallel/pa26/index-mut/`, with declared fixtures, hashes,
 independent object outcomes, `complete.json`, native outputs and resource receipt
-`79802320e2f74e2e88ef1b90d708aa2a`. Initial functional checks caught missing child
+`79802320e2f74e2e88ef1b90d708aa2a` for the initial checkpoint. The immediate-borrow
+and method-receiver follow-up passes `receiver.json` under resource receipt
+`6b485321153b47acbfd97bb6f8df1dfd`; its earlier Clippy failure identified one
+call-operator helper caller requiring the explicit, unchanged two-phase policy
+(failed receipt `881828adcb714bf08b12a9247188236f`). Independent pre-fix controls
+also retained the two incorrectly admitted index-argument conflicts and the
+direct trait-method boundary. Initial functional checks caught missing child
 scheduling in a newly guarded compound-assignment arm; its runtime lowering was
 unchanged. The initially positive capture hypothesis reached the documented
 PA24 boundary and remains explicitly qualified as such. Earlier failure logs

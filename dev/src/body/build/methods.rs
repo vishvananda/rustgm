@@ -31,6 +31,7 @@ impl Builder<'_> {
             selected.dereferences,
             selected.borrow,
             selected.receiver,
+            BorrowKind::TwoPhase,
         )?;
         self.scratch.receivers.insert(node, value);
         Ok(())
@@ -43,6 +44,7 @@ impl Builder<'_> {
         dereferences: u32,
         borrow: Option<crate::types::TypeId>,
         receiver: crate::types::TypeId,
+        mutable_kind: BorrowKind,
     ) -> Result<ValueId, Error> {
         for _ in 0..dereferences {
             place = self.dereference_place(node, place)?;
@@ -58,7 +60,7 @@ impl Builder<'_> {
                 return Err(self.error(node, "method borrow differs from selected receiver place"));
             }
             let kind = if mutable {
-                BorrowKind::TwoPhase
+                mutable_kind
             } else {
                 BorrowKind::Immediate
             };

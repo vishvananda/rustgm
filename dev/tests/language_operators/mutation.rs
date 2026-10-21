@@ -15,6 +15,12 @@ fn fixture(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(root()?.join(format!("pa26/tests/spec/index-mut/{name}.rs")))
 }
 const ACCEPTED: &[&str] = &[
+    "mutable-method",
+    "read-method",
+    "reference-method",
+    "raw-method-shared",
+    "shared-read-argument",
+    "method-reservation",
     "unsized",
     "closure-parameter",
     "store",
@@ -36,6 +42,11 @@ const ACCEPTED: &[&str] = &[
     "raw-field-shared",
 ];
 const REJECTED: &[&str] = &[
+    "mutable-method-shared",
+    "mutable-method-argument",
+    "trait-method-boundary",
+    "index-read-conflict",
+    "index-borrow-conflict",
     "escape",
     "captured",
     "immutable",
@@ -79,7 +90,11 @@ fn mutable_index_outcomes_match_independently_qualified_contracts()
             .arg(folder.join(format!("{name}.o")))
             .output()?;
         std::fs::write(folder.join(format!("{name}.stderr")), &independent.stderr)?;
-        let rustc_accepted = accepted || matches!(name, "compound-library-boundary" | "captured");
+        let rustc_accepted = accepted
+            || matches!(
+                name,
+                "compound-library-boundary" | "captured" | "trait-method-boundary"
+            );
         assert_eq!(
             independent.status.code(),
             Some(i32::from(!rustc_accepted)),
@@ -113,6 +128,12 @@ fn selected_mutable_index_places_and_evaluation_order_execute()
         "compound-order",
         "unsized",
         "closure-parameter",
+        "shared-read-argument",
+        "method-reservation",
+        "mutable-method",
+        "read-method",
+        "reference-method",
+        "raw-method-shared",
     ];
     let sources = names
         .iter()

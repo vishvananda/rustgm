@@ -409,6 +409,142 @@
         "status": 0,
         "emit": "obj"
       }
+    },
+    {
+      "path": "tests/spec/index-mut/index-read-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/index-borrow-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/shared-read-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/trait-method-boundary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Direct library-trait dot-method lookup remains a required PA26 library-surface boundary; paired inherent-method receiver reservation is qualified separately."
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/method-reservation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/mutable-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/mutable-method-shared.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/mutable-method-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/read-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/reference-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/index-mut/raw-method-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.mutable-indexing"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      }
     }
   ]
 }

@@ -114,7 +114,12 @@ mutable-reference dereference chains preserve normal loans and lifetimes.
 Raw-pointer dereferences can retain shared indexing without weakening pointer
 permissions. Runtime evaluation order is independently compared with rustc.
 
-Thirty-three draft outcomes and fourteen native programs are recorded in
+Mutable method receivers refine indexed places through the same typed facts.
+Square-index receiver borrows are immediate, while ordinary method calls retain
+two-phase receiver reservation.
+
+Forty-four draft outcomes and twenty native programs are recorded in
 `tests/index-mut-outcomes.json` and `docs/pa26-index-mut-checkpoint.md`.
-Capturing closures and custom compound assignment remain explicitly qualified
-prerequisite/hook boundaries. This checkpoint does not activate PA26.
+Capturing closures, custom compound assignment and direct library-trait
+dot-method lookup remain explicitly qualified prerequisite/hook boundaries.
+This checkpoint does not activate PA26.

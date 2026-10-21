@@ -1202,6 +1202,7 @@ impl Checker<'_> {
                 self.state.children.extend([left, right]);
             }
             Kind::MethodCall { receiver, .. } | Kind::GenericMethodCall { receiver, .. } => {
+                self.prepare_language_receiver(receiver)?;
                 self.state.work.push(Work::MethodArguments(node));
                 self.state.work.push(Work::Enter(receiver, None));
                 return Ok(());
