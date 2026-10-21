@@ -1,0 +1,1 @@
+#[repr(packed)]struct P{a:u8,b:u32}fn main(){let mut p=P{a:1,b:7};let mut write=||{p.b+=2;};write();write();let read=||p.b;check(read()==11);let raw=||&raw const p.b;check(raw()==&raw const p.b);check(p.a==1);}

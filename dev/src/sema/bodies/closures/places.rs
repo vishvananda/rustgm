@@ -19,6 +19,26 @@ pub(super) struct Place {
     pub path: PathId,
     pub shared: Option<PathId>,
     pub before_dereference: Option<PathId>,
+    precision: Option<PathId>,
+    pub raw: bool,
+}
+impl Place {
+    pub(super) fn capture_path(self, moving: bool) -> PathId {
+        // All candidates belong to this one ordered ancestor chain. Choosing
+        // the smallest interned index is constant work, without ancestry scans.
+        [
+            self.precision,
+            if moving {
+                self.before_dereference
+            } else {
+                self.shared
+            },
+        ]
+        .into_iter()
+        .flatten()
+        .min_by_key(|path| path.index())
+        .unwrap_or(self.path)
+    }
 }
 #[derive(Default)]
 pub(super) struct Places {
@@ -53,6 +73,8 @@ impl Places {
             path,
             shared: None,
             before_dereference: None,
+            precision: None,
+            raw: false,
         }))
     }
     pub(super) fn import_step(
@@ -66,15 +88,27 @@ impl Places {
         if self.work > 1_000_000 {
             return Err(checker.error(node, "nested capture place work limit exceeded"));
         }
-        if let Step::Dereference { mutable } = step {
+        if matches!(step, Step::Dereference { .. } | Step::RawDereference { .. }) {
             let term = self.types[place.path.index()];
-            if !matches!(checker.head(node, term)?, Some(Constructor::Reference {mutable: actual, ..}) if actual == mutable)
-            {
-                return Err(checker.error(node, "nested capture reference capability changed"));
+            let valid = match (step, checker.head(node, term)?) {
+                (
+                    Step::Dereference { mutable },
+                    Some(Constructor::Reference {
+                        mutable: actual, ..
+                    }),
+                )
+                | (
+                    Step::RawDereference { mutable },
+                    Some(Constructor::Pointer { mutable: actual }),
+                ) => mutable == actual,
+                _ => false,
+            };
+            if !valid {
+                return Err(checker.error(node, "nested capture dereference capability changed"));
             }
             return self.dereference(checker, node, place);
         }
-        let Step::Field(selection) = step else {
+        let (Step::Field(selection) | Step::UnionField(selection)) = step else {
             return Err(checker.error(node, "missing nested capture field selection"));
         };
         let term = self.types[place.path.index()];
@@ -103,6 +137,10 @@ impl Places {
                 ));
             }
         };
+        let expected = self.field_step(checker, node, &mut place, selection)?;
+        if expected != step {
+            return Err(checker.error(node, "nested capture field capability changed"));
+        }
         let path = self
             .graph
             .project(place.path, step)
@@ -175,6 +213,8 @@ impl Places {
                     path,
                     shared: None,
                     before_dereference: None,
+                    precision: None,
+                    raw: false,
                 }))
             }
             Kind::Group(value) | Kind::Attributed { value, .. } => Ok(self.cache[&value]),
@@ -200,23 +240,6 @@ impl Places {
                 for _ in 0..count {
                     place = self.dereference(checker, node, place)?;
                 }
-                let ty = self.types[place.path.index()];
-                if let Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) =
-                    checker.head(node, ty)?
-                    && checker
-                        .facts
-                        .aggregates
-                        .get(item)
-                        .is_some_and(|definition| {
-                            definition.kind == aggregate::Kind::Union
-                                || definition.repr.packed.is_some()
-                        })
-                {
-                    return Err(checker.error(
-                        node,
-                        "packed and union capture precision is not implemented",
-                    ));
-                }
                 let Some(Operation::Field { field }) = checker
                     .facts
                     .node(checker.key(node))
@@ -224,9 +247,10 @@ impl Places {
                 else {
                     return Err(checker.error(node, "missing typed closure field selection"));
                 };
+                let step = self.field_step(checker, node, &mut place, field)?;
                 let path = self
                     .graph
-                    .project(place.path, Step::Field(field))
+                    .project(place.path, step)
                     .map_err(|e| checker.error(node, e))?;
                 self.retain(path, checker.term(node)?);
                 place.path = path;
@@ -242,21 +266,64 @@ impl Places {
         mut place: Place,
     ) -> Result<Place, Error> {
         let term = self.types[place.path.index()];
-        let Some(Constructor::Reference { mutable, .. }) = checker.head(node, term)? else {
-            return Err(checker.error(node, "raw pointer capture paths are not implemented"));
+        let (step, mutable, raw) = match checker.head(node, term)? {
+            Some(Constructor::Reference { mutable, .. }) => {
+                (Step::Dereference { mutable }, mutable, false)
+            }
+            Some(Constructor::Pointer { mutable }) => {
+                (Step::RawDereference { mutable }, mutable, true)
+            }
+            _ => {
+                return Err(checker.error(
+                    node,
+                    "capture dereference requires a reference or raw pointer",
+                ));
+            }
         };
+        if raw {
+            place.precision = place.precision.or(Some(place.path));
+            place.raw = true;
+        }
         let ty = checker.child(node, term, 0)?;
         let path = self
             .graph
-            .project(place.path, Step::Dereference { mutable })
+            .project(place.path, step)
             .map_err(|e| checker.error(node, e))?;
         self.retain(path, ty);
         place.before_dereference = place.before_dereference.or(Some(place.path));
         place.path = path;
-        if !mutable {
+        if !raw && !mutable && place.precision.is_none() {
             place.shared = Some(path);
         }
         Ok(place)
+    }
+    fn field_step(
+        &self,
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        place: &mut Place,
+        field: crate::sema::members::Selection,
+    ) -> Result<Step, Error> {
+        let term = self.types[place.path.index()];
+        let Some(Constructor::Adt(owner, _) | Constructor::AdtArgs(owner, _)) =
+            checker.head(node, term)?
+        else {
+            return Ok(Step::Field(field));
+        };
+        let definition = checker
+            .facts
+            .aggregates
+            .get(owner)
+            .ok_or_else(|| checker.error(node, "missing capture aggregate shape"))?;
+        let union = definition.kind == aggregate::Kind::Union;
+        if union || definition.repr.packed.is_some() {
+            place.precision = place.precision.or(Some(place.path));
+        }
+        Ok(if union {
+            Step::UnionField(field)
+        } else {
+            Step::Field(field)
+        })
     }
     pub const fn work(&self) -> usize {
         self.work

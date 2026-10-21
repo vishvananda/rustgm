@@ -237,25 +237,29 @@ impl Collector<'_> {
             Use::ValueOf(term) => term,
             _ => self.places.types[place.path.index()],
         };
-        let mut mode = match work.usage {
-            Use::Shared => Mode::Shared,
-            Use::Mutable => {
-                self.kind = self.kind.max(CallKind::Mutable);
-                Mode::Mutable
-            }
-            Use::Value | Use::ValueOf(_) if checker.capture_copy(work.node, term)? => Mode::Shared,
-            Use::Value | Use::ValueOf(_) => {
-                self.kind = CallKind::Once;
-                Mode::Value
-            }
-            Use::Mention => return Err(checker.error(work.node, "unexpected capture mention")),
-        };
-        let path = if self.moving {
-            mode = Mode::Value;
-            place.before_dereference.unwrap_or(place.path)
+        let mut mode = if place.raw {
+            Mode::Shared
         } else {
-            place.shared.unwrap_or(place.path)
+            match work.usage {
+                Use::Shared => Mode::Shared,
+                Use::Mutable => {
+                    self.kind = self.kind.max(CallKind::Mutable);
+                    Mode::Mutable
+                }
+                Use::Value | Use::ValueOf(_) if checker.capture_copy(work.node, term)? => {
+                    Mode::Shared
+                }
+                Use::Value | Use::ValueOf(_) => {
+                    self.kind = CallKind::Once;
+                    Mode::Value
+                }
+                Use::Mention => return Err(checker.error(work.node, "unexpected capture mention")),
+            }
         };
+        let path = place.capture_path(self.moving);
+        if self.moving {
+            mode = Mode::Value;
+        }
         self.places
             .graph
             .require(path, mode)
@@ -302,13 +306,8 @@ impl Collector<'_> {
             Kind::Unary { op, operand } => self.push(
                 operand,
                 match op {
-                    Unary::Borrow => Use::Shared,
-                    Unary::BorrowMut => Use::Mutable,
-                    Unary::RawConst | Unary::RawMut => {
-                        return Err(
-                            checker.error(node, "raw address capture uses are not implemented")
-                        );
-                    }
+                    Unary::Borrow | Unary::RawConst => Use::Shared,
+                    Unary::BorrowMut | Unary::RawMut => Use::Mutable,
                     _ => Use::Value,
                 },
             ),

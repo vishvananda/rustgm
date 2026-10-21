@@ -15,6 +15,12 @@ pub enum Mode {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Step {
     Field(Selection),
+    /// Union fields overlap and retain the union capture boundary.
+    UnionField(Selection),
+    /// A raw pointee access captures the pointer prefix without a reference loan.
+    RawDereference {
+        mutable: bool,
+    },
     /// Preserve reference capability when a required ancestor covers this place.
     Dereference {
         mutable: bool,

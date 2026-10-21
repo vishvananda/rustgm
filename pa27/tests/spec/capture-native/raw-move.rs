@@ -1,0 +1,1 @@
+fn shared<F:Fn()->u32>(_:&F){}struct S{p:*mut u32,free:u32}fn main(){let mut x=7u32;let s=S{p:&raw mut x,free:1};let c=move||unsafe{*s.p+=2;*s.p};shared(&c);check(c()==9);check(c()==11);check(x==11);check(s.free==1);}

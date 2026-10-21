@@ -1,0 +1,1 @@
+#[repr(packed)]struct P{a:u8,b:u32}union U{a:u32,b:u32}struct S{p:P,u:U,ptr:*mut u32}fn main(){let mut x=3u32;let s=S{p:P{a:1,b:7},u:U{a:9},ptr:&raw mut x};let r=&s;let outer=||{let child=||unsafe{*r.ptr+=2;r.p.b+r.u.a+*r.ptr};child()};check(outer()==21);check(outer()==23);check(x==7);}

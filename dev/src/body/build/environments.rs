@@ -384,10 +384,63 @@ impl Builder<'_> {
         formation: Formation,
     ) -> Result<Place, Error> {
         let projection = match step {
-            Step::Field(field) => {
+            Step::Field(field) | Step::UnionField(field) => {
+                let base_ty = self.place_type(node, base)?;
+                let union = match (field, self.facts.types.kind(base_ty)) {
+                    (Selection::Tuple(index), Some(Type::Tuple(fields)))
+                        if self
+                            .facts
+                            .types
+                            .list(fields)
+                            .is_some_and(|fields| (index as usize) < fields.len()) =>
+                    {
+                        false
+                    }
+                    (Selection::Nominal(field), Some(Type::Adt(owner, _))) => {
+                        let actual = self
+                            .facts
+                            .members
+                            .variant(field)
+                            .and_then(|id| self.facts.members.variants.get(id.0 as usize))
+                            .map(|variant| variant.owner);
+                        if actual != Some(owner) {
+                            return Err(self.error(node, "capture projection field owner changed"));
+                        }
+                        self.facts
+                            .aggregates
+                            .get(owner)
+                            .ok_or_else(|| self.error(node, "missing capture projection shape"))?
+                            .kind
+                            == crate::types::aggregate::Kind::Union
+                    }
+                    _ => {
+                        return Err(self
+                            .error(node, "capture projection field has a different parent type"));
+                    }
+                };
+                if union != matches!(step, Step::UnionField(_)) {
+                    return Err(self.error(node, "capture projection field capability changed"));
+                }
                 self.projection(node, expected, base, ProjectionKind::Field(field))?
             }
-            Step::Dereference { .. } => self.dereference_projection(node, base)?,
+            Step::Dereference { mutable } | Step::RawDereference { mutable } => {
+                let raw = matches!(step, Step::RawDereference { .. });
+                let capability = match self.facts.types.kind(self.place_type(node, base)?) {
+                    Some(Type::Pointer {
+                        mutable: actual, ..
+                    }) if raw => Some(actual),
+                    Some(Type::Reference {
+                        mutable: actual, ..
+                    }) if !raw => Some(actual),
+                    _ => None,
+                };
+                if capability != Some(mutable) {
+                    return Err(
+                        self.error(node, "capture projection dereference capability changed")
+                    );
+                }
+                self.dereference_projection(node, base)?
+            }
         };
         let place = Place::Projection(projection);
         if self.place_type(node, place)? != expected {
@@ -494,3 +547,7 @@ impl Builder<'_> {
         )
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/replay_capabilities.rs"]
+mod tests;

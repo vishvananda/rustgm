@@ -1,0 +1,18 @@
+{
+  "stage": "draft-predeclared",
+  "purpose": "Qualify packed reference alignment without an exported closure reference result, which is a separate current lifetime boundary.",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-local-borrow.rs",
+      "sha256": "e92c08e165e89eae148a56bdd175260f2add2ae77847534504e3d1deed961e6c",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-local-borrow.rs",
+      "sha256": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    }
+  ]
+}

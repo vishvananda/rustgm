@@ -93,6 +93,21 @@ remain distinct from creating a field reference. The qualified let-reference
 and match-reference controls reject in the executable pipeline. Earlier type
 inspection retains their alignment obligations under PA9's phase boundary.
 
+Closure capture precision stops before a packed field access, at the union,
+or before a raw-pointer dereference. Full typed leaf paths remain available for
+ordinary access checking. Raw pointee writes capture the pointer prefix as a
+read and can use an immutable `Fn` closure; separate pointer-slot writes retain
+their mutable capture and `FnMut` requirement. Move captures preserve that
+separation. Nested formation checks the same raw/reference and union/ordinary
+field capabilities, including exact nominal field ownership. Capture truncation
+grants no unsafe, alignment or constant-evaluation permission.
+
+The draft capture receipt preserves independently accepted reference-output
+controls that currently await the separately owned closure lifetime proof. It
+also retains original hypothesis disagreements for union Copy reads and direct
+raw field addresses. These boundaries are not feature acceptance or assignment
+completion.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

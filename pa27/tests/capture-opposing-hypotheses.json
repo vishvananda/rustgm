@@ -1,0 +1,64 @@
+{
+  "stage": "draft-predeclared",
+  "original_plan": "capture-precision-hypotheses.json",
+  "retained_disagreements": [
+    "union-use-after-capture",
+    "union-raw-unsafe-required"
+  ],
+  "cases": [
+    {
+      "path": "pa27/tests/spec/capture-precision/union-consume-before-call.rs",
+      "sha256": "85ec065cdd50b1aa9bcaca0ad1d00ce7bdcef883d531047832d9a4e88db3c634",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-consume-after-call.rs",
+      "sha256": "ee388945df7ed917424da30b496532742efb9312ceca7eae7f1c67ef38824beb",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-move-consume.rs",
+      "sha256": "f6aff011a27581296e1b13843b4825117f77200ede77ee1354f576ce387c1b1d",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-nested-unsafe.rs",
+      "sha256": "3d2d9acb3c0718155bcafc2ce9988d8baefd2eab1b4af86be647516ad358ab45",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-nested.rs",
+      "sha256": "c437ec26f293b37693ed5878b53d07f1d408947faad3deab6c0b605c2db3b673",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-mutable.rs",
+      "sha256": "d17467d04c448ca16c156551989808ba30a860f067434f1b3189b9b393b6f585",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-address-through-pointer-shared-call.rs",
+      "sha256": "3beffad4fac19ce565addded72a232d4140f5a2b836cbde53b2b2b49b57a119c",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-copy-shared-call.rs",
+      "sha256": "f1556e02d10408dff15902e78025d98a4f44a85564ae7342003120ba9066833e",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-outer-reference.rs",
+      "sha256": "745f9eef0273a4c7413b31437de2185fa496c82593b8f6a6b4d6615fba8f92c3",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    }
+  ]
+}

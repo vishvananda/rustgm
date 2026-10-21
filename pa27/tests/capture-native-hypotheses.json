@@ -1,0 +1,68 @@
+{
+  "stage": "draft-predeclared",
+  "native": [
+    {
+      "path": "pa27/tests/spec/capture-native/packed.rs",
+      "sha256": "e77cfa600b1a51c7ee78b3b0581b63fe349de8d79eeb9816166b811a264683e6",
+      "qualified_input_sha256": "12688269f1c1bee0c828c44ab23690989b00a5418f9a8948107ea41b89f4ffbb",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/packed-move.rs",
+      "sha256": "3232dac4c927eb5f60b93f60b74fde11ae5ff5454a36ff56fc03eda80c69911d",
+      "qualified_input_sha256": "a2557361a54125227a10558bdec7cf0cd8a1f95400cedd890be89e68a2c469ff",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/raw-write.rs",
+      "sha256": "2ae08effc02616329fd1f33247a4d07d41ee1a8f86ecd82258e4d09bc7e521c8",
+      "qualified_input_sha256": "68505572741972f34e7895563d9887cc7fa180cb8399a41b11a5e1173884d9a1",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/raw-move.rs",
+      "sha256": "5e92ded557fb16fa8c40a35425a38a48ef1b1119b07a6225f4c19971328a5ea4",
+      "qualified_input_sha256": "1f8cae87c318733b9aa931a2c2db6cff118163c1ac317c6f28f36034680c25ae",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/raw-cancellation.rs",
+      "sha256": "d30bd5ae35647d7af45fb4857ef80ec15c027e9a1292d82e6abc1dbdfdc472ac",
+      "qualified_input_sha256": "907c602d43961f401e6267b124354fa2af02aef3e4044062fbe044f361470cd2",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/union.rs",
+      "sha256": "a79cf936caa213ed1413e9f5e378e5ddf6189e047eda2aef7a33bada426fbb1a",
+      "qualified_input_sha256": "9448b34459761ce6f1d7798035e9862acbf8cda1d5ee4a0101fc9860624726a6",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/nested.rs",
+      "sha256": "a96e430cf800be76dd7b5c6456f30b5bec77b9b8b56a91d7db20ae786eca9066",
+      "qualified_input_sha256": "bfdf4d026226fde93a419bad7c9d3267e2d59b21c8e93fcb6cfbe392383fa4b0",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/shared-before-boundary.rs",
+      "sha256": "2626e09b542062e61c61a0de426f0a1fba4aaa1b2b42ea1981364cb979dd4727",
+      "qualified_input_sha256": "011e138ea0e8c7ddc36db734278adab6fbd2117e70d7c2fb3b8ac645f9cfb84e",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/pointer-slot.rs",
+      "sha256": "5a115b39394e7b27bb51ca32de20a4f8101ebfe237b115dc826608c064e465f0",
+      "qualified_input_sha256": "0022fea7fe81f1813116de2b2ff222d84c79a7df4986a85621f1792224a01820",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0
+    }
+  ]
+}

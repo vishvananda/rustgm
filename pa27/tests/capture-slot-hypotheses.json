@@ -1,0 +1,18 @@
+{
+  "stage": "draft-predeclared",
+  "purpose": "Raw pointee use cannot erase an independent captured pointer-slot mutation.",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-slot-and-pointee.rs",
+      "sha256": "1ca68191cd2bdc0355d83a12fe7a90068ae4e2d8c9adda2bc268db9cd6161043",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-slot-requires-mut-call.rs",
+      "sha256": "50b69a89eef434cc481704d7db6c1ab520040e44f3910063c241fce239553a30",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    }
+  ]
+}

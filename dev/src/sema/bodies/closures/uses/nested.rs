@@ -61,12 +61,10 @@ impl Collector<'_> {
                 }
                 Mode::Shared => Mode::Shared,
             };
-            let path = if self.moving {
+            let path = place.capture_path(self.moving);
+            if self.moving {
                 mode = Mode::Value;
-                place.before_dereference.unwrap_or(place.path)
-            } else {
-                place.shared.unwrap_or(place.path)
-            };
+            }
             self.places
                 .graph
                 .require(path, mode)

@@ -1,0 +1,205 @@
+{
+  "stage": "draft-predeclared",
+  "development_base": "171a3bda",
+  "worker_merge": "d6a8b869",
+  "qualified_cas": "4f5f3777",
+  "reference_rules": [
+    "type.closure.capture.precision.raw-pointer-dereference",
+    "type.closure.capture.precision.union",
+    "type.closure.capture.precision.unaligned"
+  ],
+  "cases": [
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-copy.rs",
+      "sha256": "8f7595da514ef53536f2ef50298e87e552dd85a28ac11d216e8bd8bd9bc0fec6",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-conflict.rs",
+      "sha256": "a1b77f84363ab1ab62bf8f6660a811924b7cbf8e24efd19ee373e13d8f102f57",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/ordinary-disjoint.rs",
+      "sha256": "9cfbb1278891e891ec1f93920e5771aae43eca7e09a622a99e64dd3f506b152c",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-nested-disjoint.rs",
+      "sha256": "28485f139b0001d7c026ea0dc67781f817eb9114738f67cb1aaf0ef7f2e99818",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-nested-conflict.rs",
+      "sha256": "e4a2f0a2744a45db4e204933150af556600cef0329e5df8533d4689d311a2e3f",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-noncopy-conflict.rs",
+      "sha256": "e129532089f762fce836b77569d536da11219910737ca2cc5893f62e50b7e90f",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/ordinary-noncopy-disjoint.rs",
+      "sha256": "f70da201aacd3e83d2a0a283a023ec84679067c782da311e8cb51a4ab0101917",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-move-conflict.rs",
+      "sha256": "8601e0b3fecb8f0e8badd16c85e98d319682f05567d5c77b8e04b37c7ff47612",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-reference.rs",
+      "sha256": "d6dd6d978f09bec33150fda1a327d50c50f8becff46537b3ca66933069b9b3e4",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-reference.rs",
+      "sha256": "30092298a6f8763626e957284f3183684b80eed9a30f180f881f9ee2af6aa738",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-raw-address.rs",
+      "sha256": "5478335d532b802bbf1088fefe3ecdd9864e20faf7c335ba277d1f8f90a02ae1",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-raw-mutable.rs",
+      "sha256": "baa314733454859168da43a8e93a65500562b5fc51cef9d5362e399751db4d8e",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-read.rs",
+      "sha256": "bc497916ad38ecc1b655506046b5c6189286d16849a7c96dee6019914108b948",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-write-shared-call.rs",
+      "sha256": "8cea1ac3219d1f9c1bdbadd952a6d540abcc9bfb9a1dfc1a40e0ad3e4426fb25",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-pointer-slot-conflict.rs",
+      "sha256": "c7a0092bf97c89bc26479dfaca8e055cfcbf53b8ed1cdd6a6adef9f0268b49f9",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-nested-field.rs",
+      "sha256": "26acbe579ff48343052ef411926490d986c1dbb963ef0c4b5088aee7e69c88b9",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-move-field.rs",
+      "sha256": "9e00d6390753501c5a412583dfec841c88dc5d827615118b598c69ec60d2b67e",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-two-dereferences.rs",
+      "sha256": "40be46cfa97ae13a97e8a8e74573ebf8796f4544919be59e2600f7bedad9aafe",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-cancellation.rs",
+      "sha256": "2b45551440fef8fc658afa5d6b21cbdb8c446784285d683cfa03af36a9cc5c05",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-unsafe-required.rs",
+      "sha256": "288bd2650119c6134dc15656175923890e0bd1d7d1eb3708a18284e7a6bc4dff",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-const-write-denied.rs",
+      "sha256": "6a68839a798e98e2bbe71c0ae248ec421fa426fcfa036ba67f3b2de063febf7f",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-copy-read.rs",
+      "sha256": "645b18b51e5fc715323bf6d8c9b3d510acfd09d98c96c97ff08327e19e89e11a",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-use-after-capture.rs",
+      "sha256": "fab9a8439fd666c0883a8531afc67ea4280d8dab8c870b53061256f44cb3da40",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-write.rs",
+      "sha256": "7e3c50e987da5d0fe93d4dc547c49e8169ff6b5ea81307224e0849109d1b62cd",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-write-requires-mut-call.rs",
+      "sha256": "f7698bbcdb4e54d1763d53aaf139d2c37657345f708b9a79bff158ffe8b51001",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-nested-disjoint.rs",
+      "sha256": "1a995fe3837939e1d2d6f55e3dd271e8bb1c2e96f282c07fceccef2724712c64",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-field-reference.rs",
+      "sha256": "82bd21e8bcbc2ceee193ec4c3182c7f84b98897ea68a5e967bff6463042aad72",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-address.rs",
+      "sha256": "939080e166e068523fe21afba0f2a846362f644b4787e58b4a4c4321f835a1aa",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-unsafe-required.rs",
+      "sha256": "9904e077876195fb9af584d38bc4ebfa1a96d726b9204a5adfe1fb252769baa3",
+      "rustc_status": 1,
+      "desired_executable_status": 1
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/nested-raw.rs",
+      "sha256": "d19b09439eb9c8defa11c11473a3a8b8bd8bc9a01af5d4d9be53b943263c0b99",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/nested-packed.rs",
+      "sha256": "e2c8d94570ae41f2e724454bad56839c262e69a3ce836f7a3bb7f7e2ccb390dc",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/nested-union.rs",
+      "sha256": "38b16e2d2442bb0fa74ac2f1d69df056ff3e3ba9c714f51632df149ebfbadc4a",
+      "rustc_status": 0,
+      "desired_executable_status": 0
+    }
+  ]
+}

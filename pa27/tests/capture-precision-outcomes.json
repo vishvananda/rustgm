@@ -1,0 +1,1573 @@
+{
+  "stage": "draft-qualified-development-checkpoint",
+  "development_base": "171a3bda",
+  "nested_dependencies": [
+    "66e9adcf",
+    "77abeb19",
+    "30f7a352"
+  ],
+  "separately_qualified_cas": "4f5f3777",
+  "compiler_source_sha256": "70cbf8cdd06576ba291c44b7ed037b47a87a2cb5e6a793171a146bf0cea9b6ff",
+  "source_hash_encoding": "SHA256 of compact sorted JSON mapping every dev/**/*.rs path to its SHA256",
+  "source_manifest": "obj/parallel/pa27/capture-layout-final/source-manifest.json",
+  "source_manifest_file_sha256": "9f01f4dca099677bde573bb1ec1c68bfbad39d08842340fdfbbf66cb25c79a7d",
+  "frontend_binary_sha256": "1ea8aae3c46ee5cfe2822eadef4e47810b0727ef7be26ffed05ca0c0e1881640",
+  "rustc": "1.98.0 / edition2024 / x86_64 / full independent objects and native execution",
+  "cases": [
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-copy.rs",
+      "sha256": "8f7595da514ef53536f2ef50298e87e552dd85a28ac11d216e8bd8bd9bc0fec6",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "7225d1023c7893ae771cb644e55f73e5cc83df78450378d3a1f8d11f484bdbb3",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "4c7f6742a3c5a79969b8b03178e80a3708aa4fa319def4be7917e1c3538b2729",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "db8eba75d379508cd376374db7fa1cc39f7022dd9e1cbc50b0c65f7fd23a25b1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "d252541a0b84172a4dcef360706731f2c95df51445ae419a7ebe94bc8f748af8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-conflict.rs",
+      "sha256": "a1b77f84363ab1ab62bf8f6660a811924b7cbf8e24efd19ee373e13d8f102f57",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "8f4325379dbcfde41b71b7e27846bccf57edd31ee80a27f73aabafc400372dc3",
+      "rustc_stderr": "error[E0506]: cannot assign to `p.b` because it is borrowed\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-aligned-conflict.rs:1:78\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u8}fn main(){let mut p=P{a:1,b:7};let c=||p.a;p.b=9;let _=c();}\n  |                                                                        ----- ^^^^^       - borrow later used here\n  |                                                                        | |   |\n  |                                                                        | |   `p.b` is assigned to here but it was already borrowed\n  |                                                                        | borrow occurs due to use in closure\n  |                                                                        `p.b` is borrowed here\n\nwarning: value assigned to `p` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-aligned-conflict.rs:1:78\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u8}fn main(){let mut p=P{a:1,b:7};let c=||p.a;p.b=9;let _=c();}\n  |                                                                              ^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0506`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "7dd25e3f7bcb462fca15a561412a9d4d8ace72000bd91f4816cdf25901145871",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c8c01017f9ab19222e4d6d50d206d4f2c1836eaee38aa66c2782e41b5a649cce",
+          "stderr": "ERROR: file 0: 77: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c8c01017f9ab19222e4d6d50d206d4f2c1836eaee38aa66c2782e41b5a649cce",
+          "stderr": "ERROR: file 0: 77: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/ordinary-disjoint.rs",
+      "sha256": "9cfbb1278891e891ec1f93920e5771aae43eca7e09a622a99e64dd3f506b152c",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "381ea9e1fbf7aa6cc4a2ad5f618b57156f3213afb8fe8dc6cff4519c4fa20fdc",
+      "rustc_stderr": "warning: value assigned to `p` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/ordinary-disjoint.rs:1:64\n  |\n1 | struct P{a:u8,b:u32}fn main(){let mut p=P{a:1,b:7};let c=||p.b;p.a=9;let _=c();}\n  |                                                                ^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "aa7a550600334f93a1ea07ba082b13cb86b9bca36f1dbb931da2235fa38b03c6",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "3e50bd524596a04efc34e6ee4bf0b9fa4927cb1bffa4272f21ab38aad0a29009",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "fb9548538f4200256ef57a779b8a9b4e67d8ba3c70875e4c82c1852b70bb68d0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-nested-disjoint.rs",
+      "sha256": "28485f139b0001d7c026ea0dc67781f817eb9114738f67cb1aaf0ef7f2e99818",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "7bc30814f82f42903ddb2cff53a0b1447919d42d4fd9c71200137d488d51e47b",
+      "rustc_stderr": "warning: value assigned to `o` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-nested-disjoint.rs:1:123\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}struct Outer{p:P,free:u32}fn main(){let mut o=Outer{p:P{a:1,b:7},free:2};let c=||o.p.b;o.free=9;le...\n  |                                                                                                                           ^^^^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-nested-disjoint.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}struct Outer{p:P,free:u32}fn main(){let mut o=Outer{p:P{a:1,b:7},free:2};let c=||o.p.b;o.free=9;le...\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "rustc_object_sha256": "38e6c104d26ebaffd7b61993938b9be87db1539886c5f24d2cc0efcfbf89c007",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "63fac99686ad9361d3ff3a3c828ab7511092e54f0e9be9772fc16b175ddcf73b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "cc684644b4765cbed8bc649182cb83225936887544b754fc421db2bd0a85179d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "eef0c29a308a9595adc0abed56c23409dd0bb8b6f1a58d81a4f550ec73a7f096",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-nested-conflict.rs",
+      "sha256": "e4a2f0a2744a45db4e204933150af556600cef0329e5df8533d4689d311a2e3f",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "0671abbeacce7f3ad780bf88d4fe50ee8a8717b460c35c33e054828b22d56548",
+      "rustc_stderr": "error[E0506]: cannot assign to `o.p.a` because it is borrowed\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-nested-conflict.rs:1:123\n  |\n1 | ...r{p:P{a:1,b:7},free:2};let c=||o.p.b;o.p.a=9;let _=c();}\n  |                                 ------- ^^^^^^^       - borrow later used here\n  |                                 | |     |\n  |                                 | |     `o.p.a` is assigned to here but it was already borrowed\n  |                                 | borrow occurs due to use in closure\n  |                                 `o.p.a` is borrowed here\n\nwarning: value assigned to `o` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-nested-conflict.rs:1:123\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}struct Outer{p:P,free:u32}fn main(){let mut o=Outer{p:P{a:1,b:7},free:2};let c=||o.p.b;o.p.a=9;let...\n  |                                                                                                                           ^^^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0506`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "965c0c862afcb80d1706da4263ae1af5576980624e290ec85658d6f72a8bf9f3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e5beb95bef4d40e711f423628a713cf4173b8ab65cec4b86a7fe2927370441a0",
+          "stderr": "ERROR: file 0: 122: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e5beb95bef4d40e711f423628a713cf4173b8ab65cec4b86a7fe2927370441a0",
+          "stderr": "ERROR: file 0: 122: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-noncopy-conflict.rs",
+      "sha256": "e129532089f762fce836b77569d536da11219910737ca2cc5893f62e50b7e90f",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "c88a88b09372605a277fe0b29648dade1850a68c58b21c065491dfafe6befd41",
+      "rustc_stderr": "error[E0505]: cannot move out of `p.a` because it is borrowed\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-noncopy-conflict.rs:1:113\n  |\n1 | ...fn main(){let p=P{a:Token(1),b:7};let c=||p.b;let owned=p.a;let _=c();let _=owned.0;}\n  |                                            -----           ^^^       - borrow later used here\n  |                                            | |             |\n  |                                            | |             move out of `p.a` occurs here\n  |                                            | borrow occurs due to use in closure\n  |                                            borrow of `p` occurs here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0505`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c840867319bf4d75e19c530cd77e79517f96614543b8e481c3a28bb2c9cb0c2f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4752d599fc0e29d664c8e1d773df7e84b5519dafde05cc31b35fc32a60dbb636",
+          "stderr": "ERROR: file 0: 112: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4752d599fc0e29d664c8e1d773df7e84b5519dafde05cc31b35fc32a60dbb636",
+          "stderr": "ERROR: file 0: 112: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/ordinary-noncopy-disjoint.rs",
+      "sha256": "f70da201aacd3e83d2a0a283a023ec84679067c782da311e8cb51a4ab0101917",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "c4f0417a18ae91f7cc4c15605e09c3c264d056945ca3d8d4fe4b21f8400eab02",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "eb90078fe7bb75209770112f408b4573f5b6a21c7b36c12c73c3ba83546092fa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "061f1c56228adfbd5ebcead81fcd8c01f209c4ed6e02bf0d69da1954693a1a75",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "e473dbfc5698ceea1321cc3dc4958ed531e76cf9f9a6cb44c2ebb286862566ff",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-move-conflict.rs",
+      "sha256": "8601e0b3fecb8f0e8badd16c85e98d319682f05567d5c77b8e04b37c7ff47612",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "0dab998c84cb194223dc2f8c990babb0e2b9ab96bfa21b48392276413e379d09",
+      "rustc_stderr": "error[E0382]: use of moved value: `p.a`\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-move-conflict.rs:1:117\n  |\n1 | ...ken,b:u32}fn main(){let p=P{a:Token(1),b:7};let c=move||p.b;let owned=p.a;let _=c();let _=owned.0;}\n  |                            -                         ---------           ^^^ value used here after move\n  |                            |                         |     |\n  |                            |                         |     variable moved due to use in closure\n  |                            |                         value moved into closure here\n  |                            move occurs because `p` has type `P`, which does not implement the `Copy` trait\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "8874eb345b5d5b7118900c54522b582ff7af42609aded865c4c1a0f9ba3fca69",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e36d4de834bbaa5ea723517d1df06010dd21a4fae37d685219870640df9d9fb8",
+          "stderr": "ERROR: file 0: 116: local may be uninitialized or moved at this read\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e36d4de834bbaa5ea723517d1df06010dd21a4fae37d685219870640df9d9fb8",
+          "stderr": "ERROR: file 0: 116: local may be uninitialized or moved at this read\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-reference.rs",
+      "sha256": "d6dd6d978f09bec33150fda1a327d50c50f8becff46537b3ca66933069b9b3e4",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e0c310c6acf2e13c967f923e11c6d6cf64aa1556dd5856ec0f68851be0d77c10",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-aligned-reference.rs:1:30\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let p=P{a:1,b:7};let c=||&p.a;let _=*c();}\n  |                       -      ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "6a65795a96896f2948396bcb8a5ffbf51641d0bdabeba9ea055d3edd1b020ec7",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc20373d497d6c97e8497be534e4ba31adef4a05b3398a10def32c05e1ad337f",
+          "stderr": "ERROR: file 0: 68: closure result retains an input-only or local lifetime\n",
+          "classification": "accepted Rust, blocked by separately owned closure output-lifetime proof; not feature acceptance"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc20373d497d6c97e8497be534e4ba31adef4a05b3398a10def32c05e1ad337f",
+          "stderr": "ERROR: file 0: 68: closure result retains an input-only or local lifetime\n",
+          "classification": "accepted Rust, blocked by separately owned closure output-lifetime proof; not feature acceptance"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc20373d497d6c97e8497be534e4ba31adef4a05b3398a10def32c05e1ad337f",
+          "stderr": "ERROR: file 0: 68: closure result retains an input-only or local lifetime\n",
+          "classification": "accepted Rust, blocked by separately owned closure output-lifetime proof; not feature acceptance"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-reference.rs",
+      "sha256": "30092298a6f8763626e957284f3183684b80eed9a30f180f881f9ee2af6aa738",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "5c351a1c881f5c646ed3482f180ada92005c94594b6a18cca0a819e7894564f9",
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-unaligned-reference.rs:1:71\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let p=P{a:1,b:7};let c=||&p.b;let _=*c();}\n  |                                                                       ^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc20373d497d6c97e8497be534e4ba31adef4a05b3398a10def32c05e1ad337f",
+          "stderr": "ERROR: file 0: 68: closure result retains an input-only or local lifetime\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc20373d497d6c97e8497be534e4ba31adef4a05b3398a10def32c05e1ad337f",
+          "stderr": "ERROR: file 0: 68: closure result retains an input-only or local lifetime\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc20373d497d6c97e8497be534e4ba31adef4a05b3398a10def32c05e1ad337f",
+          "stderr": "ERROR: file 0: 68: closure result retains an input-only or local lifetime\n"
+        }
+      },
+      "classification": "Invalid Rust, but current rejection is the prior exported-reference lifetime boundary; not evidence of alignment. Independent local-borrow pair qualifies alignment."
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-raw-address.rs",
+      "sha256": "5478335d532b802bbf1088fefe3ecdd9864e20faf7c335ba277d1f8f90a02ae1",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "5e0c062f0d7f1990480056badcad634d580d5e28e8e7ea2229b501ea80403604",
+      "rustc_stderr": "warning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-raw-address.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let p=P{a:1,b:7};let c=||&raw const p.b;let _=c();}\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "a7a1a27b323a94ec9ed20496b1ee764bee878a1e75ff8d7a57affc30783fbf8d",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "271983407828ef4491051bf4370710639db6daffc9de971f7efea595ed19d395",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "3413a143bf3fac8fe1395842863cf72c5638bd622e2f3ce6f64175c5afa22f28",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-raw-mutable.rs",
+      "sha256": "baa314733454859168da43a8e93a65500562b5fc51cef9d5362e399751db4d8e",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "0e4677db42dfe615abac353cfbbe23d6ad9eaafdb2108209f1222eafbd09a078",
+      "rustc_stderr": "warning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-raw-mutable.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let mut p=P{a:1,b:7};let mut c=||&raw mut p.b;let _=c();}\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "a7a1a27b323a94ec9ed20496b1ee764bee878a1e75ff8d7a57affc30783fbf8d",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "05d55b232212296261aace8c60c5d2f37ec49fed250218a3397efeeb31db8274",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "3413a143bf3fac8fe1395842863cf72c5638bd622e2f3ce6f64175c5afa22f28",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-read.rs",
+      "sha256": "bc497916ad38ecc1b655506046b5c6189286d16849a7c96dee6019914108b948",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "a2a3b9858aa60febe131333a1bd9b2fe751c474ff30d7cc70a7efebcbca70af3",
+      "rustc_stderr": "warning: value assigned to `x` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-read.rs:1:105\n  |\n1 | fn shared<F:Fn()->u32>(_:&F){}fn main(){let mut x=7u32;let p=&raw const x;let c=||unsafe{*p};shared(&c);x=9;let _=c();}\n  |                                                                                                         ^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "1096271d0207e1ad9f71f75a4e31091aa75629ea304af1d04e8d7440dcec6986",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a8f8ca02cf6fef51d5002f195c7c327ce15e3d14b33ba558d82eccde246a845c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0dff4f57f85021aff121b579bf790a3fcd16647fa7a22b641d6d1e75f1428cd7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6219879d178c793669fbf4a7d9bdc3f15d7fb20701c5bde023c4b4b16bf8f6a7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-write-shared-call.rs",
+      "sha256": "8cea1ac3219d1f9c1bdbadd952a6d540abcc9bfb9a1dfc1a40e0ad3e4426fb25",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "881724a1e1c19acb9b74578f660b870387f08bb773e7a1fa5f50f6d10459b141",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "6f7be52daf669fd31d911b9e2780b5737451df46517ebf480257c04f723c5083",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "48a4cf57f8c49747b562d12a278073d53e75ae1efa43e3e9061a3b6da0695e40",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6219879d178c793669fbf4a7d9bdc3f15d7fb20701c5bde023c4b4b16bf8f6a7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-pointer-slot-conflict.rs",
+      "sha256": "c7a0092bf97c89bc26479dfaca8e055cfcbf53b8ed1cdd6a6adef9f0268b49f9",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "36916da44a718b86bd95e3d378e8aced052d1119a04616db8e6930db8fccfdd4",
+      "rustc_stderr": "error[E0506]: cannot assign to `p` because it is borrowed\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-pointer-slot-conflict.rs:1:75\n  |\n1 | fn main(){let x=7u32;let y=9u32;let mut p=&raw const x;let c=||unsafe{*p};p=&raw const y;let _=c();}\n  |                                                              --       --  ^^^^^^^^^^^^^^       - borrow later used here\n  |                                                              |        |   |\n  |                                                              |        |   `p` is assigned to here but it was already borrowed\n  |                                                              |        borrow occurs due to use in closure\n  |                                                              `p` is borrowed here\n\nwarning: value assigned to `p` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-pointer-slot-conflict.rs:1:75\n  |\n1 | fn main(){let x=7u32;let y=9u32;let mut p=&raw const x;let c=||unsafe{*p};p=&raw const y;let _=c();}\n  |                                                                           ^^^^^^^^^^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0506`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "9d633f7e7b12b038bf7334940f84f273622df9023cd97471badb95213fc80f0e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f59fba104e87f87da172ae476e3e05e587dbdd4d8338c35eba0ac54fca718045",
+          "stderr": "ERROR: file 0: 74: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f59fba104e87f87da172ae476e3e05e587dbdd4d8338c35eba0ac54fca718045",
+          "stderr": "ERROR: file 0: 74: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-nested-field.rs",
+      "sha256": "26acbe579ff48343052ef411926490d986c1dbb963ef0c4b5088aee7e69c88b9",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "ab78b9ea727903a3a9d245e1db87c9d213549c3085fde1e90d09f2ddea04d3b0",
+      "rustc_stderr": "warning: value assigned to `s` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-nested-field.rs:1:157\n  |\n1 | ...{p:&raw mut x,free:1};let c=||unsafe{*s.p=9;*s.p};shared(&c);s.free=3;let _=c();}\n  |                                                                 ^^^^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "0ba2ac5854ae4d9a1eb0e197b173117fa6c0a0897b6967a81dd0f0a17938f5f6",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "fef5b49068cd16dac99c86ae42ea90555d96ac0b8590fc0d7049efce19cff700",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "1fe1c149360e1f3cf0381d858e9cdc401591d961ae381b80c9487881f39c2d9a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "157343b07b2f3bda926c4698e38f9c39f4d3cf2e723c5b072cf6669a22199282",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-move-field.rs",
+      "sha256": "9e00d6390753501c5a412583dfec841c88dc5d827615118b598c69ec60d2b67e",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "6edaf468bdf8407af3feb63b546bd2a4c3a49bc64da2d5514b504889235e764c",
+      "rustc_stderr": "warning: value assigned to `s` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-move-field.rs:1:161\n  |\n1 | ...raw mut x,free:1};let c=move||unsafe{*s.p=9;*s.p};shared(&c);s.free=3;let _=c();}\n  |                                                                 ^^^^^^^^\n  |\n  = help: maybe it is overwritten before being read?\n  = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "b5f2cd133bdec252d44064d79a225a171cf3eef5e6ad24071d9b204de28fb7a2",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "089efa4b0d6ba4bd851a2a7e4da3963239d197f2152ba8531c14bb2e9e2ba35f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "6c5a62cf0ab5d700cc8b20e5141ddca8de17ac88c22b9513145b4e06a4908f81",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "157343b07b2f3bda926c4698e38f9c39f4d3cf2e723c5b072cf6669a22199282",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-two-dereferences.rs",
+      "sha256": "40be46cfa97ae13a97e8a8e74573ebf8796f4544919be59e2600f7bedad9aafe",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "f80a91bce8909c022abc7b3d6d7fb24e921e0e5e8659016992a47da0a1b35608",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "ffabbbcf5b2ba9544602169bc45cd3f11e35720c5b5fd2a8a068fca92df27f23",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "efb1161fdf890cb726d38236d2ae20c3abf467c0b0292744ccaab0750c063ed4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6219879d178c793669fbf4a7d9bdc3f15d7fb20701c5bde023c4b4b16bf8f6a7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-cancellation.rs",
+      "sha256": "2b45551440fef8fc658afa5d6b21cbdb8c446784285d683cfa03af36a9cc5c05",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "a5488a2e82a9b42aa35ba88dd10a772d875ba2b023649e15048a2f13f8f3b495",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "9323672a84970739972aedf264fe34cc63eaa9347e9876112407c4016efe4ec5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a6fbdbbb38e5e88794ba33a9a5e7f501919a793c7a1a310bc77e6415662f1210",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-unsafe-required.rs",
+      "sha256": "288bd2650119c6134dc15656175923890e0bd1d7d1eb3708a18284e7a6bc4dff",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "2d8d888dfd40f3c9d5772945f7d826d65cc3c29a81438b34b5d0785641b58ef9",
+      "rustc_stderr": "error[E0133]: dereference of raw pointer is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-unsafe-required.rs:1:49\n  |\n1 | fn main(){let x=7u32;let p=&raw const x;let c=||*p;let _=c();}\n  |                                                 ^^ dereference of raw pointer\n  |\n  = note: raw pointers may be null, dangling or unaligned; they can violate aliasing rules and cause data races: all of these are undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "01b286f94ba701c6ffd9a754aa0fe4b1665469812e4e8d9bcf43801c2130f571",
+          "stderr": "ERROR: file 0: 48: raw pointer dereference requires an unsafe context\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "01b286f94ba701c6ffd9a754aa0fe4b1665469812e4e8d9bcf43801c2130f571",
+          "stderr": "ERROR: file 0: 48: raw pointer dereference requires an unsafe context\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "01b286f94ba701c6ffd9a754aa0fe4b1665469812e4e8d9bcf43801c2130f571",
+          "stderr": "ERROR: file 0: 48: raw pointer dereference requires an unsafe context\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-const-write-denied.rs",
+      "sha256": "6a68839a798e98e2bbe71c0ae248ec421fa426fcfa036ba67f3b2de063febf7f",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "5999aef8df8f352efee1f8f779871bf8a3bf43ae3c168ac3f638ad39ad7495c6",
+      "rustc_stderr": "error[E0594]: cannot assign to `*p`, which is behind a `*const` pointer\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-const-write-denied.rs:1:56\n  |\n1 | fn main(){let x=7u32;let p=&raw const x;let c=||unsafe{*p=9;};c();}\n  |                                                        ^^^^ cannot assign\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0594`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f440a1030cfb06418f39aa0de7f29f06265f6d5348d329bbf5c7a78fc1501be8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb35e8475748f3975b60522171c2d73434d610b46b64d66b5dbed37441bdc888",
+          "stderr": "ERROR: file 0: 55: cannot assign through a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb35e8475748f3975b60522171c2d73434d610b46b64d66b5dbed37441bdc888",
+          "stderr": "ERROR: file 0: 55: cannot assign through a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-copy-read.rs",
+      "sha256": "645b18b51e5fc715323bf6d8c9b3d510acfd09d98c96c97ff08327e19e89e11a",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3e80485a0da334a7e27178b21e828ba37c57092d97ba14c9466b02baec035d8",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-copy-read.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn shared<F:Fn()->u32>(_:&F){}fn main(){let u=U{a:7};let c=||unsafe{u.a};shared(&c);let _=c();let _=c();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "307efeb1433bb961bd40dd1ad2b07b6dac92a389be46e890bc741cbe871e1083",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "4bef02b6a52c36ba8e2af02ad21a6339568f78d19a4282e0bbfd2784d4dbed62",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "bd41bdee6d64a55c17043d373880e8b3df0f8fd0383a8df0c5647e38467f7f44",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "d252541a0b84172a4dcef360706731f2c95df51445ae419a7ebe94bc8f748af8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-use-after-capture.rs",
+      "sha256": "fab9a8439fd666c0883a8531afc67ea4280d8dab8c870b53061256f44cb3da40",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "48bf568a669a2e5ef04ce253655256279698306ab07dda6b6f6444cfd2dcab03",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "1f2bf218b2776c5014be3db32bd0c03f0c2de61e02e1dab5c6702687967b0f00",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "eb23646f89b86eb9eda4a208edaa155f249cd820ab5c1c27c76a5483ce15e6e3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "hypothesis_disagreement": "Original predicted rejection retained; independently observed Rust accepts this exact source."
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-write.rs",
+      "sha256": "7e3c50e987da5d0fe93d4dc547c49e8169ff6b5ea81307224e0849109d1b62cd",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "67a2584d69893e6da9060fb70a2acdb4abe09fa7945c4c7ae7380983832c17b0",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-write.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn main(){let mut u=U{a:7};let mut c=||{u.a=9;};c();c();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "83db449174b2feb21a3811c6ea57139e9ce453b89504f10b185d7e39d57aca6e",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f2571ddba51edaeb7f93a7d3da20e7d8c5a7df5948ecbee309684cd8f02a4db8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "574cd318bdfebecfbd74de915be86a7489b8bbcc8c009955e1aa35e082d98788",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-write-requires-mut-call.rs",
+      "sha256": "f7698bbcdb4e54d1763d53aaf139d2c37657345f708b9a79bff158ffe8b51001",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "ae40e9b17ecbc00879a8230a22adf6af44dc3e68180f8e3f7ba5d9877f5577d3",
+      "rustc_stderr": "error[E0596]: cannot borrow `c` as mutable, as it is not declared as mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-write-requires-mut-call.rs:1:64\n  |\n1 | union U{a:u32,b:u8}fn main(){let mut u=U{a:7};let c=||{u.a=9;};c();}\n  |                                                        ---     ^ cannot borrow as mutable\n  |                                                        |\n  |                                                        calling `c` requires mutable binding due to mutable borrow of `u`\n  |\nhelp: consider changing this to be mutable\n  |\n1 | union U{a:u32,b:u8}fn main(){let mut u=U{a:7};let mut c=||{u.a=9;};c();}\n  |                                                   +++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0596`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "cc12a9ed8e7eeafab3cf10e302d7ac80ec08998281b765c3e5766dde64e44079",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "56f8ee749fe3761063243e9a792e2f19c4abf733c14d64a19a5ab07061864ba8",
+          "stderr": "ERROR: file 0: 63: cannot mutably borrow an immutable local\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "56f8ee749fe3761063243e9a792e2f19c4abf733c14d64a19a5ab07061864ba8",
+          "stderr": "ERROR: file 0: 63: cannot mutably borrow an immutable local\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-nested-disjoint.rs",
+      "sha256": "1a995fe3837939e1d2d6f55e3dd271e8bb1c2e96f282c07fceccef2724712c64",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "a7ca8feaa882cac7202c5780b3dcbe439b371b7c1d5b8f213ba7209278d23b83",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-nested-disjoint.rs:1:15\n  |\n1 | union U{a:u32,b:u8}struct Token(u32);struct S{u:U,free:Token}fn main(){let s=S{u:U{a:7},free:Token(1)};let c=||unsafe{s.u.a};let t=s....\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "9dcb5d6bebdd8dd08451b7ae12c611b9e2fe8a0b53f512c62900ba87685319da",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "96659df15d0c4430e5e8f55ae4816bf41898eb51f12ea70044987d97ece16773",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "d0339440ad6ec0dac3037e3138ae6092a15d12fe6f68e4f3ccc3bf2a3b94aa4b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7e4cc69bb6a6398ba4284c9e91df78686b76c33930b239175aa4fd51ade71a17",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-field-reference.rs",
+      "sha256": "82bd21e8bcbc2ceee193ec4c3182c7f84b98897ea68a5e967bff6463042aad72",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "a9724308e036e08eecc5c8fe6db9286a994d2f9e33ffb5233244836ef43bad95",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-field-reference.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn main(){let u=U{a:7};let c=||unsafe{&u.a};let _=*c();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "ad7550fff0c0b4b089bc58f62e65d8421905e42f1c5198f509d95119e27b2cd6",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b30d53af060154ab8e3cfcec4df6c758905e3f55fedd7a182dc7ae7c40b336ec",
+          "stderr": "ERROR: file 0: 48: closure result retains an input-only or local lifetime\n",
+          "classification": "accepted Rust, blocked by separately owned closure output-lifetime proof; not feature acceptance"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b30d53af060154ab8e3cfcec4df6c758905e3f55fedd7a182dc7ae7c40b336ec",
+          "stderr": "ERROR: file 0: 48: closure result retains an input-only or local lifetime\n",
+          "classification": "accepted Rust, blocked by separately owned closure output-lifetime proof; not feature acceptance"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b30d53af060154ab8e3cfcec4df6c758905e3f55fedd7a182dc7ae7c40b336ec",
+          "stderr": "ERROR: file 0: 48: closure result retains an input-only or local lifetime\n",
+          "classification": "accepted Rust, blocked by separately owned closure output-lifetime proof; not feature acceptance"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-address.rs",
+      "sha256": "939080e166e068523fe21afba0f2a846362f644b4787e58b4a4c4321f835a1aa",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "60ff02f8a4e900d74cbaac9a48679fa5f99f7fbdf3ccedac539a5f6c29ce55f3",
+      "rustc_stderr": "warning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-raw-address.rs:1:51\n  |\n1 | union U{a:u32,b:u8}fn main(){let u=U{a:7};let c=||unsafe{&raw const u.a};let _=c();}\n  |                                                   ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-raw-address.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn main(){let u=U{a:7};let c=||unsafe{&raw const u.a};let _=c();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "rustc_object_sha256": "ad7550fff0c0b4b089bc58f62e65d8421905e42f1c5198f509d95119e27b2cd6",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "dc52c9adc3dddd4954254415b3025267384527e4f3148e8a633537b6d1e2cba0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "cadd06e96cc7ae0b5d7dce1e556ccc50f9f6ae471b273756b674a88040b5ed9f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-unsafe-required.rs",
+      "sha256": "9904e077876195fb9af584d38bc4ebfa1a96d726b9204a5adfe1fb252769baa3",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "7b7ea004dff6a83272942cf0b7795ab08cf15ce4969c6f9be95f589570fcf09c",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-raw-unsafe-required.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn main(){let u=U{a:7};let c=||&raw const u.a;let _=c();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "ad7550fff0c0b4b089bc58f62e65d8421905e42f1c5198f509d95119e27b2cd6",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "b65e0be41ebe2a4a90c37d75072cecbd072fb9616cdb1c18c23afba91852124f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "cadd06e96cc7ae0b5d7dce1e556ccc50f9f6ae471b273756b674a88040b5ed9f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "hypothesis_disagreement": "Original predicted rejection retained; independently observed Rust accepts this exact source."
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/nested-raw.rs",
+      "sha256": "d19b09439eb9c8defa11c11473a3a8b8bd8bc9a01af5d4d9be53b943263c0b99",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "501f9f0acf0680e67861cf2cc6990ce0fc9dbb86785dab919d19e8f05a66f1ab",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "97ee8eec9a8b912c896d0b910cdc2632891e0f0943c4834283b9d1c0b88788c7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "2fbb759352bbbe8ed927e36accc3c9c41a7613ee1c2586162f339197a3e3835a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6219879d178c793669fbf4a7d9bdc3f15d7fb20701c5bde023c4b4b16bf8f6a7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/nested-packed.rs",
+      "sha256": "e2c8d94570ae41f2e724454bad56839c262e69a3ce836f7a3bb7f7e2ccb390dc",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "4289e47f9b84cf6bc6599be218b5786548bf0ba16ad2d8458818c2babf085295",
+      "rustc_stderr": "warning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/nested-packed.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let p=P{a:1,b:7};let outer=||{let c=||p.b;c()};let _=outer();}\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "2e0ba5420bcf0c87e44f690f2c1ffb745a87aeec97edf78c73595687f6e31a77",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "843b8ef1742af62c3a8a475c7068d1681ec9da4a2ae1b8abbb19315f083ef13b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "721074b1cb35a64d92d625ddc77b71e7ba2e522f72cc78f91b68d3ceded92d29",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/nested-union.rs",
+      "sha256": "38b16e2d2442bb0fa74ac2f1d69df056ff3e3ba9c714f51632df149ebfbadc4a",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "8adc43c2edeb39aec1b7e556f0c27c333f74177c93381fdd281187641b70d0dc",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/nested-union.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn main(){let u=U{a:7};let outer=||{let c=||unsafe{u.a};c()};let _=outer();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "3c82700d0dad6e87190296ca023f6544f1c6bc153b775a2ab278d10052c90031",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "49edd3f2c826b9e3da040ee7a9b9cfa0fd25344e2207aeed44d57f978025ae8b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "24e39cc47c62bdd11d9364f9120fac641ea21765e9815d219a198d68a3960a4f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-consume-before-call.rs",
+      "sha256": "85ec065cdd50b1aa9bcaca0ad1d00ce7bdcef883d531047832d9a4e88db3c634",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "b98a531791a4955fde7b071e8e5c762dc7ca92b154cbb9261e06ec36f5cc9335",
+      "rustc_stderr": "error[E0505]: cannot move out of `u` because it is borrowed\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-consume-before-call.rs:1:88\n  |\n1 | union U{a:u32,b:u8}fn consume(_:U){}fn main(){let u=U{a:7};let c=||unsafe{u.a};consume(u);let _=c();}\n  |                                                                  --       ---          ^        - borrow later used here\n  |                                                                  |        |            |\n  |                                                                  |        |            move out of `u` occurs here\n  |                                                                  |        borrow occurs due to use in closure\n  |                                                                  borrow of `u` occurs here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0505`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "2c03a75d470cc9aa964d58f19a327dbca82e9729b46d61db001db88511ff747c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "765ff88babbd83ff3b754cc7fca7e09e391247b2f6d638e50e325b2fcb581c3d",
+          "stderr": "ERROR: file 0: 87: access conflicts with a live reference loan\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "765ff88babbd83ff3b754cc7fca7e09e391247b2f6d638e50e325b2fcb581c3d",
+          "stderr": "ERROR: file 0: 87: access conflicts with a live reference loan\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-consume-after-call.rs",
+      "sha256": "ee388945df7ed917424da30b496532742efb9312ceca7eae7f1c67ef38824beb",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "de69ef934c447e6953803a45c850920291db1fc310708689d943838ee4ca2431",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-consume-after-call.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn consume(_:U){}fn main(){let u=U{a:7};let c=||unsafe{u.a};let _=c();consume(u);}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "ba1873ebf51c7cb8d76a967d431c52a6fb21d275fe4663ce0ded2576b62dbbe0",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "9f01311e320f4af1732eab476ebfe113b4284c4dd148b640ae7fc5c35f03a1dc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "50526f92005a661c0eaeabfa14f9f5d4de0e701f78d87754c05d9f7bd7db547c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "536bf2bcbde0df3d3be94ff4d1d55744de797da254ca5a53550295a7b6343e06",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-move-consume.rs",
+      "sha256": "f6aff011a27581296e1b13843b4825117f77200ede77ee1354f576ce387c1b1d",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "77b37aafc1615cf2f0b56497cd5ff806786a7795fe6d649eafe6e634f4a345f9",
+      "rustc_stderr": "error[E0382]: use of moved value: `u`\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-move-consume.rs:1:102\n  |\n1 | union U{a:u32,b:u8}fn consume(_:U){}fn main(){let u=U{a:7};let c=move||unsafe{u.a};let _=c();consume(u);}\n  |                                                   -              ------       ---                    ^ value used here after move\n  |                                                   |              |            |\n  |                                                   |              |            variable moved due to use in closure\n  |                                                   |              value moved into closure here\n  |                                                   move occurs because `u` has type `U`, which does not implement the `Copy` trait\n  |\nnote: if `U` implemented `Clone`, you could clone the value\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-move-consume.rs:1:1\n  |\n1 | union U{a:u32,b:u8}fn consume(_:U){}fn main(){let u=U{a:7};let c=move||unsafe{u.a};let _=c();consume(u);}\n  | ^^^^^^^ consider implementing `Clone` for this type                           --- you could clone this value\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "9c213fa41211a7291e0923b63a4f5d971ecb290647a2daa358542ed7097cda6e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a16f5564a9fae7f2466f89df027bdcc18d1b27e3ea9ed113d76fc3d837ce39f5",
+          "stderr": "ERROR: file 0: 101: local may be uninitialized or moved at this read\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a16f5564a9fae7f2466f89df027bdcc18d1b27e3ea9ed113d76fc3d837ce39f5",
+          "stderr": "ERROR: file 0: 101: local may be uninitialized or moved at this read\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-nested-unsafe.rs",
+      "sha256": "3d2d9acb3c0718155bcafc2ce9988d8baefd2eab1b4af86be647516ad358ab45",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "12c2cc5df30928eccb24630bd580aa87d92edbd17b046b61f5216e460d65d54e",
+      "rustc_stderr": "error[E0133]: access to union field is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-raw-nested-unsafe.rs:1:73\n  |\n1 | union U{a:(u32,u32),b:u64}fn main(){let u=U{a:(7,9)};let c=||&raw const u.a.0;let _=c();}\n  |                                                                         ^^^ access to union field\n  |\n  = note: the field may not be properly initialized: using uninitialized data will cause undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3866e4d3531710a84f389353cc03ddf4b136a364af46d85437d78722b3e97b68",
+          "stderr": "ERROR: file 0: 72: union field access requires an unsafe context\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3866e4d3531710a84f389353cc03ddf4b136a364af46d85437d78722b3e97b68",
+          "stderr": "ERROR: file 0: 72: union field access requires an unsafe context\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3866e4d3531710a84f389353cc03ddf4b136a364af46d85437d78722b3e97b68",
+          "stderr": "ERROR: file 0: 72: union field access requires an unsafe context\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-nested.rs",
+      "sha256": "c437ec26f293b37693ed5878b53d07f1d408947faad3deab6c0b605c2db3b673",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e850193767d4e06412b2bbf01152ceeb34084bbe8af367dd798ded19dc932097",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-raw-nested.rs:1:21\n  |\n1 | union U{a:(u32,u32),b:u64}fn main(){let u=U{a:(7,9)};let c=||unsafe{&raw const u.a.0};let _=c();}\n  |       -             ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "c5db7a4a1492479b4c2d1b0ac5f5576c58812f520e85a1a4f5fc9360f60ebd7e",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "f89f641f6ff24000ee7cda5756dd0c8a4e6e2d5cada44b8963ce105f7ec19008",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "2096af683f7a975a878b1d8a152b329565db441353213e930fadddccb008adde",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/union-raw-mutable.rs",
+      "sha256": "d17467d04c448ca16c156551989808ba30a860f067434f1b3189b9b393b6f585",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "3ce83410c278189a6ed199ba1573a303287bec0a94bb696f939237496aae08a6",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/union-raw-mutable.rs:1:15\n  |\n1 | union U{a:u32,b:u8}fn main(){let mut u=U{a:7};let mut c=||&raw mut u.a;let _=c();}\n  |       -       ^\n  |       |\n  |       field in this union\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "ad7550fff0c0b4b089bc58f62e65d8421905e42f1c5198f509d95119e27b2cd6",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "7ee8bfc9db6e40e1d8f44bf6ec27ed7a724dc7f78f97dad1005b3a37d0850c07",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "cadd06e96cc7ae0b5d7dce1e556ccc50f9f6ae471b273756b674a88040b5ed9f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-address-through-pointer-shared-call.rs",
+      "sha256": "3beffad4fac19ce565addded72a232d4140f5a2b836cbde53b2b2b49b57a119c",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "70c60e10d8b86df2b1f4cc11b4055f3c67fc248d233a768fed596fadfab4a69c",
+      "rustc_stderr": "warning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-address-through-pointer-shared-call.rs:1:86\n  |\n1 | fn shared<F:Fn()->*mut u32>(_:&F){}fn main(){let mut x=7u32;let p=&raw mut x;let c=||unsafe{&raw mut *p};shared(&c);let _=c();}\n  |                                                                                      ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "98833e0efd61bf78d65e18fbb70025d7b756ada8cb5b35d42eee98e592d7fecc",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "106dcfa7243bc5ee07747875669861b8b555bfc616222c7a63ae834f982ee103",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "39fd7b4c2637cfb4e74cb6ed19be41396119375fdf492ac5712b9906a90f5841",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "54160910a84e1e059819d1c77cbfd1742989ee3f8967d19fd6aa29c20414ffd5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-copy-shared-call.rs",
+      "sha256": "f1556e02d10408dff15902e78025d98a4f44a85564ae7342003120ba9066833e",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "f2ea92372d969513db2aae13fd5e07fce76b3f5eb8843fb6a01db584f10f932e",
+      "rustc_stderr": "warning: field `a` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-copy-shared-call.rs:1:25\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn shared<F:Fn()->u32>(_:&F){}fn main(){let p=P{a:1,b:7};let c=move||p.b;shared(&c);let _=c();let ...\n  |                       - ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "0fdd36ca98849ea5d08e85b374301211cdd4295d14cd0eab10b81bf7e00c70a3",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "40695d737778a42458d979fa1867c39dccb69d7ecf74d4f2af673bda78f00ede",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "b5db596457260f81ef5292795f4bf6c814d3b29319f91d83cdb052e256e7c1c9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "d252541a0b84172a4dcef360706731f2c95df51445ae419a7ebe94bc8f748af8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-outer-reference.rs",
+      "sha256": "745f9eef0273a4c7413b31437de2185fa496c82593b8f6a6b4d6615fba8f92c3",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "ef9bb042f6a98daa2e9adcdda3e38fb1dd2584bf76004d15d0e99e66b5911e3a",
+      "rustc_stderr": "warning: field `free` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-outer-reference.rs:1:21\n  |\n1 | struct S{p:*mut u32,free:u32}fn shared<F:Fn()->u32>(_:&F){}fn main(){let mut x=7u32;let s=S{p:&raw mut x,free:1};let r=&s;let c=||uns...\n  |        -            ^^^^\n  |        |\n  |        field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "30c22e3d7507ddd4e9c2e4fe5fda5f625711ffa67d46b1f24a828c8408f776f1",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "43a42ce076169b93c511edff5842820b0222784f64a8b3bc5f1099bac3bbfcc8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0a702b4b943fe2642092ddd9e5049a5f98659e87d027d4edff8edf2f8fb91b9e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "d252541a0b84172a4dcef360706731f2c95df51445ae419a7ebe94bc8f748af8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-slot-and-pointee.rs",
+      "sha256": "1ca68191cd2bdc0355d83a12fe7a90068ae4e2d8c9adda2bc268db9cd6161043",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rustc_stderr": "",
+      "rustc_object_sha256": "6e78a7f724fc0d63ddee9a0675359da259d90e9e9dbe430d2d4f16e61e00201f",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "1ec5dd06db7805a52a42f5e2bc4d6db30531ad5409a569cbc4bb94edfab4c696",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "e522bb25a88ba5c06d79a5e3e78895287c0928c49920474530de9617a65caaf5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "4fd47ca1149224e2ea08b22cb0cbc81d2ebae79b997295268365559e6e296da8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/raw-slot-requires-mut-call.rs",
+      "sha256": "50b69a89eef434cc481704d7db6c1ab520040e44f3910063c241fce239553a30",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "19afdfc29c4bc396d86acc274b455cb5a267876b74251956cb9484ebc92df4e3",
+      "rustc_stderr": "error[E0596]: cannot borrow `c` as mutable, as it is not declared as mutable\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/raw-slot-requires-mut-call.rs:1:132\n  |\n1 | fn main(){let mut x=7u32;let mut y=3u32;let mut p=&raw mut x;let other=&raw mut y;let  c=||{unsafe{*p=9;}p=other;unsafe{*p}};let _=c();}\n  |                                                                                                          -                         ^ cannot borrow as mutable\n  |                                                                                                          |\n  |                                                                                                          calling `c` requires mutable binding due to mutable borrow of `p`\n  |\nhelp: consider changing this to be mutable\n  |\n1 | fn main(){let mut x=7u32;let mut y=3u32;let mut p=&raw mut x;let other=&raw mut y;let  mut c=||{unsafe{*p=9;}p=other;unsafe{*p}};let _=c();}\n  |                                                                                        +++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0596`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "0bfb8007bf775350f9e290148dfbb86a19f119801e53c6714baadec7248f077c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f7975d7d81b79344443564bf41256368205c6d267964b1d1fd142a645fae43fb",
+          "stderr": "ERROR: file 0: 131: cannot mutably borrow an immutable local\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f7975d7d81b79344443564bf41256368205c6d267964b1d1fd142a645fae43fb",
+          "stderr": "ERROR: file 0: 131: cannot mutably borrow an immutable local\n"
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-aligned-local-borrow.rs",
+      "sha256": "e92c08e165e89eae148a56bdd175260f2add2ae77847534504e3d1deed961e6c",
+      "rustc_status": 0,
+      "original_hypothesis_rustc_status": 0,
+      "original_hypothesis_executable_status": 0,
+      "observed_rustc_status": 0,
+      "rustc_stderr_sha256": "64bab4f38bd64983169237d5a90c7306e8315122b5bf64f463c5b8af27bc9705",
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-aligned-local-borrow.rs:1:30\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let p=P{a:1,b:7};let c=||{let r=&p.a;*r};let _=c();}\n  |                       -      ^\n  |                       |\n  |                       field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "rustc_object_sha256": "fa39c61d7f8b4b06dadc38737db76bdd985fef062f8da52db58e43f035d421f0",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "abbf09334ee454c90962fe2f051ec5b406f969d6924f7042cd91466a99532a57",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "ee3f157a7def92304dc9a5625d095aa02d8c7072264a16328c41604e3bb38110",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8743c7ce6b1950a7b950d37541c6c1fb27906493d4e0620c6709f2ad07987740",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "path": "pa27/tests/spec/capture-precision/packed-unaligned-local-borrow.rs",
+      "sha256": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
+      "rustc_status": 1,
+      "original_hypothesis_rustc_status": 1,
+      "original_hypothesis_executable_status": 1,
+      "observed_rustc_status": 1,
+      "rustc_stderr_sha256": "d43122c113ba492ddb9617b42c55b9a66a56f276bce70397e560556fc0db6023",
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa27/tests/spec/capture-precision/packed-unaligned-local-borrow.rs:1:78\n  |\n1 | #[repr(packed)]struct P{a:u8,b:u32}fn main(){let p=P{a:1,b:7};let c=||{let r=&p.b;*r};let _=c();}\n  |                                                                              ^^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "858bcc72874f824d8d7f8c53135a51341db46390b1b5e21ffdd88ad9ac32dfa9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "580ac6d37f242f4d22b167c48c13ef6fac33585936897094674494400e649a4e",
+          "stderr": "ERROR: file 0: 77: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "580ac6d37f242f4d22b167c48c13ef6fac33585936897094674494400e649a4e",
+          "stderr": "ERROR: file 0: 77: reference to an unaligned packed field\n"
+        }
+      }
+    }
+  ],
+  "native": [
+    {
+      "path": "pa27/tests/spec/capture-native/packed.rs",
+      "sha256": "e77cfa600b1a51c7ee78b3b0581b63fe349de8d79eeb9816166b811a264683e6",
+      "qualified_input_sha256": "12688269f1c1bee0c828c44ab23690989b00a5418f9a8948107ea41b89f4ffbb",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "a1c8473e12f9fda91b4da831f51399f6040640974d146016ef2f8b2158719865",
+      "native_binary_sha256": "c0892a1958078fea8403e43f3a29844f37a4a5a581d7890529635dc5d7e1490a",
+      "lowir_sha256": "e2e0bb78aafdd5102db1b65ce82a6bd25a26367dcb6242fe36317ff10d289b90",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/packed-move.rs",
+      "sha256": "3232dac4c927eb5f60b93f60b74fde11ae5ff5454a36ff56fc03eda80c69911d",
+      "qualified_input_sha256": "a2557361a54125227a10558bdec7cf0cd8a1f95400cedd890be89e68a2c469ff",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "fd183dea8d72371130f2bcadbded142e0d2c2893aea03cc28ce326e032509c3f",
+      "native_binary_sha256": "2a4d543b9b8c51a5960204c01dada8c4ce2a5cf1624d6b4e42482e828023d2b7",
+      "lowir_sha256": "ce2f36a59898ac9a0b4ce2f74ee6fc8dd4d2f90a064e30b46f3c37c333047705",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/raw-write.rs",
+      "sha256": "2ae08effc02616329fd1f33247a4d07d41ee1a8f86ecd82258e4d09bc7e521c8",
+      "qualified_input_sha256": "68505572741972f34e7895563d9887cc7fa180cb8399a41b11a5e1173884d9a1",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "4d6c6f7d7b8fb9f888210e9637c3a58230dfdd4643b5e89f19de06b19b6f5cad",
+      "native_binary_sha256": "151df4a5e3d40dfb5cdadef478e63c1e6dd758f7d03f37c1ad5629b01e4a558e",
+      "lowir_sha256": "692a461141064cbafd6f5875e093f4cfe6ec6e3ebcaea8b9a48691af3aa3f7fd",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/raw-move.rs",
+      "sha256": "5e92ded557fb16fa8c40a35425a38a48ef1b1119b07a6225f4c19971328a5ea4",
+      "qualified_input_sha256": "1f8cae87c318733b9aa931a2c2db6cff118163c1ac317c6f28f36034680c25ae",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "d6e1fa9d5cc5dbdaa1f48f1d0e270d9708fc36e4961c71cb55e3bd31a1d7f507",
+      "native_binary_sha256": "748e878f219a09254eef92bc6e4f24f662198e04804531e1a70ba3813f02f099",
+      "lowir_sha256": "bd44b932fe6a2b7dc5812bb2e3ef387c2841a464c30de29b5f6de2dd6e1a15c4",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/raw-cancellation.rs",
+      "sha256": "d30bd5ae35647d7af45fb4857ef80ec15c027e9a1292d82e6abc1dbdfdc472ac",
+      "qualified_input_sha256": "907c602d43961f401e6267b124354fa2af02aef3e4044062fbe044f361470cd2",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "e5f8175e15bf1a482befb6e5345b6fbd7790c4699dea1391ff94b4499b50e995",
+      "native_binary_sha256": "a9bc0133c54586039832ff96cad4742afc5a613b93f91f3a5eec2f070740acc4",
+      "lowir_sha256": "64b7dd928f0f36d8cd465f720d828712dc6d30048d8f91dfb5604113c4a2efc4",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/union.rs",
+      "sha256": "a79cf936caa213ed1413e9f5e378e5ddf6189e047eda2aef7a33bada426fbb1a",
+      "qualified_input_sha256": "9448b34459761ce6f1d7798035e9862acbf8cda1d5ee4a0101fc9860624726a6",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "a24c1e892548e90316de8be40182d282e11e34eb2dd6a06465e82104f156994c",
+      "native_binary_sha256": "c91c5678d5be3dbb89a80ad7608962cca46014aeff02a0281ab19dab642aa1ed",
+      "lowir_sha256": "21ce07dd93c42dd22674d272bd2a4f8972b1541d63daae2164787b9fbed50bdb",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/nested.rs",
+      "sha256": "a96e430cf800be76dd7b5c6456f30b5bec77b9b8b56a91d7db20ae786eca9066",
+      "qualified_input_sha256": "bfdf4d026226fde93a419bad7c9d3267e2d59b21c8e93fcb6cfbe392383fa4b0",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "17d9bfc6755744d6fb2c02da5fe211e56facda9d7e291f73ad4bba6f092a3216",
+      "native_binary_sha256": "bbf6e8f7f3517bae1fa23c481611138d5691a0774f4add1114ade5c5d669af85",
+      "lowir_sha256": "cf157d3baa5c76ab3b430331809edc287f3d8f05a8ca25ab210e1bdc735a0380",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/shared-before-boundary.rs",
+      "sha256": "2626e09b542062e61c61a0de426f0a1fba4aaa1b2b42ea1981364cb979dd4727",
+      "qualified_input_sha256": "011e138ea0e8c7ddc36db734278adab6fbd2117e70d7c2fb3b8ac645f9cfb84e",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "e56522697c7cab1f63e6858ace6cb62aab56bd51b683dbf41a8043434bebfe1e",
+      "native_binary_sha256": "7cb990983ffce81b19169ad7e41a34c0dbe425d38ab0c6791f470da52b8d80cd",
+      "lowir_sha256": "979c5096ee95869fed333db0df23db436b75d9e887f35a60331cdeb111eb7da1",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa27/tests/spec/capture-native/pointer-slot.rs",
+      "sha256": "5a115b39394e7b27bb51ca32de20a4f8101ebfe237b115dc826608c064e465f0",
+      "qualified_input_sha256": "0022fea7fe81f1813116de2b2ff222d84c79a7df4986a85621f1792224a01820",
+      "rustc_run_status": 0,
+      "frontend_run_status": 0,
+      "status_evidence": "independently executed and asserted by passing native_precision_values test",
+      "rustc_binary_sha256": "5b221d5f4f32a12fae27539a24f1e01bde1199487dcef477223170108a65fc75",
+      "native_binary_sha256": "952a6e235ff129c30a016f1c3098abecbea7753c357f27781dc53b6458409f02",
+      "lowir_sha256": "49a37ea4a1313fd466f786d9216bc6c4abd8d7f895327824a5d826016ababe3a",
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_evidence": "obj/parallel/pa27/capture-source-3626464",
+  "native_evidence": "obj/parallel/pa27/capture-native-3626464",
+  "initial_hypothesis_evidence": "obj/parallel/pa27/capture-qualification/results.json",
+  "opposing_evidence": "obj/parallel/pa27/capture-opposing-qualification/results.json",
+  "scaling": {
+    "fields": [
+      8,
+      32,
+      128
+    ],
+    "ordinary_and_nested": true,
+    "captures_per_closure": 1,
+    "graph_work_bound": "sum(plan.work) < 16*(fields+1)",
+    "linear_difference": "work128-work32 == 4*(work32-work8)",
+    "canonical_work_bound": "canonical_steps < 2048*(fields+1)"
+  },
+  "capability_corruption_controls": [
+    "raw/reference confusion",
+    "raw mutable/const capability mismatch",
+    "union/ordinary field category mismatch",
+    "foreign nominal field owner"
+  ],
+  "gates": [
+    "obj/parallel/pa27/capture-next/gates.json",
+    "obj/parallel/pa27/capture-strict-final/gates.json",
+    "obj/parallel/pa27/capture-close/gates.json",
+    "obj/parallel/pa27/capture-layout-final/gates.json",
+    "obj/parallel/pa27/capture-metadata/gates.json"
+  ],
+  "retained_failed_gates": [
+    "obj/parallel/pa27/capture-first/gates.json",
+    "obj/parallel/pa27/capture-second/gates.json",
+    "obj/parallel/pa27/capture-next/gates.json",
+    "obj/parallel/pa27/capture-strict-final/gates.json",
+    "obj/parallel/pa27/capture-close/gates.json"
+  ],
+  "limitations": [
+    "Two accepted Rust reference-output controls remain explicitly blocked by PA25 output-lifetime proof in all three frontend views; no earlier type acceptance claim.",
+    "Three adjusted receiver regression tests from77abeb19 remain documented formation lifetime boundaries; the separately retained capture-second batch recorded10passing3failing tests.",
+    "No assignment activation, generated reference update, backend change, full matrix, performance study or concurrency stress claim.",
+    "Original packed-unaligned-reference rejects first at the exported-reference lifetime boundary; only the separately qualified local-reference pair establishes packed alignment."
+  ],
+  "backend_tools": {
+    "lowir": "2acc7cefeecc3752c4a15da4ddb1e65c9cb2b88e0032a23d1eca7ff36a005882",
+    "lowir2native": "57f2c1156168eac7e653a4a193f27f124b635413e07de29940daf34a0b831fec"
+  }
+}
