@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "shared-result",
+      "path": "tests/spec/capture-copy-shape/shared-result.rs",
+      "source_sha256": "a49d456399c482418a1c7f3f3174c6509980a39c4a0a483b86754b3c55c47407",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "shared-move-result",
+      "path": "tests/spec/capture-copy-shape/shared-move-result.rs",
+      "source_sha256": "3f751f46cbdd30325ef9e815174fd7ba4ea77d80f0ec7fde4bc7710c70a5cf35",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "mutable-result",
+      "path": "tests/spec/capture-copy-shape/mutable-result.rs",
+      "source_sha256": "1dc1815bb6658bb18f7986c4d30ef838b91da0d0879836d7ca149aada6a26af3",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "mutable-twice",
+      "path": "tests/spec/capture-copy-shape/mutable-twice.rs",
+      "source_sha256": "c2402835a6fca9a91016c280e7cb36f39305465e8ed1c23235ad5d4a34582a02",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "local may be uninitialized or moved at this read"
+    },
+    {
+      "name": "mutable-as-fn",
+      "path": "tests/spec/capture-copy-shape/mutable-as-fn.rs",
+      "source_sha256": "6e6f66a0044fff8957dc235260187e739cc36fb0c777ff92d09ac22aa7a4ded0",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    {
+      "name": "shared-escape",
+      "path": "tests/spec/capture-copy-shape/shared-escape.rs",
+      "source_sha256": "55695b62492c6491eaf3fbf761ddd0a69d6f6c48f0ea17f8fd5e58b8b51bd506",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "shared-noncopy",
+      "path": "tests/spec/capture-copy-shape/shared-noncopy.rs",
+      "source_sha256": "1efcb96a52882a0b16f4895a6deec2c88f552b2b5ef32ee9e5bbb36ae675373b",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    }
+  ]
+}

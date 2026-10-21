@@ -19,6 +19,8 @@ mod nested;
 mod object_inputs;
 #[path = "environment_execution/dependent.rs"]
 mod projected;
+#[path = "environment_execution/copy_inputs.rs"]
+mod reference_copies;
 #[path = "environment_execution/references.rs"]
 mod references;
 #[path = "helpers/qualify.rs"]

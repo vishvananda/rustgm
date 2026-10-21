@@ -42,10 +42,7 @@ const NEGATIVES: &[(&str, i32, &str)] = &[
 ];
 const FRONTIERS: &[(&str, &str)] = &[
     ("quantified-input", "incompatible types"),
-    (
-        "quantified-output",
-        "capture Copy permission requires a determined input type",
-    ),
+    ("quantified-output", "incompatible types"),
     (
         "unresolved-target",
         "trait obligation requires an unambiguous",

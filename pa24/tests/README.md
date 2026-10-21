@@ -27,3 +27,8 @@ controls, with 16 native positives and six language rejections. The existing
 `captured-dispatch/quantified-capture.rs` now accepts and executes; its prior
 unsupported observation remains documented. A nonclosure caller-lifetime
 regression belongs to PA23, and no PA24 text oracles are generated yet.
+
+`capture-copy-outcomes.json` covers unresolved reference pointees and the opposing
+move/call-kind/lifetime rules. The typed outer-shape contract and qualified
+source/native evidence are in
+[reference capture classification](../../docs/pa24-reference-copy-inputs.md).

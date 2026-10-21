@@ -165,6 +165,11 @@ impl Checker<'_> {
             }
             None => {}
         }
+        // Copy depends on the reference kind, not on a determined pointee.
+        // Referent formation and all borrow/lifetime obligations remain ordinary.
+        if let Some(infer::Constructor::Reference { mutable, .. }) = self.head(node, term)? {
+            return Ok(!mutable);
+        }
         let ty = self
             .state
             .infer

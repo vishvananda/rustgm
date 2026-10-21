@@ -53,8 +53,8 @@ ordinary backend-free lane.
 The supported families cover inherited Fn/FnMut/FnOnce, mixed target arguments,
 deep and diamond inheritance, an unused quantified binder, and opposing written
 annotations/captured values. The explicit remaining positives are quantified
-reference input, quantified external-reference output (currently stopped by
-undetermined capture Copy input), and target arguments unresolved when the
+reference input, quantified external-reference output (subsequently advanced by typed
+reference Copy classification to inherited principal proof input ownership), and target arguments unresolved when the
 conversion is first reached. These are implementation boundaries, not completed
 language rejection checks. Broader quantified-object proof work remains separate.
 

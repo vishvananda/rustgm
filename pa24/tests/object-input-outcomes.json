@@ -201,7 +201,7 @@
       "features": [
         "pa24.closures"
       ],
-      "diagnostic": "capture Copy permission requires a determined input type"
+      "diagnostic": "incompatible types"
     },
     {
       "name": "quantified-static-input",
