@@ -74,16 +74,20 @@ impl Checker<'_> {
                 let variant = self.facts.members.variants[id.0 as usize];
                 for position in variant.start..variant.end {
                     let field = self.facts.members.fields[position as usize];
+                    let source = field
+                        .origin
+                        .require_diagnostic()
+                        .map_err(|e| self.error(self.nominals.entries[index].key, e))?;
                     let properties = proof
                         .check(&mut self.facts, field.ty)
-                        .map_err(|e| self.error(field.node, e))?;
+                        .map_err(|e| self.error(source, e))?;
                     if !properties.well_formed
                         || !properties.sized
                             && (kind != crate::types::aggregate::Kind::Struct
                                 || position + 1 != variant.end)
                     {
                         return Err(
-                            self.error(field.node, "only a struct's final field may be unsized")
+                            self.error(source, "only a struct's final field may be unsized")
                         );
                     }
                     if packed && !properties.sized {
@@ -104,6 +108,10 @@ impl Checker<'_> {
         owner: crate::resolve::model::DefId,
         field: crate::sema::members::Field,
     ) -> Result<(), Error> {
+        let source = field
+            .origin
+            .require_diagnostic()
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         let mut drops =
             crate::types::destruction::NeedsDrop::new(self.facts.destructors.declared());
         if let Some(environment) = self.facts.generics.environments.get(&owner) {
@@ -112,15 +120,12 @@ impl Checker<'_> {
         self.facts
             .aggregates
             .prepare(&mut self.facts.types, field.ty)
-            .map_err(|e| self.error(field.node, e))?;
+            .map_err(|e| self.error(source, e))?;
         if drops
             .demand(&self.facts.types, &self.facts.aggregates, field.ty)
-            .map_err(|e| self.error(field.node, e))?
+            .map_err(|e| self.error(source, e))?
         {
-            return Err(self.error(
-                field.node,
-                "an unsized packed tail must not need destruction",
-            ));
+            return Err(self.error(source, "an unsized packed tail must not need destruction"));
         }
         Ok(())
     }

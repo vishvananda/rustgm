@@ -243,7 +243,7 @@ fn constructors(
         {
             continue;
         }
-        let source = variant.node;
+        let source = variant.origin.require_diagnostic()?;
         if facts.members.at_node(source).is_some() && index.insert(source, bodies.len()).is_some() {
             return Err("duplicate constructor lifetime owner");
         }
@@ -322,7 +322,7 @@ pub(super) fn constructor(
         facts,
         crate::resolve::model::DefId(variant.owner.0),
         definition,
-        variant.node,
+        variant.origin.require_diagnostic()?,
         signature,
     )
 }

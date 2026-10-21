@@ -228,9 +228,10 @@ fn verify_values(
             if member.owner != definition.item {
                 continue;
             }
-            let unit = report.package.unit(member.node.file);
+            let source = member.origin.diagnostic().ok_or("missing variant source")?;
+            let unit = report.package.unit(source.file);
             let rustgm::syntax::ast::Kind::Variant(index) =
-                unit.configured.ast.node(member.node.node).kind
+                unit.configured.ast.node(source.node).kind
             else {
                 return Err("missing source variant name".into());
             };

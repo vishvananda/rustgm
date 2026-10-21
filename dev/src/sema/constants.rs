@@ -386,7 +386,15 @@ impl<'a> Queries<'a> {
 impl Queries<'_> {
     fn error(&self, query: Query, message: impl Into<String>) -> Error {
         let key = match query {
-            Query::Variant(id) => self.typing.facts.members.variants[id.0 as usize].node,
+            Query::Variant(id) => {
+                let Some(source) = self.typing.facts.members.variants[id.0 as usize]
+                    .origin
+                    .diagnostic()
+                else {
+                    return Error::at(FileId(0), 0, message);
+                };
+                source
+            }
             Query::Constant(index) | Query::Static(index) => {
                 self.typing.facts.initializers[index].value
             }

@@ -175,7 +175,7 @@ impl Checker<'_> {
             .iter()
             .copied()
             .map(|ty| Field {
-                node: declaration.origin,
+                origin: crate::sema::members::Origin::Library(declaration.origin),
                 name,
                 ty,
                 access: if declaration.kind.is_struct() {

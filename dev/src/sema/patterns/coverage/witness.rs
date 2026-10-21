@@ -65,8 +65,11 @@ impl Coverage<'_> {
         let variant = self.facts.members.variants[id.0 as usize];
         let definition = &self.report.resolution.definitions[variant.owner.0 as usize];
         out.push_str(self.report.package.names.get(definition.name));
-        let unit = self.report.package.unit(variant.node.file);
-        if let Kind::Variant(index) = unit.configured.ast.nodes[variant.node.node.0 as usize].kind {
+        let Some(source) = variant.origin.diagnostic() else {
+            return Ok(());
+        };
+        let unit = self.report.package.unit(source.file);
+        if let Kind::Variant(index) = unit.configured.ast.nodes[source.node.0 as usize].kind {
             let span = unit.configured.ast.variants[index as usize].name;
             out.push_str("::");
             out.push_str(

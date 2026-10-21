@@ -83,7 +83,11 @@ pub fn templates(
     for (definition, signature, variant) in selected {
         let declaration = facts.members.variants[variant.0 as usize];
         let owner = DefId(declaration.owner.0);
-        let error = |message| Declarations::error(report, declaration.node, message);
+        let source = declaration
+            .origin
+            .require_diagnostic()
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        let error = |message| Declarations::error(report, source, message);
         let environment = match environments.entry(owner) {
             std::collections::hash_map::Entry::Occupied(entry) => Arc::clone(entry.get()),
             std::collections::hash_map::Entry::Vacant(entry) => Arc::clone(
@@ -136,7 +140,11 @@ fn build(
 ) -> Result<Body, Error> {
     use super::{Local, LocalId, LocalKind, Statement, Value};
     let variant = facts.members.variants[variant_id.0 as usize];
-    let error = |message| Declarations::error(report, variant.node, message);
+    let source = variant
+        .origin
+        .require_diagnostic()
+        .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+    let error = |message| Declarations::error(report, source, message);
     let Some(Type::Function { result, .. }) = facts.types.kind(signature) else {
         return Err(error("missing constructor signature"));
     };
@@ -145,12 +153,12 @@ fn build(
             definition,
             signature,
         },
-        variant.node,
+        source,
         result,
     );
     body.const_context = true;
     body.storage = Some(crate::body::storage::Facts::new(
-        crate::body::scopes::Facts::synthetic(variant.node.node),
+        crate::body::scopes::Facts::synthetic(source.node),
     ));
     for (ordinal, field) in facts
         .members
@@ -159,6 +167,7 @@ fn build(
         .iter()
         .enumerate()
     {
+        let field_source = field.origin.require_diagnostic().map_err(error)?;
         let ordinal = u32::try_from(ordinal).map_err(|_| error("too many constructor fields"))?;
         let local = LocalId(ordinal);
         body.locals.push(Local {
@@ -168,10 +177,10 @@ fn build(
             kind: LocalKind::Parameter(ordinal),
             definition: None,
             mutable: false,
-            source: field.node.node,
+            source: field_source.node,
         });
         body.statements.push(Statement {
-            source: field.node.node,
+            source: field_source.node,
             action: Action::StorageLive(local),
         });
         let value = ValueId(ordinal);
@@ -181,7 +190,7 @@ fn build(
         });
         body.arguments.push(value);
         body.statements.push(Statement {
-            source: field.node.node,
+            source: field_source.node,
             action: Action::Evaluate(value),
         });
     }

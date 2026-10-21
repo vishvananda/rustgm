@@ -350,7 +350,7 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(key, "missing resolved field access"))?
             };
             fields.push(Field {
-                node: key,
+                origin: crate::sema::members::Origin::Source(key),
                 name,
                 ty,
                 access,

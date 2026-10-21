@@ -23,6 +23,10 @@ impl Checker<'_> {
         proof: &mut Proof,
         scratch: &mut Fields,
     ) -> Result<(), Error> {
+        let source = field
+            .origin
+            .require_diagnostic()
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         let manually_drop = self
             .report
             .resolution
@@ -39,17 +43,14 @@ impl Checker<'_> {
                 .checked_add(1)
                 .filter(|steps| *steps <= 8_000_000)
                 .ok_or_else(|| {
-                    self.error(field.node, "union field eligibility work budget exceeded")
+                    self.error(source, "union field eligibility work budget exceeded")
                 })?;
             if scratch.seen.len() >= 1_000_000 {
-                return Err(self.error(
-                    field.node,
-                    "union field eligibility storage budget exceeded",
-                ));
+                return Err(self.error(source, "union field eligibility storage budget exceeded"));
             }
             let ty = proof
                 .normalize(&mut self.facts, ty)
-                .map_err(|e| self.error(field.node, e))?;
+                .map_err(|e| self.error(source, e))?;
             if !scratch.seen.insert(ty) {
                 continue;
             }
@@ -62,7 +63,7 @@ impl Checker<'_> {
                         self.facts
                             .types
                             .list(fields)
-                            .ok_or_else(|| self.error(field.node, "missing union tuple fields"))?,
+                            .ok_or_else(|| self.error(source, "missing union tuple fields"))?,
                     );
                 }
                 Some(Kind::Array { element, .. } | Kind::ArrayTerm { element, .. }) => {
@@ -77,9 +78,9 @@ impl Checker<'_> {
                                 bound: Bound::Copy,
                             },
                         )
-                        .map_err(|e| self.error(field.node, e))?
+                        .map_err(|e| self.error(source, e))?
                     {
-                        return Err(self.error(field.node, "union fields require Copy, references, ManuallyDrop, or allowed tuples and arrays"));
+                        return Err(self.error(source, "union fields require Copy, references, ManuallyDrop, or allowed tuples and arrays"));
                     }
                 }
             }

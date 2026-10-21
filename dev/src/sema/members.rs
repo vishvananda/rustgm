@@ -1,4 +1,7 @@
 //! Nominal field identities, source provenance and constructor selection.
+#[cfg(test)]
+#[path = "../../tests/invariants/provenance_members.rs"]
+mod tests;
 use crate::{
     resolve::{
         model::{Access, DefId},
@@ -37,7 +40,7 @@ pub enum Name {
 }
 #[derive(Clone, Copy)]
 pub struct Field {
-    pub node: NodeKey,
+    pub origin: Origin,
     pub name: Name,
     pub ty: TypeId,
     pub access: Access,
@@ -46,29 +49,54 @@ pub struct Field {
 pub struct Variant {
     pub owner: ItemId,
     pub ordinal: u32,
-    pub node: NodeKey,
+    pub origin: Origin,
     pub shape: Shape,
     pub start: u32,
     pub end: u32,
 }
-#[derive(Clone, Copy)]
-enum Provenance {
+/// External members retain their canonical nominal owner, without source syntax.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Origin {
     Source(NodeKey),
-    Metadata(NodeKey),
+    Library(NodeKey),
+    External(DefId),
 }
-impl Provenance {
-    fn origin(self) -> NodeKey {
+impl Origin {
+    #[must_use]
+    pub const fn diagnostic(self) -> Option<NodeKey> {
         match self {
-            Self::Source(key) | Self::Metadata(key) => key,
+            Self::Source(key) | Self::Library(key) => Some(key),
+            Self::External(_) => None,
         }
     }
-    fn source(self) -> Option<NodeKey> {
+    #[must_use]
+    pub const fn source(self) -> Option<NodeKey> {
         if let Self::Source(key) = self {
             Some(key)
         } else {
             None
         }
     }
+    #[must_use]
+    pub const fn external_owner(self) -> Option<DefId> {
+        if let Self::External(owner) = self {
+            Some(owner)
+        } else {
+            None
+        }
+    }
+    pub(crate) fn require_diagnostic(self) -> Result<NodeKey, &'static str> {
+        self.diagnostic()
+            .ok_or("external member has no source diagnostic identity")
+    }
+}
+
+/// Coordinates belong to one canonical nominal owner; wire remapping replaces it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Identity {
+    pub owner: DefId,
+    pub variant: u32,
+    pub field: u32,
 }
 #[derive(Default)]
 pub struct Members {
@@ -113,7 +141,7 @@ impl Members {
         shape: Shape,
         fields: &[Field],
     ) -> Result<VariantId, &'static str> {
-        self.publish(owner, ordinal, Provenance::Source(node), shape, fields)
+        self.publish(owner, ordinal, Origin::Source(node), shape, fields)
     }
     /// Register completed library fields without inventing source syntax identities.
     /// # Errors
@@ -126,17 +154,45 @@ impl Members {
         shape: Shape,
         fields: &[Field],
     ) -> Result<VariantId, &'static str> {
-        self.publish(owner, ordinal, Provenance::Metadata(origin), shape, fields)
+        self.publish(owner, ordinal, Origin::Library(origin), shape, fields)
+    }
+    /// Publish a source-free closed record after external identities are remapped.
+    /// # Errors
+    /// Rejects foreign field owners, duplicate records and ordinal inconsistencies.
+    pub fn insert_external(
+        &mut self,
+        owner: ItemId,
+        fields: &[Field],
+    ) -> Result<VariantId, &'static str> {
+        let origin = Origin::External(DefId(owner.0));
+        if !self.variants(owner).is_empty() || fields.iter().any(|field| field.origin != origin) {
+            return Err("external record member owner is inconsistent");
+        }
+        if fields
+            .iter()
+            .any(|field| !matches!(field.name, Name::Named(_)))
+        {
+            return Err("external record members require named fields");
+        }
+        self.publish(owner, 0, origin, Shape::Record, fields)
     }
     fn publish(
         &mut self,
         owner: ItemId,
         ordinal: u32,
-        provenance: Provenance,
+        provenance: Origin,
         shape: Shape,
         fields: &[Field],
     ) -> Result<VariantId, &'static str> {
-        let node = provenance.origin();
+        if fields.iter().any(|field| match (provenance, field.origin) {
+            (Origin::Source(_), Origin::Source(_)) | (Origin::Library(_), Origin::Library(_)) => {
+                false
+            }
+            (Origin::External(owner), Origin::External(field_owner)) => owner != field_owner,
+            _ => true,
+        }) {
+            return Err("aggregate field provenance differs from its owner");
+        }
         if provenance
             .source()
             .is_some_and(|node| self.by_node.contains_key(&node))
@@ -165,7 +221,7 @@ impl Members {
         self.variants.push(Variant {
             owner,
             ordinal,
-            node,
+            origin: provenance,
             shape,
             start,
             end,
@@ -191,6 +247,15 @@ impl Members {
     #[must_use]
     pub fn variant(&self, field: FieldId) -> Option<VariantId> {
         self.field_variants.get(field.0 as usize).copied()
+    }
+    #[must_use]
+    pub fn identity(&self, field: FieldId) -> Option<Identity> {
+        let variant = self.variants.get(self.variant(field)?.0 as usize)?;
+        Some(Identity {
+            owner: DefId(variant.owner.0),
+            variant: variant.ordinal,
+            field: self.ordinal(field)?,
+        })
     }
     #[must_use]
     pub fn field(&self, variant: VariantId, name: Name) -> Option<FieldId> {

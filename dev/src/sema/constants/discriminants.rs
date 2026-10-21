@@ -86,7 +86,11 @@ pub(in crate::sema) fn advance(
             visit(facts)?;
             let spec = entry.spec;
             let member = facts.members.variants[spec.variant.0 as usize];
-            let error = |message| Declarations::error(report, member.node, message);
+            let source = member
+                .origin
+                .require_diagnostic()
+                .map_err(|e| Error::at(super::FileId(0), 0, e))?;
+            let error = |message| Declarations::error(report, source, message);
             let value = if let Some(value) = entry.value {
                 value
             } else if spec.previous.is_none() {
@@ -133,7 +137,10 @@ pub(in crate::sema) fn advance(
         }
         resumed = false;
         if let Some(dependency) = queries.drain_until(None)? {
-            let source = queries.typing.facts.members.variants[variant.0 as usize].node;
+            let source = queries.typing.facts.members.variants[variant.0 as usize]
+                .origin
+                .require_diagnostic()
+                .map_err(|e| queries.error(query, e))?;
             let (saved, continuation) = queries.suspend();
             *scratch = saved;
             return Ok(Progress::Prepare {
