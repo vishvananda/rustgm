@@ -149,7 +149,7 @@ fn canonical_methods_and_runtime_shims_have_bounded_growth()
             true,
         )?;
         let (mut report, mut facts) = semantic::analyze(&text)?;
-        assert_eq!(facts.intrinsics.iter().count(), 6);
+        assert_eq!(facts.intrinsics.iter().count(), 7);
         for kind in [Intrinsic::AtomicLoad, Intrinsic::AtomicStore] {
             let method = facts.intrinsics.get(kind).ok_or("missing atomic method")?;
             assert!(method.parameter.is_none());

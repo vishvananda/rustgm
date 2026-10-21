@@ -1,0 +1,2249 @@
+{
+  "stage": "planned-development-checkpoint",
+  "assignment_active": false,
+  "baseline": "55b221e3",
+  "source_sha256": "a8459686c284f90d1f0abe53d295968f2f9fd90e6080a7ee028ed7cf5ba3e1a3",
+  "source_fingerprint_format": "sha256(concatenated sorted dev/**/*.rs relative path UTF8, NUL, file bytes, NUL)",
+  "compiler_sha256": "1417cafedd6293e929af0bb476ef2fd1891a0c7dba2e7ed765be97eb6d719e11",
+  "frontend_cases": 21,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "backend": "unchanged backend.lock"
+  },
+  "summary": {
+    "rustc=0,types=0,execution=0": 10,
+    "rustc=1,types=1,execution=1": 10,
+    "rustc=1,types=0,execution=1": 1
+  },
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-subtract/sub-orders.rs",
+      "sha256": "fa175fd5583ffda1b2838cf147581e47f2b1862593b95780a62951ba84be506c",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/add-orders.rs; fetch_add replaced with fetch_sub",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "d9eb6cfeaea65f32602e6b267f7353aa31331637b33191d63254b67a75ce748c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "132462e800dc549d9e0e32397f4eac7bc262d608c0d1e470d92e0166171922f5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7e64f06a5cb14af1c0bbd8941611ef51ec833b372c2f8fa35d1fa79f0d7715e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "63ab9f851bdc100ab3f3dfbce81467b9778cba1b9db96ccf5d781333308dbaed"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/variable-order.rs",
+      "sha256": "4f893d8ef27c92a24ea302f65aa46743728e8919f5eb31d430b313d3d575b885",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "51f4f167469a4fdf05484763f20dc8d1c606048fd3089298bc56a3699a68d51b",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c51fc9ca8c3912417b4ed79f227e7cbc730f53782d50da24c506e6169651817a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "5d3e0c227f9b54374f0b184ec58a34f8a522186addf590a0e3ff9ee6ccc0144c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "9f5f4bb3c370a58fe5a2fa02e3676fce2e88cb7f8003bc0724f206492416d874",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "f5f5fce0b187062df2ce606612988f2b4ef6ff9775211cd78c99f5312d258e41"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/aliased-order.rs",
+      "sha256": "b3a7553db92de488c54b7e4fe2f4d7518135ec88fa39a9dc261de0a58516beea",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "b1745ee2bede6ce33645c1e6d2acc239acb54872f4182161957279add3f2e68b",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "44110641fe24c80366c2c3d0459dc4e52b5eaab4e4827dd3ee3f1766b67d5200",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "b2ed523e543074992afd118590ce40a30887cecfbfce92b8ea7da8cb64a92691",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "f05b5274ddecb2fa75f42bfc84b31ced79d25ef820f8caded382d6a65e02901f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "f5af775aaaf844aedcb605aab88ff53a714ff07d2f5d0912eb2197a9fe7f86c1"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/reified.rs",
+      "sha256": "6056b6ab6a836dad814d3697158ac0b6fa61f38362f875f1e9c3bc65d740e8f9",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "c140fc89597b3b2d047811fd5c86136b6940ebef01fabf4b2ae0cfea6b13f24a",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "3312f8c2774add341770218e8fc1d58d95e1dee11e283ce389cfa00963ce2b4f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8571018f86883278317e0db4799d8259529e3a58c9c77847df319e6367f62b07",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7e64f06a5cb14af1c0bbd8941611ef51ec833b372c2f8fa35d1fa79f0d7715e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "bc17de6e13fa832191c97228dc21d568f5e5270dde2b6962d95b4229b2596e40"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/ufcs.rs",
+      "sha256": "bdd768995be00d60f8f7fcf24e4292277f5e7b7559783085f539f944c3a02733",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "4b34be974c419614d48b8d6f2d43ccb5061326dcb433325da458edd8b80b6e83",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "4cf96bd64029382188d0b2de9ce0058a88b882df69d63b0df89d716634608e05",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8badb61397045564e00d91c81038892f7efda01853a5a0e14c702d4ac915c848",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7e64f06a5cb14af1c0bbd8941611ef51ec833b372c2f8fa35d1fa79f0d7715e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "2c4211181c7ce596102dbbc44e27e207910f9ea42891e99d0c572993dcffad77"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/shared-static.rs",
+      "sha256": "d93633a4edcfc596064ebf808645bc103cf471ff4bc974d105ee625a90c80884",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "2ca7fecffdb44e6c5b1e3cc1ce2452f2044024200625c4bb03e6c9ce15b8244e",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `x` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/shared-static.rs:1:94\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};static A0:A=A::new(1);struct Pair{a:A,x:u32}static PAIR:Pair=Pair{a:A::new(2),...\n  |                                                                                     ----     ^\n  |                                                                                     |\n  |                                                                                     field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c61c2f9c9a2179c3559dc62d26113a3f23455a75094ba12e75896ab7f65b9c95",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "90fe173d2d858c1039f60ef9267f04bb9391228e2f573cf494db8199165184d8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "21686651fe028a59894b1a38123139ad4baa4d86a44e9456202c2bab629a38a8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "a7d1538044837e6d77daefb16261839f90b93d0f52780b8dc34916cc677e04a3"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrapping.rs",
+      "sha256": "edaad1553e7cc7eb51e8c851c449b7934214192e6b7cce51aa9abeaacaa8f7fb",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrapping.rs; fetch_add replaced with fetch_sub",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "b06ca94abae72776cfcd55007c54d9b6b75bafdf294944000045310fe56ddb11",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0566cd5e6034cd99bf526155bc38ab643ae2e8d2094dcaa9cdafbe36be360965",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7e64f06a5cb14af1c0bbd8941611ef51ec833b372c2f8fa35d1fa79f0d7715e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "b6cf5f0445e5fa5d4783244c4a59ade7507f9a4f9bc9c341d0dc8c783bd719b2"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/unsafe-narrowing.rs",
+      "sha256": "3020b4bfbb662d3db5b4a73374e6f7c87c65dfee26281a9e31c6c21ef8d4594d",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "db2838e22a2e514c825f31c649941a57af33e21f440604a5382b75187e020d80",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "8420795d1f28e2a843f597cde9650dbedbbe1c2662ef8d689c2ed2e974c90ae9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "7e64f06a5cb14af1c0bbd8941611ef51ec833b372c2f8fa35d1fa79f0d7715e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "506c4db66211b3e3d77e30729422b9b462c0675c44b70bd190d1a5c60b8c0fdc"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub.rs",
+      "sha256": "283f2f42fa08493bdd313fe56a8aee9da5b280d592fb974641ac3f3283f96f9a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add.rs; fetch_add replaced with fetch_sub",
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-sub.rs:1:87\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);a.fetch_sub(2,O::Relaxed)};fn main(){let _=X;}\n  |                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-dead-sub.rs",
+      "sha256": "3d1513e6c204225f87c0aa4b22809a8f7f0c8dc5028af01fa05873433dcc950c",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-dead-add.rs; fetch_add replaced with fetch_sub",
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-dead-sub.rs:1:96\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);if false{a.fetch_sub(2,O::Relaxed)}else{7}};fn ma...\n  |                                                                                                ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-reified.rs",
+      "sha256": "3ebd9cbb61a61a12dd4970dd8c452c70dd990bbfa9cd1ece9369f0a572135916",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "non-const calls are not allowed in constant initializers",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error: function pointer calls are not allowed in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-reified.rs:1:127\n  |\n1 | ...u32,O)->u32=A::fetch_sub;const X:u32={let a=A::new(1);SWAP(&a,2,O::Relaxed)};fn main(){let _=X;}\n  |                                                          ^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7de6dd5a5f4f3436dcfcddde2b52bf4320e09c3d2a9dd77710664f327bf466e4",
+          "stderr": "ERROR: file 0: 109: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7de6dd5a5f4f3436dcfcddde2b52bf4320e09c3d2a9dd77710664f327bf466e4",
+          "stderr": "ERROR: file 0: 109: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7de6dd5a5f4f3436dcfcddde2b52bf4320e09c3d2a9dd77710664f327bf466e4",
+          "stderr": "ERROR: file 0: 109: non-const calls are not allowed in constant initializers\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-receiver.rs",
+      "sha256": "6dc1a4b14f19d11c5c41b71709bff6a4cccc24d43261dc0e09ba25454471cfc5",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "reference to an unaligned packed field",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-receiver.rs:1:134\n  |\n1 | ...struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=p.a.fetch_sub(2,O::Relaxed);}\n  |                                                                   ^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "95585f2d7191f8c6bad3993b285d30c100c7f60850e0711be7207a5e8e728066",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d",
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d",
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-value.rs",
+      "sha256": "6f5d46a3f87edab9016ec74ecc75d49c9233383bde22e91c894511890525d600",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrong-value.rs; fetch_add replaced with fetch_sub",
+      "reason": "",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-value.rs:1:100\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(true,O::Relaxed);}\n  |                                                                                          --------- ^^^^ expected `u32`, found `bool`\n  |                                                                                          |\n  |                                                                                          arguments to this method are incorrect\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c92d0f7ce71b79cd9b8b983af869e34b91a2f48ca6864bf9e9006fc62c18f1a1",
+          "stderr": "ERROR: file 0: 99: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c92d0f7ce71b79cd9b8b983af869e34b91a2f48ca6864bf9e9006fc62c18f1a1",
+          "stderr": "ERROR: file 0: 99: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c92d0f7ce71b79cd9b8b983af869e34b91a2f48ca6864bf9e9006fc62c18f1a1",
+          "stderr": "ERROR: file 0: 99: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-order.rs",
+      "sha256": "0c4dca3565c7fe2adbabb071b2bd70af2ed99320f79dca21712141fbc93a492d",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: unused import: `Ordering as O`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-order.rs:1:41\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(2,0u8);}\n  |                                         ^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-order.rs:1:102\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(2,0u8);}\n  |                                                                                          ---------   ^^^ expected `Ordering`, found `u8`\n  |                                                                                          |\n  |                                                                                          arguments to this method are incorrect\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "87ebf8c83706b5817fe836cf4c5af1820af9b93dc59d5e07e6d8de13e68c5cc5",
+          "stderr": "ERROR: file 0: 101: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "87ebf8c83706b5817fe836cf4c5af1820af9b93dc59d5e07e6d8de13e68c5cc5",
+          "stderr": "ERROR: file 0: 101: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "87ebf8c83706b5817fe836cf4c5af1820af9b93dc59d5e07e6d8de13e68c5cc5",
+          "stderr": "ERROR: file 0: 101: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-arity.rs",
+      "sha256": "52b2b284c738916aafe6d3080a9bcdbaf394364349bc396359561e33d9c21b17",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0061]: this method takes 2 arguments but 1 argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-arity.rs:1:90\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(O::Relaxed);}\n  |                                                                                          ^^^^^^^^^ ---------- argument #1 of type `u32` is missing\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\nhelp: provide the argument\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(/* u32 */, O::Relaxed);}\n  |                                                                                                    ++++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0061`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586",
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586",
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586",
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/generic-argument.rs",
+      "sha256": "bbcbd4a0f418515906af7ed8b7edc5c953e0801c01b438654b9093cb021b8b65",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0107]: method takes 0 generic arguments but 1 generic argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/generic-argument.rs:1:90\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub::<u32>(2,O::Relaxed);}\n  |                                                                                          ^^^^^^^^^------- help: remove the unnecessary generics\n  |                                                                                          |\n  |                                                                                          expected 0 generic arguments\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0107`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059",
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059",
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059",
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/local-shadow.rs",
+      "sha256": "4bf2d973a25fc026399f679426e5f9dcc7c348d21f3075761cf420db6604062f",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/local-shadow.rs; fetch_add replaced with fetch_sub",
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unused import: `AtomicU32 as A`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/local-shadow.rs:1:26\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};struct Local;impl Local{fn swap(&self,x:u32,o:O)->u32{let _=o;x}fn fetch_sub(&...\n  |                          ^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "4e20223bdea1b6945da9c1a7f52b426ef8c0555a79b901d573cd7ff130cc6d17",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0f09f62d108ccc57219fba84f209a6406948a1522b693308af9e80564f6ad6c7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "3dccd9e8d28eb370a5533642910ceac0faccbc64ea291b1a8752b02417194941",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "512a1e43ffa978ab54cb943c61373faa224d593684b7336c3acb1082f9e7033b"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub-alias.rs",
+      "sha256": "ed7092a7e03eb38932511912a5d031e3b15c5cb4b072c3e643033afd9187773a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add-alias.rs; fetch_add replaced with fetch_sub",
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-sub-alias.rs:1:104\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);let f=A::fetch_sub;f(&a,2,O::Relaxed)};fn main(){...\n  |                                                                                                        ^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-generic-skipped.rs",
+      "sha256": "14f8935dda218e8694120055a0496f0cca502aa5aa325e4ea64fa5d3133e5a38",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constant functions\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-generic-skipped.rs:1:116\n  |\n1 | ...n f<const N:usize>()->u32{let a=A::new(1);if false{a.fetch_sub(1,O::Relaxed)}else{7}}const X:u32=f::<1>();fn main(){let _=X;}\n  |                                                         ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constant functions are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "831cfeac47b7e27a01ffe58cfcf2ef5ac13b927843078a5b493712c2bcdfebcb",
+          "stderr": "ERROR: file 0: 87: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "831cfeac47b7e27a01ffe58cfcf2ef5ac13b927843078a5b493712c2bcdfebcb",
+          "stderr": "ERROR: file 0: 87: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "831cfeac47b7e27a01ffe58cfcf2ef5ac13b927843078a5b493712c2bcdfebcb",
+          "stderr": "ERROR: file 0: 87: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-unsafe.rs",
+      "sha256": "3e177942248e6c662b04022db73891f0006921dda3ce0af63cd70df57d4bb35f",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-unsafe.rs:1:94\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);unsafe{a.fetch_sub(1,O::Relaxed)}};fn main(){let ...\n  |                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nwarning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-unsafe.rs:1:85\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);unsafe{a.fetch_sub(1,O::Relaxed)}};fn main(){let ...\n  |                                                                                     ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
+          "stderr": "ERROR: file 0: 67: runtime-only intrinsic is not allowed during constant evaluation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-raw.rs",
+      "sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": "",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unused import: `Ordering as O`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-raw.rs:1:41\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};#[repr(packed)]struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=...\n  |                                         ^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `tag` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-raw.rs:1:80\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};#[repr(packed)]struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=...\n  |                                                                              - ^^^\n  |                                                                              |\n  |                                                                              field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "8e7767f038fd5508cd8d8192dfd442b8d88b703231253c25c0e31dc2f04fbdf5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "31c7e40df886f8e299eac253903cdfb487f735b2da93e0bfb926db52252a3f0c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "07ba31266b3569f9fc15d9ab4b1358b11ee0a32c57b59adb7932fc607581755d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "70036f1da18b9d782468d467c07e126333a0b7f0c68b42af65156325ba3f3459"
+    }
+  ],
+  "preliminary_derivative_observations": [
+    {
+      "path": "pa28/tests/spec/atomic-subtract/sub-orders.rs",
+      "sha256": "fa175fd5583ffda1b2838cf147581e47f2b1862593b95780a62951ba84be506c",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/add-orders.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      },
+      "rustc_object_sha256": "63ab9f851bdc100ab3f3dfbce81467b9778cba1b9db96ccf5d781333308dbaed"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/variable-order.rs",
+      "sha256": "51f4f167469a4fdf05484763f20dc8d1c606048fd3089298bc56a3699a68d51b",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/variable-order.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      },
+      "rustc_object_sha256": "64de43e51066c7e2b62b54ef4021d4b5e51db31dd9fa30e74ec697a26f130d0d"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/aliased-order.rs",
+      "sha256": "b1745ee2bede6ce33645c1e6d2acc239acb54872f4182161957279add3f2e68b",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/aliased-order.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 134: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4622a8a4fc7296cafcde0b800b908e783b368baed8da573fe49a4203359c6aa0"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 134: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4622a8a4fc7296cafcde0b800b908e783b368baed8da573fe49a4203359c6aa0"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 134: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4622a8a4fc7296cafcde0b800b908e783b368baed8da573fe49a4203359c6aa0"
+        }
+      },
+      "rustc_object_sha256": "6901bdaa5629af2e6062a615e7a9d5ab691b253a302f1620678551e6b96c581a"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/reified.rs",
+      "sha256": "c140fc89597b3b2d047811fd5c86136b6940ebef01fabf4b2ae0cfea6b13f24a",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/reified.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 142: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "40aceac09d7c39a1af426db2e78f5aa31882061170ec2629bc1cbd775d6f4abb"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 142: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "40aceac09d7c39a1af426db2e78f5aa31882061170ec2629bc1cbd775d6f4abb"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 142: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "40aceac09d7c39a1af426db2e78f5aa31882061170ec2629bc1cbd775d6f4abb"
+        }
+      },
+      "rustc_object_sha256": "2c2dfeb34ccb3621489a3b70b0f44f48085a7a21838fc936f07c7a1f85273c24"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/ufcs.rs",
+      "sha256": "4b34be974c419614d48b8d6f2d43ccb5061326dcb433325da458edd8b80b6e83",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/ufcs.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 118: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "534bcd7381340d8011c3ce17643e17c04ff0a394e83f77a271f33938718a833f"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 118: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "534bcd7381340d8011c3ce17643e17c04ff0a394e83f77a271f33938718a833f"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 118: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "534bcd7381340d8011c3ce17643e17c04ff0a394e83f77a271f33938718a833f"
+        }
+      },
+      "rustc_object_sha256": "4c87aa584047da3e5e68d5be426f2570c0e147781fa25f692ecf0da4cefefb41"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/shared-static.rs",
+      "sha256": "2ca7fecffdb44e6c5b1e3cc1ce2452f2044024200625c4bb03e6c9ce15b8244e",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/shared-static.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `x` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/shared-static.rs:1:94\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};static A0:A=A::new(1);struct Pair{a:A,x:u32}static PAIR:Pair=Pair{a:A::new(2),...\n  |                                                                                     ----     ^\n  |                                                                                     |\n  |                                                                                     field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 181: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5dc4e9cc239d2a05245939dba5fedbec8cea460759983c1bc44c1fa8aee6e031"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 181: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5dc4e9cc239d2a05245939dba5fedbec8cea460759983c1bc44c1fa8aee6e031"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 181: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5dc4e9cc239d2a05245939dba5fedbec8cea460759983c1bc44c1fa8aee6e031"
+        }
+      },
+      "rustc_object_sha256": "05b749bbfecee4d409d62336c9cb90ad7a53c4e37b45e0ab1b4956483011f86d"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrapping.rs",
+      "sha256": "edaad1553e7cc7eb51e8c851c449b7934214192e6b7cce51aa9abeaacaa8f7fb",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrapping.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1cad4551b6c27f29a8f851ee92301f1183618761617bbff319cdb727196a1fbc"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1cad4551b6c27f29a8f851ee92301f1183618761617bbff319cdb727196a1fbc"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1cad4551b6c27f29a8f851ee92301f1183618761617bbff319cdb727196a1fbc"
+        }
+      },
+      "rustc_object_sha256": "b6cf5f0445e5fa5d4783244c4a59ade7507f9a4f9bc9c341d0dc8c783bd719b2"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/unsafe-narrowing.rs",
+      "sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/unsafe-narrowing.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "8f700969690058b156aab3ec5e54d941dc07d4a47e7d12f512039098a7211895",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "93e98cf1a7f5d0b46d1a4aee66fa7b75bc92b3d2b18afaaf585dc45ef7e24174",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "fa8c2fdfe28b0463bec5d3588d29e37df640726a73e7fcd1fbb750473fc969a5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "92080fd44466796cc14b25d72e4b02f99ff8e09bf96a9bd4c6a8352a180d3bfd"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub.rs",
+      "sha256": "283f2f42fa08493bdd313fe56a8aee9da5b280d592fb974641ac3f3283f96f9a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-sub.rs:1:87\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);a.fetch_sub(2,O::Relaxed)};fn main(){let _=X;}\n  |                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ba7a39bf1b65fad587e8e6563d7fdb0918ed0eebe27e4cfd124ff3e1d18f33d5"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ba7a39bf1b65fad587e8e6563d7fdb0918ed0eebe27e4cfd124ff3e1d18f33d5"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ba7a39bf1b65fad587e8e6563d7fdb0918ed0eebe27e4cfd124ff3e1d18f33d5"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-dead-sub.rs",
+      "sha256": "3d1513e6c204225f87c0aa4b22809a8f7f0c8dc5028af01fa05873433dcc950c",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-dead-add.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-dead-sub.rs:1:96\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);if false{a.fetch_sub(2,O::Relaxed)}else{7}};fn ma...\n  |                                                                                                ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 93: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4efd4bc1847b41d3ef57f8f0b08e804be9f5c6a10d59e50cbe1900b2324c36cc"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 93: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4efd4bc1847b41d3ef57f8f0b08e804be9f5c6a10d59e50cbe1900b2324c36cc"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 93: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4efd4bc1847b41d3ef57f8f0b08e804be9f5c6a10d59e50cbe1900b2324c36cc"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-reified.rs",
+      "sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-reified.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error: function pointer calls are not allowed in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-reified.rs:1:122\n  |\n1 | ...n(&A,u32,O)->u32=A::swap;const X:u32={let a=A::new(1);SWAP(&a,2,O::Relaxed)};fn main(){let _=X;}\n  |                                                          ^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 104: non-const calls are not allowed in constant initializers\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "648e62b52eae1613cfb3249ca67cda4700681b71a6cd9553ff2dfee976573e07"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 104: non-const calls are not allowed in constant initializers\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "648e62b52eae1613cfb3249ca67cda4700681b71a6cd9553ff2dfee976573e07"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 104: non-const calls are not allowed in constant initializers\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "648e62b52eae1613cfb3249ca67cda4700681b71a6cd9553ff2dfee976573e07"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-receiver.rs",
+      "sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/packed-receiver.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-receiver.rs:1:134\n  |\n1 | ...struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=p.a.swap(2,O::Relaxed);}\n  |                                                                   ^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "9f8f64202a132d00ebdac44d676fc3fd006dfb9732fbd5f9df291695dd54e0c2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 133: reference to an unaligned packed field\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2c8f396f96cac047a78d9f56e52ef5f063b1ff07136004c192c08680973ef92d"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-value.rs",
+      "sha256": "6f5d46a3f87edab9016ec74ecc75d49c9233383bde22e91c894511890525d600",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrong-value.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-value.rs:1:100\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(true,O::Relaxed);}\n  |                                                                                          --------- ^^^^ expected `u32`, found `bool`\n  |                                                                                          |\n  |                                                                                          arguments to this method are incorrect\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-order.rs",
+      "sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrong-order.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: unused import: `Ordering as O`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-order.rs:1:41\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.swap(2,0u8);}\n  |                                         ^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-order.rs:1:97\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.swap(2,0u8);}\n  |                                                                                          ----   ^^^ expected `Ordering`, found `u8`\n  |                                                                                          |\n  |                                                                                          arguments to this method are incorrect\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:2911:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: incompatible types\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c155f8956bb568c1673b5afa60c006a2655e62c3c9360ef1965bccf558c269ce"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: incompatible types\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c155f8956bb568c1673b5afa60c006a2655e62c3c9360ef1965bccf558c269ce"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: incompatible types\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c155f8956bb568c1673b5afa60c006a2655e62c3c9360ef1965bccf558c269ce"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-arity.rs",
+      "sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrong-arity.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0061]: this method takes 2 arguments but 1 argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-arity.rs:1:90\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.swap(O::Relaxed);}\n  |                                                                                          ^^^^ ---------- argument #1 of type `u32` is missing\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:2911:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\nhelp: provide the argument\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.swap(/* u32 */, O::Relaxed);}\n  |                                                                                               ++++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0061`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: call argument count mismatch\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d02182b7c7fff102090d358adfb875cb5e6b57f7490d93a4774f76c46989586"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/generic-argument.rs",
+      "sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/generic-argument.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0107]: method takes 0 generic arguments but 1 generic argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/generic-argument.rs:1:90\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.swap::<u32>(2,O::Relaxed);}\n  |                                                                                          ^^^^------- help: remove the unnecessary generics\n  |                                                                                          |\n  |                                                                                          expected 0 generic arguments\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0107`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: incorrect number of type and const arguments\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7caefb4af2b22fa8fc94c4df292eab474450d1f6e2a5d8e7bcf883098dd02059"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/local-shadow.rs",
+      "sha256": "4bf2d973a25fc026399f679426e5f9dcc7c348d21f3075761cf420db6604062f",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/local-shadow.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unused import: `AtomicU32 as A`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/local-shadow.rs:1:26\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};struct Local;impl Local{fn swap(&self,x:u32,o:O)->u32{let _=o;x}fn fetch_sub(&...\n  |                          ^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "bd38b16796d1d11e2c6a974cd0bf7dccf1b4a05a129dc66314b8035dac30bace",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "ee91e416ce2df702e23f9e208abbe0e0f13b803943154ad70e42d0f1804bf39b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "0bfeee3f94945ee4c9f332419741efbd85b91bd957ebf92cdf5042006f0a6559",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "512a1e43ffa978ab54cb943c61373faa224d593684b7336c3acb1082f9e7033b"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub-alias.rs",
+      "sha256": "ed7092a7e03eb38932511912a5d031e3b15c5cb4b072c3e643033afd9187773a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add-alias.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-sub-alias.rs:1:104\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);let f=A::fetch_sub;f(&a,2,O::Relaxed)};fn main(){...\n  |                                                                                                        ^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 90: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e32fbc388f6ed8a78dc2860372d36cdace842f239998503bb4bb7ea1d8a69096"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 90: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e32fbc388f6ed8a78dc2860372d36cdace842f239998503bb4bb7ea1d8a69096"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 90: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e32fbc388f6ed8a78dc2860372d36cdace842f239998503bb4bb7ea1d8a69096"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-generic-skipped.rs",
+      "sha256": "14f8935dda218e8694120055a0496f0cca502aa5aa325e4ea64fa5d3133e5a38",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constant functions\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-generic-skipped.rs:1:116\n  |\n1 | ...n f<const N:usize>()->u32{let a=A::new(1);if false{a.fetch_sub(1,O::Relaxed)}else{7}}const X:u32=f::<1>();fn main(){let _=X;}\n  |                                                         ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constant functions are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "303c9cf57b5a15db7a564e84d3872891e752ffc4ec7d8e3adcd1d0003c890f7a"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "303c9cf57b5a15db7a564e84d3872891e752ffc4ec7d8e3adcd1d0003c890f7a"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "303c9cf57b5a15db7a564e84d3872891e752ffc4ec7d8e3adcd1d0003c890f7a"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-unsafe.rs",
+      "sha256": "3e177942248e6c662b04022db73891f0006921dda3ce0af63cd70df57d4bb35f",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-unsafe.rs:1:94\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);unsafe{a.fetch_sub(1,O::Relaxed)}};fn main(){let ...\n  |                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nwarning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-unsafe.rs:1:85\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);unsafe{a.fetch_sub(1,O::Relaxed)}};fn main(){let ...\n  |                                                                                     ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 91: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf27700d097e7046b347af04ed71fefb94ceae02267ee758f4ada0fe7505003"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 91: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf27700d097e7046b347af04ed71fefb94ceae02267ee758f4ada0fe7505003"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 91: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf27700d097e7046b347af04ed71fefb94ceae02267ee758f4ada0fe7505003"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-raw.rs",
+      "sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unused import: `Ordering as O`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-raw.rs:1:41\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};#[repr(packed)]struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=...\n  |                                         ^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `tag` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-raw.rs:1:80\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};#[repr(packed)]struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=...\n  |                                                                              - ^^^\n  |                                                                              |\n  |                                                                              field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "366942ff5661412dd3e5a9170c62613001b8b16a56a1e6dde8e90eb5e0b16e32",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "f3dee3a91258060965ae7c3d0472b21ce774e40b4b191a0a6c59f67c2db2831b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "4d29eea3bb87609aa2b1aef336b6ef50efb084985ec4540f3e1d1f49e9180cfc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "70036f1da18b9d782468d467c07e126333a0b7f0c68b42af65156325ba3f3459"
+    }
+  ],
+  "corrected_preimplementation_observations": [
+    {
+      "path": "pa28/tests/spec/atomic-subtract/sub-orders.rs",
+      "sha256": "fa175fd5583ffda1b2838cf147581e47f2b1862593b95780a62951ba84be506c",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/add-orders.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      },
+      "rustc_object_sha256": "63ab9f851bdc100ab3f3dfbce81467b9778cba1b9db96ccf5d781333308dbaed"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/variable-order.rs",
+      "sha256": "4f893d8ef27c92a24ea302f65aa46743728e8919f5eb31d430b313d3d575b885",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "51f4f167469a4fdf05484763f20dc8d1c606048fd3089298bc56a3699a68d51b",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 75: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4a098a41cd1c244919da3284b51ff4159c0d9bb9c80c6e0a23040af5aaf323b9"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 75: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4a098a41cd1c244919da3284b51ff4159c0d9bb9c80c6e0a23040af5aaf323b9"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 75: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4a098a41cd1c244919da3284b51ff4159c0d9bb9c80c6e0a23040af5aaf323b9"
+        }
+      },
+      "rustc_object_sha256": "f5f5fce0b187062df2ce606612988f2b4ef6ff9775211cd78c99f5312d258e41"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/aliased-order.rs",
+      "sha256": "b3a7553db92de488c54b7e4fe2f4d7518135ec88fa39a9dc261de0a58516beea",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "b1745ee2bede6ce33645c1e6d2acc239acb54872f4182161957279add3f2e68b",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 112: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5be4afa2e9d490a619876655c574d0145d09f2bbb76acba2fb8c20d20a760b62"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 112: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5be4afa2e9d490a619876655c574d0145d09f2bbb76acba2fb8c20d20a760b62"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 112: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "5be4afa2e9d490a619876655c574d0145d09f2bbb76acba2fb8c20d20a760b62"
+        }
+      },
+      "rustc_object_sha256": "f5af775aaaf844aedcb605aab88ff53a714ff07d2f5d0912eb2197a9fe7f86c1"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/reified.rs",
+      "sha256": "6056b6ab6a836dad814d3697158ac0b6fa61f38362f875f1e9c3bc65d740e8f9",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "c140fc89597b3b2d047811fd5c86136b6940ebef01fabf4b2ae0cfea6b13f24a",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6591c7fd8a8914961ae03ebd7c6ab0adba8ffbde195b95965eba5cf6c5707318"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6591c7fd8a8914961ae03ebd7c6ab0adba8ffbde195b95965eba5cf6c5707318"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6591c7fd8a8914961ae03ebd7c6ab0adba8ffbde195b95965eba5cf6c5707318"
+        }
+      },
+      "rustc_object_sha256": "bc17de6e13fa832191c97228dc21d568f5e5270dde2b6962d95b4229b2596e40"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/ufcs.rs",
+      "sha256": "bdd768995be00d60f8f7fcf24e4292277f5e7b7559783085f539f944c3a02733",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "4b34be974c419614d48b8d6f2d43ccb5061326dcb433325da458edd8b80b6e83",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8df10c9cb18d2ec105189d2075e5008e1133cbfcac7c65c1762450a0cbe8753e"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8df10c9cb18d2ec105189d2075e5008e1133cbfcac7c65c1762450a0cbe8753e"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8df10c9cb18d2ec105189d2075e5008e1133cbfcac7c65c1762450a0cbe8753e"
+        }
+      },
+      "rustc_object_sha256": "2c4211181c7ce596102dbbc44e27e207910f9ea42891e99d0c572993dcffad77"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/shared-static.rs",
+      "sha256": "d93633a4edcfc596064ebf808645bc103cf471ff4bc974d105ee625a90c80884",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "2ca7fecffdb44e6c5b1e3cc1ce2452f2044024200625c4bb03e6c9ce15b8244e",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `x` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/shared-static.rs:1:94\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};static A0:A=A::new(1);struct Pair{a:A,x:u32}static PAIR:Pair=Pair{a:A::new(2),...\n  |                                                                                     ----     ^\n  |                                                                                     |\n  |                                                                                     field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 154: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9bd48ea58a23bb2a907974afa37a3b700cb1cdcc775d550f90e0af96909cb610"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 154: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9bd48ea58a23bb2a907974afa37a3b700cb1cdcc775d550f90e0af96909cb610"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 154: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "9bd48ea58a23bb2a907974afa37a3b700cb1cdcc775d550f90e0af96909cb610"
+        }
+      },
+      "rustc_object_sha256": "a7d1538044837e6d77daefb16261839f90b93d0f52780b8dc34916cc677e04a3"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrapping.rs",
+      "sha256": "edaad1553e7cc7eb51e8c851c449b7934214192e6b7cce51aa9abeaacaa8f7fb",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrapping.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1cad4551b6c27f29a8f851ee92301f1183618761617bbff319cdb727196a1fbc"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1cad4551b6c27f29a8f851ee92301f1183618761617bbff319cdb727196a1fbc"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 96: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1cad4551b6c27f29a8f851ee92301f1183618761617bbff319cdb727196a1fbc"
+        }
+      },
+      "rustc_object_sha256": "b6cf5f0445e5fa5d4783244c4a59ade7507f9a4f9bc9c341d0dc8c783bd719b2"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/unsafe-narrowing.rs",
+      "sha256": "3020b4bfbb662d3db5b4a73374e6f7c87c65dfee26281a9e31c6c21ef8d4594d",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 120: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0578d806492f46ced855a7dc57c367576f958cd677da8b0b4c02b3e0d80d6582"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 120: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0578d806492f46ced855a7dc57c367576f958cd677da8b0b4c02b3e0d80d6582"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 120: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0578d806492f46ced855a7dc57c367576f958cd677da8b0b4c02b3e0d80d6582"
+        }
+      },
+      "rustc_object_sha256": "506c4db66211b3e3d77e30729422b9b462c0675c44b70bd190d1a5c60b8c0fdc"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub.rs",
+      "sha256": "283f2f42fa08493bdd313fe56a8aee9da5b280d592fb974641ac3f3283f96f9a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-sub.rs:1:87\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);a.fetch_sub(2,O::Relaxed)};fn main(){let _=X;}\n  |                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ba7a39bf1b65fad587e8e6563d7fdb0918ed0eebe27e4cfd124ff3e1d18f33d5"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ba7a39bf1b65fad587e8e6563d7fdb0918ed0eebe27e4cfd124ff3e1d18f33d5"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ba7a39bf1b65fad587e8e6563d7fdb0918ed0eebe27e4cfd124ff3e1d18f33d5"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-dead-sub.rs",
+      "sha256": "3d1513e6c204225f87c0aa4b22809a8f7f0c8dc5028af01fa05873433dcc950c",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-dead-add.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-dead-sub.rs:1:96\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);if false{a.fetch_sub(2,O::Relaxed)}else{7}};fn ma...\n  |                                                                                                ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 93: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4efd4bc1847b41d3ef57f8f0b08e804be9f5c6a10d59e50cbe1900b2324c36cc"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 93: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4efd4bc1847b41d3ef57f8f0b08e804be9f5c6a10d59e50cbe1900b2324c36cc"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 93: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4efd4bc1847b41d3ef57f8f0b08e804be9f5c6a10d59e50cbe1900b2324c36cc"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-reified.rs",
+      "sha256": "3ebd9cbb61a61a12dd4970dd8c452c70dd990bbfa9cd1ece9369f0a572135916",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error: function pointer calls are not allowed in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-reified.rs:1:127\n  |\n1 | ...u32,O)->u32=A::fetch_sub;const X:u32={let a=A::new(1);SWAP(&a,2,O::Relaxed)};fn main(){let _=X;}\n  |                                                          ^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "faf59007177cf6a83a96b265954b5f7ebb0fd0dd13a2e0c0b00b24aeb7118c7f"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "faf59007177cf6a83a96b265954b5f7ebb0fd0dd13a2e0c0b00b24aeb7118c7f"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 84: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "faf59007177cf6a83a96b265954b5f7ebb0fd0dd13a2e0c0b00b24aeb7118c7f"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-receiver.rs",
+      "sha256": "6dc1a4b14f19d11c5c41b71709bff6a4cccc24d43261dc0e09ba25454471cfc5",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0793]: reference to field of packed struct is unaligned\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-receiver.rs:1:134\n  |\n1 | ...struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=p.a.fetch_sub(2,O::Relaxed);}\n  |                                                                   ^^^\n  |\n  = note: this struct is 1-byte aligned, but the type of this field may require higher alignment\n  = note: creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)\n  = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0793`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 133: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "99d25801d6bf3ab5ab46427bd963b1e80140762efb869da53baa57d166156054"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 133: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "99d25801d6bf3ab5ab46427bd963b1e80140762efb869da53baa57d166156054"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 133: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "99d25801d6bf3ab5ab46427bd963b1e80140762efb869da53baa57d166156054"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-value.rs",
+      "sha256": "6f5d46a3f87edab9016ec74ecc75d49c9233383bde22e91c894511890525d600",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrong-value.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-value.rs:1:100\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(true,O::Relaxed);}\n  |                                                                                          --------- ^^^^ expected `u32`, found `bool`\n  |                                                                                          |\n  |                                                                                          arguments to this method are incorrect\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-order.rs",
+      "sha256": "0c4dca3565c7fe2adbabb071b2bd70af2ed99320f79dca21712141fbc93a492d",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "warning: unused import: `Ordering as O`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-order.rs:1:41\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(2,0u8);}\n  |                                         ^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nerror[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-order.rs:1:102\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(2,0u8);}\n  |                                                                                          ---------   ^^^ expected `Ordering`, found `u8`\n  |                                                                                          |\n  |                                                                                          arguments to this method are incorrect\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-arity.rs",
+      "sha256": "52b2b284c738916aafe6d3080a9bcdbaf394364349bc396359561e33d9c21b17",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0061]: this method takes 2 arguments but 1 argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/wrong-arity.rs:1:90\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(O::Relaxed);}\n  |                                                                                          ^^^^^^^^^ ---------- argument #1 of type `u32` is missing\n  |\nnote: method defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3177:19\n ::: /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs:3714:1\n  |\n  = note: in this macro invocation\n  = note: this error originates in the macro `atomic_int` (in Nightly builds, run with -Z macro-backtrace for more info)\nhelp: provide the argument\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub(/* u32 */, O::Relaxed);}\n  |                                                                                                    ++++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0061`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/generic-argument.rs",
+      "sha256": "bbcbd4a0f418515906af7ed8b7edc5c953e0801c01b438654b9093cb021b8b65",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0107]: method takes 0 generic arguments but 1 generic argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/generic-argument.rs:1:90\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};fn main(){let a=A::new(1);let _=a.fetch_sub::<u32>(2,O::Relaxed);}\n  |                                                                                          ^^^^^^^^^------- help: remove the unnecessary generics\n  |                                                                                          |\n  |                                                                                          expected 0 generic arguments\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0107`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 87: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "53000572c78372babf12476a85f079d8c1f02d798b12a9bb5c4dc011b35dbd8b"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/local-shadow.rs",
+      "sha256": "4bf2d973a25fc026399f679426e5f9dcc7c348d21f3075761cf420db6604062f",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/local-shadow.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unused import: `AtomicU32 as A`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/local-shadow.rs:1:26\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};struct Local;impl Local{fn swap(&self,x:u32,o:O)->u32{let _=o;x}fn fetch_sub(&...\n  |                          ^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "bd38b16796d1d11e2c6a974cd0bf7dccf1b4a05a129dc66314b8035dac30bace",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "ee91e416ce2df702e23f9e208abbe0e0f13b803943154ad70e42d0f1804bf39b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "0bfeee3f94945ee4c9f332419741efbd85b91bd957ebf92cdf5042006f0a6559",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "512a1e43ffa978ab54cb943c61373faa224d593684b7336c3acb1082f9e7033b"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub-alias.rs",
+      "sha256": "ed7092a7e03eb38932511912a5d031e3b15c5cb4b072c3e643033afd9187773a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add-alias.rs; fetch_add replaced with fetch_sub",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-sub-alias.rs:1:104\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);let f=A::fetch_sub;f(&a,2,O::Relaxed)};fn main(){...\n  |                                                                                                        ^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 90: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e32fbc388f6ed8a78dc2860372d36cdace842f239998503bb4bb7ea1d8a69096"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 90: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e32fbc388f6ed8a78dc2860372d36cdace842f239998503bb4bb7ea1d8a69096"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 90: missing value resolution\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e32fbc388f6ed8a78dc2860372d36cdace842f239998503bb4bb7ea1d8a69096"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-generic-skipped.rs",
+      "sha256": "14f8935dda218e8694120055a0496f0cca502aa5aa325e4ea64fa5d3133e5a38",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constant functions\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-generic-skipped.rs:1:116\n  |\n1 | ...n f<const N:usize>()->u32{let a=A::new(1);if false{a.fetch_sub(1,O::Relaxed)}else{7}}const X:u32=f::<1>();fn main(){let _=X;}\n  |                                                         ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constant functions are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "303c9cf57b5a15db7a564e84d3872891e752ffc4ec7d8e3adcd1d0003c890f7a"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "303c9cf57b5a15db7a564e84d3872891e752ffc4ec7d8e3adcd1d0003c890f7a"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 113: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "303c9cf57b5a15db7a564e84d3872891e752ffc4ec7d8e3adcd1d0003c890f7a"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-unsafe.rs",
+      "sha256": "3e177942248e6c662b04022db73891f0006921dda3ce0af63cd70df57d4bb35f",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0015]: cannot call non-const method `Atomic::<u32>::fetch_sub` in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-unsafe.rs:1:94\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);unsafe{a.fetch_sub(1,O::Relaxed)}};fn main(){let ...\n  |                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: calls in constants are limited to constant functions, tuple structs and tuple variants\n\nwarning: unnecessary `unsafe` block\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/const-unsafe.rs:1:85\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};const X:u32={let a=A::new(1);unsafe{a.fetch_sub(1,O::Relaxed)}};fn main(){let ...\n  |                                                                                     ^^^^^^ unnecessary `unsafe` block\n  |\n  = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 91: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf27700d097e7046b347af04ed71fefb94ceae02267ee758f4ada0fe7505003"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 91: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf27700d097e7046b347af04ed71fefb94ceae02267ee758f4ada0fe7505003"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 91: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf27700d097e7046b347af04ed71fefb94ceae02267ee758f4ada0fe7505003"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-raw.rs",
+      "sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: unused import: `Ordering as O`\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-raw.rs:1:41\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};#[repr(packed)]struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=...\n  |                                         ^^^^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: field `tag` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/atomic-subtract/packed-raw.rs:1:80\n  |\n1 | use core::sync::atomic::{AtomicU32 as A,Ordering as O};#[repr(packed)]struct P{tag:u8,a:A}fn main(){let p=P{tag:0,a:A::new(1)};let _=...\n  |                                                                              - ^^^\n  |                                                                              |\n  |                                                                              field in this struct\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 2 warnings emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "366942ff5661412dd3e5a9170c62613001b8b16a56a1e6dde8e90eb5e0b16e32",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "f3dee3a91258060965ae7c3d0472b21ce774e40b4b191a0a6c59f67c2db2831b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "4d29eea3bb87609aa2b1aef336b6ef50efb084985ec4540f3e1d1f49e9180cfc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "rustc_object_sha256": "70036f1da18b9d782468d467c07e126333a0b7f0c68b42af65156325ba3f3459"
+    }
+  ],
+  "gates": [
+    {
+      "batch": "subtract-first",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 5.462407112121582
+    },
+    {
+      "batch": "subtract-first",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 101,
+      "seconds": 42.98406410217285
+    },
+    {
+      "batch": "subtract-second",
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "dev/Cargo.toml"
+      ],
+      "status": 0,
+      "seconds": 6.362364053726196
+    },
+    {
+      "batch": "subtract-second",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": 0,
+      "seconds": 6.5981481075286865
+    },
+    {
+      "batch": "subtract-second",
+      "name": "audit",
+      "command": [
+        "obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        "."
+      ],
+      "status": 0,
+      "seconds": 23.415868520736694
+    },
+    {
+      "batch": "subtract-second",
+      "name": "source-native",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "subtract_intrinsics",
+        "--",
+        "--include-ignored",
+        "--nocapture",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 56.25312161445618
+    },
+    {
+      "batch": "subtract-second",
+      "name": "regressions",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--test",
+        "intrinsic_methods",
+        "--test",
+        "rmw_intrinsics",
+        "--test",
+        "cas_intrinsics",
+        "--test",
+        "provenance_writes",
+        "--test",
+        "union_addresses",
+        "--",
+        "--test-threads=2"
+      ],
+      "status": 0,
+      "seconds": 17.3889319896698
+    },
+    {
+      "batch": "subtract-close",
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "dev/Cargo.toml",
+        "--locked",
+        "--bin",
+        "rustgm"
+      ],
+      "status": 0,
+      "seconds": 0.08052229881286621
+    },
+    {
+      "batch": "subtract-close",
+      "name": "upstream",
+      "command": [
+        "python3",
+        "scripts/upstream.py",
+        "--verify"
+      ],
+      "status": 0,
+      "seconds": 0.14526891708374023
+    }
+  ],
+  "native": [
+    {
+      "name": "effects-storage",
+      "source_sha256": "d9d51bbc42787ab32cf766fd1e1f16b819ece9c1cb32e26dd9880a5aabf89162",
+      "lowir_sha256": "d8b00dee91cb7eaee4c964113e2902884e9bcc51253f9a10ceb9cd2aed8f9afd",
+      "validated_lowir_sha256": "0b10fbcb98c40d8849dabb9a507a05ef4591c974bfc6f4be5f4afdd6ddb714bb",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "subtract-second/source-native.log: subtraction_values_and_effects_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "orders-wrapping",
+      "source_sha256": "c0efc22fd4fd7f05d8a1a396fd0862ae916a59ddb923039094437ff9af27d0cf",
+      "lowir_sha256": "05d0f89df81f974d7807cfaf390f1d4be645fda119cd5febf89f4236c3dcaaa9",
+      "validated_lowir_sha256": "67b5be36baccb2b5182cbfa76f2a75c5b0ec8754e7b99874b8a6b4802425b017",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "subtract-second/source-native.log: subtraction_values_and_effects_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "reified",
+      "source_sha256": "00b821b318a9351914e77e4f1c9d0ab96cf8ce4f5317431436cf8275745c446f",
+      "lowir_sha256": "3e98a55d8c98d0c992b8bcb2a08c501691ab830f1af0ef998360928abde17f64",
+      "validated_lowir_sha256": "f6c1f1decc5881a0e5b5efd5cc7695310d6505d2991b817b99c54b4a2b561eaa",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "subtract-second/source-native.log: subtraction_values_and_effects_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    },
+    {
+      "name": "zero-max",
+      "source_sha256": "9944a068dae19d042696acf43622de40f23c6b08043d98d7459a71980ddd6f24",
+      "lowir_sha256": "c1bf611b2d563df4cae1c1210d386d39a209c39df8dfe05284f69104ece01500",
+      "validated_lowir_sha256": "d2f1f64f0c658fa7c3079b1d478bb9e29d973dcf809fb7bd04372fef3db626ee",
+      "rustc_status": 0,
+      "frontend_status": 0,
+      "rustc_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frontend_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status_evidence": "subtract-second/source-native.log: subtraction_values_and_effects_execute passed; helper asserts both successful executions and byte-identical repeated frontend output"
+    }
+  ],
+  "scaling": {
+    "callers": [
+      8,
+      32,
+      128
+    ],
+    "body_steps": [
+      179,
+      683,
+      2699
+    ],
+    "canonical_atomic_methods": 7,
+    "demanded_subtraction_shims": 1,
+    "per_shim": {
+      "atomic_add_fetch": 5,
+      "wrapping_u32_negation": 5,
+      "wrapping_u32_reconstruction": 5,
+      "ordering_u8_argument_load": 1,
+      "extra_atomic_object_reads": 0
+    },
+    "backend_order_codes": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "claim": "bounded checking work and fixed demanded shim count; no throughput or concurrency claim"
+  },
+  "interface": {
+    "intrinsic": "AtomicFetchSub",
+    "index": 8,
+    "prior_indices_unchanged": true,
+    "safety": "Safe",
+    "constant": "RuntimeOnly",
+    "payload": "existing Rvalue::Intrinsic unchanged",
+    "lowering": "updated = atomic_add_fetch(wrapping_u32(0 - operand)); old = wrapping_u32(updated + operand)"
+  },
+  "remaining": [
+    "other atomic widths and types",
+    "bitwise/min/max RMWs, fetch_update, fences and accessors",
+    "memory/numeric intrinsic families",
+    "aggregate, zero-sized and wide volatile transfers",
+    "concurrent execution and full release/performance qualification remain integrator-owned"
+  ],
+  "metadata": {
+    "upstream": "24 fixtures + 126 Reference files verified",
+    "layout": "not repeated: inherited PA16 receipt gap already root-fixed014bfcde"
+  },
+  "evidence_root": "obj/parallel/pa28",
+  "notes": [
+    "initial qualifier wrapper dead-code warning retained; no production compile error",
+    "preliminary derivative initially retained some swap operations; corrected exact fixtures independently requalified before production edits, both observation sets retained",
+    "all new native tests ignored by default",
+    "no LowIR/backend vocabulary changes, active oracle generation, assignment activation or full-release claim"
+  ]
+}

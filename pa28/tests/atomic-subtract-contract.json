@@ -1,0 +1,214 @@
+{
+  "stage": "predeclared-development-contract",
+  "baseline": "55b221e3",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/atomic-subtract/sub-orders.rs",
+      "sha256": "fa175fd5583ffda1b2838cf147581e47f2b1862593b95780a62951ba84be506c",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/add-orders.rs; fetch_add replaced with fetch_sub",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/variable-order.rs",
+      "sha256": "4f893d8ef27c92a24ea302f65aa46743728e8919f5eb31d430b313d3d575b885",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "51f4f167469a4fdf05484763f20dc8d1c606048fd3089298bc56a3699a68d51b",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/aliased-order.rs",
+      "sha256": "b3a7553db92de488c54b7e4fe2f4d7518135ec88fa39a9dc261de0a58516beea",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "b1745ee2bede6ce33645c1e6d2acc239acb54872f4182161957279add3f2e68b",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/reified.rs",
+      "sha256": "6056b6ab6a836dad814d3697158ac0b6fa61f38362f875f1e9c3bc65d740e8f9",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "c140fc89597b3b2d047811fd5c86136b6940ebef01fabf4b2ae0cfea6b13f24a",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/ufcs.rs",
+      "sha256": "bdd768995be00d60f8f7fcf24e4292277f5e7b7559783085f539f944c3a02733",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "4b34be974c419614d48b8d6f2d43ccb5061326dcb433325da458edd8b80b6e83",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/shared-static.rs",
+      "sha256": "d93633a4edcfc596064ebf808645bc103cf471ff4bc974d105ee625a90c80884",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "2ca7fecffdb44e6c5b1e3cc1ce2452f2044024200625c4bb03e6c9ce15b8244e",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrapping.rs",
+      "sha256": "edaad1553e7cc7eb51e8c851c449b7934214192e6b7cce51aa9abeaacaa8f7fb",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrapping.rs; fetch_add replaced with fetch_sub",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/unsafe-narrowing.rs",
+      "sha256": "3020b4bfbb662d3db5b4a73374e6f7c87c65dfee26281a9e31c6c21ef8d4594d",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub.rs",
+      "sha256": "283f2f42fa08493bdd313fe56a8aee9da5b280d592fb974641ac3f3283f96f9a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add.rs; fetch_add replaced with fetch_sub",
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-dead-sub.rs",
+      "sha256": "3d1513e6c204225f87c0aa4b22809a8f7f0c8dc5028af01fa05873433dcc950c",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-dead-add.rs; fetch_add replaced with fetch_sub",
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-reified.rs",
+      "sha256": "3ebd9cbb61a61a12dd4970dd8c452c70dd990bbfa9cd1ece9369f0a572135916",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "non-const calls are not allowed in constant initializers"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-receiver.rs",
+      "sha256": "6dc1a4b14f19d11c5c41b71709bff6a4cccc24d43261dc0e09ba25454471cfc5",
+      "rustc_status": 1,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": "reference to an unaligned packed field"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-value.rs",
+      "sha256": "6f5d46a3f87edab9016ec74ecc75d49c9233383bde22e91c894511890525d600",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/wrong-value.rs; fetch_add replaced with fetch_sub",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-order.rs",
+      "sha256": "0c4dca3565c7fe2adbabb071b2bd70af2ed99320f79dca21712141fbc93a492d",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/wrong-arity.rs",
+      "sha256": "52b2b284c738916aafe6d3080a9bcdbaf394364349bc396359561e33d9c21b17",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/generic-argument.rs",
+      "sha256": "bbcbd4a0f418515906af7ed8b7edc5c953e0801c01b438654b9093cb021b8b65",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of existing atomic-rmw control; all selected atomic operations changed to fetch_sub",
+      "preliminary_derivative_sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+      "preliminary_derivative_recipe": "original atomic-rmw source with only fetch_add replaced; preliminary observations retained separately",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/local-shadow.rs",
+      "sha256": "4bf2d973a25fc026399f679426e5f9dcc7c348d21f3075761cf420db6604062f",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/local-shadow.rs; fetch_add replaced with fetch_sub",
+      "reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-sub-alias.rs",
+      "sha256": "ed7092a7e03eb38932511912a5d031e3b15c5cb4b072c3e643033afd9187773a",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "source_origin": "authored derivative of pa28/tests/spec/atomic-rmw/const-add-alias.rs; fetch_add replaced with fetch_sub",
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-generic-skipped.rs",
+      "sha256": "14f8935dda218e8694120055a0496f0cca502aa5aa325e4ea64fa5d3133e5a38",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/const-unsafe.rs",
+      "sha256": "3e177942248e6c662b04022db73891f0006921dda3ce0af63cd70df57d4bb35f",
+      "rustc_status": 1,
+      "frontend_types_status": 1,
+      "frontend_executable_status": 1,
+      "reason": "runtime-only intrinsic is not allowed during constant evaluation"
+    },
+    {
+      "path": "pa28/tests/spec/atomic-subtract/packed-raw.rs",
+      "sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+      "rustc_status": 0,
+      "frontend_types_status": 0,
+      "frontend_executable_status": 0,
+      "reason": ""
+    }
+  ]
+}

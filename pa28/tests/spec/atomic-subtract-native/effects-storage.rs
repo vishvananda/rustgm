@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};static VALUE:A=A::new(5);struct Pair{x:u32,a:A}static NESTED:Pair=Pair{x:7,a:A::new(11)};fn main(){let _=VALUE.fetch_sub(7,O::Acquire);check(VALUE.load(O::Relaxed)==4294967294);let _=NESTED.a.fetch_sub(6,O::SeqCst);check(NESTED.a.load(O::Relaxed)==5);check(NESTED.x==7);}

@@ -1,0 +1,1 @@
+use core::sync::atomic::{AtomicU32 as A,Ordering as O};struct Local;impl Local{fn swap(&self,x:u32,o:O)->u32{let _=o;x}fn fetch_sub(&self,x:u32,o:O)->u32{let _=o;x}}fn main(){let x=Local;let _=x.swap(2,O::Relaxed);let _=x.fetch_sub(3,O::Release);}

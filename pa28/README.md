@@ -76,6 +76,12 @@ It performs no extra memory read. Shared static storage, nested aggregates,
 ignored results, variable/aliased orders and integer wraparound retain their
 runtime effects. Constant calls, including retained skipped branches and
 function-item aliases, remain forbidden independently of unsafe permission.
+The subtraction slice adds canonical safe runtime `fetch_sub` for the same five
+orderings. It passes a wrapping u32 negation to add-and-fetch, then adds the
+original operand to the captured result to recover the old value. Both arithmetic
+steps use u32 width, and no additional atomic-object read occurs. Independent
+source, native and shim-growth controls are recorded in
+`tests/atomic-subtract-outcomes.json`.
 The CAS slice adds canonical safe runtime `compare_exchange` and
 `compare_exchange_weak` returning the exact `Result<u32,u32>` identity. Typed
 success/failure orders preserve all fifteen valid backend pairs: success accepts

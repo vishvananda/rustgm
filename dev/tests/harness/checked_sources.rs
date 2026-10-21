@@ -6,6 +6,14 @@ pub fn check(
     name: &str,
     (rust, frontend, reason): (i32, i32, &str),
 ) -> Result<(), Box<dyn std::error::Error>> {
+    check_modes(source, evidence, name, (rust, [frontend; 3], reason))
+}
+pub fn check_modes(
+    source: &Path,
+    evidence: &Path,
+    name: &str,
+    (rust, frontend, reason): (i32, [i32; 3], &str),
+) -> Result<(), Box<dyn std::error::Error>> {
     let independent = Command::new("rustc")
         .args([
             "+1.98.0",
@@ -29,7 +37,10 @@ pub fn check(
         "{name}: {}",
         String::from_utf8_lossy(&independent.stderr)
     );
-    for mode in ["--emit-types", "--emit-lowir", "--emit-constants"] {
+    for (mode, frontend) in ["--emit-types", "--emit-lowir", "--emit-constants"]
+        .into_iter()
+        .zip(frontend)
+    {
         let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .arg(mode)
             .arg(source)

@@ -172,6 +172,14 @@ fn atomic_operation(
                 // captured atomic result; it performs no additional memory read.
                 builder.binary(Binary::Sub, updated, value)?
             }
+            Intrinsic::AtomicFetchSub => {
+                let zero = builder.integer(Type::U32, 0)?;
+                let delta = builder.binary(Binary::Sub, zero, value)?;
+                let updated = builder.atomic_add_fetch(delta, pointer, order)?;
+                // Both arithmetic operations wrap at u32 width. The captured
+                // result supplies the old value without another atomic read.
+                builder.binary(Binary::Add, updated, value)?
+            }
             _ => return Err("invalid atomic RMW identity"),
         };
         Ok(Some(result))

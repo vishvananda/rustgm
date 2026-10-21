@@ -159,7 +159,7 @@ fn rmw_registry_and_effectful_shims_grow_by_identity() -> Result<(), Box<dyn std
         }
         text.push('}');
         let (mut report, mut facts) = semantic::analyze(&text)?;
-        assert_eq!(facts.intrinsics.iter().count(), 6);
+        assert_eq!(facts.intrinsics.iter().count(), 7);
         for intrinsic in [Intrinsic::AtomicSwap, Intrinsic::AtomicFetchAdd] {
             let method = facts.intrinsics.get(intrinsic).ok_or("method")?;
             assert!(method.owner.is_some());

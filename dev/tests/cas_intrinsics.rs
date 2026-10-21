@@ -339,7 +339,7 @@ fn compare_exchange_identity_layout_and_shims_scale() -> Result<(), Box<dyn std:
         }
         text.push('}');
         let (mut report, mut facts) = semantic::analyze(&text)?;
-        assert_eq!(facts.intrinsics.iter().count(), 6);
+        assert_eq!(facts.intrinsics.iter().count(), 7);
         let result = facts
             .intrinsics
             .comparison_result()

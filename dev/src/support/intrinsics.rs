@@ -9,6 +9,7 @@ pub enum Intrinsic {
     AtomicFetchAdd,
     AtomicCompareExchange,
     AtomicCompareExchangeWeak,
+    AtomicFetchSub,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -26,7 +27,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 9] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -35,6 +36,7 @@ impl Intrinsic {
         Self::AtomicFetchAdd,
         Self::AtomicCompareExchange,
         Self::AtomicCompareExchangeWeak,
+        Self::AtomicFetchSub,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -47,6 +49,7 @@ impl Intrinsic {
             Self::AtomicFetchAdd => 5,
             Self::AtomicCompareExchange => 6,
             Self::AtomicCompareExchangeWeak => 7,
+            Self::AtomicFetchSub => 8,
         }
     }
     #[must_use]
@@ -60,6 +63,7 @@ impl Intrinsic {
             Self::AtomicFetchAdd => "fetch_add",
             Self::AtomicCompareExchange => "compare_exchange",
             Self::AtomicCompareExchangeWeak => "compare_exchange_weak",
+            Self::AtomicFetchSub => "fetch_sub",
         }
     }
     #[must_use]
@@ -73,7 +77,7 @@ impl Intrinsic {
                 order.load_valid()
             }
             Self::AtomicStore => order.store_valid(),
-            Self::AtomicSwap | Self::AtomicFetchAdd => true,
+            Self::AtomicSwap | Self::AtomicFetchAdd | Self::AtomicFetchSub => true,
             Self::ReadVolatile | Self::WriteVolatile => false,
         }
     }
