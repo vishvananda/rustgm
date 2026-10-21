@@ -88,3 +88,46 @@ hashes, every observation and instruction profiles remain under
 `obj/parallel/partial-context-performance/measurement-v1/`; resource receipt
 `cdaee657c6dd4dfe85d189a4eef9d2c7` returned zero. This is a development checkpoint,
 not the still-pending PA24 assignment release.
+
+
+## Corrected candidate measurement
+
+The frozen `7e80bff0` compiler has SHA-256
+`2dbcee5d302485ff30f4fbae8c5575b61760325cc9e7bef7870dfc7ceb1f9e3c`;
+its complete source-manifest hash is
+`e77b3aad1286886303537cdb2dabc8befd9bf315293297155a3315ea82ceaeb8`.
+It uses the same release profile and `e7437974` baseline described above. This
+comparison also includes the integrated discriminant-readiness correction; the
+inputs contain no enums, but it does not isolate every linked compiler change.
+
+Fifteen frozen sources were independently object-qualified at widths 8/32/128:
+ordinary functions, known contextual closures, partial contextual closures,
+generic-call controls, and partial closures capturing an enclosing lifetime in
+their signature. All nine shared LowIR/status/stderr triples are byte-identical.
+The other six inputs reject on the baseline and are candidate-only measurements.
+Four A/A observations precede five ABBA blocks, with three executions per
+observation: all 390 observations/1,170 executions, 120 RSS samples and 24
+Callgrind profiles are retained. The exclusive resource receipt is
+`662063c4a50243a199d6d1c72c2214fe` (exit zero).
+
+Shared median wall changes are +0.73% to +3.99%, with shared A/A spreads of
+1.39% to 10.73%. The positive medians are retained; this study does not establish
+wall-time neutrality. Ordinary/known-context instruction changes range from
+-0.025% to +0.235%. Generic controls incur +0.62%/+1.20%/+0.90% instructions at
+8/32/128, including the new bounded query on unresolved call signatures.
+This is measured additional work, not an asserted timing artifact. Shared RSS
+medians decrease by 114–474 KiB.
+
+| Functions | Partial context, ms | Outer lifetime, ms | Partial instructions, millions | Outer instructions, millions |
+| --- | ---: | ---: | ---: | ---: |
+| 8 | 4.19 | 4.63 | 6.57 | 7.32 |
+| 32 | 8.00 | 8.67 | 24.32 | 27.19 |
+| 128 | 22.53 | 23.17 | 95.94 | 106.84 |
+
+These independent-body measurements and the shared-DAG work invariant support
+linear growth over the tested range, not a bound for all closure programs.
+Candidate-only median RSS ranges from 8,924 to 11,180 KiB. Plans, qualification,
+input/output hashes, every observation and raw profiles remain under
+`obj/parallel/partial-context-performance/measurement-v2/`. Successful scoped
+cleanup removed the qualification object. Full combined publication validation
+and PA24 completion remain separate requirements.
