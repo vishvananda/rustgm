@@ -1,6 +1,8 @@
 //! Execution tests consume ordinary typed CFGs and independent const-value checks.
 #[path = "helpers/qualify.rs"]
 mod rustc;
+#[path = "cfg_execution/sequence.rs"]
+mod sequence;
 use rustgm::{
     body,
     const_eval::{Limits, Machine},

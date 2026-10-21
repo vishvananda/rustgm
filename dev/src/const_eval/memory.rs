@@ -1,5 +1,6 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
 mod image_paths;
+mod sequences;
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
     body::ir::{LocalId, Place, ProjectionKind, ValueId},
@@ -223,8 +224,7 @@ impl Machine<'_, '_> {
         let target = self.storage_target(place)?;
         let path = &path[..target.path_len(path.len())?];
         let value = if self.memory.roots.contains_key(&root) {
-            let cell = self.cell(root, path)?;
-            self.freeze(cell)?
+            self.read_cell(root, path)?
         } else {
             let location = Reader::new(self.evaluator.facts()).location(root)?;
             let mut value = if let Origin::Static(id) = location.origin {
@@ -438,10 +438,13 @@ impl Machine<'_, '_> {
             ProjectionKind::IndexParameter { .. } => {
                 return Err("constant body retains an unresolved array length".into());
             }
-            ProjectionKind::SliceIndex { .. }
-            | ProjectionKind::FromEnd { .. }
-            | ProjectionKind::Subslice { .. }
-            | ProjectionKind::Subarray { .. } => {
+            ProjectionKind::SliceIndex { .. } | ProjectionKind::FromEnd { .. } => {
+                let index = self.sequence_index(frame, address, projection.kind)?;
+                self.project_raw_type(address)?;
+                self.evaluator
+                    .projection(address.address, index, projection.ty)?
+            }
+            ProjectionKind::Subslice { .. } | ProjectionKind::Subarray { .. } => {
                 return Err("constant slice projection is not implemented".into());
             }
         };

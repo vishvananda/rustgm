@@ -37,6 +37,61 @@ impl Constant {
     }
 }
 impl Evaluator<'_> {
+    /// Execute an already checked reference adjustment without losing slice metadata.
+    /// The typed CFG's legacy `Constrain` operation also carries direct array unsizing.
+    /// This reads its representation change; it does not establish conversion eligibility.
+    /// # Errors
+    /// Rejects an array-to-slice conversion whose value has no address representation.
+    pub fn constrain(
+        &self,
+        value: Constant,
+        source: TypeId,
+        target: TypeId,
+    ) -> Result<Constant, Failure> {
+        use crate::types::Kind;
+        if source == target {
+            return Ok(value);
+        }
+        let types = &self.facts().types;
+        if let (
+            Some(Kind::Reference {
+                referent: source, ..
+            }),
+            Some(Kind::Reference { .. }),
+        ) = (types.kind(source), types.kind(target))
+        {
+            return self.adjust_reference(value, source, target);
+        }
+        Ok(value)
+    }
+    /// Form the checked reference view of an existing place, preserving its identity.
+    /// Direct reborrows can attach slice metadata without a separate CFG unsize node.
+    /// # Errors
+    /// Rejects a non-reference target or a metadata conversion without an address.
+    pub fn adjust_reference(
+        &self,
+        mut value: Constant,
+        source: TypeId,
+        target: TypeId,
+    ) -> Result<Constant, Failure> {
+        use crate::types::Kind;
+        let types = &self.facts().types;
+        let Some(Kind::Reference {
+            referent, mutable, ..
+        }) = types.kind(target)
+        else {
+            return Err("constant reference adjustment lacks a reference target".into());
+        };
+        if !mutable {
+            value = value.restrict_shared();
+        }
+        if let (Some(Kind::Array { length, .. }), Some(Kind::Slice(_))) =
+            (types.kind(source), types.kind(referent))
+        {
+            return value.unsize(length);
+        }
+        Ok(value)
+    }
     /// Reserve storage identity independently of initialization or reads.
     /// # Errors
     /// Diagnoses exhausted location identities.

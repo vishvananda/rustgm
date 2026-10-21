@@ -1,0 +1,248 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-constants",
+  "declared_origin": "obj/parallel/pa25/sequence-hypotheses-v1/declared.json",
+  "independent_review": "Original text-match/text-empty acceptance hypotheses were rejected by pinned Rust E0658. Source bytes and failed hypotheses are retained.",
+  "cases": [
+    {
+      "path": "tests/spec/sequences/slice-index.rs",
+      "source_sha256": "29a5be04f03089c29106f62319efbe2aa4d3066295f58e58a302a270aa57aace",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/sequences/slice-static.rs",
+      "source_sha256": "01e3643f330448ebded5b3278f82c3f81217c4cf0ba0722a5425772dc3fef7c1",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/sequences/slice-mutate.rs",
+      "source_sha256": "e53e5828652c49a35aa76e0bf8a36ca888dcafbf3f791b27cf5b404b91ddde19",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/sequences/slice-suffix.rs",
+      "source_sha256": "ee5e4aca8da497c8617c2a78d35293da2353a9e4b740024067724b332426e6f2",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/sequences/slice-rest.rs",
+      "source_sha256": "e0b3a17794a91419d1de7fc5b7cdbc3f44b4ba6103628a47e31bb616195b3777",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "boundary": "Rust accepts; typed constant range views or literal byte backing remain unimplemented."
+    },
+    {
+      "path": "tests/spec/sequences/array-rest.rs",
+      "source_sha256": "f27cae392c758a3bd332482670874677023344d214d58b67d7bd4896c198589d",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "boundary": "Rust accepts; typed constant range views or literal byte backing remain unimplemented."
+    },
+    {
+      "path": "tests/spec/sequences/slice-empty.rs",
+      "source_sha256": "a1de9488316c9171a2407f58b4d288af24027eed615e779012521ab941998cf3",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/sequences/slice-bytes.rs",
+      "source_sha256": "e116e81e5649280a6f4f53b62d8bf9322e7bf1cded25966629d80dfaf058daea",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "boundary": "Rust accepts; typed constant range views or literal byte backing remain unimplemented."
+    },
+    {
+      "path": "tests/spec/sequences/slice-repeat.rs",
+      "source_sha256": "201e262a271f0a987587441501776decdaf2a6a029ca17c674634f3313b7ae5f",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "path": "tests/spec/sequences/slice-oob.rs",
+      "source_sha256": "faba5679cb187a4e4331bbf603051f4087a4306c82edcb0ff9a2baa11d1ed2f3",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ]
+    },
+    {
+      "path": "tests/spec/sequences/slice-empty-oob.rs",
+      "source_sha256": "33d2a66bc36543a792b22e5b5df9826b489dbf0a798ad2b27a04b6ec0acf7390",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ]
+    },
+    {
+      "path": "tests/spec/sequences/slice-local-escape.rs",
+      "source_sha256": "5448078584c05d89352fcabfe7dff1b65e402575448ad6bfb341552fd58c0d69",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ]
+    },
+    {
+      "path": "tests/spec/sequences/text-match.rs",
+      "source_sha256": "9c50e0304c40bed44558294b6dbdeb37ed77d3238ea447f6d63ce4585ca4be76",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "boundary": "Rust rejects const str matching; the current interpreter boundary does not establish whole-body const eligibility."
+    },
+    {
+      "path": "tests/spec/sequences/text-empty.rs",
+      "source_sha256": "b17e6ec4196ede75b1c483c44d4c049e7d57f962809be18dffb4c752a2377eae",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa25.const-sequences"
+      ],
+      "boundary": "Rust rejects const str matching; the current interpreter boundary does not establish whole-body const eligibility."
+    }
+  ]
+}

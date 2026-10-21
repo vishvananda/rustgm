@@ -157,8 +157,10 @@ row. `add` has `const=true status=checked-body`. The count mode equals the final
 in maintainer evidence rather than hand-edited reference files.
 
 Inline-const integration and its qualification boundary are described in
-[the inline body draft](pa25-inline-const.md). Remaining PA25 work includes dynamic pattern
-and enum readiness continuations, slice/text projection execution, raw/union
+[the inline body draft](pa25-inline-const.md). Array-backed slice indexing and
+compressed reads are described in [the sequence checkpoint](pa25-sequences.md).
+Remaining PA25 work includes dynamic pattern and enum readiness continuations,
+sequence rest views and literal backing, whole-body const eligibility, raw/union
 validity and complete promotion/static allocation coverage. This view does not
 claim those execution boundaries are implemented.
 

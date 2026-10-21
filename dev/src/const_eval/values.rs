@@ -92,7 +92,11 @@ impl Machine<'_, '_> {
                 };
                 self.evaluator.repeat(Self::value(frame, value)?, length)?
             }
-            Rvalue::Constrain(value) => Self::value(frame, value)?,
+            Rvalue::Constrain(value) => self.evaluator.constrain(
+                Self::value(frame, value)?,
+                body.values[value.0 as usize].ty,
+                ty,
+            )?,
             Rvalue::Reify(value) => self
                 .evaluator
                 .reify(body.values[value.0 as usize].ty, Self::value(frame, value)?)?,
@@ -182,7 +186,7 @@ impl Machine<'_, '_> {
                     self.evaluator.facts().types.kind(ty),
                     Some(Kind::Reference { mutable: false, .. })
                 );
-                if place.union.is_some() {
+                let value = if place.union.is_some() {
                     let Some(address) = self.union_reference(place, !shared)? else {
                         return Ok(None);
                     };
@@ -201,7 +205,8 @@ impl Machine<'_, '_> {
                     place.address.restrict_shared()
                 } else {
                     place.address
-                }
+                };
+                self.evaluator.adjust_reference(value, place.ty, ty)?
             }
             Rvalue::Unary {
                 operator,

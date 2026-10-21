@@ -1,5 +1,5 @@
 //! Promotion roots stop at dereferences; evaluated projections demand their inputs.
-use super::{Engine, Error, Evaluated, Key, Ready, Type};
+use super::{Engine, Error, Evaluated, Key, Ready};
 use crate::{
     body::ir::{Place, Projection, ProjectionId, ProjectionKind, ValueId},
     sema::{members::Selection, model::Scalar},
@@ -62,20 +62,21 @@ impl Engine<'_, '_> {
         let Some(value) = self.place_value(base)? else {
             return Ok(None);
         };
-        if base == place {
-            let Some(Type::Reference { referent, .. }) = self.evaluator.facts().types.kind(ty)
-            else {
-                return Err("promotion borrow lacks a reference type".into());
-            };
-            Ok(Some(match value.value {
-                Evaluated::Constant(value) => {
-                    Evaluated::Constant(self.evaluator.borrow(value, referent)?)
-                }
-                Evaluated::Deferred => Evaluated::Deferred,
-            }))
-        } else {
-            Ok(Some(value.value))
-        }
+        let source = self
+            .body
+            .place_type(place)
+            .ok_or("missing borrowed place type")?;
+        Ok(Some(match value.value {
+            Evaluated::Constant(value) => {
+                let address = if base == place {
+                    self.evaluator.borrow(value, source)?
+                } else {
+                    value
+                };
+                Evaluated::Constant(self.evaluator.adjust_reference(address, source, ty)?)
+            }
+            Evaluated::Deferred => Evaluated::Deferred,
+        }))
     }
     pub(super) fn finish_projection(&self, id: ProjectionId) -> Result<Option<Evaluated>, Error> {
         let projection = self.projection(id)?;

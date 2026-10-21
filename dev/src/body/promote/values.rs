@@ -170,6 +170,23 @@ impl Engine<'_, '_> {
             Evaluated::Deferred => Evaluated::Deferred,
         }))
     }
+    fn constrain_value(
+        &self,
+        operand: ValueId,
+        target: crate::types::TypeId,
+    ) -> Result<Option<Ready>, Error> {
+        let Some(mut ready) = self.ready(Key::Value(operand))? else {
+            return Ok(None);
+        };
+        if let Evaluated::Constant(value) = ready.value {
+            ready.value = Evaluated::Constant(self.evaluator.constrain(
+                value,
+                self.value(operand)?.ty,
+                target,
+            )?);
+        }
+        Ok(Some(ready))
+    }
     pub(super) fn finish_value(&mut self, id: ValueId) -> Result<Option<Ready>, Error> {
         let value = self.value(id)?;
         let (ty, kind) = (value.ty, value.kind);
@@ -190,7 +207,7 @@ impl Engine<'_, '_> {
             Rvalue::Repeat { value, .. } => self.repeat(ty, value)?,
             Rvalue::Read(place) => self.place_value(place)?.map(|v| v.value),
             Rvalue::Borrow { place, .. } => self.borrow_value(place, ty)?,
-            Rvalue::Constrain(operand) => return self.ready(Key::Value(operand)),
+            Rvalue::Constrain(operand) => return self.constrain_value(operand, ty),
             Rvalue::Unsize { value, conversion } => match conversion {
                 crate::types::unsizing::Conversion::Slice(array) => self.unsize(value, array)?,
                 crate::types::unsizing::Conversion::Object { concrete, target } => {

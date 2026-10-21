@@ -21,6 +21,8 @@ remain available. The implemented draft vocabulary, graph identities, ordering,
 resource/error contract and independently checked example are documented in
 [the constants view draft](../docs/pa25-constants-view.md). Review its complete
 fixtures and generated oracles before declaring this assignment active.
+The [sequence execution checkpoint](../docs/pa25-sequences.md) records implemented
+array-backed slice operations, scaling invariants and remaining sequence gaps.
 
 ## Tests to develop with the reference
 
