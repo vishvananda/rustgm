@@ -59,7 +59,7 @@ type 56 aggregate def=15 regions=[region:9]
 type 57 reference mutable=false region=region:9 referent=11
 type 58 function binders=0 parameters=[57] result=56 unsafe=false
 type 59 function-item def=16 signature=58 regions=[region:9]
-type 60 reference mutable=false region=static referent=11
+type 60 reference mutable=false region=region:10 referent=11
 def 13 type=22 name="check" source=0:19
 def 14 type=24 name="fail" source=0:35
 def 15 type=19 name="K" source=0:43
@@ -102,6 +102,7 @@ region-var region:6 body=0:126 source=0:123 origin=call-argument pending
 region-var region:7 body=0:126 source=0:119 origin=item-argument pending
 region-var region:8 body=0:126 source=0:121 origin=expression-borrow pending
 region-var region:9 body=0:68 source=0:65 origin=item-argument pending
+region-var region:10 body=0:68 source=0:67 origin=expression-borrow pending
 region-equal body=0:100 left=region:2 right=bound:0:0
 region-equal body=0:100 left=region:1 right=region:2
 region-coercion body=0:126 source=0:109 actual=54 expected=45 kind=same-shape pending

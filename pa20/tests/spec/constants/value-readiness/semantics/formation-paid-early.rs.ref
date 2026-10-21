@@ -37,40 +37,42 @@ type 34 reference mutable=false region=bound:0:0 referent=11
 type 35 reference mutable=false region=static referent=11
 type 36 aggregate def=20 regions=[region:1]
 type 37 aggregate def=20 regions=[region:2]
-type 38 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 39 array element=11 length=parameter:15:0
-type 40 aggregate def=18 regions=[region:2]
-type 41 array element=11 length=3
-type 42 aggregate def=18 regions=[region:3]
-type 43 function binders=0 parameters=[39] result=19 unsafe=false
-type 44 function-item def=16 signature=43
-type 45 aggregate def=27 regions=[region:3]
-type 46 reference mutable=false region=region:3 referent=11
-type 47 reference mutable=false region=static referent=45
-type 48 function binders=0 parameters=[41] result=38 unsafe=false
-type 49 function-item def=16 signature=48 arguments=[const:16:0x00000000000000000000000000000003]
-type 50 function binders=0 parameters=[] result=38 unsafe=false
-type 51 function-item def=17 signature=50
-type 52 function binders=0 parameters=[] result=1 unsafe=false
-type 53 function-item def=33 signature=52
-type 54 function binders=1 parameters=[34] result=20 unsafe=false
-type 55 reference mutable=false region=bound:1:0 referent=11
-type 56 aggregate def=18 regions=[bound:1:0]
-type 57 function binders=0 parameters=[55] result=56 unsafe=false
-type 58 function-item def=19 signature=54
-type 59 function binders=1 parameters=[34] result=21 unsafe=false
-type 60 aggregate def=20 regions=[bound:1:0]
-type 61 function binders=0 parameters=[55] result=60 unsafe=false
-type 62 function-item def=21 signature=59
+type 38 reference mutable=false region=region:2 referent=11
+type 39 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 40 array element=11 length=parameter:15:0
+type 41 aggregate def=18 regions=[region:3]
+type 42 array element=11 length=3
+type 43 aggregate def=18 regions=[region:4]
+type 44 function binders=0 parameters=[40] result=19 unsafe=false
+type 45 function-item def=16 signature=44
+type 46 aggregate def=27 regions=[region:4]
+type 47 reference mutable=false region=region:4 referent=11
+type 48 reference mutable=false region=region:7 referent=46
+type 49 reference mutable=false region=region:5 referent=11
+type 50 function binders=0 parameters=[42] result=39 unsafe=false
+type 51 function-item def=16 signature=50 arguments=[const:16:0x00000000000000000000000000000003]
+type 52 function binders=0 parameters=[] result=39 unsafe=false
+type 53 function-item def=17 signature=52
+type 54 function binders=0 parameters=[] result=1 unsafe=false
+type 55 function-item def=33 signature=54
+type 56 function binders=1 parameters=[34] result=20 unsafe=false
+type 57 reference mutable=false region=bound:1:0 referent=11
+type 58 aggregate def=18 regions=[bound:1:0]
+type 59 function binders=0 parameters=[57] result=58 unsafe=false
+type 60 function-item def=19 signature=56
+type 61 function binders=1 parameters=[34] result=21 unsafe=false
+type 62 aggregate def=20 regions=[bound:1:0]
+type 63 function binders=0 parameters=[57] result=62 unsafe=false
+type 64 function-item def=21 signature=61
 def 13 type=28 name="check" source=0:19
 def 14 type=30 name="fail" source=0:35
 def 15 type=19 name="X" source=0:47
-def 16 type=44 name="X" source=0:47
-def 17 type=51 name="f" source=0:78
+def 16 type=45 name="X" source=0:47
+def 17 type=53 name="f" source=0:78
 def 18 type=20 name="S" source=0:86
-def 19 type=58 name="S" source=0:86
+def 19 type=60 name="S" source=0:86
 def 20 type=21 name="R" source=0:94
-def 21 type=62 name="R" source=0:94
+def 21 type=64 name="R" source=0:94
 def 23 type=23 name="Self" source=0:102
 def 24 type=34 name="D" source=0:101
 def 25 type=21 name="Self" source=0:122
@@ -80,7 +82,7 @@ def 29 type=24 name="Self" source=0:163
 def 30 type=31 name="C" source=0:162
 def 31 type=20 name="Self" source=0:197
 def 32 type=33 name="C" source=0:196
-def 33 type=53 name="main" source=0:211
+def 33 type=55 name="main" source=0:211
 def 34 type=2 name="bool"
 def 35 type=3 name="char"
 def 36 type=4 name="str"
@@ -120,19 +122,23 @@ impl owner=25 source=0:122 subject=21 bound=trait:22 arguments=[region:bound:0:0
 impl owner=31 source=0:197 subject=20 bound=trait:28 arguments=[region:bound:0:0]
 trait-path source=0:60 method=30 trait=28 qualifier=explicit origin=ordinary subject-source=0:53
 trait-path source=0:142 method=24 trait=22 qualifier=explicit origin=ordinary subject-source=0:135
-implementation-use source=0:60 owner=31 arguments=[region:region:2]
+implementation-use source=0:60 owner=31 arguments=[region:region:3]
 implementation-use source=0:142 owner=25 arguments=[region:region:1]
 region-var region:1 body=0:148 source=0:142 origin=inference pending
-region-var region:2 body=0:67 source=0:60 origin=inference pending
-region-var region:3 body=0:195 source=0:194 origin=item-argument pending
-region-var region:4 body=0:195 source=0:192 origin=universal-alias pending
+region-var region:2 body=0:120 source=0:120 origin=expression-borrow pending
+region-var region:3 body=0:67 source=0:60 origin=inference pending
+region-var region:4 body=0:195 source=0:194 origin=item-argument pending
+region-var region:5 body=0:195 source=0:185 origin=expression-borrow pending
+region-var region:6 body=0:195 source=0:192 origin=universal-alias pending
+region-var region:7 body=0:195 source=0:195 origin=expression-borrow pending
 region-equal body=0:148 left=static right=region:1
 region-equal body=0:148 left=static right=region:1
-region-equal body=0:67 left=static right=region:2
-region-equal body=0:67 left=static right=region:2
-region-equal body=0:195 left=region:4 right=bound:0:0
-region-coercion body=0:195 source=0:185 actual=35 expected=46 kind=same-shape pending
-region-coercion body=0:195 source=0:195 actual=47 expected=33 kind=same-shape pending
+region-equal body=0:67 left=static right=region:3
+region-equal body=0:67 left=static right=region:3
+region-equal body=0:195 left=region:6 right=bound:0:0
+region-coercion body=0:120 source=0:120 actual=38 expected=35 kind=same-shape pending
+region-coercion body=0:195 source=0:185 actual=49 expected=47 kind=same-shape pending
+region-coercion body=0:195 source=0:195 actual=48 expected=33 kind=same-shape pending
 associated-constant def=24 type=34
 associated-constant def=26 type=35
 associated-constant def=30 type=31

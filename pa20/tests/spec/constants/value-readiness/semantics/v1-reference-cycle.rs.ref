@@ -28,37 +28,38 @@ type 25 function-item def=13 signature=24
 type 26 function binders=0 parameters=[11] result=11 unsafe=false
 type 27 function-item def=14 signature=26
 type 28 reference mutable=false region=static referent=21
-type 29 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 30 function binders=0 parameters=[] result=29 unsafe=false
-type 31 function-item def=19 signature=30
-type 32 function binders=0 parameters=[] result=1 unsafe=false
-type 33 function-item def=31 signature=32
-type 34 array element=11 length=parameter:15:0
-type 35 function binders=0 parameters=[34] result=19 unsafe=false
-type 36 function-item def=16 signature=35
-type 37 function binders=0 parameters=[11] result=20 unsafe=false
-type 38 function-item def=18 signature=37
-type 39 function binders=0 parameters=[28] result=22 unsafe=false
-type 40 function-item def=25 signature=39
-type 41 array element=11 length=3
-type 42 function binders=0 parameters=[41] result=29 unsafe=false
-type 43 function-item def=16 signature=42 arguments=[const:16:0x00000000000000000000000000000003]
+type 29 reference mutable=false region=region:1 referent=21
+type 30 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 31 function binders=0 parameters=[] result=30 unsafe=false
+type 32 function-item def=19 signature=31
+type 33 function binders=0 parameters=[] result=1 unsafe=false
+type 34 function-item def=31 signature=33
+type 35 array element=11 length=parameter:15:0
+type 36 function binders=0 parameters=[35] result=19 unsafe=false
+type 37 function-item def=16 signature=36
+type 38 function binders=0 parameters=[11] result=20 unsafe=false
+type 39 function-item def=18 signature=38
+type 40 function binders=0 parameters=[28] result=22 unsafe=false
+type 41 function-item def=25 signature=40
+type 42 array element=11 length=3
+type 43 function binders=0 parameters=[42] result=30 unsafe=false
+type 44 function-item def=16 signature=43 arguments=[const:16:0x00000000000000000000000000000003]
 def 13 type=25 name="check" source=0:19
 def 14 type=27 name="fail" source=0:35
 def 15 type=19 name="X" source=0:47
-def 16 type=36 name="X" source=0:47
+def 16 type=37 name="X" source=0:47
 def 17 type=20 name="V" source=0:52
-def 18 type=38 name="V" source=0:52
-def 19 type=31 name="f" source=0:78
+def 18 type=39 name="V" source=0:52
+def 19 type=32 name="f" source=0:78
 def 20 type=21 name="R" source=0:87
 def 21 type=22 name="OptionR" source=0:96
 def 23 type=22 name="None" source=0:88
-def 25 type=40 name="Some" source=0:95
+def 25 type=41 name="Some" source=0:95
 def 27 type=23 name="Self" source=0:103
 def 28 type=28 name="C" source=0:102
 def 29 type=11 name="Self" source=0:126
 def 30 type=28 name="C" source=0:125
-def 31 type=33 name="main" source=0:140
+def 31 type=34 name="main" source=0:140
 def 32 type=2 name="bool"
 def 33 type=3 name="char"
 def 34 type=4 name="str"
@@ -89,6 +90,8 @@ predicate owner=26 source=0:103 subject=23 bound=trait:26 arguments=[]
 impl owner=29 source=0:126 subject=11 bound=trait:26 arguments=[]
 trait-path source=0:61 method=28 trait=26 qualifier=explicit origin=ordinary subject-source=0:56
 implementation-use source=0:61 owner=29 arguments=[]
+region-var region:1 body=0:124 source=0:124 origin=expression-borrow pending
+region-coercion body=0:124 source=0:124 actual=29 expected=28 kind=same-shape pending
 associated-constant def=28 type=28
 associated-constant def=30 type=28
 impl-constant owner=29 declaration=28 selected=30 default=false

@@ -218,26 +218,24 @@ fn instrument(program: &mut Program, observer: &str, expected: &[u8]) -> Result<
     check_final_count(program, index, expected.len())
 }
 fn check_final_count(program: &mut Program, index: GlobalId, expected: usize) -> Result<(), Error> {
-    let old_entry = program
+    let new_entry = program
         .symbols
         .iter()
         .position(|s| s.entry)
         .ok_or("entry")?;
-    program.symbols[old_entry].entry = false;
-    program.symbols[old_entry].name = "test.source.entry".into();
-    let signature = program.symbols[old_entry].signature;
-    let new_entry = program.declare("main".into(), signature, true)?;
+    let signature = program.symbols[new_entry].signature;
+    let original = program.symbols[new_entry].body.take().ok_or("entry body")?;
+    // Preserve canonical names and the backend's reserved main entry. Move its
+    // original body to a fresh symbol, then install the observer wrapper at main.
+    let old_entry = program.declare("test.source.entry".into(), signature, false)?;
+    program.define(old_entry, original)?;
+    let new_entry = SymbolId(u32::try_from(new_entry)?);
     let mut builder = Builder::default();
     let entry = builder.block()?;
     let yes = builder.block()?;
     let no = builder.block()?;
     builder.enter(entry)?;
-    builder.call(
-        signature,
-        Type::I64,
-        Operand::Symbol(SymbolId(u32::try_from(old_entry)?)),
-        &[],
-    )?;
+    builder.call(signature, Type::I64, Operand::Symbol(old_entry), &[])?;
     let actual = builder.load(Type::I64, Operand::Global(index))?;
     let expected = builder.integer(Type::I64, expected as u128)?;
     let condition = builder.compare(Predicate::Eq, actual, expected)?;
@@ -251,7 +249,7 @@ fn check_final_count(program: &mut Program, index: GlobalId, expected: usize) ->
         let value = builder.integer(Type::I64, status)?;
         builder.terminate(Terminator::Return(Some(value)))?;
     }
-    program.symbols[new_entry.0 as usize].body = Some(builder.finish()?);
+    program.define(new_entry, builder.finish()?)?;
     Ok(())
 }
 fn success(name: &str, output: std::process::Output) -> Result<Vec<u8>, Error> {

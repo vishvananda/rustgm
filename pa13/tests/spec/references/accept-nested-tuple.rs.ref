@@ -24,6 +24,7 @@ type 21 reference mutable=false region=bound:0:0 referent=11
 type 22 tuple [21,2]
 type 23 function binders=1 parameters=[22] result=1 unsafe=false
 type 24 function-item def=14 signature=23
+type 25 reference mutable=false region=region:1 referent=11
 root 0:29 pattern=0
 root 0:32 pattern=1
 pattern 0 source=0:29 input=22 product variant=- fields=0:2
@@ -38,4 +39,6 @@ range 1 ranks=1:1
 match 0 source=0:35 input=0:26 arms=0:2 exhaustive=true uninhabited=false work=139
 arm 0 source=0:31 pattern=0 guard=- useful=true value=0:30
 arm 1 source=0:34 pattern=1 guard=- useful=true value=0:33
-eof roots=2 patterns=5 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=139 region-vars=0 region-equalities=0 conditions=0 chains=0
+region-var region:1 body=0:11 source=0:9 origin=expression-borrow pending
+region-coercion body=0:11 source=0:9 actual=25 expected=19 kind=same-shape pending
+eof roots=2 patterns=5 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=139 region-vars=1 region-equalities=0 conditions=0 chains=0

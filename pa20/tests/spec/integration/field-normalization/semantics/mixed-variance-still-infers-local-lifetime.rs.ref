@@ -50,6 +50,7 @@ type 47 reference mutable=false region=region:4 referent=11
 type 48 aggregate def=20 arguments=[region:region:4,type:11]
 type 49 function binders=0 parameters=[11,47] result=48 unsafe=false
 type 50 function-item def=21 signature=49 arguments=[region:region:4,type:11]
+type 51 reference mutable=false region=region:5 referent=11
 def 13 type=25 name="check" source=0:19
 def 14 type=27 name="fail" source=0:35
 def 16 type=21 name="Self" source=0:37
@@ -115,10 +116,11 @@ region-var region:1 body=0:146 source=0:113 origin=inference pending
 region-var region:2 body=0:146 source=0:122 origin=item-argument pending
 region-var region:3 body=0:146 source=0:126 origin=expression-borrow pending
 region-var region:4 body=0:95 source=0:91 origin=item-argument pending
+region-var region:5 body=0:95 source=0:94 origin=expression-borrow pending
 region-coercion body=0:146 source=0:113 actual=28 expected=43 kind=same-shape pending
 region-coercion body=0:146 source=0:126 actual=45 expected=39 kind=same-shape pending
 region-coercion body=0:146 source=0:127 actual=40 expected=43 kind=same-shape pending
-region-coercion body=0:95 source=0:94 actual=46 expected=47 kind=same-shape pending
+region-coercion body=0:95 source=0:94 actual=51 expected=47 kind=same-shape pending
 region-coercion body=0:95 source=0:95 actual=48 expected=28 kind=same-shape pending
 associated-type def=17 type=23
 result-contract def=17 projection=23
