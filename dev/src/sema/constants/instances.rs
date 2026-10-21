@@ -19,6 +19,32 @@ pub(crate) enum Dependency {
     Constant(Instance),
     Callable(TypeId),
 }
+#[derive(Clone, Copy)]
+pub(super) enum ValueScope {
+    Anonymous { body: NodeKey, ty: TypeId },
+    Initializer { body: NodeKey },
+}
+impl ValueScope {
+    pub(super) const fn body(self) -> NodeKey {
+        match self {
+            Self::Anonymous { body, .. } | Self::Initializer { body } => body,
+        }
+    }
+    pub(super) fn retain(
+        self,
+        facts: &mut Declarations,
+        source: NodeKey,
+        proof: crate::types::lifetime_proof::Obligations,
+    ) -> Result<(), &'static str> {
+        if !proof.is_empty() {
+            proof.retain_body(facts, self.body(), source)?;
+            if let Self::Anonymous { body, ty } = self {
+                facts.anonymous_constants.insert(body, ty);
+            }
+        }
+        Ok(())
+    }
+}
 impl Instance {
     /// Substitute captured arguments without rewriting the shared declaration.
     /// # Errors
@@ -244,8 +270,8 @@ impl Queries<'_> {
         {
             return Ok(instance);
         }
-        if let Some((body, ty)) = self.value_scope {
-            return self.value_instance(key, instance, body, ty);
+        if let Some(scope) = self.value_scope {
+            return self.value_instance(key, instance, scope);
         }
         self.typing
             .facts
@@ -263,8 +289,7 @@ impl Queries<'_> {
         &mut self,
         key: NodeKey,
         instance: Instance,
-        body: NodeKey,
-        ty: TypeId,
+        scope: ValueScope,
     ) -> Result<Instance, Error> {
         let first = self
             .typing
@@ -286,15 +311,9 @@ impl Queries<'_> {
         let result = dispatch
             .constant(self.typing.facts, instance)
             .map_err(|e| self.error(Query::Node(key), e))?;
-        let proof = dispatch.finish();
-        if !proof.is_empty() {
-            // Initializer typing can allocate more regions on the next work item.
-            // Publish this interval now, under the anonymous value's own body.
-            proof
-                .retain_body(self.typing.facts, body, key)
-                .map_err(|e| self.error(Query::Node(key), e))?;
-            self.typing.facts.anonymous_constants.insert(body, ty);
-        }
+        scope
+            .retain(self.typing.facts, key, dispatch.finish())
+            .map_err(|e| self.error(Query::Node(key), e))?;
         Ok(result)
     }
     pub(super) fn enter_instance(&mut self, instance: Instance) -> Result<(), Error> {

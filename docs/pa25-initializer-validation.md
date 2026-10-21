@@ -41,6 +41,37 @@ The source manifest SHA-256 is
 The reborrow lint and reviewed-vocabulary test inclusion audit failures are
 retained separately; their repairs change neither evaluated source nor policy.
 
+## Associated selection during ordinary completion
+
+Ordinary initializer evaluation now supplies an explicit typed initializer scope
+to the existing availability-aware constant dispatcher. Selection and its proof
+use the real initializer body; an initializer is not registered as an anonymous
+constant. Anonymous const arguments and discriminants keep their existing scope
+and type. The named evaluator restores its previous scope after either success
+or failure. The initializer index, shared dependency cache and declaration order
+remain unchanged.
+
+This repairs the eager-validation regression in PA20's global constant and
+members/mixed inspection fixtures. All six original sources compile again, and
+their three LowIR outputs are byte-identical to committed references. Semantic
+inspection now includes completed dispatch facts: one default selection for
+global, a default and an override for members, and one lifetime/type/const-argument
+selection for mixed. Only those rows and their counts differ; they are retained
+for integrator review rather than hidden to reproduce an incomplete inventory.
+PA22's raw temporary retains its existing precise diagnostic.
+
+At widths 8/32/128, unused ordinary roots reading one associated default keep
+selection and dependency-expansion counts linear. Three native controls execute
+default/override constants and a static, lifetime/type/const arguments, and nested
+named dependencies against independent pinned Rust executables. The initializer
+policy, indexing and scalar crate-linking regressions also pass. Formatting,
+check, strict all-target/all-feature Clippy and the file audit pass. Evidence and
+the exact six view deltas are under
+`obj/parallel/pa25-initializer-selection/`. An initial byte comparison failed on
+the newly completed semantic facts; no references were changed. A merge-only
+duplicate standalone import test was removed in a separate commit before the
+final zero-finding audit.
+
 ## Remaining PA25 work
 
 - Resume dynamic cross-body pattern dependencies and forward unready enum tags;
@@ -50,7 +81,7 @@ retained separately; their repairs change neither evaluated source nor policy.
 - Complete slice/text projection and compressed literal reference execution.
 - Qualify and implement raw pointer and union const validity with PA27, retaining
   allocation provenance, initialization and overlap rules.
-- Complete promotion/static allocation graph coverage, including associated
-  initializer contexts and deterministic export representation.
+- Complete promotion/static allocation graph coverage and deterministic export
+  representation; associated initializer dispatch now retains its actual owner.
 - Finish owning fixtures, manifest/handout contracts and integrated release
   qualification. PA25 remains planned and incomplete.

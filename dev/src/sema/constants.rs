@@ -184,7 +184,7 @@ struct Queries<'a> {
     layout_scratch: layouts::Scratch,
     pattern_scope: Option<PatternScope>,
     pattern_dispatch: Option<super::dispatch::Dispatcher>,
-    value_scope: Option<(NodeKey, TypeId)>,
+    value_scope: Option<instances::ValueScope>,
     checked_members: HashSet<Query>,
 }
 /// Reusable storage belongs to one report and its append-only declaration facts.

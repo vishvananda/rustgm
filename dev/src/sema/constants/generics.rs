@@ -33,7 +33,7 @@ pub(in crate::sema) fn advance(
     // Declaration bodies may prove a goal once its compatible candidate inventory
     // is complete. A pending header yields through the body's owned continuation.
     queries.typing.availability = crate::sema::traits::implementations::Availability::Declarations;
-    queries.value_scope = Some((key, ty));
+    queries.value_scope = Some(super::instances::ValueScope::Anonymous { body: key, ty });
     let fresh = continuation.is_none();
     if let Some(continuation) = continuation {
         queries.resume(*continuation);
@@ -90,7 +90,7 @@ pub(in crate::sema) fn argument(
 ) -> Result<u128, Error> {
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
-    queries.value_scope = Some((key, ty));
+    queries.value_scope = Some(super::instances::ValueScope::Anonymous { body: key, ty });
     queries.typing.anonymous_constant(key, ty, module)?;
     queries.require_complete_patterns(Query::Node(key))?;
     queries.work.push(Work::Enter(Query::Node(key)));

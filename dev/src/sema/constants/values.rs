@@ -381,9 +381,19 @@ impl<'a> Evaluator<'a> {
                 },
             ));
         }
+        let scope = self
+            .queries
+            .value_scope
+            .replace(super::instances::ValueScope::Initializer {
+                body: self.queries.typing.facts.initializers[index].value,
+            });
         self.queries.work.push(Work::Enter(query));
-        self.queries.drain()?;
-        self.queries.value(query).map(Constant)
+        let result = self
+            .queries
+            .drain()
+            .and_then(|()| self.queries.value(query).map(Constant));
+        self.queries.value_scope = scope;
+        result
     }
     /// # Errors
     /// Diagnoses exhausted constant storage.

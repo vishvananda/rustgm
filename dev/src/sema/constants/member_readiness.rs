@@ -16,9 +16,10 @@ impl Queries<'_> {
         if instances.is_empty() {
             return Ok(Vec::new());
         }
-        let Some((body, ty)) = self.value_scope else {
+        let Some(scope) = self.value_scope else {
             return Ok(Vec::new());
         };
+        let body = scope.body();
         let query = Query::Node(body);
         let first = self
             .typing
@@ -65,13 +66,9 @@ impl Queries<'_> {
                 });
             }
         }
-        let proof = dispatch.finish();
-        if !proof.is_empty() {
-            proof
-                .retain_body(self.typing.facts, body, body)
-                .map_err(|e| self.error(query, e))?;
-            self.typing.facts.anonymous_constants.insert(body, ty);
-        }
+        scope
+            .retain(self.typing.facts, body, dispatch.finish())
+            .map_err(|e| self.error(query, e))?;
         let mut pending: Vec<_> = pending.into_iter().collect();
         pending.sort_unstable_by_key(|request| (request.owner.0, request.declaration.0));
         Ok(pending)

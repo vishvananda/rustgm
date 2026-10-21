@@ -203,10 +203,7 @@ impl Queries<'_> {
         let mut place = self.place(key, value)?;
         if raw {
             if matches!(place.access, Access::Owned) {
-                return Err(self.error(
-                    Query::Node(key),
-                    "raw constant address requires existing storage",
-                ));
+                return Err(self.error(Query::Node(key), "cannot take raw address of a temporary"));
             }
             if matches!(
                 self.typing.facts.types.kind(ty),

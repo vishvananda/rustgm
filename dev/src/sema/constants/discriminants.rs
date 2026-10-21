@@ -121,7 +121,12 @@ pub(in crate::sema) fn advance(
             .entries[index]
             .spec;
         let variant = spec.variant;
-        queries.value_scope = spec.value.map(|key| (key, TypeId::primitive(spec.tag)));
+        queries.value_scope = spec
+            .value
+            .map(|body| super::instances::ValueScope::Anonymous {
+                body,
+                ty: TypeId::primitive(spec.tag),
+            });
         let query = Query::Variant(variant);
         if !resumed {
             queries.work.push(Work::Enter(query));
