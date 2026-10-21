@@ -86,8 +86,18 @@ pub(super) fn arguments(
 pub(crate) fn execution(
     facts: &mut Declarations,
     instance: Instance,
-    mut execution: Execution,
+    execution: Execution,
 ) -> Result<Prepared, &'static str> {
+    let execution = substitute(facts, instance, execution)?;
+    normalize(facts, execution)
+}
+
+/// Keep every original slot, including a receiver removed by an owned adapter.
+pub(crate) fn substitute(
+    facts: &mut Declarations,
+    instance: Instance,
+    mut execution: Execution,
+) -> Result<Execution, &'static str> {
     let Some(Kind::Closure { identity, .. }) = facts.types.kind(instance.ty()) else {
         return Err("closure execution requires a canonical instance");
     };
@@ -97,7 +107,7 @@ pub(crate) fn execution(
         .ok_or("missing closure source")?;
     let mut inputs = arguments(facts, instance, source)?;
     if inputs.bindings.is_empty() {
-        return normalize(facts, execution);
+        return Ok(execution);
     }
     let mut regions = Bound::universals(execution.universals);
     for (_, argument) in &mut inputs.bindings {
@@ -114,11 +124,38 @@ pub(crate) fn execution(
     execution.signature =
         parameters.signature(&mut facts.types, execution.signature, execution.universals)?;
     facts.body_work.canonical_steps += regions.steps + parameters.steps;
-    normalize(facts, execution)
+    Ok(execution)
+}
+
+/// Normalize Self before shaping a requested receiver. Its separate debts must
+/// survive even when the requested signature omits the source receiver slot.
+pub(crate) fn self_type(
+    facts: &mut Declarations,
+    mut execution: Execution,
+) -> Result<Prepared, &'static str> {
+    use crate::types::lifetime_proof::{Obligations, ScopeId};
+    if facts.types.contains_projections(execution.self_ty) != Some(true) {
+        return Ok(Prepared {
+            execution,
+            proof: None,
+        });
+    }
+    let mut proof = Obligations::new(1);
+    let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
+    let (self_ty, steps) = session.normalize(facts, execution.self_ty)?;
+    facts.body_work.canonical_steps += steps;
+    execution.self_ty = self_ty;
+    Ok(Prepared {
+        execution,
+        proof: (!proof.is_empty()).then_some(proof),
+    })
 }
 
 /// Canonical normal forms retain their own debts in the formal execution scope.
-fn normalize(facts: &mut Declarations, mut execution: Execution) -> Result<Prepared, &'static str> {
+pub(crate) fn normalize(
+    facts: &mut Declarations,
+    mut execution: Execution,
+) -> Result<Prepared, &'static str> {
     use crate::types::lifetime_proof::{Obligations, ScopeId};
     if facts.types.contains_projections(execution.self_ty) != Some(true)
         && facts.types.contains_projections(execution.signature) != Some(true)
