@@ -7,20 +7,32 @@ pub(super) struct Interface {
     pub opening: Bound,
     annotations: Vec<RegionId>,
     inherited: usize,
+    contextual: Option<u32>,
 }
 impl Interface {
-    pub fn new(enclosing: &[RegionId], annotations: Vec<RegionId>) -> Result<Self, &'static str> {
+    pub fn new(
+        enclosing: &[RegionId],
+        mut annotations: Vec<RegionId>,
+        contextual: Option<u32>,
+    ) -> Result<Self, &'static str> {
         let mut opening = Bound::universals(0);
         for &region in enclosing {
             opening.region(region, 0)?;
         }
-        for index in 0..annotations.len() {
+        let inputs = contextual.map_or(annotations.len(), |count| count as usize);
+        if contextual.is_some() {
+            // Elided annotations refine the contextual universals; they do not
+            // introduce independent rigid lifetimes beside the expected binder.
+            annotations.clear();
+        }
+        for index in 0..inputs {
             opening.region(slot(index)?, 0)?;
         }
         Ok(Self {
             opening,
             annotations,
             inherited: enclosing.len(),
+            contextual,
         })
     }
     pub fn count(&self) -> Result<u32, &'static str> {
@@ -36,7 +48,12 @@ impl Interface {
     pub fn closing(&self, calls: &CallTypes, output: bool) -> Result<Bound, &'static str> {
         let mut mapping = HashMap::new();
         for (source, universal) in self.opening.universal_pairs() {
-            if !output || source.bound_parts().is_none() {
+            if !output
+                || source.bound_parts().is_none()
+                || source.bound_parts().is_some_and(|(depth, slot)| {
+                    depth == 0 && self.contextual.is_some_and(|count| u32::from(slot) < count)
+                })
+            {
                 mapping.insert(universal, source);
             }
         }

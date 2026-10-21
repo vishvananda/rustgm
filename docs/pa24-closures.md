@@ -507,3 +507,31 @@ receiver kind, loans, moves and environment storage. The index is not yet wired
 into source capture construction. Initial focused checks cover nested scopes,
 shadowed definitions, macro hygiene and repeated-use scaling; final lint and
 combined validation remain pending.
+
+
+## Contextual reference signatures
+
+Known function-pointer expectations now supply a closure's quantified input and
+output contract. The isolated body receives its own universal lifetimes, while
+enclosing lifetimes cross the existing explicit interface. Elided annotations
+refine those contextual inputs; they do not introduce unrelated rigid lifetimes.
+The body must still prove every result and coercion. Empty closure environments
+now enter the same lifetime relation as function-item pointer conversions.
+
+`obj/parallel/closure-context-gates-v4/` records four passing lifetime groups,
+strict all-target/all-feature release Clippy and the file audit with zero findings.
+Sixteen contextual outcomes agree independently with pinned rustc, including
+separate/shared input lifetimes, mutable identity, outer lifetimes, nested callable
+signatures, arguments and returned pointers. All eleven positive cases execute
+through both rustc and CPPGM. Five negative cases cover crossed outputs, local
+and static escapes, a dangling call result and shared-to-mutable conversion.
+The seven existing uncontextual lifetime controls remain intact. The preceding
+`closure-context-gates-v2/` also passes pointer, safety and source-body groups;
+its audit prompted consolidation into the existing lifetime test owner.
+
+The retained candidate and preceding integrated baseline are pinned under
+`obj/parallel/closure-context-performance/binaries/`; timing qualification is
+pending. Safe-to-unsafe pointer conversion remains a separate callable conversion
+change coordinated with PA30. Capture construction, generic closure templates,
+dynamic callable adapters and contextual signatures with unresolved components
+still require work. No assignment was activated or text reference changed.

@@ -37,8 +37,9 @@ ordinary storage guard unless explicitly configured.
 Initial reviewed limits:
 
 - At most two heavy commands across all worktrees, one command per worktree.
-- An exclusive full validation or benchmark command excludes every other
-  guarded heavy command. A waiting exclusive job blocks new ordinary admission.
+- Functional validation shares the two-command budget with focused worker checks.
+  Benchmarks use an exclusive lease, which excludes every other guarded heavy
+  command. A waiting exclusive job blocks new ordinary admission.
 - Each process tree has a systemd user scope: CPU quota 800% (eight CPU cores),
   MemoryMax 12 GiB, no swap and at most 256 tasks. Missing systemd limits fail
   the command; there is no unrestricted fallback in a configured repository.
@@ -86,8 +87,9 @@ use an outer resource lease. Nested storage wrappers inherit it, but keep their
 own cleanup and checkout lock:
 
 ```sh
-python3 scripts/resources.py run --exclusive -- make test-harness
-python3 scripts/resources.py run --exclusive -- python3 scripts/storage.py run --prune-under obj/parallel/release -- python3 obj/parallel/validate_release.py
+python3 scripts/resources.py run -- make test-harness
+python3 scripts/resources.py run -- python3 scripts/storage.py run --prune-under obj/parallel/release -- python3 obj/parallel/validate_release.py
+python3 scripts/resources.py run --exclusive -- python3 scripts/storage.py run --prune-under obj/parallel/performance -- python3 obj/parallel/measure.py
 ```
 
 Use `resources.py` rather than nesting `storage.py` around a Makefile that itself

@@ -1,5 +1,7 @@
 //! Closure interfaces transport inputs and retain all enclosing generic arguments.
-use super::{Argument, Checker, Constructor, Error, NodeId, Refinement, TermId, universes};
+use super::{
+    Argument, Checker, Constructor, Error, NodeId, Refinement, TermId, contextual, universes,
+};
 use crate::types::{ItemId, Kind, RegionId, arguments::ConstKind, parameters::ParameterKind};
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn closure_pointer_environment(
@@ -20,7 +22,8 @@ impl Checker<'_> {
         node: NodeId,
         terms: &[TermId],
         parameters: u32,
-        lifetimes: &universes::Interface,
+        lifetimes: &mut universes::Interface,
+        expected: Option<contextual::Expected>,
     ) -> Result<(Refinement, TermId), Error> {
         let (mut inputs, roots) = Refinement::new(
             &self.facts.types,
@@ -50,6 +53,16 @@ impl Checker<'_> {
                 &terms,
             )
             .map_err(|e| self.error(node, e))?;
+        if let Some(expected) = expected {
+            contextual::constrain(
+                &mut self.facts.types,
+                &mut inputs.context,
+                signature,
+                lifetimes,
+                expected,
+            )
+            .map_err(|e| self.error(node, e))?;
+        }
         Ok((inputs, signature))
     }
 

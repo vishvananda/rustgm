@@ -595,7 +595,15 @@ impl<'a> Constraints<'a> {
                 self.child(relation, ea, eb, Variance::Invariant)?;
             }
             (Kind::Function { .. }, Kind::Function { .. }) => self.function(relation, a, b)?,
-            (Kind::FunctionItem { signature, .. }, Kind::Function { .. }) => {
+            (Kind::FunctionItem { signature, .. }, Kind::Function { .. })
+            | (
+                Kind::Closure {
+                    signature,
+                    environment: TypeId::UNIT,
+                    ..
+                },
+                Kind::Function { .. },
+            ) => {
                 self.child(relation, signature, relation.expected, covariant)?;
             }
             (

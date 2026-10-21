@@ -1,5 +1,6 @@
 //! Closure bodies retain separate control state and exchange only interface constraints.
 mod completion;
+mod contextual;
 mod interface;
 mod universes;
 use super::{
@@ -34,7 +35,7 @@ impl Checker<'_> {
     pub(super) fn enter_closure(
         &mut self,
         node: NodeId,
-        _expected: Option<TermId>,
+        expected: Option<TermId>,
     ) -> Result<(), Error> {
         let Kind::Closure {
             parameters,
@@ -73,7 +74,12 @@ impl Checker<'_> {
             .get(&self.key(node))
             .cloned()
             .unwrap_or_default();
-        let bound_regions = u32::try_from(annotations.len())
+        let expected = self.closure_expectation(node, expected, count)?;
+        let bound_regions = expected
+            .map_or_else(
+                || u32::try_from(annotations.len()),
+                |expected| Ok(expected.regions),
+            )
             .map_err(|_| self.error(node, "too many closure lifetimes"))?;
         let signature = self
             .state
@@ -101,10 +107,14 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         self.save(node, closure);
         self.state.work.push(Work::Exit(node));
-        let lifetimes =
-            universes::Interface::new(&self.state.call_types.universal_arguments(), annotations)
-                .map_err(|e| self.error(node, e))?;
-        let (inputs, signature) = self.closure_body_interface(node, &terms, count, &lifetimes)?;
+        let mut lifetimes = universes::Interface::new(
+            &self.state.call_types.universal_arguments(),
+            annotations,
+            expected.map(|expected| expected.regions),
+        )
+        .map_err(|e| self.error(node, e))?;
+        let (inputs, signature) =
+            self.closure_body_interface(node, &terms, count, &mut lifetimes, expected)?;
         self.switch_closure_body(
             body,
             Entry {
