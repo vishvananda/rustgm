@@ -10,6 +10,7 @@ mod decisions;
 mod drops;
 mod environments;
 mod guards;
+mod inline_roots;
 mod intrinsics;
 mod invocations;
 mod matches;
@@ -455,6 +456,9 @@ impl<'a> Builder<'a> {
             .active[node.0 as usize]
     }
     fn fact(&self, node: NodeId) -> Result<&NodeFacts, Error> {
+        if let Some(root) = self.inline_root(node) {
+            return Ok(&root.node);
+        }
         self.facts
             .node(NodeKey {
                 file: self.body.source.file,

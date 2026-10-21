@@ -67,7 +67,7 @@ fn fixture(stem: &str) -> Result<String, std::io::Error> {
     )
 }
 #[test]
-fn declared_output_lifetime_boundaries() -> Result<(), Box<dyn std::error::Error>> {
+fn declared_output_lifetime_results() -> Result<(), Box<dyn std::error::Error>> {
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
         "../obj/parallel/pa24/capture-execution/output-boundaries/{}",
         std::process::id()
@@ -87,11 +87,11 @@ fn declared_output_lifetime_boundaries() -> Result<(), Box<dyn std::error::Error
             .arg(path)
             .output()?;
         std::fs::write(folder.join(format!("{name}.stderr")), &output.stderr)?;
-        assert_eq!(output.status.code(), Some(1), "{name}");
-        assert!(
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "{name}: {}",
             String::from_utf8_lossy(&output.stderr)
-                .contains("closure result retains an input-only or local lifetime"),
-            "{name}"
         );
     }
     Ok(())
@@ -142,6 +142,11 @@ fn native_direct_execution() -> Result<(), Box<dyn std::error::Error>> {
         .iter()
         .filter(|case| case.2)
         .map(|&(name, stem, _)| fixture(stem).map(|source| (name, source)))
+        .chain(
+            ["reference-return", "once-partial-cleanup"]
+                .into_iter()
+                .map(|name| fixture(name).map(|source| (name, source))),
+        )
         .collect::<Result<Vec<_>, _>>()?;
     let cases = sources
         .iter()

@@ -1,6 +1,8 @@
 //! Inline constants retain independent bodies while their results refine caller types.
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "nested_evaluation/output.rs"]
+mod output;
 #[path = "helpers/resolve.rs"]
 mod source;
 use rustgm::{

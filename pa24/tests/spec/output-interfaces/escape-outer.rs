@@ -1,0 +1,1 @@
+pub fn run()->impl Fn()->&'static u8{let x=7u8;||&x}

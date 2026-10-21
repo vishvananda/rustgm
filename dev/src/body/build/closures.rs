@@ -50,7 +50,7 @@ pub(super) fn body(
             execution: closure.execution.map(|execution| execution.signature),
         },
         closure.semantic_source(),
-        result,
+        closure.internal_result.unwrap_or(result),
     );
     Builder::new(report, facts, scratch, body, scope_plan, query)
         .run_root(closure.body.node, Some(closure.parameters))

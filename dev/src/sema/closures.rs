@@ -22,6 +22,8 @@ pub struct Body {
     pub body: NodeKey,
     pub parameters: List,
     pub signature: TypeId,
+    /// Solved internal result before the lifetime-only formal signature fold.
+    pub internal_result: Option<TypeId>,
     pub owner: Option<DefId>,
     pub universals: u32,
     /// Leading body universals inherited from the immediate enclosing body.

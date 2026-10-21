@@ -3,6 +3,7 @@ use super::{Action, Bound, RegionId};
 use std::collections::HashMap;
 
 pub(super) enum Mode {
+    Observe,
     Scopes(Vec<std::ops::Range<u32>>),
     Close(Box<super::equation_closure::Closing>),
     Export(Box<super::export::Export>),
@@ -92,6 +93,9 @@ impl Mapping {
         };
         let replacement = if let Some(&replacement) = self.replacements.get(&key) {
             replacement
+        } else if matches!(self.mode, Mode::Observe) {
+            self.replacements.insert(key, key);
+            key
         } else if let Mode::Export(export) = &mut self.mode {
             export.region(key, &mut self.replacements, steps)?
         } else if let Mode::Open { next, .. } = &mut self.mode {
@@ -126,6 +130,28 @@ impl Mapping {
     }
 }
 impl Bound {
+    /// Inspect surrounding region occurrences without changing their identities.
+    /// Nested callable binders remain private to their own signatures.
+    pub(crate) fn observe_regions() -> Self {
+        let mut fold = Self::new(Vec::new());
+        fold.action = Action::Regions(Box::new(Mapping {
+            mode: Mode::Observe,
+            replacements: HashMap::new(),
+        }));
+        fold
+    }
+    pub(crate) fn observed_regions(&self) -> impl Iterator<Item = RegionId> + '_ {
+        let replacements = match &self.action {
+            Action::Regions(mapping) if matches!(mapping.mode, Mode::Observe) => {
+                Some(&mapping.replacements)
+            }
+            _ => None,
+        };
+        replacements
+            .into_iter()
+            .flatten()
+            .map(|(&region, _)| region)
+    }
     /// Open an innermost-first stack in one fold, retaining nested local binders
     /// and lowering captures outside the removed stack by its complete depth.
     /// Every alias interval belongs to the caller's existing proof scopes.
@@ -249,9 +275,11 @@ impl Bound {
             Action::Regions(mapping) => match mapping.mode {
                 Mode::Open { next, .. } => Some(next),
                 Mode::Export(ref export) => Some(export.next),
-                Mode::Restore { .. } | Mode::Rebase { .. } | Mode::Close(_) | Mode::Scopes(_) => {
-                    None
-                }
+                Mode::Observe
+                | Mode::Restore { .. }
+                | Mode::Rebase { .. }
+                | Mode::Close(_)
+                | Mode::Scopes(_) => None,
             },
             _ => None,
         }

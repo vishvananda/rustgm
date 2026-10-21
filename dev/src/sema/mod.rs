@@ -23,6 +23,7 @@ pub mod lifetimes;
 pub mod members;
 pub mod methods;
 pub mod model;
+pub mod nested_outputs;
 mod nominals;
 pub mod opaque;
 pub mod pattern_view;

@@ -204,6 +204,7 @@ impl Checker<'_> {
                     right,
                 }),
         );
+        self.retain_inline_root()?;
         Ok(hidden)
     }
     fn clear_body_inference(&mut self) {

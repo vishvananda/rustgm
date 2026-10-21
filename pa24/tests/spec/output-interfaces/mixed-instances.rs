@@ -1,0 +1,1 @@
+fn id<T>(x:T)->T{x}pub fn run()->u8{let x=7u8;let c=||&x;id(*c())+id(2u16) as u8}

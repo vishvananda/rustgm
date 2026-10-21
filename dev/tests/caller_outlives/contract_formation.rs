@@ -16,6 +16,7 @@ fn contract(f: &Fixture, ty: TypeId) -> Contract {
     Contract {
         key: rustgm::body::ir::BodyKey::Anonymous(source(1)),
         builtins: None,
+        output: None,
         source: source(1),
         signature: None,
         universals: 2,

@@ -1,0 +1,1 @@
+struct D<'a>{r:&'a mut u8}pub fn run()->u8{let mut x=7u8;let mut y=9u8;let d1=D{r:&mut x};let d2=D{r:&mut y};let c=move||{let _=&d2;d1};*c().r}

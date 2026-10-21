@@ -1,0 +1,220 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-constants",
+  "cases": [
+    {
+      "path": "tests/spec/output-interfaces/borrowed-outer.rs",
+      "expected_status": 0,
+      "source_sha256": "d9a95f0df6cf2913543b1a56c219944dbb1b0fb6d115f67d5ae38fa455de9fda",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/owned-outer.rs",
+      "expected_status": 1,
+      "source_sha256": "7db13613c26b5a7bf47b2979c48064afa4838aebbdc450f3e5456813ce104de0",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/mutable-receiver-escape.rs",
+      "expected_status": 1,
+      "source_sha256": "d34ecaa9e0781018ea5a616881d3e230b4a1fdb259b7733bc6c88f85133115af",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/borrowed-mutable-shared.rs",
+      "expected_status": 0,
+      "source_sha256": "4c75680c62ba303ac471cfaa6a8da160e519bcc5135208a5ecd1f19e4b4fae58",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/once-reference.rs",
+      "expected_status": 0,
+      "source_sha256": "1f40b573d655235ab165bc3a8eb6c76d384ca041a5680f3ca3ef8c94ab08d43c",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/once-aggregate.rs",
+      "expected_status": 0,
+      "source_sha256": "d4c6c8f26d15a838dba076ad10012602c0857438b1ea9ebd62e393f861794d1c",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/joined-borrows.rs",
+      "expected_status": 0,
+      "source_sha256": "868ba3da0d685f44f4091ee6ed6344f4792ba57d5085f831d94cfef3843f6f4d",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/escape-outer.rs",
+      "expected_status": 1,
+      "source_sha256": "346e48d3271c1964f74ecf7bac6fd8dfa30054170e7076e17128224a027bf86d",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/explicit-return.rs",
+      "expected_status": 0,
+      "source_sha256": "aade51b2cd4e6ef92ef6fa1f7a8af21abe229906f655a4c182c5557ab4b91087",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/branch-return.rs",
+      "expected_status": 0,
+      "source_sha256": "4c855ce8d619caa00daff178d64aedb9b25aaee4a4af863bafc7c57603893227",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/diverging-root.rs",
+      "expected_status": 0,
+      "source_sha256": "907b6cb487c29b11cef0332c9c35dd7b68a9a19028fbb160362c5f91ee0783bc",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/explicit-owned-return.rs",
+      "expected_status": 1,
+      "source_sha256": "5bde947bdb272288b41e0a5988bfef9dcdab742efcba23b09e48b05612bbc9d5",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/mixed-instances.rs",
+      "expected_status": 0,
+      "source_sha256": "cd4604f0af826077cb36232cee91676001b6b4fe489886090c4e10a9a76e46c2",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/repeated-slots.rs",
+      "expected_status": 0,
+      "source_sha256": "7ce30fc2f56f1734e36c6a46bcf039a9601d944ab3b984feceda664f5eb271fe",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    },
+    {
+      "path": "tests/spec/output-interfaces/once-cleanup.rs",
+      "expected_status": 0,
+      "source_sha256": "6450ef9b7dc0305e24199ef3babf826266d8b50ce34b8bc19032a8383be65e83",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
+    }
+  ]
+}

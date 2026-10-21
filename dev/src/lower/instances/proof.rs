@@ -23,6 +23,8 @@ pub(super) struct Builder {
     verifier: incremental::Verifier,
     recipes: Option<glue::Cache>,
     dependencies: Dependencies,
+    original_regions:
+        Option<std::collections::HashMap<crate::body::ir::BodyKey, borrow::regions::Body>>,
 }
 impl Builder {
     pub(super) fn new(mut program: Program) -> Result<(Self, Vec<Body>), &'static str> {
@@ -38,6 +40,7 @@ impl Builder {
                 verifier,
                 recipes,
                 dependencies: Dependencies::default(),
+                original_regions: None,
             },
             ordinary,
         ))
@@ -47,6 +50,80 @@ impl Builder {
             .get(index)
             .map(incremental::Proved::body)
             .ok_or("missing proved instance body")
+    }
+    pub(super) fn prepare_original_regions(
+        &mut self,
+        facts: &mut Declarations,
+        inputs: &std::collections::HashMap<crate::body::ir::BodyKey, Contract>,
+        bodies: &[Body],
+    ) -> Result<(), borrow::Error> {
+        if !bodies.iter().any(|body| {
+            inputs
+                .get(&body.key())
+                .is_some_and(|input| input.output.is_some())
+        }) {
+            return Ok(());
+        }
+        let sources: std::collections::HashSet<_> = bodies
+            .iter()
+            .filter_map(|body| {
+                inputs
+                    .get(&body.key())
+                    .and_then(|input| input.output.as_ref())
+                    .map(|link| [body.source, link.parent])
+            })
+            .flatten()
+            .collect();
+        let bodies: Vec<_> = bodies
+            .iter()
+            .filter(|body| sources.contains(&body.source))
+            .collect();
+        for body in &bodies {
+            let input = inputs.get(&body.key()).ok_or_else(|| borrow::Error {
+                node: Some(body.source),
+                message: "missing original output contract".into(),
+            })?;
+            input
+                .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+                .map_err(|message| borrow::Error {
+                    node: Some(body.source),
+                    message: message.into(),
+                })?;
+        }
+        let contracts = crate::body::regions::Contracts {
+            bodies: Vec::new(),
+            callables: &facts.lifetimes.callables,
+            nominal_requirements: &facts.lifetimes.nominal_requirements,
+        };
+        let regions = borrow::regions::check_nested_bodies(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &contracts,
+            bodies.iter().map(|&body| {
+                inputs
+                    .get(&body.key())
+                    .map(|input| (input, body))
+                    .ok_or_else(|| borrow::regions::Error {
+                        source: Some(body.source),
+                        message: "missing original output contract".into(),
+                    })
+            }),
+        )
+        .map_err(|e| borrow::Error {
+            node: e.source,
+            message: e.message,
+        })?;
+        let mut retained = std::collections::HashMap::with_capacity(regions.bodies.len());
+        for proof in regions.bodies {
+            if retained.insert(proof.key, proof).is_some() {
+                return Err(borrow::Error {
+                    node: None,
+                    message: "duplicate original region proof".into(),
+                });
+            }
+        }
+        self.original_regions = Some(retained);
+        Ok(())
     }
     pub(super) fn push(
         &mut self,
@@ -114,13 +191,23 @@ impl Builder {
             &facts.lifetimes.nominal_requirements,
             &facts.lifetimes.callables,
         );
-        let result = borrow::regions::check_one(
-            &facts.types,
-            &facts.lifetimes.variances,
-            &mut queries,
-            input,
-            &body,
-        );
+        let result = if body.instance.is_none() {
+            self.original_regions
+                .as_mut()
+                .and_then(|regions| regions.remove(&body.key()))
+                .map(Ok)
+        } else {
+            None
+        }
+        .unwrap_or_else(|| {
+            borrow::regions::check_one(
+                &facts.types,
+                &facts.lifetimes.variances,
+                &mut queries,
+                input,
+                &body,
+            )
+        });
         self.queries = queries.into_cache();
         let contract = result.map_err(|e| borrow::Error {
             node: e.source,
@@ -240,6 +327,16 @@ impl Builder {
         self,
         use_checked: impl FnOnce(&borrow::Checked<'_>) -> T,
     ) -> Result<T, borrow::Error> {
+        if self
+            .original_regions
+            .as_ref()
+            .is_some_and(|proofs| !proofs.is_empty())
+        {
+            return Err(borrow::Error {
+                node: None,
+                message: "unconsumed original nested region proof".into(),
+            });
+        }
         incremental::with_checked(
             self.program,
             self.bodies,

@@ -4293,6 +4293,23 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/thin-native/returned-lifetime-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.references"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/nested_evaluation/output.rs"
     }
   ],
   "additional_modes": [

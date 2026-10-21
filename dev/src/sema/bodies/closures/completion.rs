@@ -153,11 +153,18 @@ impl Checker<'_> {
             .inherited()
             .map_err(|e| self.error(source, e))?;
         let signature = solved.types[metadata.signature.0 as usize];
+        let Some(Kind::Function {
+            result: internal_result,
+            ..
+        }) = self.facts.types.kind(signature)
+        else {
+            return Err(self.error(source, "missing solved closure result"));
+        };
         let signature = self.closure_contract_signature(source, signature, solved)?;
         let Some(Kind::Function { result, .. }) = self.facts.types.kind(signature) else {
             return Err(self.error(source, "missing completed closure signature"));
         };
-        self.state.result = result;
+        self.state.result = internal_result;
         let execution = self.publish_capture_environment(solved, signature)?;
         let body = Body {
             identity,
@@ -165,6 +172,7 @@ impl Checker<'_> {
             body: root,
             parameters,
             signature,
+            internal_result: (internal_result != result).then_some(internal_result),
             owner: self.state.environment_owner,
             universals: self.state.body_binders,
             inherited,

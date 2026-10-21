@@ -410,6 +410,9 @@ fn prepare_ordinary(
     }
     let (mut program, bodies) =
         proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
+    program
+        .prepare_original_regions(facts, &inputs, &bodies)
+        .map_err(|e| diagnostic(report, e.node, e.message))?;
     let mut ordinary = Ordinary::default();
     for body in bodies {
         let source = body.source;

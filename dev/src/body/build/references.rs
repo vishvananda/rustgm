@@ -11,15 +11,8 @@ impl Builder<'_> {
         let Some(mut place) = place.filter(|_| self.current.is_some()) else {
             return Ok(());
         };
-        let key = super::NodeKey {
-            node,
-            ..self.body.source
-        };
         let reference = self
-            .facts
-            .reference_adjustments
-            .get(&key)
-            .copied()
+            .reference_adjustment(node)
             .ok_or_else(|| self.error(node, "missing reference conversion selection"))?;
         let adjustment = self
             .fact(node)?
@@ -40,9 +33,9 @@ impl Builder<'_> {
             BorrowKind::Immediate
         };
         let value = self.evaluate(node, reference.borrow, Rvalue::Borrow { place, kind })?;
-        let value = if self.facts.pointer_adjustments.contains_key(&key) {
+        let value = if self.pointer_adjustment(node).is_some() {
             self.selected_pointer(node, value, adjustment.target)?
-        } else if self.facts.unsizing_adjustments.contains_key(&key) {
+        } else if self.unsizing_adjustment(node).is_some() {
             self.selected_unsizing(node, value, adjustment.target)?
         } else {
             self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?
@@ -55,14 +48,8 @@ impl Builder<'_> {
         value: ValueId,
         target: TypeId,
     ) -> Result<ValueId, Error> {
-        let key = super::NodeKey {
-            node,
-            ..self.body.source
-        };
-        let intermediate = *self
-            .facts
-            .pointer_adjustments
-            .get(&key)
+        let intermediate = self
+            .pointer_adjustment(node)
             .ok_or_else(|| self.error(node, "missing selected pointer conversion"))?;
         let value = self.evaluate(
             node,
@@ -72,7 +59,7 @@ impl Builder<'_> {
                 operand: value,
             },
         )?;
-        if self.facts.unsizing_adjustments.contains_key(&key) {
+        if self.unsizing_adjustment(node).is_some() {
             self.selected_unsizing(node, value, target)
         } else if intermediate != target {
             self.evaluate(node, target, Rvalue::Constrain(value))
@@ -86,14 +73,8 @@ impl Builder<'_> {
         value: ValueId,
         target: TypeId,
     ) -> Result<ValueId, Error> {
-        let key = super::NodeKey {
-            node,
-            ..self.body.source
-        };
-        let conversion = *self
-            .facts
-            .unsizing_adjustments
-            .get(&key)
+        let conversion = self
+            .unsizing_adjustment(node)
             .ok_or_else(|| self.error(node, "missing selected unsizing conversion"))?;
         self.evaluate(node, target, Rvalue::Unsize { value, conversion })
     }

@@ -1,0 +1,1 @@
+pub fn run(flag:bool)->u8{let x=7u8;let y=9u8;let c=||if flag{&x}else{&y};*c()}

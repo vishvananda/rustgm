@@ -8,6 +8,7 @@ pub(in crate::sema::bodies) struct Interface {
     annotations: Vec<RegionId>,
     inherited: usize,
     contextual: Option<u32>,
+    pub(in crate::sema::bodies) outputs: Option<Box<super::super::nested::output::Ports>>,
 }
 impl Interface {
     pub fn new(
@@ -35,6 +36,7 @@ impl Interface {
             annotations,
             inherited: enclosing.len(),
             contextual,
+            outputs: None,
         })
     }
     pub fn count(&self) -> Result<u32, &'static str> {
@@ -66,6 +68,14 @@ impl Interface {
             if let Some(&target) = mapping.get(&slot(index)?) {
                 mapping.insert(alias, target);
             }
+        }
+        if let Some(outputs) = &self.outputs {
+            mapping.extend(
+                outputs
+                    .pairs
+                    .iter()
+                    .map(|(&private, &caller)| (private, caller)),
+            );
         }
         if !output {
             for (index, &annotation) in self.annotations.iter().enumerate() {

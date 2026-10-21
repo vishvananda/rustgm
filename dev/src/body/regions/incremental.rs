@@ -131,6 +131,7 @@ impl Collector {
     }
 
     fn populate(&mut self, facts: &Declarations, contract: &mut Contract) {
+        super::output_interface(facts, contract);
         if let Some(bucket) = self.pending.remove(&contract.source) {
             contract
                 .obligations

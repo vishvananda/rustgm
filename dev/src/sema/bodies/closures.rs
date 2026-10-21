@@ -29,7 +29,7 @@ pub(super) struct Metadata {
     bindings: Vec<(crate::resolve::model::DefId, TermId)>,
     captures: Option<Box<uses::Captures>>,
     fields: Vec<TermId>,
-    lifetimes: universes::Interface,
+    pub(super) lifetimes: universes::Interface,
 }
 impl Checker<'_> {
     pub(super) fn enter_closure(
@@ -225,6 +225,7 @@ impl Checker<'_> {
             .types
             .complete_closure(metadata.identity, kind)
             .map_err(|e| self.error(body, e))?;
+        self.prepare_nested_output(&mut metadata.lifetimes, parent.body)?;
         self.closure_result_boundary(&metadata.lifetimes)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
         let mut identity = metadata

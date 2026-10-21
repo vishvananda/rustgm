@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct D<'a>{r:&'a mut u8}fn identity<'a>(d:D<'a>)->D<'a>{d}pub fn run()->u8{let mut x=7u8;let d=D{r:&mut x};*identity(d).r}fn main(){check(run()==7);}

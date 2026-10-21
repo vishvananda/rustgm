@@ -66,3 +66,9 @@ Evidence is under `obj/parallel/pa25-inline-const/owner-root/`, including
 `inferred-direct.trace`. The prior immutable inline performance observations
 remain unchanged; the earlier unexplained scalar RSS increase remains unresolved.
 No full matrix, assignment activation or reference generation is implied.
+
+The later nested-output checkpoint in [pa25-nested-output.md](pa25-nested-output.md)
+closes the two original uncontextual reference-return cases with unchanged
+source bytes, CLI acceptance and independent native comparison. The local
+written `&u8` annotation frontier remains explicit. The observations above
+remain the historical qualification of the owner/root-only checkpoint.

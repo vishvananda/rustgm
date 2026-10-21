@@ -7,8 +7,16 @@ impl Queries<'_> {
         let result = self
             .typing
             .facts
-            .node(source)
-            .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
+            .inline_constants
+            .as_deref()
+            .and_then(|registry| registry.get(source))
+            .and_then(|body| body.result)
+            .or_else(|| {
+                self.typing
+                    .facts
+                    .node(source)
+                    .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
+            })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant eligibility type"))?;
         let result = self.specialized_type(source, result)?;
         let target = Target::Expression {
@@ -30,8 +38,16 @@ impl Queries<'_> {
         let result = self
             .typing
             .facts
-            .node(source)
-            .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
+            .inline_constants
+            .as_deref()
+            .and_then(|registry| registry.get(source))
+            .and_then(|body| body.result)
+            .or_else(|| {
+                self.typing
+                    .facts
+                    .node(source)
+                    .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
+            })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant execution type"))?;
         let result = self.specialized_type(source, result)?;
         let request = Request {

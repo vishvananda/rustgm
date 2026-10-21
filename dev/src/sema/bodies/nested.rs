@@ -1,5 +1,6 @@
 //! Nested body states are parked in one flat scheduler with body-specific payloads.
 mod completion;
+pub(super) mod output;
 use super::{Checker, Dependency, Error, NodeId, State, Work, closures, inline};
 use crate::{
     sema::traits::selection::Source,
@@ -24,6 +25,18 @@ enum Kind {
 }
 
 impl Payload {
+    fn lifetimes_mut(&mut self) -> &mut closures::universes::Interface {
+        match self {
+            Self::Closure(value) => &mut value.lifetimes,
+            Self::Inline(value) => &mut value.lifetimes,
+        }
+    }
+    fn lifetimes(&self) -> &closures::universes::Interface {
+        match self {
+            Self::Closure(value) => &value.lifetimes,
+            Self::Inline(value) => &value.lifetimes,
+        }
+    }
     const fn kind(&self) -> Kind {
         match self {
             Self::Closure(_) => Kind::Closure,
@@ -136,6 +149,16 @@ impl Checker<'_> {
         let Some(mut scheduler) = self.state.closures.take() else {
             return Ok(());
         };
+        if let Some(index) = scheduler.active {
+            let parent = scheduler
+                .stack
+                .last()
+                .map(|(_, parent)| parent.body)
+                .ok_or_else(|| {
+                    self.error(self.state.body.node, "missing output interface parent")
+                })?;
+            self.prepare_nested_output(scheduler.entries[index].payload.lifetimes_mut(), parent)?;
+        }
         let result = match kind {
             Some(Kind::Closure) => self.export_closure_inputs(&mut scheduler),
             Some(Kind::Inline) => self.export_inline_inputs(&mut scheduler),
@@ -150,6 +173,7 @@ impl Checker<'_> {
             Some(Kind::Closure) => self.publish_closure_body(solved),
             Some(Kind::Inline) => self.publish_inline_body(solved),
             None => Ok(()),
-        }
+        }?;
+        self.publish_active_output()
     }
 }

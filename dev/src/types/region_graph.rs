@@ -1,7 +1,9 @@
 //! Bounded outlives propagation; universal assumptions never become obligations.
 mod components;
 mod members;
+mod output;
 mod quantifier_elimination;
+pub(crate) use output::{Conditional, OutputError};
 mod verify;
 pub use members::{ChoicesId, MembershipId};
 use std::collections::{HashMap, HashSet};
@@ -36,6 +38,7 @@ impl Kind {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
+    UnsupportedOutput,
     Identity,
     Budget,
     Membership {
@@ -53,6 +56,7 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         out.write_str(match self {
+            Self::UnsupportedOutput => "conditional nested output shape is not implemented",
             Self::Identity => "invalid lifetime constraint identity",
             Self::Budget => "lifetime constraint work budget exceeded",
             Self::Membership { .. } => "hidden lifetime has no unique permitted choice",
@@ -265,9 +269,13 @@ impl Graph {
     ///
     /// # Errors
     /// Reports an unentailed universal relationship or bounded-resource failure.
-    pub fn solve(mut self) -> Result<Solution, Error> {
+    pub fn solve(self) -> Result<Solution, Error> {
+        self.solve_charged(0)
+    }
+    fn solve_charged(mut self, prior: usize) -> Result<Solution, Error> {
         let member_steps = self.select_members()?;
         let mut solver = Solver::new(&self);
+        solver.charge_many(prior)?;
         solver.charge_many(member_steps)?;
         solver.propagate(|longer, shorter, source| {
             Err(Error::Unsatisfied {

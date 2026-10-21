@@ -1,0 +1,1 @@
+pub fn run()->u8{let x=7u8;let c=||(&x,&x);let(a,b)=c();*a+*b}

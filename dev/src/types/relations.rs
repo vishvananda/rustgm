@@ -1,4 +1,5 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
+type OutputConditions = Vec<(RegionId, RegionId, u32)>;
 mod ancestry;
 mod equivalence;
 pub(crate) use equivalence::RegionEqualities;
@@ -755,6 +756,52 @@ impl<'a> Constraints<'a> {
                 parameters: self.parameters,
             },
         })
+    }
+
+    pub(crate) fn prove_output(
+        mut self,
+        interface: &[RegionId],
+    ) -> Result<(Proof, OutputConditions), super::region_graph::OutputError> {
+        use super::region_graph::OutputError;
+        if self.projected.is_some() {
+            return Err(OutputError::Unsupported);
+        }
+        let mut regions = Vec::with_capacity(interface.len());
+        let mut names = HashMap::from([(Region::STATIC, RegionId::STATIC)]);
+        for &id in interface {
+            let region = self.region(id, Scope(0))?;
+            if names.insert(region, id).is_some() {
+                return Err(Error::Identity.into());
+            }
+            regions.push(region);
+        }
+        let end = self.binders.first().ok_or(Error::Identity)?.end;
+        self.arguments.truncate(end);
+        let super::region_graph::Conditional {
+            solution,
+            conditions,
+        } = self.graph.prove_output(&regions)?;
+        let conditions = conditions
+            .into_iter()
+            .map(|(longer, shorter, source)| {
+                Ok((
+                    *names.get(&longer).ok_or(Error::Identity)?,
+                    *names.get(&shorter).ok_or(Error::Identity)?,
+                    source,
+                ))
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok((
+            Proof {
+                solution,
+                identities: Identities {
+                    variables: self.variables,
+                    universals: self.arguments,
+                    parameters: self.parameters,
+                },
+            },
+            conditions,
+        ))
     }
 }
 

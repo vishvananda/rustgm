@@ -92,7 +92,7 @@ impl Solver {
             Error::Budget => "runtime lifetime verification work budget exceeded",
             Error::Identity => "invalid runtime lifetime verification identity",
             Error::Verification { .. } => "required type does not outlive its live uses",
-            Error::Unsatisfied { .. } | Error::Membership { .. } => {
+            Error::UnsupportedOutput | Error::Unsatisfied { .. } | Error::Membership { .. } => {
                 "invalid symbolic lifetime verification"
             }
         })?;

@@ -16,6 +16,7 @@ pub struct Body {
     pub hidden_regions: Vec<crate::types::opaque::RegionChoice>,
     pub identities: super::constraints::Identities,
     pub builtins: Option<std::sync::Arc<crate::body::regions::BuiltinRequirements>>,
+    pub output: Option<super::OutputSummary>,
 }
 pub struct Analysis {
     pub bodies: Vec<Body>,
@@ -161,7 +162,37 @@ pub(crate) fn check_one(
             message: "instance contract does not match its body".into(),
         });
     }
-    body(types, variances, queries, input, Some(cfg))
+    let result = body(types, variances, queries, input, Some(cfg), &[])?;
+    if result
+        .output
+        .as_ref()
+        .is_some_and(super::output::Summary::requires_parent)
+    {
+        return Err(Error {
+            source: Some(input.source),
+            message: "nested output requires its checked parent contract".into(),
+        });
+    }
+    Ok(result)
+}
+
+pub(crate) fn check_nested_bodies<'a>(
+    types: &Store,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    inputs: impl Iterator<Item = Result<(&'a Contract, &'a crate::body::ir::Body), Error>>,
+) -> Result<Analysis, Error> {
+    let inputs = inputs.map(|pair| {
+        let (input, body) = pair?;
+        if input.key != body.key() || input.source != body.source || body.instance.is_some() {
+            return Err(Error {
+                source: Some(body.source),
+                message: "nested original proof has mismatched CFG ownership".into(),
+            });
+        }
+        Ok((input, Some(body)))
+    });
+    super::output::prove(types, variances, contracts, inputs)
 }
 fn run(
     types: &Store,
@@ -198,40 +229,35 @@ fn prove<'a>(
     contracts: &Contracts<'_>,
     inputs: impl Iterator<Item = Result<(&'a Contract, Option<&'a crate::body::ir::Body>), Error>>,
 ) -> Result<Analysis, Error> {
+    if contracts
+        .bodies
+        .iter()
+        .any(|contract| contract.output.is_some())
+    {
+        return super::output::prove(types, variances, contracts, inputs);
+    }
     let mut queries = Queries::new(types, contracts.nominal_requirements, contracts.callables);
     let mut bodies = Vec::with_capacity(inputs.size_hint().0);
     for input in inputs {
         let (input, cfg) = input?;
-        bodies.push(body(types, variances, &mut queries, input, cfg)?);
+        bodies.push(body(types, variances, &mut queries, input, cfg, &[])?);
     }
     Ok(Analysis { bodies })
 }
 
-fn body(
+pub(super) fn body(
     types: &Store,
     variances: &Variances,
     queries: &mut Queries<'_>,
     input: &Contract,
     cfg: Option<&crate::body::ir::Body>,
+    children: &[&super::output::Summary],
 ) -> Result<Body, Error> {
     let error = |message| Error {
         source: Some(input.source),
         message,
     };
-    if let Some(crate::body::ir::Body {
-        owner:
-            crate::body::ir::Owner::Closure {
-                execution: Some(signature),
-                ..
-            },
-        ..
-    }) = cfg
-        && input.signature != Some(*signature)
-    {
-        return Err(error(
-            "closure proof does not select its checked execution signature".into(),
-        ));
-    }
+    super::interfaces::validate_body(input, cfg)?;
     let mut constraints = Constraints::new(types, variances, input.universals, 1_000_000)
         .map_err(|e| error(e.to_string()))?;
     for id in &input.parameters {
@@ -242,19 +268,23 @@ fn body(
     for &(a, b) in &input.assumptions {
         constraints.assume(a, b).map_err(|e| error(e.to_string()))?;
     }
-    if let Some(signature) = input.signature {
-        constraints
-            .assume_signature(queries, signature)
-            .map_err(error)?;
-    }
+    super::interfaces::assume_inputs(types, queries, input, &mut constraints)?;
     constraints
         .assume_outlives_clauses(queries, input.type_assumptions.iter().copied())
         .map_err(error)?;
-    let provenance = cfg
+    let mut provenance = cfg
         .map(|cfg| super::places::bounds(types, cfg))
         .transpose()
         .map_err(|message| error(message.into()))?
         .unwrap_or_default();
+    for child in children {
+        if child.parent != input.source {
+            return Err(error(
+                "nested output summary belongs to another parent".into(),
+            ));
+        }
+        provenance.extend(child.requirements.iter().copied());
+    }
     let first_proof = input.obligations.len().saturating_add(provenance.len());
     let obligations = || input.obligations.iter().chain(&provenance).enumerate();
     let mut members = super::membership::Requests::new(types);
@@ -280,7 +310,8 @@ fn body(
         cfg.is_some(),
         &mut members,
     )?;
-    let proof = constraints.prove().map_err(|e| {
+    super::interfaces::require_return(types, input, cfg, &mut constraints, first_proof)?;
+    let (proof, output) = super::output::finish(constraints, input).map_err(|e| {
         let source = match e {
             graph::Error::Unsatisfied { source, .. }
             | graph::Error::Verification { source }
@@ -315,6 +346,7 @@ fn body(
         solution: proof.solution,
         identities: proof.identities,
         builtins: input.builtins.clone(),
+        output,
     })
 }
 fn require_obligations<'a>(

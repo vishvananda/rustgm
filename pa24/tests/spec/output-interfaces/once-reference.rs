@@ -1,0 +1,1 @@
+pub fn run()->u8{let mut x=7u8;let r=&mut x;let c=move||r;*c()}

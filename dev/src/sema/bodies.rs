@@ -876,6 +876,24 @@ impl Checker<'_> {
             let key = self.key(node);
             let ty = solved.types[term.0 as usize];
             self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
+            if key != self.state.body
+                && self
+                    .facts
+                    .inline_constants
+                    .as_deref()
+                    .and_then(|registry| registry.get(key))
+                    .is_some_and(|body| body.root.is_some())
+            {
+                self.facts
+                    .node_mut(key)
+                    .ok_or_else(|| {
+                        Declarations::error(self.report, key, "missing inline expression facts")
+                    })?
+                    .adjustment = None;
+                self.facts.reference_adjustments.remove(&key);
+                self.facts.pointer_adjustments.remove(&key);
+                self.facts.unsizing_adjustments.remove(&key);
+            }
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?

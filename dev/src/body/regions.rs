@@ -1,4 +1,5 @@
 //! Group typed lifetime facts by body without repeating resolution or inference.
+pub use crate::sema::nested_outputs::Link as OutputLink;
 mod clause_terms;
 mod incremental;
 use super::ir::NodeKey;
@@ -59,6 +60,7 @@ pub struct Contract {
     pub obligations: Vec<Obligation>,
     pub proofs: Vec<Proof>,
     pub builtins: Option<std::sync::Arc<crate::sema::model::BuiltinRequirements>>,
+    pub output: Option<std::sync::Arc<crate::sema::nested_outputs::Link>>,
 }
 impl Contract {
     /// Materialize demanded nominal requirements before borrowing immutable proof facts.
@@ -91,6 +93,7 @@ impl Contract {
             obligations: Vec::new(),
             proofs: Vec::new(),
             builtins: None,
+            output: None,
         }
     }
 }
@@ -133,6 +136,9 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         bodies.push(Contract::constant(source));
     }
     constructors(facts, &mut bodies, &mut index)?;
+    for contract in &mut bodies {
+        output_interface(facts, contract);
+    }
     incremental::Cursor::default().visit(facts, |body, source, fact| {
         let target = index
             .get(&body)
@@ -356,5 +362,17 @@ fn parameter_contract(
         obligations: Vec::new(),
         proofs: Vec::new(),
         builtins: None,
+        output: None,
     })
+}
+
+fn output_interface(facts: &Declarations, contract: &mut Contract) {
+    contract.output = facts
+        .nested_outputs
+        .as_deref()
+        .and_then(|outputs| outputs.get(&contract.source))
+        .cloned();
+    if let Some(output) = &contract.output {
+        contract.universals = contract.universals.max(output.universals);
+    }
 }

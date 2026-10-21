@@ -1,0 +1,1 @@
+pub fn run(){let _c=||const{let x=7u8;&x};}

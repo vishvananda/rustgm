@@ -197,6 +197,7 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
         bodies: vec![Contract {
             key: rustgm::body::ir::BodyKey::Anonymous(source),
             builtins: None,
+            output: None,
             source,
             signature: None,
             universals: 1,

@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "stage": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-constants",
+  "cases": [
+    {
+      "path": "tests/spec/inline-output/inferred-inline.rs",
+      "expected_status": 0,
+      "source_sha256": "e65e48bfe89fa6aee4ddb5be69a6b722354dd13d2c9deb386af68bef7a4f3399",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa25.inline-const"
+      ]
+    },
+    {
+      "path": "tests/spec/inline-output/inline-local-escape.rs",
+      "expected_status": 1,
+      "source_sha256": "9475a8356e05814dc311b79d5b04e7bb5919c314fa9f95c9c778d691a41edcee",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa25.inline-const"
+      ]
+    },
+    {
+      "path": "tests/spec/inline-output/explicit-inline-return.rs",
+      "expected_status": 0,
+      "source_sha256": "5bdf4da582088536d9f8e4ac243587156e90f4a14366afacb58a04cec66d431e",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa25.inline-const"
+      ]
+    }
+  ]
+}

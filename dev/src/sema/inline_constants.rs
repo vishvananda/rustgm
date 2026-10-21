@@ -27,10 +27,17 @@ pub struct Body {
     pub result: Option<TypeId>,
     pub evaluation: Evaluation,
     pub value: Option<Constant>,
+    pub root: Option<Box<RootFacts>>,
     parent: Option<Id>,
     first_child: Option<Id>,
     last_child: Option<Id>,
     next_sibling: Option<Id>,
+}
+pub struct RootFacts {
+    pub node: super::model::NodeFacts,
+    pub reference: Option<super::model::ReferenceAdjustment>,
+    pub pointer: Option<TypeId>,
+    pub unsizing: Option<crate::types::unsizing::Conversion<TypeId>>,
 }
 
 /// This table exists only for crates containing inline bodies. Each source is
@@ -94,6 +101,7 @@ impl Registry {
             result: None,
             evaluation,
             value: None,
+            root: None,
             parent,
             first_child: None,
             last_child: None,
@@ -124,6 +132,20 @@ impl Registry {
         }
         body.result = Some(result);
         self.publications += 1;
+        Ok(())
+    }
+    pub(crate) fn retain_root(
+        &mut self,
+        source: NodeKey,
+        root: RootFacts,
+    ) -> Result<(), &'static str> {
+        let id = self.lookup(source).ok_or("missing inline root owner")?;
+        let bytes = self.retained_bytes.saturating_add(size_of::<RootFacts>());
+        if bytes > 64 * 1024 * 1024 || self.bodies[id.0 as usize].root.is_some() {
+            return Err("inline root is duplicate or exceeds storage budget");
+        }
+        self.bodies[id.0 as usize].root = Some(Box::new(root));
+        self.retained_bytes = bytes;
         Ok(())
     }
 
