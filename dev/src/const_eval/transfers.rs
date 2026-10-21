@@ -1,0 +1,104 @@
+//! Exact typed pointer transfers reuse raw storage checks without creating references.
+use super::{
+    Constant, Failure, Machine,
+    memory::{RawAccess, Resolved},
+};
+use crate::{
+    resolve::model::DefId,
+    sema::values::Reader,
+    support::intrinsics::{ConstPermission, Intrinsic},
+    types::{Kind, TypeId, callable::Convention, instance::Instance},
+};
+impl Machine<'_, '_> {
+    fn memory_pointee(&self, intrinsic: Intrinsic, instance: Instance) -> Result<TypeId, Failure> {
+        let facts = self.evaluator.facts();
+        let Some(Kind::FunctionItem {
+            item, signature, ..
+        }) = facts.types.kind(instance.ty())
+        else {
+            return Err("pointer memory operation requires a selected callable".into());
+        };
+        if facts.intrinsics.identify(DefId(item.0)) != Some(intrinsic) {
+            return Err("pointer memory operation identity mismatch".into());
+        }
+        let Some(Kind::Function {
+            parameters,
+            result,
+            unsafe_: true,
+            convention: Convention::RUST,
+            ..
+        }) = facts.types.kind(signature)
+        else {
+            return Err("pointer memory operation requires an unsafe Rust signature".into());
+        };
+        let inputs = facts
+            .types
+            .list(parameters)
+            .ok_or("missing pointer memory parameters")?;
+        let Some(Kind::Pointer { mutable, pointee }) =
+            inputs.first().and_then(|&ty| facts.types.kind(ty))
+        else {
+            return Err("pointer memory operation requires a typed raw pointer".into());
+        };
+        let writing = intrinsic == Intrinsic::Write;
+        if mutable != writing
+            || inputs.len() != if writing { 2 } else { 1 }
+            || writing && (inputs[1] != pointee || result != TypeId::UNIT)
+            || !writing && result != pointee
+        {
+            return Err("pointer memory operation signature mismatch".into());
+        }
+        Ok(pointee)
+    }
+    pub(super) fn intrinsic(
+        &mut self,
+        intrinsic: Intrinsic,
+        instance: Instance,
+        arguments: &[Constant],
+    ) -> Result<Option<Constant>, Failure> {
+        if intrinsic.descriptor().constant == ConstPermission::RuntimeOnly {
+            return Err("runtime-only intrinsic is not allowed during constant evaluation".into());
+        }
+        if !intrinsic.is_memory() {
+            return Err("constant intrinsic execution is not implemented".into());
+        }
+        let ty = self.memory_pointee(intrinsic, instance)?;
+        self.charge(1)?;
+        if !self.memory.copy_intrinsics.contains(&instance) {
+            let (properties, work) = Reader::new(self.evaluator.facts())
+                .copy_properties(ty, self.limits.steps.saturating_sub(self.work.steps))?;
+            self.charge(work)?;
+            self.work.copy_steps = self
+                .work
+                .copy_steps
+                .checked_add(work)
+                .ok_or("constant Copy work overflow")?;
+            if !properties.copy {
+                return Err("non-Copy pointer memory operations are not implemented".into());
+            }
+            self.reserve_cells(1)?;
+            self.memory.copy_intrinsics.insert(instance);
+        }
+        let writing = intrinsic == Intrinsic::Write;
+        if arguments.len() != if writing { 2 } else { 1 } {
+            return Err("pointer memory operation argument count mismatch".into());
+        }
+        let address = arguments[0];
+        let place = Resolved {
+            address,
+            ty,
+            raw: Some(RawAccess {
+                location: address.location(),
+                ty,
+            }),
+            union: None,
+        };
+        if writing {
+            self.check_raw_write(place)?;
+            self.write_place(place, arguments[1])?;
+            Ok(Some(self.evaluator.fields(&[], None)?))
+        } else {
+            self.read(place)
+        }
+    }
+}

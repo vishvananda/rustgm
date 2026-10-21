@@ -62,11 +62,11 @@ impl Resolver<'_> {
             name == "ptr"
                 || Intrinsic::ALL
                     .into_iter()
-                    .any(|kind| kind.is_volatile() && kind.name() == name)
+                    .any(|kind| kind.is_pointer() && kind.name() == name)
         });
         if requested {
             for kind in Intrinsic::ALL {
-                if kind.is_volatile() {
+                if kind.is_pointer() {
                     self.prepare_intrinsic(c, node, kind)?;
                 }
             }
@@ -164,10 +164,7 @@ impl Resolver<'_> {
             return Err(self.error(c, node, "canonical comparison Result changed identity"));
         }
         self.facts.intrinsics.comparison_result = Some(identity);
-        for kind in Intrinsic::ALL
-            .into_iter()
-            .filter(|kind| !kind.is_volatile())
-        {
+        for kind in Intrinsic::ALL.into_iter().filter(|kind| kind.is_atomic()) {
             let definition = self.builtin_definition(
                 Context { scope, ..c },
                 node,

@@ -250,7 +250,7 @@ fn volatile_instances_share_canonical_identity_and_additive_body_work()
             )?;
         }
         let (report, facts) = semantic::analyze(&text)?;
-        assert_eq!(facts.intrinsics.iter().count(), 2);
+        assert_eq!(facts.intrinsics.iter().count(), 4);
         assert_ne!(
             facts
                 .intrinsics

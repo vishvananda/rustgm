@@ -25,7 +25,7 @@ impl Checker<'_> {
             let Some(intrinsic) = self.facts.intrinsics.identify(call.method) else {
                 continue;
             };
-            if intrinsic.is_volatile() {
+            if !intrinsic.is_atomic() {
                 continue;
             }
             let Some(&argument) = self

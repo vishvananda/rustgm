@@ -14,6 +14,8 @@ pub enum Intrinsic {
     AtomicFetchOr,
     AtomicFetchXor,
     AtomicFetchNand,
+    Read,
+    Write,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -31,7 +33,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 13] = [
+    pub const ALL: [Self; 15] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -45,6 +47,8 @@ impl Intrinsic {
         Self::AtomicFetchOr,
         Self::AtomicFetchXor,
         Self::AtomicFetchNand,
+        Self::Read,
+        Self::Write,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -62,6 +66,8 @@ impl Intrinsic {
             Self::AtomicFetchOr => 10,
             Self::AtomicFetchXor => 11,
             Self::AtomicFetchNand => 12,
+            Self::Read => 13,
+            Self::Write => 14,
         }
     }
     #[must_use]
@@ -80,11 +86,42 @@ impl Intrinsic {
             Self::AtomicFetchOr => "fetch_or",
             Self::AtomicFetchXor => "fetch_xor",
             Self::AtomicFetchNand => "fetch_nand",
+            Self::Read => "read",
+            Self::Write => "write",
         }
     }
     #[must_use]
     pub const fn is_volatile(self) -> bool {
         matches!(self, Self::ReadVolatile | Self::WriteVolatile)
+    }
+    #[must_use]
+    pub const fn is_memory(self) -> bool {
+        matches!(self, Self::Read | Self::Write)
+    }
+    #[must_use]
+    pub const fn is_pointer(self) -> bool {
+        self.is_volatile() || self.is_memory()
+    }
+    #[must_use]
+    pub const fn is_atomic(self) -> bool {
+        matches!(
+            self,
+            Self::AtomicLoad
+                | Self::AtomicStore
+                | Self::AtomicSwap
+                | Self::AtomicFetchAdd
+                | Self::AtomicCompareExchange
+                | Self::AtomicCompareExchangeWeak
+                | Self::AtomicFetchSub
+                | Self::AtomicFetchAnd
+                | Self::AtomicFetchOr
+                | Self::AtomicFetchXor
+                | Self::AtomicFetchNand
+        )
+    }
+    #[must_use]
+    pub const fn writes_pointer(self) -> bool {
+        matches!(self, Self::Write | Self::WriteVolatile)
     }
     #[must_use]
     pub const fn atomic_order_valid(self, order: super::atomic_ordering::Ordering) -> bool {
@@ -100,7 +137,7 @@ impl Intrinsic {
             | Self::AtomicFetchOr
             | Self::AtomicFetchXor
             | Self::AtomicFetchNand => true,
-            Self::ReadVolatile | Self::WriteVolatile => false,
+            Self::ReadVolatile | Self::WriteVolatile | Self::Read | Self::Write => false,
         }
     }
     #[must_use]
@@ -123,12 +160,16 @@ impl Intrinsic {
     #[must_use]
     pub const fn descriptor(self) -> Descriptor {
         Descriptor {
-            safety: if self.is_volatile() {
+            safety: if self.is_pointer() {
                 Safety::Unsafe
             } else {
                 Safety::Safe
             },
-            constant: ConstPermission::RuntimeOnly,
+            constant: if self.is_memory() {
+                ConstPermission::Allowed
+            } else {
+                ConstPermission::RuntimeOnly
+            },
         }
     }
 }

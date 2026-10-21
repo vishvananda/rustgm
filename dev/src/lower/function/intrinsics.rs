@@ -11,7 +11,6 @@ impl Lower<'_, '_> {
         instance: Instance,
         arguments: ValueList,
     ) -> Result<Selected, &'static str> {
-        let ty = self.context.intrinsic_type(intrinsic, instance)?;
         if !intrinsic.is_volatile() {
             let Some(crate::types::Kind::FunctionItem { signature, .. }) =
                 self.context.types.kind(instance.ty())
@@ -31,6 +30,10 @@ impl Lower<'_, '_> {
                 result,
             );
         }
+        let super::Representation::Scalar(ty) = self.context.intrinsic_type(intrinsic, instance)?
+        else {
+            return Err("volatile operation requires a scalar representation");
+        };
         let inputs = self.body.arguments(arguments);
         let pointer = self
             .value(*inputs.first().ok_or("missing volatile pointer operand")?)?

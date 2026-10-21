@@ -63,7 +63,7 @@ impl Checker<'_> {
         Ok((formal, subject))
     }
     fn intrinsic_signature(&mut self, declaration: BuiltinIntrinsic) -> Result<(), Error> {
-        if !declaration.kind.is_volatile() {
+        if declaration.kind.is_atomic() {
             return self.atomic_signature(declaration);
         }
         let (formal, subject) = self.intrinsic_parameter(declaration)?;
@@ -77,16 +77,12 @@ impl Checker<'_> {
         let pointer = self.intern(
             origin,
             Type::Pointer {
-                mutable: kind == Intrinsic::WriteVolatile,
+                mutable: kind.writes_pointer(),
                 pointee: subject,
             },
         )?;
         let inputs = [pointer, subject];
-        let count = if kind == Intrinsic::ReadVolatile {
-            1
-        } else {
-            2
-        };
+        let count = if kind.writes_pointer() { 2 } else { 1 };
         let parameters = self
             .facts
             .types
@@ -97,10 +93,10 @@ impl Checker<'_> {
             Type::Function {
                 bound_regions: 0,
                 parameters,
-                result: if kind == Intrinsic::ReadVolatile {
-                    subject
-                } else {
+                result: if kind.writes_pointer() {
                     TypeId::UNIT
+                } else {
+                    subject
                 },
                 unsafe_: kind.descriptor().safety == Safety::Unsafe,
                 convention: Convention::RUST,

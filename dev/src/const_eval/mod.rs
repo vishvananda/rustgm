@@ -4,6 +4,7 @@ mod memory;
 mod raw_reads;
 mod readiness;
 mod returns;
+mod transfers;
 mod values;
 
 use crate::sema::values::execution::{Progress, Requirement};
@@ -33,6 +34,7 @@ impl Default for Limits {
 #[derive(Clone, Copy, Default, Debug)]
 pub struct Work {
     pub steps: usize,
+    pub copy_steps: usize,
     pub calls: usize,
     pub peak_frames: usize,
     pub peak_slots: usize,

@@ -1,0 +1,1818 @@
+{
+  "stage": "qualified-isolated-development-checkpoint",
+  "baseline": "62542d22",
+  "source_profile": "Rust1.98.0 edition2024 x86_64-unknown-linux-gnu",
+  "contract_sha256": "b7b8c957d6e1a62c90b711a5a2d35949c96b6531a2d00fa8d7b1867ee4b55c6c",
+  "snapshot": {
+    "source_sha256": "9083fafbdaa6ad164c001d7ebdd213af281ebee424ca9f1ccd02698d5a1e8338",
+    "source_fingerprint_format": "sha256(concatenated sorted dev/**/*.rs relative path UTF8, NUL, file bytes, NUL)",
+    "compiler_sha256": "4ba7a063d7e214e19c1bfb442829e81ac803393f23095f9b4b183c69ee09f6a2",
+    "frontend_cases": 42,
+    "related_groups": [
+      "volatile_intrinsics",
+      "bitwise_atomics",
+      "atomic_storage",
+      "unsafe_unions",
+      "union_addresses",
+      "union_references",
+      "direct_union_borrows",
+      "mutable_reconstruction",
+      "reference_cells",
+      "reference_reconstruction",
+      "reference_alignment"
+    ]
+  },
+  "gates": [
+    {
+      "name": "format",
+      "status": 0,
+      "seconds": 5.847480058670044
+    },
+    {
+      "name": "clippy",
+      "status": 0,
+      "seconds": 1.0340840816497803
+    },
+    {
+      "name": "audit",
+      "status": 0,
+      "seconds": 23.48287868499756
+    },
+    {
+      "name": "source-native",
+      "status": 0,
+      "seconds": 6.483067512512207
+    },
+    {
+      "name": "related",
+      "status": 0,
+      "seconds": 28.670095205307007
+    },
+    {
+      "name": "build",
+      "status": 0,
+      "seconds": 0.06890559196472168
+    },
+    {
+      "name": "upstream",
+      "status": 0,
+      "seconds": 0.15446114540100098
+    }
+  ],
+  "cases": [
+    {
+      "path": "pa28/tests/spec/pointer-memory/scalar-runtime.rs",
+      "sha256": "f4342fe31d5545bbf262c944fb6b56457bcbb21a34d64a41a4c581ec7a6b6acc",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "8c7eed4bcee6b547e555dd44859a50dec94c988651c776b8c4a1bbd6608793ba",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "cf0938d3e48b7598b2eb0e06b1d6681b53c3969040eb48df7e13d7d234abaa0d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "92947cebfe7d0be3439d53d12a1620eed6120e465ffae7b30ecc3e6788a9d276",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "47e03bd08d7d584bb268f10726db2574d3c09a1f0f740767147b4ec80cb0e236"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-scalar.rs",
+      "sha256": "6ff9daba5a772c6842fff6b86c1bfa64b4917f3f136feb7af0ee0c7c8f546141",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "3cc47994568600113cc8ac79fccf06f02a1a6924e4d2dec29c8d57ba0dea88a8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "bcd4b17c1cb56f010af6577df8b1573b940003343ee4aee3939e89f5aceda9ce",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-product.rs",
+      "sha256": "652f4c550996ccda2a7e643fe354d97ae24259639393c30ea0083e0cef9181fd",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "6fe391896b152f957194f69047a6d0278bcff1ba2d89af4565d57c511795e749",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "0281a90cb3cbcaee86dcc07bccdad17c633421e6aed808976e87d8fa228768cf",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/aggregate-runtime.rs",
+      "sha256": "d5cf443cbcd6926298ac275a1ecb47662c3a8049c04eb79e5e541227c58ab0b3",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "3d680bfd0f5b43e15aa3cd6a21306512e20ea61332545bbaf810c2aad395548b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "97c5303cd1e3418cfea656a86a3fe2e3fb061fd9c5f510062fba25ff867c2a60",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a88b65c91a249c18625152bc00ddd645d0f703826f8e3743e36189407c289e14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "9ab3b137c538bd08b7b35b19fe0cf95673be69b7d07964f15b94fd668199d07c"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/array-const.rs",
+      "sha256": "1422edf98893ba1db95be49926d794ed1ab0da3a21cca1111530ad0e4bb55640",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "92ca18fcea5aa84d73ee5be26e3638c53f7136c423af3f08421dd7a2fd815987",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "bcd4b17c1cb56f010af6577df8b1573b940003343ee4aee3939e89f5aceda9ce",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/generic.rs",
+      "sha256": "d0122fbe6f0f75d0698bb8bcbcf88f7f1f667e63524a232e87bf3af45e20c51f",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "0e899742d154a3f86382ed5a8e15ba6e4eb3543706ee4e94934d2f9d2dddc4c3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "b42e2d147fcd6d359ee0842cd0e1d69a27879d8c023292f085a4b3afd336df3a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8f7c1b4bd60b7292a2a0b7a1d0a5f420da92ace4f09abf1fbc7a18ca167e8694",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "7a298839312951c4ff70aa1c7532649f63e821072bf2faab652a0fd0373511db"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/reified.rs",
+      "sha256": "249314f464b5bc407e00df904b1d82ff7ca60f69395f663aae91e2d6a0b672ee",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: fields `a` and `b` are never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/reified.rs:1:31\n  |\n1 | #[derive(Copy,Clone)]struct P{a:u8,b:u32}fn main(){let mut x=P{a:3,b:37};let f:unsafe fn(*const P)->P=core::ptr::read::<P>;let g:unsa...\n  |                             - ^    ^\n  |                             |\n  |                             fields in this struct\n  |\n  = note: `P` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "362721036cd6f935510b954863661e0e7fb74c30aa284df7eabf6cb985376b5b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "2847c0db6ed13410c032c58c665578ca08b1226e4cb0534575a552ec46e6685e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a88b65c91a249c18625152bc00ddd645d0f703826f8e3743e36189407c289e14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "f0bcb7bd480b78c1a3762127f2ce94ae0f0d3a284ae96e35f16d15252dda75d9"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/alias-core.rs",
+      "sha256": "f99b036ca7268ec27e31f65e5f714ca96f09506551b8e4fbcc1b1341ec84ffc6",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "983846a0f36c39a3957a107f32d52f1cb7afad1f9e75828a70701d87f2f15d9e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "3bd04fb5f7369fe070aded1564793ccb51c1264d211d31c3b2846f10bbb64831",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "444716e5fcb357945a74961f2b068ed4db55cc8319caafcd3afe76efbfdb90c5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "15820f1858b272924c8c6e52e6c497b2786be827380b6a7b47ac66b5de45add9"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/std-import.rs",
+      "sha256": "335830449a350402c9eb392b716e32148426075ef48cf3280aa594d76e0a33e6",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "dd5f17fde1f539c6846d7b5b8165ccfe389c5af5d4a6ab0c7c956f3f934b2b07",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "07c6eeb2858e3f99fc591e05cb1e547b72d8ee4c2398d77918bf9676c8032d9c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "d09fe7b004c119bbadf7ff6bc6a2be5bf74774b1a48bd6c5a88b2772aca64999",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "96917cf135004da5e6c11c44e819a6c372797619225b173bc8aaf977ac0b599c"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/shadow.rs",
+      "sha256": "f810330e3cb89b1db4a7651f06e695817e590053e0183b0f94ec0d2306f50dc5",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "182b386ac149160cb242dbe123f296995097ce01ee4f3291ddcd2b47cb5cba32",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "2ecea5c96a60f1c695df64b0c639fcb134f749a657195c214e2e111a648d866f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "41c6900f07ee29bcc432d353812f4d51138ace62bf98f1420f9372cd7c97800a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "41e209315a96461d3f8b9db9e4d22be56c9d75c8f1c1f9d948094ada62870f00"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-live.rs",
+      "sha256": "7015df9d9c4329da2dd3cf1cd7384831d7df62a4386adcf2f149eee4cc4fe753",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "64491cacc89fd78fa937897896b8b2beb42c99d9e96813b94897af1f6c89fefb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "fd585e3608552b7d7ec43f5b8bd6450430cd4df18c35b3e707753434e2c6e761",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-null.rs",
+      "sha256": "681b7801b880f2a61f1d83ba641903696f622068d706b7c53ba7c4fac4dc5276",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "hypothesis_disagreement": "Original declaration predicted1; independent full object accepted0. Original hypothesis and stderr retained.",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer has no allocation provenance",
+      "profile_boundary": true,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b97fc07669e7f5802e94556a0ec8914914c43a5fdd6108c82aa785c49d62456",
+          "stderr": "ERROR: file 0: 11: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b97fc07669e7f5802e94556a0ec8914914c43a5fdd6108c82aa785c49d62456",
+          "stderr": "ERROR: file 0: 11: constant pointer has no allocation provenance\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b97fc07669e7f5802e94556a0ec8914914c43a5fdd6108c82aa785c49d62456",
+          "stderr": "ERROR: file 0: 11: constant pointer has no allocation provenance\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-unaligned.rs",
+      "sha256": "4648f837b021c0fa0a260cb55213a6a47224de2502f15756894e00d1692752ec",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer has no allocation provenance",
+      "profile_boundary": false,
+      "rejection_gate_note": "Rustc alignment rejection; frontend rejects at earlier unsupported numeric-provenance boundary. This does not qualify alignment diagnostic precedence.",
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 16 is required\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/zst-unaligned.rs:1:66\n  |\n1 | #[derive(Copy,Clone)]#[repr(align(16))]struct Z;const X:Z=unsafe{core::ptr::read(1usize as *const Z)};fn main(){let _=X;}\n  |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/zst-unaligned.rs:1:119\n  |\n1 | #[derive(Copy,Clone)]#[repr(align(16))]struct Z;const X:Z=unsafe{core::ptr::read(1usize as *const Z)};fn main(){let _=X;}\n  |                                                                                                                       ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8c0770c7589bc375cb4e7e904813850a9e806e93a20862ee099da96882a0b23b",
+          "stderr": "ERROR: file 0: 58: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8c0770c7589bc375cb4e7e904813850a9e806e93a20862ee099da96882a0b23b",
+          "stderr": "ERROR: file 0: 58: constant pointer has no allocation provenance\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8c0770c7589bc375cb4e7e904813850a9e806e93a20862ee099da96882a0b23b",
+          "stderr": "ERROR: file 0: 58: constant pointer has no allocation provenance\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/read-unsafe.rs",
+      "sha256": "7f86f85bbf0c326bdeb63c09bc5661535b35c4f61e7c7be41f2bb430b409cd24",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "call to unsafe function requires an unsafe context",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0133]: call to unsafe function `std::ptr::read` is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/read-unsafe.rs:1:28\n  |\n1 | fn main(){let x=7u32;let _=core::ptr::read(&raw const x);}\n  |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ call to unsafe function\n  |\n  = note: consult the function's documentation for information on how to avoid undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "097d8cdcafb52e17490c5eac23739ae7657f6d61a575d3e30092e58e6925c7bc",
+          "stderr": "ERROR: file 0: 27: call to unsafe function requires an unsafe context\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "097d8cdcafb52e17490c5eac23739ae7657f6d61a575d3e30092e58e6925c7bc",
+          "stderr": "ERROR: file 0: 27: call to unsafe function requires an unsafe context\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "097d8cdcafb52e17490c5eac23739ae7657f6d61a575d3e30092e58e6925c7bc",
+          "stderr": "ERROR: file 0: 27: call to unsafe function requires an unsafe context\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/write-unsafe.rs",
+      "sha256": "8af66064494cbe9677fc5d24870e47d47c02f74cdbd659dbe0d8cdea11cf9c98",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "call to unsafe function requires an unsafe context",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0133]: call to unsafe function `std::ptr::write` is unsafe and requires unsafe block\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/write-unsafe.rs:1:26\n  |\n1 | fn main(){let mut x=7u32;core::ptr::write(&raw mut x,37);}\n  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ call to unsafe function\n  |\n  = note: consult the function's documentation for information on how to avoid undefined behavior\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0133`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bbe9481494458e3114bc3e995808e46c8bfcc7f525428c51d1ccff905f82c59e",
+          "stderr": "ERROR: file 0: 25: call to unsafe function requires an unsafe context\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bbe9481494458e3114bc3e995808e46c8bfcc7f525428c51d1ccff905f82c59e",
+          "stderr": "ERROR: file 0: 25: call to unsafe function requires an unsafe context\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bbe9481494458e3114bc3e995808e46c8bfcc7f525428c51d1ccff905f82c59e",
+          "stderr": "ERROR: file 0: 25: call to unsafe function requires an unsafe context\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wrong-arity.rs",
+      "sha256": "8216aa789a088a15d6b16479d1907b89f8cb3158cbba8c189d66513168bd638c",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "call argument count mismatch",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0061]: this function takes 2 arguments but 1 argument was supplied\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/wrong-arity.rs:1:18\n  |\n1 | fn main(){unsafe{core::ptr::write(0usize as *mut u32);}}\n  |                  ^^^^^^^^^^^^^^^^-------------------- argument #2 of type `u32` is missing\n  |\nnote: function defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs:1916:20\nhelp: provide the argument\n  |\n1 | fn main(){unsafe{core::ptr::write(0usize as *mut u32, /* u32 */);}}\n  |                                                     +++++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0061`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "030c760d334f7f5c00700b6fa923b9fa93e247108f2092967ccb86d14f58fe22",
+          "stderr": "ERROR: file 0: 17: call argument count mismatch\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "030c760d334f7f5c00700b6fa923b9fa93e247108f2092967ccb86d14f58fe22",
+          "stderr": "ERROR: file 0: 17: call argument count mismatch\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "030c760d334f7f5c00700b6fa923b9fa93e247108f2092967ccb86d14f58fe22",
+          "stderr": "ERROR: file 0: 17: call argument count mismatch\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wrong-type.rs",
+      "sha256": "f3da1a50f1b5668d7a248a34c47dd680eaafa61ebea47935dad3f2d13664ef20",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/wrong-type.rs:1:61\n  |\n1 | fn main(){let mut x=7u32;unsafe{core::ptr::write(&raw mut x,37u8);}}\n  |                                 ----------------            ^^^^ expected `u32`, found `u8`\n  |                                 |\n  |                                 arguments to this function are incorrect\n  |\nnote: function defined here\n --> /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs:1916:20\nhelp: change the type of the numeric literal from `u8` to `u32`\n  |\n1 - fn main(){let mut x=7u32;unsafe{core::ptr::write(&raw mut x,37u8);}}\n1 + fn main(){let mut x=7u32;unsafe{core::ptr::write(&raw mut x,37u32);}}\n  |\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ca5d61428ada66a111203fcba4d7829f272df06627e2d8928e8cc8584f5a8f6b",
+          "stderr": "ERROR: file 0: 60: incompatible types\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ca5d61428ada66a111203fcba4d7829f272df06627e2d8928e8cc8584f5a8f6b",
+          "stderr": "ERROR: file 0: 60: incompatible types\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ca5d61428ada66a111203fcba4d7829f272df06627e2d8928e8cc8584f5a8f6b",
+          "stderr": "ERROR: file 0: 60: incompatible types\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/shared-derived.rs",
+      "sha256": "6b07f91c917bf78527efce89b380d8ccf4e518228fb64d0c0b7121a94f9ddc19",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/shared-derived.rs:2:67\n  |\n2 | const X:u32={let x=7u32;let p=&x as *const u32 as *mut u32;unsafe{core::ptr::write(p,37);x}};fn main(){let _=X;}\n  |                                                                   ^^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/shared-derived.rs:2:110\n  |\n2 | const X:u32={let x=7u32;let p=&x as *const u32 as *mut u32;unsafe{core::ptr::write(p,37);x}};fn main(){let _=X;}\n  |                                                                                                              ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-cast-writable.rs",
+      "sha256": "91375037859d2bc00129a4189d614c9231ec17cbcaa34b548ff550675096460b",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "d55fba187df1eecbf0be773daf786b6a4014967c5c5b5f0f2a5a4419a0ada668",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "6ab9da6bbf55404772fd78dae15a70b3f7399734dc1393af07db1ca89ad9db4b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/stale-read.rs",
+      "sha256": "5ed3cc0675cd842ae0bed1d58cd03870509b6deb2a27147e213916cd20866d07",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/stale-read.rs:1:54\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{core::ptr::read(p)}};fn main(){let _=X;}\n  |                                                      ^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/stale-read.rs:1:91\n  |\n1 | const X:u32={let p={let x=37u32;&raw const x};unsafe{core::ptr::read(p)}};fn main(){let _=X;}\n  |                                                                                           ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/stale-write.rs",
+      "sha256": "90c81c485e38d9a81611d8f6c712d6eeffe744ec9722e8fe589d0a427a7ea8db",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: memory access failed: alloc2 has been freed, so this pointer is dangling\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/stale-write.rs:1:56\n  |\n1 | const X:u32={let p={let mut x=37u32;&raw mut x};unsafe{core::ptr::write(p,7)};0};fn main(){let _=X;}\n  |                                                        ^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/stale-write.rs:1:98\n  |\n1 | const X:u32={let p={let mut x=37u32;&raw mut x};unsafe{core::ptr::write(p,7)};0};fn main(){let _=X;}\n  |                                                                                                  ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "796ad423ec4c3f3b2f3906e5065e30b3165815e84d4c1c788906dc6f5e7f2c2e",
+          "stderr": "ERROR: file 0: 12: constant pointer refers to expired storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/packed-field.rs",
+      "sha256": "61ca8e46243afc4e46a9bed4bf9068f1a98fe49abd3c99ee25d57f6e06c1ac4f",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer read is unaligned",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: accessing memory based on pointer with alignment 1, but alignment 4 is required\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/packed-field.rs:1:76\n  |\n1 | #[repr(C,packed)]struct P{a:u8,b:u32}const X:u32={let p=P{a:0,b:37};unsafe{core::ptr::read(&raw const p.b)}};fn main(){let _=X;}\n  |                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/packed-field.rs:1:126\n  |\n1 | #[repr(C,packed)]struct P{a:u8,b:u32}const X:u32={let p=P{a:0,b:37};unsafe{core::ptr::read(&raw const p.b)}};fn main(){let _=X;}\n  |                                                                                                                              ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e448d5e8cf02e2e66603b26ce5f3b1fc40ccc8f3deb5c3970a00d8226c5c2393",
+          "stderr": "ERROR: file 0: 49: constant raw pointer read is unaligned\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e448d5e8cf02e2e66603b26ce5f3b1fc40ccc8f3deb5c3970a00d8226c5c2393",
+          "stderr": "ERROR: file 0: 49: constant raw pointer read is unaligned\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e448d5e8cf02e2e66603b26ce5f3b1fc40ccc8f3deb5c3970a00d8226c5c2393",
+          "stderr": "ERROR: file 0: 49: constant raw pointer read is unaligned\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/invalid-bool.rs",
+      "sha256": "6827cd1e601bd38cd42250b3bc2c6a946e6da3fc89caa3631353b8a2b7bf0b67",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant union scalar read has invalid bool representation",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: constructing invalid value of type bool: encountered 0x02, but expected a boolean\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/invalid-bool.rs:1:21\n  |\n1 | union U{a:u8,b:bool}const X:bool={let u=U{a:2};unsafe{core::ptr::read(&raw const u.b)}};fn main(){let _=X;}\n  |                     ^^^^^^^^^^^^ it is undefined behavior to use this value\n  |\n  = note: the rules on what exactly is undefined behavior aren't clear, so this check might be overzealous. Please open an issue on the rustc repository if you believe it should not be considered undefined behavior.\n  = note: the raw bytes of the constant (size: 1, align: 1) {\n              02                                              \u2502 .\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/invalid-bool.rs:1:105\n  |\n1 | union U{a:u8,b:bool}const X:bool={let u=U{a:2};unsafe{core::ptr::read(&raw const u.b)}};fn main(){let _=X;}\n  |                                                                                                         ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b94fe437418d3fd0cb05f6c5a94ed82aa8b76433817679709892a6747781c935",
+          "stderr": "ERROR: file 0: 33: constant union scalar read has invalid bool representation\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b94fe437418d3fd0cb05f6c5a94ed82aa8b76433817679709892a6747781c935",
+          "stderr": "ERROR: file 0: 33: constant union scalar read has invalid bool representation\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b94fe437418d3fd0cb05f6c5a94ed82aa8b76433817679709892a6747781c935",
+          "stderr": "ERROR: file 0: 33: constant union scalar read has invalid bool representation\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-alias.rs",
+      "sha256": "a68f7fa38205b61b1abe53507e0750bcc712901010881981f5e81540ee6fb96e",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "c4b3339fab5399cdc42dd81cdbb84d252db58523320dcb1566951c8b5e4aed65",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a59fa3ee3eeba5814dfd920fefff1746ee5b1f416ad1ea8fa2e93d839752afd3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/static-read.rs",
+      "sha256": "3b55a8ed3f69b2641315baed25b416272a18d96329eab496abafcf653d1fc2c0",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "d1b98c4ea557f3067cb074f2d135ce80a055e80100bd0d09f734e71090ae312c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "43aaf992f8b2b0a1660017490b0a775bd90d75923df265f9198e5de9511e8dfa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "439266d7733428d9d44aba037a91f72e0a3f60bd063ce5d6675089857a1ce73d"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/static-write.rs",
+      "sha256": "fbdfb43519d6eef3285f88a9f3bf4dbab262a7fb9afe3ad090a6618d7f867ca3",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant execution cannot write static storage",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: modifying a static's initial value from another static's initializer\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/static-write.rs:1:38\n  |\n1 | static mut S:u32=7;const X:()=unsafe{core::ptr::write(&raw mut S,37)};fn main(){let _=X;}\n  |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/static-write.rs:1:87\n  |\n1 | static mut S:u32=7;const X:()=unsafe{core::ptr::write(&raw mut S,37)};fn main(){let _=X;}\n  |                                                                                       ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0d4aa304f799c1f7f1d7c6f8436450b71b7e17826d001c0398cdfa8c62f4eeeb",
+          "stderr": "ERROR: file 0: 30: constant execution cannot write static storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0d4aa304f799c1f7f1d7c6f8436450b71b7e17826d001c0398cdfa8c62f4eeeb",
+          "stderr": "ERROR: file 0: 30: constant execution cannot write static storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0d4aa304f799c1f7f1d7c6f8436450b71b7e17826d001c0398cdfa8c62f4eeeb",
+          "stderr": "ERROR: file 0: 30: constant execution cannot write static storage\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/pointer-value.rs",
+      "sha256": "5840dafae80b7129ce9137e3661d462c1c1adbf602f1217dfb2267ccc690e1a4",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "ad74ff9d0388a388fed65464c14ef56468988971c111b9ff1d427bd80284a787",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "24af111d28004d2e5e768cdbf40b5e166449f5fb5727066a83483fd92eff4b95",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/noncopy-boundary.rs",
+      "sha256": "eacd3669e049f26a90a6a742a5e04168ed28fdaeeeb019ffe0a6c73d2ea36536",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "boundary",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        0,
+        1,
+        0
+      ],
+      "reason": "non-Copy pointer memory operations are not implemented",
+      "profile_boundary": true,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "42f10639e84c873eebd0c73e052eab9e2177bc85624d061d94769fba11eb0d28",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "06ea614814b31a3a777a21cb86fb0d81e3b5cc5c61b2dc6a283b4ca370652211",
+          "stderr": "ERROR: file 0: 52: non-Copy pointer memory operations are not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a88b65c91a249c18625152bc00ddd645d0f703826f8e3743e36189407c289e14",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "ff12b50f9cfbd17e0b86ec40e29bd36a945ce826d9ed2f77a0819ae3edecbc32"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-reified.rs",
+      "sha256": "061e8b44da79c332da7aec2bc8749380550e6f3ea5563fb68e21f2d625c2a9bf",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "non-const calls are not allowed in constant initializers",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error: function pointer calls are not allowed in constants\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/const-reified.rs:1:89\n  |\n1 | const X:u32={let x=37u32;let f:unsafe fn(*const u32)->u32=core::ptr::read::<u32>;unsafe{f(&raw const x)}};fn main(){let _=X;}\n  |                                                                                         ^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6d33c5e347c6f87eeef69d8518e4b53080198be482174c82cc68717e444ffaf6",
+          "stderr": "ERROR: file 0: 12: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6d33c5e347c6f87eeef69d8518e4b53080198be482174c82cc68717e444ffaf6",
+          "stderr": "ERROR: file 0: 12: non-const calls are not allowed in constant initializers\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "6d33c5e347c6f87eeef69d8518e4b53080198be482174c82cc68717e444ffaf6",
+          "stderr": "ERROR: file 0: 12: non-const calls are not allowed in constant initializers\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-null-write.rs",
+      "sha256": "bc8d1a2c20ddaf77adf5e064a7505118f224719f7b1789cc79f767ca724eb2b5",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer has no allocation provenance",
+      "profile_boundary": true,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b97fc07669e7f5802e94556a0ec8914914c43a5fdd6108c82aa785c49d62456",
+          "stderr": "ERROR: file 0: 11: constant pointer has no allocation provenance\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b97fc07669e7f5802e94556a0ec8914914c43a5fdd6108c82aa785c49d62456",
+          "stderr": "ERROR: file 0: 11: constant pointer has no allocation provenance\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4b97fc07669e7f5802e94556a0ec8914914c43a5fdd6108c82aa785c49d62456",
+          "stderr": "ERROR: file 0: 11: constant pointer has no allocation provenance\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-expired.rs",
+      "sha256": "173f72e1578ebd21b7acba08f3e529de38890bcc81eaae43ec1a160d52e1a08a",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "profile_boundary": true,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "31e43bbe1bc622262da5517f46189b19f6032306190bceed3f7a5e4dcd6a5367",
+          "stderr": "ERROR: file 0: 40: constant pointer refers to expired storage\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "31e43bbe1bc622262da5517f46189b19f6032306190bceed3f7a5e4dcd6a5367",
+          "stderr": "ERROR: file 0: 40: constant pointer refers to expired storage\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "31e43bbe1bc622262da5517f46189b19f6032306190bceed3f7a5e4dcd6a5367",
+          "stderr": "ERROR: file 0: 40: constant pointer refers to expired storage\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-repair.rs",
+      "sha256": "9d05efef587153ac5971a3c6fe246c566cb934f1395981c7fc926509cb05dc3d",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "ec2c683918cd23d9753932a514d5908cb7849158a5b92805e34fa0e79294264c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "0bbfa2357955d258e2e6866047b63742d6b467e9c749200f3f4bdf3229dcab19",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-initialize.rs",
+      "sha256": "0d3fde90e87c98779818421c00c08646a70b70349cea9c632bdad4e1dfb31a8f",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "de6f666ffec54b1bab43b12eb41fb681f880c4a8d1a83e150f7af62ffdaabe55",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a11f7308505e57d47272ce19f0832a71d0de3e9f1aaac043c85ab2440f2fb748",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/copied-write-authority.rs",
+      "sha256": "eff4eedb14909864b72c2e9bcf9c7dd734b308f52eda36ed25c783deead74d29",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "84d8338b5a586fbd9f39966a58a0e074659c9c3c47831d63a4ad4409573ce0c8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "55c7d55f7f03cef593a0fe1cb07f8358f3ab284b8e5be82185291b7a6343c980",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/copied-shared-authority.rs",
+      "sha256": "c0bb31f253eebcc4408a902ca6d45923f999eea5311d3c5658c7297ccb25c229",
+      "rustc_status": 1,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: writing through a pointer that was derived from a shared (immutable) reference\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/copied-shared-authority.rs:2:146\n  |\n2 | ...onst q);core::ptr::write(&raw mut q,r);core::ptr::write(q,37);x}};fn main(){let _=X;}\n  |                                           ^^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/copied-shared-authority.rs:2:189\n  |\n2 | ...:write(&raw mut q,r);core::ptr::write(q,37);x}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3576d2ef9bf442c6831c4c0474976c4731009437abbf2a989c1382d2c048ecaa",
+          "stderr": "ERROR: file 0: 49: constant raw pointer write is derived from a shared reference\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wide-value.rs",
+      "sha256": "12e8b09da068d6520f721a098e0694bbae0fe4eff941d1271ce268cc99e19667",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant slice projection is not implemented",
+      "profile_boundary": true,
+      "boundary_scope": "Independent positive memory transfer reaches preexisting CTFE slice-indexing boundary in this worker cut; root will verify combined main independently.",
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "75699db84e55f4951916ad22458c625c5c866accc93e42347e7dce6529befdbc",
+          "stderr": "ERROR: file 0: 37: constant slice projection is not implemented\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "75699db84e55f4951916ad22458c625c5c866accc93e42347e7dce6529befdbc",
+          "stderr": "ERROR: file 0: 37: constant slice projection is not implemented\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "75699db84e55f4951916ad22458c625c5c866accc93e42347e7dce6529befdbc",
+          "stderr": "ERROR: file 0: 37: constant slice projection is not implemented\n"
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/ordinary-scalar.rs",
+      "sha256": "8213e830136224a050821294a33ff6e8d8c06c0eec5705aca629e9e0d29c51f0",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "a580adc95a0a3f970ec4bf812c128164391e1c86ad5c8d0c1d0a138263a37269",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-image-copy.rs",
+      "sha256": "ec5f540ab4a0b81b8c934d962bbd2da0118d59451e48be0f4844adf0005a616d",
+      "rustc_status": 0,
+      "source_origin": "authored union Image copy/mask control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "warning: field `b` is never read\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/union-image-copy.rs:1:35\n  |\n1 | #[derive(Copy,Clone)]union U{a:u8,b:bool}const X:u8={let mut u=U{a:2};unsafe{let v=core::ptr::read(&raw const u);core::ptr::write(&ra...\n  |                            -      ^\n  |                            |\n  |                            field in this union\n  |\n  = note: `U` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "3b5c04b69bb4d9c37244efedde1568ff511efcfb7d46665b78d77544430db771",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "2a3f317e6cc5caa70ab958c56af34e0708b577ed52ed046bbf70e354714dfc5b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-image-mask.rs",
+      "sha256": "c20cd701cddc749217a6c0588509fb55e0cab6f6283240062a20428c35800b2d",
+      "rustc_status": 1,
+      "source_origin": "authored union Image copy/mask control",
+      "frontend_statuses": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant union scalar read uses uninitialized bytes",
+      "profile_boundary": false,
+      "rustc_actual_status": 1,
+      "rustc_stderr": "error[E0080]: reading memory at alloc2[0x0..0x4], but memory is uninitialized at [0x1..0x4], and this operation requires initialized memory\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/union-image-mask.rs:1:145\n  |\n1 | ...u);core::ptr::write(&raw mut u,v);core::ptr::read(&raw const u.b)}};fn main(){let _=X;}\n  |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `X` failed here\n  |\n  = note: the raw bytes of the constant (size: 4, align: 4) {\n              07 __ __ __                                     \u2502 .\u2591\u2591\u2591\n          }\n\nnote: erroneous constant encountered\n --> /home/vishvananda/rustgm-pa27-work/pa28/tests/spec/pointer-memory/union-image-mask.rs:1:195\n  |\n1 | ...&raw mut u,v);core::ptr::read(&raw const u.b)}};fn main(){let _=X;}\n  |                                                                    ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0080`.\n",
+      "frontend": {
+        "--emit-types": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "db4d3af870d96c7bd6368571a627ff9583b29c7f90c2147f1b2d7030ea70f925",
+          "stderr": "ERROR: file 0: 52: constant union scalar read uses uninitialized bytes\n"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "db4d3af870d96c7bd6368571a627ff9583b29c7f90c2147f1b2d7030ea70f925",
+          "stderr": "ERROR: file 0: 52: constant union scalar read uses uninitialized bytes\n"
+        },
+        "--emit-constants": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "db4d3af870d96c7bd6368571a627ff9583b29c7f90c2147f1b2d7030ea70f925",
+          "stderr": "ERROR: file 0: 52: constant union scalar read uses uninitialized bytes\n"
+        }
+      }
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wide-transfer.rs",
+      "sha256": "e640cfcf40b2c3ed8a5823ac6cc3492029cbd7c73f13c39fb2e5f4a678809148",
+      "rustc_status": 0,
+      "source_origin": "authored whole-wide transfer/packed aggregate alignment control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "16add3b2d8a1f306fa1713859d36de410b798de90ea591281395455d04d2cee3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "60059e38955617e5fa4be12efca474a1374086b5e6b67f47320ac112ba331bad",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "835fed4b2f6236594a99591cd20a57f57a860b4e5ecad6eabc8101508c072af7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/packed-aggregate.rs",
+      "sha256": "be4286152f5c6826054879cd4bf210575d30a48d310cc2f87417e8e39147d62f",
+      "rustc_status": 0,
+      "source_origin": "authored whole-wide transfer/packed aggregate alignment control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "b6dabbe0f9f13eaa1bef9edcb47f14298d673be2ce971b843169826dc3fb14cf",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "a11f7308505e57d47272ce19f0832a71d0de3e9f1aaac043c85ab2440f2fb748",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-generic.rs",
+      "sha256": "e8c3133d401c29425e8b4c1ea69315e26a302e1f6fb15be23556858a7b28fdd0",
+      "rustc_status": 0,
+      "source_origin": "authored const generic transfer control",
+      "frontend_statuses": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "profile_boundary": false,
+      "rustc_actual_status": 0,
+      "rustc_stderr": "",
+      "frontend": {
+        "--emit-types": {
+          "status": 0,
+          "stdout_sha256": "0212427995c5f77d44ad047395efcb7a997184ee54f531f889f1deeb2a0cf279",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-lowir": {
+          "status": 0,
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "--emit-constants": {
+          "status": 0,
+          "stdout_sha256": "2aaa47a5b5db0eb3f99145e0b0ab21a13db883989bca3d144d11b791ed4fe9e6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_object_sha256": "dcc61f945ba7a6e82789081d5977220d0237ee86a70446aff5ca2ba6531d4b87"
+    }
+  ],
+  "native": {
+    "groups": 11,
+    "successful": 10,
+    "expected_abort": 1,
+    "test": "pointer_memory_native_snapshots_and_reified_abi",
+    "ignored_by_default": true,
+    "runtime": "pinned CPPGM LowIR backend unchanged",
+    "limitations": "Deterministic single-process memory controls; no backend vocabulary change or benchmark claim."
+  },
+  "private_invariants": {
+    "copy": 4,
+    "shim": 2,
+    "evidence": "obj/parallel/pa28/pointer-memory-seventh/{private,copy-private}.log"
+  },
+  "capability_matrix": [
+    {
+      "width": 2,
+      "repeats": 1,
+      "unrelated": 0,
+      "copy_steps": 36,
+      "steps": 220,
+      "slots": 49
+    },
+    {
+      "width": 2,
+      "repeats": 8,
+      "unrelated": 0,
+      "copy_steps": 36,
+      "steps": 794,
+      "slots": 175
+    },
+    {
+      "width": 2,
+      "repeats": 32,
+      "unrelated": 0,
+      "copy_steps": 36,
+      "steps": 2762,
+      "slots": 607
+    },
+    {
+      "width": 2,
+      "repeats": 1,
+      "unrelated": 64,
+      "copy_steps": 36,
+      "steps": 220,
+      "slots": 49
+    },
+    {
+      "width": 2,
+      "repeats": 8,
+      "unrelated": 64,
+      "copy_steps": 36,
+      "steps": 794,
+      "slots": 175
+    },
+    {
+      "width": 2,
+      "repeats": 32,
+      "unrelated": 64,
+      "copy_steps": 36,
+      "steps": 2762,
+      "slots": 607
+    },
+    {
+      "width": 16,
+      "repeats": 1,
+      "unrelated": 0,
+      "copy_steps": 148,
+      "steps": 500,
+      "slots": 105
+    },
+    {
+      "width": 16,
+      "repeats": 8,
+      "unrelated": 0,
+      "copy_steps": 148,
+      "steps": 1074,
+      "slots": 231
+    },
+    {
+      "width": 16,
+      "repeats": 32,
+      "unrelated": 0,
+      "copy_steps": 148,
+      "steps": 3042,
+      "slots": 663
+    },
+    {
+      "width": 16,
+      "repeats": 1,
+      "unrelated": 64,
+      "copy_steps": 148,
+      "steps": 500,
+      "slots": 105
+    },
+    {
+      "width": 16,
+      "repeats": 8,
+      "unrelated": 64,
+      "copy_steps": 148,
+      "steps": 1074,
+      "slots": 231
+    },
+    {
+      "width": 16,
+      "repeats": 32,
+      "unrelated": 64,
+      "copy_steps": 148,
+      "steps": 3042,
+      "slots": 663
+    },
+    {
+      "width": 64,
+      "repeats": 1,
+      "unrelated": 0,
+      "copy_steps": 532,
+      "steps": 1460,
+      "slots": 297
+    },
+    {
+      "width": 64,
+      "repeats": 8,
+      "unrelated": 0,
+      "copy_steps": 532,
+      "steps": 2034,
+      "slots": 423
+    },
+    {
+      "width": 64,
+      "repeats": 32,
+      "unrelated": 0,
+      "copy_steps": 532,
+      "steps": 4002,
+      "slots": 855
+    },
+    {
+      "width": 64,
+      "repeats": 1,
+      "unrelated": 64,
+      "copy_steps": 532,
+      "steps": 1460,
+      "slots": 297
+    },
+    {
+      "width": 64,
+      "repeats": 8,
+      "unrelated": 64,
+      "copy_steps": 532,
+      "steps": 2034,
+      "slots": 423
+    },
+    {
+      "width": 64,
+      "repeats": 32,
+      "unrelated": 64,
+      "copy_steps": 532,
+      "steps": 4002,
+      "slots": 855
+    }
+  ],
+  "paired_loop": [
+    {
+      "memory": false,
+      "count": 8,
+      "steps": 343,
+      "slots": 30
+    },
+    {
+      "memory": false,
+      "count": 32,
+      "steps": 1159,
+      "slots": 30
+    },
+    {
+      "memory": false,
+      "count": 128,
+      "steps": 4423,
+      "slots": 30
+    },
+    {
+      "memory": true,
+      "count": 8,
+      "steps": 509,
+      "slots": 38
+    },
+    {
+      "memory": true,
+      "count": 32,
+      "steps": 1781,
+      "slots": 38
+    },
+    {
+      "memory": true,
+      "count": 128,
+      "steps": 6869,
+      "slots": 38
+    }
+  ],
+  "ordinary_equality": {
+    "baseline": "62542d22",
+    "path": "pa27/tests/spec/union-borrows/ordinary-scalar.rs",
+    "all_views_byte_identical": true,
+    "views": {
+      "--emit-types": "a580adc95a0a3f970ec4bf812c128164391e1c86ad5c8d0c1d0a138263a37269",
+      "--emit-lowir": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
+      "--emit-constants": "8d2ee6564a1d8898659bfb9ba684ae1f29a312163c88bedeeef9b51fb7878a7e"
+    }
+  },
+  "retained_findings": {
+    "null_unit_read": "Initial hypothesis predicted rustc rejection; independently accepted. Original hypothesis/results retained; symbolic-provenance profile boundary declared.",
+    "wide_const_index": "Original unchanged wide-value.rs reaches constant slice projection is not implemented on this worker cut; combined-main qualification remains integrator owned.",
+    "wide_len_native_source": "obj/parallel/pa28/pointer-memory-native-2914072/arrays-and-wide-values.rs; receiver has no inherent nominal method. Revised transfers use runtime indexing/bounds without broadening slice methods.",
+    "fixed_slot_hypothesis": "Unrolled ordinary control itself used133 slots atN8, exceeding oldN+96. Original evidence retained. Separate paired loop and measured affine width/repetition matrix supersede that unsupported budget assumption.",
+    "gate_repairs": "Test-only Operand PartialEq assumption, scoped lint/style fixes, filename grouping, one missing local script invocation. No repaired semantic output is silently substituted for an original expected language outcome."
+  },
+  "remaining_boundaries": [
+    "non-Copy sized transfer capability (source signatures retain only Sized)",
+    "numeric zero-sized pointer read/write and expired-ZST read under existing stricter symbolic liveness/provenance profile",
+    "original CTFE slice index consumer on this worker cut",
+    "existing general reinterpretation/offset/raw provenance and pointer-bearing union Image limits",
+    "counted copies/memmove/byte fills, unaligned operations, numeric families and further atomic release requirements"
+  ],
+  "activation": false,
+  "generated_oracles": false
+}

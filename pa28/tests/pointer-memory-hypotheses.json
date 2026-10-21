@@ -1,0 +1,209 @@
+{
+  "stage": "predeclared-before-independent-qualification",
+  "baseline": "62542d22",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/pointer-memory/scalar-runtime.rs",
+      "sha256": "f4342fe31d5545bbf262c944fb6b56457bcbb21a34d64a41a4c581ec7a6b6acc",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-scalar.rs",
+      "sha256": "6ff9daba5a772c6842fff6b86c1bfa64b4917f3f136feb7af0ee0c7c8f546141",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-product.rs",
+      "sha256": "652f4c550996ccda2a7e643fe354d97ae24259639393c30ea0083e0cef9181fd",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/aggregate-runtime.rs",
+      "sha256": "d5cf443cbcd6926298ac275a1ecb47662c3a8049c04eb79e5e541227c58ab0b3",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/array-const.rs",
+      "sha256": "1422edf98893ba1db95be49926d794ed1ab0da3a21cca1111530ad0e4bb55640",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/generic.rs",
+      "sha256": "d0122fbe6f0f75d0698bb8bcbcf88f7f1f667e63524a232e87bf3af45e20c51f",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/reified.rs",
+      "sha256": "249314f464b5bc407e00df904b1d82ff7ca60f69395f663aae91e2d6a0b672ee",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/alias-core.rs",
+      "sha256": "f99b036ca7268ec27e31f65e5f714ca96f09506551b8e4fbcc1b1341ec84ffc6",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/std-import.rs",
+      "sha256": "335830449a350402c9eb392b716e32148426075ef48cf3280aa594d76e0a33e6",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/shadow.rs",
+      "sha256": "f810330e3cb89b1db4a7651f06e695817e590053e0183b0f94ec0d2306f50dc5",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-live.rs",
+      "sha256": "7015df9d9c4329da2dd3cf1cd7384831d7df62a4386adcf2f149eee4cc4fe753",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-null.rs",
+      "sha256": "681b7801b880f2a61f1d83ba641903696f622068d706b7c53ba7c4fac4dc5276",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-unaligned.rs",
+      "sha256": "4648f837b021c0fa0a260cb55213a6a47224de2502f15756894e00d1692752ec",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/read-unsafe.rs",
+      "sha256": "7f86f85bbf0c326bdeb63c09bc5661535b35c4f61e7c7be41f2bb430b409cd24",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/write-unsafe.rs",
+      "sha256": "8af66064494cbe9677fc5d24870e47d47c02f74cdbd659dbe0d8cdea11cf9c98",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wrong-arity.rs",
+      "sha256": "8216aa789a088a15d6b16479d1907b89f8cb3158cbba8c189d66513168bd638c",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wrong-type.rs",
+      "sha256": "f3da1a50f1b5668d7a248a34c47dd680eaafa61ebea47935dad3f2d13664ef20",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/shared-derived.rs",
+      "sha256": "6b07f91c917bf78527efce89b380d8ccf4e518228fb64d0c0b7121a94f9ddc19",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-cast-writable.rs",
+      "sha256": "91375037859d2bc00129a4189d614c9231ec17cbcaa34b548ff550675096460b",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/stale-read.rs",
+      "sha256": "5ed3cc0675cd842ae0bed1d58cd03870509b6deb2a27147e213916cd20866d07",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/stale-write.rs",
+      "sha256": "90c81c485e38d9a81611d8f6c712d6eeffe744ec9722e8fe589d0a427a7ea8db",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/packed-field.rs",
+      "sha256": "61ca8e46243afc4e46a9bed4bf9068f1a98fe49abd3c99ee25d57f6e06c1ac4f",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/invalid-bool.rs",
+      "sha256": "6827cd1e601bd38cd42250b3bc2c6a946e6da3fc89caa3631353b8a2b7bf0b67",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-alias.rs",
+      "sha256": "a68f7fa38205b61b1abe53507e0750bcc712901010881981f5e81540ee6fb96e",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/static-read.rs",
+      "sha256": "3b55a8ed3f69b2641315baed25b416272a18d96329eab496abafcf653d1fc2c0",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/static-write.rs",
+      "sha256": "fbdfb43519d6eef3285f88a9f3bf4dbab262a7fb9afe3ad090a6618d7f867ca3",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/pointer-value.rs",
+      "sha256": "5840dafae80b7129ce9137e3661d462c1c1adbf602f1217dfb2267ccc690e1a4",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/noncopy-boundary.rs",
+      "sha256": "eacd3669e049f26a90a6a742a5e04168ed28fdaeeeb019ffe0a6c73d2ea36536",
+      "rustc_status": 0,
+      "proposed_frontend_profile": "boundary",
+      "source_origin": "authored independent memory intrinsic control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-reified.rs",
+      "sha256": "061e8b44da79c332da7aec2bc8749380550e6f3ea5563fb68e21f2d625c2a9bf",
+      "rustc_status": 1,
+      "proposed_frontend_profile": "supported-or-semantic-rejection",
+      "source_origin": "authored independent memory intrinsic control"
+    }
+  ]
+}

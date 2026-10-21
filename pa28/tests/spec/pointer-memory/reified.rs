@@ -1,0 +1,1 @@
+#[derive(Copy,Clone)]struct P{a:u8,b:u32}fn main(){let mut x=P{a:3,b:37};let f:unsafe fn(*const P)->P=core::ptr::read::<P>;let g:unsafe fn(*mut P,P)=core::ptr::write::<P>;unsafe{let y=f(&raw const x);g(&raw mut x,y);}}

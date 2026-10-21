@@ -1,5 +1,6 @@
 //! Typed scalar operations and reified shims use the existing volatile vocabulary.
 mod atomic;
+mod memory;
 use super::context::{Context, Representation};
 use crate::{
     lowir::{
@@ -17,7 +18,7 @@ impl Context<'_> {
         &mut self,
         intrinsic: Intrinsic,
         instance: Instance,
-    ) -> Result<Type, &'static str> {
+    ) -> Result<Representation, &'static str> {
         let Some(Kind::FunctionItem {
             item, signature, ..
         }) = self.types.kind(instance.ty())
@@ -42,8 +43,10 @@ impl Context<'_> {
         {
             return Err("intrinsic callable permissions differ from its descriptor");
         }
-        if !intrinsic.is_volatile() {
-            return self.atomic_type(intrinsic, parameters, result);
+        if intrinsic.is_atomic() {
+            return self
+                .atomic_type(intrinsic, parameters, result)
+                .map(Representation::Scalar);
         }
         let parameters = self
             .types
@@ -54,13 +57,16 @@ impl Context<'_> {
         else {
             return Err("volatile intrinsic requires a raw pointer");
         };
-        let writing = intrinsic == Intrinsic::WriteVolatile;
+        let writing = intrinsic.writes_pointer();
         if mutable != writing
             || parameters.len() != if writing { 2 } else { 1 }
             || writing && (parameters[1] != pointee || result != TypeId::UNIT)
             || !writing && result != pointee
         {
             return Err("volatile intrinsic parameter or result type mismatch");
+        }
+        if intrinsic.is_memory() {
+            return self.memory_type(pointee);
         }
         let pointee = self.types.storage_head(pointee)?;
         match self.types.kind(pointee) {
@@ -78,7 +84,7 @@ impl Context<'_> {
         {
             return Err("volatile scalar layout differs from its operation width or alignment");
         }
-        Ok(ty)
+        Ok(Representation::Scalar(ty))
     }
     pub(super) fn demand_intrinsic(
         &mut self,
@@ -91,12 +97,17 @@ impl Context<'_> {
         if self.intrinsic_symbols.len() >= 100_000 {
             return Err("intrinsic shim count exceeds 100000");
         }
-        let ty = self.intrinsic_type(intrinsic, instance)?;
+        let representation = self.intrinsic_type(intrinsic, instance)?;
         let Some(Kind::FunctionItem { signature, .. }) = self.types.kind(instance.ty()) else {
             return Err("intrinsic shim requires a function item");
         };
         let signature = self.signature(signature)?;
-        let body = if intrinsic.is_volatile() {
+        let body = if intrinsic.is_memory() {
+            Self::memory_body(intrinsic, representation)?
+        } else if intrinsic.is_volatile() {
+            let Representation::Scalar(ty) = representation else {
+                return Err("volatile intrinsic has no scalar representation");
+            };
             Self::volatile_body(intrinsic, ty)?
         } else {
             self.atomic_body(intrinsic, instance)?

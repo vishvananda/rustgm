@@ -54,16 +54,16 @@ impl Machine<'_, '_> {
                     .inline_instance(instance, value.ty)
                     .ok_or("anonymous instance value is not prepared")?
             }
-            Rvalue::Intrinsic { intrinsic, .. } => {
-                return Err(match intrinsic.descriptor().constant {
-                    crate::support::intrinsics::ConstPermission::RuntimeOnly => {
-                        "runtime-only intrinsic is not allowed during constant evaluation"
-                    }
-                    crate::support::intrinsics::ConstPermission::Allowed => {
-                        "constant intrinsic execution is not implemented"
-                    }
-                }
-                .into());
+            Rvalue::Intrinsic {
+                intrinsic,
+                instance,
+                arguments,
+            } => {
+                let inputs = self.arguments(frame, arguments)?;
+                let Some(value) = self.intrinsic(intrinsic, instance, &inputs)? else {
+                    return Ok(None);
+                };
+                value
             }
             Rvalue::Scalar(id) => Constant::scalar(
                 *body

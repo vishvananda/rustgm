@@ -62,6 +62,8 @@ pub struct Work {
     pub expressions: usize,
     pub frames_started: usize,
     pub steps: usize,
+    /// Closed pointer-memory Copy traversal; cache lookups are counted in steps.
+    pub copy_steps: usize,
     pub resumes: usize,
     /// Actual source-budget preparation visits retained across required queries.
     pub value_preparation: usize,

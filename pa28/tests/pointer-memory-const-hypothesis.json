@@ -1,0 +1,11 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/pointer-memory/const-generic.rs",
+      "sha256": "e8c3133d401c29425e8b4c1ea69315e26a302e1f6fb15be23556858a7b28fdd0",
+      "rustc_status": 0,
+      "source_origin": "authored const generic transfer control"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/pointer-memory/wide-transfer.rs",
+      "sha256": "e640cfcf40b2c3ed8a5823ac6cc3492029cbd7c73f13c39fb2e5f4a678809148",
+      "rustc_status": 0,
+      "source_origin": "authored whole-wide transfer/packed aggregate alignment control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/packed-aggregate.rs",
+      "sha256": "be4286152f5c6826054879cd4bf210575d30a48d310cc2f87417e8e39147d62f",
+      "rustc_status": 0,
+      "source_origin": "authored whole-wide transfer/packed aggregate alignment control"
+    }
+  ]
+}

@@ -38,10 +38,12 @@ pub(super) struct Memory {
     cells: Vec<Cell>,
     roots: HashMap<LocationId, usize>,
     expired: HashSet<LocationId>,
+    // Successful closed callable capabilities only; access permission is never cached.
+    pub(super) copy_intrinsics: HashSet<crate::types::instance::Instance>,
 }
 impl Memory {
     pub(super) fn retained_cells(&self) -> usize {
-        self.cells.len()
+        self.cells.len().saturating_add(self.copy_intrinsics.len())
     }
     pub(super) fn expire(&mut self, locations: &[LocationId]) {
         self.expired.extend(locations.iter().copied());
@@ -128,11 +130,10 @@ impl Machine<'_, '_> {
         };
         Ok(())
     }
-    fn reserve_cells(&mut self, amount: usize) -> Result<(), Failure> {
+    pub(super) fn reserve_cells(&mut self, amount: usize) -> Result<(), Failure> {
         let retained = self
             .memory
-            .cells
-            .len()
+            .retained_cells()
             .checked_add(self.slots)
             .and_then(|n| n.checked_add(amount))
             .ok_or("constant retained storage size overflow")?;

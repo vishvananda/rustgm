@@ -1,0 +1,1 @@
+const unsafe fn take<T>(p:*const T)->T{unsafe{core::ptr::read(p)}}const unsafe fn put<T>(p:*mut T,x:T){unsafe{core::ptr::write(p,x)}}const X:u32={let mut x=(3u8,7u32);unsafe{let y=take(&raw const x);put(&raw mut x,(y.0,37));x.1}};fn main(){let _=X;}

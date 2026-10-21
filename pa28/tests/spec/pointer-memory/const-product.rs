@@ -1,0 +1,1 @@
+#[derive(Copy,Clone)]#[repr(C)]struct P{a:u8,b:u32}const X:u32={let mut p=P{a:3,b:7};unsafe{let q=core::ptr::read(&raw const p);core::ptr::write(&raw mut p,P{a:q.a+2,b:q.b+30});p.b+p.a as u32}};fn main(){let _=X;}

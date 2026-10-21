@@ -170,6 +170,7 @@ impl Engine {
                     facts.constant_work.expressions += 1;
                     facts.constant_work.frames_started += work.calls;
                     facts.constant_work.steps += work.steps;
+                    facts.constant_work.copy_steps += work.copy_steps;
                     facts.constant_work.peak_frames =
                         facts.constant_work.peak_frames.max(work.peak_frames);
                     facts.constant_work.peak_slots =

@@ -1,0 +1,17 @@
+{
+  "stage": "predeclared-before-independent-object-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-image-copy.rs",
+      "sha256": "ec5f540ab4a0b81b8c934d962bbd2da0118d59451e48be0f4844adf0005a616d",
+      "rustc_status": 0,
+      "source_origin": "authored union Image copy/mask control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-image-mask.rs",
+      "sha256": "c20cd701cddc749217a6c0588509fb55e0cab6f6283240062a20428c35800b2d",
+      "rustc_status": 1,
+      "source_origin": "authored union Image copy/mask control"
+    }
+  ]
+}

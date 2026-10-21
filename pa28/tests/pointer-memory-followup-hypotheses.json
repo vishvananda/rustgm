@@ -1,0 +1,53 @@
+{
+  "stage": "predeclared-before-follow-up-independent-qualification",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-null-write.rs",
+      "sha256": "bc8d1a2c20ddaf77adf5e064a7505118f224719f7b1789cc79f767ca724eb2b5",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/zst-expired.rs",
+      "sha256": "173f72e1578ebd21b7acba08f3e529de38890bcc81eaae43ec1a160d52e1a08a",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-repair.rs",
+      "sha256": "9d05efef587153ac5971a3c6fe246c566cb934f1395981c7fc926509cb05dc3d",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/union-initialize.rs",
+      "sha256": "0d3fde90e87c98779818421c00c08646a70b70349cea9c632bdad4e1dfb31a8f",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/copied-write-authority.rs",
+      "sha256": "eff4eedb14909864b72c2e9bcf9c7dd734b308f52eda36ed25c783deead74d29",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/copied-shared-authority.rs",
+      "sha256": "c0bb31f253eebcc4408a902ca6d45923f999eea5311d3c5658c7297ccb25c229",
+      "rustc_status": 1,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/wide-value.rs",
+      "sha256": "12e8b09da068d6520f721a098e0694bbae0fe4eff941d1271ce268cc99e19667",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    },
+    {
+      "path": "pa28/tests/spec/pointer-memory/ordinary-scalar.rs",
+      "sha256": "8213e830136224a050821294a33ff6e8d8c06c0eec5705aca629e9e0d29c51f0",
+      "rustc_status": 0,
+      "source_origin": "authored independent follow-up memory control"
+    }
+  ]
+}

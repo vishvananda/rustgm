@@ -32,6 +32,26 @@ that pointer during constant evaluation remains forbidden. As for raw reads and
 writes, the source program must meet the selected type's validity and alignment
 requirements; an unsafe block does not validate a pointer or its contents.
 
+The ordinary memory slice adds canonical `core::ptr` / `std::ptr` `read` and
+`write`. Their real signature requires only Sized T; the initial concrete
+implementation profile is Copy, with explicit non-Copy capability diagnostics.
+Both operations require unsafe permission and permit const execution through
+existing symbolic raw-access checks. Per-pointer authority, exact selected
+storage, initialization, bounds, raw-target alignment and liveness remain checked
+at every access. Cached Copy capability grants no write permission.
+
+Runtime object transfers use completed CopyObject spans and fresh owned ABI
+snapshots, preserving padding and source/destination aliasing semantics. Reified
+calls use the same ordinary hidden-result and argument ABI. CTFE preserves typed
+values and scalar union Image initialization masks; writes can initialize or
+repair fields without creating a reference. Live symbolic aligned ZSTs and sized
+wide reference values have dedicated controls. Numeric/expired zero-size pointer
+profiles, non-Copy transfers and existing general reinterpretation limits remain
+explicit boundaries. `tests/pointer-memory-outcomes.json` records 42 independent
+object outcomes, eleven native comparisons and bounded traversal/storage controls.
+The retained original wide slice-index/.len consumer boundaries are described in
+`docs/pa28-memory-review.md` and require combined-main qualification.
+
 Aggregate, zero-sized and wide-pointer volatile transfers remain explicitly
 unsupported. Ordinary object copies or zero initialization cannot substitute for
 volatile accesses or padding. The remaining atomic methods and intrinsic families are later slices. Backend
