@@ -15,3 +15,9 @@ unsupported-capture diagnostic does not prove a negative borrow/call rule.
 Put required regressions here, in the earliest assignment owning all their
 features. Keep draft inputs in their outcome manifests. At assignment release,
 register every required input in `manifest.json`; no undiscovered fixtures.
+
+`object-input-outcomes.json` declares inherited callable-object inference controls
+and explicit quantified/unresolved-target boundaries. See
+[the implementation contract](../../docs/pa24-object-input-inference.md) for the
+ordinary required-goal protocol, cache identity, independent/native evidence and
+remaining scope. It does not activate a grading suite or generated references.

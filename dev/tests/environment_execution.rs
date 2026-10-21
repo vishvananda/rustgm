@@ -15,6 +15,8 @@ mod hierarchy;
 mod native;
 #[path = "environment_execution/nested.rs"]
 mod nested;
+#[path = "environment_execution/conversion_context.rs"]
+mod object_inputs;
 #[path = "environment_execution/dependent.rs"]
 mod projected;
 #[path = "environment_execution/references.rs"]

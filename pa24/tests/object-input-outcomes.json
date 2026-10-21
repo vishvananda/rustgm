@@ -1,0 +1,383 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "inherited",
+      "path": "tests/spec/object-input-context/inherited.rs",
+      "source_sha256": "1880d2ffe491b08271ed1ae32947c1937922a4791b230f2c1485c8f1fdede0e2",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "annotated",
+      "path": "tests/spec/object-input-context/annotated.rs",
+      "source_sha256": "a906deedc3060cb3b0fcc5559d18b9a0aa735e49b7e11732cf3344d2f8b7af40",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "mutable",
+      "path": "tests/spec/object-input-context/mutable.rs",
+      "source_sha256": "39fa7b6dfeefdd8838e7fa1aab034e7fb5edd5e29a3b8d42c5e8d43841471d80",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "once",
+      "path": "tests/spec/object-input-context/once.rs",
+      "source_sha256": "dd7ea8f534087dfbf5f575e8be6b3c206d0bffabb44f42837ac8c29cc96732ac",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "wrong-annotation",
+      "path": "tests/spec/object-input-context/wrong-annotation.rs",
+      "source_sha256": "c4df6b5db8572e875b1b0e6cf7b983674d5a06f9ac3b153fb996e356d3d3d49f",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    {
+      "name": "wrong-capture",
+      "path": "tests/spec/object-input-context/wrong-capture.rs",
+      "source_sha256": "62d7cea16bea346257772f93560c23a6a176354aae3d22c17d5b36ad9bc7127c",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    {
+      "name": "mixed",
+      "path": "tests/spec/object-input-context/mixed.rs",
+      "source_sha256": "158d59eb467720f8d10d8a504b58b4d08df12a9296151998811f8d6a3a45d2b8",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "quantified-input",
+      "path": "tests/spec/object-input-context/quantified-input.rs",
+      "source_sha256": "f1572439e328638e5759b4566a37a3f4a6344d2f7b63565540eb9512b8a3eade",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "incompatible types"
+    },
+    {
+      "name": "quantified-output",
+      "path": "tests/spec/object-input-context/quantified-output.rs",
+      "source_sha256": "7f2f15144df20f4770d0d4c9adf68185529b6dd623b7fee44b8e61c62410e2a9",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "capture Copy permission requires a determined input type"
+    },
+    {
+      "name": "quantified-static-input",
+      "path": "tests/spec/object-input-context/quantified-static-input.rs",
+      "source_sha256": "6f352ffa12d84577a1a332bd5c1eb31afe1e2d0d51fa20c845f7a429648d6ef4",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "output-escape",
+      "path": "tests/spec/object-input-context/output-escape.rs",
+      "source_sha256": "3d23576eb348d6f655afec4b4ea9d7f424c54d50de8c6d8ab8274f830feeb8e2",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "incompatible types"
+    },
+    {
+      "name": "deep",
+      "path": "tests/spec/object-input-context/deep.rs",
+      "source_sha256": "ea71bbd3b59e02357e37a76249ce4a1bf92e6ad33adc213371604101ad4a0afb",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "diamond",
+      "path": "tests/spec/object-input-context/diamond.rs",
+      "source_sha256": "d5501bc2ca86ec97c701e302c83031f2240bb52b0200a309a1d306314c357186",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "unresolved-target",
+      "path": "tests/spec/object-input-context/unresolved-target.rs",
+      "source_sha256": "e7c68b536b472cafd86e3df6b8dedf5dba9c2dc5f829f0a28d87bfed1a8ea611",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    {
+      "name": "unused-binder",
+      "path": "tests/spec/object-input-context/unused-binder.rs",
+      "source_sha256": "fda807fb0ebebf18c8608e0982f4b8fad856d11708258decc154e2af9ad67a4d",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "wrong-output",
+      "path": "tests/spec/object-input-context/wrong-output.rs",
+      "source_sha256": "aea00c35255369f8ba384d7acf5dd1036a56088b7ccb1748357bd8db3ceefb3c",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    {
+      "name": "principal-missing",
+      "path": "tests/spec/object-input-context/principal-missing.rs",
+      "source_sha256": "c1081066ea72756308d5d655676cd85d4000e570bace2155f737244bc1da6110",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa24.closures"
+      ],
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation"
+    }
+  ]
+}

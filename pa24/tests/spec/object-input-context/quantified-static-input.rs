@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Apply:for<'a>Fn(&'a u8)->u8{}impl<F:for<'a>Fn(&'a u8)->u8>Apply for F{}fn main(){let n=7;let f=|_:&'static u8|n;let _o:&dyn Apply=&f;}

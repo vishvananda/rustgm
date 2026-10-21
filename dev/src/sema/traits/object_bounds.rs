@@ -1,4 +1,5 @@
 //! One complete object application shares its inherited membership and equations.
+pub(in crate::sema) mod demands;
 pub(in crate::sema) mod graph;
 #[cfg(test)]
 #[path = "../../../tests/invariants/object_bound_index.rs"]
@@ -20,6 +21,7 @@ use std::{
 pub(super) struct Cache {
     enabled: bool,
     storage: Option<Box<Storage>>,
+    demands: Option<Box<demands::Cache>>,
 }
 #[derive(Default)]
 struct Storage {

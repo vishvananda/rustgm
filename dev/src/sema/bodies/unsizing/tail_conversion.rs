@@ -222,6 +222,9 @@ impl Checker<'_> {
         target: TermId,
         upcast: bool,
     ) -> Result<(), Error> {
+        if !upcast {
+            self.object_callable_demands(node, concrete, target)?;
+        }
         let requirements = if upcast {
             self.state
                 .infer

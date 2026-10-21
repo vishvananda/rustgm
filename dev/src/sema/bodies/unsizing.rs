@@ -1,6 +1,7 @@
 //! Select one structural unsizing and retain the source-side lifetime view.
 use super::{Checker, Constructor, Error, NodeId, TermId};
 mod construction_context;
+mod elaboration;
 mod relations;
 mod tail_conversion;
 use crate::types::infer::arguments::Argument;
