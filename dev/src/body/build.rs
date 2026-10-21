@@ -128,6 +128,7 @@ pub(crate) fn concrete_prepared(
         &mut scratch,
         &mut program,
         drop_query.as_mut(),
+        &template,
     )?;
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     if let Some(body) = prepared.values().next() {

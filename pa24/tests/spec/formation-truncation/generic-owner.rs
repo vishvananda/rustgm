@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a>{a:&'static u8,b:&'a u8}fn make<'a,'b,T:Copy>(x:&'a S<'b>,_:T)->impl Fn()->u8+'static{||*x.a}static N:u8=7;fn main(){let local=9u8;let s=S{a:&N,b:&local};let f=make(&s,0u8);check(f()==7);}

@@ -1,6 +1,8 @@
 //! Captured object conversions retain per-use proofs and select sealed native bodies.
 #[path = "harness/checked_sources.rs"]
 mod checked;
+#[path = "captured_dispatch/truncation.rs"]
+mod formation_truncation;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "captured_dispatch/quantifiers.rs"]

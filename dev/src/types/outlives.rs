@@ -411,6 +411,10 @@ impl<'a> Queries<'a> {
     ) -> Self {
         QueryCache::default().attach(types, bounds, callables)
     }
+    /// Read already charged structural query work without changing its context.
+    pub(crate) const fn steps(&self) -> usize {
+        self.state.scan.budget.0
+    }
     /// Release semantic borrows without discarding completed queries or budgets.
     #[must_use]
     pub fn into_cache(self) -> QueryCache {

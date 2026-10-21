@@ -1,4 +1,5 @@
 //! A sealed proof retains the exact immutable templates checked under their assumptions.
+mod preconditions;
 use super::{Environment, Error, loans, regions};
 use crate::{
     body::{
@@ -24,12 +25,16 @@ impl Checked<'_> {
     /// They grant no caller permission; selection must require their actual images.
     pub(crate) fn visit_closure_conditions(
         &self,
+        types: &crate::types::Store,
+        bounds: &crate::types::outlives::Bounds,
+        callables: &crate::types::callable::Templates,
         mut publish: impl FnMut(
             ClosureId,
             crate::body::ir::NodeKey,
             Option<&std::sync::Arc<[crate::types::outlives::Pair]>>,
         ) -> Result<(), &'static str>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<usize, &'static str> {
+        let mut collector = preconditions::Collector::new(types, bounds, callables);
         for (&identity, &index) in &self.closures {
             let contract = &self.contracts[index];
             if !matches!(
@@ -41,15 +46,26 @@ impl Checked<'_> {
             ) {
                 continue;
             }
-            let conditions = self.regions.bodies[index]
-                .output
-                .as_ref()
-                .map(|summary| summary.execution_conditions(contract))
-                .transpose()?
-                .flatten();
-            publish(identity, contract.source, conditions)?;
+            let conditions = match &self.regions.bodies[index].output {
+                Some(summary) => summary.execution_conditions(contract)?,
+                None if contract.output.is_some() => {
+                    return Err("closure conditions require their checked output summary");
+                }
+                None => None,
+            };
+            let source = self.templates.bodies[index].body.source;
+            let kind = types
+                .closure_kind(identity)
+                .ok_or("closure conditions require complete call permission")?;
+            let borrowed_receiver = kind != crate::types::closure::CallKind::Once;
+            let universals = contract
+                .universals
+                .checked_sub(u32::from(borrowed_receiver))
+                .ok_or("captured source has no execution receiver lifetime")?;
+            let conditions = collector.source(contract, universals, conditions)?;
+            publish(identity, source, conditions.as_ref())?;
         }
-        Ok(())
+        Ok(collector.steps())
     }
     pub(crate) fn is_empty(&self) -> bool {
         self.templates.bodies.is_empty()

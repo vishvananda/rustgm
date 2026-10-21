@@ -1,0 +1,90 @@
+{
+  "profile": "Rust 1.98.0 / edition 2024 / x86_64-unknown-linux-gnu",
+  "status": "predeclared independent source outcomes; no active manifest or text oracles",
+  "cases": [
+    {
+      "name": "original",
+      "path": "pa24/tests/spec/captures/shared-reference-truncation.rs",
+      "sha256": "57b59bbb0a20524496c38dfc8c15d90ec999e64b178c2e63beddf4dbffabe242",
+      "rust_expected": 0,
+      "target_frontend": 0
+    },
+    {
+      "name": "after-scope",
+      "path": "pa24/tests/spec/formation-truncation/after-scope.rs",
+      "sha256": "b6a0fe0333d331c62f63a060d0bc7a85d6e7f46c33e7dd6ace3b0f3499cf1dd9",
+      "rust_expected": 0,
+      "target_frontend": 0
+    },
+    {
+      "name": "reference-result",
+      "path": "pa24/tests/spec/formation-truncation/reference-result.rs",
+      "sha256": "8c1f2e940cbfea7cf3c140bb5ccc7a1aa5542e82329c289acaff2bc562c0db9e",
+      "rust_expected": 0,
+      "target_frontend": 0
+    },
+    {
+      "name": "generic-owner",
+      "path": "pa24/tests/spec/formation-truncation/generic-owner.rs",
+      "sha256": "c588cdc722c690f059b50024db201168ca769e88cb89422faa7440b6d751a8dc",
+      "rust_expected": 0,
+      "target_frontend": 0
+    },
+    {
+      "name": "unused",
+      "path": "pa24/tests/spec/formation-truncation/unused.rs",
+      "sha256": "00b2616198c05190986c1ab3a45cde28a95ff162590319e05b78a771c3fc7bdf",
+      "rust_expected": 0,
+      "target_frontend": 0
+    },
+    {
+      "name": "reference-field",
+      "path": "pa24/tests/spec/formation-truncation/reference-field.rs",
+      "sha256": "d1ffc14013c626f7c4ffb98fbbb16526d39e2113ab0578eca04ce7a288abef1b",
+      "rust_expected": 1,
+      "target_frontend": 1
+    },
+    {
+      "name": "local-field",
+      "path": "pa24/tests/spec/formation-truncation/local-field.rs",
+      "sha256": "fbcb9812d48ded69f9fee3424d74e5af80d553740f16f4156380f9efb699cdac",
+      "rust_expected": 1,
+      "target_frontend": 1
+    },
+    {
+      "name": "whole-root",
+      "path": "pa24/tests/spec/formation-truncation/whole-root.rs",
+      "sha256": "bac826348be5586f0c6abc862fc9678d11b6f5752ac34cfc8be076eff62fbd11",
+      "rust_expected": 1,
+      "target_frontend": 1
+    },
+    {
+      "name": "mutable-root",
+      "path": "pa24/tests/spec/formation-truncation/mutable-root.rs",
+      "sha256": "59887f8a1e77d09d85f11a860c690b7c3e6eb03445b04befb7d4fa113fafc681",
+      "rust_expected": 1,
+      "target_frontend": 1
+    },
+    {
+      "name": "unused-invalid-child",
+      "path": "pa24/tests/spec/formation-truncation/unused-invalid-child.rs",
+      "sha256": "5cce4f80cbf0cfbe998822bd233ab0dfde6f8fcc93ce5646561ea2088714ae26",
+      "rust_expected": 1,
+      "target_frontend": 1
+    },
+    {
+      "name": "unused-valid-child",
+      "path": "pa24/tests/spec/formation-truncation/unused-valid-child.rs",
+      "sha256": "9dbd03af07e92dd93413fd94eb4149a73c1de92ecd1c40927a38f212a876cbd4",
+      "rust_expected": 0,
+      "target_frontend": 0
+    },
+    {
+      "name": "nested-truncation",
+      "path": "pa24/tests/spec/formation-truncation/nested-truncation.rs",
+      "sha256": "261e4489fa3c7ab078bb8b3af606077f54e3baa7ac130f5fa72166a6908fd7ac",
+      "rust_expected": 0,
+      "target_frontend": 0
+    }
+  ]
+}

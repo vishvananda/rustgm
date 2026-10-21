@@ -23,7 +23,7 @@ pub(super) fn prepare(
     let mut canonical = validate_execution(&facts.types, source)?;
     let generic = source
         .owner
-        .is_some_and(|owner| facts.generics.has_parameters(owner));
+        .is_some_and(|owner| crate::body::templates::owns(facts, owner));
     let mut proofs = Vec::new();
     let mut equalities = Vec::new();
     let execution = if generic && let Some(adapter) = adapter {

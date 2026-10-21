@@ -69,11 +69,16 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
             .to_string()
             .contains("checked source execution conditions")
     );
-    checked.visit_closure_conditions(|identity, source, conditions| {
-        facts
-            .closures
-            .retain_conditions(identity, source, conditions)
-    })?;
+    checked.visit_closure_conditions(
+        &facts.types,
+        &facts.lifetimes.nominal_requirements,
+        &facts.lifetimes.callables,
+        |identity, source, conditions| {
+            facts
+                .closures
+                .retain_conditions(identity, source, conditions)
+        },
+    )?;
     let mut entries = Vec::new();
     for outer in instances {
         entries.push(generic_entry(&mut facts, &checked, outer)?);

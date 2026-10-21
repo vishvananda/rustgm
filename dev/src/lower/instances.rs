@@ -148,13 +148,19 @@ fn inspect_roots<R>(
     )
     .map_err(|e| diagnostic(report, e.node, e.message))?;
     let inputs = contracts.bodies;
-    checked
-        .visit_closure_conditions(|identity, source, conditions| {
-            facts
-                .closures
-                .retain_conditions(identity, source, conditions)
-        })
+    let condition_steps = checked
+        .visit_closure_conditions(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+            |identity, source, conditions| {
+                facts
+                    .closures
+                    .retain_conditions(identity, source, conditions)
+            },
+        )
         .map_err(|e| diagnostic(report, None, e.into()))?;
+    facts.body_work.canonical_steps += condition_steps;
     if !facts.opaques.owners.is_empty() {
         let owners: std::collections::HashMap<_, _> = facts
             .functions

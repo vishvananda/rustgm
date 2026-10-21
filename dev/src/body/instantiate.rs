@@ -1,6 +1,9 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
 mod anonymous;
 mod initializers;
+#[cfg(test)]
+#[path = "../../tests/invariants/seals.rs"]
+mod seals;
 pub(crate) use initializers::with_contract as selected_initializer;
 mod closures;
 mod contracts;

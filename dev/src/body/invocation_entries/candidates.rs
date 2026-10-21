@@ -61,7 +61,7 @@ impl Candidate {
         let identity = source.identity;
         let generic = source
             .owner
-            .is_some_and(|owner| facts.generics.has_parameters(owner));
+            .is_some_and(|owner| crate::body::templates::owns(facts, owner));
         let super::shaping::Prepared {
             execution,
             mut equalities,

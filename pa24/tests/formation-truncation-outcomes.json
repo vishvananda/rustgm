@@ -1,0 +1,698 @@
+{
+  "status": "development qualification; no assignment activation or text oracles",
+  "profile": "Rust 1.98.0 / edition 2024 / x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "name": "original",
+      "path": "pa24/tests/spec/captures/shared-reference-truncation.rs",
+      "sha256": "57b59bbb0a20524496c38dfc8c15d90ec999e64b178c2e63beddf4dbffabe242",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "classification": "supported",
+      "native_expected": 0,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "a6d9eaec75864f88c2a315f0659618364421d39126a3d42a2896e10c06e4921c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "a6139f7f75e270447a5bd48a20f9c85a05ef41345c6f877779028dec296c52b4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "4246962b8fbfb348e786b3a122f246e95d88f64109af06ee8dfe6c218c195d61",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "7a60179d9f00a9c27d87f89641f52b57bb519ef96fb8b0a5d2184fa669d3f723",
+      "native_evidence": {
+        "source_sha256": "57b59bbb0a20524496c38dfc8c15d90ec999e64b178c2e63beddf4dbffabe242",
+        "lowir_sha256": "a6139f7f75e270447a5bd48a20f9c85a05ef41345c6f877779028dec296c52b4",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing source_root_conditions_execute_after_parent_storage_expires assertions"
+      }
+    },
+    {
+      "name": "after-scope",
+      "path": "pa24/tests/spec/formation-truncation/after-scope.rs",
+      "sha256": "b6a0fe0333d331c62f63a060d0bc7a85d6e7f46c33e7dd6ace3b0f3499cf1dd9",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "classification": "supported",
+      "native_expected": 0,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "4dc778ce083178185a77489ccc998df8b0d43dddd301f375d10bea419ea37452",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "a6139f7f75e270447a5bd48a20f9c85a05ef41345c6f877779028dec296c52b4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "4246962b8fbfb348e786b3a122f246e95d88f64109af06ee8dfe6c218c195d61",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "1bd7e26bdbf8b7dfa8564f60b09e557199772f7317bd65516e0dedab85b147cf",
+      "native_evidence": {
+        "source_sha256": "b6a0fe0333d331c62f63a060d0bc7a85d6e7f46c33e7dd6ace3b0f3499cf1dd9",
+        "lowir_sha256": "a6139f7f75e270447a5bd48a20f9c85a05ef41345c6f877779028dec296c52b4",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing source_root_conditions_execute_after_parent_storage_expires assertions"
+      }
+    },
+    {
+      "name": "reference-result",
+      "path": "pa24/tests/spec/formation-truncation/reference-result.rs",
+      "sha256": "8c1f2e940cbfea7cf3c140bb5ccc7a1aa5542e82329c289acaff2bc562c0db9e",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "classification": "valid Rust; remaining checked reference-result boundary",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "750758a72cee459751d9e590488b69988b2f7f9bf2a544cbc772108551a23f12",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "01ab522a9069bc8d8b789fefe995c5eba5973a4765ea0fb76d1ab3e9381bb9eb",
+          "stderr": "ERROR: file 0: 162: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "01ab522a9069bc8d8b789fefe995c5eba5973a4765ea0fb76d1ab3e9381bb9eb",
+          "stderr": "ERROR: file 0: 162: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "eb772e24a9610a1564c12ce57d322af766a53b7928dbf51241ee240ff0ff6ac7"
+    },
+    {
+      "name": "generic-owner",
+      "path": "pa24/tests/spec/formation-truncation/generic-owner.rs",
+      "sha256": "c588cdc722c690f059b50024db201168ca769e88cb89422faa7440b6d751a8dc",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "classification": "supported",
+      "native_expected": 0,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "7e899baa72d6bd84b5f7d5c5f80926ee69749cda9a1413a491f96ef6be51c952",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "f544e833341159e30b294fe50203d941ed85abe24cadd6aeffad13381ff7b7ee",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "f8665d5d1f277389ce49444c022e98595b888754911bcb397a47d5d97b6de89f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "677e8a1e7404dc8a221b238be4194948940df43667878e7d6466595fed900882",
+      "native_evidence": {
+        "source_sha256": "c588cdc722c690f059b50024db201168ca769e88cb89422faa7440b6d751a8dc",
+        "lowir_sha256": "f544e833341159e30b294fe50203d941ed85abe24cadd6aeffad13381ff7b7ee",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing source_root_conditions_execute_after_parent_storage_expires assertions"
+      }
+    },
+    {
+      "name": "unused",
+      "path": "pa24/tests/spec/formation-truncation/unused.rs",
+      "sha256": "00b2616198c05190986c1ab3a45cde28a95ff162590319e05b78a771c3fc7bdf",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "classification": "supported",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "56ae7f359e9f27cb846a10ea2c6306717b7d9dd2ed6bf4ece310288792a9e8cb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "ce8d7b0d1ccfaeeb9b7f26f09ae68940a9e95caefaf31540b95144e22e410156",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "a2003b3430b6f185fb62d1cd10047f9713a72a48acb8a49558ab0575d4fd50df",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "47492756ca5d364805a9b7465f02b4d6a20441e0fed14f219a798e7bb06ac69a"
+    },
+    {
+      "name": "reference-field",
+      "path": "pa24/tests/spec/formation-truncation/reference-field.rs",
+      "sha256": "d1ffc14013c626f7c4ffb98fbbb16526d39e2113ab0578eca04ce7a288abef1b",
+      "rust_expected": 1,
+      "target_frontend": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "classification": "independently rejected source",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "d797fc2f2e584c1bf1673f9cdade3dc45842bf6e98e67f5bbf14dffd148fe97c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b1c1c3f04e98bcc69605ae8b8b42a2d5c828643b12b22de7c6eefdd8fa1cda5f",
+          "stderr": "ERROR: file 0: 160: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b1c1c3f04e98bcc69605ae8b8b42a2d5c828643b12b22de7c6eefdd8fa1cda5f",
+          "stderr": "ERROR: file 0: 160: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "1b8d0420402e9ee663db1b76e9c0e6d30ef02c5a959e06ccf911745b84110c21"
+    },
+    {
+      "name": "local-field",
+      "path": "pa24/tests/spec/formation-truncation/local-field.rs",
+      "sha256": "fbcb9812d48ded69f9fee3424d74e5af80d553740f16f4156380f9efb699cdac",
+      "rust_expected": 1,
+      "target_frontend": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "classification": "independently rejected source",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "afc268ebb587444d3151b8c3bba934acbd5a727734cf220e08ced81ed5d2d41b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e8009e29b1ec6c58d9278a4a067d45d01f0b0f78f2ea665eb7587f410e52d880",
+          "stderr": "ERROR: file 0: 137: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e8009e29b1ec6c58d9278a4a067d45d01f0b0f78f2ea665eb7587f410e52d880",
+          "stderr": "ERROR: file 0: 137: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "e6d316df928dcbb0c7916c941b0e583b5cf134f10f98b023403c56fb12ea8e2d"
+    },
+    {
+      "name": "whole-root",
+      "path": "pa24/tests/spec/formation-truncation/whole-root.rs",
+      "sha256": "bac826348be5586f0c6abc862fc9678d11b6f5752ac34cfc8be076eff62fbd11",
+      "rust_expected": 1,
+      "target_frontend": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "classification": "independently rejected source",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "20a42441737751ba88a6364d8d5e3729318bc78ef2fdf6169403527e12509d6b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "59d3b33831c7b8438fec36d695ec9a8572fe98f971648da3033797cc1cfde3da",
+          "stderr": "ERROR: file 0: 151: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "59d3b33831c7b8438fec36d695ec9a8572fe98f971648da3033797cc1cfde3da",
+          "stderr": "ERROR: file 0: 151: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "329bf4f1e156ffb277e5e7bc6ef008afc4f5335999a34da8a4e3c0cf97a83ad5"
+    },
+    {
+      "name": "mutable-root",
+      "path": "pa24/tests/spec/formation-truncation/mutable-root.rs",
+      "sha256": "59887f8a1e77d09d85f11a860c690b7c3e6eb03445b04befb7d4fa113fafc681",
+      "rust_expected": 1,
+      "target_frontend": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "classification": "independently rejected source",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "b274dfe1af5c5cafea4319dc8ea74b3911b38f62055115a22c93c895bda92d53",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ceff5b1e0f94f16b561847811a8f0190bf7d7842306a8fcf96df61eee6bd09ae",
+          "stderr": "ERROR: file 0: 113: required lifetime does not outlive its target\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ceff5b1e0f94f16b561847811a8f0190bf7d7842306a8fcf96df61eee6bd09ae",
+          "stderr": "ERROR: file 0: 113: required lifetime does not outlive its target\n"
+        }
+      },
+      "rustc_stderr_sha256": "f45ffcf553e5c90448239c955acc2abe9e18ea022e3d926e148af965cac785b0"
+    },
+    {
+      "name": "unused-invalid-child",
+      "path": "pa24/tests/spec/formation-truncation/unused-invalid-child.rs",
+      "sha256": "5cce4f80cbf0cfbe998822bd233ab0dfde6f8fcc93ce5646561ea2088714ae26",
+      "rust_expected": 1,
+      "target_frontend": 1,
+      "frontend": [
+        0,
+        1,
+        1
+      ],
+      "classification": "independently rejected source",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "3390c955977df160c73ad06eab2d924993e354c66fd6eb2e389dae158039b636",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bff76bc442158a4c8bb2cf42d92d0b6786351d3d572e3c59fc63ff983cc52112",
+          "stderr": "ERROR: file 0: 127: access conflicts with a live reference loan\n"
+        },
+        "constants": {
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "bff76bc442158a4c8bb2cf42d92d0b6786351d3d572e3c59fc63ff983cc52112",
+          "stderr": "ERROR: file 0: 127: access conflicts with a live reference loan\n"
+        }
+      },
+      "rustc_stderr_sha256": "88527a3cf626664570519496bbb8f07b786f288ee5e6add59e711650eef166d9"
+    },
+    {
+      "name": "unused-valid-child",
+      "path": "pa24/tests/spec/formation-truncation/unused-valid-child.rs",
+      "sha256": "9dbd03af07e92dd93413fd94eb4149a73c1de92ecd1c40927a38f212a876cbd4",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "classification": "supported",
+      "native_expected": null,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "4f516e139ee67bce58c1181c427dfb82e0b7a419cd2d74c681c8251d31164732",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "7702305f172b5ee97d1a51ff0441cb0898c5f391559c23a0d9663d5a62e546ab",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "4accf88f5670d4ea9d7d25a719cd4b29bed4ba4afe3df88539ab17329799becb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "e27fbb98b3d8995b3da384bad59dc7f890e7e4928f3a94259496422c27986e52"
+    },
+    {
+      "name": "nested-truncation",
+      "path": "pa24/tests/spec/formation-truncation/nested-truncation.rs",
+      "sha256": "261e4489fa3c7ab078bb8b3af606077f54e3baa7ac130f5fa72166a6908fd7ac",
+      "rust_expected": 0,
+      "target_frontend": 0,
+      "frontend": [
+        0,
+        0,
+        0
+      ],
+      "classification": "supported",
+      "native_expected": 0,
+      "outputs": {
+        "types": {
+          "stdout_sha256": "e00253a3a3b5e351ad56e137c424f9113724c42e1ef728a4caaf156cabf1c0c1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "lowir": {
+          "stdout_sha256": "db3537039b468bcfa288ba5476ba29482475599e3dba4307053e9f4377b488c9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        },
+        "constants": {
+          "stdout_sha256": "4246962b8fbfb348e786b3a122f246e95d88f64109af06ee8dfe6c218c195d61",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": ""
+        }
+      },
+      "rustc_stderr_sha256": "3444e9c772d57267bbda7d701c22013eb9006a220cf2df434d5af80cb82b817a",
+      "native_evidence": {
+        "source_sha256": "261e4489fa3c7ab078bb8b3af606077f54e3baa7ac130f5fa72166a6908fd7ac",
+        "lowir_sha256": "db3537039b468bcfa288ba5476ba29482475599e3dba4307053e9f4377b488c9",
+        "rustc_status": 0,
+        "backend_status": 0,
+        "verified_by": "passing source_root_conditions_execute_after_parent_storage_expires assertions"
+      }
+    }
+  ],
+  "evidence": "obj/parallel/pa24/formation-truncation/",
+  "base": "96a49b48",
+  "source_sha256": "59966be79dda2d61501b4a1a48a00ec83c8a6f7487313205593f79397dc8d02f",
+  "compiler_sha256": "f332dedc10dc73a3867f93d42a45c96e3e0a00aa42610208002e9e17a7ba65d1",
+  "source_evidence": "obj/parallel/pa24/formation-truncation/source/3902561",
+  "native_evidence": "obj/parallel/pa24/formation-truncation/native-3902561",
+  "gates": [
+    {
+      "name": "format",
+      "status": 0,
+      "seconds": 5.937208890914917
+    },
+    {
+      "name": "lint",
+      "status": 0,
+      "seconds": 50.787065505981445
+    },
+    {
+      "name": "audit",
+      "status": 0,
+      "seconds": 24.344584703445435
+    },
+    {
+      "name": "catalog-invariants",
+      "status": 0,
+      "seconds": 83.59382486343384
+    },
+    {
+      "name": "source-seal-invariants",
+      "status": 0,
+      "seconds": 0.09102034568786621
+    },
+    {
+      "name": "adapter-proofs",
+      "status": 0,
+      "seconds": 0.9187214374542236
+    },
+    {
+      "name": "entry-proofs",
+      "status": 0,
+      "seconds": 0.09771919250488281
+    },
+    {
+      "name": "captured-source-native",
+      "status": 0,
+      "seconds": 72.27403664588928
+    },
+    {
+      "name": "specialization_formation",
+      "status": 0,
+      "seconds": 1.715562105178833
+    },
+    {
+      "name": "opaque_body_values",
+      "status": 0,
+      "seconds": 3.5763282775878906
+    },
+    {
+      "name": "opaque_inference",
+      "status": 0,
+      "seconds": 0.9860002994537354
+    },
+    {
+      "name": "opaque_outlives",
+      "status": 0,
+      "seconds": 1.0799086093902588
+    },
+    {
+      "name": "upstream",
+      "status": 0,
+      "seconds": 0.2066192626953125
+    },
+    {
+      "name": "layout",
+      "status": 0,
+      "seconds": 5.7540974617004395
+    }
+  ],
+  "text_comparisons": [
+    {
+      "stage": "pa1",
+      "status": 0
+    },
+    {
+      "stage": "pa2",
+      "status": 0
+    },
+    {
+      "stage": "pa3",
+      "status": 0
+    },
+    {
+      "stage": "pa4",
+      "status": 0
+    },
+    {
+      "stage": "pa5",
+      "status": 0
+    },
+    {
+      "stage": "pa6",
+      "status": 0
+    },
+    {
+      "stage": "pa7",
+      "status": 0
+    },
+    {
+      "stage": "pa8",
+      "status": 0
+    },
+    {
+      "stage": "pa9",
+      "status": 0
+    },
+    {
+      "stage": "pa10",
+      "status": 0
+    },
+    {
+      "stage": "pa11",
+      "status": 0
+    },
+    {
+      "stage": "pa12",
+      "status": 0
+    },
+    {
+      "stage": "pa13",
+      "status": 0
+    },
+    {
+      "stage": "pa14",
+      "status": 0
+    },
+    {
+      "stage": "pa15",
+      "status": 0
+    },
+    {
+      "stage": "pa16",
+      "status": 0
+    },
+    {
+      "stage": "pa17",
+      "status": 0
+    },
+    {
+      "stage": "pa18",
+      "status": 0
+    },
+    {
+      "stage": "pa19",
+      "status": 0
+    },
+    {
+      "stage": "pa20",
+      "status": 0
+    },
+    {
+      "stage": "pa21",
+      "status": 0
+    },
+    {
+      "stage": "pa22",
+      "status": 0
+    },
+    {
+      "stage": "pa23",
+      "status": 0
+    }
+  ],
+  "scaling": {
+    "declared": "obj/parallel/pa24/formation-truncation/close/scaling-declared.json",
+    "observed": [
+      {
+        "axis": "roots",
+        "width": 8,
+        "path": "obj/parallel/pa24/formation-truncation/close/roots-8.rs",
+        "sha256": "e8a4453d82039cb3217888a5a6479b8f6c6be0554bc5bdd9b884df1d2fe90998",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "repeat",
+        "width": 8,
+        "path": "obj/parallel/pa24/formation-truncation/close/repeat-8.rs",
+        "sha256": "c968405a2a20dc18fbb41eef06619fce77315abb3805295bdeb26c73332a170b",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "roots",
+        "width": 32,
+        "path": "obj/parallel/pa24/formation-truncation/close/roots-32.rs",
+        "sha256": "ebb8ca22b059be5bc9c9f28b89b481ff907d6ab2652fea756db9865192d59a94",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "repeat",
+        "width": 32,
+        "path": "obj/parallel/pa24/formation-truncation/close/repeat-32.rs",
+        "sha256": "d96cf319eda21b895df10f4d4254b22f6b94a0333b36f0be8188f38ebc3bca4a",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "roots",
+        "width": 128,
+        "path": "obj/parallel/pa24/formation-truncation/close/roots-128.rs",
+        "sha256": "cc6aef437f18717c5d7e656855a3ae28d5c3faa3e8e798436af04573b0fb413c",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "repeat",
+        "width": 128,
+        "path": "obj/parallel/pa24/formation-truncation/close/repeat-128.rs",
+        "sha256": "2eafa4295085988760fab2bc47995b2ed244226b403c0042d95658472fc40f2f",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      },
+      {
+        "axis": "ordinary",
+        "width": 128,
+        "path": "obj/parallel/pa24/formation-truncation/close/ordinary.rs",
+        "sha256": "d5ba4d0aeb1083a8b845318c14e1f67784362c8c9074455eeb64677320e5619c",
+        "rust_expected": 0,
+        "frontend_expected": 0,
+        "rustc_observed": 0,
+        "lowir_observed": 0
+      }
+    ],
+    "collector": "final3/catalog-invariants.log",
+    "structural_query_steps": 5,
+    "logical_work": [
+      [
+        8,
+        230,
+        830,
+        3230
+      ],
+      [
+        32,
+        878,
+        3206,
+        12518
+      ],
+      [
+        128,
+        3470,
+        12710,
+        49670
+      ]
+    ],
+    "repetitions": [
+      8,
+      32,
+      128
+    ]
+  },
+  "retained_failures": [
+    "final/lint.log: two test-only Clippy findings corrected",
+    "final2/audit.log: repeated filename stems corrected",
+    "first/: original family partition rejection",
+    "second/ and trace2/: missing source-root WF debt after family correction"
+  ]
+}

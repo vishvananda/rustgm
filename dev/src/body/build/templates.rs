@@ -26,6 +26,10 @@ impl Template {
 pub struct Templates {
     pub bodies: Vec<Template>,
 }
+/// Every original child belongs to the same defining source family as its parent.
+pub(crate) fn owns(facts: &Declarations, owner: crate::resolve::model::DefId) -> bool {
+    facts.generics.has_parameters(owner) || facts.opaques.owners.contains_key(&owner)
+}
 /// Build each generic or opaque-defining body once using the ordinary scope/CFG builder.
 /// The result retains possible cleanup even without a declared custom destructor.
 /// It cannot be passed to the concrete program verifier or `LowIR` lowerer.
@@ -259,10 +263,7 @@ impl Prepared {
     pub fn finish(mut self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
         for function in &facts.functions {
-            if function.body.is_some()
-                && (facts.generics.has_parameters(function.definition)
-                    || facts.opaques.owners.contains_key(&function.definition))
-            {
+            if function.body.is_some() && owns(facts, function.definition) {
                 bodies.push(self.function(report, facts, function)?);
             }
         }
@@ -276,7 +277,7 @@ impl Prepared {
         }
         for closure in facts.closures.all() {
             if let Some(owner) = closure.owner
-                && facts.generics.has_parameters(owner)
+                && owns(facts, owner)
             {
                 bodies.push(self.closure(report, facts, closure, owner)?);
             }
