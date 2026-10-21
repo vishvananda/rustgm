@@ -74,3 +74,8 @@ audit limits; each was corrected before the final passing gates. The initial
 independent hypothesis that a safe mutable declaration itself was invalid was
 corrected from rustc evidence before frontend qualification; its accesses still
 require unsafe permission. No assignment activation is included.
+
+The fixed matched-release measurement is recorded in `pa30-static-performance.md`.
+Shared scalar instructions are effectively unchanged; storage controls add
+about 1.12–1.13%. A/A wall calibration is noisy, so no tight wall-time claim is
+made. Every observation and output comparison is retained.
