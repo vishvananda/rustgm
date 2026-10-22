@@ -40,7 +40,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("pointee-lifetime", true, true),
     ("unpaid-lifetime", false, false),
     ("wrong-reified-outer", false, false),
-    ("same-named-trait", true, false),
+    ("same-named-trait", true, true),
     ("same-named-no-operator", false, false),
     ("coherence-reified-fixed-inner", true, true),
     ("coherence-source-before-pointee", false, false),
@@ -79,11 +79,8 @@ fn reference_comparison_outcomes() -> Result<(), Box<dyn std::error::Error>> {
             accepted,
         )?;
         let checked = frontend::checked(&source);
-        let implemented = accepted
-            && !matches!(
-                name,
-                "contract-unsized-pointee" | "same-named-trait" | "dot-reference-member"
-            );
+        let implemented =
+            accepted && !matches!(name, "contract-unsized-pointee" | "dot-reference-member");
         if checked.is_ok() != implemented {
             failures.push(format!("{name}: {:?}", checked.err()));
         }

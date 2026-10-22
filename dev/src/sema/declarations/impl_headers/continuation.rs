@@ -162,6 +162,32 @@ impl Checker<'_> {
         })
     }
 
+    pub(in crate::sema::declarations) fn finish_impl_regions(
+        &mut self,
+        owner: Owner,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        let definition = owner.self_definition;
+        let binder = self
+            .owner_binders
+            .get(&definition)
+            .copied()
+            .ok_or_else(|| self.error(owner.source, "missing pending impl region binder"))?;
+        if !self.impl_headers.active.contains(&definition)
+            || self.impl_headers.complete.contains(&definition)
+            || context.binder != Some(binder)
+            || self.regions.owner(binder) != Some(definition)
+        {
+            return Err(self.error(
+                owner.source,
+                "impl region completion requires its active unfinished header",
+            ));
+        }
+        self.facts
+            .finish_impl_regions(definition, self.regions.count(binder))
+            .map_err(|e| self.error(owner.source, e))
+    }
+
     fn finish_header_state(&mut self, id: DefId) {
         self.impl_headers.active.remove(&id);
         self.impl_headers.complete.insert(id);

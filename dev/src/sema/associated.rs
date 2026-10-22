@@ -1,6 +1,9 @@
 //! Namespace-resolved associated declarations; this inventory is not a type or impl proof.
 mod comparisons;
 mod language;
+#[cfg(test)]
+#[path = "../../tests/invariants/owner_slots.rs"]
+mod tests;
 use crate::{
     resolve::{
         expansion::Report,
@@ -168,6 +171,61 @@ impl Inventory {
                 Err("associated owner environment already completed")
             }
         }
+    }
+}
+
+impl super::model::Declarations {
+    /// Seal anonymous impl inputs before any prepared header can be selected.
+    pub(in crate::sema) fn finish_impl_regions(
+        &mut self,
+        definition: DefId,
+        captures: u32,
+    ) -> Result<(), &'static str> {
+        let owner = self
+            .associated
+            .owner(definition)
+            .ok_or("missing impl region owner")?;
+        let declaration = self
+            .associated
+            .get(owner)
+            .ok_or("invalid impl region owner")?;
+        if declaration.self_definition != definition
+            || !matches!(
+                declaration.kind,
+                OwnerKind::Impl {
+                    trait_type: Some(_),
+                    ..
+                }
+            )
+        {
+            return Err("impl region completion requires the trait impl Self owner");
+        }
+        if self
+            .generics
+            .implementations
+            .as_ref()
+            .is_some_and(|registry| registry.header(definition).is_some())
+        {
+            return Err("impl regions cannot change after header publication");
+        }
+        let schema = self
+            .associated
+            .schemas
+            .get_mut(&owner)
+            .ok_or("missing pending impl schema")?;
+        if self
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            != Some(schema.self_type)
+            || captures < schema.captures
+            || captures > u32::from(u16::MAX) + 1
+        {
+            return Err("stale or inconsistent pending impl region schema");
+        }
+        schema.captures = captures;
+        Ok(())
     }
 }
 

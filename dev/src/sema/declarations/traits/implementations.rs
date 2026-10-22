@@ -135,6 +135,7 @@ impl Checker<'_> {
                 Bound::Auto(marker)
             }
         };
+        self.finish_impl_regions(owner, context)?;
         let predicate = Predicate { ty, bound };
         self.validate_language_orphan(owner.source, definition, predicate)?;
         self.impl_parameters(owner.self_definition, owner.source, predicate)?;

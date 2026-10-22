@@ -100,3 +100,12 @@ Pending and Node remain 80 and 160 bytes. The integrated layout assertion uses
 this independently identified base change. Reference forwarding itself adds no
 Frame storage. The first combined check retained the failed 1,392-byte assertion
 as evidence rather than claiming the worker's old-base size for this checkout.
+
+
+The impl-lifetime-sealing follow-up supersedes the omitted-lifetime boundary
+above without changing its fixture bytes: all 61 classifications now include
+43 frontend positives, two required gaps and 16 language negatives; 25 native
+programs pass. Concrete str and dot-call RHS inference remain required. See
+[the sealing checkpoint](pa19-impl-lifetime-sealing.md) for its independent slots,
+ordinary proof path and separately retained FunctionItem inference boundary.
+Slice len was subsequently completed by its own checkpoint.

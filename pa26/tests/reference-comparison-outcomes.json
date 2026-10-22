@@ -579,7 +579,7 @@
     },
     {
       "path": "tests/spec/reference-comparison/same-named-trait.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.reference-comparison"
       ],
@@ -589,9 +589,8 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
-      "traps": false,
-      "boundary": "Required Rust-positive preexisting gap: elided reference-impl lifetime arguments"
+      "native": true,
+      "traps": false
     },
     {
       "path": "tests/spec/reference-comparison/same-named-no-operator.rs",

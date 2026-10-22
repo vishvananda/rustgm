@@ -1262,3 +1262,6 @@ fn associated_patterns_preserve_native_matching() -> Result<(), Box<dyn std::err
         .collect::<Vec<_>>();
     native::check_cases("associated-patterns", &cases)
 }
+
+#[path = "associated_declarations/elision.rs"]
+mod elision;
