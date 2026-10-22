@@ -9,6 +9,34 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
+        if let Some(prefix) = self.facts.methods.length_prefix(self.key(node)) {
+            let length = self
+                .facts
+                .methods
+                .demanded_length()
+                .ok_or_else(|| self.error(node, "missing selected slice method"))?;
+            let prefix = self.annotation(prefix.node)?;
+            let prefix = self.alias_argument(node, prefix)?;
+            if !matches!(self.head(node, prefix)?, Some(super::Constructor::Slice)) {
+                return Err(self.error(node, "slice method prefix is not a slice"));
+            }
+            let element = self.child(node, prefix, 0)?;
+            let target = bindings
+                .iter()
+                .find_map(|(id, arg)| {
+                    if *id == length.parameter {
+                        if let Argument::Type(ty) = arg {
+                            Some(*ty)
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                })
+                .ok_or_else(|| self.error(node, "missing inherited slice element argument"))?;
+            return self.equate(node, element, target);
+        }
         let selected = self.facts.methods.qualified.get(&self.key(node)).copied();
         let dot = self.state.call_types.method_owners.get(&node).copied();
         let Some(implementation) = selected

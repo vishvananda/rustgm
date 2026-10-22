@@ -218,7 +218,12 @@ impl Queries<'_> {
             return Ok(value);
         };
         let Some(&conversion) = self.typing.facts.unsizing_adjustments.get(&key) else {
-            return Ok(value);
+            return self
+                .direct_slice_metadata(key)?
+                .map_or(Ok(value), |metadata| {
+                    super::address_values::unsize(value, metadata)
+                        .map_err(|e| self.error(query, e.message()))
+                });
         };
         let metadata = match conversion {
             crate::types::unsizing::Conversion::Slice(array) => {
@@ -245,6 +250,53 @@ impl Queries<'_> {
             }
         };
         super::address_values::unsize(value, metadata).map_err(|e| self.error(query, e.message()))
+    }
+    fn direct_slice_metadata(&mut self, key: NodeKey) -> Result<Option<Metadata>, Error> {
+        let Some(fact) = self.typing.facts.node(key) else {
+            return Ok(None);
+        };
+        let Some(adjustment) = fact
+            .adjustment
+            .filter(|a| a.kind == crate::sema::model::AdjustmentKind::ArrayToSlice)
+        else {
+            return Ok(None);
+        };
+        let source = fact
+            .ty
+            .ok_or_else(|| self.error(Query::Node(key), "slice adjustment lacks its source"))?;
+        let source = self.specialized_type(key, source)?;
+        let target = self.specialized_type(key, adjustment.target)?;
+        let types = &self.typing.facts.types;
+        let (
+            Some(crate::types::Kind::Reference {
+                referent: source,
+                mutable: false,
+                ..
+            }),
+            Some(crate::types::Kind::Reference {
+                referent: target,
+                mutable: false,
+                ..
+            }),
+        ) = (types.kind(source), types.kind(target))
+        else {
+            return Ok(None);
+        };
+        let (
+            Some(crate::types::Kind::Array { element, length }),
+            Some(crate::types::Kind::Slice(target)),
+        ) = (types.kind(source), types.kind(target))
+        else {
+            // An existing slice view retains its own metadata, including shorter rest views.
+            return Ok(None);
+        };
+        if element != target {
+            return Err(self.error(
+                Query::Node(key),
+                "slice adjustment changes element identity",
+            ));
+        }
+        Ok(Some(Metadata::Length(length)))
     }
     fn union_receiver(&self, key: NodeKey, base: NodeKey) -> Result<bool, Error> {
         let Some(mut ty) = self.typing.facts.node(base).and_then(|f| f.ty) else {

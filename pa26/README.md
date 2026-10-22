@@ -273,6 +273,13 @@ outcomes and 24 selected native programs are declared in
 recorded in `docs/pa26-reference-comparisons.md`. Concrete str comparisons, elided
 reference-impl lifetime arguments and dot-call RHS autodereference inference
 remain explicit Rust-positive requirements. Supported opposing forms do not
-replace those original failing programs. Structural tuple/array/slice comparisons,
-ordinary array/slice len and the remaining hook families are still required.
+replace those original failing programs. Structural tuple/array/slice comparisons
+and the remaining hook families are still required.
 This checkpoint does not activate PA26.
+
+The slice-length checkpoint is qualified separately in
+`docs/pa26-slice-length.md`. It uses a canonical slice impl owner and an ordinary
+checked const method body; arrays retain receiver adjustment rather than gaining
+an array inherent method. Its 49 source outcomes and 30 native programs pass;
+the three earlier source gaps remain required work. Explicit array-reference
+to slice `as` conversion remains a separately recorded PA22 requirement.

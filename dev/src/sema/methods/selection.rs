@@ -21,7 +21,7 @@ use crate::{
     },
 };
 pub(super) use applicability::applicable;
-use applicability::inference;
+pub(super) use applicability::inference;
 pub(in crate::sema) use paths::{
     OwnedCaller as PathCaller, Progress as PathProgress, Query as PathQuery,
 };

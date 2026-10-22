@@ -6,6 +6,8 @@ use crate::{
     syntax::ast::NodeId,
 };
 use std::collections::HashMap;
+mod slices;
+pub use slices::SliceLength;
 
 #[derive(Clone, Copy)]
 pub struct Variant {
@@ -23,11 +25,16 @@ pub struct Nominal {
 }
 #[derive(Default)]
 pub struct LibraryTypes {
+    slice_length: Option<Box<SliceLength>>,
     entries: HashMap<LibraryType, Nominal>,
     prelude: HashMap<(NameId, Namespace), DefId>,
     modules: [Option<ScopeId>; LibraryModule::COUNT],
 }
 impl LibraryTypes {
+    #[must_use]
+    pub fn slice_length(&self) -> Option<&SliceLength> {
+        self.slice_length.as_deref()
+    }
     #[must_use]
     pub fn get(&self, kind: LibraryType) -> Option<&Nominal> {
         self.entries.get(&kind)

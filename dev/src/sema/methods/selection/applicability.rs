@@ -214,7 +214,7 @@ fn trait_requirements(
     }
     Ok(true)
 }
-pub(super) fn inference(error: infer::Error) -> &'static str {
+pub(in crate::sema::methods) fn inference(error: infer::Error) -> &'static str {
     match error {
         infer::Error::Budget => "method candidate work budget exceeded",
         infer::Error::Overflow => "method candidate arena exceeds 32 bits",

@@ -33,6 +33,8 @@ mod methods;
 mod objects;
 mod projections;
 mod receivers;
+mod slice_methods;
+mod slice_paths;
 mod trait_paths;
 mod trait_regions;
 mod traits;
@@ -318,6 +320,16 @@ impl Checker<'_> {
                 u32::try_from(index)
                     .map_err(|_| Error::at(FileId(0), 0, "too many type declarations"))?,
             );
+            if self
+                .report
+                .resolution
+                .library_types
+                .slice_length()
+                .is_some_and(|length| length.definition == id)
+            {
+                // The exact library method is published only by typed slice demand.
+                continue;
+            }
             if !matches!(
                 self.report.resolution.definitions[index].kind,
                 DefKind::Primitive

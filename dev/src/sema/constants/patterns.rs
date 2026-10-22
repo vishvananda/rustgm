@@ -76,6 +76,7 @@ impl Expansion<'_> {
             let ty = self.facts.patterns.nodes[id.0 as usize]
                 .ty
                 .ok_or("missing constant pattern input type")?;
+            let value = self.literal_pointer(ty, value)?;
             let kind = match (self.facts.types.kind(ty), value) {
                 (
                     Some(Type::Reference {
@@ -275,6 +276,7 @@ impl Expansion<'_> {
         Ok(u64::from(member.end - member.start))
     }
     fn select(&mut self, ty: TypeId, value: Value) -> Result<PatternId, &'static str> {
+        let value = self.literal_pointer(ty, value)?;
         if let Value::Reference(reference) = value
             && let Some(&id) = self.references.get(&(reference, ty))
         {
@@ -304,7 +306,34 @@ impl Expansion<'_> {
         self.work.push((id, value));
         Ok(id)
     }
+    fn literal_pointer(&self, ty: TypeId, value: Value) -> Result<Value, &'static str> {
+        let Value::BytePointer {
+            text,
+            metadata: super::references::Metadata::Length(length),
+        } = value
+        else {
+            return Ok(value);
+        };
+        let Some(Type::Reference {
+            mutable: false,
+            referent,
+            ..
+        }) = self.facts.types.kind(ty)
+        else {
+            return Ok(value);
+        };
+        if self.facts.types.kind(referent) == Some(Type::Slice(TypeId::primitive(Primitive::U8)))
+            && self.facts.texts.get(text)?.len() as u64 == length
+        {
+            // Reuse the canonical literal and its structural expansion cache.
+            return Ok(Value::Bytes(text));
+        }
+        Ok(value)
+    }
 }
+#[cfg(test)]
+#[path = "../../../tests/invariants/literal_pointers.rs"]
+mod tests;
 fn child(
     facts: &Declarations,
     ty: TypeId,

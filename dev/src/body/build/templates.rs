@@ -263,7 +263,13 @@ impl Prepared {
     pub fn finish(mut self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
         for function in &facts.functions {
-            if function.body.is_some() && owns(facts, function.definition) {
+            if (function.body.is_some()
+                || facts
+                    .methods
+                    .demanded_length()
+                    .is_some_and(|l| l.definition == function.definition))
+                && owns(facts, function.definition)
+            {
                 bodies.push(self.function(report, facts, function)?);
             }
         }

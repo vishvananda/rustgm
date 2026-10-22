@@ -484,8 +484,10 @@ impl<'a> Constraints<'a> {
             ) if x == y || (relation.reborrow && x && !y) => {
                 self.regions(relation, a, b, covariant, source)?;
                 if relation.unsize {
-                    let (Some(Kind::Array { element, .. }), Some(Kind::Slice(target))) =
-                        (self.types.kind(left), self.types.kind(right))
+                    let (
+                        Some(Kind::Array { element, .. } | Kind::ArrayTerm { element, .. }),
+                        Some(Kind::Slice(target)),
+                    ) = (self.types.kind(left), self.types.kind(right))
                     else {
                         return Err(Error::Identity);
                     };

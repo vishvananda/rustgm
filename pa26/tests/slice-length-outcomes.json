@@ -1,0 +1,745 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/slice-length/array-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "ef27137e57565f221d535274c4b7d055c8ccd7d6bdfa61717c8ceae928d648ef",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/slice-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "f4265290ef25895a0bd6d6a765f496fb6f984c705b363ca51b9ea48307bd257b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/array-qualified.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "ce68ffa8f0b3078758e8dc0ab340f33b99c312dbcd068d449399f9f7fbddb04c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/slice-qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "b192e836c9ef71c7db2a288e6cd8af5ec62ba87179888b64da9080f1fddc369a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/array-reified.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "e371fbe3a0742ff566eef4755f91abd47bdefa3e7cc43784b77c0505082eeb5c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/slice-reified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "8a4343afe7ec8249aa54d4db9d3704df5b8fbef706cbbad5606c39d439d828e3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/array-alias.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "057d7f1ee57c33c0aa58527a25b2013b5516ce0b315eb8175539c6c048b9e11f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/slice-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "9a76586e88a93e5000ea440ab36f3b2b6badcf19fe904e0bbdb508f713676f35",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "d94a04771045c68a97aad7402f657cde3e29564e82cc23b966676eadf186b981",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "2fe1e94941515f5eac4675252b2246c6fd52e085bce6d2083ede331e4430148f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/const-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "676ad7082f7091f574d8ea24cd34e266c934b1fb3f721c49c9754eefb32252db",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/const-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "cef6c4a8f60e2b45b84441d6180d7fbaf3e34e96efc59e7991b64c8bc95e9030",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/const-generic-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "34448909c95a17ccb1d8693a1d145c306af86885388fa3454dfae6d92f1896c6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/const-generic-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "6d46a4aa6ea8645c97d9fd9d952060a65d72ce641d987336bc1d2e6093fec193",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/const-qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "9cf206d892d728d1c354d9e223d7d9e5dbe1d8b4adf99f4c731a38c22fed9ecb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/mutable-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "c75bd29b73199154fd3eb8ae3f49af8d1d7c3949d1497e51650ef9f43379b675",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/nested-references.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "bfd23d3c191f32de38d9ecbd6ca9443b20a86b8c9eba4df3d280bfdbb31ce484",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/noncopy-elements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "492d93f5fa56af19ea791299f292f8ddcbf94ceffc0b64e5c8c809a6b9c116f8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/shorter-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "8e3352c81fea216c2f39c65e448635d0f091295d08e1a7a3aa0c2ac89ea66b5f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/no-prelude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "c09085e9bfac82ddd27392dbcd4a8fac1549ba0960b07b0ff57fe36a5f7bf219",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/local-inherent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "afd758d4d31e4a0dfc7a2772b1db007084463a5cc4daaa8c71a7d72d348afecc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/trait-array-competition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "ef6a8aa84faa5754685de9319625b94e02ff886d10448e770a8ab7f254eb2c67",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/trait-slice-competition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "0d22097813d215362f6d841f002af439a33c6bb01f9fa6278a860ad012c3477f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-trait-lookalike.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "5be4d53bf073e64b827a49101e9c5ae4059cdd6d395b49af34666f90de427d4b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/uninitialized-array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "8ecb1e8ca7d95a42c17cdf775f4e9006a55b6f7375e9ca00ffc40641b991479d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/uninitialized-slice.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "065487220568a71e8b61ed7e16ba52bb0bf64b975e5ee09e8df4755157212730",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/active-mut-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "fb34920487849ced670d7b21f18f0ef70e519cb927feffd97a9474808a0d6915",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/active-element-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "e05ec5b614f068482dd32e1bea34987c6c9ce0252025b17f37459c60d26f5780",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/wrong-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "d19387ba0c509f09d8ee94ec08d54232e7c96008dd76553ecc3f9a644738398e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/wrong-reified-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "0dfc36d6dff6b0a1ce173a969f503e78a84873bcd8515ebe1c7ead1ae7ec573b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/fn-pointer-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "d87da59def9f2ee89ca8b82c221fd630b3f6df927e30503f8cdf3cf381a24461",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/mutable-static-unsafe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "c8fe91ad09e1a2633c2d73daf0e31d086fea79956eeaec4d01ca9ab33efe1021",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/mutable-static-lint.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "b839c822f94d12886a6bf35d0651e041318e063c8c63ed99638a8d67eb9d1499",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/array-qualified-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "56877783b8bf2e69ef59b38f43003c990041fb4d179bcc110250b950d0334fc7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/array-alias-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "a01e7ecda3a35d5867758ecd602431e33137147b4523c356cdf9cc34c1767fe8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/dot-turbofish.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "efd5b6bc1ed005f94be57d6aa489b25dfc16b7f170cddded083fc466cd4f2712",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/qualified-turbofish.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "af8bdf66a83a85071f22f8b592aa22881ff1fafc5b8bc8e4352c8e0ad42d2c38",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/named-pattern-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "e25dc02bd5cbf4c63c5bd2275ef785b22d9936480a505e427999fbd6e84ba7fb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/invalid-surrounding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "6f1f1f5c875956f9e44e817c8caaa35b1b291b8bf451615883ed260accf77838",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/named-empty-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "05abb71eee1774e0d7e7fe11f272a65219190e6a66dbb4a1eeff1bef21a88d93",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/named-zst-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "2b3730393c2cfa1026247ef62725d1c5e86c90f77f0e30c3945c8fe02c73c3cd",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "1ef0ed61fda27245f7d5e7fc8621d17b3ad3e5212237f20d848ff1fde6d819e9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array-wrong-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "c15a21d7b03a26df9a40f60af71561a64ff35d186a44e92e2d5d0e72f8bab010",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array-unpaid-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "b7d4507e02dedec43c0b6cde9052d40066c24d50a9008afe92b6dac8398a4e5b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array-shared-covariance.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "79c84a6480d9154633e1dc64e3d82ad14dfc116ec9903822536ceaef33c53d85",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array-mutable-invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "884bb68749859b4b14bc7abb2896285ef1148f482463979216b27283ae418d10",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/generic-array-mutable-shortening.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "803be4e2dd9a79fc49553dba81ed0b8449b4b2776fe4dabe83a844251d04bad1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/byte-pattern-metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "fc99f3549ef49430adc702e6eee9e173e723760d5873a0432e8bfe778d89446c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/empty-byte-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.slice-length"
+      ],
+      "source_sha256": "1d550b684680fe5a0f62b5ad8eaebb241f1a08884b2fdfa6c8bdf0f38c479e6c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    }
+  ]
+}

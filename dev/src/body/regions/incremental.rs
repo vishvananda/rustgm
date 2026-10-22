@@ -16,6 +16,7 @@ struct Bucket {
 /// Retained completed contracts and cursors over the shared semantic fact streams.
 #[derive(Default)]
 pub struct Collector {
+    library: Option<Box<Contract>>,
     cursor: Cursor,
     pending: HashMap<NodeKey, Bucket>,
     completed: HashMap<NodeKey, Contract>,
@@ -56,6 +57,21 @@ impl Collector {
         facts: &Declarations,
         function: &Function,
     ) -> Result<&Contract, &'static str> {
+        if let Some(length) = facts.methods.length_definition(function.definition) {
+            length.validate(facts, function)?;
+            if self.library.is_none() {
+                self.library = Some(Box::new(crate::body::length_methods::contract(
+                    facts, function,
+                )?));
+            }
+            let contract = self.library.as_deref().ok_or("missing library contract")?;
+            if contract.key != super::super::ir::BodyKey::Declaration(function.definition)
+                || contract.signature != Some(function.signature)
+            {
+                return Err("cached library original changed declaration identity");
+            }
+            return Ok(contract);
+        }
         self.update(facts)?;
         let source = function
             .body
@@ -134,6 +150,19 @@ impl Collector {
             if !index.contains_key(source) {
                 return Err("builtin requirement has no body contract");
             }
+        }
+        if let Some(length) = facts.methods.demanded_length() {
+            let function = facts
+                .function_indices
+                .get(&length.definition)
+                .and_then(|&i| facts.functions.get(i))
+                .ok_or("missing registered library function")?;
+            self.function(facts, function)?;
+            let contract = self
+                .library
+                .take()
+                .ok_or("missing retained library contract")?;
+            bodies.push(*contract);
         }
         Ok(Contracts {
             bodies,

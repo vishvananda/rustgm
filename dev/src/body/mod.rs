@@ -8,6 +8,7 @@ pub mod drops;
 pub mod instantiate;
 pub mod invocation_entries;
 pub mod ir;
+pub(crate) mod length_methods;
 pub(crate) mod primitive_methods;
 pub mod promote;
 pub(crate) mod provided;

@@ -26,6 +26,7 @@ pub(in crate::sema) struct Selected {
 #[derive(Clone, Copy)]
 enum Lane {
     Inherent,
+    Library,
     Bound,
     Lexical,
 }
@@ -38,6 +39,7 @@ struct Search<'a> {
     base: TermId,
     depth: u32,
     inherent: Vec<DefId>,
+    library: Option<DefId>,
     traits: [Vec<DefId>; 2],
     object: bool,
 }
@@ -69,7 +71,14 @@ pub(in crate::sema) fn choose(
         _ => Vec::new(),
     };
     let has_traits = facts.methods.trait_names.contains(&site.name);
-    if inherent.is_empty() && !has_traits {
+    let library = report
+        .resolution
+        .library_types
+        .slice_length()
+        .filter(|l| report.resolution.definitions[l.definition.0 as usize].name == site.name)
+        .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
+        .map(|l| l.definition);
+    if inherent.is_empty() && !has_traits && library.is_none() {
         return Err(error(
             if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
                 "no inherent method with this name"
@@ -93,6 +102,7 @@ pub(in crate::sema) fn choose(
         base,
         depth,
         inherent,
+        library,
         traits,
         object: matches!(head, Some(Constructor::Dynamic { .. })),
     };
@@ -108,7 +118,7 @@ pub(in crate::sema) fn choose(
                 .map_err(error)?;
         }
     }
-    if matches!(head, Some(Constructor::Array(_))) {
+    if array(head) {
         let element = search
             .source
             .child(&search.facts.types, base, 0)
@@ -150,7 +160,7 @@ impl Search<'_> {
             } else {
                 term
             };
-            for lane in [Lane::Inherent, Lane::Bound, Lane::Lexical] {
+            for lane in [Lane::Inherent, Lane::Library, Lane::Bound, Lane::Lexical] {
                 if let Some(method) = self.select(actual, dereferences, borrow, lane)? {
                     return Ok(Some(Selected {
                         method,
@@ -168,6 +178,7 @@ impl Search<'_> {
     fn candidates(&self, lane: Lane) -> &[DefId] {
         match lane {
             Lane::Inherent => &self.inherent,
+            Lane::Library => self.library.as_slice(),
             Lane::Bound => &self.traits[0],
             Lane::Lexical => &self.traits[1],
         }
@@ -183,6 +194,13 @@ impl Search<'_> {
         let mut selected = None;
         for index in 0..self.candidates(lane).len() {
             let method = self.candidates(lane)[index];
+            if matches!(lane, Lane::Library) {
+                let possible = self.library_candidate(term, method)?;
+                if possible && selected.replace(method).is_some() {
+                    return Err("multiple applicable library methods");
+                }
+                continue;
+            }
             let Some(&(receiver, references)) = self.facts.methods.receivers.get(&method) else {
                 continue;
             };
@@ -240,6 +258,19 @@ impl Search<'_> {
         Ok(selected)
     }
 
+    fn library_candidate(&mut self, term: TermId, method: DefId) -> Result<bool, &'static str> {
+        if !super::slices::receiver(self.facts, self.source, term)? {
+            return Ok(false);
+        }
+        super::slices::prepare(self.report, self.facts)?;
+        let mut probe = Context::default();
+        let actual = probe
+            .import(&self.facts.types, self.source, term)
+            .map_err(inference)?;
+        let possible = super::slices::applicable(self.facts, &mut probe, actual, method)?;
+        selection::account_probe(self.facts, probe.steps)?;
+        Ok(possible)
+    }
     fn possible_trait(
         &mut self,
         owner: DefId,
@@ -284,4 +315,11 @@ impl Search<'_> {
 }
 fn inference(_: crate::types::infer::Error) -> &'static str {
     "invalid or exhausted receiver inference graph"
+}
+
+fn array(head: Option<Constructor>) -> bool {
+    matches!(
+        head,
+        Some(Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_))
+    )
 }

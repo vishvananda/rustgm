@@ -185,6 +185,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             .ok_or("builtin requirement has no body contract")?;
         bodies[index].builtins = Some(std::sync::Arc::new(requirements.clone()));
     }
+    super::length_methods::append_contract(facts, &mut bodies)?;
     Ok(Contracts {
         bodies,
         callables: &facts.lifetimes.callables,

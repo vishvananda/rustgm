@@ -72,6 +72,7 @@ impl Checker<'_> {
                 .method_owners
                 .insert(node, (implementation, subject));
         }
+        self.facts.methods.demand_library_method(selected.method);
         self.complete_method_arguments(node, selected.method)?;
         let ty = self.facts.definitions[selected.method.0 as usize]
             .ok_or_else(|| self.error(node, "missing selected method type"))?;

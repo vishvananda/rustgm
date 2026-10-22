@@ -2,6 +2,7 @@
 pub(super) mod overlap;
 pub(super) mod receiver;
 pub(super) mod selection;
+pub(crate) mod slices;
 mod visible;
 use crate::{
     resolve::{model::DefId, names::NameId, unit::NodeKey},
@@ -19,6 +20,7 @@ pub struct Qualified {
 
 #[derive(Default)]
 pub struct Methods {
+    library: Option<Box<slices::Library>>,
     visible: Option<Box<visible::Index>>,
     comparison_borrows: Option<Box<ComparisonBorrows>>,
     pub(super) trait_names: HashSet<NameId>,

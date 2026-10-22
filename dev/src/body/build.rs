@@ -149,6 +149,15 @@ fn function_body(
     function: &crate::sema::model::Function,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<Body, Error> {
+    if let Some(mut body) = super::length_methods::build(facts, function)
+        .map_err(|e| Declarations::error(report, function.node, e))?
+    {
+        if let Some(query) = query {
+            factory_owned_values(facts, &mut body, query)
+                .map_err(|e| Declarations::error(report, function.node, e))?;
+        }
+        return Ok(body);
+    }
     let source = function
         .body
         .ok_or_else(|| Declarations::error(report, function.node, "missing function body"))?;

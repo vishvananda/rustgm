@@ -37,6 +37,9 @@ impl Checker<'_> {
             self.schedule_method_prefix(prefix, None, context, steps, limit, scan)?;
             return Ok(true);
         }
+        if self.schedule_slice_alias(key, context, steps, limit, scan)? {
+            return Ok(true);
+        }
         let path = self.named_method_path(key);
         let Some(path) = path else {
             return self.schedule_implicit_method(key, context, steps, limit, scan);
@@ -52,6 +55,9 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
+        if self.complete_slice_prefix(key, context, steps, limit, scan)? {
+            return Ok(());
+        }
         if let Some(path) = self.explicit_method_path(key) {
             self.schedule_nominal_path(key, &path, context, steps, limit, scan)?;
         } else {
@@ -99,7 +105,8 @@ impl Checker<'_> {
     }
 
     fn completed_method_path(&self, key: NodeKey) -> bool {
-        self.facts.methods.qualified.contains_key(&key)
+        (self.facts.methods.qualified.contains_key(&key)
+            || self.facts.methods.length_prefix(key).is_some())
             && self.facts.generics.item_uses.contains_key(&key)
     }
 

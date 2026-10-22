@@ -190,6 +190,15 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         if definition.kind != DefKind::SelfType {
             continue;
         }
+        if report
+            .resolution
+            .library_types
+            .slice_length()
+            .is_some_and(|length| length.owner.0 as usize == index)
+        {
+            // This canonical slice impl is described by library metadata, not AST ownership.
+            continue;
+        }
         let source = definition
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "associated Self definition has no source"))?;
