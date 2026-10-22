@@ -1,12 +1,7 @@
 //! Byte transport preserves initialization independently of typed scalar validity.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::{
+    checked_sources as checked, native_references as native, qualify as rustc, resolve as source,
+};
 #[path = "byte_transfers/work.rs"]
 mod work;
 use std::path::Path;
