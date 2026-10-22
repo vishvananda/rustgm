@@ -1,6 +1,8 @@
 //! Constant locations carry value, access and packed-field provenance in a flat arena.
+mod ranges;
 use super::{Declarations, Error, Kind, NodeKey, Operation, Queries, Query, Value};
 use crate::{resolve::model::DefId, sema::members::Selection, types::TypeId};
+pub(super) use ranges::ProjectionView;
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -34,7 +36,10 @@ impl Pointer {
     }
 }
 #[derive(Clone, Copy)]
-pub(super) struct ProjectionId(u32);
+pub(super) enum ProjectionId {
+    Field(u32),
+    Sequence(u32),
+}
 struct Projection {
     base: Id,
     index: u64,
@@ -58,6 +63,7 @@ pub(super) struct Place {
 pub(in crate::sema) struct References {
     places: Vec<Place>,
     projections: Vec<Projection>,
+    ranges: Option<Vec<ranges::Subsequence>>,
     statics: HashMap<DefId, Id>,
     literals: HashMap<crate::sema::text::Id, Id>,
     pub(super) static_order: Vec<DefId>,
@@ -116,11 +122,8 @@ impl References {
         }
     }
     pub(super) fn insert(&mut self, place: Place) -> Result<Value, &'static str> {
-        if place
-            .projection
-            .is_some_and(|id| id.0 as usize >= self.projections.len())
-        {
-            return Err("invalid constant projection identity");
+        if place.projection.is_some() {
+            self.projection(place)?;
         }
         let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
         self.places.push(place);
@@ -133,14 +136,30 @@ impl References {
     pub(super) fn project(
         &mut self,
         base: Pointer,
-        index: u64,
+        mut index: u64,
         mut place: Place,
     ) -> Result<Value, &'static str> {
         if base.place.0 as usize >= self.places.len() {
             return Err("constant projection lacks an earlier base location");
         }
+        let mut base = base;
+        if self.ranges.is_some()
+            && let Some(ProjectionView::Sequence {
+                base: original,
+                from,
+                length,
+            }) = self.projection(self.get(Value::Reference(base))?)?
+        {
+            if index >= length {
+                return Err("constant index is out of bounds");
+            }
+            index = from
+                .checked_add(index)
+                .ok_or("constant range offset overflow")?;
+            base.place = original;
+        }
         let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
-        let projection = ProjectionId(
+        let projection = ProjectionId::Field(
             u32::try_from(self.projections.len()).map_err(|_| "too many constant projections")?,
         );
         place.projection = Some(projection);
@@ -154,17 +173,6 @@ impl References {
             metadata: None,
             write: base.write,
         }))
-    }
-    pub(super) fn projection(&self, place: Place) -> Result<Option<(Id, u64)>, &'static str> {
-        place
-            .projection
-            .map(|id| {
-                self.projections
-                    .get(id.0 as usize)
-                    .map(|p| (p.base, p.index))
-                    .ok_or("missing constant projection")
-            })
-            .transpose()
     }
     pub(super) fn get(&self, value: Value) -> Result<Place, &'static str> {
         let Value::Reference(pointer) = value else {

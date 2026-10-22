@@ -1,0 +1,1 @@
+const fn first(x:&[u8])->u8{x[0]}const fn put(x:&mut[u8]){x[0]=37;}const fn f()->u8{let mut a=[2u8,3,5,7];{let[_,ref mut r @ ..,_]=a;let n=first(r);put(r);r[1]=n;}a[1]+a[2]}const N:u8=f();fn main(){check(N==40);check(f()==40);}

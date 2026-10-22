@@ -335,7 +335,12 @@ impl Queries<'_> {
         let value = if let Some(value) = place.value {
             Some(self.field_value(key, value, index)?)
         } else {
-            self.check_static_projection(key, place.ty, index)?;
+            self.check_static_projection(
+                key,
+                place.ty,
+                index,
+                super::values::Constant(location).length(),
+            )?;
             None
         };
         // Project physical backing, retaining the actual sized field type even
@@ -407,7 +412,13 @@ impl Queries<'_> {
             .ok_or_else(|| error("constant backing field is out of bounds"))?;
         Ok((ty, index + 1 == fields.len()))
     }
-    fn check_static_projection(&self, key: NodeKey, ty: TypeId, index: u64) -> Result<(), Error> {
+    fn check_static_projection(
+        &self,
+        key: NodeKey,
+        ty: TypeId,
+        index: u64,
+        length: Option<u64>,
+    ) -> Result<(), Error> {
         let facts = &*self.typing.facts;
         if let Some(Type::Adt(item, _)) = facts.types.kind(ty)
             && facts
@@ -423,6 +434,13 @@ impl Queries<'_> {
         let fields = match facts.types.kind(ty) {
             Some(Type::Array { length, .. }) => {
                 return if index < length {
+                    Ok(())
+                } else {
+                    Err(self.error(Query::Place(key), "constant index is out of bounds"))
+                };
+            }
+            Some(Type::Slice(_)) => {
+                return if length.is_some_and(|length| index < length) {
                     Ok(())
                 } else {
                     Err(self.error(Query::Place(key), "constant index is out of bounds"))

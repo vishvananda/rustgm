@@ -48,26 +48,14 @@ impl Machine<'_, '_> {
         }
         Ok(())
     }
-    /// Physical reference-cell identity does not compare its outer lifetime.
-    /// Source type equality and lifetime proofs remain separate and unchanged.
-    fn same_raw_storage_type(&self, left: TypeId, right: TypeId) -> bool {
-        if left == right {
-            return true;
-        }
-        let types = &self.evaluator.facts().types;
-        matches!((types.kind(left), types.kind(right)),
-            (Some(crate::types::Kind::Reference { mutable: a, referent: x, .. }),
-             Some(crate::types::Kind::Reference { mutable: b, referent: y, .. }))
-                if a == b && x == y)
-    }
     pub(super) fn project_raw_type(&mut self, place: Resolved) -> Result<(), Failure> {
         if place.raw.is_some() {
-            self.path(place.address)?;
+            self.path(place.address)?.fields_only()?;
             let location = place
                 .address
                 .location()
                 .ok_or("constant pointer has no allocation provenance")?;
-            if !self.same_raw_storage_type(
+            if !Reader::new(self.evaluator.facts()).same_storage_type(
                 Reader::new(self.evaluator.facts()).location(location)?.ty,
                 place.ty,
             ) {
@@ -170,7 +158,7 @@ impl Machine<'_, '_> {
         place: Resolved,
         mutable: bool,
     ) -> Result<Option<crate::sema::values::Constant>, Failure> {
-        let (root, path) = self.path(place.address)?;
+        let (root, path) = self.path(place.address)?.fields_only()?;
         let location = Reader::new(self.evaluator.facts()).location(root)?;
         if mutable {
             if matches!(location.origin, crate::sema::values::Origin::Static(_)) {
@@ -202,7 +190,7 @@ impl Machine<'_, '_> {
         let root_type = location.ty;
         let root_layout = self.footprint(root_type)?;
         let (ty, offset) = self.storage_offset(root_type, &path)?;
-        if !self.same_raw_storage_type(ty, place.ty) {
+        if !Reader::new(self.evaluator.facts()).same_storage_type(ty, place.ty) {
             return Err(
                 "raw pointer type reinterpretation in constant execution is not implemented".into(),
             );
@@ -240,7 +228,7 @@ impl Machine<'_, '_> {
         let access = place
             .raw
             .ok_or("constant raw write lacks its access anchor")?;
-        let (root, path) = self.path(place.address)?;
+        let (root, path) = self.path(place.address)?.fields_only()?;
         let location = Reader::new(self.evaluator.facts()).location(root)?;
         if matches!(location.origin, crate::sema::values::Origin::Static(_)) {
             return Err("constant execution cannot write static storage".into());
@@ -291,7 +279,7 @@ impl Machine<'_, '_> {
         let root_ty = Reader::new(self.evaluator.facts()).location(root)?.ty;
         let root_layout = self.footprint(root_ty)?;
         let (ty, offset) = self.storage_offset(root_ty, path)?;
-        if !self.same_raw_storage_type(ty, place.ty) {
+        if !Reader::new(self.evaluator.facts()).same_storage_type(ty, place.ty) {
             return Err(
                 "raw pointer type reinterpretation in constant execution is not implemented".into(),
             );
@@ -311,12 +299,14 @@ impl Machine<'_, '_> {
         let location = access
             .location
             .ok_or("constant pointer has no allocation provenance")?;
-        let (base, path) = self.path(crate::sema::values::Constant::pointer(location))?;
+        let (base, path) = self
+            .path(crate::sema::values::Constant::pointer(location))?
+            .fields_only()?;
         if base != root {
             return Err("constant raw target differs from selected allocation".into());
         }
         let (ty, offset) = self.storage_offset(root_ty, &path)?;
-        if !self.same_raw_storage_type(ty, access.ty) {
+        if !Reader::new(self.evaluator.facts()).same_storage_type(ty, access.ty) {
             return Err(
                 "raw pointer type reinterpretation in constant execution is not implemented".into(),
             );

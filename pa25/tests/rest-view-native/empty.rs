@@ -1,0 +1,1 @@
+const fn tail(x:&[u8])->&[u8]{match x{[_,r @ ..]=>r,_=>x}}const R:&[u8]=tail(&[7]);const A:[u8;0]={let[_,r @ ..]=[7];r};fn main(){check(match R{[]=>true,_=>false});check(match A{[]=>true});check(match tail(&[3]){[]=>true,_=>false});}

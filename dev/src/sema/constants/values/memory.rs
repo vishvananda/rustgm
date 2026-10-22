@@ -196,3 +196,88 @@ impl Evaluator<'_> {
             .insert(definition, value.0);
     }
 }
+
+impl Evaluator<'_> {
+    /// Select a checked sequence's storage without reading or copying its elements.
+    /// # Errors
+    /// Rejects inconsistent element types, missing metadata and out-of-bounds ranges.
+    pub fn subsequence(
+        &mut self,
+        base: Constant,
+        from: u64,
+        length: u64,
+        ty: TypeId,
+    ) -> Result<Constant, Failure> {
+        use crate::types::Kind;
+        let Value::Reference(pointer) = base.0 else {
+            return Err("constant range requires symbolic storage".into());
+        };
+        let facts = &mut *self.queries.typing.facts;
+        let original = facts.constant_references.get(base.0)?;
+        let (element, bound) = match facts.types.kind(original.ty) {
+            Some(Kind::Array { element, length }) => {
+                (element, base.length().unwrap_or(length).min(length))
+            }
+            Some(Kind::Slice(element)) => (
+                element,
+                base.length()
+                    .ok_or("constant slice lacks length metadata")?,
+            ),
+            _ => return Err("constant range requires array or slice storage".into()),
+        };
+        let slice = match facts.types.kind(ty) {
+            Some(Kind::Array {
+                element: selected,
+                length: n,
+            }) if super::Reader::new(facts).same_storage_type(selected, element) && n == length => {
+                false
+            }
+            Some(Kind::Slice(selected))
+                if super::Reader::new(facts).same_storage_type(selected, element) =>
+            {
+                true
+            }
+            _ => {
+                return Err(
+                    "constant range differs from its checked element type or length".into(),
+                );
+            }
+        };
+        if from.checked_add(length).is_none_or(|end| end > bound) {
+            return Err(Failure::Fault("constant range is out of bounds"));
+        }
+        let value = Constant(facts.constant_references.subsequence(
+            pointer,
+            from,
+            length,
+            Place {
+                value: None,
+                ty,
+                access: original.access,
+                packed: original.packed,
+                projection: None,
+            },
+        )?);
+        if slice {
+            value.unsize(length)
+        } else {
+            Ok(value)
+        }
+    }
+    /// Snapshot a completed sequence with a shared immutable range recipe.
+    /// # Errors
+    /// Rejects malformed sequence storage, range bounds and exhausted recipe storage.
+    pub fn sequence_range(
+        &mut self,
+        value: Constant,
+        from: u64,
+        length: u64,
+    ) -> Result<Constant, Failure> {
+        let facts = &mut *self.queries.typing.facts;
+        facts
+            .constant_products
+            .range(value.0, from, length, &facts.texts)
+            .map(Constant)
+            .map_err(Failure::Invalid)
+    }
+}

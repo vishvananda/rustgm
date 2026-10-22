@@ -1,4 +1,5 @@
 //! Demanded product values share flat storage; repeats retain one element.
+mod ranges;
 use super::{Declarations, Error, Kind, NodeKey, Queries, Query, Type, Value};
 use crate::{resolve::expansion::Report, syntax::ast::List};
 
@@ -10,6 +11,11 @@ enum Contents {
         start: u32,
         end: u32,
         variant: Option<super::VariantId>,
+    },
+    Bytes {
+        text: crate::sema::text::Id,
+        from: u64,
+        length: u64,
     },
     Repeat {
         value: Value,
@@ -29,7 +35,7 @@ impl Products {
             .ok_or("missing constant product")?
         {
             Contents::Repeat { value, length } => Ok(Some((*value, *length))),
-            Contents::Fields { .. } => Ok(None),
+            Contents::Fields { .. } | Contents::Bytes { .. } => Ok(None),
         }
     }
     fn insert(&mut self, contents: Contents) -> Result<Value, &'static str> {
@@ -71,10 +77,15 @@ impl Products {
             .ok_or("missing constant product")?
         {
             Contents::Fields { start, end, .. } => Ok(u64::from(end - start)),
-            Contents::Repeat { length, .. } => Ok(*length),
+            Contents::Repeat { length, .. } | Contents::Bytes { length, .. } => Ok(*length),
         }
     }
-    pub(super) fn get(&self, id: Id, index: u64) -> Result<Value, &'static str> {
+    pub(super) fn get(
+        &self,
+        id: Id,
+        index: u64,
+        texts: &crate::sema::text::Texts,
+    ) -> Result<Value, &'static str> {
         match *self
             .nodes
             .get(id.0 as usize)
@@ -89,6 +100,20 @@ impl Products {
                     .ok_or("missing constant field")
             }
             Contents::Repeat { value, length } if index < length => Ok(value),
+            Contents::Bytes { text, from, length } if index < length => {
+                let index = usize::try_from(
+                    from.checked_add(index)
+                        .ok_or("constant byte offset overflow")?,
+                )
+                .map_err(|_| "constant byte offset exceeds host size")?;
+                let byte = *texts
+                    .get(text)?
+                    .get(index)
+                    .ok_or("constant byte range exceeds storage")?;
+                Ok(Value::Scalar(crate::sema::model::Scalar::Integer(
+                    u128::from(byte),
+                )))
+            }
             _ => Err("constant index is out of bounds"),
         }
     }
@@ -99,7 +124,7 @@ impl Products {
             .ok_or("missing constant product")?
         {
             Contents::Fields { variant, .. } => Ok(*variant),
-            Contents::Repeat { .. } => Ok(None),
+            Contents::Repeat { .. } | Contents::Bytes { .. } => Ok(None),
         }
     }
 }

@@ -24,6 +24,11 @@ impl Context<'_> {
             .enumerate()
             .all(|(i, byte)| !image.initialized(i) || *byte == 0))
     }
+    fn zero_bytes(&mut self, ty: TypeId, value: Constant) -> Result<bool, &'static str> {
+        let bytes = self.constants.stored_bytes(ty, value)?;
+        self.data.charge(bytes.len())?;
+        Ok(bytes.iter().all(|&byte| byte == 0))
+    }
     pub(super) fn zero_data(&mut self, ty: TypeId, value: Constant) -> Result<bool, &'static str> {
         let root = (ty, value);
         let mut work = vec![(root, false)];
@@ -45,6 +50,7 @@ impl Context<'_> {
                 | View::Text(_)
                 | View::Bytes(_)
                 | View::BytePointer { .. } => false,
+                View::ByteRange { .. } => self.zero_bytes(ty, value)?,
                 View::Address { bits } => {
                     bits == 0
                         && matches!(

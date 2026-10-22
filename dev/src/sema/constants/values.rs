@@ -39,7 +39,15 @@ pub struct LocationId(references::Id);
 pub enum Origin {
     Allocation,
     Static(DefId),
-    Projection { base: LocationId, index: u64 },
+    Projection {
+        base: LocationId,
+        index: u64,
+    },
+    Subsequence {
+        base: LocationId,
+        from: u64,
+        length: u64,
+    },
 }
 #[derive(Clone, Copy)]
 pub struct Location {
@@ -64,6 +72,11 @@ pub enum View {
     },
     Text(crate::sema::text::Id),
     Bytes(crate::sema::text::Id),
+    ByteRange {
+        text: crate::sema::text::Id,
+        from: u64,
+        length: u64,
+    },
     Repeat {
         value: Constant,
         length: u64,
@@ -142,19 +155,7 @@ impl<'a> Reader<'a> {
                 length: 0,
                 variant: Some(id),
             },
-            Value::Product(id) => {
-                if let Some((value, length)) = self.facts.constant_products.repeated(id)? {
-                    View::Repeat {
-                        value: Constant(value),
-                        length,
-                    }
-                } else {
-                    View::Product {
-                        length: self.facts.constant_products.length(id)?,
-                        variant: self.facts.constant_products.variant(id)?,
-                    }
-                }
-            }
+            Value::Product(id) => self.facts.constant_products.view(id)?,
         })
     }
     /// A projected location retains its original base; equal values are not
@@ -166,17 +167,26 @@ impl<'a> Reader<'a> {
             .facts
             .constant_references
             .get(Value::Reference(references::Pointer::new(id.0)))?;
-        let origin =
-            if let Some((base, index)) = self.facts.constant_references.projection(place)? {
-                Origin::Projection {
+        let origin = match self.facts.constant_references.projection(place)? {
+            Some(references::ProjectionView::Field { base, index }) => Origin::Projection {
+                base: LocationId(base),
+                index,
+            },
+            Some(references::ProjectionView::Sequence { base, from, length }) => {
+                Origin::Subsequence {
                     base: LocationId(base),
-                    index,
+                    from,
+                    length,
                 }
-            } else if let references::Access::Static(id) = place.access {
-                Origin::Static(id)
-            } else {
-                Origin::Allocation
-            };
+            }
+            None => {
+                if let references::Access::Static(id) = place.access {
+                    Origin::Static(id)
+                } else {
+                    Origin::Allocation
+                }
+            }
+        };
         Ok(Location {
             value: place.value.map(Constant),
             ty: place.ty,
@@ -187,7 +197,11 @@ impl<'a> Reader<'a> {
     /// Rejects non-products or out-of-bounds field selection.
     pub fn field(self, constant: Constant, index: u64) -> Result<Constant, &'static str> {
         match constant.0 {
-            Value::Product(id) => self.facts.constant_products.get(id, index).map(Constant),
+            Value::Product(id) => self
+                .facts
+                .constant_products
+                .get(id, index, &self.facts.texts)
+                .map(Constant),
             Value::Bytes(id) => self
                 .facts
                 .texts
@@ -523,7 +537,7 @@ impl<'a> Evaluator<'a> {
                 }
                 facts
                     .constant_products
-                    .get(id, index)
+                    .get(id, index, &facts.texts)
                     .map(Constant)
                     .map_err(Failure::Invalid)
             }

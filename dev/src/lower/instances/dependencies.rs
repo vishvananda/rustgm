@@ -346,7 +346,9 @@ impl Dependencies {
                     }
                     let location = reader.location(id)?;
                     match location.origin {
-                        Origin::Projection { base, .. } => work.push(Work::Location(base)),
+                        Origin::Projection { base, .. } | Origin::Subsequence { base, .. } => {
+                            work.push(Work::Location(base));
+                        }
                         Origin::Allocation => work.push(Work::Value(
                             location.ty,
                             location.value.ok_or("missing allocation value")?,

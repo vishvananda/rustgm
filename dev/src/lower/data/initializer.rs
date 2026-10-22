@@ -137,17 +137,9 @@ impl Context<'_> {
                         matches!(layout.shape, Shape::WidePointer),
                     );
                 }
-                let bytes = self.constants.bytes(id)?;
-                if !matches!(layout.shape, Shape::Array { stride: 1, length, .. } if length == bytes.len() as u64)
-                {
-                    return Err("constant bytes differ from their array layout");
-                }
-                self.data.charge(bytes.len())?;
-                for (index, &byte) in bytes.iter().enumerate() {
-                    init.bits(offset + index as u64, 1, u128::from(byte))?;
-                }
-                Ok(())
+                self.initialize_bytes(init, offset, ty, value)
             }
+            View::ByteRange { .. } => self.initialize_bytes(init, offset, ty, value),
             View::Text(id) => {
                 self.initialize_text(init, offset, id, matches!(layout.shape, Shape::WidePointer))
             }
@@ -184,6 +176,20 @@ impl Context<'_> {
                 Ok(())
             }
         }
+    }
+    fn initialize_bytes(
+        &mut self,
+        init: &mut Initializer,
+        offset: u64,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<(), &'static str> {
+        let bytes = self.constants.stored_bytes(ty, value)?;
+        self.data.charge(bytes.len())?;
+        for (index, &byte) in bytes.iter().enumerate() {
+            init.bits(offset + index as u64, 1, u128::from(byte))?;
+        }
+        Ok(())
     }
     fn initialize_repeat(
         &mut self,

@@ -1,5 +1,6 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
 mod image_paths;
+mod ranges;
 mod sequences;
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
@@ -7,6 +8,7 @@ use crate::{
     sema::values::{LocationId, Origin, Reader, View},
     types::TypeId,
 };
+pub(super) use ranges::{Range, StoragePath};
 use std::collections::{HashMap, HashSet};
 
 enum Cell {
@@ -94,26 +96,39 @@ impl Machine<'_, '_> {
         }
         Ok(())
     }
-    pub(super) fn path(&mut self, address: Constant) -> Result<(LocationId, Vec<u64>), Failure> {
+    pub(super) fn path(&mut self, address: Constant) -> Result<StoragePath, Failure> {
         let mut location = address.location().ok_or(Failure::Fault(
             "constant pointer has no allocation provenance",
         ))?;
         let mut path = Vec::new();
+        let mut range = None;
         loop {
             self.charge(1)?;
             if self.memory.expired.contains(&location) {
                 return Err(Failure::Fault("constant pointer refers to expired storage"));
             }
             let place = Reader::new(self.evaluator.facts()).location(location)?;
-            if let Origin::Projection { base, index } = place.origin {
-                path.push(index);
-                location = base;
-            } else {
-                break;
+            match place.origin {
+                Origin::Projection { base, index } => {
+                    path.push(index);
+                    location = base;
+                }
+                Origin::Subsequence { base, from, length } => {
+                    if range.is_some() || !path.is_empty() {
+                        return Err("constant range is not a terminal normalized projection".into());
+                    }
+                    range = Some(Range { from, length });
+                    location = base;
+                }
+                Origin::Static(_) | Origin::Allocation => break,
             }
         }
         path.reverse();
-        Ok((location, path))
+        Ok(StoragePath {
+            root: location,
+            fields: path,
+            range,
+        })
     }
     fn thaw(&mut self, id: usize) -> Result<(), Failure> {
         let Cell::Frozen(value) = self.memory.cells[id] else {
@@ -121,7 +136,7 @@ impl Machine<'_, '_> {
         };
         let (length, variant) = match Reader::new(self.evaluator.facts()).view(value)? {
             View::Product { length, variant } => (length, variant),
-            View::Repeat { length, .. } => (length, None),
+            View::Repeat { length, .. } | View::ByteRange { length, .. } => (length, None),
             View::Bytes(text) => (
                 Reader::new(self.evaluator.facts()).bytes(text)?.len() as u64,
                 None,
@@ -218,8 +233,15 @@ impl Machine<'_, '_> {
         place: Resolved,
         purpose: super::static_reads::ReadPurpose,
     ) -> Result<Option<Constant>, Failure> {
-        let (root, path) = self.path(place.address)?;
+        let StoragePath {
+            root,
+            fields: path,
+            range,
+        } = self.path(place.address)?;
         if let Some(access) = place.raw {
+            if range.is_some() {
+                return Err("constant raw whole-range access is not implemented".into());
+            }
             self.check_raw_read(
                 Resolved {
                     ty: place.union.map_or(place.ty, |u| u.owner),
@@ -234,7 +256,11 @@ impl Machine<'_, '_> {
         let target = self.storage_target(place)?;
         let path = &path[..target.path_len(path.len())?];
         let value = if self.memory.roots.contains_key(&root) {
-            self.read_cell(root, path)?
+            if let Some(range) = range {
+                self.read_range(root, path, range)?
+            } else {
+                self.read_cell(root, path)?
+            }
         } else {
             let location = Reader::new(self.evaluator.facts()).location(root)?;
             let mut value = if let Origin::Static(id) = location.origin {
@@ -254,7 +280,13 @@ impl Machine<'_, '_> {
                 self.charge(1)?;
                 value = self.evaluator.field(value, index)?;
             }
-            value
+            if let Some(range) = range {
+                self.charge(1)?;
+                self.evaluator
+                    .sequence_range(value, range.from, range.length)?
+            } else {
+                value
+            }
         };
         if let Some(union) = target.field() {
             let (value, work) = self.evaluator.union_read(
@@ -271,7 +303,7 @@ impl Machine<'_, '_> {
     pub(super) fn write_place(&mut self, place: Resolved, value: Constant) -> Result<(), Failure> {
         let target = self.storage_target(place)?;
         if let Some(union) = target.field() {
-            let (root, path) = self.path(place.address)?;
+            let (root, path) = self.path(place.address)?.fields_only()?;
             let cell = self.cell(root, &path[..target.path_len(path.len())?])?;
             let image = self.freeze(cell)?;
             let (image, work) = self.evaluator.union_write(
@@ -289,7 +321,14 @@ impl Machine<'_, '_> {
         }
     }
     pub(super) fn write(&mut self, address: Constant, value: Constant) -> Result<(), Failure> {
-        let (root, path) = self.path(address)?;
+        let StoragePath {
+            root,
+            fields: path,
+            range,
+        } = self.path(address)?;
+        if let Some(range) = range {
+            return self.write_range(root, &path, range, value);
+        }
         let cell = self.cell(root, &path)?;
         self.memory.cells[cell] = Cell::Frozen(value);
         Ok(())
@@ -457,7 +496,8 @@ impl Machine<'_, '_> {
                     .projection(address.address, index, projection.ty)?
             }
             ProjectionKind::Subslice { .. } | ProjectionKind::Subarray { .. } => {
-                return Err("constant slice projection is not implemented".into());
+                self.project_raw_type(address)?;
+                self.range_projection(address, projection)?
             }
         };
         Ok(Some(Resolved {

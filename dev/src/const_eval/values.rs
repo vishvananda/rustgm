@@ -326,19 +326,7 @@ impl Machine<'_, '_> {
                 let Some(address) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                let Some(value) = self.read(address)? else {
-                    return Ok(None);
-                };
-                let reader = Reader::new(self.evaluator.facts());
-                let length = if let Some(length) = address.address.length() {
-                    length
-                } else {
-                    match reader.view(value)? {
-                        View::Product { length, .. } | View::Repeat { length, .. } => length,
-                        View::Bytes(text) => reader.bytes(text)?.len() as u64,
-                        _ => value.length().ok_or("constant value has no length")?,
-                    }
-                };
+                let length = self.sequence_length(address)?;
                 Constant::scalar(Scalar::Integer(u128::from(length)))
             }
             Rvalue::TextEquals { .. } => {

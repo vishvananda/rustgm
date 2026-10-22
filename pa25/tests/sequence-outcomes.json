@@ -88,9 +88,9 @@
       }
     },
     {
-      "path": "tests/spec/sequences/slice-rest.rs",
+      "path": "tests/spec/rest-views/slice-rest.rs",
       "source_sha256": "e0b3a17794a91419d1de7fc5b7cdbc3f44b4ba6103628a47e31bb616195b3777",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -100,12 +100,22 @@
       "features": [
         "pa25.const-sequences"
       ],
-      "boundary": "Rust accepts; typed constant range views or literal byte backing remain unimplemented."
+      "prior_boundary": {
+        "exit_status": 1,
+        "reason": "Rust accepts; typed constant range views or literal byte backing remain unimplemented.",
+        "superseded_by": "tests/rest-view-contract.json"
+      },
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
     },
     {
-      "path": "tests/spec/sequences/array-rest.rs",
+      "path": "tests/spec/rest-views/array-rest.rs",
       "source_sha256": "f27cae392c758a3bd332482670874677023344d214d58b67d7bd4896c198589d",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -115,7 +125,17 @@
       "features": [
         "pa25.const-sequences"
       ],
-      "boundary": "Rust accepts; typed constant range views or literal byte backing remain unimplemented."
+      "prior_boundary": {
+        "exit_status": 1,
+        "reason": "Rust accepts; typed constant range views or literal byte backing remain unimplemented.",
+        "superseded_by": "tests/rest-view-contract.json"
+      },
+      "native": {
+        "kind": "run",
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
     },
     {
       "path": "tests/spec/sequences/slice-empty.rs",

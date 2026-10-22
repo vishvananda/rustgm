@@ -1,4 +1,5 @@
 //! Evaluated storage refines the conservative type fact without following pointer slots.
+mod ranges;
 use super::{Constant, Error, Evaluator, Origin, Reader, View};
 use crate::types::{
     Kind, TypeId,
@@ -133,6 +134,10 @@ impl Inspection<'_> {
                     Answer::Ordinary => {}
                 },
                 Kind::Array { element, length } => self.array(element, length, value)?,
+                Kind::Slice(element) => {
+                    let length = self.reader.field_types(ty, value)?.len();
+                    self.array(element, length, value)?;
+                }
                 Kind::Tuple(fields) => self.fields(fields, value)?,
                 Kind::Closure { environment, .. } => self.push(environment, value)?,
                 Kind::Reference { .. } if self.references => match self.reference(value)? {
@@ -141,7 +146,6 @@ impl Inspection<'_> {
                     Answer::Ordinary => {}
                 },
                 Kind::ArrayTerm { .. }
-                | Kind::Slice(_)
                 | Kind::Parameter(_)
                 | Kind::Projection(_)
                 | Kind::Opaque(..)
@@ -226,10 +230,15 @@ impl Inspection<'_> {
         loop {
             self.charge(1)?;
             match self.reader.location(location)?.origin {
-                Origin::Projection { base, .. } => location = base,
+                Origin::Projection { base, .. } | Origin::Subsequence { base, .. } => {
+                    location = base;
+                }
                 Origin::Static(_) => return Ok(Answer::Ordinary),
                 Origin::Allocation => break,
             }
+        }
+        if let Origin::Subsequence { base, from, length } = pointed.origin {
+            return self.range_reference(pointed.ty, base, from, length);
         }
         let value = pointed
             .value
@@ -282,6 +291,18 @@ impl Inspection<'_> {
                 )?;
                 for index in 0..length {
                     self.push(element, self.reader.field(value, index)?)?;
+                }
+            }
+            View::Bytes(_) | View::ByteRange { .. }
+                if element == TypeId::primitive(crate::types::Primitive::U8) =>
+            {
+                let actual = match self.reader.view(value)? {
+                    View::Bytes(text) => self.reader.bytes(text)?.len() as u64,
+                    View::ByteRange { length, .. } => length,
+                    _ => return Err("missing byte range"),
+                };
+                if actual != length {
+                    return Err("stored byte range differs from its type length");
                 }
             }
             _ => return Err("stored array value differs from its type length"),

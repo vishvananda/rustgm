@@ -1,0 +1,1 @@
+static mut DROPS:u32=0;struct V(u32);impl Drop for V{fn drop(&mut self){unsafe{DROPS=DROPS+self.0;}}}fn middle<T>(a:[T;4])->[T;2]{let[_,r @ ..,_]=a;r}fn main(){{let r=middle([V(1),V(2),V(4),V(8)]);check(unsafe{DROPS}==9);check(r[0].0==2);check(r[1].0==4);}check(unsafe{DROPS}==15);}

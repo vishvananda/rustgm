@@ -1,0 +1,551 @@
+{
+  "stage": "planned-assignment-qualified-development-profile",
+  "base": "901242ff plus2ad8f5fb and5adab045",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "pa25/tests/spec/rest-views/nested-slice.rs",
+      "rustc_expected": 0,
+      "sha256": "bf80ca343f3bb1a203fe21b63bd5070afdbf3a98734a91843d64020a749c06b4",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/empty-slice.rs",
+      "rustc_expected": 0,
+      "sha256": "83d2e57bd467742dae1f7132decaaddedfa77f7d94a1e2100dfd15598683a2fa",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/empty-array.rs",
+      "rustc_expected": 0,
+      "sha256": "f69885669dfbcdcc6e198204c18aaa399a5c6424ab53bb25858e0997d07b2bc4",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/mutable-array.rs",
+      "rustc_expected": 0,
+      "sha256": "60c28880218540e7581413d733d8f304d0b62ad93c95ee0eca598b8c22fdf3c5",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/mutable-slice.rs",
+      "rustc_expected": 0,
+      "sha256": "ce30bbf304dc0b2bca2aaf2c6913798b0d6cfd81fc4c60c8827a9409fb6e9531",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/nested-mutable.rs",
+      "rustc_expected": 0,
+      "sha256": "1c789b312e68c2a38664aba753b4d701bde5e13176c9cb558d5539adbdc8e091",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/whole-range-write.rs",
+      "rustc_expected": 0,
+      "sha256": "ff7fd5108e24254c93cd9d4dac32598a3fd7089a10d3136a41da961287d99291",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/reborrow.rs",
+      "rustc_expected": 0,
+      "sha256": "52d1d10eed15ee4cd54d95b2c0e083a8f410059039c5e71a4cb95b0c1a1ba454",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/copied-array.rs",
+      "rustc_expected": 0,
+      "sha256": "182e968ac2e2b9411177c6b59e4df25d7c08588dcd69d57fae7966b4a72dea0e",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/static-range.rs",
+      "rustc_expected": 0,
+      "sha256": "38f6999437d3ff977d6d273681ec838f67d24f1c6cd9d072f8f6bc36fe37a60a",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/literal-range.rs",
+      "rustc_expected": 0,
+      "sha256": "c049d70f5ac6e03e43b363c8e5d84c711144016c823b379eb3726fc7b64ceeb4",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/literal-copy.rs",
+      "rustc_expected": 0,
+      "sha256": "716c12787685d9fb4c96759d5c687b93be4cb40e9c17b8eb68c4260bd957f341",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/generic-copy.rs",
+      "rustc_expected": 0,
+      "sha256": "289ae13359634de308e82158f3d96d9f51ca6c716dd518435ae577d61e83ddc6",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/too-short.rs",
+      "rustc_expected": 0,
+      "sha256": "47269338bb4f426ec987fddc04c68b24183e130ef209375e99174017e2321ad3",
+      "note": ""
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/raw-alias.rs",
+      "rustc_expected": 0,
+      "sha256": "e664871132269d70d4948c829c39879f1ac09d8cbcad0cc7b005dedb7c021e23",
+      "note": "Corrected unsafe contract: raw pointer is derived from the active mutable rest reference. Original parent-alias hypothesis is retained as source-only evidence, not native validity proof."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/local-escape.rs",
+      "rustc_expected": 1,
+      "sha256": "e5557eb7ca8ed46e1b2d4d3d33b27f3d3b1fb6b9c4dba87da021aa800b0aa258",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/empty-local-escape.rs",
+      "rustc_expected": 1,
+      "sha256": "24645c92719b6da0aab93cdb731b9f4f450e075791a4f7ce2551efad3bf2926a",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/bounds.rs",
+      "rustc_expected": 1,
+      "sha256": "6a7e259cdb9c58af16c999428304c00788f46c9de4719bd37c8a60c0a43cf7f2",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/shared-write.rs",
+      "rustc_expected": 1,
+      "sha256": "779536a73472313569a94bc2972cd52040d3ea1830afe5639fbde73ec82e9a17",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/loan-conflict.rs",
+      "rustc_expected": 1,
+      "sha256": "9c8cdee1eecf382ce4c6035128cf170fca961e6ca062b566f3d219e189c22e73",
+      "note": ""
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/raw-shared-write.rs",
+      "rustc_expected": 1,
+      "sha256": "65eabc7f4a992e91e3c9d1cc20e0dc22b253f39dfe9815e7937c58fab36225ab",
+      "note": ""
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/raw-expired.rs",
+      "rustc_expected": 1,
+      "sha256": "cf46c3e04568190a3c9f02464fb676e6e922a3e4b10333f11b7c7a375aa8f186",
+      "note": ""
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/static-length.rs",
+      "rustc_expected": 0,
+      "sha256": "0fd2b019efac380335707571d31d05c3f52373d2dbab354b84502be38d215f26",
+      "note": "Metadata hypothesis: no whole contents read"
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/interior-static-length.rs",
+      "rustc_expected": 0,
+      "sha256": "0316b9e2584292c33e8d12207e490608efc97afa205bc5771c48be3d08c011ac",
+      "note": "Metadata hypothesis: interior static length is not a by-value contents read"
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/self-static-length.rs",
+      "rustc_expected": 0,
+      "sha256": "df0cd16e2b110d09bba78f9fa6f0c0f5c168a78214e4471dffa10a65f5c36af1",
+      "note": "Metadata hypothesis: length does not demand its own initializer"
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/mutable-static-length.rs",
+      "rustc_expected": 0,
+      "sha256": "68a479bf311d46917c5ed4da418023d5a59eb56823a839dc7148065714ea0be9",
+      "note": "Metadata hypothesis: mutable-static address/length versus contents"
+    },
+    {
+      "path": "pa30/tests/spec/rest-views/foreign-static-length.rs",
+      "rustc_expected": 0,
+      "sha256": "27a0469ef3fc6fdbfe04a9772f8c59712583e759014837e768f95106a94d1c59",
+      "note": "Object-only metadata hypothesis; no link-time definition"
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/slice-rest.rs",
+      "rustc_expected": 0,
+      "sha256": "e0b3a17794a91419d1de7fc5b7cdbc3f44b4ba6103628a47e31bb616195b3777",
+      "note": "Original unchanged owning fixture"
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/array-rest.rs",
+      "rustc_expected": 0,
+      "sha256": "f27cae392c758a3bd332482670874677023344d214d58b67d7bd4896c198589d",
+      "note": "Original unchanged owning fixture"
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/mutable-length-unsafe.rs",
+      "rustc_expected": 1,
+      "sha256": "c8fe91ad09e1a2633c2d73daf0e31d086fea79956eeaec4d01ca9ab33efe1021",
+      "note": "Metadata does not waive source unsafe/static_mut_refs obligations"
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/mutable-length-lint.rs",
+      "rustc_expected": 1,
+      "sha256": "47c2ecdb0434d117ca81b640dfcb0c69633f4408931885b387318d47fec5c18b",
+      "note": "Metadata does not waive source unsafe/static_mut_refs obligations"
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/metadata-pattern-static.rs",
+      "rustc_expected": 0,
+      "sha256": "b201596705d9db1431cb949a91fb6bbdf4391ba76c60ff96773d64b827991f1d",
+      "note": "Metadata-only Rvalue::Length through supported pattern route; independent hypothesis predeclared before execution."
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/metadata-pattern-interior.rs",
+      "rustc_expected": 0,
+      "sha256": "8c57b44bbdd59e055ff0ecab07beefd6b216c8311f10ad50b4d6e813e553f1c2",
+      "note": "Metadata-only Rvalue::Length through supported pattern route; independent hypothesis predeclared before execution."
+    },
+    {
+      "path": "pa27/tests/spec/rest-views/metadata-pattern-mutable.rs",
+      "rustc_expected": 0,
+      "sha256": "2fedb05d70592937ef41493b1b441dfed8a180fd015e5859f7fc60a87f4ab7c3",
+      "note": "Metadata-only Rvalue::Length through supported pattern route; independent hypothesis predeclared before execution."
+    },
+    {
+      "path": "pa30/tests/spec/rest-views/metadata-pattern-foreign.rs",
+      "rustc_expected": 0,
+      "sha256": "070cfb57fd7628a71c30f2fc98346ce40604586a3808fd0641252ac801d25913",
+      "note": "Metadata-only Rvalue::Length through supported pattern route; independent hypothesis predeclared before execution."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/metadata-pattern-self.rs",
+      "rustc_expected": 0,
+      "sha256": "e6258e164befbb2eaf567a3866232fa3485b07a291c3207c7244f2c304fcd850",
+      "note": "Metadata-only Rvalue::Length through supported pattern route; independent hypothesis predeclared before execution."
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/ordinary-with-interior-type.rs",
+      "rustc_expected": 0,
+      "sha256": "7b92f33277e736f1fa10162cd491706b47cd8d594c33d06d4359b96f274f01f3",
+      "note": "Predeclared final-reference selected-range/interior storage control."
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/interior-empty.rs",
+      "rustc_expected": 0,
+      "sha256": "8c5b40969a5a11df86089b6e11d2f08d8f41a64a8b9d82b0f0a534fcc41672af",
+      "note": "Predeclared final-reference selected-range/interior storage control."
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/interior-nonempty.rs",
+      "rustc_expected": 1,
+      "sha256": "ac693a5d50dfef35c39bc5393c3659484bbcf8679afc2b0428912dd2549be6d1",
+      "note": "Predeclared final-reference selected-range/interior storage control."
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/byte-with-interior-type.rs",
+      "rustc_expected": 0,
+      "sha256": "97511ed08f2b4d4443b97369044368b3ce598f570bb641c1538d2944bceefeb7",
+      "note": "Predeclared final-reference selected-range/interior storage control."
+    },
+    {
+      "path": "pa28/tests/spec/rest-views/interior-parent-empty.rs",
+      "rustc_expected": 1,
+      "sha256": "1420ef8f4f00b5b9c2f0d04da16756f475d0a0c010a06364fcd5eb2852636c09",
+      "note": "Predeclared opposing source promotion control: empty selected range must not invent promotion for a nonpromotable interior parent."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/owned-array.rs",
+      "rustc_expected": 0,
+      "sha256": "6fc0831109031d8129b75883272f3e5295773982c26b30007d8ad27737917413",
+      "note": "Predeclared non-Copy owned snapshot/move authority control; no invented Copy bound."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/owned-moved.rs",
+      "rustc_expected": 1,
+      "sha256": "976abeb4f365765731540908586a5dd19002324012da3727820b6a7710350b96",
+      "note": "Predeclared non-Copy owned snapshot/move authority control; no invented Copy bound."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/deep-reference.rs",
+      "rustc_expected": 0,
+      "sha256": "b2c0579063f14b8cffb2a0ba3bfceacc30a8daad56bd32903932135a9f7bebe3",
+      "note": "Predeclared128 nested reference ranges over compressed backing; output graph must retain canonical absolute offset instead of an ancestry chain."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/reference-array-temporary.rs",
+      "rustc_expected": 1,
+      "sha256": "1a62e557dbbff0dabf53a56af7ebfacd500bb8a2fea803769df14ffc37f8d226",
+      "note": "Original predicted-positive reference-array hypothesis rejected pinned Rust E0716; exact bytes retained. Actual static backing is a separate positive."
+    },
+    {
+      "path": "pa25/tests/spec/rest-views/reference-array.rs",
+      "rustc_expected": 0,
+      "sha256": "860d4a32489d2559dce6bd0df09bc182316097aa9594b71588e67dbdec9cacc1",
+      "note": "Reference-bearing selected range has actual static array backing; separate from temporary lifetime rejection."
+    }
+  ],
+  "native": [
+    {
+      "path": "pa25/tests/rest-view-native/nested-slice.rs",
+      "sha256": "e5c81ac8a4f329ab72fbcec7cde26efde63c22ab3cc69976860d7abf50bd8211",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/empty.rs",
+      "sha256": "5a4ec7d2c91b2366167303073442c0ac03fd5503f93ecc950997c89cd9bc91e2",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa27/tests/rest-view-native/mutable-alias.rs",
+      "sha256": "95adf77d8d46b7cb3834d082a59a42054bef3d801919d9e11d3451aefb5bef30",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/whole-write.rs",
+      "sha256": "a99559cb338cf2529147a3d5200fa3a650045b44e57fffc6149a586f0612f650",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/nested-mutable.rs",
+      "sha256": "ef9a0e38614b900b8fab1e1f10a5f2a68d70e8e0b8cb1b368b909b95b3d90abb",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/copy-isolation.rs",
+      "sha256": "d13d78fee15bc47f4ef0ca74948ef8d69e8a5be343d730ddf05680693a3df8f7",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/literal.rs",
+      "sha256": "1f0e8cd764dc73e27a539c93a71ea4413a503fbadb2da0a5664bc373d65e430f",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/static.rs",
+      "sha256": "e7751802ddd62462483f532324a5271af3858623d2e2898ae231fab8de2cdee7",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/generic.rs",
+      "sha256": "e41b6619f2bd4ab94aee55e6db511c6f0556ac6a83b411d9edfebc23aee2cbb9",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/reborrow.rs",
+      "sha256": "d5b1004200dc64afa985a894ac58c8496e5aa9fb0a00415192cbb397ea57bb1c",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Same const result and runtime function/alias checks where applicable; no claim about unsafe aliasing beyond active reborrow."
+    },
+    {
+      "path": "pa27/tests/rest-view-native/owned-drops.rs",
+      "sha256": "da4c4bdd7d1982443f40a22e47f73f3bd9524ef643452297536ae93f000b2f1b",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Predeclared generic non-Copy ownership transfer and exact prefix/suffix/result destruction counts."
+    },
+    {
+      "path": "pa25/tests/rest-view-native/reference-array.rs",
+      "sha256": "0d3789110df9a62db72e5aca450b4dfc294f11cc73d5bb91d22751f43445f52b",
+      "runtime_status": 0,
+      "prefix": "native_references::CHECK",
+      "note": "Actual static reference-array backing and named local array retain pointees; temporary-backed hypothesis retained separately."
+    }
+  ],
+  "native_method_route_declarations": [
+    {
+      "name": "nested-slice",
+      "source": "const fn trim(x:&[u32])->&[u32]{match x{[_,r @ ..,_]=>match r{[_,s @ ..]=>s,_=>&[]},_=>&[]}}const R:&[u32]=trim(&[2,3,5,7,11]);fn main(){check(R.len()==2);check(R[0]==5);check(R[1]==7);let x=[13,17,19,23,29];let r=trim(&x);check(r[0]==19);check(r[1]==23);}\n",
+      "sha256": "dc2e62bc623d61aa4a7d0e9bbce007b3ed6448a9e3cfeaddcece423213b9d8e1",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "empty",
+      "source": "const fn tail(x:&[u8])->&[u8]{match x{[_,r @ ..]=>r,_=>x}}const R:&[u8]=tail(&[7]);const A:[u8;0]={let[_,r @ ..]=[7];r};fn main(){check(R.len()==0);check(A.len()==0);check(tail(&[3]).len()==0);}\n",
+      "sha256": "ed00be5eb5657bf895568fdf747f71f479c2873aab6ef4c90e2c1055301a8fbc",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "mutable-alias",
+      "source": "const fn f()->u8{let mut a=[2u8,3,5,7];{let[_,ref mut r @ ..,_]=a;r[0]=37;let p=&raw mut r[1];unsafe{*p=41;}}a[1]+a[2]}const N:u8=f();fn main(){check(N==78);check(f()==78);}\n",
+      "sha256": "95adf77d8d46b7cb3834d082a59a42054bef3d801919d9e11d3451aefb5bef30",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "whole-write",
+      "source": "const fn f()->u8{let mut a=[2u8,3,5,7];{let[_,ref mut r @ ..,_]=a;*r=[37,41];}a[1]+a[2]}const N:u8=f();fn main(){check(N==78);check(f()==78);}\n",
+      "sha256": "a99559cb338cf2529147a3d5200fa3a650045b44e57fffc6149a586f0612f650",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "nested-mutable",
+      "source": "const fn put(x:&mut[u8]){match x{[_,r @ ..]=>match r{[_,s @ ..]=>{s[0]=37;s[1]=41;},_=>()},_=>()}}const fn f()->u8{let mut a=[2u8,3,5,7];put(&mut a);a[2]+a[3]}const N:u8=f();fn main(){check(N==78);check(f()==78);}\n",
+      "sha256": "ef9a0e38614b900b8fab1e1f10a5f2a68d70e8e0b8cb1b368b909b95b3d90abb",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "copy-isolation",
+      "source": "const fn f()->u8{let a=[2u8,3,5,7];let[_,mut r @ ..,_]=a;r[0]=37;r[1]=41;r[0]+a[1]}const N:u8=f();fn main(){check(N==40);check(f()==40);}\n",
+      "sha256": "d13d78fee15bc47f4ef0ca74948ef8d69e8a5be343d730ddf05680693a3df8f7",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "literal",
+      "source": "const fn tail(x:&[u8])->&[u8]{match x{[_,r @ ..]=>r,_=>x}}const R:&[u8]=tail(b\"abc\");const A:[u8;2]={let[_,r @ ..,_]=*b\"abcd\";r};fn main(){check(R.len()==2);check(R[0]==98);check(R[1]==99);check(A[0]==98);check(A[1]==99);}\n",
+      "sha256": "30a4e59e1f5b361e71f8da37a582813da52c69f54b682f95745119da58dbe8fb",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "static",
+      "source": "static A:[u32;4]=[2,3,5,7];const R:&[u32]={let[_,ref r @ ..,_]=A;r};const N:usize=A.len();fn main(){check(N==4);check(R.len()==2);check(R[0]==3);check(R[1]==5);}\n",
+      "sha256": "9fa0d1a51f2ec4699cd76f0c704cafc24c83e354699b6bd4fc11b46a4ab355b8",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "generic",
+      "source": "const fn mid<T:Copy>(a:[T;4])->[T;2]{let[_,r @ ..,_]=a;r}const A:[u32;2]=mid([2,3,5,7]);fn main(){check(A[0]==3);check(A[1]==5);let r=mid([11u64,13,17,19]);check(r[0]==13);check(r[1]==17);}\n",
+      "sha256": "e41b6619f2bd4ab94aee55e6db511c6f0556ac6a83b411d9edfebc23aee2cbb9",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    },
+    {
+      "name": "reborrow",
+      "source": "const fn first(x:&[u8])->u8{x[0]}const fn put(x:&mut[u8]){x[0]=37;}const fn f()->u8{let mut a=[2u8,3,5,7];{let[_,ref mut r @ ..,_]=a;let n=first(r);put(r);r[1]=n;}a[1]+a[2]}const N:u8=f();fn main(){check(N==40);check(f()==40);}\n",
+      "sha256": "d5b1004200dc64afa985a894ac58c8496e5aa9fb0a00415192cbb397ea57bb1c",
+      "status": "unexecuted declaration replaced before qualification; missing .len route retained separately"
+    }
+  ],
+  "native_method_route_note": "Initial unexecuted declarations used .len(); replaced with pattern checks before qualification because canonical method preparation is a separate PA26 gap. Source metadata hypotheses remain unchanged.",
+  "placement_note": "Plain rest projections PA25; unsafe/raw/mutable-static cross-controls PA27; AtomicU32 storage PA28; foreign-static metadata PA30. All moved fixture bytes unchanged.",
+  "hypothesis_disagreements": [
+    {
+      "path": "pa25/tests/spec/rest-views/reference-array-temporary.rs",
+      "sha256": "1a62e557dbbff0dabf53a56af7ebfacd500bb8a2fea803769df14ffc37f8d226",
+      "initial_expected": 0,
+      "rustc_observed": 1,
+      "diagnostic": "E0716 temporary value dropped while borrowed",
+      "evidence": "obj/parallel/pa25/rest-views/close/reference-array.rustc.stderr"
+    }
+  ],
+  "superseded_native_hypotheses": [
+    {
+      "path": "pa25/tests/rest-view-native/reference-array.rs",
+      "source": "const fn tail<'a>(a:&'a[&'a u8])->&'a[&'a u8]{match a{[_,r @ ..]=>r,_=>a}}static A:u8=7;const R:&[&u8]=tail(&[&A,&A]);const N:u8=*R[0];fn main(){check(N==7);check(*R[0]==7);let x=13u8;let y=19u8;let a=[&x,&y];let r=tail(&a);check(*r[0]==19);}\n",
+      "sha256": "2629f2cfe9e313d67dd6acf90afe22ed0064e42ef50dda801efd1ebe789e5d8b",
+      "status": "unexecuted; shared initializer rejected pinned Rust E0716 before native stage"
+    }
+  ],
+  "qualification": {
+    "compiler_sha256": "bc1fd81c36ff254b30fb8962e8f07fcffe6c1051dac4180ececdbf8e6f9b5787",
+    "compiler_source_fingerprint": "99da51530380cb87e60f2fecf6ffc0934d84e0efcc4fa927be5ef9bf575e901f",
+    "independent_cases": 46,
+    "independent_receipt": "obj/parallel/pa25/rest-views/close-v2/independent.json",
+    "checked_view_receipt": "obj/parallel/pa25/rest-views/close-v4/outcomes.json",
+    "checked_view_count": 138,
+    "known_method_route_boundaries": [
+      {
+        "path": "pa25/tests/spec/rest-views/empty-slice.rs",
+        "rustc_expected": 0,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Valid Rust source; canonical .len method preparation is separate PA26 work."
+      },
+      {
+        "path": "pa25/tests/spec/rest-views/static-length.rs",
+        "rustc_expected": 0,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Valid Rust source; canonical .len method preparation is separate PA26 work."
+      },
+      {
+        "path": "pa28/tests/spec/rest-views/interior-static-length.rs",
+        "rustc_expected": 0,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Valid Rust source; canonical .len method preparation is separate PA26 work."
+      },
+      {
+        "path": "pa25/tests/spec/rest-views/self-static-length.rs",
+        "rustc_expected": 0,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Valid Rust source; canonical .len method preparation is separate PA26 work."
+      },
+      {
+        "path": "pa27/tests/spec/rest-views/mutable-static-length.rs",
+        "rustc_expected": 0,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Valid Rust source; canonical .len method preparation is separate PA26 work."
+      },
+      {
+        "path": "pa30/tests/spec/rest-views/foreign-static-length.rs",
+        "rustc_expected": 0,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Valid Rust source; canonical .len method preparation is separate PA26 work."
+      },
+      {
+        "path": "pa27/tests/spec/rest-views/mutable-length-lint.rs",
+        "rustc_expected": 1,
+        "views": {
+          "--emit-types": 1,
+          "--emit-lowir": 1,
+          "--emit-constants": 1
+        },
+        "note": "Method lookup unsupported; rejection does not independently prove mutable-static lint policy."
+      }
+    ],
+    "native_cases": 12,
+    "native_receipt": "obj/parallel/pa25/rest-views/close-v4/focused.log",
+    "strict_and_text_receipt": "obj/parallel/pa25/rest-views/close-v4/phases.json",
+    "compatibility_receipt": "obj/parallel/pa25/rest-views/compatibility/phases.json",
+    "active_text_stages": "PA1\u2013PA23; every existing expected stdout/stderr/status unchanged",
+    "layout": "passed",
+    "upstream": "24 fixtures and126 Reference files verified",
+    "scope": "Development profile only; no assignment activation or generated reference changes."
+  },
+  "source_only_hypotheses": [
+    {
+      "name": "original-parent-derived-raw-alias",
+      "source": "const N:u8={let mut a=[2u8,3,5,7];let p=&raw mut a[1];{let [_,ref mut r @ ..,_]=a;unsafe{*p=37;}r[1]=41;}a[1]+a[2]};fn main(){let _=N;}\n",
+      "sha256": "c5091f3a89a2e6215fc34669c854ca21c082e86c58b9bd9ee22e2ab82c5cd782",
+      "rustc_object_status": 0,
+      "native_claim": false,
+      "reason": "Object acceptance alone does not prove defined behavior for a pointer derived before the active mutable rest borrow; corrected control derives from that borrow."
+    }
+  ]
+}

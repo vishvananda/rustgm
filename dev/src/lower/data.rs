@@ -194,6 +194,41 @@ impl Context<'_> {
                     path.push((id, offset));
                     id = base;
                 }
+                Origin::Subsequence { base, from, length } => {
+                    let parent = self.constants.location(base)?;
+                    let layout = self.layout(parent.ty)?;
+                    let crate::abi::layout::Shape::Array {
+                        element,
+                        stride,
+                        length: bound,
+                    } = layout.shape
+                    else {
+                        return Err("constant sequence address lacks an array base");
+                    };
+                    if from.checked_add(length).is_none_or(|end| end > bound) {
+                        return Err("constant sequence address exceeds its base");
+                    }
+                    match self.types.kind(location.ty) {
+                        Some(crate::types::Kind::Array {
+                            element: selected,
+                            length: n,
+                        }) if self.constants.same_storage_type(selected, element)
+                            && n == length => {}
+                        Some(crate::types::Kind::Slice(selected))
+                            if self.constants.same_storage_type(selected, element) => {}
+                        _ => {
+                            return Err(
+                                "constant sequence address differs from its selected storage type",
+                            );
+                        }
+                    }
+                    path.push((
+                        id,
+                        from.checked_mul(stride)
+                            .ok_or("constant sequence address offset overflow")?,
+                    ));
+                    id = base;
+                }
                 Origin::Static(definition) => {
                     let pointer = Pointer {
                         global: self.static_data(definition)?,

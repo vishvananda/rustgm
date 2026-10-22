@@ -181,7 +181,10 @@ impl Expansion<'_> {
         let mark = self.work.len();
         for index in 0..length {
             let (ty, selection) = child(self.facts, ty, variant, index)?;
-            let value = self.facts.constant_products.get(product, index)?;
+            let value = self
+                .facts
+                .constant_products
+                .get(product, index, &self.facts.texts)?;
             let pattern = self.select(ty, value)?;
             self.facts
                 .patterns

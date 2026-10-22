@@ -52,6 +52,9 @@ fn ancestry(
                 indices.push(index);
                 id = base;
             }
+            Origin::Subsequence { .. } => {
+                return Err("ordinary location fixture unexpectedly selected a sequence range");
+            }
         }
     }
     Err("cyclic constant projection ancestry")

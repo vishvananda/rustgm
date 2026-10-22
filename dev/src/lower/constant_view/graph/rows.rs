@@ -38,6 +38,7 @@ impl Graph<'_> {
             View::Text(_) | View::Bytes(_) | View::BytePointer { .. } => {
                 self.literal_row(&mut row, ty, value)?;
             }
+            View::ByteRange { length, .. } => self.byte_range_row(&mut row, ty, value, length)?,
             View::Repeat {
                 value: element,
                 length,
@@ -56,6 +57,26 @@ impl Graph<'_> {
             }
         }
         Ok(row)
+    }
+    fn byte_range_row(
+        &mut self,
+        row: &mut String,
+        ty: TypeId,
+        value: Constant,
+        length: u64,
+    ) -> Result<(), &'static str> {
+        let bytes = self.reader.stored_bytes(ty, value)?;
+        if bytes.len() as u64 != length {
+            return Err("constant byte range differs from its recipe length");
+        }
+        self.charge(bytes.len())?;
+        self.storage(bytes.len().saturating_mul(2).saturating_add(64))?;
+        write!(row, "byte-range length={length} data=")
+            .map_err(|_| "constant view formatting failed")?;
+        for byte in bytes {
+            write!(row, "{byte:02x}").map_err(|_| "constant view formatting failed")?;
+        }
+        Ok(())
     }
     fn image_row(
         &mut self,
@@ -240,6 +261,15 @@ impl Graph<'_> {
                     let base = self.location(base)?;
                     write!(row, "origin=projection:a{base}:{index} contents=alias")
                         .map_err(|_| "constant view formatting failed")?;
+                    return Ok(row);
+                }
+                Origin::Subsequence { base, from, length } => {
+                    let base = self.location(base)?;
+                    write!(
+                        row,
+                        "origin=subsequence:a{base}:{from}:{length} contents=alias"
+                    )
+                    .map_err(|_| "constant view formatting failed")?;
                     return Ok(row);
                 }
                 Origin::Allocation => row.push_str("origin=allocation"),

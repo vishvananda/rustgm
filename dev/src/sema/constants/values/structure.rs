@@ -30,6 +30,15 @@ impl FieldTypes<'_> {
     }
 }
 impl<'a> Reader<'a> {
+    /// Physical reference-cell identity ignores only its outer lifetime.
+    /// This establishes no source equality, conversion or lifetime permission.
+    pub(crate) fn same_storage_type(self, left: TypeId, right: TypeId) -> bool {
+        left == right
+            || matches!((self.facts.types.kind(left), self.facts.types.kind(right)),
+            (Some(Kind::Reference { mutable: a, referent: x, .. }),
+             Some(Kind::Reference { mutable: b, referent: y, .. }))
+                if a == b && x == y)
+    }
     /// Read the active product's closed stored field types, preserving array compression.
     /// # Errors
     /// Rejects unpublished shapes, invalid variants and non-product types.
@@ -48,6 +57,19 @@ impl<'a> Reader<'a> {
             .ok_or("missing stored field type")?
         {
             Kind::Array { element, length } => return Ok(FieldTypes::Repeated { element, length }),
+            Kind::Slice(element) => {
+                let length = match self.view(value)? {
+                    View::Product {
+                        length,
+                        variant: None,
+                    }
+                    | View::Repeat { length, .. }
+                    | View::ByteRange { length, .. } => length,
+                    View::Bytes(text) => self.bytes(text)?.len() as u64,
+                    _ => return Err("constant slice lacks completed sequence storage"),
+                };
+                return Ok(FieldTypes::Repeated { element, length });
+            }
             Kind::Tuple(fields) => fields,
             Kind::Adt(item, _) => {
                 if self.facts.aggregates.get(item).is_some_and(|definition| {
@@ -93,5 +115,49 @@ impl<'a> Reader<'a> {
                 .list(fields)
                 .ok_or("missing stored field list")?,
         ))
+    }
+}
+
+impl<'a> Reader<'a> {
+    /// Borrow the selected immutable byte payload without copying or scalar expansion.
+    /// # Errors
+    /// Rejects byte-range recipes outside their canonical literal storage.
+    pub fn byte_range(
+        self,
+        text: crate::sema::text::Id,
+        from: u64,
+        length: u64,
+    ) -> Result<&'a [u8], &'static str> {
+        let start = usize::try_from(from).map_err(|_| "constant byte range exceeds host size")?;
+        let end = from
+            .checked_add(length)
+            .and_then(|n| usize::try_from(n).ok())
+            .ok_or("constant byte range exceeds host size")?;
+        self.bytes(text)?
+            .get(start..end)
+            .ok_or("constant byte range exceeds storage")
+    }
+    /// Borrow a typed byte sequence without expanding one Constant per byte.
+    /// # Errors
+    /// Rejects non-byte storage, inconsistent lengths and invalid recipe bounds.
+    pub(crate) fn stored_bytes(
+        self,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<&'a [u8], &'static str> {
+        let bytes = match self.view(value)? {
+            View::Bytes(text) => self.bytes(text)?,
+            View::ByteRange { text, from, length } => self.byte_range(text, from, length)?,
+            _ => return Err("constant byte storage requires a byte recipe"),
+        };
+        match self.facts.types.kind(ty) {
+            Some(Kind::Array { element, length })
+                if element == TypeId::primitive(crate::types::Primitive::U8)
+                    && length == bytes.len() as u64 => {}
+            Some(Kind::Slice(element))
+                if element == TypeId::primitive(crate::types::Primitive::U8) => {}
+            _ => return Err("constant byte range differs from its stored type"),
+        }
+        Ok(bytes)
     }
 }

@@ -203,7 +203,7 @@ impl Queries<'_> {
                 self.typing
                     .facts
                     .constant_products
-                    .get(base, index as u64)
+                    .get(base, index as u64, &self.typing.facts.texts)
                     .map_err(|e| self.error(Query::Node(key), e))?
             });
         }

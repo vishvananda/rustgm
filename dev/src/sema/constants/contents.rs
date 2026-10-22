@@ -1,11 +1,18 @@
 //! Reading a constant location is separate from forming its storage address.
-use super::references::{Access, Id};
+use super::references::{Access, Id, ProjectionView};
 use super::{Error, NodeKey, Queries, Query, State, Value, Work as Pending};
 use crate::sema::model::Scalar;
 use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 pub(super) enum Work {
+    Range {
+        key: NodeKey,
+        id: Id,
+        base: Id,
+        from: u64,
+        length: u64,
+    },
     Project {
         key: NodeKey,
         id: Id,
@@ -20,19 +27,35 @@ impl Queries<'_> {
         if let Some(value) = place.value {
             self.states
                 .insert(self.state_key(query), State::Ready(value));
-        } else if let Some((base, index)) = self
+        } else if let Some(projection) = self
             .typing
             .facts
             .constant_references
             .projection(place)
             .map_err(|e| self.error(query, e))?
         {
-            self.work.push(Pending::Contents(Work::Project {
-                key,
-                id,
-                base,
-                index,
-            }));
+            let (work, base) = match projection {
+                ProjectionView::Field { base, index } => (
+                    Work::Project {
+                        key,
+                        id,
+                        base,
+                        index,
+                    },
+                    base,
+                ),
+                ProjectionView::Sequence { base, from, length } => (
+                    Work::Range {
+                        key,
+                        id,
+                        base,
+                        from,
+                        length,
+                    },
+                    base,
+                ),
+            };
+            self.work.push(Pending::Contents(work));
             self.work.push(Pending::Enter(Query::Contents(key, base)));
         } else if let Access::Static(definition) = place.access {
             let index = self
@@ -47,20 +70,38 @@ impl Queries<'_> {
         Ok(())
     }
     pub(super) fn finish_contents(&mut self, work: Work) -> Result<(), Error> {
-        let Work::Project {
-            key,
-            id,
-            base,
-            index,
-        } = work;
+        let (key, id, value) = match work {
+            Work::Project {
+                key,
+                id,
+                base,
+                index,
+            } => {
+                let value = self.value(Query::Contents(key, base))?;
+                (
+                    key,
+                    id,
+                    self.projected_contents(key, id, base, index, value)?,
+                )
+            }
+            Work::Range {
+                key,
+                id,
+                base,
+                from,
+                length,
+            } => {
+                self.budget()?;
+                let value = self.value(Query::Contents(key, base))?;
+                let facts = &mut *self.typing.facts;
+                let value = facts
+                    .constant_products
+                    .range(value, from, length, &facts.texts)
+                    .map_err(|e| self.error(Query::Contents(key, id), e))?;
+                (key, id, value)
+            }
+        };
         let query = Query::Contents(key, id);
-        let value = self.projected_contents(
-            key,
-            id,
-            base,
-            index,
-            self.value(Query::Contents(key, base))?,
-        )?;
         self.typing
             .facts
             .constant_references
@@ -171,7 +212,7 @@ impl Queries<'_> {
                 .typing
                 .facts
                 .constant_products
-                .get(id, index)
+                .get(id, index, &self.typing.facts.texts)
                 .map_err(error),
             Value::Bytes(id) => {
                 let byte = self
@@ -231,6 +272,16 @@ impl Queries<'_> {
                     work.push((self.value(query)?, false));
                 }
                 Value::Product(id) => {
+                    if self
+                        .typing
+                        .facts
+                        .constant_products
+                        .byte_range(id)
+                        .map_err(|e| self.error(Query::Node(key), e))?
+                        .is_some()
+                    {
+                        continue;
+                    }
                     if let Some((value, length)) = self
                         .typing
                         .facts

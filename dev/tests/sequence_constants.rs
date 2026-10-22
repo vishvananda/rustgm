@@ -13,6 +13,8 @@ const ACCEPT: &[&str] = &[
     "slice-empty",
     "slice-repeat",
     "slice-bytes",
+    "slice-rest",
+    "array-rest",
 ];
 const LITERALS: &[&str] = &[
     "literal-index",
@@ -29,7 +31,12 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..")
 }
 fn source(name: &str) -> PathBuf {
-    root().join(format!("pa25/tests/spec/sequences/{name}.rs"))
+    let cluster = if matches!(name, "slice-rest" | "array-rest") {
+        "rest-views"
+    } else {
+        "sequences"
+    };
+    root().join(format!("pa25/tests/spec/{cluster}/{name}.rs"))
 }
 fn literal(name: &str) -> PathBuf {
     root().join(format!("pa25/tests/spec/literal-backing/{name}.rs"))
@@ -68,16 +75,6 @@ fn pending_sequence_views_and_const_text_eligibility_stay_explicit()
 -> Result<(), Box<dyn std::error::Error>> {
     let evidence = evidence("boundaries")?;
     for (name, rust, reason) in [
-        (
-            "slice-rest",
-            0,
-            "constant slice projection is not implemented",
-        ),
-        (
-            "array-rest",
-            0,
-            "constant slice projection is not implemented",
-        ),
         (
             "text-match",
             1,

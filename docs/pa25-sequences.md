@@ -42,9 +42,9 @@ remain integration requirements before publication.
 
 ## Remaining coverage
 
-Subslice/subarray rest views remain implementation gaps for Rust-accepted inputs.
-They require preserving backing identity and
-aliasing, rather than allocating unrelated copies for views. Initial positive
+The separately qualified [rest-storage checkpoint](pa25-rest-views.md) supersedes
+the original Subslice/Subarray implementation boundary. It preserves backing
+identity for references and independent immutable snapshots for by-value rests. Initial positive
 hypotheses for constant `str` matching were rejected by pinned rustc with E0658;
 the unchanged sources and failed hypotheses remain evidence. The current
 interpreter's rejection of those operations does not yet establish whole-body

@@ -108,9 +108,9 @@ fn reference_cell_storage_equivalence_ignores_only_its_outer_region() -> Result<
     assert_ne!(a, b);
     let evaluator = sema::values::Evaluator::new(&report, &mut facts);
     let machine = Machine::new(evaluator, &bodies.bodies, super::super::Limits::default())?;
-    assert!(machine.same_raw_storage_type(a, a));
-    assert!(machine.same_raw_storage_type(a, b));
-    assert!(machine.same_raw_storage_type(b, a));
+    assert!(sema::values::Reader::new(machine.evaluator.facts()).same_storage_type(a, a));
+    assert!(sema::values::Reader::new(machine.evaluator.facts()).same_storage_type(a, b));
+    assert!(sema::values::Reader::new(machine.evaluator.facts()).same_storage_type(b, a));
     for (left, right) in [
         (a, mutable),
         (mutable, a),
@@ -119,7 +119,9 @@ fn reference_cell_storage_equivalence_ignores_only_its_outer_region() -> Result<
         (pointer_a, pointer_b),
         (scalar, signed),
     ] {
-        assert!(!machine.same_raw_storage_type(left, right));
+        assert!(
+            !sema::values::Reader::new(machine.evaluator.facts()).same_storage_type(left, right)
+        );
     }
     Ok(())
 }
@@ -187,5 +189,45 @@ fn unaligned_field_access(
             })
         );
     }
+    Ok(())
+}
+
+#[test]
+fn rest_reference_elements_reuse_only_physical_outer_region_compatibility() -> Result<(), String> {
+    let report = test_source::resolve("", true)?;
+    let mut facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let scalar = TypeId::primitive(Primitive::U32);
+    let signed = TypeId::primitive(Primitive::I32);
+    let a = reference(&mut facts.types, 1, false, scalar)?;
+    let b = reference(&mut facts.types, 2, false, scalar)?;
+    let mutable = reference(&mut facts.types, 2, true, scalar)?;
+    let other = reference(&mut facts.types, 2, false, signed)?;
+    let nested_a = reference(&mut facts.types, 1, false, a)?;
+    let nested_b = reference(&mut facts.types, 2, false, b)?;
+    let array = facts.types.intern(Kind::Array {
+        element: a,
+        length: 4,
+    })?;
+    let nested = facts.types.intern(Kind::Array {
+        element: nested_a,
+        length: 4,
+    })?;
+    let targets = [b, mutable, other, nested_b]
+        .into_iter()
+        .map(|element| facts.types.intern(Kind::Slice(element)))
+        .collect::<Result<Vec<_>, _>>()?;
+    let mut evaluator = sema::values::Evaluator::new(&report, &mut facts);
+    let base = evaluator
+        .allocation(None, array)
+        .map_err(Failure::message)?;
+    let nested = evaluator
+        .allocation(None, nested)
+        .map_err(Failure::message)?;
+    assert!(evaluator.subsequence(base, 1, 2, targets[0]).is_ok());
+    for &target in &targets[1..3] {
+        assert!(evaluator.subsequence(base, 1, 2, target).is_err());
+    }
+    assert!(evaluator.subsequence(nested, 1, 2, targets[3]).is_err());
+    assert!(evaluator.subsequence(base, 3, 2, targets[0]).is_err());
     Ok(())
 }

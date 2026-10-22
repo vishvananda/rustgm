@@ -1,0 +1,1 @@
+const fn trim(x:&[u32])->&[u32]{match x{[_,r @ ..,_]=>match r{[_,s @ ..]=>s,_=>&[]},_=>&[]}}const R:&[u32]=trim(&[2,3,5,7,11]);fn main(){check(match R{[_,_]=>true,_=>false});check(R[0]==5);check(R[1]==7);let x=[13,17,19,23,29];let r=trim(&x);check(r[0]==19);check(r[1]==23);}

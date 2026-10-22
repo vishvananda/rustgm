@@ -1,0 +1,1 @@
+const fn put(x:&mut[u8]){match x{[_,r @ ..]=>match r{[_,s @ ..]=>{s[0]=37;s[1]=41;},_=>()},_=>()}}const fn f()->u8{let mut a=[2u8,3,5,7];put(&mut a);a[2]+a[3]}const N:u8=f();fn main(){check(N==78);check(f()==78);}
