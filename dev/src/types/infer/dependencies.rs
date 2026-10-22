@@ -40,6 +40,9 @@ pub(super) struct Storage {
     changed: VecDeque<WatchId>,
 }
 impl Storage {
+    fn has_pending_resolution(&self) -> bool {
+        !self.ready.is_empty() || !self.work.is_empty() || !self.changed.is_empty()
+    }
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         if let Some(changes) = &self.root_changes {
@@ -243,6 +246,16 @@ impl Context {
         Ok(())
     }
 
+    /// Whether `ready_resolution` or `ready_equation` could return anything:
+    /// queued readiness, dependency work, partial changes or woken equations.
+    #[inline]
+    #[must_use]
+    pub fn has_pending_notifications(&self) -> bool {
+        self.dependencies
+            .as_ref()
+            .is_some_and(|s| s.has_pending_resolution() || s.equations.has_ready())
+    }
+
     /// Return a ready notification, traversing only newly supplied or awakened work.
     /// Resolution tickets notify once; change tickets can notify repeatedly.
     /// Variables newly bound to compound types expose their unresolved children;
@@ -251,6 +264,13 @@ impl Context {
     /// # Errors
     /// Rejects malformed graphs and exhausted inference resources.
     pub fn ready_resolution(&mut self, store: &Store) -> Result<Option<WatchId>, Error> {
+        if !self
+            .dependencies
+            .as_ref()
+            .is_some_and(|s| s.has_pending_resolution())
+        {
+            return Ok(None);
+        }
         let Some(mut storage) = self.dependencies.take() else {
             return Ok(None);
         };

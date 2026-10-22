@@ -89,6 +89,11 @@ impl Notifications {
         Ok(None)
     }
     #[inline]
+    pub fn has_queued_projections(&self) -> bool {
+        self.data
+            .as_ref()
+            .is_some_and(|data| !data.projections.is_empty())
+    }
     pub fn waiting(&self) -> bool {
         self.data
             .as_ref()

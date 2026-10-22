@@ -50,6 +50,9 @@ pub(super) struct Storage {
     pending: usize,
 }
 impl Storage {
+    pub(super) fn has_ready(&self) -> bool {
+        !self.ready.is_empty()
+    }
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.opaque);

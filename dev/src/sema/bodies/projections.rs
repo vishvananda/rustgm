@@ -128,6 +128,11 @@ impl Pending {
                 .is_some_and(|data| !data.normalizations.is_empty())
     }
     #[inline]
+    pub fn has_continuation(&self) -> bool {
+        self.data
+            .as_ref()
+            .is_some_and(|data| data.continuation.is_some())
+    }
     pub fn active(&self) -> bool {
         self.data.as_ref().is_some_and(|data| {
             data.continuation.is_some() || !data.tasks.is_empty() || !data.equations.is_empty()
@@ -359,10 +364,21 @@ impl Checker<'_> {
             }
         }
     }
+    /// Most polls find nothing to deliver; they are answered here, before the
+    /// continuation and notification machinery's frame.
+    #[inline]
     pub(super) fn poll_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
-        if !self.state.projections.active() && !self.state.notifications.waiting() {
+        if !self.state.projections.active() && !self.state.notifications.waiting()
+            || !self.state.projections.has_continuation()
+                && !self.state.notifications.has_queued_projections()
+                && !self.state.infer.has_pending_notifications()
+        {
             return Ok(Advance::Ready(false));
         }
+        self.poll_pending_projections(body)
+    }
+    #[inline(never)]
+    fn poll_pending_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
         let mut progress = false;
         if let Some(continuation) = self
             .state
