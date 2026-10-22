@@ -24,7 +24,12 @@ pub(super) struct Publication {
 }
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
-        if self.state.trait_goals.is_none() {
+        if self
+            .state
+            .trait_goals
+            .as_ref()
+            .is_none_or(|pending| !pending.finishing)
+        {
             for adjustment in &self.state.adjustments {
                 if adjustment.kind == AdjustmentKind::Never {
                     self.state

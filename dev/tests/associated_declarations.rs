@@ -1265,3 +1265,6 @@ fn associated_patterns_preserve_native_matching() -> Result<(), Box<dyn std::err
 
 #[path = "associated_declarations/elision.rs"]
 mod elision;
+
+#[path = "associated_declarations/argument_expectations.rs"]
+mod argument_expectations;

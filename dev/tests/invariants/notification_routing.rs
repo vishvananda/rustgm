@@ -82,3 +82,53 @@ fn independent_pending_goals_have_linear_registration_and_delivery_work() -> Tes
     }
     Ok(())
 }
+
+#[test]
+fn owned_prefix_events_do_not_consume_projection_or_foreign_goal_events() -> TestResult {
+    use crate::syntax::ast::NodeId;
+    let mut store = Store::default();
+    let mut context = Context::default();
+    let mut events = Notifications::default();
+    let owner = NodeId(10);
+    let foreign = NodeId(20);
+    events.own(owner, &[0])?;
+    events.own(foreign, &[1])?;
+    assert_eq!(events.next_owned(&mut context, owner)?, Some(0));
+    assert_eq!(events.next_owned(&mut context, foreign)?, Some(1));
+    let first = context.variable(Domain::Any)?;
+    let second = context.variable(Domain::Any)?;
+    let first_goal = goal(&mut context, &mut store, first)?;
+    let second_goal = goal(&mut context, &mut store, second)?;
+    events.observe(&mut context, &store, 0, &first_goal)?;
+    events.observe(&mut context, &store, 1, &second_goal)?;
+    let projection = context.variable(Domain::Any)?;
+    let watch = context.watch_resolution(&[projection], &[])?;
+    let unit = context.known(&store, TypeId::UNIT)?;
+    context.equate(&store, second, unit)?;
+    context.equate(&store, projection, unit)?;
+    assert_eq!(events.next_projection(&mut context, &store)?, Some(watch));
+    assert_eq!(events.next_projection(&mut context, &store)?, None);
+    assert_eq!(events.next_owned(&mut context, owner)?, None);
+    assert_eq!(events.next_owned(&mut context, foreign)?, Some(1));
+    events.complete(&mut context, 1)?;
+    assert_eq!(events.next_goal(&mut context)?, None);
+    context.equate(&store, first, unit)?;
+    assert_eq!(events.next_projection(&mut context, &store)?, None);
+    assert_eq!(events.next_owned(&mut context, owner)?, Some(0));
+    events.complete(&mut context, 0)?;
+    assert!(!events.waiting());
+    Ok(())
+}
+#[test]
+fn completed_prefix_seed_without_watch_cannot_leave_an_active_owner() -> TestResult {
+    use crate::syntax::ast::NodeId;
+    let mut events = Notifications::default();
+    let mut context = Context::default();
+    events.own(NodeId(1), &[0])?;
+    assert!(events.own(NodeId(2), &[0]).is_err());
+    events.complete(&mut context, 0)?;
+    assert_eq!(events.next_owned(&mut context, NodeId(1))?, None);
+    events.own(NodeId(2), &[0])?;
+    assert_eq!(events.next_owned(&mut context, NodeId(2))?, Some(0));
+    Ok(())
+}

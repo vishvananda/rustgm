@@ -2,6 +2,7 @@
 #[cfg(test)]
 #[path = "../../../tests/invariants/notification_routing.rs"]
 mod tests;
+use super::NodeId;
 use crate::types::{
     Store,
     infer::{Context, Error, dependencies::WatchId, predicates::Predicate},
@@ -15,12 +16,77 @@ struct Data {
     goals: VecDeque<usize>,
     queued: HashSet<usize>,
     projections: VecDeque<WatchId>,
+    owned: Option<Box<Owned>>,
+}
+#[derive(Default)]
+struct Owned {
+    owners: HashMap<usize, NodeId>,
+    ready: HashMap<NodeId, VecDeque<usize>>,
+    queued: HashSet<usize>,
+}
+impl Data {
+    fn queue(&mut self, index: usize) {
+        if self.queued.insert(index) {
+            self.goals.push_back(index);
+        }
+        if let Some(owned) = &mut self.owned
+            && let Some(&owner) = owned.owners.get(&index)
+            && owned.queued.insert(index)
+        {
+            owned.ready.entry(owner).or_default().push_back(index);
+        }
+    }
 }
 #[derive(Default)]
 pub(super) struct Notifications {
     data: Option<Box<Data>>,
 }
 impl Notifications {
+    pub fn own(&mut self, owner: NodeId, indices: &[usize]) -> Result<(), Error> {
+        if indices.is_empty() {
+            return Ok(());
+        }
+        let data = self.data.get_or_insert_with(Default::default);
+        let routing = data.owned.get_or_insert_with(Default::default);
+        if indices.iter().any(|index| {
+            routing
+                .owners
+                .get(index)
+                .is_some_and(|current| *current != owner)
+        }) {
+            return Err(Error::InvalidIdentity);
+        }
+        for &index in indices {
+            routing.owners.insert(index, owner);
+            if routing.queued.insert(index) {
+                routing.ready.entry(owner).or_default().push_back(index);
+            }
+        }
+        Ok(())
+    }
+    pub fn next_owned(
+        &mut self,
+        context: &mut Context,
+        owner: NodeId,
+    ) -> Result<Option<usize>, Error> {
+        let Some(data) = &mut self.data else {
+            return Ok(None);
+        };
+        let Some(routing) = &mut data.owned else {
+            return Ok(None);
+        };
+        let Some(ready) = routing.ready.get_mut(&owner) else {
+            return Ok(None);
+        };
+        while let Some(index) = ready.pop_front() {
+            context.account_work(1)?;
+            if routing.queued.remove(&index) {
+                data.queued.remove(&index);
+                return Ok(Some(index));
+            }
+        }
+        Ok(None)
+    }
     pub fn waiting(&self) -> bool {
         self.data
             .as_ref()
@@ -57,8 +123,8 @@ impl Notifications {
         while let Some(watch) = context.ready_resolution(store)? {
             context.account_work(1)?;
             if let Some(&owner) = data.by_watch.get(&watch) {
-                if owner != index && data.queued.insert(owner) {
-                    data.goals.push_back(owner);
+                if owner != index {
+                    data.queue(owner);
                 }
             } else {
                 data.projections.push_back(watch);
@@ -67,12 +133,16 @@ impl Notifications {
         Ok(())
     }
     pub fn complete(&mut self, context: &mut Context, index: usize) -> Result<(), Error> {
-        if let Some(data) = &mut self.data
-            && let Some(watch) = data.by_goal.remove(&index)
-        {
-            data.by_watch.remove(&watch);
+        if let Some(data) = &mut self.data {
+            if let Some(watch) = data.by_goal.remove(&index) {
+                data.by_watch.remove(&watch);
+                context.cancel_watch(watch)?;
+            }
             data.queued.remove(&index);
-            context.cancel_watch(watch)?;
+            if let Some(owned) = &mut data.owned {
+                owned.owners.remove(&index);
+                owned.queued.remove(&index);
+            }
         }
         Ok(())
     }
@@ -96,9 +166,7 @@ impl Notifications {
                 return Ok(Some(watch));
             };
             context.account_work(1)?;
-            if data.queued.insert(index) {
-                data.goals.push_back(index);
-            }
+            data.queue(index);
         }
         Ok(None)
     }

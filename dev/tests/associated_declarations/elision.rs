@@ -186,10 +186,7 @@ fn omitted_impl_inputs_match_independent_outcomes() -> Result<(), Box<dyn std::e
                 .map(|_| ())
                 .map_err(|e| e.to_string())
         });
-        // This unchanged Rust-positive inference gap also fails on the immutable
-        // pre-fix compiler; explicit function-pointer and qualified-R controls pass.
-        let implemented = accepted && name != "nested-callable";
-        if checked.is_ok() != implemented {
+        if checked.is_ok() != accepted {
             failures.push(format!("{name}: {checked:?}"));
         }
     }
@@ -201,7 +198,7 @@ fn omitted_impl_inputs_match_independent_outcomes() -> Result<(), Box<dyn std::e
 fn omitted_impl_inputs_preserve_native_values() -> Result<(), Box<dyn std::error::Error>> {
     let cases = CASES
         .iter()
-        .filter(|c| c.1 && c.0 != "nested-callable")
+        .filter(|c| c.1)
         .map(|&(name, _, source)| {
             Ok((
                 name,

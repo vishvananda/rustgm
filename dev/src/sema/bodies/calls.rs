@@ -11,6 +11,7 @@ use std::collections::{HashMap, HashSet};
 #[derive(Default)]
 pub(super) struct CallTypes {
     pub closure_expectations: Hints,
+    pub input_context: super::callee_inputs::Inputs,
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub assumed_obligations: HashSet<usize>,
     #[expect(
@@ -76,6 +77,7 @@ impl CallTypes {
     }
     pub fn clear(&mut self) {
         self.closure_expectations = Hints::default();
+        self.input_context = super::callee_inputs::Inputs::default();
         self.obligations.clear();
         self.assumed_obligations.clear();
         self.constraints = None;

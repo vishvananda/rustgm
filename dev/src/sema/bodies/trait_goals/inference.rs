@@ -15,6 +15,8 @@ pub(in crate::sema::bodies) enum Progress {
 }
 pub(in crate::sema::bodies) struct Pending {
     goals: Vec<usize>,
+    registered: usize,
+    pub(in crate::sema::bodies) finishing: bool,
     cursor: usize,
     current: Option<usize>,
     evidence: HashMap<usize, Source>,
@@ -28,39 +30,10 @@ impl Checker<'_> {
         &mut self,
         body: NodeId,
     ) -> Result<Progress, Error> {
-        let mut pending = if let Some(pending) = self.state.trait_goals.take() {
-            *pending
-        } else {
-            let pending: Vec<_> = self
-                .state
-                .call_types
-                .obligations
-                .iter()
-                .enumerate()
-                .filter_map(|(index, (_, predicate))| {
-                    (predicate.trait_arguments().is_some()
-                        || matches!(
-                            predicate.builtin_bound(),
-                            Some(crate::types::parameters::predicates::Bound::Auto(_))
-                        )
-                        || self.state.call_types.bound_regions(index).is_some())
-                    .then_some(index)
-                })
-                .collect();
-            if pending.is_empty() && !self.state.projections.active() {
-                return Ok(Progress::Ready(HashMap::new()));
-            }
-            Pending {
-                goals: pending,
-                cursor: 0,
-                current: None,
-                evidence: HashMap::new(),
-                assumptions: self.trait_assumptions(body)?.unwrap_or_default(),
-                query: None,
-                reservation: Reservation::default(),
-                partial: HashMap::new(),
-            }
+        let Some(mut pending) = self.take_trait_goals(body)? else {
+            return Ok(Progress::Ready(HashMap::new()));
         };
+        pending.finishing = true;
         loop {
             let index = if let Some(index) = pending.current {
                 index
@@ -103,6 +76,9 @@ impl Checker<'_> {
                     return Err(self.error(node, "trait obligation requires an unambiguous matching assumption or implementation"));
                 }
             };
+            if pending.evidence.contains_key(&index) {
+                continue;
+            }
             pending.current = Some(index);
             let first = self.trait_region_start(body)?;
             if let Some(dependency) = self.advance_trait_goal(&mut pending, index, first)? {
@@ -112,6 +88,132 @@ impl Checker<'_> {
             pending.current = None;
         }
         Ok(Progress::Ready(pending.evidence))
+    }
+    fn take_trait_goals(&mut self, body: NodeId) -> Result<Option<Pending>, Error> {
+        let mut pending = if let Some(pending) = self.state.trait_goals.take() {
+            *pending
+        } else {
+            let goals: Vec<_> = (0..self.state.call_types.obligations.len())
+                .filter(|&index| self.inferred_trait_goal(index))
+                .collect();
+            if goals.is_empty() && !self.state.projections.active() {
+                return Ok(None);
+            }
+            Pending {
+                goals,
+                registered: self.state.call_types.obligations.len(),
+                finishing: false,
+                cursor: 0,
+                current: None,
+                evidence: HashMap::new(),
+                assumptions: self.trait_assumptions(body)?.unwrap_or_default(),
+                query: None,
+                reservation: Reservation::default(),
+                partial: HashMap::new(),
+            }
+        };
+        for index in pending.registered..self.state.call_types.obligations.len() {
+            self.state
+                .infer
+                .account_work(1)
+                .map_err(|e| self.error(body, e))?;
+            if self.inferred_trait_goal(index) {
+                pending.goals.push(index);
+            }
+        }
+        pending.registered = self.state.call_types.obligations.len();
+        Ok(Some(pending))
+    }
+    fn inferred_trait_goal(&self, index: usize) -> bool {
+        let predicate = &self.state.call_types.obligations[index].1;
+        predicate.trait_arguments().is_some()
+            || matches!(
+                predicate.builtin_bound(),
+                Some(crate::types::parameters::predicates::Bound::Auto(_))
+            )
+            || self.state.call_types.bound_regions(index).is_some()
+    }
+    pub(in crate::sema::bodies) fn refine_call_inputs(
+        &mut self,
+        call: NodeId,
+        expected: super::super::TermId,
+    ) -> Result<Option<Dependency>, Error> {
+        let callable = if let crate::syntax::ast::Kind::Call { callee, .. } = self.kind(call) {
+            Some(self.term(callee)?)
+        } else {
+            None
+        };
+        let mut inputs = std::mem::take(&mut self.state.call_types.input_context);
+        let owner = inputs.owner(
+            &mut self.state.infer,
+            &self.facts.types,
+            &self.state.call_types,
+            &self.state.adjustments,
+            callable,
+            call,
+        );
+        self.state.call_types.input_context = inputs;
+        let Some((owner, seeds)) = owner.map_err(|e| self.error(call, e))? else {
+            return Ok(None);
+        };
+        let seeds: Vec<_> = seeds
+            .into_iter()
+            .filter(|&index| self.inferred_trait_goal(index))
+            .collect();
+        self.state
+            .notifications
+            .own(owner, &seeds)
+            .map_err(|e| self.error(call, e))?;
+        let body = self.state.body.node;
+        let Some(mut pending) = self.take_trait_goals(body)? else {
+            return Ok(None);
+        };
+        loop {
+            if let projections::Advance::Definition(dependency) = self.poll_projections(body)? {
+                self.state.trait_goals = Some(Box::new(pending));
+                return Ok(Some(dependency));
+            }
+            if pending.current.is_none() && self.head(call, expected)?.is_some() {
+                break;
+            }
+            let index = if let Some(index) = pending.current {
+                index
+            } else {
+                let Some(index) = self
+                    .state
+                    .notifications
+                    .next_owned(&mut self.state.infer, owner)
+                    .map_err(|e| self.error(call, e))?
+                else {
+                    break;
+                };
+                index
+            };
+            if self
+                .state
+                .call_types
+                .obligations
+                .get(index)
+                .is_none_or(|(source, _)| *source != owner)
+            {
+                return Err(self.error(
+                    call,
+                    "call input requirement belongs to another instantiation",
+                ));
+            }
+            if pending.evidence.contains_key(&index) {
+                continue;
+            }
+            pending.current = Some(index);
+            let first = self.trait_region_start(body)?;
+            if let Some(dependency) = self.advance_trait_goal(&mut pending, index, first)? {
+                self.state.trait_goals = Some(Box::new(pending));
+                return Ok(Some(dependency));
+            }
+            pending.current = None;
+        }
+        self.state.trait_goals = Some(Box::new(pending));
+        Ok(None)
     }
     fn advance_trait_goal(
         &mut self,

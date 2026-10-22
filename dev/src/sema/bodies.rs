@@ -4,6 +4,7 @@ mod alignment;
 mod annotations;
 mod atomic_ordering;
 mod bounds;
+mod callee_inputs;
 mod calls;
 mod closures;
 mod comparisons;
@@ -170,6 +171,11 @@ enum Work {
     Field(NodeId, aggregates::Field),
     CoerceElement(NodeId, TermId),
     CallArguments(NodeId, Option<TermId>),
+    CoerceCallArgument {
+        call: NodeId,
+        argument: NodeId,
+        parameter: u32,
+    },
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
     CollectClosure,
@@ -774,6 +780,22 @@ impl Checker<'_> {
                 Work::Enter(..) => {}
                 Work::CoerceElement(node, expected) => self.coerce(node, expected)?,
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
+                Work::CoerceCallArgument {
+                    call,
+                    argument,
+                    parameter,
+                } => {
+                    if let Some(dependency) =
+                        self.coerce_call_argument(call, argument, parameter)?
+                    {
+                        self.state.work.push(Work::CoerceCallArgument {
+                            call,
+                            argument,
+                            parameter,
+                        });
+                        return Ok(Some(dependency));
+                    }
+                }
                 Work::MethodArguments(node) => self.method_arguments(node)?,
                 Work::AssignmentValue(node) => {
                     let Kind::Binary { left, right, .. } = self.kind(node) else {
@@ -783,27 +805,9 @@ impl Checker<'_> {
                     self.state.work.push(Work::Enter(right, Some(expected)));
                 }
                 Work::Exit(node) => {
-                    if let Some(requirement) = self.value_readiness(node) {
-                        self.state.work.push(Work::Exit(node));
-                        return Ok(Some(Dependency {
-                            requirement,
-                            source: self.key(node),
-                        }));
+                    if let Some(dependency) = self.complete_body_expression(node)? {
+                        return Ok(Some(dependency));
                     }
-                    let term = if let Kind::Field { value, name } = self.kind(node) {
-                        let field = self.prepare_field(node, value, name)?;
-                        if let Some(item) = self.field_dependency(&field) {
-                            self.state.work.push(Work::Field(node, field));
-                            return Ok(Some(Dependency {
-                                requirement: Requirement::Nominal(item),
-                                source: self.key(node),
-                            }));
-                        }
-                        self.complete_field(node, field)?
-                    } else {
-                        self.expression(node)?
-                    };
-                    self.schedule_expression_completion(node, term)?;
                 }
                 Work::Field(node, field) => {
                     let term = self.complete_field(node, field)?;
@@ -813,6 +817,30 @@ impl Checker<'_> {
             }
         }
         self.finish(self.state.body.node)
+    }
+    fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
+        if let Some(requirement) = self.value_readiness(node) {
+            self.state.work.push(Work::Exit(node));
+            return Ok(Some(Dependency {
+                requirement,
+                source: self.key(node),
+            }));
+        }
+        let term = if let Kind::Field { value, name } = self.kind(node) {
+            let field = self.prepare_field(node, value, name)?;
+            if let Some(item) = self.field_dependency(&field) {
+                self.state.work.push(Work::Field(node, field));
+                return Ok(Some(Dependency {
+                    requirement: Requirement::Nominal(item),
+                    source: self.key(node),
+                }));
+            }
+            self.complete_field(node, field)?
+        } else {
+            self.expression(node)?
+        };
+        self.schedule_expression_completion(node, term)?;
+        Ok(None)
     }
     fn schedule_expression_completion(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         if matches!(
@@ -1681,7 +1709,16 @@ impl Checker<'_> {
             actual
         };
         self.callable_shape(source, inferred, expected)?;
+        let index = self.state.adjustments.len();
         self.record_adjustment(source, expected, AdjustmentKind::Equality)?;
+        if inferred != actual
+            && matches!(
+                actual_head,
+                Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            )
+        {
+            self.state.call_types.input_context.freshening(index);
+        }
         Ok(())
     }
     fn join(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<TermId, Error> {
@@ -1829,7 +1866,7 @@ impl Checker<'_> {
             )),
         }
     }
-    fn call(&mut self, node: NodeId, _callee: NodeId, arguments: List) -> Result<TermId, Error> {
+    fn call(&mut self, node: NodeId, _callee: NodeId, _arguments: List) -> Result<TermId, Error> {
         let term = self
             .state
             .call_types
@@ -1854,50 +1891,8 @@ impl Checker<'_> {
         if bound_regions != 0 {
             return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));
         }
-        let unit = self.report.package.unit(self.state.file);
-        let mut count = usize::from(matches!(
-            self.kind(node),
-            Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
-        ));
-        for argument in unit.configured.ast.list(arguments) {
-            if !self.active(*argument) {
-                continue;
-            }
-            if count >= parameters as usize {
-                return Err(self.error(node, "too many call arguments"));
-            }
-            let expected = self.child(node, term, count)?;
-            let exclusive = matches!(
-                self.head(node, expected)?,
-                Some(Constructor::Reference { mutable: true, .. })
-            );
-            let mark = self.state.adjustments.len();
-            self.coerce(*argument, expected)?;
-            let mut site = *argument;
-            while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(site) {
-                site = value;
-            }
-            for index in mark..self.state.adjustments.len() {
-                if self.state.adjustments[index].node == site
-                    && !matches!(
-                        self.kind(site),
-                        Kind::Unary {
-                            op: Unary::BorrowMut,
-                            ..
-                        }
-                    )
-                    && let Some((adjustment, _)) = self.state.reference_adjustments.get_mut(&index)
-                {
-                    adjustment.two_phase = exclusive && adjustment.dereferences == 1;
-                }
-            }
-            count += 1;
-        }
-        if count != parameters as usize {
-            return Err(self.error(node, "too few call arguments"));
-        }
         self.state.calls.push((node, term));
-        self.child(node, term, count)
+        self.child(node, term, parameters as usize)
     }
     fn enter_control(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
         let label = if self
@@ -2088,6 +2083,17 @@ impl Checker<'_> {
                 self.shape_equation(node, result, expected)?;
             }
         }
+        if !constructor && let Some(expected) = expected {
+            let result = self.child(node, term, parameters as usize)?;
+            if self.head(node, result)?.is_none()
+                && matches!(
+                    self.contextual_head(node, expected)?,
+                    Some(Constructor::Function { .. })
+                )
+            {
+                self.callable_shape(node, result, expected)?;
+            }
+        }
         self.schedule_call_arguments(node, term, arguments, 0)
     }
     fn schedule_call_arguments(
@@ -2116,6 +2122,13 @@ impl Checker<'_> {
             if self.active(*argument) {
                 index -= 1;
                 let expected = self.child(node, term, index)?;
+                let parameter = u32::try_from(index)
+                    .map_err(|_| self.error(node, "call parameter index exhausted"))?;
+                self.state.work.push(Work::CoerceCallArgument {
+                    call: node,
+                    argument: *argument,
+                    parameter,
+                });
                 self.state.work.push(Work::Enter(*argument, Some(expected)));
             }
         }

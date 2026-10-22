@@ -83,3 +83,16 @@ in this compiler checkpoint; the integrator owns independent sidecar review.
 The inferred FunctionItem source is retained separately as required work and
 is not admitted as a passing implementation by that payload. Its SHA-256 is
 2b0bd86513377dcc51154fba36cfacf7ba833f5553e5890b75bbefcf17672ed0.
+
+After clean merge 07dfd0cd of integrator b0d85e28, grouped-v5 passes strict release
+all-target/all-feature Clippy, registration (336 roots in 13 binaries), all four
+exact elision/reference source/native selectors through maintainer_suites.py,
+audit 1578/0 and layout. No compiler change was needed for grouped execution.
+The first projections binary compiled in 78 seconds; repeated exact source/
+native selections reused it. Full publication remains a separate frozen cut.
+
+The later argument-local inference checkpoint closes the retained FunctionItem
+trait-input source through ordinary contextual coercion, preserving the exact
+original bytes and old failure evidence. See
+[pa19-call-argument-context.md](pa19-call-argument-context.md). Its direct
+returned-FunctionItem call boundary remains separate required PA18 work.

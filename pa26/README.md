@@ -283,3 +283,12 @@ checked const method body; arrays retain receiver adjustment rather than gaining
 an array inherent method. Its 49 source outcomes and 30 native programs pass;
 the three earlier source gaps remain required work. Explicit array-reference
 to slice `as` conversion remains a separately recorded PA22 requirement.
+
+The later impl-owned omitted-lifetime seal and argument-local callable coercion
+checkpoint close the retained reference-impl lifetime and FunctionItem
+trait-input controls through ordinary declaration and caller proof. See
+`docs/pa19-impl-lifetime-sealing.md` and `docs/pa19-call-argument-context.md`.
+Dot-call RHS inference, concrete str and structural comparisons remain required;
+this does not complete their original Rust-positive sources. The explicit
+array-reference→slice cast follow-up is recorded separately in
+`docs/pa22-reference-unsizing-casts.md`.
