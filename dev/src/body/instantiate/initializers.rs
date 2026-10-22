@@ -54,6 +54,11 @@ fn materialize(
             cleanup: &mut cleanup,
         },
     )?;
+    if let anonymous::Selection::SourceInitializer(witness) = selection
+        && !witness.rigid_parameters(facts)?.is_empty()
+    {
+        super::rigid_values::check(facts, &body)?;
+    }
     Ok(Materialized {
         body,
         destruction,
@@ -85,7 +90,12 @@ pub(crate) fn source(
     };
     if template.body.result == result && facts.types.needs_region_context(result) == Some(false) {
         let mut inputs = anonymous::initializer_inputs(facts, selected.selected)?;
-        let (substitution, contract) = contracts::initializer(facts, original, &mut inputs)?;
+        let parameters = witness.rigid_parameters(facts)?;
+        let (substitution, contract) = if parameters.is_empty() {
+            contracts::initializer(facts, original, &mut inputs)?
+        } else {
+            contracts::rigid_initializer(facts, original, &mut inputs, parameters)?
+        };
         return Ok(SourceMaterialized {
             materialized: materialize(
                 facts,

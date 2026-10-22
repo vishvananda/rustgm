@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "status": "draft; focused source/native checkpoint; central integration, PA13/PA16 oracle prerequisites and PA25 activation remain pending",
+  "language": "Rust1.98.0 edition2024",
+  "cases": [
+    {
+      "name": "bound",
+      "path": "tests/spec/rigid-pattern-context/bound.rs",
+      "source_sha256": "6edd96261a29fc13f57c8f759f3fdc8c3d9adb192577b4c7add9140c0fb3df30",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending; native passed",
+      "note": ""
+    },
+    {
+      "name": "callee-independent",
+      "path": "tests/spec/rigid-pattern-context/callee-independent.rs",
+      "source_sha256": "8e95604c20afc71aaa34a791d5f85e1ef5a04ca590ff97df6bf834515d26fa24",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "required-positive-frontier",
+      "note": ""
+    },
+    {
+      "name": "dependent-associated",
+      "path": "tests/spec/rigid-pattern-context/dependent-associated.rs",
+      "source_sha256": "ff26c47eaf57dbac60de332181e8287b743b493c6602cccda4b91fe8b36bd4c4",
+      "rustc": {
+        "emit": "obj",
+        "status": 1
+      },
+      "required_modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native_required": false,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending",
+      "note": ""
+    },
+    {
+      "name": "faulting",
+      "path": "tests/spec/rigid-pattern-context/faulting.rs",
+      "source_sha256": "2c6ebc0f4d2c91bd242db2f0715b802cc40f2c257e08d3ed25442c4f4f19ed58",
+      "rustc": {
+        "emit": "obj",
+        "status": 1
+      },
+      "required_modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native_required": false,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending",
+      "note": ""
+    },
+    {
+      "name": "invalid-unused-body",
+      "path": "tests/spec/rigid-pattern-context/invalid-unused-body.rs",
+      "source_sha256": "3f8cbd9bda9e58f23f91b3237bc1c24969daf5dfd309f2a5ed2d7ca54e07f3ce",
+      "rustc": {
+        "emit": "obj",
+        "status": 1
+      },
+      "required_modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native_required": false,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending",
+      "note": ""
+    },
+    {
+      "name": "lifetime",
+      "path": "tests/spec/rigid-pattern-context/lifetime.rs",
+      "source_sha256": "238d158624befda29811677b1a8aa70207d92507dcde2fc34695a16b3cff608b",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending; native passed",
+      "note": ""
+    },
+    {
+      "name": "multiple",
+      "path": "tests/spec/rigid-pattern-context/multiple.rs",
+      "source_sha256": "9d38410b77c99f2de84ab9b7b7a1b95c78a964f6eed9836a967b0e2ba115125e",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending; native passed",
+      "note": ""
+    },
+    {
+      "name": "ordinary",
+      "path": "tests/spec/rigid-pattern-context/ordinary.rs",
+      "source_sha256": "38b4c54dfc7fad2840d4b86de5d1dfc2b264a7756c5dcfb19ef321e0ad4b4a49",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending; native passed",
+      "note": ""
+    },
+    {
+      "name": "skipped-dependency",
+      "path": "tests/spec/rigid-pattern-context/skipped-dependency.rs",
+      "source_sha256": "e81971d2ab6bafaec53adadd9f512d78182424d244a42ff7dbaa0f9db01f3deb",
+      "rustc": {
+        "emit": "obj",
+        "status": 1
+      },
+      "required_modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native_required": false,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending",
+      "note": ""
+    },
+    {
+      "name": "type-outlives",
+      "path": "tests/spec/rigid-pattern-context/type-outlives.rs",
+      "source_sha256": "df75369611ca9a54e8872d683794cf34d8d2ed6224d84be4e687a93650641f96",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending; native passed",
+      "note": ""
+    },
+    {
+      "name": "unpaid-bound",
+      "path": "tests/spec/rigid-pattern-context/unpaid-bound.rs",
+      "source_sha256": "2d4cd90f344e0071bb5762401efb0b5bda900e7d0b51a019008cdeac059e1228",
+      "rustc": {
+        "emit": "obj",
+        "status": 1
+      },
+      "required_modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native_required": false,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending",
+      "note": ""
+    },
+    {
+      "name": "unused-const",
+      "path": "tests/spec/rigid-pattern-context/unused-const.rs",
+      "source_sha256": "8060493dcedfb29350ff940d7628bee402d569697517472c4d96bd845a588976",
+      "rustc": {
+        "emit": "obj",
+        "status": 0
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native_required": true,
+      "qualification": "required-positive-frontier",
+      "note": ""
+    },
+    {
+      "name": "unpaid-outlives",
+      "path": "tests/spec/rigid-pattern-context/unpaid-outlives.rs",
+      "source_sha256": "a85d4429d40deb8eebc1d02208542705e4eb547357cb7e58cc2b595681873941",
+      "rustc": {
+        "emit": "obj",
+        "status": 1
+      },
+      "required_modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native_required": false,
+      "qualification": "independent-full-object-and-focused-views-qualified; central integration pending",
+      "note": "Rust E0309 remains required. PA19 inspection and PA20 retained-lifetime contract permit pending type-view debt; exact raw caller obligation and checked-mode rejection are separately qualified. Original all-view hypothesis/failure remains in obj/parallel/pa25-generic-pattern/final/source.log and unpaid-baseline/observed.json.",
+      "original_all_view_hypothesis": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      }
+    }
+  ],
+  "probe_note": "The independent generic size_of negative remains in obj/parallel/pa25-generic-pattern, masked by an existing PA26 library lookup boundary on this worker base; it is not counted as owning PA25 semantic coverage."
+}

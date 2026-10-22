@@ -9,6 +9,7 @@ pub(crate) use namespaces::{
     with_namespace, with_registered_namespace,
 };
 mod paid_inputs;
+mod rigid_inputs;
 mod seals;
 use super::{Declarations, Error, InitializerKind, NodeKey, Queries, Query, TypeId};
 use crate::{
@@ -117,6 +118,62 @@ impl SourceComputation {
             seal.validate_paid(facts, entry.caller, caller)
         })
     }
+    pub(crate) fn rigid_parameters(
+        self,
+        facts: &mut Declarations,
+    ) -> Result<Vec<crate::types::parameters::ParameterId>, &'static str> {
+        let (entry, caller) = self.entry(facts)?;
+        facts.body_work.canonical_steps += 1;
+        let parameters = facts
+            .source_computations
+            .as_deref()
+            .ok_or("missing source parameter catalog")?
+            .0
+            .parameters(entry.caller)?;
+        let Some(parameters) = parameters else {
+            return Ok(Vec::new());
+        };
+        parameters.validate(facts, entry.caller, caller)?;
+        let count = facts
+            .types
+            .arguments(entry.selected.arguments)
+            .ok_or("missing source arguments")?
+            .len();
+        let scratch =
+            crate::support::retained::new_map::<crate::types::parameters::ParameterId, ()>(count)
+                .saturating_add(
+                    count.saturating_mul(2 * size_of::<crate::types::parameters::ParameterId>()),
+                );
+        facts
+            .source_computations
+            .as_deref()
+            .ok_or("missing source parameter catalog")?
+            .0
+            .namespace_budget(scratch)?;
+        let mut result = Vec::with_capacity(count);
+        let mut seen = std::collections::HashSet::with_capacity(count);
+        for argument in facts
+            .types
+            .arguments(entry.selected.arguments)
+            .ok_or("missing source arguments")?
+        {
+            facts.body_work.canonical_steps += 1;
+            if let Argument::Type(ty) = argument
+                && let Some(Kind::Parameter(id)) = facts.types.kind(ty)
+            {
+                if !parameters.contains(id) {
+                    return Err("source computation has a foreign rigid parameter");
+                }
+                if seen.len() >= 1_000_000 {
+                    return Err("source rigid argument budget exceeded");
+                }
+                if seen.insert(id) {
+                    result.push(id);
+                }
+            }
+        }
+        Ok(result)
+    }
     pub(crate) fn result(self, facts: &Declarations) -> Result<TypeId, &'static str> {
         Ok(self.entry(facts)?.0.requested)
     }
@@ -165,13 +222,25 @@ impl SourceComputation {
         if entry.requested != result {
             return Err("source computation request result changed");
         }
-        if let Some(seal) = entry.seal {
-            Self::shape(facts, entry.selected, entry.original)?;
+        let parameters = facts
+            .source_computations
+            .as_deref()
+            .ok_or("missing source parameter catalog")?
+            .0
+            .parameters(entry.caller)?;
+        if let Some(parameters) = &parameters {
+            parameters.validate(facts, entry.caller, caller)?;
+        }
+        let rigid = if let Some(seal) = entry.seal {
+            let (_, rigid) =
+                Self::shape(facts, entry.selected, entry.original, parameters.as_deref())?;
             seal.validate(facts, entry.selected, result)?;
             seal.validate_paid(facts, entry.caller, caller)?;
+            rigid
         } else {
             Self::schema(facts, entry.selected, entry.original, result)?;
-        }
+            false
+        };
         let mut nonstatic = false;
         for argument in facts
             .types
@@ -224,7 +293,7 @@ impl SourceComputation {
                 facts.body_work.canonical_steps.saturating_add(visits);
             nonstatic |= observed?;
         }
-        if !nonstatic && !entry.seal.is_some_and(|seal| seal.projected(facts)) {
+        if !nonstatic && !rigid && !entry.seal.is_some_and(|seal| seal.projected(facts)) {
             return Err("source computation requires an owned open lifetime");
         }
         Ok(Resolved {
@@ -238,14 +307,15 @@ impl SourceComputation {
         original: NodeKey,
         result: TypeId,
     ) -> Result<(), &'static str> {
-        let declared = Self::shape(facts, selected, original)?;
+        let (declared, _) = Self::shape(facts, selected, original, None)?;
         selected_result(facts, selected, declared, result)
     }
     fn shape(
         facts: &mut Declarations,
         selected: Instance,
         original: NodeKey,
-    ) -> Result<TypeId, &'static str> {
+        parameters: Option<&rigid_inputs::Parameters>,
+    ) -> Result<(TypeId, bool), &'static str> {
         let initializer = facts
             .initializer_index(selected.definition)
             .and_then(|index| facts.initializers.get(index))
@@ -259,17 +329,26 @@ impl SourceComputation {
         }
         // Validate exact parameter arity/kinds without resolving or interning a result.
         selected.selected_arguments(facts)?;
+        let mut rigid = false;
         for argument in facts
             .types
             .arguments(selected.arguments)
             .ok_or("missing source arguments")?
         {
+            facts.body_work.canonical_steps += 1;
             let closed = match argument {
                 Argument::Lifetime(_) => true,
                 Argument::Type(ty) => {
-                    facts.types.contains_parameters(ty) == Some(false)
-                        && facts.types.contains_projections(ty) == Some(false)
-                        && facts.types.escaping_binders(ty) == Some(0)
+                    if matches!(facts.types.kind(ty), Some(Kind::Parameter(id))
+                        if parameters.is_some_and(|p| p.contains(id)))
+                    {
+                        rigid = true;
+                        true
+                    } else {
+                        facts.types.contains_parameters(ty) == Some(false)
+                            && facts.types.contains_projections(ty) == Some(false)
+                            && facts.types.escaping_binders(ty) == Some(0)
+                    }
                 }
                 Argument::Const(id) => {
                     matches!(facts.types.const_kind(id), Some(ConstKind::Value(_)))
@@ -279,7 +358,7 @@ impl SourceComputation {
                 return Err("source computation retains a non-lifetime parameter");
             }
         }
-        Ok(initializer.ty)
+        Ok((initializer.ty, rigid))
     }
 }
 fn selected_result(
@@ -389,8 +468,15 @@ impl Queries<'_> {
                 };
                 let (selected, paid) =
                     paid_inputs::select(facts, dispatcher, key, publication, inputs, selected)?;
-                let seal =
-                    seals::Seal::prepare(facts, dispatcher, selected, result)?.with_paid(paid)?;
+                let parameters = rigid_inputs::prepare(facts, key, publication, inputs, selected)?;
+                let seal = seals::Seal::prepare(
+                    facts,
+                    dispatcher,
+                    selected,
+                    result,
+                    parameters.as_deref(),
+                )?
+                .with_paid(paid)?;
                 let requested = seal.result();
                 dispatcher.reserve_pattern(facts, scope.body, reservation)?;
                 let known = facts

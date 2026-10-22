@@ -236,7 +236,7 @@ impl<'a> BodyCaller<'a> {
             .and_then(|n| facts.initializers.get(n))
             .ok_or("source operand has no original initializer")?
             .semantic_source();
-        let seal = Seal::prepare(facts, dispatcher, selected, result)?.with_paid(paid)?;
+        let seal = Seal::prepare(facts, dispatcher, selected, result, None)?.with_paid(paid)?;
         let requested = seal.result();
         dispatcher.reserve_pattern(facts, self.key.source, &mut self.reservation)?;
         let catalog = &mut facts

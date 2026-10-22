@@ -13,6 +13,8 @@ mod computed;
 mod open;
 #[path = "selected_initializers/paid.rs"]
 mod paid;
+#[path = "selected_initializers/rigid.rs"]
+mod rigid;
 #[path = "helpers/objects.rs"]
 mod rustc;
 #[path = "selected_initializers/type_arguments.rs"]

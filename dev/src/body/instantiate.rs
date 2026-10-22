@@ -4,6 +4,7 @@ mod anonymous;
 mod caller_transport;
 mod initializers;
 mod parent_results;
+mod rigid_values;
 pub(crate) use parent_results::prepare as source_inline_results;
 #[cfg(test)]
 #[path = "../../tests/invariants/seals.rs"]

@@ -101,6 +101,7 @@ impl Publication {
 struct Caller {
     key: CallerKey,
     publication: Publication,
+    parameters: Option<std::sync::Arc<super::rigid_inputs::Parameters>>,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Use {
@@ -174,7 +175,11 @@ impl Catalog {
         if matches!(key.enclosing, Enclosing::Original) {
             self.originals.insert(key.source, id);
         }
-        self.callers.push(Caller { key, publication });
+        self.callers.push(Caller {
+            key,
+            publication,
+            parameters: None,
+        });
         self.caller_indices.insert(key, id);
         self.bytes = bytes;
         Ok(id)
@@ -282,6 +287,33 @@ impl Catalog {
             .get(id.0.get() as usize - 1)
             .map(|caller| caller.publication)
             .ok_or("source caller index is stale")
+    }
+    pub(super) fn parameters(
+        &self,
+        caller: CallerId,
+    ) -> Result<Option<std::sync::Arc<super::rigid_inputs::Parameters>>, &'static str> {
+        self.callers
+            .get(caller.0.get() as usize - 1)
+            .map(|row| row.parameters.clone())
+            .ok_or("source parameter caller is stale")
+    }
+    pub(super) fn retain_parameters(
+        &mut self,
+        caller: CallerId,
+        parameters: super::rigid_inputs::Parameters,
+    ) -> Result<(), &'static str> {
+        let bytes = self.bytes.saturating_add(parameters.retained_bytes());
+        self.preflight(bytes, self.callers.len())?;
+        let row = self
+            .callers
+            .get_mut(caller.0.get() as usize - 1)
+            .ok_or("source parameter caller is stale")?;
+        if row.parameters.is_some() {
+            return Err("source parameter context was already published");
+        }
+        row.parameters = Some(std::sync::Arc::new(parameters));
+        self.bytes = bytes;
+        Ok(())
     }
     fn preflight(&self, bytes: usize, entries: usize) -> Result<(), &'static str> {
         if bytes.saturating_add(self.namespaces.as_ref().map_or(0, |n| n.bytes)) > LIMIT

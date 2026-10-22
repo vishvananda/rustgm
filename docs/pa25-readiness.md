@@ -535,3 +535,16 @@ The requirement-level post-premise inventory is maintained in
 [PA25 completion gaps](pa25-completion-gaps.md). It separates demonstrated
 Rust-positive blockers from integrated coverage reconciliation and release work,
 and records the PA29 generic/const-body contracts needed for upstream core.
+
+
+## Rigid caller pattern checkpoint
+
+The original unused-T generic pattern now accepts with exact completed caller
+ownership and a parameter-independent whole executable footprint. Actual
+instantiations/native programs, bounds, multiple parameters and lifetime/type
+combinations qualify in `pa25-rigid-patterns.md`. Parameter membership is not a
+trait/outlives premise; the unpaid T:'a control retains its real caller obligation
+and rejects checked constants/LowIR. Unused const-N, generic callee/inline and
+conditional parent-output positives remain required. Current-public text
+differences and PA13/PA16 release prerequisites remain explicit; no activation or
+reference generation is claimed.

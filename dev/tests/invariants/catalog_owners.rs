@@ -38,6 +38,15 @@ fn value(caller: CallerId) -> Use {
 
 #[test]
 fn catalog_epochs_and_result_seals_do_not_cross_declaration_owners() -> Result<(), &'static str> {
+    eprintln!(
+        "source catalog layouts caller={} catalog={} witness={} target={} request={} code={}",
+        size_of::<Caller>(),
+        size_of::<Catalog>(),
+        size_of::<Handle>(),
+        size_of::<crate::sema::values::execution::Target>(),
+        size_of::<crate::sema::values::execution::Request>(),
+        size_of::<crate::const_eval::code::Code>(),
+    );
     let publication = Publication::new([0..2, 4..5])?;
     let mut first = Catalog::new()?;
     let first_caller = first.caller(key(), publication)?;

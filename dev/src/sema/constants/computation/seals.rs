@@ -17,13 +17,14 @@ impl Seal {
         dispatcher: &mut Dispatcher,
         selected: Instance,
         requested: TypeId,
+        parameters: Option<&super::rigid_inputs::Parameters>,
     ) -> Result<Self, String> {
         let original = facts
             .initializer_index(selected.definition)
             .and_then(|n| facts.initializers.get(n))
             .ok_or("missing selected initializer result")?
             .semantic_source();
-        let declared = SourceComputation::shape(facts, selected, original)?;
+        let (declared, _) = SourceComputation::shape(facts, selected, original, parameters)?;
         let mut fold = selected.substitution(facts)?;
         let actual = fold.apply(&mut facts.types, declared)?;
         facts.body_work.canonical_steps += fold.steps;

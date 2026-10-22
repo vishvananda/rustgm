@@ -42,13 +42,12 @@ impl OriginalInputs {
             );
         (bytes, count.saturating_add(1))
     }
-    pub(in crate::sema) fn new(
-        facts: &mut Declarations,
+    pub(in crate::sema) fn identity(
+        facts: &Declarations,
         source: NodeKey,
         owner: Option<DefId>,
-        universals: u32,
-    ) -> Result<Self, &'static str> {
-        let (signature, count) = if let Some(closure) = facts.closures.get(source) {
+    ) -> Result<(Option<TypeId>, u32), &'static str> {
+        Ok(if let Some(closure) = facts.closures.get(source) {
             if closure.owner != owner {
                 return Err("prepared input closure owner changed");
             }
@@ -98,7 +97,15 @@ impl OriginalInputs {
             )
         } else {
             return Err("prepared caller has no actual input header");
-        };
+        })
+    }
+    pub(in crate::sema) fn new(
+        facts: &mut Declarations,
+        source: NodeKey,
+        owner: Option<DefId>,
+        universals: u32,
+    ) -> Result<Self, &'static str> {
+        let (signature, count) = Self::identity(facts, source, owner)?;
         if count != universals {
             return Err("prepared caller input binder changed");
         }

@@ -9,22 +9,28 @@ The historical checkpoint documents describe their own snapshots; their old
 
 ## Demonstrated language blockers
 
-Two original independently Rust-positive families remain in this lane after the
-caller-paid checkpoint. Their sources and declared positive outcomes are intact:
+The original independently Rust-positive conditional-output family remains in
+this lane after the rigid-pattern checkpoint. Its sources and declared positive
+outcomes are intact. Additional independently qualified generic positives remain
+required as described below:
 
-- `pa25/tests/spec/open-type-initializer-context/generic-pattern.rs`: the unused
-  rigid `T` in `S::<T>::C` does not affect the constant's scalar value, but the
-  current source-computation shape/materialization boundary still rejects this
-  generic original. Supporting it must preserve original body/const eligibility,
-  actual parameter identity and every eventual selected-instance proof. It may
-  not make arbitrary generic dependent patterns concrete or relax ordinary
-  Associated admission. This is the next generic-template/value consumer gap.
+- `pa25/tests/spec/rigid-pattern-context/{unused-const,callee-independent}.rs`:
+  an unused const-N owner and a parameter-independent generic callee still reject.
+  They require the real original const context and source-only callee proof,
+  respectively. Generic inline dependencies and composite rigid arguments also
+  remain required; no ordinary concrete admission or callable permit is relaxed.
 - `pa25/tests/spec/inline-query-context/closure.rs` and `paid-lifetime.rs`: the
   nested closure/inline associated reference result requires the checked parent
   output contract. The current parent namespace/result transport rejects that
   conditional interface. It must transport/prove the real conditional child and
   caller obligations, retaining private storage/escape upper bounds. Clearing an
   OutputLink, assuming its conclusion, or equating lifetimes by shape is invalid.
+
+The original `open-type-initializer-context/generic-pattern.rs` is now implemented
+for direct owned rigid type arguments with a closed complete executable footprint,
+including actual instantiated/native uses, bounds, multiple parameters and
+lifetime/type combinations. See `pa25-rigid-patterns.md` for exact proof, work,
+current-public comparison limits and still-required positive frontiers.
 
 The original `open-type-initializer-context/paid.rs` is now implemented, with
 source/object/native evidence in the caller-premise handoff. The lifetime-negative
@@ -41,7 +47,7 @@ the integrated compiler before activation; do not infer completion from an old
 
 | Required family | Current evidence and remaining release obligation |
 | --- | --- |
-| Const functions, control flow, recursion and restrictions | `dev/tests/cfg_execution.rs` and `required_values.rs` qualify iterative checked execution, values/native programs, recursion and deterministic limits; inline/associated matrices cover generic selection and unused/skipped invalid bodies. Keep complete instance identity and selected callee proof. The two blockers above remain part of generics, rather than exclusions. |
+| Const functions, control flow, recursion and restrictions | `dev/tests/cfg_execution.rs` and `required_values.rs` qualify iterative checked execution, values/native programs, recursion and deterministic limits; inline/associated matrices cover generic selection and unused/skipped invalid bodies. Keep complete instance identity and selected callee proof. The generic and conditional-output blockers above remain required, rather than exclusions. |
 | Statics and promotion | Original controls include `associated-execution/static-suspension.rs`, `inline-written/static.rs`, `static-local.rs`, `promotion.rs`, and `lifetime-initializer-results/{static-reference,promoted-reference,dangling-reference}.rs`. Reconcile all current storage/forward/static-context and optional-promotion controls on the integrated cut. No additional current PA25-positive failure is established by this lane's receipts; this is not a blanket completeness claim. |
 | Symbolic provenance and allocation validity | Existing allocation/static/projection/literal identities, permissions, liveness, initialized storage, bounds and escape checks are shared typed machinery. The separate C lane now supplies later byte/relocation/enum/range cases. Reconcile its integrated outcomes, preserving each earliest owning PA. Raw intrinsics or future-stage unsupported operations must not be confused with missing PA25 reference/static behavior or silently exempted from the full provenance responsibility. |
 | Bounds and limits | Interpreter call/instruction/storage limits, dependency cycles versus recursion, retained query/dispatcher limits and inspection graph limits have private/source controls. Caller payment now charges raw predicates, preparation, solve work and retained rows. Keep both resource-error and ordinary valid cases, plus shared-DAG/scaling controls. A compiler signal/panic/timeout is never a successful limit diagnostic. |

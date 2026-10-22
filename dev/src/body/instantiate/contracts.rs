@@ -14,7 +14,7 @@ pub(super) fn specialize(
     inputs: &mut Inputs,
     premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
-    let (bound, contract, _) = prepare(facts, original, inputs, premises, None, false)?;
+    let (bound, contract, _) = prepare(facts, original, inputs, premises, None, false, None)?;
     Ok((bound, contract))
 }
 pub(super) fn initializer(
@@ -34,6 +34,7 @@ pub(super) fn initializer(
         super::Premises::Required,
         None,
         close_static,
+        None,
     )?;
     Ok((bound, contract))
 }
@@ -50,12 +51,30 @@ pub(super) fn source_result(
         super::Premises::Required,
         Some(requested),
         false,
+        None,
     )?;
     Ok((
         bound,
         contract,
         imported.ok_or("source result import was lost")?,
     ))
+}
+pub(super) fn rigid_initializer(
+    facts: &mut Declarations,
+    original: &Contract,
+    inputs: &mut Inputs,
+    parameters: Vec<crate::types::parameters::ParameterId>,
+) -> Result<(Bound, Contract), &'static str> {
+    let (bound, contract, _) = prepare(
+        facts,
+        original,
+        inputs,
+        super::Premises::Required,
+        None,
+        false,
+        Some(parameters),
+    )?;
+    Ok((bound, contract))
 }
 fn prepare(
     facts: &mut Declarations,
@@ -64,6 +83,7 @@ fn prepare(
     premises: super::Premises,
     mut requested: Option<crate::types::TypeId>,
     close_static: bool,
+    parameters: Option<Vec<crate::types::parameters::ParameterId>>,
 ) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
     let mut contract = original.clone();
     if requested.is_some() && matches!(original.key, crate::body::ir::BodyKey::Anonymous(_)) {
@@ -105,7 +125,7 @@ fn prepare(
             u32::try_from(regions.universal_count()).map_err(|_| "too many instance lifetimes")?,
         )
         .ok_or("too many instance lifetimes")?;
-    contract.parameters.clear();
+    contract.parameters = parameters.unwrap_or_default();
     if let Some(signature) = &mut contract.signature {
         // Body signatures express their parameter roots inside the body binder.
         // Ordinary callable types visited below retain their nested binder.
