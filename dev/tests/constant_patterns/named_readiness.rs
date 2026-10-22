@@ -160,3 +160,59 @@ fn completed_patterns_have_native_values() -> TestResult {
         .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
     native::check_cases("parallel/pa25-pattern-readiness/native", &cases)
 }
+
+fn prior_pattern(name: &str) -> Result<String, std::io::Error> {
+    std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa20/tests/spec/constants/pattern/lowir")
+            .join(format!("{name}.rs")),
+    )
+}
+#[test]
+fn default_values_keep_caller_parameters_and_declaration_rules() -> TestResult {
+    let folder = output()?;
+    for (name, accepted) in [
+        ("generic-default-dependency", true),
+        ("generic-bounded-owner", true),
+        ("generic-missing-bound", false),
+        ("missing-copy", false),
+    ] {
+        object(&folder, name, &prior_pattern(name)?, accepted)?;
+        views(&folder, name, accepted, "")?;
+    }
+    // A concrete caller does not validate the original declaration's pattern.
+    for (name, diagnostic) in [
+        ("source-opaque-pattern", "symbolic assumption"),
+        (
+            "interleaved-lifetime-bound",
+            "selected constant arguments are not concrete",
+        ),
+    ] {
+        object(&folder, name, &source(name)?, false)?;
+        views(&folder, name, false, diagnostic)?;
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the pinned CPPGM native backend"]
+fn default_values_select_overrides_in_generic_callers() -> TestResult {
+    let a = prior_pattern("generic-default-dependency")?;
+    let b = prior_pattern("generic-bounded-owner")?;
+    native::check_cases(
+        "parallel/pa20-pattern-defaults/native",
+        &[
+            (
+                "default",
+                a.strip_prefix(native::CHECK)
+                    .ok_or("missing check prefix")?,
+                false,
+            ),
+            (
+                "bounded",
+                b.strip_prefix(native::CHECK)
+                    .ok_or("missing check prefix")?,
+                false,
+            ),
+        ],
+    )
+}

@@ -237,3 +237,36 @@ fn parent_pattern_owner_reserves_before_child_inference_allocations() -> TestRes
     assert!(proof.evidence.proof.has_gaps());
     Ok(())
 }
+
+#[test]
+fn selected_value_keeps_caller_scope_and_restores_initializer_owner() -> TestResult {
+    let report = crate::test_source::resolve("const A:u8=7;const B:u8=9;fn main(){}", true)?;
+    let mut facts = declarations::analyze(&report)?;
+    let caller = facts.initializers[0].semantic_source();
+    let original = facts.initializers[1].semantic_source();
+    let mut queries = Queries::new(&report, &mut facts);
+    let outer = frame(&mut queries, caller)?;
+    queries.begin_pattern_value(1, Context(0))?;
+    let inner = *queries
+        .pattern_frames
+        .as_ref()
+        .ok_or("missing frames")?
+        .active
+        .last()
+        .ok_or("missing inner frame")?;
+    assert!(inner != outer);
+    let scope = queries.pattern_scope.ok_or("missing caller scope")?;
+    assert_eq!(scope.body, caller);
+    assert_eq!(scope.binders, 1);
+    assert!(matches!(queries.value_scope,
+        Some(ValueScope::Initializer { body, index:1 }) if body == original));
+    queries.finish_pattern_frame(inner)?;
+    assert_eq!(
+        queries.pattern_scope.ok_or("missing restored scope")?.body,
+        caller
+    );
+    assert!(queries.value_scope.is_none());
+    queries.finish_pattern_frame(outer)?;
+    assert!(queries.pattern_scope.is_none() && queries.value_scope.is_none());
+    Ok(())
+}

@@ -71,17 +71,9 @@ impl Queries<'_> {
         if !needed {
             return Ok(());
         }
-        let scope = self.pattern_scope.map(|_| PatternScope {
-            body,
-            owner: Some(initializer.definition),
-            binders: self
-                .typing
-                .facts
-                .associated
-                .schema(initializer.definition)
-                .map_or(0, |s| s.captures),
-            end: 0,
-        });
+        // Value substitution uses the caller's rigid parameters and proof scope.
+        // Declaration-pattern eligibility enters its own queued PreparedScope.
+        let scope = self.pattern_scope;
         let id = self.append_pattern_frame(Frame {
             prepared: None,
             cursor: 0,

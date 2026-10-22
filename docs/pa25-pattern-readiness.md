@@ -165,3 +165,40 @@ including independent objects/three views, retained positive boundaries and
 seventeen paired native executions. All three pass on the final source in
 3.62 seconds (test time). Its successful receipt is `764ee742b004437791ec14f97c644ac6`. The previously
 empty filter remains recorded as an empty run, not counted among passing tests.
+
+### Generic default value caller scope correction
+
+The active PA20 `generic-default-dependency.rs` exposed a regression introduced
+by the value-owner frame: evaluating trait default `C = Self::D` for `S<T>`
+installed the original initializer's parameter environment as the selection
+caller. The substituted rigid `T` belongs to the requesting generic function,
+so nested selection incorrectly reported `shape parameter is outside its
+environment`.
+
+`begin_pattern_value` now retains the actual caller `PatternScope` while its
+`ValueScope::Initializer` retains the exact declaration identity. The original
+queued `PreparedScope` still supplies the declaration's own environment when
+checking its patterns, then restores the caller scope. No foreign-parameter
+fallback, concrete specialization, or extra proof assumption is introduced.
+
+The isolated comparison is recorded under
+`obj/parallel/pa20-default-context/first`: the unchanged source rejects in all
+three views with c9377070's binary (`2ea7997768ab394e5eedb00cd0326d95eb7458f21ffb6a680000effcb6b6f952`)
+and accepts with the fully qualified frozen PA24 binary
+(`c408b1205c7815a004309b471ee115db532c7dd3c3a070c0ca2e2904d858cd10`,
+c7fe46c0 / production 0b89bf31). The corrected binary is
+`ce4abc52d50a5c54d0a772515b3c942a10c224e8357a9d6cc6a8974f829df49d`;
+its sorted production source-map digest is
+`668b9bafdfe2c038afa809238c0d1a84223d5ec36f9de6e6ac7a78b0ab0e81ca`.
+
+Six private frame controls and five focused source/native test functions pass.
+The original generic default and bounded-owner fixtures accept all three views
+and execute paired native value checks. Missing caller bounds, missing Copy,
+original opaque declaration patterns, and the existing lifetime-debt rejection
+remain negative. Existing closed-readiness outcomes and eighteen paired natives
+also pass. All 7,788 PA1–23 text comparisons pass unchanged, including PA20's
+1,381 cases. Strict release all-target/all-feature Clippy, the file/architecture
+audit (1,518 files, zero findings), layout and upstream verification pass.
+Receipt `5b40d8170b644008b95f03f2bcd57620` closed with status zero and
+19,670,597,632 bytes retained within the unchanged worker budget. No reference
+or expected-outcome changes were needed.
