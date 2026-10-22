@@ -229,8 +229,9 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<body::ir::Value>()
     );
     // Caller computations add an 8-byte box slot and an 8-byte work counter;
-    // write_bytes and the two pointer-add identities add three 32-byte slots.
-    assert_eq!(size_of::<Declarations>(), 8536);
+    // write_bytes and the two pointer-add identities add three 32-byte slots;
+    // pointer method selection adds one 8-byte lazy catalog slot.
+    assert_eq!(size_of::<Declarations>(), 8544);
     assert_eq!(size_of::<Original>(), 56);
     assert_eq!(size_of::<crate::sema::iteration::Registry>(), 304);
     assert_eq!(size_of::<body::ir::Value>(), 24);
