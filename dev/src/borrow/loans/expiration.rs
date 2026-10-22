@@ -85,7 +85,7 @@ impl Expirations {
     ) -> Result<(), &'static str> {
         // Bound both simultaneous index buffers and charge their initialization,
         // prefix walk and clone, plus event initialization and row counting.
-        self.charge(slots * 3 + self.entries + rows.len())?;
+        self.charge(slots * 3 + self.entries + rows.len() * 2)?;
         let mut starts = vec![0_u32; slots];
         for &(point, region) in &rows {
             let slot = starts
@@ -115,6 +115,10 @@ impl Expirations {
         words: &HashMap<Region, Vec<(usize, u64)>>,
     ) -> Result<(), &'static str> {
         self.charge(rows.len())?;
+        // Reserve a conservative comparison allowance before entering the
+        // bounded library sort; only actual comparisons consume the budget.
+        let levels = rows.len().max(1).next_power_of_two().ilog2() as usize;
+        self.total_work(rows.len().saturating_mul(levels).saturating_mul(4))?;
         let mut comparisons = 0;
         rows.sort_unstable_by(|a, b| {
             comparisons += 1;
@@ -175,12 +179,14 @@ impl Expirations {
         }
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
-        self.steps = self
-            .steps
+        self.steps = self.total_work(count)?;
+        Ok(())
+    }
+    fn total_work(&self, count: usize) -> Result<usize, &'static str> {
+        self.steps
             .checked_add(count)
             .filter(|&steps| steps <= 32_000_000)
-            .ok_or("loan expiration work budget exceeded")?;
-        Ok(())
+            .ok_or("loan expiration work budget exceeded")
     }
     /// Block entries, joins, jumps and unvalidated births use the exact full
     /// membership check. Only a known consecutive state can consume exit events.

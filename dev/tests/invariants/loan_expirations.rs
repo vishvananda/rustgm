@@ -253,5 +253,17 @@ fn dense_exits_keep_direct_rows_and_charge_index_construction()
     );
     assert!(matches!(exhausted.rows, super::Rows::Empty));
     assert!(exhausted.events.is_empty());
+    exhausted.steps = 32_000_000 - 4;
+    assert!(
+        exhausted
+            .sparse(
+                vec![(9, region), (3, region), (6, region)],
+                &crate::support::hash::HashMap::default(),
+            )
+            .is_err()
+    );
+    assert_eq!(exhausted.steps, 32_000_000 - 1);
+    assert!(matches!(exhausted.rows, super::Rows::Empty));
+    assert!(exhausted.events.is_empty());
     Ok(())
 }
