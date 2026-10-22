@@ -79,7 +79,8 @@ pub struct BodyRegions {
     active: Positions,
     unit: Option<NodeKey>,
     suspended: HashMap<NodeKey, Positions>,
-    /// Each nested body's enclosing body; a unit is a body without one.
+    /// Unit links. Insertion uses the current root; later empty-unit nesting
+    /// retains that old root as an alias, so queries must still follow links.
     parents: HashMap<NodeKey, NodeKey>,
     /// Most identities allocated in any unit.
     widest: usize,
@@ -177,7 +178,12 @@ impl BodyRegions {
         {
             return Err("nested body already numbered its own regions");
         }
-        self.parents.insert(body, parent);
+        self.parents.insert(body, unit);
+        // The check above proves this cached unit has no identities. Its old
+        // root now aliases `unit`, so even read-only queries must resolve again.
+        if self.unit == Some(body) {
+            self.unit = None;
+        }
         Ok(())
     }
     /// The unit whose identities `body` uses.
@@ -187,6 +193,8 @@ impl BodyRegions {
             return body;
         }
         while let Some(&parent) = self.parents.get(&body) {
+            #[cfg(test)]
+            tests::followed_parent();
             body = parent;
         }
         body
@@ -241,3 +249,7 @@ fn next_identity(count: usize) -> Result<u32, &'static str> {
         .filter(|n| *n < 0x8000_0000)
         .ok_or("body region identity space exhausted")
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/numbering_units.rs"]
+mod tests;
