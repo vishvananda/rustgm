@@ -105,10 +105,33 @@ library builds. Their actual blockers determine the order of remaining work.
    [callable-selection probes](library-bootstrap-inventory.md#callable-selection-followup)
    retain accepted runtime pointers and compiler ICEs separately from source
    rejections; do not encode an unqualified function-items-only restriction.
-4. Compile core end to end, then alloc. Start the PA34 build/edition work in
-   parallel so it does not become a serial prerequisite after the libraries work.
-5. Build and run PA35's real crate graph, then PA36's std graph. Procedural derives
-   follow; async and full unwinding do not gate the initial abort-profile target.
+4. Compile core end to end. Start the PA34 build/edition work in parallel so it
+   does not become a serial prerequisite after the libraries work. As soon as
+   core and the required build path work, build and execute PA35's original itoa
+   and no-default-features serde_core graph. Do not wait for alloc or std to
+   exercise these core-only targets. Their failures feed back into the earliest
+   owning compiler assignment.
+5. Compile alloc and execute its consumers, then build and run the complete
+   selected serde_json alloc graph. Preserve the earlier core-only crate checks
+   as regression gates.
+6. Build PA36's std graph and default-feature serde_json, then procedural derives.
+   Async and full unwinding do not gate the initial abort-profile target.
+
+These are implementation checkpoints, not changes to cumulative release order.
+PA35 owns upstream crate acceptance even when its core-only checks are developed
+before PA33's alloc release. PA34's build/edition contract can likewise be
+implemented against small separate crates before the library assignments pass.
+The first real-crate result must identify the complete successful graph and
+feature profile; it cannot imply that alloc, std or the rest of PA35 is complete.
+
+Within PA31/PA32, keep four observable boundaries: validated source bindings;
+configured whole-source loading/expansion; complete semantic and exported-body
+checking; and object emission plus native consumers. For each boundary, record
+the exact first failure, reached source set and owning compiler contract. A
+requested internal feature gate alone does not prove that its constructs are
+active on the selected target. Classify gates and attributes using source/config
+evidence, then diagnose unsupported active constructs at their actual phase.
+Never count root parsing or a reduced source package as a whole-library pass.
 
 With three GPT-6.1-Sol/high workers, keep one lane on const proof closure followed
 by generic metadata; one on genuine language hooks followed by source-declared

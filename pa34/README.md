@@ -21,6 +21,11 @@ every target Rust library/dependency must compile through RustGM. This is not a
 claim of rustc-private metadata compatibility or a drop-in Cargo/rustc interface.
 Freeze the supported driver protocol before publishing its grading contract.
 
+Develop this path alongside PA31/PA32 using small separate crates first. Its
+implementation need not wait for alloc: core-only itoa/serde_core acceptance
+should become available as soon as core and their build prerequisites work.
+The cumulative assignment prerequisite and release checks remain unchanged.
+
 Test original Serde build-script outputs and serde_json configuration. Record
 source/package checksums, all transitive versions, compiler/runtime identities,
 features, target facts and output hashes. Offline replay after source acquisition

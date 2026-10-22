@@ -11,8 +11,9 @@ efficient representations and algorithms, not an implementation of Rust rules.
 Target Rust 1.98.0, first edition 2024, on Linux x86-64. Freeze language release,
 Unicode tables, edition, target, panic mode and overflow-check mode in each
 relevant test manifest. PA34 adds the Rust 2021 crate profile; PA40 closes the
-remaining editions. Compiling original upstream core, alloc and std, followed by
-real crates, is required by PA31–PA36. Rustc-private binary/metadata compatibility
+remaining editions. PA31–PA36 require original upstream core, alloc and std,
+with real-crate acceptance beginning after core and expanding with alloc/std.
+Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
 
 ```text

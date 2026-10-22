@@ -13,7 +13,11 @@ serde_json 1.0.151 with defaults disabled and alloc enabled. Freeze the exact
 transitive graph, including serde_core, itoa, memchr and zmij, with package/source
 checksums and features. These are initial declared targets, not current successes.
 
-Compile every selected target Rust dependency using RustGM's core/alloc sysroot.
+Compile every selected target Rust dependency using RustGM's source-built sysroot:
+core for the initial itoa/serde_core profile, then core and alloc for serde_json.
+Develop and execute the core-only checks as soon as PA32 and their required PA34
+build/edition path work; alloc and std do not gate that implementation checkpoint.
+The complete assignment still requires all selected graphs and prior releases.
 Execute separate consumer crates covering integer formatting, Serde visitors,
 JSON parsing/serialization, floating and integer boundaries, string escaping,
 malformed input, nesting and round trips. Declare outputs and independent pinned
