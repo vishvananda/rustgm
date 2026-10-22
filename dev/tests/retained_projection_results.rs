@@ -476,3 +476,93 @@ fn symbolic_results_execute_with_later_input_proofs() -> Result<(), Box<dyn std:
         ],
     )
 }
+
+const SCOPED_ASSOCIATED: &[(&str, &str, bool)] = &[
+    (
+        "ordinary-reference",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out=&7;}fn get<'a,T:Pick<'a>>()->T::Out{let n=T::V;n}fn main(){check(*get::<Tag>()==7);}",
+        true,
+    ),
+    (
+        "ordinary-tuple",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=(&'a u8,u8);const V:Self::Out=(&7,9);}fn get<'a,T:Pick<'a>>()->T::Out{let n=T::V;n}fn main(){let x=get::<Tag>();check(*x.0==7);check(x.1==9);}",
+        true,
+    ),
+    (
+        "repeated-distinct-owners",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out=&7;}fn get<'a,T:Pick<'a>,const N:usize>()->(T::Out,T::Out){let a=T::V;let b=T::V;(a,b)}fn main(){let a=get::<Tag,2>();check(*a.0+*a.1==14);let b=get::<Tag,3>();check(*b.0+*b.1==14);}",
+        true,
+    ),
+    (
+        "paid-application",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out=&7;}fn get<'a,'b,T:Pick<'a>>() -> <T as Pick<'a>>::Out where 'a:'b,'b:'a{<T as Pick<'b>>::V}fn main(){check(*get::<Tag>()==7);}",
+        true,
+    ),
+    (
+        "unpaid-application",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out=&7;}fn get<'a,'b,T:Pick<'a>>() -> <T as Pick<'a>>::Out{<T as Pick<'b>>::V}fn main(){}",
+        false,
+    ),
+    (
+        "distinct-applications",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out=&7;}fn get<'a,'b,T:Pick<'a>+Pick<'b>>() -> <T as Pick<'a>>::Out{<T as Pick<'b>>::V}fn main(){}",
+        false,
+    ),
+    (
+        "dangling-initializer",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out={let n=7;&n};}fn get<'a,T:Pick<'a>>()->T::Out{T::V}fn main(){let _=get::<Tag>();}",
+        false,
+    ),
+    (
+        "wrong-result",
+        "trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=&'a u8;const V:Self::Out=&7;}fn get<'a,T:Pick<'a,Out=&'a u8>>()->&'a u16{T::V}fn main(){}",
+        false,
+    ),
+    (
+        "unpaid-type-bound",
+        "trait A<T>{const C:usize;}struct S;impl<T:'static>A<T>for S{const C:usize=3;}fn value<'a>(_:&'a u8)->usize{<S as A<&'a u8>>::C}fn main(){check(<S as A<&'static u8>>::C==3);}",
+        false,
+    ),
+];
+#[test]
+fn associated_results_retain_original_and_instance_caller_debts()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut failures = Vec::new();
+    for &(name, source, accepted) in SCOPED_ASSOCIATED {
+        let source = format!("{}{source}", native::CHECK);
+        rustc::qualify(&format!("scoped-associated-{name}"), &source, accepted)?;
+        let result = semantic::resolve(&source).and_then(|mut report| {
+            let analysis = rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
+            let mut facts = analysis.facts;
+            let entry =
+                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
+            rustgm::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        });
+        if name == "unpaid-type-bound" {
+            assert!(
+                result.as_ref().err().is_some_and(
+                    |message| message.contains("required lifetime does not outlive its target")
+                ),
+                "{result:?}"
+            );
+        }
+        if result.is_ok() != accepted {
+            failures.push(format!("{name}: {:?}", result.err()));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn associated_results_execute_with_exact_repeated_caller_owners()
+-> Result<(), Box<dyn std::error::Error>> {
+    let cases = SCOPED_ASSOCIATED
+        .iter()
+        .filter(|case| case.2)
+        .map(|&(name, source, _)| (name, source, false))
+        .collect::<Vec<_>>();
+    native::check_cases("parallel/scoped-associated-results", &cases)
+}

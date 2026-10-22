@@ -14,13 +14,23 @@ struct Group {
     roots: Vec<TypeRoot>,
 }
 
+#[cfg(test)]
 pub(super) fn normalize(
     facts: &mut Declarations,
     contract: &mut Contract,
-    mut next: u32,
+    next: u32,
 ) -> Result<usize, &'static str> {
+    normalize_with_owner(facts, contract, next, None).map(|(work, _)| work)
+}
+
+pub(super) fn normalize_with_owner(
+    facts: &mut Declarations,
+    contract: &mut Contract,
+    mut next: u32,
+    mut owner: Option<&mut super::super::allocated_owners::Operation>,
+) -> Result<(usize, u32), &'static str> {
     let mut work = 0_usize;
-    for evidence in &mut contract.proofs {
+    for (index, evidence) in contract.proofs.iter_mut().enumerate() {
         let original = &mut evidence.proof;
         let mut groups: Vec<Group> = Vec::new();
         let mut scopes = HashMap::new();
@@ -43,6 +53,7 @@ pub(super) fn normalize(
         }
         // Other contract proofs may own the intervening identities. Resume the
         // existing binder tree while explicitly excluding those foreign ranges.
+        let first = next;
         original.resume_at(next)?;
         for group in groups {
             let replacements = {
@@ -60,8 +71,11 @@ pub(super) fn normalize(
             }
         }
         next = original.regions.end;
+        if let Some(owner) = owner.as_deref_mut() {
+            owner.record(index, evidence, first..next)?;
+        }
     }
-    Ok(work)
+    Ok((work, next))
 }
 
 fn charge(work: &mut usize, amount: usize) -> Result<(), &'static str> {

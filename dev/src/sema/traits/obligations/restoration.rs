@@ -20,6 +20,10 @@ impl Obligations {
         self.restore::<false>(true, &mut 0)
     }
 
+    pub(crate) fn body_restoration_counted(&self, work: &mut usize) -> Result<Bound, &'static str> {
+        self.restore::<true>(true, work)
+    }
+
     fn restore<const COUNTED: bool>(
         &self,
         retain_private: bool,

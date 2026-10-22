@@ -82,3 +82,95 @@ fn selected_aliases_never_replace_original_source_mappings()
     assert!(fold.projection_anchor_growth(usize::MAX)? > 64 * 1024 * 1024);
     Ok(())
 }
+
+#[test]
+fn selected_proof_aliases_compose_with_source_closing_without_paying_debts()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut facts = make_facts()?;
+    let mut dispatcher = Dispatcher::new(1, 10)?;
+    let mut proof = crate::types::lifetime_proof::Obligations::new(20);
+    proof.regions.end = 21;
+    proof.equalities.push((RegionId(1), RegionId(20)));
+    proof.outlives.push((RegionId(1), RegionId::STATIC));
+    let debts = proof.equalities.clone();
+    let selected = self::selected(&mut facts, RegionId(20))?;
+    let restored = super::super::implementation::restore_constant(
+        &mut facts,
+        &mut dispatcher.context,
+        selected,
+        &proof,
+    )?;
+    assert_eq!(restored, self::selected(&mut facts, RegionId(1))?);
+    let mut source = source()?;
+    let canonical = restored.substitute(&mut facts.types, &mut source)?;
+    assert_eq!(
+        canonical,
+        self::selected(&mut facts, RegionId::bound(0, 0)?)?
+    );
+    assert_eq!(
+        dispatcher.source_instance(&mut facts, canonical)?,
+        self::selected(&mut facts, RegionId(10))?
+    );
+    assert_eq!(proof.equalities, debts);
+    assert_eq!(proof.outlives, [(RegionId(1), RegionId::STATIC)]);
+    assert!(dispatcher.context.steps > 0);
+    let mut missing = proof.clone();
+    missing.equalities.clear();
+    let unanchored = super::super::implementation::restore_constant(
+        &mut facts,
+        &mut dispatcher.context,
+        selected,
+        &missing,
+    )?;
+    assert_eq!(unanchored, selected);
+    assert!(
+        unanchored
+            .substitute(&mut facts.types, &mut source)
+            .is_err()
+    );
+    let foreign = self::selected(&mut facts, RegionId(25))?;
+    let before = dispatcher.context.steps;
+    assert!(
+        super::super::implementation::restore_constant(
+            &mut facts,
+            &mut dispatcher.context,
+            foreign,
+            &proof
+        )
+        .is_err()
+    );
+    assert!(dispatcher.context.steps > before);
+    Ok(())
+}
+
+#[test]
+fn selections_without_equalities_preserve_input_types_and_their_unpaid_debts()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut facts = make_facts()?;
+    let mut dispatcher = Dispatcher::new(0, 10)?;
+    let reference = facts.types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId(1),
+        referent: TypeId::primitive(Primitive::U8),
+    })?;
+    let selected = Instance {
+        definition: DefId(0),
+        arguments: facts.types.intern_arguments(&[Argument::Type(reference)])?,
+    };
+    let mut proof = crate::types::lifetime_proof::Obligations::new(10);
+    proof.types.push((reference, RegionId::STATIC));
+    let before = dispatcher.context.steps;
+    assert_eq!(
+        super::super::implementation::restore_constant(
+            &mut facts,
+            &mut dispatcher.context,
+            selected,
+            &proof
+        )?,
+        selected
+    );
+    assert_eq!(proof.types, [(reference, RegionId::STATIC)]);
+    assert!(proof.equalities.is_empty());
+    assert_eq!(dispatcher.context.steps, before);
+    Ok(())
+}

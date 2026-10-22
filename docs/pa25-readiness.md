@@ -50,10 +50,11 @@ original and instance proof, actual result identity, escape checks, and caller
 debts. They do not close the following required families:
 
 - Demanded associated results whose original declarations retain projections.
-  The generic `T::V -> T::Out` inference prerequisite now has an isolated repair;
-  ordinary demanded reference/tuple calls still expose a normalized source-result
-  seal disagreement, and specialized generic initializer bodies still expose
-  missing projection normalization. These are independently Rust-positive cases.
+  Ordinary demanded reference/tuple returns and repeated distinct generic callers
+  now execute through checked specialization. Nested associated initializer
+  values still expose unresolved value selection, and selected tuple/record
+  patterns expose missing projection normalization. These remain independently
+  Rust-positive cases.
 - Projected named-pattern operands. The original selected reference and paid
   relation controls still fail shape inference before value execution; selected
   tuple/record controls reach the initializer projection boundary. Result seals
@@ -115,3 +116,46 @@ the associated-type lifetime diagnostic at byte 115. That exact delta is pending
 integrator review; no reference was changed. The text guard therefore exits 1.
 This prerequisite advances original Rust-positive cases to the execution gaps
 listed above; it does not complete demanded projected-result execution.
+
+### Selected arguments and normalization allocation ownership
+
+The next checkpoint composes selected constant arguments through only that
+selection's retained equalities, then through the original caller's existing
+alias transport. All selection obligations remain attached to the caller.
+An empty equality set is an identity operation, including when the original
+proof retains an unpaid type-outlives requirement. The opposing active PA20
+`unpaid-type-bound` case must still reach its required-lifetime rejection.
+
+Instance normalization can allocate additional identities while completing both
+new proofs and existing suspended proof debts. A stack-only operation recorder
+now observes those exact allocation intervals at their completion sites. Before
+the existing reservation publishes them, it validates the full caller instance,
+body/contract identity, proof position/source, contiguous retained coverage and
+unchanged global frontier. It never fills gaps or infers ownership from a high
+water mark. Ordinary normalization has no recorder. Temporary snapshot and row
+capacities are checked before growth against the caller namespace's remaining
+budget (at most 64 MiB), with one million validation steps/rows as upper bounds.
+
+`owned-normalization-closing-second/` records six private ownership controls,
+strict release all-target/all-feature Clippy, file audit (1,607 files, zero
+findings), 46 associated source tests and two native groups executing 13 programs.
+The controls include resumed existing debts, foreign gaps, stale retained proofs,
+different enclosing instances and interleaved unrelated sources. For 8/32/128
+resumed proofs, validation work is 46/166/646 and diagnostic payload storage is
+180/660/2,580 bytes; this is a bounded normalization claim, not a cleanup scaling
+claim. `selected-identity-closing/` additionally passes the four alias controls
+and four focused source tests after the empty-equality correction.
+
+The immutable final binary and production source-map hashes are recorded by
+`selected-qualified/identity.json`; `selected-qualified/review.json` retains
+source and expected/actual output hashes for every observed PA20 delta, including
+the repaired unpaid-bound negative. Six semantics views now show the actual
+selected caller/static arguments instead of their private selector aliases.
+Together with the earlier rejected-result diagnostic change, these require
+integrator review before oracle publication. No reference was changed here.
+
+Remaining consumers are explicit: projected named-pattern results still enter
+the source query's projection boundary, while nested non-pattern initializer
+values still enter an unscoped value selector. Their retained caller and result
+normalization debts must reach the existing checked execution path; neither an
+AST value cache nor an unsupported diagnostic is proof of completion.

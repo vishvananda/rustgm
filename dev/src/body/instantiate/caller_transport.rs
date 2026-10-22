@@ -1,5 +1,6 @@
 //! Alpha-rename source-owned facts before simultaneous external substitutions.
 use super::Declarations;
+pub(super) use super::allocated_owners::normalize;
 use crate::{
     body::{
         ir::{Body, ProjectionKind, Rvalue},

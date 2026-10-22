@@ -1,4 +1,5 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
+mod allocated_owners;
 mod anonymous;
 mod caller_transport;
 mod initializers;
@@ -242,7 +243,7 @@ fn materialize(
         let contract = contract
             .as_deref_mut()
             .ok_or("projected instance requires its lifetime contract")?;
-        projections::normalize(facts, &mut body, contract, comparison)?;
+        caller_transport::normalize(facts, &mut body, contract, comparison)?;
     }
     if let super::ir::Owner::Closure {
         execution: Some(execution),

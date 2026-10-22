@@ -133,7 +133,20 @@ pub(super) fn normalize(
     contract: &mut Contract,
     comparison: Option<(TypeId, TypeId)>,
 ) -> Result<(), &'static str> {
-    let mut proof = Obligations::new(first_region(contract)?);
+    normalize_with_owner(facts, body, contract, comparison, None).map(|_| ())
+}
+
+pub(super) fn normalize_with_owner(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    comparison: Option<(TypeId, TypeId)>,
+    mut owner: Option<&mut super::allocated_owners::Operation>,
+) -> Result<u32, &'static str> {
+    let first = owner
+        .as_ref()
+        .map_or_else(|| first_region(contract), |owner| Ok(owner.first()))?;
+    let mut proof = Obligations::new(first);
     let mut session = projections::concrete(&mut proof, ScopeId::ROOT)?;
     let mut storage = crate::sema::stored_fields::Preparation::default();
     if let Some((expected, actual)) = comparison
@@ -173,10 +186,13 @@ pub(super) fn normalize(
     }
     let next = evidence.proof.regions.end;
     if !evidence.proof.is_empty() {
+        let index = contract.proofs.len();
         contract.proofs.push(evidence);
+        if let Some(owner) = owner.as_deref_mut() {
+            owner.record(index, &contract.proofs[index], first..next)?;
+        }
     }
-    debts::normalize(facts, contract, next)?;
-    Ok(())
+    debts::normalize_with_owner(facts, contract, next, owner).map(|(_, next)| next)
 }
 
 pub(super) fn first_region(contract: &Contract) -> Result<u32, &'static str> {

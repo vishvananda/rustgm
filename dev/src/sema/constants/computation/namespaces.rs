@@ -331,3 +331,16 @@ fn room(facts: &Declarations, key: CallerKey) -> Result<usize, &'static str> {
 #[cfg(test)]
 #[path = "../../../../tests/invariants/parked_callers.rs"]
 mod tests;
+
+/// The body owner supplies only its completed, exactly covered normalization delta.
+/// Registration reserves diagnostics; its proof remains in the caller Contract.
+pub(crate) fn reserve_normalization(
+    facts: &mut Declarations,
+    source: NodeKey,
+    enclosing: CallerInstance,
+    allocated: Range<u32>,
+) -> Result<(), &'static str> {
+    with_registered_namespace(facts, source, enclosing, |facts, _| {
+        Reservation::default().reserve(facts, source, source, allocated)
+    })
+}

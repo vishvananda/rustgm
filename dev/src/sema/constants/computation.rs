@@ -5,8 +5,8 @@ mod observed_arguments;
 mod prepared_callers;
 mod queries;
 pub(crate) use namespaces::{
-    available as caller_namespace_available, published as caller_published, with_namespace,
-    with_registered_namespace,
+    available as caller_namespace_available, published as caller_published, reserve_normalization,
+    with_namespace, with_registered_namespace,
 };
 mod seals;
 use super::{Declarations, Error, InitializerKind, NodeKey, Queries, Query, TypeId};

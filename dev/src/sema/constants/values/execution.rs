@@ -2,7 +2,7 @@
 pub use super::super::computation::SourceComputation;
 pub(crate) use super::super::computation::{
     BodyCaller, CallerInstance, PreparedConstant, caller_namespace_available, caller_published,
-    with_namespace, with_registered_namespace,
+    reserve_normalization, with_namespace, with_registered_namespace,
 };
 use super::{Constant, Instance};
 use crate::{

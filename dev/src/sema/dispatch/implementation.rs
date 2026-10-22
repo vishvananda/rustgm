@@ -111,3 +111,28 @@ pub(super) fn certify(
         ..target
     }))
 }
+
+/// Compose only this selection's aliases before the caller closes source roots.
+/// The original evidence remains mandatory caller debt; this grants no permission.
+pub(super) fn restore_constant(
+    facts: &mut Declarations,
+    context: &mut Context,
+    selected: crate::sema::values::Instance,
+    proof: &Obligations,
+) -> Result<crate::sema::values::Instance, String> {
+    if proof.equalities.is_empty() {
+        // No aliases can change. Caller input lifetimes occurring only in
+        // type-outlives debts remain untouched until ordinary body proof.
+        return Ok(selected);
+    }
+    let mut steps = 0;
+    let result = (|| {
+        let mut restore = proof.body_restoration_counted(&mut steps)?;
+        let result = selected.substitute(&mut facts.types, &mut restore);
+        steps += restore.steps;
+        result
+    })();
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+    context.account_work(steps).map_err(|e| e.to_string())?;
+    result.map_err(Into::into)
+}
