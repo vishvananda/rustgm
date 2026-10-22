@@ -1,9 +1,9 @@
 //! Source sizing defaults become actual scoped clauses, never blanket parameter evidence.
 use super::{Checker, DefId, Error, GenericFlavor, NodeKey, Subject, Syntax, Written};
+use crate::support::hash::HashMap;
 use crate::{
     support::bindings::LangItem, syntax::item::ItemKind, types::parameters::predicates::Bound,
 };
-use crate::support::hash::HashMap;
 const SIZED: u8 = 1;
 const META: u8 = 2;
 const POINTEE: u8 = 4;

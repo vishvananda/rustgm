@@ -170,7 +170,9 @@ where
                             "projection selection requires a prepared implementation header",
                         );
                     }
-                    let first = facts.body_regions.probe_frontier()?
+                    let first = facts
+                        .body_regions
+                        .probe_frontier()?
                         .max(self.cursor.allocation_end(self.proof));
                     self.cursor.resume_at(self.proof, first)?;
                     waits += 1;

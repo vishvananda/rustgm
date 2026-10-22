@@ -1,4 +1,5 @@
 //! Actual caller input assumptions stay separate from every selected body debt.
+use crate::support::hash::HashSet;
 use crate::{
     resolve::unit::NodeKey,
     sema::model::Declarations,
@@ -11,7 +12,6 @@ use crate::{
         substitute::RegionEquations,
     },
 };
-use crate::support::hash::HashSet;
 const LIMIT: usize = 1_000_000;
 const BYTES: usize = 64 * 1024 * 1024;
 

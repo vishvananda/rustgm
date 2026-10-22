@@ -9,7 +9,10 @@ impl Checker<'_> {
         // A canonical declaration type already has determined inputs. Keep its
         // written body lifetimes while proving its complete nested binder tree;
         // replacing the whole type with caller aliases would change its return contract.
-        let first = self.facts.body_regions.frontier(self.state.body)
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
             .map_err(|e| self.error(node, e))?;
         let mut proof = Obligations::new(first);
         // Call arguments already use free aliases for caller universals. Their

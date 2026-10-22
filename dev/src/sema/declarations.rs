@@ -1500,7 +1500,10 @@ impl Checker<'_> {
                     .constant_annotation_bodies
                     .insert(NodeKey { node: body, ..key });
             }
-            let owner = NodeKey { file: key.file, node: body };
+            let owner = NodeKey {
+                file: key.file,
+                node: body,
+            };
             let region = self
                 .facts
                 .body_regions

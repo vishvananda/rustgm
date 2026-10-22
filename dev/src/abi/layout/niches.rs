@@ -1,10 +1,10 @@
 //! Canonical nullable carriers are physical facts, never reference permissions.
 use super::{Layout, Layouts, Range, Shape, Variant, index};
+use crate::support::hash::HashMap;
 use crate::types::{
     Kind, Store, TypeId,
     aggregate::{Definitions, NullableEnum, Representation, SharedMutation},
 };
-use crate::support::hash::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/nullable_layout.rs"]
 mod tests;

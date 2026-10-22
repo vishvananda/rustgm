@@ -1,5 +1,6 @@
 //! Completed configured owners reserve source identities before semantic queries.
 use super::{SourceCore, policy::Feature};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
         model::{DefId, DefKind, Resolution, ScopeId},
@@ -12,7 +13,6 @@ use crate::{
     },
     syntax::{ast::Kind, attribute::Input, item::ItemKind},
 };
-use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Declaration {

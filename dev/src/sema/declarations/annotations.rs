@@ -38,7 +38,10 @@ impl Checker<'_> {
                 }
                 #[cfg(test)]
                 tests::visit(true);
-                let fact = self.facts.body_regions.get(key, *region)
+                let fact = self
+                    .facts
+                    .body_regions
+                    .get(key, *region)
                     .ok_or_else(|| self.error(key, "closure input region is not retained"))?;
                 if fact.body != key
                     || !matches!(

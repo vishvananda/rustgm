@@ -2,8 +2,8 @@
 mod header_inputs;
 mod instantiation;
 mod known_premises;
-mod range_inputs;
 mod memo;
+mod range_inputs;
 mod readiness;
 pub(in crate::sema) use range_inputs::range_element;
 mod result_templates;

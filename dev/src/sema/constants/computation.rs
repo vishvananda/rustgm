@@ -151,7 +151,10 @@ impl SourceComputation {
             .0
             .namespace_budget(scratch)?;
         let mut result = Vec::with_capacity(count);
-        let mut seen = std::collections::HashSet::with_capacity(count);
+        let mut seen = crate::support::hash::HashSet::with_capacity_and_hasher(
+            count,
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for argument in facts
             .types
             .arguments(entry.selected.arguments)

@@ -19,7 +19,7 @@ pub(crate) struct Catalog {
     provider: CrateIdentity,
     languages: [Option<Declaration>; 5],
     sizing: Option<[DefId; 3]>,
-    intrinsics: std::collections::HashMap<DefId, layout::Intrinsic>,
+    intrinsics: crate::support::hash::HashMap<DefId, layout::Intrinsic>,
 }
 impl Catalog {
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {

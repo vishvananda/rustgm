@@ -1,6 +1,6 @@
 //! Active closure input scopes index only the regions their owner produces.
-use crate::{resolve::unit::NodeKey, types::RegionId};
 use crate::support::hash::HashMap;
+use crate::{resolve::unit::NodeKey, types::RegionId};
 
 #[derive(Default)]
 struct Input {
