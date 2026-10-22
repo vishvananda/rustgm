@@ -86,7 +86,7 @@ impl Engine {
             .contracts
             .expression(facts, source)
             .map_err(|e| Declarations::error(report, source, e))?;
-        body::dispatch::resolve(facts, &mut template.body, &mut contract)
+        body::dispatch::original_anonymous(facts, &mut template.body, &mut contract)
             .map_err(|e| Declarations::error(report, source, e))?;
         body::promote::instance_reusing(
             report,

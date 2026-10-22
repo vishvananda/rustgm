@@ -33,7 +33,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn closure_projection_environment(
+    pub(in crate::sema::bodies) fn nested_projection_environment(
         &mut self,
         node: NodeId,
         lifetimes: &mut universes::Interface,

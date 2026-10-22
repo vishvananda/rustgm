@@ -33,6 +33,7 @@ impl Checker<'_> {
         }
         let predicate = self.alias_predicate(node, predicate)?;
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
+        let environment = self.trait_query_environment(node)?;
         let first_region = self.trait_region_start(node)?;
         let key = self.key(node);
         let context = self
@@ -74,7 +75,7 @@ impl Checker<'_> {
                 })?;
             let caller = Caller {
                 assumptions: &assumptions,
-                environment: self.state.method_environment.as_ref(),
+                environment: environment.as_ref(),
                 first_region,
                 retain_sized: false,
             };
@@ -149,6 +150,19 @@ impl Checker<'_> {
         Ok(selected)
     }
 
+    /// Nested queries consume the same opened premises as projected inputs.
+    /// The declaration environment and its ordinary proof obligations stay intact.
+    pub(super) fn trait_query_environment(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<Arc<crate::types::parameters::environment::Environment>>, Error> {
+        if self.state.projections.has_inherited_environment() {
+            self.projection_environment(node)
+        } else {
+            Ok(self.state.method_environment.clone())
+        }
+    }
+
     pub(super) fn trait_assumptions(
         &mut self,
         node: NodeId,
@@ -156,9 +170,8 @@ impl Checker<'_> {
         if let Some(assumptions) = &self.state.trait_environment {
             return Ok(Some(Arc::clone(assumptions)));
         }
-        let clauses: Vec<_> = self
-            .state
-            .method_environment
+        let environment = self.trait_query_environment(node)?;
+        let clauses: Vec<_> = environment
             .iter()
             .flat_map(|environment| environment.trait_clauses())
             .collect();

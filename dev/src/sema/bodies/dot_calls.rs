@@ -42,7 +42,7 @@ impl Checker<'_> {
             .copied()
             .ok_or_else(|| self.error(node, "missing resolved method call site"))?;
         let term = self.term(site.receiver)?;
-        let environment = self.state.method_environment.clone();
+        let environment = self.trait_query_environment(node)?;
         let traits = self.trait_assumptions(node)?;
         let key = self.key(node);
         let selected = receiver::choose(

@@ -41,12 +41,14 @@ impl Checker<'_> {
             return Err(self.error(node, "missing inline constant result interface"));
         };
         let result = *result;
-        let lifetimes = Interface::new(
+        let mut lifetimes = Interface::new(
             &self.state.call_types.universal_arguments(),
             Vec::new(),
             None,
         )
         .map_err(|e| self.error(node, e))?;
+        let environment = self.nested_projection_environment(node, &mut lifetimes)?;
+        let mapped_environment = environment.is_some();
         let generic = self.state.body_binders != 0
             || self
                 .state
@@ -75,12 +77,20 @@ impl Checker<'_> {
         child.safety = self.state.safety;
         child.body_binders = lifetimes.count().map_err(|e| self.error(node, e))?;
         child.environment_owner = self.state.environment_owner;
+        if let Some(environment) = environment {
+            child
+                .projections
+                .inherit_environment(environment)
+                .map_err(|e| self.error(node, e))?;
+        }
         child
             .method_environment
             .clone_from(&self.state.method_environment);
-        child
-            .trait_environment
-            .clone_from(&self.state.trait_environment);
+        if !mapped_environment {
+            child
+                .trait_environment
+                .clone_from(&self.state.trait_environment);
+        }
         child.prepare_parameter_queries();
         child.completion = super::readiness::Completion::Ordinary;
         self.park_nested(
@@ -96,6 +106,9 @@ impl Checker<'_> {
                 }),
             },
         )?;
+        if mapped_environment {
+            self.prepare_universals(node)?;
+        }
         self.state.work.push(Work::CollectInline);
         self.start_body(node)
     }

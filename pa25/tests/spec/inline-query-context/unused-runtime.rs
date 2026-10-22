@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Pick<'a>{const V:u8;}struct Tag;impl<'a>Pick<'a>for Tag{const V:u8=7;}fn runtime()->u8{7}fn get<'a,T:Pick<'a>>()->u8{const{runtime()+T::V}}fn main(){}

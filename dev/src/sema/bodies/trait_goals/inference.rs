@@ -302,6 +302,8 @@ impl Checker<'_> {
         index: usize,
         first: u32,
     ) -> Result<selection::Progress, Error> {
+        let environment =
+            self.trait_query_environment(self.state.call_types.obligations[index].0)?;
         let (node, predicate) = &self.state.call_types.obligations[index];
         let node = *node;
         if let Some((query, reservation)) = pending.partial.remove(&index) {
@@ -321,7 +323,7 @@ impl Checker<'_> {
                 predicate,
                 &Caller {
                     assumptions: &pending.assumptions,
-                    environment: self.state.method_environment.as_ref(),
+                    environment: environment.as_ref(),
                     first_region: first,
                     retain_sized: false,
                 },
@@ -335,7 +337,7 @@ impl Checker<'_> {
                 predicate,
                 selection::OwnedCaller {
                     assumptions: Arc::clone(&pending.assumptions),
-                    environment: self.state.method_environment.clone(),
+                    environment,
                     first_region: first,
                     retain_sized: false,
                 },

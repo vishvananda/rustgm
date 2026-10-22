@@ -74,7 +74,7 @@ impl Checker<'_> {
                 evidence: LifetimeProof::new(self.state.body, Obligations::new(first)),
                 reservation,
                 assumptions,
-                environment: self.state.method_environment.clone(),
+                environment: self.trait_query_environment(node)?,
             }));
         }
         let shared = checked

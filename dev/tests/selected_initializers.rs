@@ -249,3 +249,6 @@ fn source_completed_inventory_defers_unmaterialized_results()
 
 #[path = "selected_initializers/forms.rs"]
 mod forms;
+
+#[path = "selected_initializers/inline_query.rs"]
+mod inline_query;

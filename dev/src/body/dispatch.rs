@@ -11,7 +11,7 @@ use crate::{
 use std::collections::HashMap;
 mod callers;
 mod originals;
-pub(crate) use originals::initializer as original_initializer;
+pub(crate) use originals::{anonymous as original_anonymous, initializer as original_initializer};
 
 pub(crate) fn resolve(
     facts: &mut Declarations,

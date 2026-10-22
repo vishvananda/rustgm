@@ -151,6 +151,7 @@ impl Checker<'_> {
             }
         };
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
+        let environment = self.trait_query_environment(node)?;
         let key = self.key(node);
         let context = self
             .state
@@ -189,7 +190,7 @@ impl Checker<'_> {
                 &goal,
                 selection::OwnedCaller {
                     assumptions,
-                    environment: self.state.method_environment.clone(),
+                    environment,
                     first_region: first,
                     retain_sized: false,
                 },

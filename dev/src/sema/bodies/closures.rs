@@ -190,7 +190,8 @@ impl Checker<'_> {
             .closure_mut()
             .map_err(|e| self.error(entry.source, e))?;
         let environment =
-            self.closure_projection_environment(entry.source, &mut metadata.lifetimes)?;
+            self.nested_projection_environment(entry.source, &mut metadata.lifetimes)?;
+        let mapped_environment = environment.is_some();
         let mut scratch = Scratch::default();
         scratch.resumable();
         let mut child = Checker::with_scratch(self.report, self.facts, scratch).state;
@@ -227,9 +228,11 @@ impl Checker<'_> {
             .method_environment
             .clone_from(&self.state.method_environment);
         child.prepare_parameter_queries();
-        child
-            .trait_environment
-            .clone_from(&self.state.trait_environment);
+        if !mapped_environment {
+            child
+                .trait_environment
+                .clone_from(&self.state.trait_environment);
+        }
         child.completion = super::readiness::Completion::Ordinary;
         self.park_nested(child, entry)
     }

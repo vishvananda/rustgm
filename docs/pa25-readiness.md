@@ -54,7 +54,9 @@ debts. They do not close the following required families:
   now execute through checked specialization. The projected tuple/record
   pattern and nested associated reference/tuple families now also execute through
   that path. A generic inline constant containing the same projected associated
-  use still fails earlier semantic normalization and remains Rust-positive.
+  use now passes semantic normalization in the direct and nested controls. Its
+  demanded execution still needs the sealed open initializer context and the
+  anonymous result/output interface described below.
 - Projected named-pattern operands. The original selected reference and paid
   relation controls still fail shape inference before value execution. Selected
   tuple/record controls now pass their actual projected operand and a separately
@@ -250,3 +252,47 @@ independently qualifies four Rust-positive inline/nested/closure/paid-lifetime
 sources and one foreign-lifetime negative before the next implementation edit.
 The unmodified compiler still fails their earlier inline normalization frontier;
 that receipt does not claim their real lifetime checks have yet been reached.
+
+
+### Inline query and original-template prerequisite
+
+The inline child now opens its readonly query premises through the exact existing
+nested `Interface.opening`. Its projection and trait queries share that opened
+namespace, including synchronous, canonical and suspended selections. Original
+method environments, imported terms, public binders and proof debts remain intact.
+Mapped children build their own trait assumption cache instead of inheriting the
+parent's alias cache. Registering the inline universals before local holes prevents
+a selected equality from restoring an unrelated older implicit argument identity.
+
+Provider construction of an original anonymous template now uses the same rigid
+operand classification and single mandatory validation as original named
+initializers. The entry checks the actual registered inline source, result,
+universals, declaration, body key and contract, and rejects an instantiated body.
+Concrete dispatch remains strict. No stored field, owner, frame or execution
+permission was added; the ordinary query path can clone its existing environment
+`Arc`, and nested queries reuse the existing immutable projection environment.
+
+`tests/inline-query-outcomes.json` declares eleven unchanged sources. Three scalar
+direct/nested/closure programs pass all checked views and execute natively. The
+foreign-parent and unused-runtime negatives reach their actual checks. The original
+projected reference direct/nested cases now pass types; execution still rejects
+open initializer context. Closure/paid reference controls still require their
+checked conditional parent, and the unpaid open-type control still reaches its
+explicit implementation boundary. Those cases remain required work; their
+unsupported diagnostics are not language rejections or completion evidence.
+
+Evidence is under `obj/parallel/pa25-projected-result-routing/inline-*`.
+The closing strict release Clippy and audit pass (1,613 files, zero findings).
+Eight private ownership/linear-work checks, the two source functions, 36 existing
+exact-place tests, 22 nested-evaluation tests, three new native programs, harness
+and upstream checks pass. A stale file-stem filter and then a partial exact-case
+filter were refused; both attempts are retained and excluded from the passing
+counts. The corrected exact selections reuse the same unchanged source snapshot.
+
+`inline-qualified/identity.json` pins the candidate and production source map.
+All 8,255 active worker-base comparisons, including the immutable published
+467-case PA24 archive, preserve the preceding checkpoint's outputs: 8,248 exact,
+with only the same seven inherited PA20 hash pairs pending central review.
+The text guard exits 1 for that existing review set; it introduces no new delta.
+Both common output controls remain byte-identical. Full combined publication,
+newer public-base fixtures and performance qualification remain integrator-owned.

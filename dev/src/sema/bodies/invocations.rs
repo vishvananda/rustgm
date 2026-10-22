@@ -91,6 +91,7 @@ impl Checker<'_> {
         head: Option<Constructor>,
     ) -> Result<Option<(CallTrait, TermId)>, Error> {
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
+        let environment = self.trait_query_environment(node)?;
         for kind in CallTrait::ALL {
             let Some(item) = self.facts.associated.callable_definition(kind) else {
                 continue;
@@ -115,7 +116,7 @@ impl Checker<'_> {
                 &goal,
                 Caller {
                     assumptions: &assumptions,
-                    environment: self.state.method_environment.as_ref(),
+                    environment: environment.as_ref(),
                     first_region,
                     retain_sized: false,
                 },
@@ -144,6 +145,7 @@ impl Checker<'_> {
         item: ItemId,
         assumptions: &crate::sema::traits::assumptions::Assumptions,
     ) -> Result<bool, Error> {
+        let environment = self.trait_query_environment(node)?;
         let mut probe = Context::default();
         let subject = probe
             .import(&self.facts.types, &mut self.state.infer, subject)
@@ -159,7 +161,7 @@ impl Checker<'_> {
             &goal,
             Caller {
                 assumptions,
-                environment: self.state.method_environment.as_ref(),
+                environment: environment.as_ref(),
                 first_region,
                 retain_sized: false,
             },

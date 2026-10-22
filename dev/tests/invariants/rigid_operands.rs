@@ -264,3 +264,47 @@ fn repeated_original_operands_reuse_the_same_occurrence_graph() -> Result {
     assert!(measurements[2] <= 4 * measurements[1] + 32);
     Ok(())
 }
+
+fn anonymous_fixture() -> Result<(Declarations, Body, Contract)> {
+    let report = crate::test_source::resolve(
+        "trait A{const V:u8;}fn get<T:A>()->u8{const{T::V}}fn main(){}",
+        true,
+    )?;
+    let facts = crate::pipeline::analyze_source(&report)?.facts;
+    let source = facts
+        .inline_constants
+        .as_deref()
+        .and_then(|r| r.bodies().next())
+        .ok_or("missing anonymous body")?
+        .source;
+    let template =
+        crate::body::templates::Prepared::default().anonymous(&report, &facts, source)?;
+    let contract = crate::body::regions::Collector::default().expression(&facts, source)?;
+    Ok((facts, template.body, contract))
+}
+#[test]
+fn original_anonymous_dispatch_keeps_the_exact_deferred_operand() -> Result {
+    let (mut facts, mut body, mut contract) = anonymous_fixture()?;
+    let expected = operand(&body)?;
+    assert!(super::super::resolve(&mut facts, &mut body.clone(), &mut contract.clone()).is_err());
+    super::anonymous(&mut facts, &mut body, &mut contract)?;
+    assert_eq!(operand(&body)?, expected);
+    Ok(())
+}
+#[test]
+fn original_anonymous_entry_rejects_foreign_contract_and_result() -> Result {
+    let (mut facts, body, contract) = anonymous_fixture()?;
+    let mut wrong = contract.clone();
+    wrong.source.node.0 += 1;
+    assert!(super::anonymous(&mut facts, &mut body.clone(), &mut wrong).is_err());
+    let mut wrong = contract.clone();
+    wrong.universals += 1;
+    assert!(super::anonymous(&mut facts, &mut body.clone(), &mut wrong).is_err());
+    let mut wrong = body.clone();
+    wrong.result = TypeId::primitive(Primitive::U16);
+    assert!(super::anonymous(&mut facts, &mut wrong, &mut contract.clone()).is_err());
+    let mut wrong = body;
+    wrong.source.node.0 += 1;
+    assert!(super::anonymous(&mut facts, &mut wrong, &mut contract.clone()).is_err());
+    Ok(())
+}

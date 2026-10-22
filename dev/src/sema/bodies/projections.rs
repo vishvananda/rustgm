@@ -113,6 +113,11 @@ impl Pending {
         data.source_environment = Some(environment);
         Ok(())
     }
+    pub(super) fn has_inherited_environment(&self) -> bool {
+        self.data
+            .as_ref()
+            .is_some_and(|data| data.source_environment.is_some())
+    }
     /// Finishing the worklist does not remove the caller aliases introduced by
     /// projected field/call instantiation from subsequent shape equations.
     pub fn has_context(&self) -> bool {

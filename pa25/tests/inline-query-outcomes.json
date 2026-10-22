@@ -1,0 +1,217 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "scalar",
+      "path": "tests/spec/inline-query-context/scalar.rs",
+      "source_sha256": "c0a4db452548a652277a10f5c56297a5bbf8fd2d7b451751416a1e2e87ff6d4d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "implemented",
+      "diagnostic": ""
+    },
+    {
+      "name": "scalar-nested",
+      "path": "tests/spec/inline-query-context/scalar-nested.rs",
+      "source_sha256": "d8dd9b8f86beb0813a27637dd4d7456e148fba274d6edc28b6f0bab20fbe57d4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "implemented",
+      "diagnostic": ""
+    },
+    {
+      "name": "scalar-closure",
+      "path": "tests/spec/inline-query-context/scalar-closure.rs",
+      "source_sha256": "24b4a7131fa297549c878a0ced91c0a0391bae0d281d5631df1b548c64028470",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "implemented",
+      "diagnostic": ""
+    },
+    {
+      "name": "foreign-parent",
+      "path": "tests/spec/inline-query-context/foreign-parent.rs",
+      "source_sha256": "43b157b829fa42068a26f3a0f8250ef585b04ead66249eb477fad342a091057c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "implemented",
+      "diagnostic": "trait obligation"
+    },
+    {
+      "name": "unused-runtime",
+      "path": "tests/spec/inline-query-context/unused-runtime.rs",
+      "source_sha256": "eb2e2afc62826fe94a6af33900d9dd39df2ac9ff02607d9df7bf09573c5013a8",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "implemented",
+      "diagnostic": "non-const"
+    },
+    {
+      "name": "required",
+      "path": "tests/spec/inline-query-context/required.rs",
+      "source_sha256": "ee0601e9bb650dc03f1a46f4c21c14b4c51e61170c6be5c210543f3095422130",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required lifetime/output continuation; original outcome retained",
+      "diagnostic": "anonymous initializer context is not closed"
+    },
+    {
+      "name": "nested",
+      "path": "tests/spec/inline-query-context/nested.rs",
+      "source_sha256": "0d62bcebc1554dfdd06a2861c9714984b5e4260c857d0ccc741d9cabeab3084f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required lifetime/output continuation; original outcome retained",
+      "diagnostic": "anonymous initializer context is not closed"
+    },
+    {
+      "name": "closure",
+      "path": "tests/spec/inline-query-context/closure.rs",
+      "source_sha256": "527c9f6beba3711118d2861853e9b44a70d25aebfbd105c40aab597dd70ba564",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required lifetime/output continuation; original outcome retained",
+      "diagnostic": "nested output requires its checked parent contract"
+    },
+    {
+      "name": "paid-lifetime",
+      "path": "tests/spec/inline-query-context/paid-lifetime.rs",
+      "source_sha256": "b002583e43134c3f227d6654dffa5be489c57e66fefecc2203572d03ac75976b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required lifetime/output continuation; original outcome retained",
+      "diagnostic": "nested output requires its checked parent contract"
+    },
+    {
+      "name": "foreign-lifetime",
+      "path": "tests/spec/inline-query-context/foreign-lifetime.rs",
+      "source_sha256": "c2a69c0c96ac54bd79d2fc176972630ae33e03fe00517500eb3cedeabed99455",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required lifetime/output continuation; original outcome retained",
+      "diagnostic": "nested output requires its checked parent contract"
+    },
+    {
+      "name": "unpaid-lifetime",
+      "path": "tests/spec/inline-query-context/unpaid-lifetime.rs",
+      "source_sha256": "f01c03469df0b07d940e20c9bc92d4a83c5f7e1120dcf8c781b1b580c6538984",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required lifetime/output continuation; original outcome retained",
+      "diagnostic": "source computation retains a non-lifetime parameter"
+    }
+  ]
+}

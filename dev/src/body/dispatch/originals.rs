@@ -44,6 +44,42 @@ pub(crate) fn initializer(
     {
         return Err("original initializer dispatch belongs to another declaration or body".into());
     }
+    resolve_parameters(facts, body, contract, definition)
+}
+
+pub(crate) fn anonymous(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+) -> Result<(), String> {
+    let inline = facts
+        .inline_constants
+        .as_deref()
+        .and_then(|registry| registry.get(body.source))
+        .ok_or("original anonymous dispatch has no typed body")?;
+    let definition = inline
+        .declaration
+        .ok_or("original anonymous dispatch has no declaration")?;
+    if body.instance.is_some()
+        || !matches!(body.owner, Owner::AnonymousConstant)
+        || body.key() != BodyKey::Anonymous(inline.source)
+        || body.key() != contract.key
+        || body.source != contract.source
+        || inline.result != Some(body.result)
+        || inline.universals != contract.universals
+        || facts.constant_body_type(body.source) != Some(body.result)
+    {
+        return Err("original anonymous dispatch belongs to another declaration or body".into());
+    }
+    resolve_parameters(facts, body, contract, definition)
+}
+
+fn resolve_parameters(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    definition: crate::resolve::model::DefId,
+) -> Result<(), String> {
     let mut visits = 0;
     let dependent = body.values.iter().any(|value| {
         visits += 1;
