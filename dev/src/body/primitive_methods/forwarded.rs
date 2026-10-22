@@ -10,9 +10,16 @@ pub(super) fn contract(
     selected: Selected,
     source: &Validated,
 ) -> Result<(Contract, [TypeId; 2]), &'static str> {
-    let inputs = selected
-        .reference_inputs(facts)?
-        .ok_or("missing reference inputs")?;
+    let inputs = match source.compound {
+        crate::sema::primitive_methods::Compound::References(_) => {
+            selected.reference_inputs(facts)?
+        }
+        crate::sema::primitive_methods::Compound::Sequences(_) => {
+            selected.sequence_inputs(facts)?
+        }
+        crate::sema::primitive_methods::Compound::None => None,
+    }
+    .ok_or("missing compound comparison inputs")?;
     let parameters = [
         facts.types.intern(Kind::Reference {
             referent: inputs.operands[0],
@@ -65,7 +72,7 @@ pub(super) fn operation(
         arguments.push(Argument::Type(referent));
         places.push(place);
     }
-    let (callable, opened) = callable(facts, source, arguments)?;
+    let (callable, opened) = callable(facts, source.definition, arguments)?;
     let Some(Kind::Function {
         parameters: call_parameters,
         result,
@@ -139,15 +146,15 @@ fn operand(
     };
     Ok((place, referent))
 }
-fn callable(
+pub(super) fn callable(
     facts: &mut Declarations,
-    source: &Validated,
+    definition: crate::resolve::model::DefId,
     mut arguments: Vec<Argument>,
 ) -> Result<(TypeId, TypeId), &'static str> {
     let generic = facts
         .lifetimes
         .callables
-        .generic_parameters(crate::types::ItemId(source.definition.0))
+        .generic_parameters(crate::types::ItemId(definition.0))
         .ok_or("missing reference method parameters")?;
     if generic.len() == 1 {
         arguments.truncate(1);
@@ -163,14 +170,14 @@ fn callable(
     let template = facts
         .lifetimes
         .callables
-        .get(crate::types::ItemId(source.definition.0))
+        .get(crate::types::ItemId(definition.0))
         .ok_or("missing reference method template")?
         .signature;
     let signature =
         Bound::parameters(&facts.types, &bindings)?.apply(&mut facts.types, template)?;
     let arguments = facts.types.intern_arguments(&arguments)?;
     let callable = facts.types.intern(Kind::FunctionItem {
-        item: crate::types::ItemId(source.definition.0),
+        item: crate::types::ItemId(definition.0),
         signature,
         arguments,
     })?;

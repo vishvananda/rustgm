@@ -86,7 +86,7 @@ impl Results {
         }
     }
 }
-fn branch(
+pub(super) fn branch(
     body: &mut Body,
     start: u32,
     condition: ValueId,

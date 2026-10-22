@@ -142,3 +142,6 @@ mod referents;
 
 #[path = "language_operators/lengths.rs"]
 mod lengths;
+
+#[path = "language_operators/collections.rs"]
+mod collections;

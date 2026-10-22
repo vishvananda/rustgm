@@ -70,7 +70,7 @@ fn reference_factory_keeps_two_shared_reborrows_and_no_mutable_value_read() -> R
     Ok(())
 }
 
-fn replace_operands(
+pub(super) fn replace_operands(
     facts: &mut Declarations,
     selected: Selected,
     operands: [TypeId; 2],

@@ -39,7 +39,7 @@ impl Search<'_> {
                 );
                 frame.selected = Some(node);
             }
-            Ok(Candidate::Referent {
+            Ok(Candidate::Conditional {
                 descriptor,
                 prerequisite,
             }) => {

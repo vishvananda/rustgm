@@ -146,6 +146,25 @@ impl Context {
             }),
         )
     }
+    /// Obtain only a checked array head's usize length, independently of its element.
+    /// # Errors
+    /// Rejects nonarray heads, invalid const identities and exhausted work.
+    pub fn array_length(
+        &mut self,
+        store: &Store,
+        head: super::Constructor,
+    ) -> Result<ConstTermId, Error> {
+        let id = match head {
+            super::Constructor::Array(length) => self.const_length(length)?,
+            super::Constructor::ArrayTerm(length) => self.known_const(store, length)?,
+            super::Constructor::ArrayInfer(length) => length,
+            _ => return Err(Error::InvalidIdentity),
+        };
+        if self.constants().ty(id)? != TypeId::primitive(Primitive::Usize) {
+            return Err(Error::InvalidIdentity);
+        }
+        Ok(id)
+    }
     /// No integer fallback applies to const arguments, even for an integer type.
     /// # Errors
     /// Rejects unresolved/invalid variables and exhausted canonical storage.

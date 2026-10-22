@@ -40,7 +40,7 @@ pub(super) fn candidate(
     } else {
         Vec::new()
     };
-    Ok(Some(Candidate::Referent {
+    Ok(Some(Candidate::Conditional {
         descriptor: Descriptor {
             operation: Operation::References(kind),
             operands: Operands::References {
@@ -107,7 +107,7 @@ impl super::Selected {
         if facts.types.contains_parameters(self.instance().ty()) != Some(false) {
             return Err("reference factory requires a complete concrete instance");
         }
-        let Some(operands) = source.references else {
+        let super::Compound::References(operands) = source.compound else {
             return Ok(None);
         };
         let Operation::References(kind) = self.descriptor.operation else {

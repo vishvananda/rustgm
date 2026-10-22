@@ -714,3 +714,6 @@ fn canonical_ordering_is_lazy_and_its_empty_argument_views_select() -> Result {
 
 #[path = "referent_witnesses.rs"]
 mod references;
+
+#[path = "collection_witnesses.rs"]
+mod collections;

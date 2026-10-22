@@ -64,27 +64,29 @@ fn verify(
 }
 #[test]
 fn default_ne_original_is_checked_with_incremental_and_batch_contracts() -> Result {
-    let report = crate::test_source::resolve(
+    for source in [
         "struct S;impl PartialEq for S{fn eq(&self,_:&Self)->bool{false}}fn main(){let _=S!=S;}",
-        true,
-    )?;
-    let crate::pipeline::Analysis { mut facts, .. } = crate::pipeline::analyze_source(&report)?;
-    for incremental in [false, true] {
-        let mut contracts = if incremental {
-            body::regions::Collector::default().finish(&facts)?.bodies
-        } else {
-            body::regions::collect(&facts)?.bodies
-        };
-        let mut templates = body::templates::Templates { bodies: Vec::new() };
-        super::append(&report, &mut facts, &mut templates, &mut contracts)?;
-        assert_eq!(templates.bodies.len(), 1);
-        let default = &templates.bodies[0].body;
-        assert!(default.instance.is_none());
-        assert!(matches!(default.key(), body::ir::BodyKey::Declaration(_)));
-        assert_eq!(default.locals.len(), 2);
-        verify(&mut facts, &templates, contracts.clone())?;
-        templates.bodies[0].body.locals[0].kind = body::ir::LocalKind::Binding;
-        assert!(verify(&mut facts, &templates, contracts).is_err());
+        "fn main(){let _=[1u8]!=[2u8];}",
+    ] {
+        let report = crate::test_source::resolve(source, true)?;
+        let crate::pipeline::Analysis { mut facts, .. } = crate::pipeline::analyze_source(&report)?;
+        for incremental in [false, true] {
+            let mut contracts = if incremental {
+                body::regions::Collector::default().finish(&facts)?.bodies
+            } else {
+                body::regions::collect(&facts)?.bodies
+            };
+            let mut templates = body::templates::Templates { bodies: Vec::new() };
+            super::append(&report, &mut facts, &mut templates, &mut contracts)?;
+            assert_eq!(templates.bodies.len(), 1);
+            let default = &templates.bodies[0].body;
+            assert!(default.instance.is_none());
+            assert!(matches!(default.key(), body::ir::BodyKey::Declaration(_)));
+            assert_eq!(default.locals.len(), 2);
+            verify(&mut facts, &templates, contracts.clone())?;
+            templates.bodies[0].body.locals[0].kind = body::ir::LocalKind::Binding;
+            assert!(verify(&mut facts, &templates, contracts).is_err());
+        }
     }
     Ok(())
 }

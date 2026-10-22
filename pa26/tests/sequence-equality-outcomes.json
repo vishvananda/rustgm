@@ -1,0 +1,450 @@
+{
+  "status": "draft; independently qualified sources; no generated text or assignment activation",
+  "cases": [
+    {
+      "name": "array-equality",
+      "path": "tests/spec/sequence-equality/array-equality.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "16601b48b97d373f2280b704503572cf751939a90a3bc48ee4654cf217cc9c91",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "slice-equality",
+      "path": "tests/spec/sequence-equality/slice-equality.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "d9ba89e4d82479802e6b70d6abdcc5ad84dc6e5b17a475d8989bd98fc1b9650a",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "array-slice",
+      "path": "tests/spec/sequence-equality/array-slice.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "caa5791a3323aa55bbe53633a85b0a07e21186792ab7515c79e58317ed15d3be",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "slice-array",
+      "path": "tests/spec/sequence-equality/slice-array.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "89dc9ab74dd78d260ff4289bbb5663c371183645a85211c72c2857a7c99ef6a2",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "heterogeneous-array",
+      "path": "tests/spec/sequence-equality/heterogeneous-array.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "edc0b7fa57052185ba0a4bbbe79c358aa8d24776ada339a41a5c25fb85186d01",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "heterogeneous-slice",
+      "path": "tests/spec/sequence-equality/heterogeneous-slice.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "2224a4f7206f94ea77b86a6d4776e8356ecd8b99d7c237b38bfae51eaaa581c8",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "heterogeneous-array-slice",
+      "path": "tests/spec/sequence-equality/heterogeneous-array-slice.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "09cc9ce3f4238f07b4437175a4e5337cb3a877083d90e275c0298fb7fe4a7567",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "different-array-length",
+      "path": "tests/spec/sequence-equality/different-array-length.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "78d8695cb1cfd66e3f9e9d29e0d3d95fe02234b8d5d5022d82416a5549edd3d1"
+    },
+    {
+      "name": "different-primitives",
+      "path": "tests/spec/sequence-equality/different-primitives.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "f51cda0428059c3bea1cf198f958e5e15621a225c65b1d8ca3e8444531f2737b"
+    },
+    {
+      "name": "empty-missing-element-bound",
+      "path": "tests/spec/sequence-equality/empty-missing-element-bound.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "c2f5c3b1c1c124d562621043b81c464f1266f66416ed7c47efe89cb04146c51d"
+    },
+    {
+      "name": "float-equality",
+      "path": "tests/spec/sequence-equality/float-equality.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "fb3171a05c12833acda50d36d7a7c6e4475da5772f3112c5b44055e0c36835d3",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "float-eq-bound",
+      "path": "tests/spec/sequence-equality/float-eq-bound.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "816db4e832b451d8aef99a225da88248ee7280ec8e663375c84b6e344807b1ba"
+    },
+    {
+      "name": "array-ne-override",
+      "path": "tests/spec/sequence-equality/array-ne-override.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "895274bd2ec0d769468e3100c765d03c93b9ee07ecf87449f68c8c5b2ff13e05",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "slice-ne-override",
+      "path": "tests/spec/sequence-equality/slice-ne-override.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "575508095438e90aa4541c94d8d7555927e34a17b1c30095cb74f145edaf91a9",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "generic-array",
+      "path": "tests/spec/sequence-equality/generic-array.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "26a04777f4f4e3a988373b44f7615e839d679bd90dd4eb9a9aec4be81cd1ba5b",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "generic-slice",
+      "path": "tests/spec/sequence-equality/generic-slice.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "1c27f4b075f535c78dda99f9c033971e66ebc29f22a5a3af2e4be3b6b4a97f09",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "array-qualified-reified",
+      "path": "tests/spec/sequence-equality/array-qualified-reified.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "c7460f89cbe9d31472738262cf38628a1ea2b03227104ef72b2a029fdf5b40c9",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "slice-qualified-reified",
+      "path": "tests/spec/sequence-equality/slice-qualified-reified.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "592b0885e3372c6ba422ad7963a68c8168542469a68cd0bbd54d2fb1f84bc709",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "nested-arrays",
+      "path": "tests/spec/sequence-equality/nested-arrays.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "eaeab4aa1b032bae49716cbb3abfdb48987258e6205241305952bd59f3f40c75",
+      "status": "Rust-positive required follow-up: sequence PartialOrd"
+    },
+    {
+      "name": "aliased-shapes",
+      "path": "tests/spec/sequence-equality/aliased-shapes.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "b96400edbeb2ce59887dda9c7e5854b1cabb93731c20fac70cd154a4a142289e",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "zero-sized-elements",
+      "path": "tests/spec/sequence-equality/zero-sized-elements.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "ff350dc9ecb57e87f17ca6e7ef79e070a994b9ebc91dd1e38dee07495ebd3921",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "rest-metadata",
+      "path": "tests/spec/sequence-equality/rest-metadata.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "a594631c921b58bb82e94940b8852f2af23e6c7c4434e966eabed6e5553daf37",
+      "status": "Rust-positive required follow-up: range indexing consumer"
+    },
+    {
+      "name": "local-source-implementation",
+      "path": "tests/spec/sequence-equality/local-source-implementation.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "d533cf2ee332fe97013cebc166b532576de4a3f5ea25101b318b3a3f19628c4d",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "shared-slice-reference",
+      "path": "tests/spec/sequence-equality/shared-slice-reference.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "e2434effff95e5bb24bccbcd15bd4564c16c1d773d95ce49f3ddae700685d02b",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "mutable-slice-reference",
+      "path": "tests/spec/sequence-equality/mutable-slice-reference.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "5b12984634cf1ca89e42bd76ba9e93d6d5c13ac3f4338869d5d242d9b11e4f09",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "array-reference-rejected",
+      "path": "tests/spec/sequence-equality/array-reference-rejected.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "5153d79fb684e3175e97275f1b568c1465588a1691b8c7dca533326cc4be858f"
+    },
+    {
+      "name": "reference-array-rejected",
+      "path": "tests/spec/sequence-equality/reference-array-rejected.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "11e217805cdae35f811b897240b4bf4a42127808f551f90abb6c273ed189d835"
+    },
+    {
+      "name": "heterogeneous-array-reference",
+      "path": "tests/spec/sequence-equality/heterogeneous-array-reference.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "62208ef1a8dd5b1a26e04f870a13a718732725a637a9cd6a0e4dc4d8888fc40f",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "heterogeneous-reference-array",
+      "path": "tests/spec/sequence-equality/heterogeneous-reference-array.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "617b6b0ff4272aadefaf94d812ee46d9e3eb1d810bd7923006e2492dfe5e042b",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "lookalike-element-trait",
+      "path": "tests/spec/sequence-equality/lookalike-element-trait.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "aea5e7955caea3e8095a941fad72df1f37064fa6a391af579f40988533c45bbe"
+    },
+    {
+      "name": "empty-unpaid-eq",
+      "path": "tests/spec/sequence-equality/empty-unpaid-eq.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "f8b2d8624cb29ef48ef99402d0fe12da2f376da187ae405558956dcc0978459e"
+    },
+    {
+      "name": "paid-lifetime",
+      "path": "tests/spec/sequence-equality/paid-lifetime.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "8983db6709dc5fb6c5d50322656608bfee92bafcbafdc9a6a1ab4bc088820b19",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "unpaid-lifetime",
+      "path": "tests/spec/sequence-equality/unpaid-lifetime.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "446593b7248fc11c290b018f276c0a9f7718d8dfa72e3bce7404ce12c7070c55"
+    },
+    {
+      "name": "inferred-array-length",
+      "path": "tests/spec/sequence-equality/inferred-array-length.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "843dbf1b9217a6ed40fc663bd17bd070b52f398527438404bb36ac73c55fd196",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "distinct-symbolic-lengths",
+      "path": "tests/spec/sequence-equality/distinct-symbolic-lengths.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "18e7812a89810581bfcdbbb57f6a68162ad2ff143e3bdf79a57b49755cd8fe75"
+    },
+    {
+      "name": "explicit-array-bound",
+      "path": "tests/spec/sequence-equality/explicit-array-bound.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "5ef1e32574634644c7784ead7138edf1d7ce41c0c7c39107d76ecced528b3a6b",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "nested-equality",
+      "path": "tests/spec/sequence-equality/nested-equality.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "d8bbe5584856a913bcf7b543ab5c691ea4995eeb413f6d5893d3012aac250375",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "rest-pattern-metadata",
+      "path": "tests/spec/sequence-equality/rest-pattern-metadata.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "427316ce970bae2d1c51cea0e2cd3e0748564349119c1ef0ed4d4fd0d7c45bda",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "latent-module-origin",
+      "path": "tests/spec/sequence-equality/latent-module-origin.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "b517187d9d87dad14c71b9fdf18cb125107e9ea8c3ecbf17f292ab26f1be35f9",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "latent-unrelated-query",
+      "path": "tests/spec/sequence-equality/latent-unrelated-query.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "d84625fba0f847f535c66b964bb158e3917f833eb3239d340c171787e5376105",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "latent-macro-origin",
+      "path": "tests/spec/sequence-equality/latent-macro-origin.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "4f2ea0a1d090876c41763a0e142eec6bf12722dd7aa85c67f62f8f286ee78aa5",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "eager-canonical-impl",
+      "path": "tests/spec/sequence-equality/eager-canonical-impl.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "0b4497f2126777bf9a438070c2bbeec2272bc3093e97ec59d892bf27d13f17a8",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "eq-prerequisite",
+      "path": "tests/spec/sequence-equality/eq-prerequisite.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "3846bf8c55b720c8ec95ac070887eb01768f3b4c94b83311935f17212236a9ca",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "ord-prerequisite",
+      "path": "tests/spec/sequence-equality/ord-prerequisite.rs",
+      "mode": "--emit-lowir",
+      "expected": 0,
+      "source_sha256": "e677bdc5986a969528690fb78dbd89faa61ddd4e96d5e96d3fb5d412e23ef66a",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "name": "alias-dot-wrong-rhs",
+      "path": "tests/spec/sequence-equality/alias-dot-wrong-rhs.rs",
+      "mode": "--emit-lowir",
+      "expected": 1,
+      "source_sha256": "ea7bae800a4a58086365dc4bc82de232c89f0b7e012fccaebd846fade589cf56"
+    }
+  ]
+}

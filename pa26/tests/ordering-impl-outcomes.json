@@ -398,7 +398,7 @@
     },
     {
       "path": "tests/spec/ordering-impls/array-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.ordering-impls"
       ],
@@ -408,8 +408,14 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
-      "traps": false
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "traps": false,
+      "previous_frontend_status": 1,
+      "mode": "--emit-lowir",
+      "superseded_by": "sequence equality checkpoint; original fixture bytes unchanged"
     },
     {
       "path": "tests/spec/ordering-impls/constant-pattern.rs",

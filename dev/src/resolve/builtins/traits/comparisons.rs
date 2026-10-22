@@ -1,10 +1,21 @@
 //! Equality metadata keeps a methodless Eq distinct from `PartialEq`'s two members.
+mod demand;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/latent_contracts.rs"]
+mod tests;
 use super::{Context, DefId, DefKind, Error, Resolver, Traits};
 use crate::{
     resolve::{package::ModuleId, unit::NodeKey},
     support::comparisons::{Comparison, Method},
     syntax::ast::NodeId,
 };
+#[derive(Default)]
+pub(super) struct Comparisons {
+    pub entries: [Option<Equality>; 4],
+    pending: u8,
+    latent: u8,
+    origin: Option<(ModuleId, NodeKey)>,
+}
 #[derive(Clone, Copy)]
 pub struct Equality {
     pub origin: NodeKey,
@@ -60,7 +71,7 @@ impl Members {
 impl Traits {
     #[must_use]
     pub fn comparison(&self, kind: Comparison) -> Option<Equality> {
-        self.comparisons.as_deref()?[kind as usize]
+        self.comparisons.as_deref()?.entries[kind as usize]
     }
 }
 impl Resolver<'_> {
@@ -150,7 +161,8 @@ impl Resolver<'_> {
         self.facts
             .builtin_traits
             .comparisons
-            .get_or_insert_default()[kind as usize] = Some(Equality {
+            .get_or_insert_default()
+            .entries[kind as usize] = Some(Equality {
             origin: NodeKey { file: c.file, node },
             kind,
             definition,

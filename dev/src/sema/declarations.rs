@@ -10,6 +10,7 @@ use calling_conventions::rust_abi;
 mod capture_bounds;
 mod comparison_methods;
 mod comparisons;
+pub(in crate::sema) use comparisons::prepare as prepare_comparison;
 mod constants;
 mod contracts;
 mod deferred_arguments;
@@ -320,6 +321,15 @@ impl Checker<'_> {
                 u32::try_from(index)
                     .map_err(|_| Error::at(FileId(0), 0, "too many type declarations"))?,
             );
+            if self
+                .report
+                .resolution
+                .builtin_traits
+                .latent_comparison_owner(id)
+                .is_some()
+            {
+                continue;
+            }
             if self
                 .report
                 .resolution
@@ -642,6 +652,25 @@ impl Checker<'_> {
     }
     fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
         if self.states[id.0 as usize] == State::Complete {
+            return Ok(());
+        }
+        if let Some(declaration) = self
+            .report
+            .resolution
+            .builtin_traits
+            .latent_comparison_owner(id)
+        {
+            if self.states[declaration.definition.0 as usize] == State::Active {
+                return Err(self.error(
+                    declaration.origin,
+                    "recursive canonical comparison preparation",
+                ));
+            }
+            self.states[declaration.definition.0 as usize] = State::Active;
+            self.comparison_contract(declaration)?;
+            if let Some(contracts) = &mut self.facts.generics.traits {
+                contracts.complete_results();
+            }
             return Ok(());
         }
         let definition = &self.report.resolution.definitions[id.0 as usize];

@@ -8,6 +8,58 @@ use crate::{
     },
 };
 impl Checker<'_> {
+    pub(super) fn comparison_readiness(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<super::Requirement>, Error> {
+        let method = match self.kind(node) {
+            crate::syntax::ast::Kind::Binary {
+                op: crate::lex::token::Punctuation::EqualEqual,
+                ..
+            } => Method::Eq,
+            crate::syntax::ast::Kind::Binary {
+                op: crate::lex::token::Punctuation::BangEqual,
+                ..
+            } => Method::Ne,
+            _ => return Ok(None),
+        };
+        let declaration = self
+            .report
+            .resolution
+            .builtin_traits
+            .comparison(method.owner());
+        let Some(declaration) = declaration else {
+            return Ok(None);
+        };
+        if self
+            .facts
+            .associated
+            .comparison(declaration.definition)
+            .is_some()
+        {
+            return Ok(None);
+        }
+        let crate::syntax::ast::Kind::Binary { left, right, .. } = self.kind(node) else {
+            return Err(self.error(node, "invalid comparison readiness site"));
+        };
+        if !self.uses_comparison(node, method, left, right)? {
+            return Ok(None);
+        }
+        if matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) {
+            return Ok(Some(super::Requirement::Definition(declaration.definition)));
+        }
+        // Only this source-free latent family can be completed synchronously;
+        // every ordinary Validated dependency retains its existing invariant.
+        crate::sema::declarations::prepare_comparison(
+            self.report,
+            self.facts,
+            declaration.definition,
+        )?;
+        Ok(None)
+    }
     pub(super) fn uses_comparison(
         &mut self,
         node: NodeId,

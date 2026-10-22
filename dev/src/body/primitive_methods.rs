@@ -1,6 +1,7 @@
 //! Validated primitive selections materialize ordinary typed and independently proved CFGs.
 mod forwarded;
 mod ordering;
+mod sequences;
 use super::{
     ir::{
         Action, Body, BodyKey, Local, LocalId, LocalKind, Owner, Place, Projection, ProjectionId,
@@ -12,7 +13,7 @@ use crate::{
     resolve::{expansion::Report, package::Error},
     sema::{
         model::Declarations,
-        primitive_methods::{Form, Rhs, Selected, Validated},
+        primitive_methods::{Compound, Form, Rhs, Selected, Validated},
     },
     types::{Kind, TypeId, substitute::Bound},
 };
@@ -43,12 +44,12 @@ pub(crate) fn build(
             .instantiate(&mut facts.types, source.result)
             .map_err(error)?;
     }
-    let (mut contract, parameters) = if source.references.is_some() {
-        forwarded::contract(facts, selected, &source).map_err(error)?
-    } else {
+    let (mut contract, parameters) = if matches!(source.compound, Compound::None) {
         let (contract, right) =
             contract(facts, &source, selected.descriptor().form()).map_err(error)?;
         (contract, [source.receiver, right])
+    } else {
+        forwarded::contract(facts, selected, &source).map_err(error)?
     };
     let mut body = Body::new(
         Owner::Function {
@@ -75,7 +76,10 @@ pub(crate) fn build(
         });
         statement(&mut body, Action::StorageLive(LocalId(ordinal)));
     }
-    let result = if source.references.is_some() {
+    let result = if matches!(source.compound, Compound::Sequences(_)) {
+        sequences::operation(&mut body, facts, &source, parameters).map_err(error)?;
+        None
+    } else if !matches!(source.compound, Compound::None) {
         Some(forwarded::operation(&mut body, facts, &source, parameters).map_err(error)?)
     } else {
         operation(&mut body, facts, selected, &source, parameters[1]).map_err(error)?
@@ -83,7 +87,7 @@ pub(crate) fn build(
     if let Some(result) = result {
         super::build::finish_factory(&mut body, result).map_err(error)?;
     }
-    if source.references.is_some() {
+    if !matches!(source.compound, Compound::None) {
         super::dispatch::resolve(facts, &mut body, &mut contract)
             .map_err(|e| Declarations::error(report, source.source, e))?;
     }
@@ -294,19 +298,11 @@ pub(crate) fn validate(
         .list(parameters)
         .ok_or("missing factory contract parameters")?
         .to_vec();
-    if result != source.result
-        || bound_regions != input.universals
-        || body.locals.len() != 2
-        || parameters.len() != 2
-        || body
-            .locals
-            .iter()
-            .zip(&parameters)
-            .any(|(local, &ty)| local.ty != ty)
-    {
+    if result != source.result || bound_regions != input.universals || parameters.len() != 2 {
         return Err("primitive factory parameters differ from lifetime contract");
     }
-    if source.references.is_some() {
+    validate_locals(body, &source, &parameters)?;
+    if !matches!(source.compound, Compound::None) {
         forwarded::validate(facts, selected, &source, input, &parameters)?;
         return Ok(Permit {
             instance: selected.instance(),
@@ -366,4 +362,25 @@ pub(crate) fn validate(
     Ok(Permit {
         instance: selected.instance(),
     })
+}
+
+fn validate_locals(
+    body: &Body,
+    source: &Validated,
+    parameters: &[TypeId],
+) -> Result<(), &'static str> {
+    let sequence = matches!(source.compound, Compound::Sequences(_));
+    if body.locals.len() != if sequence { 3 } else { 2 }
+        || body
+            .locals
+            .iter()
+            .zip(parameters)
+            .any(|(local, &ty)| local.ty != ty)
+    {
+        return Err("primitive factory locals differ from lifetime contract");
+    }
+    if sequence {
+        sequences::validate(body)?;
+    }
+    Ok(())
 }

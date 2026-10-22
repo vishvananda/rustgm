@@ -123,11 +123,11 @@ pub(super) fn retain_language(
     ty: TypeId,
     descriptor: crate::sema::primitive_methods::Descriptor,
 ) -> Result<(), String> {
-    if !facts
+    let provided = facts
         .associated
         .comparison_method(method)
-        .is_some_and(crate::support::comparisons::Method::owned)
-    {
+        .is_some_and(|member| member.owned() || descriptor.sequence_default(member));
+    if !provided {
         crate::sema::primitive_methods::retain(
             facts,
             crate::types::instance::Instance::new(&facts.types, ty)?,
@@ -135,9 +135,12 @@ pub(super) fn retain_language(
         )?;
     } else if !matches!(
         facts.associated.library_default(method),
-        Some(crate::sema::associated::LibraryDefault::OrdHelper { .. })
+        Some(
+            crate::sema::associated::LibraryDefault::OrdHelper { .. }
+                | crate::sema::associated::LibraryDefault::PartialEqNe { .. }
+        )
     ) {
-        return Err("owned comparison helper has no canonical provided original".into());
+        return Err("comparison helper has no canonical provided original".into());
     }
     Ok(())
 }

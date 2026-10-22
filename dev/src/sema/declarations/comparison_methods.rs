@@ -20,6 +20,22 @@ impl Checker<'_> {
         subject: TypeId,
         inputs: &[Argument],
     ) -> Result<(), Error> {
+        super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .register_library_method(method, subject, inputs)?;
+        self.states[method.definition.0 as usize] = State::Complete;
+        Ok(())
+    }
+}
+impl super::comparisons::LibraryContracts<'_> {
+    pub(super) fn register_library_method(
+        &mut self,
+        method: MethodContract,
+        subject: TypeId,
+        inputs: &[Argument],
+    ) -> Result<(), Error> {
         let MethodContract {
             origin,
             owner,
@@ -103,7 +119,6 @@ impl Checker<'_> {
             .trait_names
             .insert(self.report.resolution.definitions[definition.0 as usize].name);
         self.facts.definitions[definition.0 as usize] = Some(callable);
-        self.states[definition.0 as usize] = State::Complete;
         self.facts
             .generics
             .parameters

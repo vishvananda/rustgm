@@ -30,7 +30,7 @@ impl Resolver<'_> {
                 self.visit(c, root, Namespace::Value)?;
             }
         }
-        Ok(())
+        self.reserve_operator_comparisons()
     }
     pub fn visit_list(&mut self, c: Context, list: List, ns: Namespace) -> Result<(), Error> {
         for offset in list.start..list.end {
@@ -62,6 +62,16 @@ impl Resolver<'_> {
         }
         if let Some(scope) = self.facts.node_scopes.get(&(c.module, node)) {
             c.scope = *scope;
+        }
+        if let Kind::Binary {
+            op:
+                crate::lex::token::Punctuation::EqualEqual | crate::lex::token::Punctuation::BangEqual,
+            ..
+        } = self.kind(c, node)
+        {
+            self.facts
+                .builtin_traits
+                .note_equality_operator(c.module, NodeKey { file: c.file, node });
         }
         match self.kind(c, node) {
             Kind::LibraryValue { kind, value } => {

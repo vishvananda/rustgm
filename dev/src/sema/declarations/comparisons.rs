@@ -1,5 +1,7 @@
 //! Equality traits use real canonical owners and ordinary independent shared borrows.
 use super::{Checker, Error, ItemId, State, Type};
+use crate::resolve::{expansion::Report, model::DefId, unit::NodeKey};
+use crate::sema::model::Declarations;
 use crate::{
     resolve::model::BuiltinEquality,
     sema::{
@@ -18,13 +20,109 @@ use crate::{
 impl Checker<'_> {
     pub(super) fn prepare_comparison_contracts(&mut self) -> Result<(), Error> {
         for kind in Comparison::ALL {
-            if let Some(declaration) = self.report.resolution.builtin_traits.comparison(kind) {
+            if let Some(declaration) = self.report.resolution.builtin_traits.comparison(kind)
+                && !self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .comparison_latent(kind)
+            {
                 self.comparison_contract(declaration)?;
             }
         }
         Ok(())
     }
-    fn comparison_contract(&mut self, declaration: BuiltinEquality) -> Result<(), Error> {
+    pub(super) fn comparison_contract(
+        &mut self,
+        declaration: BuiltinEquality,
+    ) -> Result<(), Error> {
+        LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .comparison_contract(declaration)?;
+        self.states[declaration.definition.0 as usize] = State::Complete;
+        self.states[declaration.self_parameter.0 as usize] = State::Complete;
+        if let Some(argument) = declaration.argument {
+            self.states[argument.0 as usize] = State::Complete;
+        }
+        if let Some(methods) = declaration.methods {
+            for (_, member) in methods.iter() {
+                self.states[member.0 as usize] = State::Complete;
+            }
+        }
+        Ok(())
+    }
+}
+/// The exact canonical declaration builder has no source-definition dependencies.
+pub(super) struct LibraryContracts<'a> {
+    pub report: &'a Report,
+    pub facts: &'a mut Declarations,
+}
+/// Activate only an identity reserved for implicit equality syntax. A named trait,
+/// source implementation or ordinary declaration never enters this route.
+pub(in crate::sema) fn prepare(
+    report: &Report,
+    facts: &mut Declarations,
+    owner: DefId,
+) -> Result<(), Error> {
+    let declaration = report
+        .resolution
+        .builtin_traits
+        .latent_comparison_owner(owner)
+        .filter(|declaration| {
+            declaration.definition == owner && declaration.kind == Comparison::PartialEq
+        })
+        .ok_or_else(|| {
+            Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "unregistered latent comparison owner",
+            )
+        })?;
+    if facts.associated.comparison(owner).is_some() {
+        return Ok(());
+    }
+    LibraryContracts { report, facts }.comparison_contract(declaration)?;
+    if let Some(contracts) = &mut facts.generics.traits {
+        contracts.complete_results();
+    }
+    Ok(())
+}
+impl LibraryContracts<'_> {
+    pub(super) fn error(&self, origin: NodeKey, message: impl Into<String>) -> Error {
+        Declarations::error(self.report, origin, message)
+    }
+    pub(super) fn intern(&mut self, origin: NodeKey, kind: Type) -> Result<TypeId, Error> {
+        self.facts
+            .types
+            .intern(kind)
+            .map_err(|error| self.error(origin, error))
+    }
+    pub(super) fn language_parameter(
+        &mut self,
+        source: NodeKey,
+        binding: DefId,
+        owner: DefId,
+        sized: bool,
+    ) -> Result<TypeId, Error> {
+        let parameter = self
+            .facts
+            .types
+            .intern_parameter(crate::types::parameters::Parameter {
+                owner: ItemId(owner.0),
+                index: 0,
+                kind: crate::types::parameters::ParameterKind::Type { sized },
+            })
+            .map_err(|error| self.error(source, error))?;
+        let ty = self.intern(source, Type::Parameter(parameter))?;
+        self.facts.definitions[binding.0 as usize] = Some(ty);
+        Ok(ty)
+    }
+    pub(super) fn comparison_contract(
+        &mut self,
+        declaration: BuiltinEquality,
+    ) -> Result<(), Error> {
         let BuiltinEquality {
             origin,
             kind,
@@ -45,9 +143,6 @@ impl Checker<'_> {
                 None,
             )
             .map_err(|e| self.error(origin, e))?;
-        self.facts
-            .associated
-            .declare_comparison(definition, kind, origin, methods);
         let arguments = self
             .facts
             .types
@@ -94,7 +189,11 @@ impl Checker<'_> {
             .declare(ItemId(definition.0), header)
             .map_err(|e| self.error(origin, e))?;
         self.comparison_methods(declaration, subject)?;
-        self.states[definition.0 as usize] = State::Complete;
+        // Publish only after the complete schema, generic environment and every
+        // method signature are installed. Typed consumers cannot see a prefix.
+        self.facts
+            .associated
+            .declare_comparison(definition, kind, origin, methods);
         Ok(())
     }
     fn comparison_inputs(

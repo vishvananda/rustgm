@@ -819,7 +819,10 @@ impl Checker<'_> {
         self.finish(self.state.body.node)
     }
     fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
-        if let Some(requirement) = self.value_readiness(node) {
+        if let Some(requirement) = self
+            .comparison_readiness(node)?
+            .or_else(|| self.value_readiness(node))
+        {
             self.state.work.push(Work::Exit(node));
             return Ok(Some(Dependency {
                 requirement,

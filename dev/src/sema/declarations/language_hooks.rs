@@ -7,10 +7,7 @@ use crate::{
     types::{
         GenericArgs, TypeId,
         arguments::Argument,
-        parameters::{
-            Parameter as Formal, ParameterKind,
-            predicates::{Bound, Predicate},
-        },
+        parameters::predicates::{Bound, Predicate},
         projection,
         traits::Application,
     },
@@ -31,17 +28,11 @@ impl Checker<'_> {
         owner: DefId,
         sized: bool,
     ) -> Result<TypeId, Error> {
-        let id = self
-            .facts
-            .types
-            .intern_parameter(Formal {
-                owner: ItemId(owner.0),
-                index: 0,
-                kind: ParameterKind::Type { sized },
-            })
-            .map_err(|e| self.error(source, e))?;
-        let ty = self.intern(source, Type::Parameter(id))?;
-        self.facts.definitions[binding.0 as usize] = Some(ty);
+        let ty = super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .language_parameter(source, binding, owner, sized)?;
         self.states[binding.0 as usize] = State::Complete;
         Ok(ty)
     }

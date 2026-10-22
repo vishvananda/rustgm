@@ -59,7 +59,7 @@ pub struct Traits {
     entries: [Option<DefId>; 11],
     callables: Option<Box<[Callable; 3]>>,
     language: std::collections::HashMap<Hook, Language>,
-    comparisons: Option<Box<[Option<Equality>; 4]>>,
+    comparisons: Option<Box<comparisons::Comparisons>>,
 }
 impl Traits {
     fn insert_fixed(
@@ -111,7 +111,7 @@ impl Traits {
             .chain(
                 self.comparisons
                     .iter()
-                    .flat_map(|entries| entries.iter().flatten())
+                    .flat_map(|entries| entries.entries.iter().flatten())
                     .map(|entry| entry.definition),
             )
     }

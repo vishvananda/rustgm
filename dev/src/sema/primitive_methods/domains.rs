@@ -24,6 +24,9 @@ pub(super) fn comparison_candidate(
     {
         return Ok(candidate);
     }
+    if let Some(candidate) = super::sequences::candidate(facts, context, goal, right_term, kind)? {
+        return Ok(candidate);
+    }
     let mut left = context.head(&facts.types, goal.subject())?;
     let mut right = context.head(&facts.types, right_term)?;
     if let Some(candidate) =

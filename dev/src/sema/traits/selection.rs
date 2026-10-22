@@ -184,6 +184,20 @@ pub(in crate::sema) fn may_have_subject(
         // validated by ordinary complete trait selection.
         return Ok(true);
     }
+    if matches!(
+        facts.associated.comparison(DefId(item.0)),
+        Some(
+            crate::support::comparisons::Comparison::PartialEq
+                | crate::support::comparisons::Comparison::Eq
+        )
+    ) && matches!(
+        subject,
+        super::heads::Subject::Rigid(super::heads::Head::Array | super::heads::Head::Slice)
+    ) {
+        // Container shape permits a candidate; lengths, RHS and exact element
+        // prerequisite remain mandatory in ordinary complete selection.
+        return Ok(true);
+    }
     if facts.associated.comparison(DefId(item.0)).is_some()
         && matches!(
             subject,

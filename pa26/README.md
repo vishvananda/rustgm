@@ -292,3 +292,19 @@ Dot-call RHS inference, concrete str and structural comparisons remain required;
 this does not complete their original Rust-positive sources. The explicit
 array-reference→slice cast follow-up is recorded separately in
 `docs/pa22-reference-unsizing-casts.md`.
+
+
+## Maintainer sequence equality checkpoint
+
+Canonical array/slice PartialEq and Eq now use exact container/length identities
+and selected element conditions. Heterogeneous elements and the pinned slice
+reference combinations retain their actual contracts. Checked equality loops
+call element ne; sequence ne uses its checked provided original. Mutable
+references are reborrowed without moving intermediate reference values.
+
+The draft `tests/sequence-equality-outcomes.json` records 43 implemented source
+outcomes and two unchanged required later-contract positives. The 32 accepted
+implemented programs execute independently and through CPPGM. Sequence ordering,
+tuple/str comparisons and other required hooks remain unfinished. See
+`docs/pa26-sequence-equality.md` for lazy contract publication, size/scaling
+controls and exact text review. This does not activate PA26.

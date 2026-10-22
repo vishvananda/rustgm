@@ -15,6 +15,7 @@ use crate::{
 mod domains;
 mod ordering;
 mod referential;
+mod sequences;
 use domains::comparison_candidate;
 pub(in crate::sema) use ordering::register_ordering;
 use std::collections::HashMap;
@@ -39,6 +40,7 @@ pub(crate) enum Operation {
     Comparison(crate::support::comparisons::Comparison),
     Ordering(crate::support::comparisons::Comparison),
     References(crate::support::comparisons::Comparison),
+    Sequences(crate::support::comparisons::Comparison),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Scalars {
@@ -47,11 +49,22 @@ pub(crate) struct Scalars {
     pub rhs: Rhs,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Sequence {
+    Array,
+    Slice,
+    SharedSlice,
+    MutableSlice,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Operands {
     Scalars(Scalars),
     References {
         left_mutable: bool,
         right_mutable: bool,
+    },
+    Sequences {
+        left: Sequence,
+        right: Sequence,
     },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -95,6 +108,10 @@ impl Descriptor {
             Ok(TypeId::primitive(primitive))
         }
     }
+    pub(crate) fn sequence_default(self, member: crate::support::comparisons::Method) -> bool {
+        matches!(self.operation, Operation::Sequences(_))
+            && member == crate::support::comparisons::Method::Ne
+    }
     pub(crate) fn nominal(self) -> bool {
         matches!(self.operation, Operation::Ordering(_))
     }
@@ -102,23 +119,27 @@ impl Descriptor {
         match self.operation {
             Operation::Arithmetic(hook) if hook.assignment() => Form::Assignment,
             Operation::Arithmetic(_) => Form::ValueBinary,
-            Operation::Comparison(_) | Operation::Ordering(_) | Operation::References(_) => {
-                Form::Comparison
-            }
+            Operation::Comparison(_)
+            | Operation::Ordering(_)
+            | Operation::References(_)
+            | Operation::Sequences(_) => Form::Comparison,
         }
     }
     pub(crate) fn scalars(self) -> Result<Scalars, &'static str> {
         match self.operands {
             Operands::Scalars(scalars) => Ok(scalars),
-            Operands::References { .. } => Err("reference operands are not scalar operation types"),
+            Operands::References { .. } | Operands::Sequences { .. } => {
+                Err("reference operands are not scalar operation types")
+            }
         }
     }
     pub(crate) fn operator(self) -> Result<Punctuation, &'static str> {
         match self.operation {
             Operation::Arithmetic(hook) => operator(hook),
-            Operation::Comparison(_) | Operation::Ordering(_) | Operation::References(_) => {
-                Ok(Punctuation::EqualEqual)
-            }
+            Operation::Comparison(_)
+            | Operation::Ordering(_)
+            | Operation::References(_)
+            | Operation::Sequences(_) => Ok(Punctuation::EqualEqual),
         }
     }
     fn member(
@@ -139,6 +160,7 @@ impl Descriptor {
             Operation::Comparison(kind)
             | Operation::Ordering(kind)
             | Operation::References(kind)
+            | Operation::Sequences(kind)
                 if facts.associated.comparison(owner) == Some(kind) =>
             {
                 use crate::support::comparisons::Method;
@@ -314,7 +336,7 @@ pub(in crate::sema) enum Candidate {
     Unrelated,
     Deferred,
     Present(Descriptor),
-    Referent {
+    Conditional {
         descriptor: Descriptor,
         prerequisite: Predicate,
     },
@@ -387,6 +409,12 @@ pub(crate) struct Selected {
     instance: Instance,
     descriptor: Descriptor,
 }
+#[derive(Clone, Copy)]
+pub(crate) enum Compound {
+    None,
+    References([TypeId; 2]),
+    Sequences([TypeId; 2]),
+}
 pub(crate) struct Validated {
     pub definition: DefId,
     pub source: NodeKey,
@@ -396,7 +424,7 @@ pub(crate) struct Validated {
     pub result: TypeId,
     pub operator: Punctuation,
     pub comparison: Option<crate::support::comparisons::Method>,
-    pub references: Option<[TypeId; 2]>,
+    pub compound: Compound,
 }
 impl Selected {
     pub(crate) const fn instance(self) -> Instance {
@@ -441,7 +469,7 @@ impl Selected {
             .ok_or("missing primitive method arguments")?
             .collect::<Vec<_>>();
         let [subject, right] = self.descriptor.arguments(&arguments)?;
-        let references = if let Operation::References(kind) = self.descriptor.operation {
+        let compound = if let Operation::References(kind) = self.descriptor.operation {
             referential::validate(
                 facts,
                 self.descriptor,
@@ -450,7 +478,17 @@ impl Selected {
                 [receiver, physical_right],
                 bound_regions,
             )?;
-            Some([subject, right])
+            Compound::References([subject, right])
+        } else if let Operation::Sequences(kind) = self.descriptor.operation {
+            sequences::validate(
+                facts,
+                self.descriptor,
+                kind,
+                [subject, right],
+                [receiver, physical_right],
+                bound_regions,
+            )?;
+            Compound::Sequences([subject, right])
         } else {
             domains::validate_scalars(
                 facts,
@@ -459,10 +497,15 @@ impl Selected {
                 [receiver, physical_right],
                 signature,
             )?;
-            None
+            Compound::None
         };
         validate_substitution(facts, self.descriptor, item, signature, &arguments)?;
         let comparison = facts.associated.comparison_method(definition);
+        if matches!(self.descriptor.operation, Operation::Sequences(_))
+            && comparison != Some(crate::support::comparisons::Method::Eq)
+        {
+            return Err("sequence factory requires the exact canonical eq member");
+        }
         if comparison.is_some_and(|method| {
             !matches!(
                 method,
@@ -482,7 +525,7 @@ impl Selected {
             result,
             operator,
             comparison,
-            references,
+            compound,
         })
     }
 }

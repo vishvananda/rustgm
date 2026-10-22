@@ -59,7 +59,7 @@ pub(in crate::sema) fn reference_comparison(
     let goal = inputs.instantiate(facts, &mut context, header)?;
     let candidate =
         primitive_methods::candidate(facts, &mut context, &goal).map_err(|e| e.to_string())?;
-    let Candidate::Referent { prerequisite, .. } = candidate else {
+    let Candidate::Conditional { prerequisite, .. } = candidate else {
         return Ok((false, context.steps));
     };
     if disjointness::has_unsized(facts, &mut context, &inputs)? {

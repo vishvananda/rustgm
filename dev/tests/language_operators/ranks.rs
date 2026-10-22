@@ -30,7 +30,7 @@ const CASES: &[(&str, bool, bool, bool)] = &[
     ("wrong-reified", false, false, false),
     ("const-call", false, false, false),
     ("reference-boundary", true, true, false),
-    ("array-boundary", true, false, false),
+    ("array-boundary", true, true, false),
     ("constant-pattern", true, true, false),
 ];
 fn fixture(name: &str) -> PathBuf {
