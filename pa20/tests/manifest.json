@@ -22203,6 +22203,20 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/output-not-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
     }
   ]
 }

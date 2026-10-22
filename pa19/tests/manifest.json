@@ -16094,6 +16094,364 @@
       },
       "mode": "--emit-lowir",
       "maintainer_origin": "dev/tests/borrowed_receivers.rs"
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/explicit-lookalike.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/both-elided.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/rhs-elided.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/placeholders.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/named-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/named-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/named-both.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/unused-named.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/self-only.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/multiple-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/nested-references.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/tuple-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/generic-pointee.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/rhs-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/wrong-result-owner.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/explicit-unpaid-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/caller-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/overlap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/receiver-result-elision.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/explicit-function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/qualified-function-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

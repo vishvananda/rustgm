@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/impl-lifetimes/canonical-explicit-rhs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

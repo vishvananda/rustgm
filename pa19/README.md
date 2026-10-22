@@ -225,9 +225,9 @@ source-to-LowIR functionality can compile the same program.
 
 ## Validation
 
-The manifest contains 1,103 cases: 705 accepted and 398 rejected. There are 440
-semantic inspection cases and 663 LowIR cases. The LowIR lane has 269 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 394
+The manifest contains 1,124 cases: 721 accepted and 403 rejected. There are 440
+semantic inspection cases and 684 LowIR cases. The LowIR lane has 285 accepted
+programs, all with declared clean execution through rustc and CPPGM, and 399
 rejections. No accepted native control is silently skipped.
 
 Five acceptance differences are explicit: one later-stage boundary, one
@@ -243,6 +243,6 @@ migrated fixtures because the maintainer supports its constant argument.
 
 Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
 `make lint audit-rust test-harness test-upstream`. The root report includes PA19;
-PA24–PA38 remain planned and fail explicitly. See
+PA25–PA38 remain planned and fail explicitly. See
 [the validation review](../docs/pa19-validation.md) for qualifications, reference
 review, native evidence and the distinction between inspection and execution.

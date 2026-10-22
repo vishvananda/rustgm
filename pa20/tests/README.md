@@ -1,12 +1,14 @@
 # PA20 fixture ownership
 
-The manifest registers 1,381 exact text-oracle cases from 835 source programs.
+The manifest registers 1,382 exact text-oracle cases from 836 source programs.
 The semantic lane has 484 accepted and 62 rejected cases; the LowIR lane has
-508 accepted native executions and 327 rejected programs. One semantic-positive
+508 accepted native executions and 328 rejected programs. One semantic-positive
 fixture deliberately retains a lifetime error rejected by LowIR and rustc.
 
 Fixture families:
 
+- `impl-lifetimes`: an omitted lifetime in an associated output cannot introduce
+  an impl input binder; this rejection accompanies PA19's qualified input cases.
 - `projections`: qualified/shorthand paths, complete type/lifetime/const inputs,
   aliases, nominal fields, callable signatures, nested results and repeated uses.
   Include method-local trait Self bounds versus trait-impl Self lookup, reordered

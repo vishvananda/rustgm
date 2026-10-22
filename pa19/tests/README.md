@@ -1,6 +1,6 @@
 # PA19 fixture ownership
 
-The manifest owns 1,103 fixtures: 440 semantic inspection cases and 663 LowIR
+The manifest owns 1,124 fixtures: 440 semantic inspection cases and 684 LowIR
 cases. Expected outcomes were recorded before compiler probes and reference
 creation. The source corpus comes from the independently qualified maintainer
 trait/method tests, with `maintainer_origin` preserving each source's origin.
@@ -12,7 +12,7 @@ conformance, impl selection, caller assumptions, qualified and implicit paths,
 lexical visibility, default/required dispatch, receiver adjustments, callable
 binders, lifetime equality, generic Drop requirements and execution. Native
 programs use the same `check`/`fail` helper as their original maintainer checks.
-The 269 accepted LowIR programs declare runtime outcomes; the other 394 LowIR
+The 285 accepted LowIR programs declare runtime outcomes; the other 399 LowIR
 cases are required rejections. Semantic inspection contributes 436 accepted
 cases and four required early rejections.
 
@@ -21,6 +21,12 @@ generic, reference-field, enum and const-argument receivers with invalid
 mutability, loan and argument-type uses. They exercise implicit storage places
 introduced by method adjustment, including callees not otherwise demanded from
 the entry function.
+
+`impl-lifetimes/` covers independent omitted and named lifetime inputs in Self
+and trait arguments, nested references, callable binders and result ownership.
+Its 16 accepted programs execute with both compilers; five negatives preserve
+method conformance, caller escape and coherence requirements. The associated
+output-only lifetime rejection belongs to PA20.
 
 `migrated/` preserves the original PA17/PA18 inherent-method boundaries, and
 `receiver-lookup/receiver-former-pa18-boundary.rs` preserves PA18's trait-method
