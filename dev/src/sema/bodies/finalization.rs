@@ -155,7 +155,9 @@ impl Checker<'_> {
         } = publication;
         self.facts.body_work.inference_steps += solved.steps;
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
+        let constant_dependencies = self.dependency_frontier();
         self.publish_constant_uses(arguments)?;
+        let constant_dependencies = self.dependency_append(&constant_dependencies)?;
         self.publish_methods(&solved);
         self.publish_for_plans(&solved)?;
         self.publish_invocations(&solved);
@@ -176,7 +178,9 @@ impl Checker<'_> {
             );
         let main_equalities = main_start..self.facts.region_equalities.len();
         self.publish_body_types(body, &solved)?;
+        let callable_dependencies = self.dependency_frontier();
         self.publish_constant_callables()?;
+        let callable_dependencies = self.dependency_append(&callable_dependencies)?;
         self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
         for (node, term) in &self.state.calls {
@@ -217,6 +221,10 @@ impl Checker<'_> {
                 }),
         );
         let late_equalities = late_start..self.facts.region_equalities.len();
+        self.canonicalize_dependencies(
+            [constant_dependencies, callable_dependencies],
+            [main_equalities.clone(), late_equalities.clone()],
+        )?;
         if !self.state.call_types.constants.is_empty() {
             self.facts
                 .retain_source_caller(

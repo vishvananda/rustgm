@@ -74,13 +74,42 @@ impl RegionEquations {
         equations: impl IntoIterator<Item = (RegionId, RegionId)>,
     ) -> Result<usize, &'static str> {
         let mut steps = 0;
+        self.extend_counted(equations, &mut steps)?;
+        Ok(steps)
+    }
+
+    pub(crate) fn extend_counted(
+        &mut self,
+        equations: impl IntoIterator<Item = (RegionId, RegionId)>,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
         for (left, right) in equations {
-            self.equate(left, right, &mut steps);
-            if steps > super::WORK_LIMIT || self.vertices.len() > super::WORK_LIMIT {
+            self.equate(left, right, steps);
+            if *steps > super::WORK_LIMIT || self.vertices.len() > super::WORK_LIMIT {
                 return Err("projection closure work budget exceeded");
             }
         }
-        Ok(steps)
+        Ok(())
+    }
+
+    /// Return only the identity representative of these already-retained equations.
+    /// This neither proves an equation nor grants ownership of an unknown identity.
+    pub(crate) fn canonical_anchor(
+        &mut self,
+        region: RegionId,
+        steps: &mut usize,
+    ) -> Result<RegionId, &'static str> {
+        *steps = steps.saturating_add(1);
+        let anchor = if let Some(&index) = self.indices.get(&region) {
+            let root = self.root(index, steps);
+            self.vertices[root].anchor
+        } else {
+            region
+        };
+        if *steps > super::WORK_LIMIT {
+            return Err("projection closure work budget exceeded");
+        }
+        Ok(anchor)
     }
 }
 

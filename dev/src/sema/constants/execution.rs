@@ -8,6 +8,7 @@ impl Queries<'_> {
         source: NodeKey,
         result: crate::types::TypeId,
     ) -> Result<Target, Error> {
+        let result = self.substituted_type(source, result)?;
         let context = self.execution_context();
         if let Some(instance) = context
             && self
@@ -33,8 +34,10 @@ impl Queries<'_> {
                     .ok_or_else(|| self.error(Query::Node(source), "missing source initializer"))?;
                 return self.source_computation(instance, original, result);
             }
+            let result = self.complete_type(source, result)?;
             return Ok(Target::Associated { instance, result });
         }
+        let result = self.complete_type(source, result)?;
         if let Some(initializer) = context
             && self
                 .typing
@@ -81,7 +84,6 @@ impl Queries<'_> {
                     .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
             })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant eligibility type"))?;
-        let result = self.specialized_type(source, result)?;
         let target = self.execution_target(source, result)?;
         let mut executor = self.typing.facts.constant_executor.take().ok_or_else(|| {
             self.error(
@@ -108,7 +110,6 @@ impl Queries<'_> {
                     .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
             })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant execution type"))?;
-        let result = self.specialized_type(source, result)?;
         let request = Request {
             target: self.execution_target(source, result)?,
             arguments: Vec::new(),
@@ -130,3 +131,7 @@ impl Queries<'_> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/root_requests.rs"]
+mod tests;

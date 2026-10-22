@@ -10,11 +10,22 @@ use crate::{
 };
 use std::collections::HashMap;
 mod callers;
+mod originals;
+pub(crate) use originals::initializer as original_initializer;
 
 pub(crate) fn resolve(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
+) -> Result<(), String> {
+    resolve_with_original(facts, body, contract, None)
+}
+
+fn resolve_with_original(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    mut original: Option<originals::Parameters>,
 ) -> Result<(), String> {
     let dispatch = body.values.iter().any(|value| {
         matches!(value.kind, Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_))
@@ -26,6 +37,12 @@ pub(crate) fn resolve(
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
     let mut replacements = HashMap::new();
     for value in &mut body.values {
+        if let Rvalue::AssociatedConstant(instance) = value.kind
+            && let Some(parameters) = &mut original
+            && parameters.deferred(facts, instance)?
+        {
+            continue;
+        }
         if let Rvalue::AssociatedConstant(instance) = value.kind
             && crate::sema::values::execution::BodyCaller::needed(facts, instance, value.ty)?
         {

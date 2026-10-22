@@ -111,6 +111,132 @@
         "--emit-constants": 1,
         "--emit-lowir": 1
       }
+    },
+    {
+      "name": "selected-tuple",
+      "source_sha256": "f800c390da6dbe9d48b5f36b889c6ebfae2a456ad76424a14321d280ef7d1cc1",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/selected-tuple.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "selected-record",
+      "source_sha256": "8bc632955ad836c1abe15f39b8cfb5a0f1be4cf26e6a30ff7a5a0d6d14a17f70",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/selected-record.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "nested-reference",
+      "source_sha256": "61475af90360f9551c342aefe409f4f4db4cd414d6c9f6222a37c05f85ea1b53",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/nested-reference.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "nested-tuple",
+      "source_sha256": "3ad38862e3e130e3436ed78bf2a2dc51c819f62dc2896512535447c4a10f0947",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/nested-tuple.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "constant-function",
+      "source_sha256": "2e3c6cb635a95fb35689a9a23126252b5be7b0c73c6c2788d15e78fa7c9fcde7",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/constant-function.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "unpaid-source-relation",
+      "source_sha256": "87b98b9af01aab6531d1947a641db94e2895fd0ecaaf9e8a639d03a67ef14efa",
+      "diagnostic": "lifetime",
+      "path": "tests/spec/projected-initializer-patterns/unpaid-source-relation.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      }
+    },
+    {
+      "name": "unused-runtime-call",
+      "source_sha256": "946a5202e934f03689c9f95fd4135c29f2eec8e1edc463d2ab359b4523a255aa",
+      "diagnostic": "non-const",
+      "path": "tests/spec/projected-initializer-patterns/unused-runtime-call.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      }
     }
   ]
 }

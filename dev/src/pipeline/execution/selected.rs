@@ -192,7 +192,7 @@ impl Engine {
             .contracts
             .initializer(facts, initializer)
             .map_err(|e| Declarations::error(report, source, e))?;
-        body::dispatch::resolve(facts, &mut template.body, &mut contract)
+        body::dispatch::original_initializer(facts, &mut template.body, &mut contract, initializer)
             .map_err(|e| Declarations::error(report, source, e))?;
         body::promote::instance_reusing(
             report,

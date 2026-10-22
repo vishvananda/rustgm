@@ -10,6 +10,7 @@ mod closures;
 mod comparisons;
 mod conditions;
 mod defining_bodies;
+mod dependency_roots;
 mod divergence;
 mod dot_calls;
 mod environment_values;

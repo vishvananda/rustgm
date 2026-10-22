@@ -2,7 +2,16 @@
 use super::native;
 use std::path::{Path, PathBuf};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
-const ACCEPTED: &[&str] = &["reference", "product", "paid-normalization"];
+const ACCEPTED: &[&str] = &[
+    "reference",
+    "product",
+    "paid-normalization",
+    "selected-tuple",
+    "selected-record",
+    "nested-reference",
+    "nested-tuple",
+    "constant-function",
+];
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../pa25/tests/spec/projected-initializer-patterns")
@@ -23,6 +32,17 @@ fn projected_patterns_keep_shape_and_normalization_debts() -> TestResult {
         "unpaid-normalization",
         (1, [0, 1, 1], "lifetime"),
     )?;
+    for (name, diagnostic) in [
+        ("unpaid-source-relation", "lifetime"),
+        ("unused-runtime-call", "non-const"),
+    ] {
+        super::checked_sources::check_modes(
+            &fixture(name),
+            &evidence,
+            name,
+            (1, [0, 1, 1], diagnostic),
+        )?;
+    }
     for name in ["wrong-referent", "wrong-mutability"] {
         super::checked_sources::check(
             &fixture(name),

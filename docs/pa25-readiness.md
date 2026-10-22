@@ -51,14 +51,15 @@ debts. They do not close the following required families:
 
 - Demanded associated results whose original declarations retain projections.
   Ordinary demanded reference/tuple returns and repeated distinct generic callers
-  now execute through checked specialization. Nested associated initializer
-  values still expose unresolved value selection, and selected tuple/record
-  patterns expose missing projection normalization. These remain independently
-  Rust-positive cases.
+  now execute through checked specialization. The projected tuple/record
+  pattern and nested associated reference/tuple families now also execute through
+  that path. A generic inline constant containing the same projected associated
+  use still fails earlier semantic normalization and remains Rust-positive.
 - Projected named-pattern operands. The original selected reference and paid
-  relation controls still fail shape inference before value execution; selected
-  tuple/record controls reach the initializer projection boundary. Result seals
-  must preserve the original operand and canonical requested identities separately.
+  relation controls still fail shape inference before value execution. Selected
+  tuple/record controls now pass their actual projected operand and a separately
+  normalized requested result through the same checked seal. The remaining
+  reference-shape controls are required work, not language rejections.
 - Selected type arguments containing open caller lifetimes. Their exact owning
   caller proof must supply authority without relaxing the ordinary concrete path.
 - Source-associated uses inside conditional nested-output contracts. The original
@@ -154,8 +155,67 @@ selected caller/static arguments instead of their private selector aliases.
 Together with the earlier rejected-result diagnostic change, these require
 integrator review before oracle publication. No reference was changed here.
 
-Remaining consumers are explicit: projected named-pattern results still enter
-the source query's projection boundary, while nested non-pattern initializer
-values still enter an unscoped value selector. Their retained caller and result
-normalization debts must reach the existing checked execution path; neither an
-AST value cache nor an unsupported diagnostic is proof of completion.
+### Projected patterns and nested initializer dependencies
+
+The next bounded checkpoint routes only the exact selected initializer root
+through its retained caller when its arguments remain open. Other expressions
+and the ordinary concrete/materialized path retain their strict result checks.
+Seal preparation normalizes the declaration and request in the same dispatcher;
+the source use retains its original projected operand separately from the
+canonical requested result. A private observer rejects swapping those identities.
+
+Original initializer preparation now recognizes its own rigid type/const
+parameters without trying to select a concrete implementation. It validates the
+actual declaration, body, original contract and retained source-local identities.
+It preserves the complete associated operand for mandatory instance dispatch.
+The original proof and eligibility pass still run before instantiation, and the
+instance repeats ordinary dispatch, promotion and full proof. A lifetime-only
+unresolved operand and foreign/missing source ownership cannot use this entry.
+Bodies without associated operands do not allocate these temporary catalogs.
+
+Dependencies published by an initializer must close their source-local aliases
+before caller arguments are substituted. Publication records only the newly
+appended constant/callable rows and exact main/late equation ranges for that body.
+The existing equality closure supplies canonical identity anchors; it adds no
+relations or proof authority. A bounded observer and fixed restore folder update
+those rows transactionally. Source contracts and every original equality and
+formation debt remain unchanged. Foreign/interleaved ranges fail. The private
+external-ID collision control verifies canonicalize-original then substitute-caller
+order; a missing equality preserves the old identity and strict admission failure.
+
+`publication-tail/` retains the ten original/template/result/publication private
+checks plus all five selected-cache authority checks. `publication-final/` passes
+strict release all-target/all-feature Clippy, the architecture/file audit (1,612
+files, zero findings), the affected result-identity private check, a 13-source
+matrix (eight positives and five negatives), four retained-result test functions,
+46 associated-declaration test functions and one native group executing eight
+programs. Harness/layout and upstream verification also pass. The public compiler
+and full combined release gates remain integrator-owned. No oracle was changed.
+
+For 8/32/128 newly appended dependencies, measured publication work is
+180/588/2,220. Temporary scratch is bounded to 64 MiB and one million work units;
+the original owned-identity catalog is bounded separately. There is no new
+Body/Target/Request/dependency representation or global proof graph. These are
+changed-path bounds, not claims about the separate generic cleanup quadratic.
+
+The four earlier projected/nested positives retain their original authored bytes.
+A const-function caller also passes. The added unused generic non-const call and
+unpaid source lifetime relation reject at their real permission/lifetime checks.
+`publication-closing/owner-outcomes.json` preserves all four independent owner
+hypotheses: its inline-projected positive accepts Rust object emission but still
+fails the compiler's semantic associated-type lookup at byte 261. The declaration
+and output hashes remain in that receipt; this boundary is required followup.
+
+The first closing batch stopped at that independently valid inline boundary.
+Subsequent batches corrected routine lint findings and a private test's unreviewed
+`include_str!` by using normal runtime fixture loading. Their failures are retained;
+none was counted as a passing source result or used to change a language outcome.
+
+`publication-qualified/identity.json` freezes the candidate and production map.
+All 8,255 worker-base active cases were compared, including the immutable
+published 467-case PA24 archive. There are no additional text differences from
+`395193a6`: the same seven PA20 source/output hash pairs in the prior review
+bundle remain different from committed oracles (8,248 exact comparisons).
+The text guard therefore exits 1 pending that existing central review. Both
+ordinary512 and constcall64 outputs are byte-identical. No worker benchmark or
+full Cargo publication run was repeated.

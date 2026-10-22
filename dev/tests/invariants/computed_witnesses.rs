@@ -3,6 +3,85 @@ use super::*;
 use crate::sema::values::execution::{Executor, Progress, Request, Target};
 use std::{cell::Cell, rc::Rc};
 struct Capture(Rc<Cell<usize>>);
+
+struct ProjectedCapture(Rc<Cell<usize>>);
+impl Executor for ProjectedCapture {
+    fn check(
+        &mut self,
+        _: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        target: Target,
+    ) -> Result<(), Error> {
+        let Target::SourceAssociated { source, result } = target else {
+            return Ok(());
+        };
+        let (entry, caller) = source
+            .entry(facts)
+            .map_err(|message| Error::at(super::super::FileId(0), 0, message))?;
+        assert_eq!(
+            facts.types.contains_projections(entry.actual_result),
+            Some(true)
+        );
+        assert_eq!(facts.types.contains_projections(result), Some(false));
+        assert_ne!(entry.actual_result, result);
+        assert!(source.validate(facts, result).is_ok());
+        assert!(source.validate(facts, entry.actual_result).is_err());
+        assert!(
+            source
+                .validate_use(facts, caller.source, caller.enclosing, entry.actual_result)
+                .is_ok()
+        );
+        assert!(
+            source
+                .validate_use(facts, caller.source, caller.enclosing, result)
+                .is_err()
+        );
+        self.0.set(self.0.get() + 1);
+        Err(Error::at(
+            super::super::FileId(0),
+            0,
+            "observed projected operand and normalized request",
+        ))
+    }
+    fn advance(
+        &mut self,
+        _: &crate::resolve::expansion::Report,
+        _: &mut Declarations,
+        _: &Request,
+    ) -> Result<Progress, Error> {
+        Err(Error::at(
+            super::super::FileId(0),
+            0,
+            "unexpected execution before result observation",
+        ))
+    }
+}
+
+#[test]
+fn projected_pattern_request_keeps_operand_and_normalized_result_distinct()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa25/tests/spec/projected-initializer-patterns/selected-tuple.rs"),
+    )?;
+    let report = crate::test_source::resolve(&source, true)?;
+    let count = Rc::new(Cell::new(0));
+    let facts = crate::sema::declarations::analyze_with_executor(
+        &report,
+        Box::new(ProjectedCapture(Rc::clone(&count))),
+    )?;
+    let error = crate::pipeline::analyze(&report, facts)
+        .err()
+        .ok_or("projected request was not observed")?;
+    assert!(
+        error
+            .to_string()
+            .contains("observed projected operand and normalized request"),
+        "{error}"
+    );
+    assert_eq!(count.get(), 1);
+    Ok(())
+}
 impl Executor for Capture {
     fn check(
         &mut self,

@@ -260,8 +260,9 @@ impl Queries<'_> {
         original: NodeKey,
         result: TypeId,
     ) -> Result<super::values::execution::Target, Error> {
-        SourceComputation::schema(self.typing.facts, selected, original, result)
+        SourceComputation::shape(self.typing.facts, selected, original)
             .map_err(|e| self.error(Query::Node(original), e))?;
+        let actual_result = result;
         let aliases = self
             .typing
             .facts
@@ -289,6 +290,7 @@ impl Queries<'_> {
                     });
                 }
                 let seal = seals::Seal::prepare(facts, dispatcher, selected, result)?;
+                let requested = seal.result();
                 dispatcher.reserve_pattern(facts, scope.body, reservation)?;
                 let publication = catalog::Publication::new(publication)?;
                 let known = facts
@@ -328,15 +330,15 @@ impl Queries<'_> {
                     input,
                     selected,
                     original,
-                    actual_result: result,
-                    requested: result,
+                    actual_result,
+                    requested,
                     seal: Some(seal),
                 })?);
                 facts.constant_work.source_context_bytes = catalog.retained_bytes();
-                witness.validate(facts, result)?;
+                witness.validate(facts, requested)?;
                 Ok(super::values::execution::Target::SourceAssociated {
                     source: witness,
-                    result,
+                    result: requested,
                 })
             },
         )

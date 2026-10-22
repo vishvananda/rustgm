@@ -254,13 +254,22 @@ impl Queries<'_> {
         (context, query)
     }
     pub(super) fn specialized_type(&mut self, key: NodeKey, ty: TypeId) -> Result<TypeId, Error> {
+        let result = self.substituted_type(key, ty)?;
+        self.complete_type(key, result)
+    }
+    pub(super) fn substituted_type(&mut self, key: NodeKey, ty: TypeId) -> Result<TypeId, Error> {
         let Some(index) = self.work.context.0.checked_sub(1) else {
             return Ok(ty);
         };
-        let result = self.instances.environments[index as usize]
+        self.instances.environments[index as usize]
             .substitution
             .apply(&mut self.typing.facts.types, ty)
-            .map_err(|e| self.error(Query::Node(key), e))?;
+            .map_err(|e| self.error(Query::Node(key), e))
+    }
+    pub(super) fn complete_type(&mut self, key: NodeKey, result: TypeId) -> Result<TypeId, Error> {
+        if self.work.context == Context::default() {
+            return Ok(result);
+        }
         if self.typing.facts.types.contains_parameters(result) != Some(false) {
             return Err(self.error(
                 Query::Node(key),
