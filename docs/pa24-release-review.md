@@ -104,22 +104,32 @@ still expected its former unsupported result. Test-only commit `6e88cdb6`
 preserves the qualified type-identity checks, retains an allocation ceiling with
 an unrelated-type independence check, and adds a native value check for the
 accepted slice case. Production sources are unchanged from `1b93560f`. The
-repaired full release Cargo run passed 2,316 tests; its native and independent
-release checks are tracked separately in `test-repair-v2/` under the frozen
-sequence qualification. This result does not qualify the later combined compiler.
+repaired full release Cargo run passed 2,316 tests and its native maintainer run
+passed 219 tests. The affected independent source/native checks also passed;
+their receipts are in `test-repair-v2/` under the frozen sequence qualification.
+The completed 45-input comparison is documented in `pa24-sequence-performance.md`.
+This checkpoint was published as `6e88cdb6`; it does not qualify the later
+combined compiler.
+
+The PA24 release candidate is separately frozen at `c7fe46c0`, whose compiler and
+tests are unchanged from the qualified `0b89bf31` integration above. The changes
+since then are documentation and verified diagnostic archival. Its full release,
+native maintainer, all earlier independent and complete staged PA24 source/native
+checks run in the validation worktree under `obj/parallel/pa24-release-final-v1/`.
+Later PA25 development proceeds independently of that frozen candidate.
 
 ## Remaining release gates
 
 - Complete the frozen combined release Cargo and native maintainer suites and
-  all earlier independent suites. Formatting, strict all-target/all-feature
-  Clippy, architecture/layout/harness audits, upstream/backend checks and all
-  PA1–PA23 text comparisons passed preflight on the frozen snapshot.
+  all earlier independent suites. Retain the exact-source formatting, strict
+  Clippy, architecture/layout and text evidence described above; validate the
+  cleanup changes with their independently passing 81-test harness batch.
 - Carry the corrected library proof and reviewed v2 oracle source identity into
   the next full combined publication checkpoint before installing the oracles.
-- Finish the broad frozen-binary performance comparison, including ordinary
-  controls, distinct/repeated captures, projected and quantified objects, and
-  receiver-depth growth. The existing receiver-depth superlinear observation
-  remains an open performance issue, not a linearity claim.
+- Retain the completed broad frozen-binary performance comparison and measure
+  the later combined compiler's changed paths, including library proof ordering.
+  The receiver-depth superlinear observation remains an open performance issue,
+  not a linearity claim.
 - Publish the reviewed handout, complete manifest, generated sidecars and
   provenance together. Update `assignments.json`, the roadmap and root text,
   independent-source and native-suite selection together; rerun their layout
