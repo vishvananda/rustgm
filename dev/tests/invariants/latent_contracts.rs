@@ -4,7 +4,8 @@ use super::*;
 fn comparison_registry_keeps_ordinary_owner_size_and_bounds_reserved_storage() {
     let old = std::mem::size_of::<[Option<Equality>; 4]>();
     let current = std::mem::size_of::<Comparisons>();
-    assert_eq!(std::mem::size_of::<Traits>(), 192);
+    // Iteration adds one demand-loaded optional boxed registry.
+    assert_eq!(std::mem::size_of::<Traits>(), 200);
     assert!(current <= old + 24);
     eprintln!(
         "comparison storage: Traits={} old_registry={old} registry={current}",

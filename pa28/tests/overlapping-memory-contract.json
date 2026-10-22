@@ -562,11 +562,11 @@
       "sha256": "b6c1f4e1d3d46721b4226c0f6ea26d9969ddd75bc03d280e1019a875e1a01a32",
       "rustc_expected": 0,
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "frontend_reason": "constant counted pointer reinterpretation is not implemented"
+      "frontend_reason": ""
     },
     {
       "path": "pa28/tests/spec/overlapping-memory/invalid-byte-profile.rs",
