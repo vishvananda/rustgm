@@ -56,7 +56,8 @@ pub struct Facts<'a> {
     body: &'a Body,
     pub ownership: BodyFacts,
     pub consumption: Effects,
-    pub storage: crate::borrow::storage::Analysis,
+    /// Proved for this body, or shared by every instance of its template.
+    pub storage: std::borrow::Cow<'a, crate::borrow::storage::Analysis>,
     owners: Owners,
     incoming: Vec<state::Word<u64>>,
     words: usize,
@@ -218,6 +219,7 @@ pub fn analyze<'a, S: BuildHasher>(
     analyze_ordered(types, definitions, derives, copies, body, order.as_ref())
 }
 /// `analyze`, reusing a reverse-postorder walk already computed for the body.
+#[inline]
 pub(crate) fn analyze_ordered<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
@@ -226,15 +228,54 @@ pub(crate) fn analyze_ordered<'a, S: BuildHasher>(
     body: &'a Body,
     order: Option<&crate::borrow::order::Order>,
 ) -> Result<Facts<'a>, Error> {
+    analyze_with(types, definitions, derives, copies, body, order, None)
+}
+/// `analyze`, reusing the order walk and storage proof an instance shares with
+/// every other instance of its checked template (see `borrow::check::structure`).
+#[inline]
+pub(crate) fn analyze_shared<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &'a Body,
+    order: Option<&crate::borrow::order::Order>,
+    storage: &'a crate::borrow::storage::Analysis,
+) -> Result<Facts<'a>, Error> {
+    analyze_with(
+        types,
+        definitions,
+        derives,
+        copies,
+        body,
+        order,
+        Some(storage),
+    )
+}
+fn analyze_with<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &'a Body,
+    order: Option<&crate::borrow::order::Order>,
+    shared: Option<&'a crate::borrow::storage::Analysis>,
+) -> Result<Facts<'a>, Error> {
     let mut ownership = super::prepare(types, definitions, derives, copies, body, true)?;
     let consumption = Effects::build(body, types, &ownership.paths).map_err(|message| Error {
         node: body.source,
         message,
     })?;
-    let storage = crate::borrow::storage::check_ordered(body, order).map_err(|error| Error {
-        node: error.node,
-        message: error.message,
-    })?;
+    let storage = if let Some(shared) = shared {
+        std::borrow::Cow::Borrowed(shared)
+    } else {
+        std::borrow::Cow::Owned(crate::borrow::storage::check_ordered(body, order).map_err(
+            |error| Error {
+                node: error.node,
+                message: error.message,
+            },
+        )?)
+    };
     let owners = Owners::build(body, &ownership.paths).map_err(|message| Error {
         node: body.source,
         message,

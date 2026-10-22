@@ -5,8 +5,8 @@ use crate::body::{
     ir::{Action, BlockId, Body, NodeKey, Place, Rvalue, ValueId},
     storage::End,
 };
-use index::Index;
 pub(crate) use index::{Event, EventKind};
+use index::{Index, Trust};
 use state::State;
 
 #[derive(Debug)]
@@ -14,6 +14,8 @@ pub struct Error {
     pub node: NodeKey,
     pub message: &'static str,
 }
+/// Equal storage inputs yield equal analyses: no field depends on types.
+#[derive(Clone, PartialEq, Eq)]
 pub struct Analysis {
     pub reachable: Vec<bool>,
     pub steps: usize,
@@ -81,23 +83,44 @@ impl Analysis {
 ///
 /// This verifies the storage containing a pointer, not the lifetime of its referent.
 /// It neither grants an executable borrow-check token nor discharges region contracts.
+/// The storage metadata must come unmodified from the body builder, which
+/// guarantees its construction invariants (see the `index` module); only
+/// debug builds re-check them. Use [`validate`] for any other metadata.
 ///
 /// # Errors
-/// Reports invalid metadata, unavailable temporary places or bounded-dataflow exhaustion.
+/// Reports unavailable temporary places or bounded-dataflow exhaustion, and in
+/// debug builds also invalid metadata.
 pub fn check(body: &Body) -> Result<Analysis, Error> {
     check_ordered(body, None)
+}
+/// `check` for storage metadata that need not come from the body builder:
+/// re-validate every construction invariant (scope ancestry, materialization
+/// points, exit ranges, edges and successors) and order each block's events
+/// canonically before the same analysis.
+///
+/// # Errors
+/// Reports invalid metadata as well as every `check` failure.
+pub fn validate(body: &Body) -> Result<Analysis, Error> {
+    analyze(body, None, Trust::Validate)
 }
 /// `check`, reusing a reachability walk already computed for this body.
 pub(crate) fn check_ordered(
     body: &Body,
     order: Option<&super::order::Order>,
 ) -> Result<Analysis, Error> {
+    analyze(body, order, Trust::Builder)
+}
+fn analyze(
+    body: &Body,
+    order: Option<&super::order::Order>,
+    trust: Trust,
+) -> Result<Analysis, Error> {
     let error = |message| Error {
         node: body.source,
         message,
     };
     let mut state = State::new(body.temporaries.len());
-    let index = Index::new(body, &mut state).map_err(error)?;
+    let index = Index::new(body, &mut state, trust).map_err(error)?;
     if body.temporaries.is_empty() {
         return untracked(body, index, state, order).map_err(error);
     }

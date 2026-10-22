@@ -1,7 +1,8 @@
 //! The executable boundary combines owned access, storage, contracts and loans.
 pub(crate) mod incremental;
 mod static_targets;
-use super::{loans, ownership, regions, storage};
+pub(crate) mod structure;
+use super::{loans, ownership, regions};
 use crate::support::hash::HashMap;
 use crate::{
     body::ir::{Body, NodeKey, Program},
@@ -171,7 +172,13 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
             node: Some(body.source),
             message: "body has no lifetime proof".into(),
         })?;
-        let (owned, proof) = prove_body::<RECORD, _>(environment, &mut components, body, contract)?;
+        let (owned, proof) = prove_body::<RECORD, _>(
+            environment,
+            &mut components,
+            body,
+            contract,
+            structure::Use::Own,
+        )?;
         record(owned, proof);
     }
     Ok(Checked {
@@ -224,6 +231,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
                 body,
                 contract,
                 &mut catalog,
+                structure::Use::Own,
             )?
             .map(Box::new),
         );
@@ -263,25 +271,36 @@ fn require_body_promotions(body: &Body) -> Result<(), Error> {
     Ok(())
 }
 
+/// Prove one body. An instance reuses the facts an earlier instance of its
+/// checked template proved (`structure::Use::Shared`) or proves them into a
+/// slot kept for later instances; ordinary bodies prove and drop them here.
 fn prove_body<const RECORD: bool, S: BuildHasher>(
     environment: &mut Environment<'_, S>,
     components: &mut LiveRegions,
     body: &Body,
     contract: &regions::Body,
+    structure: structure::Use<'_, '_>,
 ) -> Result<(ownership::BodyFacts, loans::Report), Error> {
     let mut copies = super::permissions::check(environment, contract)?.map(Copies::in_environment);
-    let order = super::order::Order::new(body);
-    let storage = storage::check_ordered(body, order.as_ref()).map_err(|e| Error {
-        node: Some(e.node),
-        message: e.message.into(),
-    })?;
+    let local;
+    let (order, storage) = match structure {
+        structure::Use::Shared(shared) => (shared.order, shared.storage),
+        structure::Use::Keep(slot) => {
+            let proved = slot.insert(structure::Proved::new(body)?);
+            (proved.order.as_ref(), &proved.storage)
+        }
+        structure::Use::Own => {
+            local = structure::Proved::new(body)?;
+            (local.order.as_ref(), &local.storage)
+        }
+    };
     let owned = ownership::analyze_body_ordered(
         environment.types,
         environment.definitions,
         environment.derives,
         copies.as_mut().unwrap_or(environment.copies),
         body,
-        order.as_ref(),
+        order,
     )
     .map_err(|e| Error {
         node: Some(e.node),
@@ -293,7 +312,7 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
         body,
         contract,
         &owned,
-        &storage,
+        storage,
     )
     .map_err(|e| Error {
         node: Some(e.node),
@@ -309,6 +328,7 @@ fn prove_cleanup<S: BuildHasher>(
     body: &Body,
     contract: &regions::Body,
     catalog: &mut super::destruction::glue::Catalog<'_>,
+    structure: structure::Use<'_, '_>,
 ) -> Result<Option<super::destruction::Plan>, Error> {
     use super::{destruction, ownership::initialization};
     let parameters = super::permissions::check(environment, contract)?;
@@ -320,13 +340,36 @@ fn prove_cleanup<S: BuildHasher>(
         node,
         message: message.into(),
     };
-    let init = initialization::analyze(
-        environment.types,
-        environment.definitions,
-        environment.derives,
-        copies.as_mut().unwrap_or(environment.copies),
-        body,
-    )
+    let (shared, slot) = match structure {
+        structure::Use::Shared(shared) => (Some(shared), None),
+        structure::Use::Keep(slot) => (None, Some(slot)),
+        structure::Use::Own => (None, None),
+    };
+    let order = if shared.is_some() {
+        None
+    } else {
+        super::order::Order::new(body)
+    };
+    let init = if let Some(shared) = shared {
+        initialization::analyze_shared(
+            environment.types,
+            environment.definitions,
+            environment.derives,
+            copies.as_mut().unwrap_or(environment.copies),
+            body,
+            shared.order,
+            shared.storage,
+        )
+    } else {
+        initialization::analyze_ordered(
+            environment.types,
+            environment.definitions,
+            environment.derives,
+            copies.as_mut().unwrap_or(environment.copies),
+            body,
+            order.as_ref(),
+        )
+    }
     .map_err(|e| error(Some(e.node), e.message))?;
     let plan = destruction::select(catalog, &init).map_err(|e| error(Some(e.node), e.message))?;
     loans::check_destruction(
@@ -339,6 +382,11 @@ fn prove_cleanup<S: BuildHasher>(
         &plan,
     )
     .map_err(|e| error(Some(e.node), e.message))?;
+    if let Some(slot) = slot
+        && let std::borrow::Cow::Owned(storage) = init.storage
+    {
+        *slot = Some(structure::Proved { order, storage });
+    }
     // Keep no event tape when no runtime cleanup remains, after proving liveness.
     Ok(plan.cleanups.iter().any(|c| c.node.is_some()).then(|| {
         let mut plan = plan;

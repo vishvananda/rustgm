@@ -95,7 +95,9 @@ fn unavailable_temporary_uses_and_missing_cleanup_are_rejected() -> Result<(), S
             location,
             end: End::Temporaries { start: 0, end: 1 },
         });
-    let error = borrow::storage::check(body)
+    // The injected endpoint is not in builder construction order, so this
+    // hand-edited metadata goes through the validating entry point.
+    let error = borrow::storage::validate(body)
         .err()
         .ok_or("unavailable borrow accepted")?;
     assert_eq!(
@@ -111,7 +113,7 @@ fn unavailable_temporary_uses_and_missing_cleanup_are_rejected() -> Result<(), S
     for temporary in &mut body.temporaries {
         temporary.exits_before = 0;
     }
-    let error = borrow::storage::check(body)
+    let error = borrow::storage::validate(body)
         .err()
         .ok_or("missing cleanup accepted")?;
     assert_eq!(error.message, "temporary storage remains live at return");
@@ -231,7 +233,7 @@ fn invalid_scope_and_edge_metadata_is_diagnosed() -> Result<(), String> {
             }),
         });
     assert_eq!(
-        borrow::storage::check(body)
+        borrow::storage::validate(body)
             .err()
             .ok_or("invalid edge accepted")?
             .message,
@@ -243,7 +245,7 @@ fn invalid_scope_and_edge_metadata_is_diagnosed() -> Result<(), String> {
         outer: Some(scopes::Id(u32::MAX)),
     });
     assert_eq!(
-        borrow::storage::check(body)
+        borrow::storage::validate(body)
             .err()
             .ok_or("invalid range accepted")?
             .message,
@@ -256,7 +258,7 @@ fn invalid_scope_and_edge_metadata_is_diagnosed() -> Result<(), String> {
     let body = final_function(&mut program)?;
     body.temporaries[0].lifetime = scopes::Lifetime::Scope(scopes::Id(u32::MAX));
     assert_eq!(
-        borrow::storage::check(body)
+        borrow::storage::validate(body)
             .err()
             .ok_or("invalid promoted scope accepted")?
             .message,
@@ -284,7 +286,7 @@ fn a_loop_cannot_reenter_a_still_live_temporary_instance() -> Result<(), String>
         temporary.exits_before = 0;
     }
     assert_eq!(
-        borrow::storage::check(body)
+        borrow::storage::validate(body)
             .err()
             .ok_or("reentry accepted")?
             .message,

@@ -2,6 +2,7 @@
 use crate::body::ir::{BlockId, Body, Terminator};
 
 /// Reachable blocks of a CFG whose successors are all valid identities.
+#[derive(Clone, PartialEq, Eq)]
 pub(crate) struct Order {
     /// Reachable blocks in reverse postorder.
     pub blocks: Vec<usize>,

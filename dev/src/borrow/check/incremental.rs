@@ -41,6 +41,8 @@ impl Proved {
 pub(crate) struct Verifier {
     components: LiveRegions,
     drops: Option<crate::types::destruction::regions::Regions>,
+    /// Substitution-invariant facts shared by instances of one template.
+    structures: super::structure::Cache,
 }
 #[derive(Clone, Copy)]
 enum Original<'a> {
@@ -143,6 +145,7 @@ impl Verifier {
     pub(crate) fn new(methods: Option<&[drops::Method]>) -> Result<Self, &'static str> {
         Ok(Self {
             components: LiveRegions::default(),
+            structures: super::structure::Cache::default(),
             drops: methods
                 .map(|methods| {
                     crate::types::destruction::regions::Regions::new(methods.iter().map(|m| m.item))
@@ -208,6 +211,19 @@ impl Verifier {
             return Err(error("instance proof belongs to another body"));
         }
         original.validate_instance(environment.types, templates, &body)?;
+        // A validated ordinary instance clones its checked template's CFG.
+        let family = (body.instance.is_some() && matches!(original, Original::Ordinary))
+            .then(|| super::structure::promoted(&body));
+        let found = match &family {
+            Some(promoted) => self.structures.find(&body, promoted)?,
+            None => super::structure::Found::First,
+        };
+        let mut proved = None;
+        let structure = match found {
+            super::structure::Found::Shared(shared) => super::structure::Use::Shared(shared),
+            super::structure::Found::Keep => super::structure::Use::Keep(&mut proved),
+            super::structure::Found::First => super::structure::Use::Own,
+        };
         let plan = match (&mut self.drops, catalog) {
             (Some(drops), Some(catalog)) => super::prove_cleanup(
                 environment,
@@ -216,9 +232,16 @@ impl Verifier {
                 &body,
                 contract,
                 catalog,
+                structure,
             )?,
             (None, None) => {
-                super::prove_body::<false, _>(environment, &mut self.components, &body, contract)?;
+                super::prove_body::<false, _>(
+                    environment,
+                    &mut self.components,
+                    &body,
+                    contract,
+                    structure,
+                )?;
                 None
             }
             _ => {
@@ -227,6 +250,9 @@ impl Verifier {
                 ));
             }
         };
+        if let (Some(promoted), Some(proved)) = (family, proved) {
+            self.structures.insert(&body, promoted, proved);
+        }
         Ok(Proved {
             static_targets: super::static_targets::prepare(contract).map_err(error)?,
             body,
