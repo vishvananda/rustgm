@@ -48,7 +48,7 @@ impl Checker<'_> {
                 head: heads.shape(target).unwrap_or_default(),
             });
         }
-        self.library_implementation_headers(&mut headers);
+        self.library_implementation_headers(&mut headers)?;
         if headers.is_empty() {
             return Ok(());
         }
@@ -76,7 +76,7 @@ impl Checker<'_> {
     fn library_implementation_headers(
         &self,
         headers: &mut Vec<crate::sema::traits::implementations::PendingHeader>,
-    ) {
+    ) -> Result<(), Error> {
         use crate::sema::traits::implementations::PendingHeader;
         if let Some(iteration) = self.report.resolution.builtin_traits.iteration() {
             for declaration in iteration.blankets {
@@ -104,22 +104,27 @@ impl Checker<'_> {
             self.report.resolution.builtin_traits.iteration(),
             self.report.resolution.builtin_traits.collections(),
         ) {
-            for declaration in collections.declarations {
+            for declaration in collections.declarations() {
                 if let Some(trait_) = declaration.kind.trait_() {
                     headers.push(PendingHeader {
                         owner: declaration.definition,
                         item: crate::types::ItemId(iteration.get(trait_).definition.0).into(),
-                        head: Some(
-                            if declaration.kind
-                                == crate::support::iteration::Collection::SliceIterator
-                            {
-                                crate::sema::traits::heads::Head::Nominal(crate::types::ItemId(
-                                    collections.iterator.0,
-                                ))
-                            } else {
-                                crate::sema::traits::heads::Head::Reference(false)
-                            },
-                        ),
+                        head: Some(if declaration.kind.next() {
+                            crate::sema::traits::heads::Head::Nominal(crate::types::ItemId(
+                                collections
+                                    .iterator(declaration.kind)
+                                    .ok_or_else(|| {
+                                        Error::at(
+                                            collections.origin.file,
+                                            0,
+                                            "missing canonical collection iterator",
+                                        )
+                                    })?
+                                    .0,
+                            ))
+                        } else {
+                            crate::sema::traits::heads::Head::Reference(declaration.kind.mutable())
+                        }),
                     });
                 }
             }
@@ -137,6 +142,7 @@ impl Checker<'_> {
                 )),
             });
         }
+        Ok(())
     }
 
     pub(super) fn impl_parameters(

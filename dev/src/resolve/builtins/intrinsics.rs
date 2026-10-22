@@ -81,7 +81,7 @@ impl Resolver<'_> {
         }
         Ok(())
     }
-    fn prepare_intrinsic(
+    pub(in crate::resolve::builtins) fn prepare_intrinsic(
         &mut self,
         c: Context,
         node: NodeId,

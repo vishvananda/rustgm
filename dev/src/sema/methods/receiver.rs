@@ -150,8 +150,13 @@ fn library_method(
                 .resolution
                 .builtin_traits
                 .collections()
-                .map(|c| {
-                    c.declarations[crate::support::iteration::Collection::SliceMethod as usize]
+                .and_then(|c| {
+                    c.declarations()
+                        .find(|d| {
+                            d.kind.method()
+                                && report.resolution.definitions[d.method.0 as usize].name == name
+                        })
+                        .copied()
                 })
                 .filter(|c| report.resolution.definitions[c.method.0 as usize].name == name)
                 .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
@@ -303,17 +308,25 @@ impl Search<'_> {
             selection::account_probe(self.facts, 1)?;
             return Ok(true);
         }
-        if !super::slices::receiver(self.facts, self.source, term)? {
-            return Ok(false);
-        }
-        if let Some(declaration) = self
+        let declaration = self
             .report
             .resolution
             .builtin_traits
             .collections()
-            .map(|c| c.declarations[crate::support::iteration::Collection::SliceMethod as usize])
-            .filter(|d| d.method == method)
-        {
+            .and_then(|c| {
+                c.declarations()
+                    .find(|d| d.kind.method() && d.method == method)
+                    .copied()
+            });
+        if !super::slices::receiver_permission(
+            self.facts,
+            self.source,
+            term,
+            declaration.is_some_and(|d| d.kind.mutable()),
+        )? {
+            return Ok(false);
+        }
+        if let Some(declaration) = declaration {
             super::super::declarations::iteration::collections::prepare(
                 self.report,
                 self.facts,

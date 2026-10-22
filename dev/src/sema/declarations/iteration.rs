@@ -27,16 +27,30 @@ impl Checker<'_> {
             self.iteration_contract(canonical, declaration)?;
         }
         self.prepare_iteration_blankets(canonical)?;
-        if self.report.resolution.builtin_traits.named_slice_iterator() {
-            let owner = self
-                .report
-                .resolution
-                .builtin_traits
-                .collections()
-                .ok_or_else(|| self.error(canonical.origin, "missing named iterator catalog"))?
-                .declarations[crate::support::iteration::Collection::SliceIterator as usize]
-                .definition;
-            self.activate_collection(owner)?;
+        for (named, kind) in [
+            (
+                self.report.resolution.builtin_traits.named_slice_iterator(),
+                crate::support::iteration::Collection::SliceIterator,
+            ),
+            (
+                self.report
+                    .resolution
+                    .builtin_traits
+                    .named_mutable_slice_iterator(),
+                crate::support::iteration::Collection::SliceMutableIterator,
+            ),
+        ] {
+            if named {
+                let owner = self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .collections()
+                    .and_then(|c| c.declaration(kind))
+                    .ok_or_else(|| self.error(canonical.origin, "missing named iterator catalog"))?
+                    .definition;
+                self.activate_collection(owner)?;
+            }
         }
         Ok(())
     }

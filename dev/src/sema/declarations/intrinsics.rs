@@ -16,7 +16,15 @@ use crate::{
 impl Checker<'_> {
     pub(super) fn prepare_intrinsics(&mut self) -> Result<(), Error> {
         for kind in Intrinsic::ALL {
-            if kind.is_pointer_offset() {
+            let latent_read = kind == Intrinsic::Read
+                && self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .collections()
+                    .and_then(|c| c.mutable.as_deref())
+                    .is_some_and(|m| m.read_latent);
+            if kind.is_pointer_offset() || latent_read {
                 continue;
             }
             if let Some(declaration) = self.report.resolution.intrinsics.get(kind).copied() {
@@ -25,6 +33,23 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    fn intrinsic_signature(&mut self, declaration: BuiltinIntrinsic) -> Result<(), Error> {
+        if declaration.kind.is_atomic() {
+            return self.atomic_signature(declaration);
+        }
+        super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .intrinsic_signature(declaration)?;
+        self.states[declaration.definition.0 as usize] = State::Complete;
+        if let Some(parameter) = declaration.parameter {
+            self.states[parameter.0 as usize] = State::Complete;
+        }
+        Ok(())
+    }
+}
+impl super::comparisons::LibraryContracts<'_> {
     fn intrinsic_parameter(
         &mut self,
         declaration: BuiltinIntrinsic,
@@ -49,7 +74,6 @@ impl Checker<'_> {
             .map_err(|e| self.error(origin, e))?;
         let subject = self.intern(origin, Type::Parameter(formal))?;
         self.facts.definitions[parameter.0 as usize] = Some(subject);
-        self.states[parameter.0 as usize] = State::Complete;
         self.facts.generics.parameters.insert(
             definition,
             vec![Parameter {
@@ -65,9 +89,17 @@ impl Checker<'_> {
             .map_err(|e| self.error(origin, e))?;
         Ok((formal, subject))
     }
-    fn intrinsic_signature(&mut self, declaration: BuiltinIntrinsic) -> Result<(), Error> {
-        if declaration.kind.is_atomic() {
-            return self.atomic_signature(declaration);
+    pub(in crate::sema::declarations) fn intrinsic_signature(
+        &mut self,
+        declaration: BuiltinIntrinsic,
+    ) -> Result<(), Error> {
+        self.validate_pointer_intrinsic(declaration)?;
+        if self
+            .facts
+            .function_indices
+            .contains_key(&declaration.definition)
+        {
+            return Ok(());
         }
         let (formal, subject) = self.intrinsic_parameter(declaration)?;
         let BuiltinIntrinsic {
@@ -139,7 +171,6 @@ impl Checker<'_> {
             },
         )?;
         self.facts.definitions[definition.0 as usize] = Some(callable);
-        self.states[definition.0 as usize] = State::Complete;
         self.facts
             .function_indices
             .insert(definition, self.facts.functions.len());
@@ -150,6 +181,22 @@ impl Checker<'_> {
             parameters: List { start: 0, end: 0 },
             body: None,
         });
+        Ok(())
+    }
+    fn validate_pointer_intrinsic(&self, declaration: BuiltinIntrinsic) -> Result<(), Error> {
+        let registered = self.report.resolution.intrinsics.get(declaration.kind);
+        if registered.is_none_or(|r| {
+            r.definition != declaration.definition
+                || r.parameter != declaration.parameter
+                || r.owner != declaration.owner
+        }) || declaration.kind.is_atomic()
+            || declaration.kind.is_pointer_offset()
+        {
+            return Err(self.error(
+                declaration.origin,
+                "unregistered pointer intrinsic signature",
+            ));
+        }
         Ok(())
     }
 }

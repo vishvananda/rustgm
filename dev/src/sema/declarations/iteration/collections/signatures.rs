@@ -1,7 +1,7 @@
 //! Each collection entry uses the same checked callable publication as source impls.
 use super::{
-    Argument, BuiltinCollectionDeclaration, BuiltinIteration, Collection, Error, GenericArgs,
-    ItemId, RegionId, Type, TypeId,
+    Argument, BuiltinCollectionDeclaration, BuiltinIteration, Error, GenericArgs, ItemId, RegionId,
+    Type, TypeId,
 };
 impl super::super::super::comparisons::LibraryContracts<'_> {
     pub(super) fn collection_method(
@@ -13,16 +13,13 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
         iterator: TypeId,
     ) -> Result<TypeId, Error> {
         let source = iteration.origin;
-        let next = declaration.kind == Collection::SliceIterator;
-        let receiver = if matches!(
-            declaration.kind,
-            Collection::SliceIterator | Collection::SliceMethod
-        ) {
+        let next = declaration.kind.next();
+        let receiver = if declaration.kind.next() || declaration.kind.method() {
             self.intern(
                 source,
                 Type::Reference {
                     referent: subject,
-                    mutable: next,
+                    mutable: next || declaration.kind.mutable(),
                     region: RegionId::bound(0, u16::from(next))
                         .map_err(|e| self.error(source, e))?,
                 },
@@ -91,7 +88,7 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
             early: Vec::new(),
             late: if next {
                 vec![1]
-            } else if declaration.kind == Collection::SliceMethod {
+            } else if declaration.kind.method() {
                 vec![0]
             } else {
                 Vec::new()

@@ -16,26 +16,7 @@ pub(super) fn build(
     body: &mut Body,
 ) -> Result<(), &'static str> {
     let (stored, slice, reference, element) = snapshot(facts, original, body)?;
-    let length = value(
-        body,
-        TypeId::primitive(Primitive::Usize),
-        Rvalue::Length(slice),
-    )?;
-    body.scalars.push(crate::sema::model::Scalar::Integer(0));
-    let zero = value(
-        body,
-        TypeId::primitive(Primitive::Usize),
-        Rvalue::Scalar(ScalarId(0)),
-    )?;
-    let empty = value(
-        body,
-        TypeId::primitive(Primitive::Bool),
-        Rvalue::Binary {
-            operator: Punctuation::EqualEqual,
-            left: length,
-            right: zero,
-        },
-    )?;
+    let empty = empty_test(body, slice)?;
     let end = u32::try_from(body.statements.len()).map_err(|_| "too many next statements")?;
     body.blocks.push(Block {
         start: 0,
@@ -64,6 +45,11 @@ pub(super) fn build(
     )?;
     crate::body::build::finish_factory_block(body, end, returned)?;
     let start = u32::try_from(body.statements.len()).map_err(|_| "too many next statements")?;
+    let slice = if original.declaration.kind.mutable() {
+        super::mutable_next::snapshot(facts, original, body, stored, reference)?
+    } else {
+        slice
+    };
     let first = projection(body, slice, element, ProjectionKind::ConstantIndex(0))?;
     let first = value(
         body,
@@ -97,13 +83,18 @@ pub(super) fn build(
             value: rest,
         },
     );
+    let argument_start =
+        u32::try_from(body.arguments.len()).map_err(|_| "too many next arguments")?;
     body.arguments.push(first);
     let returned = value(
         body,
         body.result,
         Rvalue::Aggregate {
             variant: Some(some),
-            fields: ValueList { start: 0, end: 1 },
+            fields: ValueList {
+                start: argument_start,
+                end: argument_start + 1,
+            },
         },
     )?;
     crate::body::build::finish_factory_block(body, start, returned)
@@ -131,16 +122,20 @@ fn snapshot(
         reference,
         ProjectionKind::Field(Selection::Nominal(field)),
     )?;
-    let copied = value(body, reference, Rvalue::Read(stored))?;
-    let snapshot = local(body, reference, LocalKind::Binding, false)?;
-    statement(
-        body,
-        Action::Store {
-            place: Place::Local(snapshot),
-            value: copied,
-        },
-    );
-    let slice = dereference(facts, body, Place::Local(snapshot))?;
+    let slice = if original.declaration.kind.mutable() {
+        dereference(facts, body, stored)?
+    } else {
+        let copied = value(body, reference, Rvalue::Read(stored))?;
+        let snapshot = local(body, reference, LocalKind::Binding, false)?;
+        statement(
+            body,
+            Action::Store {
+                place: Place::Local(snapshot),
+                value: copied,
+            },
+        );
+        dereference(facts, body, Place::Local(snapshot))?
+    };
     let Some(Kind::Slice(element)) = body.place_type(slice).and_then(|t| facts.types.kind(t))
     else {
         return Err("next source is not slice");
@@ -149,4 +144,27 @@ fn snapshot(
         return Err("next source differs from element schema");
     }
     Ok((stored, slice, reference, element))
+}
+
+fn empty_test(body: &mut Body, slice: Place) -> Result<crate::body::ir::ValueId, &'static str> {
+    let length = value(
+        body,
+        TypeId::primitive(Primitive::Usize),
+        Rvalue::Length(slice),
+    )?;
+    body.scalars.push(crate::sema::model::Scalar::Integer(0));
+    let zero = value(
+        body,
+        TypeId::primitive(Primitive::Usize),
+        Rvalue::Scalar(ScalarId(0)),
+    )?;
+    value(
+        body,
+        TypeId::primitive(Primitive::Bool),
+        Rvalue::Binary {
+            operator: Punctuation::EqualEqual,
+            left: length,
+            right: zero,
+        },
+    )
 }

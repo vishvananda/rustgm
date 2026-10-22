@@ -44,15 +44,6 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
     ) -> Result<Option<super::Requirement>, Error> {
-        if self
-            .facts
-            .iteration
-            .as_deref()
-            .and_then(|r| r.collections.as_deref())
-            .is_some_and(|r| r.status == crate::sema::iteration::collections::Status::Complete)
-        {
-            return Ok(None);
-        }
         let crate::syntax::ast::Kind::For { iterator, .. } = self.kind(node) else {
             return Err(self.error(node, "invalid iteration readiness continuation"));
         };
@@ -64,6 +55,22 @@ impl Checker<'_> {
             subject,
         )
         .map_err(|e| self.error(node, e.to_string()))?;
+        let owner = owner.filter(|owner| {
+            let mutable = self
+                .report
+                .resolution
+                .builtin_traits
+                .collections()
+                .and_then(|c| c.declarations().find(|d| d.definition == *owner))
+                .is_some_and(|d| d.kind.mutable());
+            !self
+                .facts
+                .iteration
+                .as_deref()
+                .and_then(|r| r.collections.as_deref())
+                .and_then(|r| r.group(mutable))
+                .is_some_and(|g| g.status == crate::sema::iteration::collections::Status::Complete)
+        });
         Ok(owner.map(super::Requirement::ImplHeader))
     }
 

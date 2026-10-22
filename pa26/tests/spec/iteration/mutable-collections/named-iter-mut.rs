@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn first<'a,T>(s:&'a mut[T])->core::slice::IterMut<'a,T>{s.iter_mut()}fn main(){let mut a=[1u8];let mut i=first(&mut a);match i.next(){Some(x)=>*x=9,None=>check(false)}check(a[0]==9);}

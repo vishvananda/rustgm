@@ -163,3 +163,6 @@ mod shared_iterators;
 
 #[path = "language_operators/iterator_cloning.rs"]
 mod iterator_cloning;
+
+#[path = "language_operators/mutable_collections.rs"]
+mod mutable_collections;

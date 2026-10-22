@@ -386,6 +386,13 @@ impl Checker<'_> {
             || self.lazy_library_method(id)
             || iteration::collections::owns(self.report, id)
             || cloning::owns(self.report, id)
+            || self
+                .report
+                .resolution
+                .builtin_traits
+                .collections()
+                .and_then(|c| c.mutable.as_deref())
+                .is_some_and(|m| m.read_latent && m.read.definition == id)
     }
 
     #[expect(

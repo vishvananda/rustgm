@@ -140,8 +140,12 @@ impl Checker<'_> {
             .and_then(|r| r.collections.as_deref())
             .and_then(|r| {
                 let prefix = r.prefixes.get(&self.key(node)).copied()?;
-                let original =
-                    r.originals[crate::support::iteration::Collection::SliceMethod as usize]?;
+                let crate::resolve::model::Target::Definition(method) =
+                    self.facts.node(self.key(node))?.reference?
+                else {
+                    return None;
+                };
+                let original = r.original(method).filter(|o| o.declaration.kind.method())?;
                 let crate::types::Kind::Parameter(parameter) =
                     self.facts.types.kind(original.parameter)?
                 else {

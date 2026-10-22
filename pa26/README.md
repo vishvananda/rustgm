@@ -340,7 +340,13 @@ The shared checkpoint's Clone marker control is separate from executable clone.
 Canonical `Iter::clone` now has an exact selected implementation and an ordinarily
 checked generic original, including non-Clone elements and independent cursor
 state. `tests/iterator-clone-outcomes.json` and `docs/pa26-iterator-clone.md`
-record actual execution, lookup and lifetime controls. Concrete derived/reference
-Clone targets, mutable/owned collection and range iteration, further iterator
-methods, question-mark, additional derives and formatting remain required; PA26
-stays planned.
+record actual execution, lookup and lifetime controls.
+Canonical mutable slice/array iteration and `IterMut` now use checked originals
+with independent source/item and next-receiver lifetimes. The nonempty next
+kernel restores the disjoint remainder before returning its mutable item;
+empty/ZST and non-Copy elements require no element Copy/Clone promise.
+`tests/mutable-iteration-outcomes.json` and `docs/pa26-mutable-iteration.md`
+record source/native, identity, split-loan and cold-demand controls. Concrete
+derived/reference Clone targets, owned collection and range iteration, further
+iterator methods, question-mark, additional derives and formatting remain
+required; PA26 stays planned.

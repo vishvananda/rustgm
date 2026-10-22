@@ -48,6 +48,7 @@ pub(super) struct Registry {
     pub(super) collections: Option<Box<super::collections::Collections>>,
     collection_origin: Option<(ModuleId, NodeKey)>,
     named_iterator: bool,
+    named_mutable_iterator: bool,
 }
 impl Traits {
     pub(in crate::resolve) fn note_iteration(&mut self, module: ModuleId, source: NodeKey) {
@@ -63,13 +64,30 @@ impl Traits {
             .collection_origin
             .get_or_insert((module, source));
     }
-    pub(in crate::resolve) fn name_slice_iterator(&mut self, module: ModuleId, source: NodeKey) {
+    pub(in crate::resolve) fn name_slice_iterator(
+        &mut self,
+        module: ModuleId,
+        source: NodeKey,
+        kind: LibraryType,
+    ) {
         self.note_collection(module, source);
-        self.iteration.get_or_insert_default().named_iterator = true;
+        if kind == LibraryType::SliceIterMut {
+            self.iteration
+                .get_or_insert_default()
+                .named_mutable_iterator = true;
+        } else {
+            self.iteration.get_or_insert_default().named_iterator = true;
+        }
     }
     #[must_use]
     pub fn named_slice_iterator(&self) -> bool {
         self.iteration.as_deref().is_some_and(|r| r.named_iterator)
+    }
+    #[must_use]
+    pub fn named_mutable_slice_iterator(&self) -> bool {
+        self.iteration
+            .as_deref()
+            .is_some_and(|r| r.named_mutable_iterator)
     }
     pub(super) fn collection_origin(&self) -> Option<(ModuleId, NodeKey)> {
         self.iteration.as_deref()?.collection_origin

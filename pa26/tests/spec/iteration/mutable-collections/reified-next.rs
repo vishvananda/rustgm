@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn first<'a>(s:&'a mut[u8])->Option<&'a mut u8>{let mut i=s.iter_mut();let next:for<'b>fn(&'b mut core::slice::IterMut<'a,u8>)->Option<&'a mut u8>=core::iter::Iterator::next;next(&mut i)}fn main(){let mut a=[1u8];match first(&mut a){Some(x)=>*x=9,None=>check(false)}check(a[0]==9);}

@@ -10,15 +10,17 @@ use crate::{
 };
 pub(super) struct Heads {
     iterator: ItemId,
-    entries: [(DefId, Collection); 3],
+    entries: Vec<(DefId, Collection)>,
+    mutable_iterator: Option<ItemId>,
     cloning: Option<DefId>,
 }
 #[derive(Clone, Copy)]
 enum Shape {
-    Slice,
-    Array,
-    Iterator,
+    Slice(bool),
+    Array(bool),
+    Iterator(bool),
     Other,
+    UnknownReference(bool),
     Unknown,
 }
 impl Pending {
@@ -59,16 +61,30 @@ impl Pending {
         if nominal.definition != canonical.iterator {
             return Err("collection scheduling iterator differs from canonical nominal");
         }
+        if let Some(mutable) = canonical.mutable.as_deref()
+            && report
+                .resolution
+                .library_types
+                .get(crate::support::library_types::LibraryType::SliceIterMut)
+                .is_none_or(|n| n.definition != mutable.iterator)
+        {
+            return Err("mutable collection iterator differs from canonical nominal");
+        }
         let mut entries = Vec::new();
-        for declaration in canonical.declarations {
+        for declaration in canonical.declarations() {
             let Some(trait_) = declaration.kind.trait_() else {
                 continue;
             };
             let expected = Identity::User(ItemId(iteration.get(trait_).definition.0));
             let head = if trait_ == Trait::Iterator {
-                Head::Nominal(ItemId(canonical.iterator.0))
+                Head::Nominal(ItemId(
+                    canonical
+                        .iterator(declaration.kind)
+                        .ok_or("missing canonical collection iterator")?
+                        .0,
+                ))
             } else {
-                Head::Reference(false)
+                Head::Reference(declaration.kind.mutable())
             };
             if self.owners.get(&declaration.definition) != Some(&(expected, Some(head)))
                 || report
@@ -81,9 +97,6 @@ impl Pending {
             }
             entries.push((declaration.definition, declaration.kind));
         }
-        let entries = entries
-            .try_into()
-            .map_err(|_| "invalid collection scheduling rule count")?;
         let cloning = report.resolution.builtin_traits.cloning().and_then(|c| {
             c.implementation
                 .map(|implementation| (c.definition, implementation))
@@ -114,6 +127,7 @@ impl Pending {
         self.collections = Some(Box::new(Heads {
             iterator: ItemId(canonical.iterator.0),
             entries,
+            mutable_iterator: canonical.mutable.as_deref().map(|m| ItemId(m.iterator.0)),
             cloning,
         }));
         Ok(())
@@ -125,8 +139,8 @@ impl Pending {
         subject: TermId,
         candidates: &mut Vec<DefId>,
     ) -> Result<(), Error> {
-        self.filter_collection_shapes(context, candidates, |context, iterator| {
-            classify(store, context, subject, iterator)
+        self.filter_collection_shapes(context, candidates, |context, iterator, mutable| {
+            classify(store, context, subject, iterator, mutable)
         })
     }
     pub(in super::super) fn filter_known_collections(
@@ -136,29 +150,29 @@ impl Pending {
         subject: crate::types::TypeId,
         candidates: &mut Vec<DefId>,
     ) -> Result<(), Error> {
-        self.filter_collection_shapes(context, candidates, |context, iterator| {
+        self.filter_collection_shapes(context, candidates, |context, iterator, mutable| {
             context.account_work(2)?;
             let root = store.kind(subject).ok_or(Error::InvalidIdentity)?;
-            let child = if let crate::types::Kind::Reference {
-                mutable: false,
-                referent,
-                ..
-            } = root
-            {
+            let child = if let crate::types::Kind::Reference { referent, .. } = root {
                 Some(Head::canonical(
                     store.kind(referent).ok_or(Error::InvalidIdentity)?,
                 ))
             } else {
                 None
             };
-            Ok(classify_heads(Some(Head::canonical(root)), child, iterator))
+            Ok(classify_heads(
+                Some(Head::canonical(root)),
+                child,
+                iterator,
+                mutable,
+            ))
         })
     }
     fn filter_collection_shapes(
         &self,
         context: &mut Context,
         candidates: &mut Vec<DefId>,
-        mut classify: impl FnMut(&mut Context, ItemId) -> Result<Shape, Error>,
+        mut classify: impl FnMut(&mut Context, ItemId, Option<ItemId>) -> Result<Shape, Error>,
     ) -> Result<(), Error> {
         let Some(rules) = self.collections.as_deref() else {
             return Ok(());
@@ -178,17 +192,22 @@ impl Pending {
                 let actual = if let Some(shape) = shape {
                     shape
                 } else {
-                    let actual = classify(context, rules.iterator)?;
+                    let actual = classify(context, rules.iterator, rules.mutable_iterator)?;
                     shape = Some(actual);
                     actual
                 };
-                matches!(
-                    (kind, actual),
-                    (Collection::SharedSlice, Shape::Slice)
-                        | (Collection::SharedArray, Shape::Array)
-                        | (Collection::SliceIterator, Shape::Iterator)
-                        | (_, Shape::Unknown)
-                )
+                match actual {
+                    Shape::Slice(mutable) => {
+                        kind.mutable() == mutable && !kind.array() && !kind.next() && !kind.method()
+                    }
+                    Shape::Array(mutable) => kind.mutable() == mutable && kind.array(),
+                    Shape::Iterator(mutable) => kind.mutable() == mutable && kind.next(),
+                    Shape::UnknownReference(mutable) => {
+                        kind.mutable() == mutable && !kind.next() && !kind.method()
+                    }
+                    Shape::Unknown => true,
+                    Shape::Other => false,
+                }
             } else {
                 true
             };
@@ -215,23 +234,30 @@ fn classify(
     context: &mut Context,
     term: TermId,
     iterator: ItemId,
+    mutable: Option<ItemId>,
 ) -> Result<Shape, Error> {
     let root = head(store, context, term)?.map(Head::inferred);
-    let child = if matches!(root, Some(Head::Reference(false))) {
+    let child = if matches!(root, Some(Head::Reference(_))) {
         let child = context.child(store, term, 0)?;
         head(store, context, child)?.map(Head::inferred)
     } else {
         None
     };
-    Ok(classify_heads(root, child, iterator))
+    Ok(classify_heads(root, child, iterator, mutable))
 }
-fn classify_heads(root: Option<Head>, child: Option<Head>, iterator: ItemId) -> Shape {
+fn classify_heads(
+    root: Option<Head>,
+    child: Option<Head>,
+    iterator: ItemId,
+    mutable: Option<ItemId>,
+) -> Shape {
     match root {
-        Some(Head::Nominal(item)) if item == iterator => Shape::Iterator,
-        Some(Head::Reference(false)) => match child {
-            Some(Head::Slice) => Shape::Slice,
-            Some(Head::Array) => Shape::Array,
-            None | Some(Head::Projection(_)) => Shape::Unknown,
+        Some(Head::Nominal(item)) if item == iterator => Shape::Iterator(false),
+        Some(Head::Nominal(item)) if mutable == Some(item) => Shape::Iterator(true),
+        Some(Head::Reference(mutable)) => match child {
+            Some(Head::Slice) => Shape::Slice(mutable),
+            Some(Head::Array) => Shape::Array(mutable),
+            None | Some(Head::Projection(_)) => Shape::UnknownReference(mutable),
             _ => Shape::Other,
         },
         None | Some(Head::Projection(_)) => Shape::Unknown,

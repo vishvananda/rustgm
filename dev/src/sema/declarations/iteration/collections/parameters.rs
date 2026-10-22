@@ -56,7 +56,7 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
             Type::Reference {
                 referent: parameter,
                 region: lifetime,
-                mutable: false,
+                mutable: declaration.kind.mutable(),
             },
         )?;
         let iterator_id = self
@@ -65,7 +65,8 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
             .builtin_traits
             .collections()
             .ok_or_else(|| self.error(source, "missing collection identities"))?
-            .iterator;
+            .iterator(declaration.kind)
+            .ok_or_else(|| self.error(source, "missing collection iterator identity"))?;
         let arguments = self
             .facts
             .types
@@ -73,17 +74,17 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
             .map_err(|e| self.error(source, e))?;
         let iterator = self.intern(source, Type::Adt(ItemId(iterator_id.0), arguments))?;
         let subject = match declaration.kind {
-            Collection::SliceMethod => slice,
-            Collection::SliceIterator => iterator,
-            Collection::SharedSlice => self.intern(
+            Collection::SliceMethod | Collection::SliceMutableMethod => slice,
+            Collection::SliceIterator | Collection::SliceMutableIterator => iterator,
+            Collection::SharedSlice | Collection::MutableSlice => self.intern(
                 source,
                 Type::Reference {
                     referent: slice,
                     region: lifetime,
-                    mutable: false,
+                    mutable: declaration.kind.mutable(),
                 },
             )?,
-            Collection::SharedArray => {
+            Collection::SharedArray | Collection::MutableArray => {
                 let array =
                     self.collection_array(iteration, declaration, parameter, &mut parameters)?;
                 self.intern(
@@ -91,7 +92,7 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
                     Type::Reference {
                         referent: array,
                         region: lifetime,
-                        mutable: false,
+                        mutable: declaration.kind.mutable(),
                     },
                 )?
             }

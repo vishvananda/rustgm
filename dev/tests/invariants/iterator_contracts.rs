@@ -269,3 +269,6 @@ fn iterator_layout_keeps_ordinary_records_compact() {
 
 #[path = "clone_contracts.rs"]
 mod cloning;
+
+#[path = "mutable_iterator_contracts.rs"]
+mod mutable_collections;

@@ -16,7 +16,7 @@ use crate::{
 };
 pub use callables::Callable;
 pub use cloning::{Declaration as Cloning, Implementation as CloneImplementation};
-pub use collections::{CollectionDeclaration, Collections};
+pub use collections::{CollectionDeclaration, Collections, MutableCollections};
 pub use comparisons::{Equality, Members as ComparisonMembers};
 pub use iteration::{Blanket as IterationBlanket, Declaration as IterationDeclaration, Iteration};
 pub use language::{Language, Output as LanguageOutput};

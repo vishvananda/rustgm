@@ -24,8 +24,14 @@ mod collection_tests;
 impl Checker<'_> {
     pub(super) fn prepare_library_types(&mut self) -> Result<(), Error> {
         for kind in LibraryType::ALL {
-            if kind == LibraryType::SliceIter
-                && !self.report.resolution.builtin_traits.named_slice_iterator()
+            if (kind == LibraryType::SliceIter
+                && !self.report.resolution.builtin_traits.named_slice_iterator())
+                || (kind == LibraryType::SliceIterMut
+                    && !self
+                        .report
+                        .resolution
+                        .builtin_traits
+                        .named_mutable_slice_iterator())
             {
                 continue;
             }
@@ -175,8 +181,10 @@ impl super::comparisons::LibraryContracts<'_> {
             .types
             .intern_arguments(&parameters)
             .map_err(|e| self.error(declaration.origin, e))?;
-        let late =
-            declaration.kind == LibraryType::SliceIter && self.facts.types.nominal_sizes_sealed();
+        let late = matches!(
+            declaration.kind,
+            LibraryType::SliceIter | LibraryType::SliceIterMut
+        ) && self.facts.types.nominal_sizes_sealed();
         let owner = if late {
             None
         } else {
@@ -255,9 +263,12 @@ impl super::comparisons::LibraryContracts<'_> {
         let properties = crate::types::copy::Properties {
             copy: !matches!(
                 declaration.kind,
-                LibraryType::AtomicU32 | LibraryType::SliceIter
+                LibraryType::AtomicU32 | LibraryType::SliceIter | LibraryType::SliceIterMut
             ),
-            clone_: declaration.kind != LibraryType::AtomicU32,
+            clone_: !matches!(
+                declaration.kind,
+                LibraryType::AtomicU32 | LibraryType::SliceIterMut
+            ),
         };
         let selected = if declaration.kind == LibraryType::SliceIter {
             crate::types::copy::Declaration::fields_only_clone()
@@ -408,13 +419,19 @@ impl super::comparisons::LibraryContracts<'_> {
                     Some(Argument::Type(ty)) => Ok(*ty),
                     _ => Err(self.error(declaration.origin, "invalid library field parameter")),
                 },
-                LibraryField::SharedSlice => {
+                LibraryField::SharedSlice | LibraryField::MutableSlice => {
                     let [Argument::Lifetime(region), Argument::Type(element)] = types else {
                         return Err(
                             self.error(declaration.origin, "invalid shared slice field schema")
                         );
                     };
-                    if declaration.kind != LibraryType::SliceIter {
+                    if declaration.kind
+                        != if field == LibraryField::MutableSlice {
+                            LibraryType::SliceIterMut
+                        } else {
+                            LibraryType::SliceIter
+                        }
+                    {
                         return Err(self.error(
                             declaration.origin,
                             "shared slice field requires canonical Iter",
@@ -424,7 +441,7 @@ impl super::comparisons::LibraryContracts<'_> {
                     self.intern(
                         declaration.origin,
                         Type::Reference {
-                            mutable: false,
+                            mutable: field == LibraryField::MutableSlice,
                             region: *region,
                             referent: slice,
                         },

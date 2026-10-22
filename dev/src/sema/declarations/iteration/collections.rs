@@ -1,5 +1,6 @@
 //! Collection impls publish real associated types and checked callable schemas.
 pub(in crate::sema::declarations) mod conformance;
+mod mutable;
 mod parameters;
 mod signatures;
 use super::{Checker, DefId, Error, ItemId, State, Type};
@@ -24,7 +25,7 @@ pub(in crate::sema) fn owns(report: &crate::resolve::expansion::Report, owner: D
         .builtin_traits
         .collections()
         .is_some_and(|c| {
-            c.declarations.iter().any(|d| {
+            c.declarations().any(|d| {
                 d.definition == owner
                     || d.method == owner
                     || d.item == Some(owner)
@@ -44,24 +45,49 @@ impl Checker<'_> {
             .builtin_traits
             .collections()
             .ok_or_else(|| Error::at(super::super::FileId(0), 0, "missing collection catalog"))?;
-        let item = ItemId(canonical.iterator.0);
-        if !self.nominal_registered(item) {
-            let definition = self.facts.aggregates.get(item).ok_or_else(|| {
-                Error::at(canonical.origin.file, 0, "missing prepared slice iterator")
+        let kind = canonical
+            .declarations()
+            .find(|d| {
+                d.definition == owner
+                    || d.method == owner
+                    || d.item == Some(owner)
+                    || d.into_iter == Some(owner)
+            })
+            .map(|d| d.kind)
+            .ok_or_else(|| {
+                Error::at(canonical.origin.file, 0, "missing exact collection demand")
             })?;
-            self.register_library_nominal(
-                item,
-                canonical.origin,
-                definition.kind,
-                definition.repr,
-                &[],
-            )?;
+        for library in [
+            crate::support::library_types::LibraryType::SliceIter,
+            crate::support::library_types::LibraryType::SliceIterMut,
+        ] {
+            let Some(nominal) = self.report.resolution.library_types.get(library) else {
+                continue;
+            };
+            let item = ItemId(nominal.definition.0);
+            if !self.nominal_registered(item)
+                && let Some(definition) = self.facts.aggregates.get(item)
+            {
+                let (shape, repr) = (definition.kind, definition.repr);
+                self.register_library_nominal(item, nominal.origin, shape, repr, &[])?;
+            }
+            if self.facts.aggregates.get(item).is_some() {
+                for id in
+                    std::iter::once(nominal.definition).chain(nominal.parameters.iter().copied())
+                {
+                    self.states[id.0 as usize] = State::Complete;
+                }
+            }
         }
         let nominal = self
             .report
             .resolution
             .library_types
-            .get(crate::support::library_types::LibraryType::SliceIter)
+            .get(if kind.mutable() {
+                crate::support::library_types::LibraryType::SliceIterMut
+            } else {
+                crate::support::library_types::LibraryType::SliceIter
+            })
             .ok_or_else(|| {
                 Error::at(
                     canonical.origin.file,
@@ -71,19 +97,24 @@ impl Checker<'_> {
             })?;
         for id in std::iter::once(nominal.definition)
             .chain(nominal.parameters.iter().copied())
-            .chain(canonical.declarations.into_iter().flat_map(|d| {
-                [
-                    Some(d.definition),
-                    Some(d.parameter),
-                    Some(d.method),
-                    d.lifetime,
-                    d.extent,
-                    d.item,
-                    d.into_iter,
-                ]
-                .into_iter()
-                .flatten()
-            }))
+            .chain(
+                canonical
+                    .declarations()
+                    .filter(|d| d.kind.mutable() == kind.mutable())
+                    .flat_map(|d| {
+                        [
+                            Some(d.definition),
+                            Some(d.parameter),
+                            Some(d.method),
+                            d.lifetime,
+                            d.extent,
+                            d.item,
+                            d.into_iter,
+                        ]
+                        .into_iter()
+                        .flatten()
+                    }),
+            )
         {
             self.states[id.0 as usize] = State::Complete;
         }
@@ -127,9 +158,10 @@ pub(in crate::sema) fn prepare(
         .is_none()
     {
         let mut builder = super::super::comparisons::LibraryContracts { report, facts };
-        builder.collection_nominal()?;
+        builder.collection_nominal(crate::support::library_types::LibraryType::SliceIter)?;
         builder.prepare_collection_contracts(canonical)?;
     }
+    mutable::prepare(report, facts, owner)?;
     let late = facts
         .generics
         .implementations
@@ -159,6 +191,7 @@ impl super::super::comparisons::LibraryContracts<'_> {
             origin: canonical.origin,
             iterator: canonical.iterator,
             declarations: canonical.declarations,
+            mutable: None,
         };
         let mut originals = [None; 4];
         for declaration in canonical.declarations {
@@ -167,6 +200,7 @@ impl super::super::comparisons::LibraryContracts<'_> {
         }
         let registry = Registry {
             status: crate::sema::iteration::collections::Status::Prepared,
+            mutable: None,
             canonical,
             originals,
             prefixes: std::collections::HashMap::new(),
@@ -178,8 +212,10 @@ impl super::super::comparisons::LibraryContracts<'_> {
             .collections = Some(Box::new(registry));
         Ok(())
     }
-    fn collection_nominal(&mut self) -> Result<(), Error> {
-        let kind = crate::support::library_types::LibraryType::SliceIter;
+    fn collection_nominal(
+        &mut self,
+        kind: crate::support::library_types::LibraryType,
+    ) -> Result<(), Error> {
         let nominal = self
             .report
             .resolution

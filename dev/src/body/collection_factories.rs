@@ -1,4 +1,5 @@
 //! Collection bodies enter ordinary original-template lifetime and ownership checks.
+mod mutable_next;
 mod next;
 use super::{
     ir::{
@@ -12,7 +13,6 @@ use super::{
 use crate::{
     resolve::{expansion::Report, package::Error},
     sema::{iteration::collections::Original, model::Declarations},
-    support::iteration::Collection,
     types::{Kind, TypeId},
 };
 use std::sync::Arc;
@@ -26,8 +26,9 @@ pub(super) fn append(
         .iteration
         .as_deref()
         .and_then(|r| r.collections.as_deref())
-        .map_or([None; 4], |r| r.originals);
-    for original in originals.into_iter().flatten() {
+        .map(|r| r.all_originals().copied().collect::<Vec<_>>())
+        .unwrap_or_default();
+    for original in originals {
         let source = facts
             .iteration
             .as_deref()
@@ -114,7 +115,7 @@ fn build(
         source.node,
     )));
     local(&mut body, receiver, LocalKind::Parameter(0), false)?;
-    if original.declaration.kind == Collection::SliceIterator {
+    if original.declaration.kind.next() {
         next::build(facts, original, &mut body)?;
     } else {
         let slice = slice_reference(facts, original)?;
@@ -124,12 +125,15 @@ fn build(
         } else {
             let Some(Kind::Reference {
                 referent: array,
-                mutable: false,
+                mutable,
                 ..
             }) = facts.types.kind(receiver)
             else {
                 return Err("invalid collection array receiver");
             };
+            if mutable != original.declaration.kind.mutable() {
+                return Err("collection array receiver has different permission");
+            }
             if !matches!(
                 facts.types.kind(array),
                 Some(Kind::Array { .. } | Kind::ArrayTerm { .. })

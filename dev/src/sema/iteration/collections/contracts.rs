@@ -1,5 +1,5 @@
 //! Factory validation independently reconstructs the canonical role's type contract.
-use super::{Collection, ItemId, Original, TypeId};
+use super::{ItemId, Original, TypeId};
 use crate::{
     sema::model::Declarations,
     types::{
@@ -13,13 +13,16 @@ impl Original {
         let source = RegionId::bound(0, 0)?;
         let Some(Kind::Reference {
             referent,
-            mutable: false,
+            mutable,
             region,
         }) = facts.types.kind(self.item)
         else {
             return Err("collection Item must be a shared reference");
         };
-        if referent != self.parameter || region != source {
+        if referent != self.parameter
+            || region != source
+            || mutable != self.declaration.kind.mutable()
+        {
             return Err("collection Item has a different source lifetime/element");
         }
         let Some(Kind::Adt(_, arguments)) = facts.types.kind(self.iterator) else {
@@ -95,29 +98,29 @@ impl Original {
         self.validate_signature(facts)
     }
     fn validate_subject(self, facts: &Declarations) -> Result<(), &'static str> {
-        if self.declaration.kind == Collection::SliceIterator {
+        if self.declaration.kind.next() {
             if self.subject != self.iterator {
                 return Err("slice iterator impl has different Self");
             }
             return Ok(());
         }
-        let referent = if self.declaration.kind == Collection::SliceMethod {
+        let referent = if self.declaration.kind.method() {
             self.subject
         } else {
             let Some(Kind::Reference {
                 referent,
-                mutable: false,
+                mutable,
                 region,
             }) = facts.types.kind(self.subject)
             else {
                 return Err("collection Self is not a shared reference");
             };
-            if region != RegionId::bound(0, 0)? {
+            if region != RegionId::bound(0, 0)? || mutable != self.declaration.kind.mutable() {
                 return Err("collection Self has a different impl lifetime");
             }
             referent
         };
-        if self.declaration.kind == Collection::SharedArray {
+        if self.declaration.kind.array() {
             let Some(Kind::ArrayTerm { element, length }) = facts.types.kind(referent) else {
                 return Err("array impl lacks its declared extent");
             };
@@ -166,15 +169,13 @@ impl Original {
         else {
             return Err("collection method has a different arity");
         };
-        let next = self.declaration.kind == Collection::SliceIterator;
+        self.validate_lifetimes(facts)?;
+        let next = self.declaration.kind.next();
         if bound_regions != if next { 2 } else { 1 } {
             return Err("collection method has a different lifetime binder");
         }
-        if matches!(
-            self.declaration.kind,
-            Collection::SliceMethod | Collection::SliceIterator
-        ) {
-            if !matches!(facts.types.kind(*receiver),Some(Kind::Reference {referent,mutable,region}) if referent==self.subject&&mutable==next&&region==RegionId::bound(0,u16::from(next))?)
+        if self.declaration.kind.method() || self.declaration.kind.next() {
+            if !matches!(facts.types.kind(*receiver),Some(Kind::Reference {referent,mutable,region}) if referent==self.subject&&mutable==(next || self.declaration.kind.mutable())&&region==RegionId::bound(0,u16::from(next))?)
             {
                 return Err("collection receiver differs from checked Self/permission");
             }
@@ -199,6 +200,31 @@ impl Original {
             }
         } else if result != self.iterator {
             return Err("collection method returns a different iterator");
+        }
+        Ok(())
+    }
+    fn validate_lifetimes(self, facts: &Declarations) -> Result<(), &'static str> {
+        let scheme = facts
+            .lifetimes
+            .functions
+            .get(&self.declaration.method)
+            .ok_or("missing collection lifetime scheme")?;
+        let next = self.declaration.kind.next();
+        let late: &[u16] = if next {
+            &[1]
+        } else if self.declaration.kind.method() {
+            &[0]
+        } else {
+            &[]
+        };
+        if scheme.total != if next { 2 } else { 1 }
+            || scheme.captures != u32::from(self.declaration.lifetime.is_some())
+            || !scheme.early.is_empty()
+            || scheme.late != late
+            || !scheme.bounds.is_empty()
+            || scheme.has_declared_late
+        {
+            return Err("collection lifetime scheme differs from its canonical role");
         }
         Ok(())
     }

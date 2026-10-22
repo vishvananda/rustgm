@@ -78,7 +78,7 @@ impl Resolver<'_> {
         let comparison = matches!(last, "Ordering" | "cmp" | "Less" | "Equal" | "Greater")
             && self.nominal_library_path(c, node, absolute, path, LibraryType::ComparisonOrdering);
         let kind = LibraryType::ALL.into_iter().find(|kind| {
-            if *kind == LibraryType::SliceIter
+            if matches!(*kind, LibraryType::SliceIter | LibraryType::SliceIterMut)
                 && (!path
                     .iter()
                     .any(|name| self.package.names.get(*name) == kind.name())
@@ -95,17 +95,20 @@ impl Resolver<'_> {
             }
 
             kind.name() == last
-                || *kind != LibraryType::SliceIter && kind.module() == last
+                || !matches!(*kind, LibraryType::SliceIter | LibraryType::SliceIterMut)
+                    && kind.module() == last
                 || kind.in_prelude() && kind.variants().iter().any(|(name, _)| *name == last)
                 || path
                     .iter()
                     .any(|name| self.package.names.get(*name) == kind.name())
         });
         if let Some(kind) = kind {
-            if kind == LibraryType::SliceIter {
-                self.facts
-                    .builtin_traits
-                    .name_slice_iterator(c.module, NodeKey { file: c.file, node });
+            if matches!(kind, LibraryType::SliceIter | LibraryType::SliceIterMut) {
+                self.facts.builtin_traits.name_slice_iterator(
+                    c.module,
+                    NodeKey { file: c.file, node },
+                    kind,
+                );
             }
             self.prepare_library_type(c, node, kind)?;
         }
@@ -255,7 +258,8 @@ impl Resolver<'_> {
     ) -> Result<Vec<Variant>, Error> {
         let mut variants = Vec::new();
         for &(name, field) in kind.variants() {
-            let constructor = if kind == LibraryType::SliceIter {
+            let constructor = if matches!(kind, LibraryType::SliceIter | LibraryType::SliceIterMut)
+            {
                 None
             } else {
                 Some(self.library_value(

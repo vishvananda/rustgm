@@ -1,5 +1,5 @@
 //! Both activation routes use ordinary impl, associated and method proof machinery.
-use super::{Checker, Collection, DefId, Error};
+use super::{Checker, DefId, Error};
 use crate::{
     resolve::expansion::Report,
     sema::{
@@ -29,9 +29,7 @@ impl Checker<'_> {
             .as_deref()
             .and_then(|r| r.collections.as_deref())
             .is_some_and(|r| {
-                r.originals
-                    .iter()
-                    .flatten()
+                r.all_originals()
                     .any(|o| o.declaration.definition == owner && o.predicate.is_some())
             })
         {
@@ -53,21 +51,48 @@ pub(super) fn complete(
     else {
         return Ok(());
     };
-    if registry.status == Status::Complete {
+    let mutable = registry.mutable.is_some();
+    complete_group(report, facts, overlap, false)?;
+    if mutable {
+        complete_group(report, facts, overlap, true)?;
+    }
+    Ok(())
+}
+fn complete_group(
+    report: &Report,
+    facts: &mut Declarations,
+    overlap: bool,
+    mutable: bool,
+) -> Result<(), Error> {
+    let registry = facts
+        .iteration
+        .as_deref()
+        .and_then(|r| r.collections.as_deref())
+        .ok_or_else(|| {
+            Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "missing active collection registry",
+            )
+        })?;
+    let group = registry.group(mutable).ok_or_else(|| {
+        Error::at(
+            registry.canonical.origin.file,
+            0,
+            "missing active collection group",
+        )
+    })?;
+    if group.status == Status::Complete {
         return Ok(());
     }
-    let originals = registry.originals;
+    let originals = *group.originals;
     let source = registry.canonical.origin;
     if overlap {
         check_overlap(report, facts, source)?;
     }
     let mut builder = super::super::super::comparisons::LibraryContracts { report, facts };
-    for kind in [
-        Collection::SliceIterator,
-        Collection::SharedSlice,
-        Collection::SharedArray,
-    ] {
-        let original = originals[kind as usize]
+    for index in [2, 0, 1] {
+        let original = originals[index]
             .ok_or_else(|| builder.error(source, "missing prepared collection original"))?;
         if !builder
             .facts
@@ -79,13 +104,21 @@ pub(super) fn complete(
             builder.validate_collection(original)?;
         }
     }
-    builder
+    let registry = builder
         .facts
         .iteration
         .as_deref_mut()
         .and_then(|r| r.collections.as_deref_mut())
-        .ok_or_else(|| Error::at(source.file, 0, "missing collection completion marker"))?
-        .status = Status::Complete;
+        .ok_or_else(|| Error::at(source.file, 0, "missing collection completion marker"))?;
+    if mutable {
+        registry
+            .mutable
+            .as_deref_mut()
+            .ok_or_else(|| Error::at(source.file, 0, "missing mutable collection marker"))?
+            .status = Status::Complete;
+    } else {
+        registry.status = Status::Complete;
+    }
     super::super::super::cloning::prepare_requested(report, facts)
 }
 pub(in crate::sema::declarations) fn check_overlap(

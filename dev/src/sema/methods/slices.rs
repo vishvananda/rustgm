@@ -188,17 +188,18 @@ pub(super) fn applicable(
     }
 }
 
-pub(super) fn receiver(
+pub(super) fn receiver_permission(
     facts: &Declarations,
     context: &mut crate::types::infer::Context,
     actual: crate::types::infer::TermId,
+    mutable: bool,
 ) -> Result<bool, &'static str> {
     use crate::types::infer::Constructor;
     if !matches!(
         context
             .head(&facts.types, actual)
             .map_err(super::selection::inference)?,
-        Some(Constructor::Reference { mutable: false, .. })
+        Some(Constructor::Reference { mutable: actual, .. }) if actual == mutable
     ) {
         return Ok(false);
     }

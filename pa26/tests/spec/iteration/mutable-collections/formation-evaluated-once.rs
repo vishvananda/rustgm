@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn touch<'a>(s:&'a mut[u8;2],n:&mut u8)->&'a mut[u8;2]{*n+=1u8;s}fn main(){let mut a=[1u8,2];let mut n=0u8;for x in touch(&mut a,&mut n){*x+=1u8;}check(n==1&&a[0]==2&&a[1]==3);}

@@ -14,8 +14,14 @@ impl Checker<'_> {
                     .resolution
                     .builtin_traits
                     .collections()
-                    .map(|c| {
-                        c.declarations[crate::support::iteration::Collection::SliceMethod as usize]
+                    .and_then(|c| {
+                        c.declarations()
+                            .find(|d| {
+                                d.kind.method()
+                                    && self.report.resolution.definitions[d.method.0 as usize].name
+                                        == name
+                            })
+                            .copied()
                     })
                     .filter(|c| {
                         self.report.resolution.definitions[c.method.0 as usize].name == name

@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn middle(s:&mut[u8]){match s{[_,xs@..,_]=>{for x in xs{*x+=1u8;}},_=>{}}}fn main(){let mut a=[1u8,2,3,4];middle(&mut a);check(a[0]==1&&a[1]==3&&a[2]==4&&a[3]==4);}

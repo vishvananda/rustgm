@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V(u8);fn visits<T,const N:usize>(s:&mut[T;N])->u8{let mut n=0u8;for _ in s{n+=1u8;}n}fn main(){let mut a=[V(1),V(2),V(3)];check(visits(&mut a)==3);let mut empty:[V;0]=[];check(visits(&mut empty)==0);}

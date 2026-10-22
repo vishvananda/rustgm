@@ -340,8 +340,7 @@ fn library_owner(report: &Report, index: usize) -> bool {
             .collections()
             .is_some_and(|collections| {
                 collections
-                    .declarations
-                    .iter()
+                    .declarations()
                     .any(|d| d.definition.0 as usize == index)
             })
         || report

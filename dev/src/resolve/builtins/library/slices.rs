@@ -42,7 +42,7 @@ impl Resolver<'_> {
         if self.package.names.get(name) == "add" {
             self.prepare_pointer_methods(c, node)?;
         }
-        if self.package.names.get(name) == "iter" {
+        if matches!(self.package.names.get(name), "iter" | "iter_mut") {
             self.facts
                 .builtin_traits
                 .note_collection(c.module, NodeKey { file: c.file, node });

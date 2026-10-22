@@ -48,20 +48,52 @@ pub enum Collection {
     SharedArray,
     SliceIterator,
     SliceMethod,
+    MutableSlice,
+    MutableArray,
+    SliceMutableIterator,
+    SliceMutableMethod,
 }
 impl Collection {
-    pub const ALL: [Self; 4] = [
+    pub const SHARED: [Self; 4] = [
         Self::SharedSlice,
         Self::SharedArray,
         Self::SliceIterator,
         Self::SliceMethod,
     ];
+    pub const MUTABLE: [Self; 4] = [
+        Self::MutableSlice,
+        Self::MutableArray,
+        Self::SliceMutableIterator,
+        Self::SliceMutableMethod,
+    ];
+    #[must_use]
+    pub const fn mutable(self) -> bool {
+        (self as usize) >= 4
+    }
+    #[must_use]
+    pub const fn index(self) -> usize {
+        self as usize % 4
+    }
+    #[must_use]
+    pub const fn next(self) -> bool {
+        matches!(self, Self::SliceIterator | Self::SliceMutableIterator)
+    }
+    #[must_use]
+    pub const fn method(self) -> bool {
+        matches!(self, Self::SliceMethod | Self::SliceMutableMethod)
+    }
+    #[must_use]
+    pub const fn array(self) -> bool {
+        matches!(self, Self::SharedArray | Self::MutableArray)
+    }
     #[must_use]
     pub const fn trait_(self) -> Option<Trait> {
-        match self {
-            Self::SharedSlice | Self::SharedArray => Some(Trait::IntoIterator),
-            Self::SliceIterator => Some(Trait::Iterator),
-            Self::SliceMethod => None,
+        if self.method() {
+            None
+        } else if self.next() {
+            Some(Trait::Iterator)
+        } else {
+            Some(Trait::IntoIterator)
         }
     }
 }

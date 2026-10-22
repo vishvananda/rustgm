@@ -236,27 +236,7 @@ fn latent_collection_headers_keep_unknown_goals_pending_and_closed_goals_disjoin
         .builtin_traits
         .iteration()
         .ok_or("iteration identities")?;
-    let mut registry = Implementations::default();
-    registry.reserve(
-        catalog
-            .declarations
-            .iter()
-            .filter_map(|d| {
-                d.kind.trait_().map(|t| Header {
-                    owner: d.definition,
-                    item: ItemId(iteration.get(t).definition.0).into(),
-                    head: Some(if t == Trait::Iterator {
-                        Head::Nominal(ItemId(catalog.iterator.0))
-                    } else {
-                        Head::Reference(false)
-                    }),
-                })
-            })
-            .collect(),
-    )?;
-    registry.register_collection_heads(&report)?;
-    registry.finish_constant_headers()?;
-    registry.finish_validation()?;
+    let registry = collection_registry(&report)?;
     assert!(registry.constant_headers_ready());
     assert!(!registry.selection_headers_ready());
     let mut store = Store::default();
@@ -269,7 +249,7 @@ fn latent_collection_headers_keep_unknown_goals_pending_and_closed_goals_disjoin
     let mut context = Context::default();
     for (ty, ready) in [
         (shared_scalar, true),
-        (shared_mut, true),
+        (shared_mut, false),
         (shared_slice, false),
     ] {
         let value = implementation(&mut store, 0, item.0, ty)?.predicate;
@@ -284,34 +264,82 @@ fn latent_collection_headers_keep_unknown_goals_pending_and_closed_goals_disjoin
             ready
         );
     }
-    let unknown = context.variable(Domain::Any)?;
-    let term = context.construct(
-        Constructor::Reference {
-            mutable: false,
-            region: RegionId::STATIC,
-        },
-        &[unknown],
-    )?;
-    let pending = registry.pending.as_deref().ok_or("pending")?;
-    let owners = catalog
-        .declarations
-        .iter()
-        .filter(|d| matches!(d.kind, Collection::SharedSlice | Collection::SharedArray))
-        .map(|d| d.definition)
-        .collect::<Vec<_>>();
-    let mut found = owners.clone();
-    pending.filter_collections(&store, &mut context, term, &mut found)?;
-    assert_eq!(found, owners);
-    let exact = context.known(&store, slice)?;
-    context.equate(&store, unknown, exact)?;
-    let mut found = owners;
-    pending.filter_collections(&store, &mut context, term, &mut found)?;
-    assert_eq!(
-        found,
-        [catalog.declarations[Collection::SharedSlice as usize].definition]
-    );
+    for mutable in [false, true] {
+        let unknown = context.variable(Domain::Any)?;
+        let term = context.construct(
+            Constructor::Reference {
+                mutable,
+                region: RegionId::STATIC,
+            },
+            &[unknown],
+        )?;
+        let pending = registry.pending.as_deref().ok_or("pending")?;
+        let owners = catalog
+            .declarations()
+            .filter(|d| d.kind.trait_() == Some(Trait::IntoIterator))
+            .map(|d| d.definition)
+            .collect::<Vec<_>>();
+        let expected = catalog
+            .declarations()
+            .filter(|d| d.kind.trait_() == Some(Trait::IntoIterator) && d.kind.mutable() == mutable)
+            .map(|d| d.definition)
+            .collect::<Vec<_>>();
+        let mut found = owners.clone();
+        pending.filter_collections(&store, &mut context, term, &mut found)?;
+        assert_eq!(found, expected);
+        let exact = context.known(&store, slice)?;
+        context.equate(&store, unknown, exact)?;
+        let mut found = owners;
+        pending.filter_collections(&store, &mut context, term, &mut found)?;
+        let kind = if mutable {
+            Collection::MutableSlice
+        } else {
+            Collection::SharedSlice
+        };
+        assert_eq!(
+            found,
+            [catalog.declaration(kind).ok_or("slice owner")?.definition]
+        );
+    }
     // Closed absence above never consumed or negatively cached either header.
     let matching = implementation(&mut store, 0, item.0, shared_slice)?.predicate;
     assert!(!registry.selection_predicate_ready(&store, &mut context, matching)?);
     Ok(())
+}
+
+fn collection_registry(
+    report: &crate::resolve::expansion::Report,
+) -> Result<Implementations, Box<dyn std::error::Error>> {
+    let catalog = report
+        .resolution
+        .builtin_traits
+        .collections()
+        .ok_or("collections")?;
+    let iteration = report
+        .resolution
+        .builtin_traits
+        .iteration()
+        .ok_or("iteration")?;
+    let mut headers = Vec::new();
+    for d in catalog.declarations() {
+        if let Some(t) = d.kind.trait_() {
+            headers.push(Header {
+                owner: d.definition,
+                item: ItemId(iteration.get(t).definition.0).into(),
+                head: Some(if d.kind.next() {
+                    Head::Nominal(ItemId(
+                        catalog.iterator(d.kind).ok_or("iterator nominal")?.0,
+                    ))
+                } else {
+                    Head::Reference(d.kind.mutable())
+                }),
+            });
+        }
+    }
+    let mut registry = Implementations::default();
+    registry.reserve(headers)?;
+    registry.register_collection_heads(report)?;
+    registry.finish_constant_headers()?;
+    registry.finish_validation()?;
+    Ok(registry)
 }

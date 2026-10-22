@@ -73,5 +73,14 @@ shared_iterators module of language_operators qualifies the unchanged sources;
 its explicitly ignored backend test compares execution with pinned Rust. These
 include empty/ZST and non-Copy elements, source/item lifetimes, qualified/reified
 lookup, one-time formation and ordinary Drop observers. The Clone-bound case
-does not invoke clone; actual `Iter::clone`, mutable/owned collections and ranges
-remain required. See `docs/pa26-shared-iteration.md`.
+does not invoke clone; executable clone has its own later checkpoint.
+See `docs/pa26-shared-iteration.md`.
+
+`mutable-iteration-outcomes.json` declares 27 `spec/iteration/mutable-collections`
+outcomes: 19 native positives and eight language rejections. The
+mutable_collections module of language_operators independently qualifies the
+unchanged sources and explicitly ignores its backend-dependent native test.
+Controls include successive live items, non-Copy Drop elements, independent
+source/receiver lifetimes, generic extents, shorter slice metadata, one-time
+formation and lookup precedence. Owned collections and range iteration remain
+required; see `docs/pa26-mutable-iteration.md`.

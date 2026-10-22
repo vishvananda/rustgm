@@ -22,12 +22,49 @@ pub(crate) enum Status {
 }
 pub(crate) struct Registry {
     pub status: Status,
+    pub mutable: Option<Box<MutableRegistry>>,
     pub canonical: BuiltinCollections,
     pub originals: [Option<Original>; 4],
     pub prefixes:
         std::collections::HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
 }
+pub(crate) struct MutableRegistry {
+    pub canonical: crate::resolve::model::BuiltinMutableCollections,
+    pub status: Status,
+    pub originals: [Option<Original>; 4],
+}
+#[derive(Clone, Copy)]
+pub(crate) struct Group<'a> {
+    pub iterator: DefId,
+    pub declarations: &'a [BuiltinCollectionDeclaration; 4],
+    pub originals: &'a [Option<Original>; 4],
+    pub status: Status,
+}
 impl Registry {
+    pub fn group(&self, mutable: bool) -> Option<Group<'_>> {
+        if mutable {
+            self.mutable.as_deref().map(|m| Group {
+                iterator: m.canonical.iterator,
+                declarations: &m.canonical.declarations,
+                originals: &m.originals,
+                status: m.status,
+            })
+        } else {
+            Some(Group {
+                iterator: self.canonical.iterator,
+                declarations: &self.canonical.declarations,
+                originals: &self.originals,
+                status: self.status,
+            })
+        }
+    }
+    pub fn all_originals(&self) -> impl Iterator<Item = &Original> {
+        self.originals
+            .iter()
+            .chain(self.mutable.iter().flat_map(|m| m.originals.iter()))
+            .flatten()
+    }
+
     pub fn associated(
         &self,
         iteration: BuiltinIteration,
@@ -35,9 +72,7 @@ impl Registry {
         item: ItemId,
     ) -> Result<Option<DefId>, &'static str> {
         let Some(original) = self
-            .originals
-            .iter()
-            .flatten()
+            .all_originals()
             .find(|o| o.declaration.definition == owner)
         else {
             return Ok(None);
@@ -63,9 +98,7 @@ impl Registry {
         Err("collection implementation does not own associated member")
     }
     pub fn original(&self, method: DefId) -> Option<Original> {
-        self.originals
-            .iter()
-            .flatten()
+        self.all_originals()
             .find(|o| o.declaration.method == method)
             .copied()
     }
@@ -96,21 +129,37 @@ pub(in crate::sema) fn requested_owner(
         {
             Some(Collection::SliceIterator)
         }
-        Some(Constructor::Reference { mutable: false, .. }) => {
+        Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _))
+            if canonical
+                .mutable
+                .as_deref()
+                .is_some_and(|m| item == ItemId(m.iterator.0)) =>
+        {
+            Some(Collection::SliceMutableIterator)
+        }
+        Some(Constructor::Reference { mutable, .. }) => {
             let term = context.child(store, term, 0)?;
             context.account_work(1)?;
             match context.head(store, term) {
-                Ok(Some(Constructor::Slice)) => Some(Collection::SharedSlice),
+                Ok(Some(Constructor::Slice)) => Some(if mutable {
+                    Collection::MutableSlice
+                } else {
+                    Collection::SharedSlice
+                }),
                 Ok(Some(
                     Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_),
-                )) => Some(Collection::SharedArray),
+                )) => Some(if mutable {
+                    Collection::MutableArray
+                } else {
+                    Collection::SharedArray
+                }),
                 Ok(_) | Err(Error::Normalization | Error::Unresolved) => None,
                 Err(error) => return Err(error),
             }
         }
         _ => None,
     };
-    Ok(kind.map(|kind| canonical.declarations[kind as usize].definition))
+    Ok(kind.and_then(|kind| canonical.declaration(kind).map(|d| d.definition)))
 }
 impl Original {
     pub fn validate(self, facts: &crate::sema::model::Declarations) -> Result<(), &'static str> {
@@ -119,10 +168,13 @@ impl Original {
             .as_deref()
             .and_then(|r| r.collections.as_deref())
             .ok_or("missing collection registry")?;
-        if registry.canonical.declarations[self.declaration.kind as usize] != self.declaration {
+        let group = registry
+            .group(self.declaration.kind.mutable())
+            .ok_or("missing active collection group")?;
+        if group.declarations[self.declaration.kind.index()] != self.declaration {
             return Err("collection original differs from canonical owner");
         }
-        if registry.status != Status::Complete {
+        if group.status != Status::Complete {
             return Err("collection original requires completed conformance");
         }
         let registered = registry
@@ -151,7 +203,7 @@ impl Original {
         {
             return Err("collection element differs from owner schema");
         }
-        let canonical = facts.definitions[registry.canonical.iterator.0 as usize]
+        let canonical = facts.definitions[group.iterator.0 as usize]
             .ok_or("missing canonical iterator type")?;
         let Some(crate::types::Kind::Adt(owner, _)) = facts.types.kind(canonical) else {
             return Err("invalid canonical iterator type");
@@ -181,7 +233,7 @@ impl Original {
             {
                 return Err("collection requires exact checked implementation");
             }
-        } else if self.declaration.kind != Collection::SliceMethod {
+        } else if !self.declaration.kind.method() {
             return Err("collection impl has no predicate");
         }
         if facts.definitions[self.declaration.method.0 as usize].and_then(|t|facts.types.kind(t)).is_none_or(|k|!matches!(k,crate::types::Kind::FunctionItem {item,signature,..} if item==ItemId(self.declaration.method.0)&&signature==self.signature)) {return Err("collection method differs from original callable");}
