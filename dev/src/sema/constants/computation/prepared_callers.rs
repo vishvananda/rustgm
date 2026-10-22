@@ -133,7 +133,7 @@ impl<'a> BodyCaller<'a> {
         };
         facts.body_work.canonical_steps += work;
         let mut equations = equations?;
-        let mut aliases = Bound::close_projection_regions(1, 0, std::collections::HashMap::new())?;
+        let mut aliases = Bound::close_projection_regions(1, 0, crate::support::hash::HashMap::default())?;
         aliases.exchange_projection_equations(&mut equations)?;
         Ok(Self {
             inputs,

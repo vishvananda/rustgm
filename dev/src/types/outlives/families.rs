@@ -1,5 +1,6 @@
 //! Immutable family input contracts and complete applications, separate from result promises.
 use super::{Budget, Implied, Pair, Scan, free, requirements::Demand};
+use crate::support::hash::HashMap;
 use crate::types::{
     ItemId, Store,
     arguments::Argument,
@@ -11,7 +12,6 @@ use crate::types::{
     projection::Application,
     substitute::families,
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/input_contracts/lifetimes.rs"]
 mod tests;

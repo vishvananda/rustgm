@@ -33,9 +33,9 @@ type 30 function binders=0 parameters=[11] result=21 unsafe=false
 type 31 function-item def=25 signature=30
 type 32 function binders=0 parameters=[15] result=21 unsafe=false
 type 33 function-item def=27 signature=32
-def 13 type=19 name="CE" source=0:10
-def 18 type=20 name="IE" source=0:22
-def 23 type=21 name="CIE" source=0:34
+def 13 type=19 name="CE" source=0:6
+def 18 type=20 name="IE" source=0:14
+def 23 type=21 name="CIE" source=0:22
 def 28 type=2 name="bool"
 def 29 type=3 name="char"
 def 30 type=4 name="str"

@@ -105,7 +105,7 @@ impl InlineInstance {
 
 impl std::fmt::Display for InlineInstance {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(out, "{}:{}@", self.source.file.0, self.source.node.0)?;
+        write!(out, "{}:{}@", self.source.file.0, self.source.node.get())?;
         match self.enclosing {
             Context::SourceInitializer(_) => out.write_str("source-initializer"),
             Context::Callable(instance) => write!(out, "callable:{}", instance.ty().0),
@@ -121,7 +121,7 @@ impl InlineInstance {
     pub(crate) fn order(self, facts: &Declarations) -> Result<[u32; 11], &'static str> {
         let mut key = [0; 11];
         key[0] = self.source.file.0;
-        key[1] = self.source.node.0;
+        key[1] = self.source.node.get();
         match self.enclosing {
             Context::Callable(instance) => key[3] = instance.ty().0,
             Context::Initializer(instance) => {
@@ -139,7 +139,8 @@ impl InlineInstance {
 }
 #[derive(Default)]
 pub(super) struct Values {
-    completed: std::collections::HashMap<(InlineInstance, crate::types::TypeId), values::Constant>,
+    completed:
+        crate::support::hash::HashMap<(InlineInstance, crate::types::TypeId), values::Constant>,
 }
 impl super::Registry {
     #[must_use]

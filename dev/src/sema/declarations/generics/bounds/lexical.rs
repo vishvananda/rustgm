@@ -103,10 +103,11 @@ impl Checker<'_> {
                     );
                 }
                 let scope = &self.report.resolution.scopes[id.0 as usize];
-                if scope
-                    .bindings
-                    .contains_key(&(definition.name, Namespace::Lifetime))
-                {
+                if self.report.resolution.bindings.contains(
+                    id,
+                    definition.name,
+                    Namespace::Lifetime,
+                ) {
                     return Err(
                         self.error(source, "quantified lifetime shadows an enclosing lifetime")
                     );

@@ -67,15 +67,11 @@ function @rg.15() -> i64 {
     jump ^b2
   block ^b2:
     %t17 = load i64 $s0
-    %t18 = convert zext i128 i64 %t17
-    %t19 = convert zext i128 i64 1
-    %t20 = binary add i128 %t18, %t19
-    %t21 = convert trunc i64 i128 %t20
-    %t22 = convert zext i128 i64 %t21
-    %t23 = cmp ne i128 %t20, %t22
-    branch %t23, ^b43, ^b44
+    %t18 = binary add i64 %t17, 1
+    %t19 = cmp ult i64 %t18, %t17
+    branch %t19, ^b43, ^b44
   block ^b44:
-    store i64 %t21, $s0
+    store i64 %t18, $s0
     branch 0, ^b37, ^b39
   block ^b39:
     jump ^b38
@@ -84,38 +80,38 @@ function @rg.15() -> i64 {
   block ^b5:
     jump ^b27
   block ^b27:
-    %t24 = load u32 $s4
-    %t25 = cmp eq u32 %t24, 4
-    %t26 = convert trunc i1 i64 %t25
-    branch %t26, ^b30, ^b33
+    %t20 = load u32 $s4
+    %t21 = cmp eq u32 %t20, 4
+    %t22 = convert trunc i1 i64 %t21
+    branch %t22, ^b30, ^b33
   block ^b33:
     jump ^b34
   block ^b34:
     jump ^b29
   block ^b29:
-    %t27 = load u32 $s4
-    %t28 = cmp eq u32 %t27, 6
-    %t29 = convert trunc i1 i64 %t28
-    branch %t29, ^b3, ^b17
+    %t23 = load u32 $s4
+    %t24 = cmp eq u32 %t23, 6
+    %t25 = convert trunc i1 i64 %t24
+    branch %t25, ^b3, ^b17
   block ^b17:
-    %t30 = load u32 $s3
-    %t31 = cmp eq u32 %t30, 2
-    %t32 = convert trunc i1 i64 %t31
-    branch %t32, ^b21, ^b24
+    %t26 = load u32 $s3
+    %t27 = cmp eq u32 %t26, 2
+    %t28 = convert trunc i1 i64 %t27
+    branch %t28, ^b21, ^b24
   block ^b24:
     jump ^b25
   block ^b25:
     jump ^b20
   block ^b20:
-    %t33 = load u32 $s3
-    %t34 = cmp eq u32 %t33, 4
-    %t35 = convert trunc i1 i64 %t34
-    branch %t35, ^b3, ^b7
+    %t29 = load u32 $s3
+    %t30 = cmp eq u32 %t29, 4
+    %t31 = convert trunc i1 i64 %t30
+    branch %t31, ^b3, ^b7
   block ^b7:
-    %t36 = load u32 $s2
-    %t37 = cmp eq u32 %t36, 0
-    %t38 = convert trunc i1 i64 %t37
-    branch %t38, ^b11, ^b14
+    %t32 = load u32 $s2
+    %t33 = cmp eq u32 %t32, 0
+    %t34 = convert trunc i1 i64 %t33
+    branch %t34, ^b11, ^b14
   block ^b14:
     jump ^b15
   block ^b15:
@@ -141,8 +137,8 @@ function @rg.15() -> i64 {
   block ^b36:
     jump ^b40
   block ^b40:
-    %t39 = load i64 $s0
-    store i64 %t39, $s1
+    %t35 = load i64 $s0
+    store i64 %t35, $s1
     jump ^b1
   block ^b30:
     jump ^b32
@@ -155,8 +151,8 @@ function @rg.15() -> i64 {
     store i64 99, $s1
     jump ^b1
   block ^b1:
-    %t40 = load i64 $s1
-    return i64 %t40
+    %t36 = load i64 $s1
+    return i64 %t36
   block ^b41:
     unreachable
   block ^b42:

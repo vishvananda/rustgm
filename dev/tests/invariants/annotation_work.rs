@@ -98,7 +98,7 @@ fn observe(text: &str) -> Result<(bool, usize, Counts)> {
     VISITS.with(|counts| counts.set(Counts::default()));
     let accepted = checker.run().is_ok();
     let counts = VISITS.with(Cell::get);
-    Ok((accepted, checker.facts.body_regions.len(), counts))
+    Ok((accepted, checker.facts.body_regions.log().len(), counts))
 }
 
 #[test]

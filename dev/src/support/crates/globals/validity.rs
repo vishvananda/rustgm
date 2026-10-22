@@ -5,7 +5,7 @@ use crate::support::crates::{
     Constant, CrateIdentity, Function, Lifetime, MAX_COMPONENTS, MAX_NAME_BYTES, Nominals, Scalar,
     Symbol, TypeNode,
 };
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 
 impl Storage {
     pub(in crate::support::crates) fn validate(

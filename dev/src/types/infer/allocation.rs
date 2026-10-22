@@ -36,7 +36,7 @@ impl Context {
         }
         if let Some(value) = &self.settled {
             total.boxed(value.as_ref());
-            total.map(value);
+            total.vector(value);
         }
         (total.bytes, total.visits)
     }

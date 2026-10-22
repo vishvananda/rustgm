@@ -47,14 +47,14 @@ type 44 function-item def=22 signature=43 arguments=[type:36,type:19]
 def 14 type=24 name="Self" source=0:1
 def 15 type=19 name="N" source=0:2
 def 16 type=19 name="N" source=0:2
-def 17 type=23 name="S" source=0:18
-def 18 type=41 name="S" source=0:18
-def 19 type=28 name="Self" source=0:50
-def 20 type=33 name="run" source=0:49
-def 21 type=31 name="Self" source=0:79
-def 22 type=35 name="run" source=0:78
-def 23 type=38 name="f" source=0:107
-def 24 type=39 name="main" source=0:109
+def 17 type=23 name="S" source=0:12
+def 18 type=41 name="S" source=0:12
+def 19 type=28 name="Self" source=0:32
+def 20 type=33 name="run" source=0:31
+def 21 type=31 name="Self" source=0:50
+def 22 type=35 name="run" source=0:49
+def 23 type=38 name="f" source=0:70
+def 24 type=39 name="main" source=0:72
 def 25 type=2 name="bool"
 def 26 type=3 name="char"
 def 27 type=4 name="str"
@@ -76,17 +76,17 @@ def 42 type=25 name="U" source=0:0
 def 43 type=20 name="T" source=0:3
 def 44 type=21 name="U" source=0:4
 def 45 type=22 name="V" source=0:5
-def 46 type=26 name="T" source=0:26
-def 47 type=27 name="U" source=0:30
-def 48 type=29 name="T" source=0:58
-def 49 type=30 name="U" source=0:59
-def 50 type=36 name="T" source=0:87
-def 58 type=28 name="self" source=0:46
-def 59 type=31 name="self" source=0:75
-def 60 type=42 name="s" source=0:90
+def 46 type=26 name="T" source=0:18
+def 47 type=27 name="U" source=0:21
+def 48 type=29 name="T" source=0:38
+def 49 type=30 name="U" source=0:39
+def 50 type=36 name="T" source=0:56
+def 58 type=28 name="self" source=0:28
+def 59 type=31 name="self" source=0:46
+def 60 type=42 name="s" source=0:57
 associated-owner 0 kind=trait self-def=14 self=24 source=0:1 trait=13 unsafe=false name="A"
-associated-owner 1 kind=inherent self-def=19 self=28 source=0:50 unsafe=false
-associated-owner 2 kind=inherent self-def=21 self=31 source=0:79 unsafe=false
+associated-owner 1 kind=inherent self-def=19 self=28 source=0:32 unsafe=false
+associated-owner 2 kind=inherent self-def=21 self=31 source=0:50 unsafe=false
 associated-member def=20 owner=1 receiver=28 references=0
 associated-member def=22 owner=2 receiver=31 references=0
 parameter owner=13 binding=42 argument=type:25 default=-
@@ -100,9 +100,9 @@ parameter owner=21 binding=48 argument=type:29 default=-
 parameter owner=21 binding=49 argument=type:30 default=-
 parameter owner=23 binding=50 argument=type:36 default=-
 predicate owner=13 source=0:1 subject=24 bound=trait:13 arguments=[type:25]
-predicate owner=19 source=0:25 subject=26 bound=trait:13 arguments=[type:27]
-predicate owner=19 source=0:29 subject=27 bound=copy
-predicate owner=21 source=0:57 subject=29 bound=trait:13 arguments=[type:30]
-predicate owner=23 source=0:86 subject=36 bound=trait:13 arguments=[type:19]
-method-call source=0:105 method=22 callable=44 dereferences=0 borrow=- receiver=42 origin=inherent
+predicate owner=19 source=0:17 subject=26 bound=trait:13 arguments=[type:27]
+predicate owner=19 source=0:20 subject=27 bound=copy
+predicate owner=21 source=0:37 subject=29 bound=trait:13 arguments=[type:30]
+predicate owner=23 source=0:55 subject=36 bound=trait:13 arguments=[type:19]
+method-call source=0:68 method=22 callable=44 dereferences=0 borrow=- receiver=42 origin=inherent
 eof owners=3 members=2 parameters=10 predicates=5 impls=0 calls=1 paths=0 impl-uses=0

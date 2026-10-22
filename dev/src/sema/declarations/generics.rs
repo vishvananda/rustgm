@@ -57,7 +57,7 @@ impl Checker<'_> {
             .list(item.generics)
             .iter()
             .copied()
-            .filter(|node| unit.configured.active[node.0 as usize])
+            .filter(|node| unit.configured.active[node.get() as usize])
             .map(|node| self.unattributed(NodeKey { node, ..key }))
             .collect();
         if let Some(anonymous) = self.report.resolution.anonymous_parameters.get(&key) {
@@ -81,7 +81,7 @@ impl Checker<'_> {
                 "type/const parameters and lifetime bounds require later semantic assignments",
             ));
         }
-        let mut names = std::collections::HashSet::new();
+        let mut names = crate::support::hash::HashSet::default();
         let mut non_lifetime = false;
         let mut defaulted = false;
         for node in &nodes {

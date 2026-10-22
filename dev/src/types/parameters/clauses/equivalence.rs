@@ -1,7 +1,7 @@
 //! Clause comparison forgets unused local slots, never captures or proof ownership.
 use super::{Clause, QuantifiedId};
+use crate::support::hash::HashMap;
 use crate::types::{Store, parameters::predicates::Predicate, substitute::Bound};
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/clause_equivalence.rs"]
 mod tests;

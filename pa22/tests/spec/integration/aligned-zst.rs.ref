@@ -90,40 +90,36 @@ function @rg.18(%p0 : ptr) -> void {
     store i64 %t36, $s2
     %t37 = load i64 $s2
     %t38 = load i64 $s1
-    %t39 = convert zext i128 i64 %t37
-    %t40 = convert zext i128 i64 %t38
-    %t41 = binary sub i128 %t39, %t40
-    %t42 = convert trunc i64 i128 %t41
-    %t43 = convert zext i128 i64 %t42
-    %t44 = cmp ne i128 %t41, %t43
-    branch %t44, ^b11, ^b13
+    %t39 = binary sub i64 %t37, %t38
+    %t40 = cmp ult i64 %t37, %t38
+    branch %t40, ^b11, ^b13
   block ^b13:
-    %t45 = cmp eq i64 %t42, 64
-    %t46 = convert trunc i1 i64 %t45
-    call void @rg.13(%t46)
-    %t47 = load ptr $s0
-    %t48 = addr $s0
-    %t49 = index u8 %t48, 8
-    %t50 = load i64 %t49
-    %t51 = index u8 %t47, 64
-    %t52 = cmp uge i64 0, %t50
-    branch %t52, ^b11, ^b14
+    %t41 = cmp eq i64 %t39, 64
+    %t42 = convert trunc i1 i64 %t41
+    call void @rg.13(%t42)
+    %t43 = load ptr $s0
+    %t44 = addr $s0
+    %t45 = index u8 %t44, 8
+    %t46 = load i64 %t45
+    %t47 = index u8 %t43, 64
+    %t48 = cmp uge i64 0, %t46
+    branch %t48, ^b11, ^b14
   block ^b14:
-    %t53 = binary mul i64 0, 0
-    %t54 = index u8 %t51, %t53
-    %t55 = load ptr $s0
-    %t56 = addr $s0
-    %t57 = index u8 %t56, 8
-    %t58 = load i64 %t57
-    %t59 = index u8 %t55, 64
-    %t60 = cmp uge i64 2, %t58
-    branch %t60, ^b11, ^b15
+    %t49 = binary mul i64 0, 0
+    %t50 = index u8 %t47, %t49
+    %t51 = load ptr $s0
+    %t52 = addr $s0
+    %t53 = index u8 %t52, 8
+    %t54 = load i64 %t53
+    %t55 = index u8 %t51, 64
+    %t56 = cmp uge i64 2, %t54
+    branch %t56, ^b11, ^b15
   block ^b15:
-    %t61 = binary mul i64 2, 0
-    %t62 = index u8 %t59, %t61
-    %t63 = cmp eq ptr %t54, %t62
-    %t64 = convert trunc i1 i64 %t63
-    call void @rg.13(%t64)
+    %t57 = binary mul i64 2, 0
+    %t58 = index u8 %t55, %t57
+    %t59 = cmp eq ptr %t50, %t58
+    %t60 = convert trunc i1 i64 %t59
+    call void @rg.13(%t60)
     return void
   block ^b9:
     unreachable

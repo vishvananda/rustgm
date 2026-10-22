@@ -11,7 +11,7 @@ use crate::{
 /// # Errors
 /// Rejects packed-field references or inconsistent selected places/layouts.
 pub fn check(facts: &mut Declarations, program: &Program) -> Result<(), Error> {
-    let mut retained = std::collections::HashSet::new();
+    let mut retained = crate::support::hash::HashSet::default();
     for obligation in &facts.reference_alignment {
         let error = |message| Error {
             node: obligation.source,

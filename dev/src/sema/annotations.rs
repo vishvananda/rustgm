@@ -118,7 +118,7 @@ impl Scratch {
                     push(result);
                 }
                 for &parameter in unit.configured.ast.list(parameters).iter().rev() {
-                    if unit.configured.active[parameter.0 as usize] {
+                    if unit.configured.active[parameter.get() as usize] {
                         push(declarations::parameter_type(
                             host.report(),
                             NodeKey {
@@ -129,7 +129,7 @@ impl Scratch {
                     }
                 }
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Applied { .. } => {
                 if let Some(use_) = host.facts().generics.annotation_uses.get(&key) {
                     for argument in use_.arguments.iter().rev() {
                         if let super::generics::AnnotationArgument::Type(key) = argument {
@@ -171,7 +171,7 @@ impl Scratch {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => {
                 return term(host, NodeKey { node, ..key });
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Applied { .. } => {
                 if host.facts().generics.annotation_uses.contains_key(&key) {
                     return applications::infer(host, key, scope);
                 }
@@ -207,13 +207,6 @@ impl Scratch {
                     self.children.push(term(host, NodeKey { node, ..key })?);
                 }
                 match flavor {
-                    TypeFlavor::Path => {
-                        return self
-                            .children
-                            .first()
-                            .copied()
-                            .ok_or_else(|| error(host, key, "missing type path"));
-                    }
                     TypeFlavor::Tuple => Constructor::Tuple,
                     TypeFlavor::Slice => Constructor::Slice,
                     TypeFlavor::Array => Constructor::Array(array_length(host, key, children)?),
@@ -254,7 +247,7 @@ impl Scratch {
         let (fixed, variadic) =
             declarations::fixed_parameters(host.report(), key, function.parameters);
         for &parameter in unit.configured.ast.list(fixed) {
-            if unit.configured.active[parameter.0 as usize] {
+            if unit.configured.active[parameter.get() as usize] {
                 let node = declarations::parameter_type(
                     host.report(),
                     NodeKey {

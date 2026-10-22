@@ -21,9 +21,36 @@ impl Parser<'_, '_> {
         }
         intrinsic
     }
+    /// Most owners have no attributes; only a doc comment or `#` enters the scan.
+    // Forced only without debug assertions: debug builds keep the call so
+    // recursive-descent frames stay small enough for the nesting limit.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-owner check that almost always finds no attribute; callgrind shows calls dominate"
+        )
+    )]
     pub(super) fn attributes(&mut self, inner: bool) -> Result<AttributeRange, LexError> {
         let start = u32::try_from(self.ast.attributes.len())
             .map_err(|_| error(self.cursor.end(), "too many attributes"))?;
+        if !self.cursor.peek(0)?.is_some_and(|token| {
+            matches!(
+                token.kind,
+                TokenKind::InnerLineDoc
+                    | TokenKind::InnerBlockDoc
+                    | TokenKind::OuterLineDoc
+                    | TokenKind::OuterBlockDoc
+                    | TokenKind::Punctuation(P::Pound)
+            )
+        }) {
+            return Ok(AttributeRange { start, end: start });
+        }
+        self.attribute_list(start, inner)
+    }
+
+    fn attribute_list(&mut self, start: u32, inner: bool) -> Result<AttributeRange, LexError> {
         while let Some(token) = self.cursor.peek(0)? {
             let is_inner = match token.kind {
                 TokenKind::InnerLineDoc | TokenKind::InnerBlockDoc => true,
@@ -95,6 +122,14 @@ impl Parser<'_, '_> {
         Ok(AttributeCapture { forest, attribute })
     }
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-owner check that almost always finds no attribute; callgrind shows calls dominate"
+        )
+    )]
     pub(super) fn attach(
         &mut self,
         range: AttributeRange,
@@ -103,18 +138,24 @@ impl Parser<'_, '_> {
         if range.start == range.end {
             return Ok(value);
         }
+        self.attributed(range, value)
+    }
+
+    fn attributed(&mut self, range: AttributeRange, value: NodeId) -> Result<NodeId, LexError> {
         let start = self.ast.node(value).span.start.min(
             self.ast.attributes[range.start as usize]
                 .attribute
                 .span
                 .start,
         );
-        self.node(
+        let owner = self.node(
             start,
             Kind::Attributed {
                 attributes: range,
                 value,
             },
-        )
+        )?;
+        self.ast.pending.owners.push(owner);
+        Ok(owner)
     }
 }

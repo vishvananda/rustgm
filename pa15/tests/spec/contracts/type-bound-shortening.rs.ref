@@ -1,5 +1,5 @@
 regions-crate 1
-body 0 source=0:26
+body 0 source=0:17
   universal b0=g2
   universal b1=g3
   region g0 static

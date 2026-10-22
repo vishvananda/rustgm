@@ -4,7 +4,7 @@ use crate::{
     body::ir::ValueList, lowir::vocabulary::Type, support::intrinsics::Intrinsic,
     types::instance::Instance,
 };
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn intrinsic(
         &mut self,
         intrinsic: Intrinsic,

@@ -3,6 +3,7 @@ use super::{
     Abilities, Environment,
     instantiation::{Matches, Pattern},
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     Store, TypeId,
     parameters::{clauses::Clause, predicates::Bound},
@@ -10,10 +11,7 @@ use crate::types::{
     structural::Shapes,
     substitute,
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 #[derive(Clone, Default)]
 pub(super) struct Index {
@@ -122,7 +120,7 @@ impl Query {
             environment,
             shapes: Shapes::default(),
             matches: Matches::default(),
-            completed: HashMap::new(),
+            completed: HashMap::default(),
             requests: 0,
         }
     }

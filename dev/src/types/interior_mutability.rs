@@ -3,7 +3,7 @@ use super::{
     Kind, Store, TypeId,
     aggregate::{Definitions, ShapeReadiness, SharedMutation},
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// A conservative type property; it does not describe a particular active value.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -58,7 +58,7 @@ impl<'a> Query<'a> {
         Self {
             types,
             definitions,
-            answers: HashMap::new(),
+            answers: HashMap::default(),
             frames: Vec::new(),
             children: Vec::new(),
             work: Work::default(),

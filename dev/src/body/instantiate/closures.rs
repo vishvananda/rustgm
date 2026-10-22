@@ -277,7 +277,7 @@ impl ProofCursor {
         let work = proof.rebase(&mut facts.types, first)?;
         let mapping = slots
             .map(|(slot, actual)| Ok((crate::types::RegionId::bound(0, slot)?, actual)))
-            .collect::<Result<std::collections::HashMap<_, _>, &'static str>>()?;
+            .collect::<Result<crate::support::hash::HashMap<_, _>, &'static str>>()?;
         let mut fold = Bound::restore_owned_regions(mapping, proof.regions.clone());
         proof.substitute(&mut facts.types, &mut fold)?;
         facts.body_work.canonical_steps += work + fold.steps;

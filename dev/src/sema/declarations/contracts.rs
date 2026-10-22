@@ -2,8 +2,8 @@
 use super::{
     BinderId, Checker, DefId, Error, Kind, List, NodeKey, RegionId, Type, TypeId, regions,
 };
+use crate::support::hash::HashSet;
 use crate::{sema::lifetimes::FunctionRegions, types::bound_uses::Uses};
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 pub(super) struct SignatureTypes {
@@ -21,7 +21,7 @@ impl Checker<'_> {
         let mut bounds = Vec::new();
         let ast = &self.report.package.unit(key.file).configured.ast;
         for mut node in ast.list(item.generics).iter().copied() {
-            if !self.report.package.unit(key.file).configured.active[node.0 as usize] {
+            if !self.report.package.unit(key.file).configured.active[node.get() as usize] {
                 continue;
             }
             while let Kind::Attributed { value, .. } = ast.node(node).kind {
@@ -73,7 +73,7 @@ impl Checker<'_> {
     }
 
     fn bound_region(&mut self, key: NodeKey, binder: BinderId) -> Result<RegionId, Error> {
-        let Kind::Name(span) = self.kind(key) else {
+        let Kind::Name(span, _) = self.kind(key) else {
             return Err(self.error(key, "type and trait where-bounds require generic semantics"));
         };
         let name = self

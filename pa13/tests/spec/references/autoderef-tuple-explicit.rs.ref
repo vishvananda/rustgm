@@ -22,18 +22,18 @@ type 19 tuple [11,2]
 type 20 reference mutable=false region=bound:0:0 referent=19
 type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=14 signature=21
-root 0:28 pattern=0
-root 0:31 pattern=2
-pattern 0 source=0:28 input=20 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:27 input=19 product variant=- fields=0:2
-pattern 2 source=0:31 input=20 wildcard
-pattern 3 source=0:27 input=11 range=0
-pattern 4 source=0:27 input=2 range=1
+root 0:15 pattern=0
+root 0:18 pattern=2
+pattern 0 source=0:15 input=20 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:14 input=19 product variant=- fields=0:2
+pattern 2 source=0:18 input=20 wildcard
+pattern 3 source=0:14 input=11 range=0
+pattern 4 source=0:14 input=2 range=1
 field 0 tuple=0 pattern=3
 field 1 tuple=1 pattern=4
 range 0 ranks=7:7
 range 1 ranks=1:1
-match 0 source=0:34 input=0:24 arms=0:2 exhaustive=true uninhabited=false work=134
-arm 0 source=0:30 pattern=0 guard=- useful=true value=0:29
-arm 1 source=0:33 pattern=2 guard=- useful=true value=0:32
+match 0 source=0:21 input=0:13 arms=0:2 exhaustive=true uninhabited=false work=134
+arm 0 source=0:17 pattern=0 guard=- useful=true value=0:16
+arm 1 source=0:20 pattern=2 guard=- useful=true value=0:19
 eof roots=2 patterns=5 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=134 region-vars=0 region-equalities=0 conditions=0 chains=0

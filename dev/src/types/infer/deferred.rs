@@ -4,8 +4,9 @@ mod occurrences;
 mod predicate_inputs;
 mod rewrite;
 use super::{Constructor, Context, Error, Kind, Store, TermId, Value};
+use crate::support::hash::HashMap;
 pub use predicate_inputs::ProjectionInputs;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 /// A body-local equation identity, retained until its normalization debt is discharged.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -49,6 +50,9 @@ pub(super) struct Storage {
     pending: usize,
 }
 impl Storage {
+    pub(super) fn has_ready(&self) -> bool {
+        !self.ready.is_empty()
+    }
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.opaque);

@@ -36,11 +36,11 @@ type 33 reference mutable=false region=bound:1:0 referent=1
 type 34 aggregate def=15 arguments=[region:bound:1:0,type:19]
 type 35 function binders=0 parameters=[33,19] result=34 unsafe=false
 type 36 function-item def=16 signature=32
-def 14 type=21 name="Self" source=0:6
-def 15 type=20 name="Wrap" source=0:26
-def 16 type=36 name="Wrap" source=0:26
-def 17 type=28 name="f" source=0:56
-def 18 type=30 name="main" source=0:58
+def 14 type=21 name="Self" source=0:4
+def 15 type=20 name="Wrap" source=0:20
+def 16 type=36 name="Wrap" source=0:20
+def 17 type=28 name="f" source=0:43
+def 18 type=30 name="main" source=0:45
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -59,11 +59,11 @@ def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
 def 37 type=22 name="U" source=0:1
-def 38 type=16 name="N" source=0:5
-def 40 type=19 name="T" source=0:17
-def 43 type=23 name="T" source=0:42
-def 44 type=24 name="x" source=0:45
-associated-owner 0 kind=trait self-def=14 self=21 source=0:6 trait=13 unsafe=false name="Tr"
+def 38 type=16 name="N" source=0:3
+def 40 type=19 name="T" source=0:13
+def 43 type=23 name="T" source=0:34
+def 44 type=24 name="x" source=0:35
+associated-owner 0 kind=trait self-def=14 self=21 source=0:4 trait=13 unsafe=false name="Tr"
 parameter owner=13 binding=36 argument=region:bound:0:0 default=-
 parameter owner=13 binding=37 argument=type:22 default=-
 parameter owner=13 binding=38 argument=const-parameter:13:2 default=-
@@ -71,12 +71,12 @@ parameter owner=14 binding=14 argument=type:21 default=-
 parameter owner=15 binding=39 argument=region:bound:0:0 default=-
 parameter owner=15 binding=40 argument=type:19 default=-
 parameter owner=17 binding=43 argument=type:23 default=-
-predicate owner=13 source=0:6 subject=21 bound=trait:13 arguments=[region:bound:0:0,type:22,const-parameter:13:2]
-predicate owner=15 source=0:16 subject=19 bound=trait:13 arguments=[region:bound:0:0,type:11,const:16:0x00000000000000000000000000000003]
-predicate owner=17 source=0:41 subject=23 bound=trait:13 arguments=[region:bound:0:1,type:11,const:16:0x00000000000000000000000000000003]
-region-var region:1 body=0:55 source=0:55 origin=universal-alias pending
-region-var region:2 body=0:55 source=0:55 origin=universal-alias pending
-region-equal body=0:55 left=region:1 right=bound:0:0
-region-equal body=0:55 left=region:2 right=bound:0:1
-region-equal body=0:55 left=region:1 right=region:2
+predicate owner=13 source=0:4 subject=21 bound=trait:13 arguments=[region:bound:0:0,type:22,const-parameter:13:2]
+predicate owner=15 source=0:12 subject=19 bound=trait:13 arguments=[region:bound:0:0,type:11,const:16:0x00000000000000000000000000000003]
+predicate owner=17 source=0:33 subject=23 bound=trait:13 arguments=[region:bound:0:1,type:11,const:16:0x00000000000000000000000000000003]
+region-var region:1 body=0:42 source=0:42 origin=universal-alias pending
+region-var region:2 body=0:42 source=0:42 origin=universal-alias pending
+region-equal body=0:42 left=region:1 right=bound:0:0
+region-equal body=0:42 left=region:2 right=bound:0:1
+region-equal body=0:42 left=region:1 right=region:2
 eof owners=1 members=0 parameters=7 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

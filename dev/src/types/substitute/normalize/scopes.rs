@@ -14,8 +14,8 @@ impl Frame {
         fold.steps = steps;
         Self {
             fold,
-            active: HashSet::new(),
-            redirects: HashMap::new(),
+            active: HashSet::default(),
+            redirects: HashMap::default(),
             scope,
         }
     }

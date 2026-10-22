@@ -1,5 +1,6 @@
 //! Opaque trait results are existential outputs whose published clauses must hold.
 use super::{Contract, Declarations};
+use crate::support::hash::HashMap;
 use crate::types::{
     Kind, TypeId,
     infer::{Context, Instantiation},
@@ -9,7 +10,6 @@ use crate::types::{
     },
     substitute::Bound,
 };
-use std::collections::HashMap;
 
 /// Match complete signatures in a private graph. The result substitutions are
 /// local to this conformance proof; they never equate distinct public identities.
@@ -46,9 +46,9 @@ pub(super) fn instantiate(
         .extend(context.region_equalities.iter().copied());
     let mut equations = crate::types::substitute::RegionEquations::default();
     equations.extend(context.region_equalities.iter().copied())?;
-    let mut closure = Bound::close_projection_regions(1, 0, HashMap::new())?;
+    let mut closure = Bound::close_projection_regions(1, 0, HashMap::default())?;
     closure.exchange_projection_equations(&mut equations)?;
-    let mut bindings = HashMap::new();
+    let mut bindings = HashMap::default();
     // Closing each result can intern types. Stable rows require stable allocation
     // order here, before the final inspection writer sorts its records.
     let mut terms = substitution.opaque_terms().collect::<Vec<_>>();
@@ -59,7 +59,7 @@ pub(super) fn instantiate(
             .map_err(|e| e.to_string())?;
         bindings.insert(id, closure.apply(&mut facts.types, ty)?);
     }
-    let mut replacements = HashMap::<TypeId, TypeId>::new();
+    let mut replacements = HashMap::<TypeId, TypeId>::default();
     for &(ty, _) in &contract.outputs {
         let Some(Kind::Opaque(id, _)) = facts.types.kind(ty) else {
             return Err("missing trait opaque output".into());

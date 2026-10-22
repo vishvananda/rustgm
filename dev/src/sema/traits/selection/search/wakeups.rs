@@ -1,7 +1,7 @@
 //! Retry a condition only after one of its own type or const inputs changes.
 use super::{Declarations, Trial, inference};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::infer::dependencies::WatchId;
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 struct Data {

@@ -1,5 +1,6 @@
 //! Early variance hints preserve only proved invariant inputs, never unknown slots.
 use super::RigidInputs;
+use crate::support::hash::HashMap;
 use crate::{
     expand::config::Config,
     resolve::{
@@ -10,7 +11,7 @@ use crate::{
     support::source::SourceFile,
     types::{ItemId, aggregate::Definitions, variance::Variance},
 };
-use std::{collections::HashMap, path::Path};
+use std::path::Path;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 struct NoFiles;
 impl Sources for NoFiles {
@@ -30,7 +31,7 @@ fn fixture() -> TestResult<(Declarations, HashMap<String, ItemId>)> {
         &Config::default(),
     )?)?;
     let facts = sema::declarations::analyze(&report)?;
-    let mut owners = HashMap::new();
+    let mut owners = HashMap::default();
     for definition in &facts.aggregates {
         let name = report.resolution.definitions[definition.item.0 as usize].name;
         owners.insert(report.package.names.get(name).to_owned(), definition.item);

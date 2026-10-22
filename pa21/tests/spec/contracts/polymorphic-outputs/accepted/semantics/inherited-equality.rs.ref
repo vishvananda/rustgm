@@ -50,18 +50,18 @@ type 47 function-item def=18 signature=46 arguments=[type:33]
 type 48 reference mutable=false region=region:1 referent=33
 type 49 function binders=0 parameters=[48] result=11 unsafe=false
 type 50 reference mutable=false region=region:2 referent=33
-def 13 type=24 name="check" source=0:19
-def 14 type=26 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:47
-def 17 type=22 name="Item" source=0:36
-def 18 type=29 name="get" source=0:46
-def 20 type=20 name="Self" source=0:59
-def 21 type=11 name="Self" source=0:83
-def 22 type=11 name="Item" source=0:69
-def 23 type=32 name="get" source=0:82
-def 24 type=11 name="Self" source=0:90
-def 25 type=35 name="f" source=0:97
-def 26 type=37 name="main" source=0:109
+def 13 type=24 name="check" source=0:13
+def 14 type=26 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:31
+def 17 type=22 name="Item" source=0:23
+def 18 type=29 name="get" source=0:30
+def 20 type=20 name="Self" source=0:39
+def 21 type=11 name="Self" source=0:52
+def 22 type=11 name="Item" source=0:43
+def 23 type=32 name="get" source=0:51
+def 24 type=11 name="Self" source=0:55
+def 25 type=35 name="f" source=0:61
+def 26 type=37 name="main" source=0:71
 def 27 type=2 name="bool"
 def 28 type=3 name="char"
 def 29 type=4 name="str"
@@ -79,43 +79,42 @@ def 40 type=15 name="u128"
 def 41 type=16 name="usize"
 def 42 type=17 name="f32"
 def 43 type=18 name="f64"
-def 44 type=2 name="ok" source=0:2
-def 45 type=11 name="x" source=0:22
-def 47 type=30 name="self" source=0:72
-associated-owner 0 kind=trait self-def=16 self=19 source=0:47 trait=15 unsafe=false name="Get"
-associated-owner 1 kind=trait self-def=20 self=20 source=0:59 trait=19 unsafe=false name="Derived"
-associated-owner 2 kind=trait-impl self-def=21 self=11 source=0:83 unsafe=false
-associated-owner 3 kind=trait-impl self-def=24 self=11 source=0:90 unsafe=false
+def 44 type=2 name="ok" source=0:0
+def 45 type=11 name="x" source=0:14
+def 47 type=30 name="self" source=0:44
+associated-owner 0 kind=trait self-def=16 self=19 source=0:31 trait=15 unsafe=false name="Get"
+associated-owner 1 kind=trait self-def=20 self=20 source=0:39 trait=19 unsafe=false name="Derived"
+associated-owner 2 kind=trait-impl self-def=21 self=11 source=0:52 unsafe=false
+associated-owner 3 kind=trait-impl self-def=24 self=11 source=0:55 unsafe=false
 associated-member def=17 owner=0
 associated-member def=18 owner=0 receiver=27 references=1
 associated-member def=22 owner=2
 associated-member def=23 owner=2 receiver=30 references=1
 parameter owner=16 binding=16 argument=type:19 default=-
 parameter owner=20 binding=20 argument=type:20 default=-
-predicate owner=15 source=0:47 subject=19 bound=trait:15 arguments=[]
-predicate owner=19 source=0:58 subject=20 bound=trait:15 arguments=[]
-predicate owner=19 source=0:59 subject=20 bound=trait:19 arguments=[]
-predicate owner=19 source=0:55 subject=21 bound=projection-equal:11
-impl owner=21 source=0:83 subject=11 bound=trait:15 arguments=[]
+predicate owner=15 source=0:31 subject=19 bound=trait:15 arguments=[]
+predicate owner=19 source=0:38 subject=20 bound=trait:15 arguments=[]
+predicate owner=19 source=0:39 subject=20 bound=trait:19 arguments=[]
+predicate owner=19 source=0:35 subject=21 bound=projection-equal:11
+impl owner=21 source=0:52 subject=11 bound=trait:15 arguments=[]
 impl-method owner=21 declaration=18 selected=23 default=false
 impl-type owner=21 declaration=17 definition=22
-impl owner=24 source=0:90 subject=11 bound=trait:19 arguments=[]
-method-call source=0:103 method=18 callable=47 dereferences=0 borrow=50 receiver=48 origin=lexical
-implementation-use source=0:94 owner=24 arguments=[]
-region-var region:1 body=0:108 source=0:103 origin=call-argument pending
-region-var region:2 body=0:108 source=0:103 origin=expression-borrow pending
-region-coercion body=0:108 source=0:103 actual=50 expected=48 kind=same-shape pending
+impl owner=24 source=0:55 subject=11 bound=trait:19 arguments=[]
+method-call source=0:65 method=18 callable=47 dereferences=0 borrow=50 receiver=48 origin=lexical
+implementation-use source=0:58 owner=24 arguments=[]
+region-var region:1 body=0:70 source=0:65 origin=call-argument pending
+region-var region:2 body=0:70 source=0:65 origin=expression-borrow pending
+region-coercion body=0:70 source=0:65 actual=50 expected=48 kind=same-shape pending
 associated-type def=17 type=22
 result-contract def=17 projection=22
 result-bound def=17 index=0 subject=22 bound=sized
 associated-type def=22 type=11
-normalized-node source=0:44 original=22 result=22
-normalized-node source=0:45 original=22 result=22
-opaque 0 owner=25 source=0:94 application=33 hidden=11 role=defining-result storage-proof=pending
+normalized-node source=0:29 original=22 result=22
+opaque 0 owner=25 source=0:58 application=33 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=33 bound=trait:19 arguments=[]
 opaque-body-result def=25 type=11
-proof 0 body=0:108 source=0:103 pending
+proof 0 body=0:70 source=0:65 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=3 end=3
 proof-block proof=0 index=1 scope=1 aliases=false source=0 start=3 end=3
-eof owners=4 members=4 parameters=2 predicates=4 impls=2 calls=1 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0
+eof owners=4 members=4 parameters=2 predicates=4 impls=2 calls=1 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

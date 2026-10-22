@@ -1,8 +1,8 @@
 loans-crate 1
-body 0 source=0:9
+body 0 source=0:7
 end-body
-body 1 source=0:34
+body 1 source=0:23
 end-body
-body 2 source=0:36
+body 2 source=0:25
 end-body
 eof bodies=3 loans=0 places=0 points=0 region_words=0 state_words=0

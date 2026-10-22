@@ -8,6 +8,7 @@ use super::{
     identity_guard::View,
     persistent::{Id, Map, Node},
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     Store,
     outlives::ResultId,
@@ -18,7 +19,6 @@ use crate::types::{
     region_graph::VerificationId,
     structural::Shapes,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct State {

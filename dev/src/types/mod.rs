@@ -32,9 +32,9 @@ pub mod traits;
 pub mod unsizing;
 pub mod variance;
 
+use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
 use properties::{Properties, Property};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TypeId(pub u32);
@@ -244,6 +244,8 @@ pub struct Store {
     closures: Option<Vec<closure::Declaration>>,
     nominal_sizes: Option<std::sync::Arc<sizedness::Rules>>,
     has_nominals: bool,
+    /// Compiled callable signature templates (see `infer::plans`).
+    plans: infer::plans::Plans,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -280,10 +282,28 @@ impl Default for Store {
             closures: None,
             nominal_sizes: None,
             has_nominals: false,
+            plans: infer::plans::Plans::default(),
         }
     }
 }
 impl Store {
+    /// Total size of the append-only canonical tables. Equal values before and
+    /// after a query certify that the query interned no new identity.
+    pub(crate) fn interned_extent(&self) -> usize {
+        self.kinds
+            .len()
+            .saturating_add(self.children.edge_count())
+            .saturating_add(self.regions.edge_count())
+            .saturating_add(self.argument_extent())
+            .saturating_add(self.trait_application_count())
+            .saturating_add(self.quantified_clauses().len())
+    }
+    pub(crate) fn take_plans(&mut self) -> infer::plans::Plans {
+        std::mem::take(&mut self.plans)
+    }
+    pub(crate) fn restore_plans(&mut self, plans: infer::plans::Plans) {
+        self.plans = plans;
+    }
     pub(crate) fn find_kind(&self, kind: Kind) -> Option<TypeId> {
         self.index.get(&kind).copied()
     }

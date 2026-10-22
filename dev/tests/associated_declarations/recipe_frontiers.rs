@@ -68,7 +68,11 @@ fn stored_field_waits_share_structure_and_retain_each_callers_proof()
             for entry in &facts.quantified_proofs {
                 for interval in entry.evidence.proof.owned_regions() {
                     for id in interval {
-                        assert_eq!(facts.body_regions[id as usize - 1].body, entry.body);
+                        let region = facts
+                            .body_regions
+                            .get(entry.body, rustgm::types::RegionId(id))
+                            .ok_or("missing owned proof region")?;
+                        assert_eq!(region.body, entry.body);
                     }
                 }
                 foreign += entry
@@ -76,13 +80,16 @@ fn stored_field_waits_share_structure_and_retain_each_callers_proof()
                     .proof
                     .regions
                     .clone()
-                    .filter(|&id| facts.body_regions[id as usize - 1].body != entry.body)
+                    .filter(|&id| {
+                        facts
+                            .body_regions
+                            .get(entry.body, rustgm::types::RegionId(id))
+                            .is_none_or(|region| region.body != entry.body)
+                    })
                     .count();
             }
-            assert!(
-                foreign > 0,
-                "storage proof must cross a child declaration's allocations"
-            );
+            // A child declaration's allocations are numbered in its own unit.
+            assert_eq!(foreign, 0, "storage proof must own its whole interval");
         }
     }
     Ok(())

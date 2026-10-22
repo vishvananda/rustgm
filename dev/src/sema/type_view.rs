@@ -1,8 +1,8 @@
 //! Deterministic type facts are an output view; later phases consume the model.
 mod dynamic;
 use super::model::{
-    AdjustmentKind, BodyRegion, BodyRegionOrigin, Declarations, InitializerKind, Operation,
-    RegionEquality, Scalar,
+    AdjustmentKind, BodyRegionOrigin, Declarations, InitializerKind, Operation, RegionEquality,
+    Scalar,
 };
 use crate::{
     literal::value::FloatBits,
@@ -22,10 +22,13 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
         write!(
             out,
             "function def={} source={}:{} signature={} body=",
-            function.definition.0, function.node.file.0, function.node.node.0, function.signature.0
+            function.definition.0,
+            function.node.file.0,
+            function.node.node.get(),
+            function.signature.0
         )?;
         if let Some(body) = function.body {
-            write!(out, "{}:{}", body.file.0, body.node.0)?;
+            write!(out, "{}:{}", body.file.0, body.node.get())?;
         } else {
             write!(out, "-")?;
         }
@@ -44,12 +47,12 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
             initializer.definition.0,
             initializer.ty.0,
             initializer.node.file.0,
-            initializer.node.node.0,
+            initializer.node.node.get(),
             initializer.value.file.0,
-            initializer.value.node.0
+            initializer.value.node.get()
         )?;
     }
-    body_regions(&facts.body_regions, out)?;
+    body_regions(facts.body_regions.log(), out)?;
     regions(&facts.region_equalities, out)?;
     coercions(&facts.coercions, out)?;
     outlives(&facts.outlives, out)?;
@@ -75,7 +78,7 @@ pub(super) fn definitions(
             false,
         )?;
         if let Some(node) = definition.node {
-            write!(out, " source={}:{}", node.file.0, node.node.0)?;
+            write!(out, " source={}:{}", node.file.0, node.node.get())?;
         }
         writeln!(out)?;
     }
@@ -93,7 +96,7 @@ fn destructors(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             implementation.target.0,
             implementation.parameters,
             implementation.source.file.0,
-            implementation.source.node.0
+            implementation.source.node.get()
         )?;
         for &(a, b) in &implementation.bounds {
             write!(
@@ -108,15 +111,15 @@ fn destructors(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         }
     }
     let mut receivers: Vec<_> = facts.receivers.iter().collect();
-    receivers.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.0));
+    receivers.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.get()));
     for (key, receiver) in receivers {
         writeln!(
             out,
             "receiver parameter={}:{} binding={}:{} def={} type={} mutable={}",
             key.file.0,
-            key.node.0,
+            key.node.get(),
             receiver.binding.file.0,
-            receiver.binding.node.0,
+            receiver.binding.node.get(),
             receiver.definition.0,
             receiver.ty.0,
             receiver.mutable
@@ -131,7 +134,10 @@ pub fn outlives(bounds: &[super::model::Outlives], out: &mut impl Write) -> io::
         write!(
             out,
             "region-outlives body={}:{} source={}:{} longer=",
-            bound.body.file.0, bound.body.node.0, bound.source.file.0, bound.source.node.0
+            bound.body.file.0,
+            bound.body.node.get(),
+            bound.source.file.0,
+            bound.source.node.get()
         )?;
         region(bound.longer, out)?;
         write!(out, " shorter=")?;
@@ -158,9 +164,9 @@ pub fn coercions(coercions: &[super::model::Coercion], out: &mut impl Write) -> 
             out,
             "region-coercion body={}:{} source={}:{} actual={} expected={} kind={kind} pending",
             coercion.body.file.0,
-            coercion.body.node.0,
+            coercion.body.node.get(),
             coercion.source.file.0,
-            coercion.source.node.0,
+            coercion.source.node.get(),
             coercion.actual.0,
             coercion.expected.0
         )?;
@@ -176,7 +182,8 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
         write!(
             out,
             "region-equal body={}:{} left=",
-            equality.body.file.0, equality.body.node.0
+            equality.body.file.0,
+            equality.body.node.get()
         )?;
         region(equality.left, out)?;
         write!(out, " right=")?;
@@ -189,8 +196,12 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
 ///
 /// # Errors
 /// Propagates output errors.
-pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<()> {
-    for (ordinal, variable) in regions.iter().enumerate() {
+pub fn body_regions(
+    regions: &[super::body_regions::AllocatedRegion],
+    out: &mut impl Write,
+) -> io::Result<()> {
+    for allocated in regions {
+        let variable = &allocated.region;
         let origin = match variable.origin {
             BodyRegionOrigin::QuantifiedProof => "quantified-proof",
             BodyRegionOrigin::Annotation => "annotation",
@@ -205,11 +216,11 @@ pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<
         writeln!(
             out,
             "region-var region:{} body={}:{} source={}:{} origin={origin} pending",
-            ordinal + 1,
+            allocated.id.0,
             variable.body.file.0,
-            variable.body.node.0,
+            variable.body.node.get(),
             variable.source.file.0,
-            variable.source.node.0
+            variable.source.node.get()
         )?;
     }
     Ok(())
@@ -230,7 +241,7 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                 write!(out, " binding={}", binding.0)?;
             }
             if let Some(Operation::Transfer { target, .. }) = fact.operation {
-                write!(out, " control={file}:{}", target.0)?;
+                write!(out, " control={file}:{}", target.get())?;
             }
             writeln!(out)?;
             if let Some(value) = fact.scalar {
@@ -247,7 +258,9 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
             }
             let key = crate::resolve::unit::NodeKey {
                 file: crate::resolve::unit::FileId(u32::try_from(file).map_err(io::Error::other)?),
-                node: crate::syntax::ast::NodeId(u32::try_from(node).map_err(io::Error::other)?),
+                node: crate::syntax::ast::NodeId::new(
+                    u32::try_from(node).map_err(io::Error::other)?,
+                ),
             };
             if let Some(count) = facts.autoderefs.get(&key) {
                 writeln!(out, "autoderef {file}:{node} count={count}")?;
@@ -563,7 +576,7 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
         Operation::Address => write!(out, "address"),
         Operation::AddressDereference => write!(out, "address-dereference"),
         Operation::PointerAddress { operand } => {
-            write!(out, "pointer-address operand={}", operand.0)
+            write!(out, "pointer-address operand={}", operand.get())
         }
         Operation::Dereference => write!(out, "deref"),
         Operation::IndexSlice => write!(out, "index length=dynamic"),

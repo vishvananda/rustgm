@@ -7,7 +7,8 @@ use crate::sema::{
     bodies::{Dependency, Requirement, projections},
     traits::{assumptions::Assumptions, obligations::Reservation},
 };
-use std::{collections::HashMap, sync::Arc};
+use crate::support::hash::HashMap;
+use std::sync::Arc;
 
 pub(in crate::sema::bodies) enum Progress {
     Ready(HashMap<usize, Source>),
@@ -31,7 +32,7 @@ impl Checker<'_> {
         body: NodeId,
     ) -> Result<Progress, Error> {
         let Some(mut pending) = self.take_trait_goals(body)? else {
-            return Ok(Progress::Ready(HashMap::new()));
+            return Ok(Progress::Ready(HashMap::default()));
         };
         pending.finishing = true;
         loop {
@@ -105,11 +106,11 @@ impl Checker<'_> {
                 finishing: false,
                 cursor: 0,
                 current: None,
-                evidence: HashMap::new(),
+                evidence: HashMap::default(),
                 assumptions: self.trait_assumptions(body)?.unwrap_or_default(),
                 query: None,
                 reservation: Reservation::default(),
-                partial: HashMap::new(),
+                partial: HashMap::default(),
             }
         };
         for index in pending.registered..self.state.call_types.obligations.len() {
@@ -304,12 +305,18 @@ impl Checker<'_> {
     ) -> Result<selection::Progress, Error> {
         let environment =
             self.trait_query_environment(self.state.call_types.obligations[index].0)?;
-        let (node, predicate) = &self.state.call_types.obligations[index];
-        let node = *node;
         if let Some((query, reservation)) = pending.partial.remove(&index) {
             pending.query = Some(query);
             pending.reservation = reservation;
         }
+        if pending.query.is_none()
+            && !self.state.call_types.assumed_obligations.contains(&index)
+            && self.memoizable(pending, index, environment.as_ref())?
+        {
+            return self.select_memoized(pending, index, first, environment);
+        }
+        let (node, predicate) = &self.state.call_types.obligations[index];
+        let node = *node;
         let selected = if let Some(query) = pending.query.take() {
             let first = pending
                 .reservation
@@ -346,6 +353,73 @@ impl Checker<'_> {
             )
         }
         .map_err(|e| self.error(node, e))?;
+        Ok(selected)
+    }
+    /// A fresh closed goal in a caller without premises: prepares its memo key.
+    fn memoizable(
+        &mut self,
+        pending: &Pending,
+        index: usize,
+        environment: Option<&Arc<crate::types::parameters::environment::Environment>>,
+    ) -> Result<bool, Error> {
+        if !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Validated
+        ) || !self.facts.types.nominal_sizes_sealed()
+            || self.state.call_types.bound_regions(index).is_some()
+            || !pending.assumptions.is_empty()
+            || !environment.is_none_or(|environment| environment.is_neutral())
+        {
+            return Ok(false);
+        }
+        let (node, predicate) = &self.state.call_types.obligations[index];
+        let node = *node;
+        self.facts
+            .generics
+            .selection_memo
+            .prepare(&self.facts.types, &mut self.state.infer, predicate)
+            .map_err(|e| self.error(node, e))
+    }
+    /// Reuse a verified answer, or search while observing its footprint.
+    fn select_memoized(
+        &mut self,
+        pending: &Pending,
+        index: usize,
+        first: u32,
+        environment: Option<Arc<crate::types::parameters::environment::Environment>>,
+    ) -> Result<selection::Progress, Error> {
+        let (node, predicate) = &self.state.call_types.obligations[index];
+        let node = *node;
+        if let Some(selected) = self.facts.generics.selection_memo.reuse(first) {
+            self.state
+                .infer
+                .account_work(1)
+                .map_err(|e| self.error(node, e))?;
+            return Ok(selection::Progress::Ready(selected));
+        }
+        let mut watch = self.facts.generics.selection_memo.watch(&self.facts.types);
+        let mut untouched = false;
+        let selected = selection::begin_refining_untouched(
+            self.facts,
+            &mut self.state.infer,
+            predicate,
+            selection::OwnedCaller {
+                assumptions: Arc::clone(&pending.assumptions),
+                environment,
+                first_region: first,
+                retain_sized: false,
+            },
+            self.availability,
+            &mut untouched,
+        )
+        .map_err(|e| self.error(node, e))?;
+        if let (Some(watch), selection::Progress::Ready(result)) = (&mut watch, &selected) {
+            watch.untouched = untouched;
+            self.facts
+                .generics
+                .selection_memo
+                .record(&self.facts.types, watch, first, result);
+        }
         Ok(selected)
     }
 }

@@ -9,13 +9,14 @@ use crate::{
         destruction::{self, glue},
         regions, templates,
     },
-    types::{Kind, outlives::LiveRegions},
+    types::Kind,
 };
 use std::hash::BuildHasher;
 
 pub(crate) struct Proved {
     body: Body,
-    plan: Option<destruction::Plan>,
+    /// Boxed: most bodies retain no runtime cleanup plan.
+    plan: Option<Box<destruction::Plan>>,
     destruction: bool,
     static_targets: Option<Box<crate::types::substitute::Bound>>,
 }
@@ -33,13 +34,15 @@ impl Proved {
         &self.body
     }
     pub(crate) fn plan(&self) -> Option<&destruction::Plan> {
-        self.plan.as_ref()
+        self.plan.as_deref()
     }
 }
 
 pub(crate) struct Verifier {
-    components: LiveRegions,
+    reused: super::Reused,
     drops: Option<crate::types::destruction::regions::Regions>,
+    /// Substitution-invariant facts shared by instances of one template.
+    structures: super::structure::Cache,
 }
 #[derive(Clone, Copy)]
 enum Original<'a> {
@@ -141,7 +144,8 @@ impl Original<'_> {
 impl Verifier {
     pub(crate) fn new(methods: Option<&[drops::Method]>) -> Result<Self, &'static str> {
         Ok(Self {
-            components: LiveRegions::default(),
+            reused: super::Reused::default(),
+            structures: super::structure::Cache::default(),
             drops: methods
                 .map(|methods| {
                     crate::types::destruction::regions::Regions::new(methods.iter().map(|m| m.item))
@@ -207,17 +211,37 @@ impl Verifier {
             return Err(error("instance proof belongs to another body"));
         }
         original.validate_instance(environment.types, templates, &body)?;
+        // A validated ordinary instance clones its checked template's CFG.
+        let family = (body.instance.is_some() && matches!(original, Original::Ordinary))
+            .then(|| super::structure::promoted(&body));
+        let found = match &family {
+            Some(promoted) => self.structures.find(&body, promoted)?,
+            None => super::structure::Found::First,
+        };
+        let mut proved = None;
+        let structure = match found {
+            super::structure::Found::Shared(shared) => super::structure::Use::Shared(shared),
+            super::structure::Found::Keep => super::structure::Use::Keep(&mut proved),
+            super::structure::Found::First => super::structure::Use::Own,
+        };
         let plan = match (&mut self.drops, catalog) {
             (Some(drops), Some(catalog)) => super::prove_cleanup(
                 environment,
-                &mut self.components,
+                &mut self.reused,
                 drops,
                 &body,
                 contract,
                 catalog,
+                structure,
             )?,
             (None, None) => {
-                super::prove_body::<false, _>(environment, &mut self.components, &body, contract)?;
+                super::prove_body::<false, _>(
+                    environment,
+                    &mut self.reused,
+                    &body,
+                    contract,
+                    structure,
+                )?;
                 None
             }
             _ => {
@@ -226,23 +250,51 @@ impl Verifier {
                 ));
             }
         };
+        if let (Some(promoted), Some(proved)) = (family, proved) {
+            self.structures.insert(&body, promoted, proved);
+        }
         Ok(Proved {
             static_targets: super::static_targets::prepare(contract).map_err(error)?,
             body,
-            plan,
+            plan: plan.map(Box::new),
             destruction: self.drops.is_some(),
         })
     }
 }
 
-/// Consume immutable proved bodies in their final order, then lend the existing
-/// executable token. No caller can mutate the owned bodies between proof and use.
-pub(crate) fn with_checked<T>(
+/// Immutable proved bodies in their final order with their selected cleanup.
+/// Inspection borrows the existing executable token; lowering may consume the
+/// bodies once, in demand order, releasing each after its emission.
+pub(crate) struct Assembled {
+    program: Program,
+    destruction: Option<Box<destruction::Proof>>,
+}
+impl Assembled {
+    /// Lend the existing executable token. No caller can mutate the owned
+    /// bodies between proof and use.
+    pub(crate) fn with_checked<T>(self, use_checked: impl FnOnce(&Checked<'_>) -> T) -> T {
+        use_checked(&Checked {
+            program: &self.program,
+            destruction: self.destruction,
+        })
+    }
+    #[cfg(test)]
+    pub(crate) const fn program(&self) -> &Program {
+        &self.program
+    }
+    /// Hand the proved bodies and cleanup proof to executable lowering, which
+    /// consumes each body once and never mutates it.
+    pub(crate) fn into_lowering(self) -> (Program, Option<Box<destruction::Proof>>) {
+        (self.program, self.destruction)
+    }
+}
+
+/// Consume immutable proved bodies in their final order.
+pub(crate) fn assemble(
     mut program: Program,
     bodies: Vec<Proved>,
     recipes: Option<glue::Recipes>,
-    use_checked: impl FnOnce(&Checked<'_>) -> T,
-) -> Result<T, Error> {
+) -> Result<Assembled, Error> {
     if !program.bodies.is_empty()
         || program.drops.is_some() != recipes.is_some()
         || program
@@ -259,13 +311,31 @@ pub(crate) fn with_checked<T>(
         });
     }
     let mut plans = Vec::with_capacity(bodies.len());
-    for proved in bodies {
+    program.bodies.reserve_exact(bodies.len());
+    // Release the proved records progressively while their bodies move.
+    let mut bodies = bodies;
+    bodies.reverse();
+    while let Some(proved) = bodies.pop() {
         program.bodies.push(proved.body);
         plans.push(proved.plan);
+        if bodies.len() < bodies.capacity() / 2 {
+            bodies.shrink_to_fit();
+        }
     }
     let destruction = recipes.map(|recipes| Box::new(destruction::Proof { plans, recipes }));
-    Ok(use_checked(&Checked {
-        program: &program,
+    Ok(Assembled {
+        program,
         destruction,
-    }))
+    })
+}
+/// Consume immutable proved bodies in their final order, then lend the existing
+/// executable token. No caller can mutate the owned bodies between proof and use.
+#[cfg(test)]
+pub(crate) fn with_checked<T>(
+    program: Program,
+    bodies: Vec<Proved>,
+    recipes: Option<glue::Recipes>,
+    use_checked: impl FnOnce(&Checked<'_>) -> T,
+) -> Result<T, Error> {
+    Ok(assemble(program, bodies, recipes)?.with_checked(use_checked))
 }

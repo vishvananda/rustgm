@@ -2,9 +2,9 @@
 mod entailment;
 mod probes;
 use super::{Error, Graph, Region, Solution};
+use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
 pub(crate) use probes::Answers;
-use std::collections::HashMap;
 
 /// Identity in one graph's append-only verification arena.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

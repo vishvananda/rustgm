@@ -306,7 +306,7 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<(ItemId, Declaration)>()
     );
     // Nullable policy/layout caches add 16 bytes; source bindings add one cold pointer.
-    assert_eq!(size_of::<crate::sema::model::Declarations>(), 8576);
+    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7040);
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(
         size_of::<(ItemId, Declaration)>(),

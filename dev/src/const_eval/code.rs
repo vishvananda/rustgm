@@ -2,13 +2,14 @@
 #[cfg(test)]
 #[path = "../../tests/invariants/retained_cfg_storage.rs"]
 mod storage_tests;
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{Block, Body, Local, Owner, Projection, Rvalue, Statement, Value, ValueId},
     resolve::{model::DefId, unit::NodeKey},
     sema::{model::Scalar, values::Constant},
     types::instance::Instance,
 };
-use std::{collections::HashMap, ops::Index};
+use std::ops::Index;
 
 #[derive(Clone, Copy)]
 pub(crate) enum Inline {
@@ -93,7 +94,7 @@ impl Code {
             promotions: body
                 .promotions
                 .as_ref()
-                .map_or_else(HashMap::new, |facts| facts.entries().collect()),
+                .map_or_else(HashMap::default, |facts| facts.entries().collect()),
             callables: body.callable_targets(),
             operands,
         })

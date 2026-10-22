@@ -1,7 +1,7 @@
 //! Strings are partitioned by observed values plus one class for every other string.
 use super::{Coverage, Kind, Roots};
 use crate::sema::text::Id;
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Domain {
@@ -14,7 +14,7 @@ impl Coverage<'_> {
             return Ok(());
         }
         let mut domain = Domain::default();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut work = match self.roots {
             Roots::Pattern(id) => vec![id],
             Roots::Arms(arms) => arms.iter().filter_map(|arm| arm.pattern).collect(),

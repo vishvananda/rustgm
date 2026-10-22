@@ -43,8 +43,8 @@ pub fn build_roots_prepared(
     roots: super::Roots<'_>,
     prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
-    inspect_roots(report, facts, roots, prepared, |facts, checked, roots| {
-        super::build_exact_roots(facts, checked, roots)
+    inspect_roots(report, facts, roots, prepared, |facts, assembled, roots| {
+        super::build_assembled(facts, assembled, roots)
     })?
     .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
 }
@@ -77,7 +77,7 @@ pub fn build_library_prepared(
             interface = Some(exported.interface);
             Ok((None, roots))
         },
-        super::build_exact_roots,
+        super::build_assembled,
     )?
     .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))?;
     let interface = interface
@@ -111,9 +111,11 @@ pub fn inspect_prepared<R>(
             exports: &[],
         },
         prepared,
-        |facts, checked, _| {
-            super::alignment::check(facts, checked.program())?;
-            Ok(inspect(facts, checked))
+        |facts, assembled, _| {
+            assembled.with_checked(|checked| {
+                super::alignment::check(facts, checked.program())?;
+                Ok(inspect(facts, checked))
+            })
         },
     )?
     .map_err(|e: super::Error| diagnostic(report, Some(e.node), e.message.into()))
@@ -124,7 +126,11 @@ fn inspect_roots<R>(
     facts: &mut Declarations,
     roots: super::Roots<'_>,
     prepared: crate::pipeline::Prepared,
-    inspect: impl FnOnce(&mut Declarations, &borrow::Checked<'_>, super::roots::Selected<'_>) -> R,
+    inspect: impl FnOnce(
+        &mut Declarations,
+        borrow::incremental::Assembled,
+        super::roots::Selected<'_>,
+    ) -> R,
 ) -> Result<R, Error> {
     inspect_selected(
         report,
@@ -144,7 +150,11 @@ fn inspect_selected<R>(
     facts: &mut Declarations,
     mut prepared: crate::pipeline::Prepared,
     select: impl FnOnce(&mut Declarations) -> Result<(Option<DefId>, super::roots::Exports), Error>,
-    inspect: impl FnOnce(&mut Declarations, &borrow::Checked<'_>, super::roots::Selected<'_>) -> R,
+    inspect: impl FnOnce(
+        &mut Declarations,
+        borrow::incremental::Assembled,
+        super::roots::Selected<'_>,
+    ) -> R,
 ) -> Result<R, Error> {
     let mut templates = prepared.templates.finish(report, facts)?;
     let mut inputs = if let Some(collector) = prepared.contracts {
@@ -212,7 +222,7 @@ fn inspect_selected<R>(
     let inputs = contracts.bodies;
     publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
     if !facts.opaques.owners.is_empty() {
-        let owners: std::collections::HashMap<_, _> = facts
+        let owners: crate::support::hash::HashMap<_, _> = facts
             .functions
             .iter()
             .filter(|f| facts.opaques.owners.contains_key(&f.definition))
@@ -240,9 +250,10 @@ fn inspect_selected<R>(
         prepared.concrete,
         prepared.constants,
     )?;
-    program
-        .with_checked(|checked| inspect(facts, checked, roots))
-        .map_err(|e| diagnostic(report, e.node, e.message))
+    let assembled = program
+        .assemble()
+        .map_err(|e| diagnostic(report, e.node, e.message))?;
+    Ok(inspect(facts, assembled, roots))
 }
 
 fn publish_closure_conditions(

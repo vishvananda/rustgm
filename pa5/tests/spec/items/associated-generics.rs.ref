@@ -1,26 +1,23 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 node 0 26 28 generic Lifetime "'a" - [] -
 node 1 36 40 name "Self"
-node 2 36 40 path false [1]
-node 3 36 40 type Path [2]
-node 4 41 43 name "'a"
-node 5 41 43 bound false [] 4
-node 6 36 43 where [] 3 [5]
-node 7 16 44 item 0
-item 0 "Item" private [0] [6] type-alias [] -
-node 8 53 55 generic Lifetime "'a" - [] -
-node 9 57 65 receiver false "'a"
-node 10 57 65 parameter 9 -
-node 11 68 72 name "Self"
-node 12 74 78 name "Item"
-node 13 79 81 name "'a"
-node 14 74 82 applied 12 [13] -
-node 15 68 82 path false [11,14]
-node 16 68 82 type Path [15]
-node 17 45 83 item 1
-item 1 "lend" private [8] [] function false false false false - [10] 16 -
-node 18 0 85 item 2
-item 2 "Lending" private [] [] trait false [] [7,17]
-node 19 0 85 crate [18]
-root 19
+node 2 41 43 name "'a"
+node 3 41 43 bound false [] 2
+node 4 36 43 where [] 1 [3]
+node 5 16 44 item 0
+item 0 "Item" private [0] [4] type-alias [] -
+node 6 53 55 generic Lifetime "'a" - [] -
+node 7 57 65 receiver false "'a"
+node 8 57 65 parameter 7 -
+node 9 68 72 name "Self"
+node 10 74 78 name "Item"
+node 11 79 81 name "'a"
+node 12 74 82 applied 10 [11] -
+node 13 68 82 path false [9,12]
+node 14 45 83 item 1
+item 1 "lend" private [6] [] function false false false false - [8] 13 -
+node 15 0 85 item 2
+item 2 "Lending" private [] [] trait false [] [5,14]
+node 16 0 85 crate [15]
+root 16
 eof 86

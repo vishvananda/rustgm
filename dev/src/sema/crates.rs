@@ -5,6 +5,7 @@ mod imported_storage;
 mod imported_values;
 mod type_transport;
 use super::{foreign, model::Declarations};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
     support::{
@@ -15,7 +16,6 @@ use crate::{
     types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId},
 };
 pub use export::{Exports, export};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub struct Linkage {

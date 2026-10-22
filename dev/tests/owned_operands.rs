@@ -14,7 +14,7 @@ use rustgm::{
 
 fn verify_points(body: &Body, facts: &initialization::Facts<'_>) -> Result<usize, &'static str> {
     let mut seen = 0;
-    let mut after = std::collections::HashMap::new();
+    let mut after = rustgm::support::hash::HashMap::default();
     for effect in facts.consumption.entries() {
         if effect.moment == Moment::Statement {
             let Location::At { block, before } = effect.location else {

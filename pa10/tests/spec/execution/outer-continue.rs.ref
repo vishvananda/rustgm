@@ -20,44 +20,44 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=14 source=0:31
-  local l0 type=14 binding def=31 mutable=true storage-parent=- source=5
-  local l1 type=14 merge mutable=true storage-parent=l0 source=29
+body 0 function def=13 signature=19 result=14 source=0:24
+  local l0 type=14 binding def=31 mutable=true storage-parent=- source=1
+  local l1 type=14 merge mutable=true storage-parent=l0 source=22
   block b0:
-    v0 type=14 = integer bits=0x00000000000000000000000000000000 source=6
-    live l0 source=5
-    store l0 v0 source=7
-    v1 type=1 = unit source=7
-    live l1 source=29
-    jump b1 source=29
+    v0 type=14 = integer bits=0x00000000000000000000000000000000 source=2
+    live l0 source=1
+    store l0 v0 source=3
+    v1 type=1 = unit source=3
+    live l1 source=22
+    jump b1 source=22
   block b1:
-    v2 type=14 = integer bits=0x00000000000000000000000000000001 source=10
-    v3 type=14 = read l0 source=11
-    v4 type=14 = binary Plus v3 v2 source=11
-    store l0 v4 source=11
-    v5 type=1 = unit source=11
-    v6 type=1 = unit source=12
-    jump b3 source=27
+    v2 type=14 = integer bits=0x00000000000000000000000000000001 source=5
+    v3 type=14 = read l0 source=6
+    v4 type=14 = binary Plus v3 v2 source=6
+    store l0 v4 source=6
+    v5 type=1 = unit source=6
+    v6 type=1 = unit source=7
+    jump b3 source=20
   block b2:
-    v13 type=14 = read l1 source=29
-    end-storage first=l0 last=l1 source=31
-    return v13 source=31
+    v13 type=14 = read l1 source=22
+    end-storage first=l0 last=l1 source=24
+    return v13 source=24
   block b3:
-    v7 type=14 = read l0 source=14
-    v8 type=14 = integer bits=0x00000000000000000000000000000003 source=15
-    v9 type=2 = binary Less v7 v8 source=16
-    branch v9 b5 b6 source=20
+    v7 type=14 = read l0 source=8
+    v8 type=14 = integer bits=0x00000000000000000000000000000003 source=9
+    v9 type=2 = binary Less v7 v8 source=10
+    branch v9 b5 b6 source=14
   block b4:
-    unreachable source=27
+    unreachable source=20
   block b5:
-    jump b1 source=17
+    jump b1 source=11
   block b6:
-    jump b7 source=20
+    jump b7 source=14
   block b7:
-    v10 type=1 = unit source=20
-    v11 type=1 = unit source=21
-    v12 type=14 = read l0 source=23
-    store l1 v12 source=24
-    jump b2 source=24
+    v10 type=1 = unit source=14
+    v11 type=1 = unit source=15
+    v12 type=14 = read l0 source=16
+    store l1 v12 source=17
+    jump b2 source=17
 end-body
 eof bodies=1 locals=2 values=14 statements=20 blocks=8

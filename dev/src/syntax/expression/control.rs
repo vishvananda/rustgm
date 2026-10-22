@@ -1,7 +1,7 @@
 //! Statement boundaries and control expressions share the ordinary cursor.
 use super::{
     BlockFlavor, CONDITION, Context, Kind, LexError, NORMAL, NodeId, P, Parser, Span, TokenKind,
-    error,
+    Word, error,
 };
 
 use super::fragment::FragmentKind as F;
@@ -29,6 +29,16 @@ impl Parser<'_, '_> {
         self.attach(inner, block)
     }
 
+    // Forced only without debug assertions: debug builds keep the call so
+    // recursive-descent frames stay small enough for the nesting limit.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-statement boundary probe; callgrind shows calls dominate"
+        )
+    )]
     fn end_statements(&mut self, close: Option<P>) -> Result<bool, LexError> {
         if let Some(close) = close {
             self.eat(close)
@@ -62,7 +72,7 @@ impl Parser<'_, '_> {
             } else if self.cursor.at(P::Semicolon)? {
                 let token = self.required()?;
                 self.node(token.start, Kind::EmptyStatement)?
-            } else if self.cursor.word("let")? {
+            } else if self.cursor.at_word(Word::Let)? {
                 self.let_statement(true)?
             } else {
                 let value = self.expr(
@@ -94,7 +104,7 @@ impl Parser<'_, '_> {
         while let Kind::Attributed { value, .. } = self.ast.node(node).kind {
             node = value;
         }
-        if let Kind::Macro { context, .. } = &mut self.ast.nodes[node.0 as usize].kind {
+        if let Kind::Macro { context, .. } = &mut self.ast.nodes[node.get() as usize].kind {
             *context = crate::syntax::ast::MacroContext::Statements;
         }
     }
@@ -113,7 +123,7 @@ impl Parser<'_, '_> {
             None
         };
         let brace_ending = self.cursor.last_kind() == Some(TokenKind::Punctuation(P::CloseBrace));
-        let otherwise = if self.word("else")? {
+        let otherwise = if self.eat_word(Word::Else)? {
             let Some(value) = value else {
                 return Err(error(start, "let else requires an initializer"));
             };
@@ -172,8 +182,8 @@ impl Parser<'_, '_> {
         let condition = self.expr(0, CONDITION)?;
         self.validate_condition(condition)?;
         let then = self.block(BlockFlavor::Plain)?;
-        let otherwise = if self.word("else")? {
-            Some(if self.cursor.word("if")? {
+        let otherwise = if self.eat_word(Word::Else)? {
+            Some(if self.cursor.at_word(Word::If)? {
                 self.expr(
                     0,
                     Context {
@@ -246,11 +256,11 @@ impl Parser<'_, '_> {
 
     pub(super) fn loop_expression(&mut self) -> Result<NodeId, LexError> {
         let token = self.required()?;
-        let kind = match self.cursor.spelling(token) {
-            "loop" => Kind::Loop {
+        let kind = match self.cursor.last_word() {
+            Word::Loop => Kind::Loop {
                 body: self.block(BlockFlavor::Plain)?,
             },
-            "while" => {
+            Word::While => {
                 let condition = self.expr(0, CONDITION)?;
                 self.validate_condition(condition)?;
                 Kind::While {
@@ -260,7 +270,7 @@ impl Parser<'_, '_> {
             }
             _ => {
                 let pattern = self.pattern(true)?;
-                if !self.word("in")? {
+                if !self.eat_word(Word::In)? {
                     return Err(self.error("for requires in")?);
                 }
                 let iterator = self.expr(
@@ -285,9 +295,9 @@ impl Parser<'_, '_> {
         self.expect(P::Colon)?;
         let value = if self.cursor.at(P::OpenBrace)? {
             self.block(BlockFlavor::Plain)?
-        } else if self.cursor.word("loop")?
-            || self.cursor.word("while")?
-            || self.cursor.word("for")?
+        } else if self.cursor.at_word(Word::Loop)?
+            || self.cursor.at_word(Word::While)?
+            || self.cursor.at_word(Word::For)?
         {
             self.loop_expression()?
         } else {
@@ -323,9 +333,9 @@ impl Parser<'_, '_> {
 
     pub(super) fn jump(&mut self) -> Result<NodeId, LexError> {
         let token = self.required()?;
-        let kind = match self.cursor.spelling(token) {
-            "continue" => Kind::Continue(self.optional_label()?),
-            "break" => {
+        let kind = match self.cursor.last_word() {
+            Word::Continue => Kind::Continue(self.optional_label()?),
+            Word::Break => {
                 let label = self.optional_label()?;
                 let value = if self.can_start()? {
                     Some(self.expr(0, NORMAL)?)
@@ -361,7 +371,7 @@ impl Parser<'_, '_> {
                 crate::syntax::item::AttributeRange::default()
             };
             let pattern = self.pattern(true)?;
-            let guard = if self.word("if")? {
+            let guard = if self.eat_word(Word::If)? {
                 // The fat arrow, unlike an if/while body, leaves struct literals unambiguous.
                 let guard = self.expr(
                     0,
@@ -462,14 +472,14 @@ impl Parser<'_, '_> {
 
     pub(super) fn async_expression(&mut self) -> Result<NodeId, LexError> {
         let start = self.required()?.start;
-        let moving = self.word("move")?;
+        let moving = self.eat_word(Word::Move)?;
         if self.cursor.at(P::OpenBrace)? {
             let block = self.block(if moving {
                 BlockFlavor::AsyncMove
             } else {
                 BlockFlavor::Async
             })?;
-            self.ast.nodes[block.0 as usize].span.start = start;
+            self.ast.nodes[block.get() as usize].span.start = start;
             Ok(block)
         } else {
             self.closure(moving, true, start)

@@ -2,6 +2,7 @@
 #[cfg(test)]
 #[path = "../../tests/invariants/provenance_members.rs"]
 mod tests;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
         model::{Access, DefId},
@@ -11,7 +12,6 @@ use crate::{
     syntax::item::Shape,
     types::{ItemId, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct VariantId(pub u32);
@@ -115,7 +115,7 @@ impl Members {
     /// Unknown external constructors are coverage facts, never storage variants.
     pub(crate) fn mark_external_open(&mut self, owner: ItemId) {
         self.external_open
-            .get_or_insert_with(HashSet::new)
+            .get_or_insert_with(HashSet::default)
             .insert(owner);
     }
     #[must_use]

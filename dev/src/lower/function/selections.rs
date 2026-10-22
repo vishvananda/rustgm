@@ -21,7 +21,7 @@ pub(super) struct Dynamic {
     offset: u64,
     projection: ProjectionId,
 }
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     fn selection_step(&mut self, id: ProjectionId) -> Result<Step, &'static str> {
         let projection = &self.body.projections[id.0 as usize];
         match projection.kind {
@@ -82,12 +82,12 @@ impl Lower<'_, '_> {
             let Place::Projection(current) = place else {
                 return Err("pattern path does not reach its scrutinee");
             };
-            if let Some(recipe) = self.selections.get(&current) {
+            if let Some(recipe) = self.selections.get(current) {
                 if recipe.anchor != anchor {
                     return Err("pattern path changed scrutinee");
                 }
                 offset = recipe.offset;
-                parent = self.selection_paths.get(&current).copied();
+                parent = self.selection_paths.get(current).copied();
                 break;
             }
             let step = self.selection_step(current)?;

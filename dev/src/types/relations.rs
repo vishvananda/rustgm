@@ -13,6 +13,7 @@ use super::structural;
 mod type_bounds;
 mod universal_bounds;
 use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};
+use crate::support::hash::{HashMap, HashSet};
 use crate::support::radix_map as persistent;
 use crate::types::{
     Kind, RegionId, Store, TypeId,
@@ -21,7 +22,6 @@ use crate::types::{
     variance::{Variance, Variances},
 };
 pub use scopes::ProofScope;
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Scope(usize);
@@ -169,13 +169,13 @@ impl<'a> Constraints<'a> {
             variances,
             graph: Graph::new(limit),
             projected: None,
-            variables: HashMap::new(),
-            parameters: HashMap::new(),
+            variables: HashMap::default(),
+            parameters: HashMap::default(),
             binders: Vec::new(),
             ancestors: Vec::new(),
             arguments: Vec::new(),
             universe: 0,
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             work: Vec::new(),
             steps: 0,
             limit,
@@ -732,7 +732,7 @@ impl<'a> Constraints<'a> {
             return Err(Error::Identity);
         }
         let binder = self.binders.first().ok_or(Error::Identity)?;
-        let mut names = HashMap::from([(Region::STATIC, RegionId::STATIC)]);
+        let mut names = HashMap::from_iter([(Region::STATIC, RegionId::STATIC)]);
         for (slot, &region) in self.arguments[binder.start..binder.end].iter().enumerate() {
             let slot = u16::try_from(slot).map_err(|_| Error::Budget)?;
             names.insert(
@@ -776,7 +776,7 @@ impl<'a> Constraints<'a> {
     ) -> Result<(Proof, OutputConditions), super::region_graph::OutputError> {
         self.verify_projections()?;
         let mut regions = Vec::with_capacity(interface.len());
-        let mut names = HashMap::from([(Region::STATIC, RegionId::STATIC)]);
+        let mut names = HashMap::from_iter([(Region::STATIC, RegionId::STATIC)]);
         for &id in interface {
             let region = self.region(id, Scope(0))?;
             if names.insert(region, id).is_some() {

@@ -54,104 +54,80 @@ function @rg.15(%p0 : ptr) -> u8 {
     %t9 = load u8 %t8
     %t10 = load ptr $s3
     %t11 = load u8 %t10
-    %t12 = convert zext i16 u8 %t9
-    %t13 = convert zext i16 u8 %t11
-    %t14 = binary add i16 %t12, %t13
-    %t15 = convert trunc u8 i16 %t14
-    %t16 = convert zext i16 u8 %t15
-    %t17 = cmp ne i16 %t14, %t16
-    branch %t17, ^b24, ^b25
+    %t12 = binary add u8 %t9, %t11
+    %t13 = cmp ult u8 %t12, %t9
+    branch %t13, ^b24, ^b25
   block ^b25:
-    %t18 = load u8 $s1
-    %t19 = convert zext i16 u8 %t18
-    %t20 = convert zext i16 u8 %t15
-    %t21 = binary add i16 %t19, %t20
-    %t22 = convert trunc u8 i16 %t21
-    %t23 = convert zext i16 u8 %t22
-    %t24 = cmp ne i16 %t21, %t23
-    branch %t24, ^b24, ^b26
+    %t14 = load u8 $s1
+    %t15 = binary add u8 %t14, %t12
+    %t16 = cmp ult u8 %t15, %t14
+    branch %t16, ^b24, ^b26
   block ^b26:
-    store u8 %t22, $s1
+    store u8 %t15, $s1
     jump ^b3
   block ^b3:
-    %t25 = load ptr $s0
+    %t17 = load ptr $s0
     jump ^b13
   block ^b13:
-    %t26 = index u8 %t25, 1
+    %t18 = index u8 %t17, 1
     jump ^b9
   block ^b9:
-    %t27 = load ptr $s0
-    store ptr %t27, $s4
-    %t28 = index u8 %t27, 1
-    store ptr %t28, $s5
+    %t19 = load ptr $s0
+    store ptr %t19, $s4
+    %t20 = index u8 %t19, 1
+    store ptr %t20, $s5
     jump ^b12
   block ^b12:
-    %t29 = load ptr $s4
-    %t30 = load u8 %t29
-    %t31 = load ptr $s5
-    %t32 = load u8 %t31
-    %t33 = convert zext i16 u8 %t30
-    %t34 = convert zext i16 u8 %t32
-    %t35 = binary add i16 %t33, %t34
-    %t36 = convert trunc u8 i16 %t35
-    %t37 = convert zext i16 u8 %t36
-    %t38 = cmp ne i16 %t35, %t37
-    branch %t38, ^b24, ^b27
+    %t21 = load ptr $s4
+    %t22 = load u8 %t21
+    %t23 = load ptr $s5
+    %t24 = load u8 %t23
+    %t25 = binary add u8 %t22, %t24
+    %t26 = cmp ult u8 %t25, %t22
+    branch %t26, ^b24, ^b27
   block ^b27:
-    %t39 = load u8 $s1
-    %t40 = convert zext i16 u8 %t39
-    %t41 = convert zext i16 u8 %t36
-    %t42 = binary add i16 %t40, %t41
-    %t43 = convert trunc u8 i16 %t42
-    %t44 = convert zext i16 u8 %t43
-    %t45 = cmp ne i16 %t42, %t44
-    branch %t45, ^b24, ^b28
+    %t27 = load u8 $s1
+    %t28 = binary add u8 %t27, %t25
+    %t29 = cmp ult u8 %t28, %t27
+    branch %t29, ^b24, ^b28
   block ^b28:
-    store u8 %t43, $s1
+    store u8 %t28, $s1
     jump ^b16
   block ^b16:
-    %t46 = load ptr $s0
+    %t30 = load ptr $s0
     jump ^b22
   block ^b22:
-    %t47 = index u8 %t46, 1
+    %t31 = index u8 %t30, 1
     jump ^b20
   block ^b20:
-    %t48 = load ptr $s0
-    store ptr %t48, $s6
-    %t49 = index u8 %t48, 1
-    store ptr %t49, $s7
+    %t32 = load ptr $s0
+    store ptr %t32, $s6
+    %t33 = index u8 %t32, 1
+    store ptr %t33, $s7
     jump ^b19
   block ^b19:
     branch 1, ^b17, ^b23
   block ^b23:
     jump ^b18
   block ^b17:
-    %t50 = load ptr $s6
-    %t51 = load u8 %t50
-    %t52 = load ptr $s7
-    %t53 = load u8 %t52
-    %t54 = convert zext i16 u8 %t51
-    %t55 = convert zext i16 u8 %t53
-    %t56 = binary add i16 %t54, %t55
-    %t57 = convert trunc u8 i16 %t56
-    %t58 = convert zext i16 u8 %t57
-    %t59 = cmp ne i16 %t56, %t58
-    branch %t59, ^b24, ^b29
+    %t34 = load ptr $s6
+    %t35 = load u8 %t34
+    %t36 = load ptr $s7
+    %t37 = load u8 %t36
+    %t38 = binary add u8 %t35, %t37
+    %t39 = cmp ult u8 %t38, %t35
+    branch %t39, ^b24, ^b29
   block ^b29:
-    %t60 = load u8 $s1
-    %t61 = convert zext i16 u8 %t60
-    %t62 = convert zext i16 u8 %t57
-    %t63 = binary add i16 %t61, %t62
-    %t64 = convert trunc u8 i16 %t63
-    %t65 = convert zext i16 u8 %t64
-    %t66 = cmp ne i16 %t63, %t65
-    branch %t66, ^b24, ^b30
+    %t40 = load u8 $s1
+    %t41 = binary add u8 %t40, %t38
+    %t42 = cmp ult u8 %t41, %t40
+    branch %t42, ^b24, ^b30
   block ^b30:
-    store u8 %t64, $s1
+    store u8 %t41, $s1
     jump ^b18
   block ^b18:
-    %t67 = load u8 $s1
-    return u8 %t67
+    %t43 = load u8 $s1
+    return u8 %t43
   block ^b6:
     unreachable
   block ^b10:

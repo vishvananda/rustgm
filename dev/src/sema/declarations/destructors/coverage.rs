@@ -1,10 +1,10 @@
 //! Drop covers the complete nominal schema, independent of impl-side assumptions.
 use super::super::{Checker, DefId};
+use crate::support::hash::HashSet;
 use crate::types::{
     GenericArgs, ItemId, Kind, RegionId, Store,
     arguments::{Argument, ConstKind},
 };
-use std::collections::HashSet;
 
 use crate::sema::destructors::Coverage;
 
@@ -39,7 +39,7 @@ impl Checker<'_> {
         if actual.len() != nominal.len() {
             return Err("Drop target argument arity mismatch");
         }
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut nominal_lifetimes = 0;
         for (actual, nominal) in actual.zip(nominal) {
             if let (Argument::Lifetime(actual), Argument::Lifetime(nominal)) = (actual, nominal) {

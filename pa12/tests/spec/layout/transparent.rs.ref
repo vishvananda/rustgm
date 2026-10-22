@@ -21,7 +21,7 @@ type 18 primitive f64
 type 19 aggregate def=13
 type 20 function binders=0 parameters=[1,14,1] result=19 unsafe=false
 type 21 function-item def=14 signature=20
-def 13 type=19 name="T" source=0:8
+def 13 type=19 name="T" source=0:6
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"

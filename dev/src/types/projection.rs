@@ -1,7 +1,8 @@
 //! Associated type identity and complete inputs, separate from normalization evidence.
 mod outlives;
 use super::{GenericArgs, ItemId, Properties, Property, Store, TypeId, traits::ApplicationId};
-use std::collections::{HashMap, hash_map::Entry};
+use crate::support::hash::HashMap;
+use std::collections::hash_map::Entry;
 
 /// Uniform declaration promises, conditional on a proved complete application.
 /// Kept separate from canonical properties when headers are typed after interning.

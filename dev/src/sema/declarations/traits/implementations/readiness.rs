@@ -4,10 +4,8 @@ use crate::sema::traits::{
     conformance::Definitions,
     implementations::{Availability, ConstantRequest},
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use crate::support::hash::{HashMap, HashSet};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub(in crate::sema::declarations) struct Readiness {

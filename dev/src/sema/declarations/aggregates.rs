@@ -261,7 +261,7 @@ impl Checker<'_> {
                 let unit = self.report.package.unit(key.file);
                 let mut groups = Vec::new();
                 for node in unit.configured.ast.list(variants).iter().copied() {
-                    if !unit.configured.active[node.0 as usize] {
+                    if !unit.configured.active[node.get() as usize] {
                         continue;
                     }
                     let key = self.unattributed(NodeKey { node, ..key });
@@ -290,7 +290,7 @@ impl Checker<'_> {
     fn field_annotations(&mut self, group: &Group, context: regions::Context) -> Result<(), Error> {
         let unit = self.report.package.unit(group.key.file);
         for node in unit.configured.ast.list(group.fields).iter().copied() {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let key = self.unattributed(NodeKey { node, ..group.key });
@@ -310,7 +310,7 @@ impl Checker<'_> {
         let mut fields: Vec<Field> = Vec::new();
         let mut declared: Option<Vec<TypeId>> = None;
         for node in unit.configured.ast.list(group.fields).iter().copied() {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let key = self.unattributed(NodeKey { node, ..group.key });

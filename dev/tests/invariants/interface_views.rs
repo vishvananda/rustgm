@@ -1,7 +1,7 @@
 //! Interface views retain source ownership while sharing one lifetime fold.
 use super::{Argument, Bound, Context, Refinement, Store, map_types};
+use crate::support::hash::HashMap;
 use crate::types::{Kind, RegionId, TypeId, callable::Convention, infer::Domain};
-use std::collections::HashMap;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn reference(store: &mut Store, region: RegionId) -> Result<TypeId, &'static str> {
     store.intern(Kind::Reference {
@@ -31,7 +31,7 @@ fn incoming_views_open_prepared_aliases_without_rebinding_source_roots() -> Test
     let tuple = store.intern(Kind::Tuple(fields))?;
     let known = parent.known(&store, tuple)?;
     parent.equate(&store, original, known)?;
-    let mut opening = Bound::restore_regions(HashMap::from([(alias, slot)]));
+    let mut opening = Bound::restore_regions(HashMap::from_iter([(alias, slot)]));
     let pairs = child.incoming_regions(&mut store, &mut parent, &mut opening)?;
     let roots = pairs.into_iter().flat_map(|(a, b)| [a, b]).collect();
     let roots = map_types(

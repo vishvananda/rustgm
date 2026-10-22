@@ -1,5 +1,6 @@
 //! Vtable entries instantiate checked declarations after the conversion proof.
 use super::{Dispatcher, arguments};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::{model::Declarations, vtable_plans::Slot},
@@ -8,7 +9,6 @@ use crate::{
         parameters::argument_id, relations::Constraints,
     },
 };
-use std::collections::HashMap;
 
 pub(crate) fn table_method(
     facts: &mut Declarations,
@@ -105,7 +105,7 @@ fn bindings(
     if formal.len() != actual.len() {
         return Err("vtable parent argument arity mismatch");
     }
-    let mut bindings = HashMap::from([(self_id, Argument::Type(concrete))]);
+    let mut bindings = HashMap::from_iter([(self_id, Argument::Type(concrete))]);
     for (parameter, argument) in formal.iter().zip(actual) {
         if !matches!(parameter.argument, Argument::Lifetime(_)) {
             bindings.insert(argument_id(&facts.types, parameter.argument)?, argument);

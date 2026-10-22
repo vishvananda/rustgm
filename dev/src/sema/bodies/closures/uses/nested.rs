@@ -8,7 +8,7 @@ pub(in crate::sema::bodies::closures) fn children<'a>(
     offset: usize,
     indices: &[usize],
 ) -> Result<HashMap<NodeId, Option<&'a Captures>>, &'static str> {
-    let mut children = HashMap::new();
+    let mut children = HashMap::default();
     for &index in indices {
         let child = index
             .checked_sub(offset)
@@ -38,7 +38,7 @@ impl Collector<'_> {
         let Some(captures) = captures else {
             return Ok(());
         };
-        let mut imported = HashMap::new();
+        let mut imported = HashMap::default();
         for capture in captures.plan.captures() {
             self.work += 1;
             let Some(place) =

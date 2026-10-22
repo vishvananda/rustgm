@@ -94,7 +94,7 @@ fn proof(source: NodeKey, range: Range<u32>) -> Proof {
 #[test]
 fn completed_and_resumed_proofs_reserve_only_their_actual_owned_ranges() -> Result {
     let (mut facts, body, mut contract) = fixture()?;
-    let first = frontier(&facts)?;
+    let first = frontier(&facts, body.source)?;
     contract.proofs.push(proof(body.source, first..first));
     let mut owner = Operation::begin(&mut facts, &body, &contract)?.ok_or("missing owner")?;
     contract.proofs.push(proof(body.source, first..first + 2));
@@ -103,9 +103,12 @@ fn completed_and_resumed_proofs_reserve_only_their_actual_owned_ranges() -> Resu
     contract.proofs[0].proof.regions.end = first + 3;
     owner.record(0, &contract.proofs[0], first + 2..first + 3)?;
     owner.finish(&mut facts, &body, &contract, first + 3)?;
-    assert_eq!(frontier(&facts)?, first + 3);
+    assert_eq!(frontier(&facts, body.source)?, first + 3);
     assert_eq!(owner.rows.len(), 2);
-    for region in &facts.body_regions[first as usize - 1..] {
+    for (_, region) in facts
+        .body_regions
+        .regions_after(body.source, first as usize - 1)
+    {
         assert_eq!(region.body, body.source);
         assert_eq!(region.source, body.source);
     }
@@ -125,7 +128,7 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
     let evidence = proof(body.source, first..first + 2);
     assert!(owner.record(0, &evidence, first + 1..first + 2).is_err());
     let mut foreign = evidence.clone();
-    foreign.source.node.0 += 1;
+    foreign.source.node = crate::syntax::ast::NodeId::new(foreign.source.node.get() + 1);
     assert!(owner.record(0, &foreign, first..first + 2).is_err());
     let mut gapped = evidence.clone();
     gapped.proof = Obligations::new(first);
@@ -145,7 +148,8 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
             .is_err()
     );
     contract.proofs.push(evidence);
-    contract.proofs[0].source.node.0 += 1;
+    contract.proofs[0].source.node =
+        crate::syntax::ast::NodeId::new(contract.proofs[0].source.node.get() + 1);
     assert!(
         owner
             .finish(&mut facts, &body, &contract, first + 2)
@@ -158,7 +162,7 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
             .finish(&mut facts, &body, &contract, first + 2)
             .is_err()
     );
-    assert_eq!(frontier(&facts)?, first);
+    assert_eq!(frontier(&facts, body.source)?, first);
     Ok(())
 }
 
@@ -175,7 +179,7 @@ fn recorder_budget_and_empty_operations_preserve_the_frontier() -> Result {
     );
     assert!(owner.rows.is_empty());
     owner.finish(&mut facts, &body, &contract, first)?;
-    assert_eq!(frontier(&facts)?, first);
+    assert_eq!(frontier(&facts, body.source)?, first);
     assert!(owner.work > 0);
     Ok(())
 }
@@ -229,14 +233,14 @@ fn distinct_instances_and_interleaved_normalization_cannot_reuse_operation_owner
             .finish(&mut facts, &body, &contract, first.first)
             .is_err()
     );
-    let after = frontier(&facts)?;
+    let after = frontier(&facts, body.source)?;
     contract.proofs.clear();
     let mut resumed =
         Operation::begin(&mut facts, &body, &contract)?.ok_or("missing fresh owner")?;
     contract.proofs.push(proof(body.source, after..after + 1));
     resumed.record(0, &contract.proofs[0], after..after + 1)?;
     resumed.finish(&mut facts, &body, &contract, after + 1)?;
-    assert_eq!(frontier(&facts)?, after + 1);
+    assert_eq!(frontier(&facts, body.source)?, after + 1);
     Ok(())
 }
 
@@ -245,7 +249,7 @@ fn allocation_rows_and_validation_work_grow_with_actual_resumed_proofs() -> Resu
     let mut previous = None;
     for count in [8, 32, 128] {
         let (mut facts, body, mut contract) = fixture()?;
-        let first = frontier(&facts)?;
+        let first = frontier(&facts, body.source)?;
         for _ in 0..count {
             contract.proofs.push(proof(body.source, first..first));
         }
@@ -278,8 +282,7 @@ fn allocation_rows_and_validation_work_grow_with_actual_resumed_proofs() -> Resu
 }
 
 #[test]
-fn unrelated_source_normalization_invalidates_a_parked_operation_without_claiming_its_rows()
--> Result {
+fn unrelated_source_normalization_keeps_a_parked_operation_and_claims_only_its_rows() -> Result {
     let (mut facts, body, contract) = fixture()?;
     let mut parked = Operation::begin(&mut facts, &body, &contract)?.ok_or("missing caller")?;
     let other = facts
@@ -345,13 +348,27 @@ fn unrelated_source_normalization_invalidates_a_parked_operation_without_claimin
     other_contract.proofs.push(proof(source, first..first + 1));
     operation.record(0, &other_contract.proofs[0], first..first + 1)?;
     operation.finish(&mut facts, &other_body, &other_contract, first + 1)?;
+    // The unrelated source numbers its own unit; only the parked unit's
+    // frontier can invalidate the parked operation.
+    assert_eq!(frontier(&facts, body.source)?, parked.first);
+    facts
+        .body_regions
+        .allocate(crate::sema::model::BodyRegion {
+            body: body.source,
+            source: body.source,
+            origin: crate::sema::model::BodyRegionOrigin::Inference,
+        })?;
     assert!(
         parked
             .finish(&mut facts, &body, &contract, parked.first)
             .is_err()
     );
-    assert_eq!(facts.body_regions[first as usize - 1].body, source);
-    assert_eq!(facts.body_regions[first as usize - 1].source, source);
+    let published = facts
+        .body_regions
+        .get(source, crate::types::RegionId(first))
+        .ok_or("missing published region")?;
+    assert_eq!(published.body, source);
+    assert_eq!(published.source, source);
     assert!(Operation::begin(&mut facts, &body, &contract)?.is_some());
     Ok(())
 }

@@ -28,8 +28,11 @@ fn frame(queries: &mut Queries<'_>, body: crate::resolve::unit::NodeKey) -> Resu
     )?;
     Ok(id)
 }
-fn frontier(queries: &Queries<'_>) -> Result<u32, std::num::TryFromIntError> {
-    u32::try_from(queries.typing.facts.body_regions.len() + 1)
+fn frontier(
+    queries: &Queries<'_>,
+    body: crate::resolve::unit::NodeKey,
+) -> Result<u32, &'static str> {
+    queries.typing.facts.body_regions.frontier(body)
 }
 #[test]
 fn malformed_discriminant_requirement_does_not_schedule_or_publish() -> TestResult {
@@ -69,13 +72,15 @@ fn interleaved_dispatchers_keep_foreign_gaps_and_exact_owners() -> TestResult {
     let mut facts = declarations::analyze(&report)?;
     let a = facts.initializers[0].semantic_source();
     let b = facts.initializers[1].semantic_source();
+    // Foreign gaps arise only between owners sharing one numbering unit.
+    facts.body_regions.nest(b, a)?;
     let mut queries = Queries::new(&report, &mut facts);
     let outer = frame(&mut queries, a)?;
-    let first = frontier(&queries)?;
+    let first = frontier(&queries, a)?;
     queries.pattern_dispatch = Some(Dispatcher::new(1, first)?);
     queries.reserve_pattern_dispatch()?;
     let inner = frame(&mut queries, b)?;
-    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries)?)?);
+    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries, a)?)?);
     queries.reserve_pattern_dispatch()?;
     let (scratch, continuation) = queries.suspend()?;
     let mut queries = Queries::with_scratch(&report, &mut facts, None, scratch);
@@ -95,8 +100,9 @@ fn interleaved_dispatchers_keep_foreign_gaps_and_exact_owners() -> TestResult {
     queries.finish_pattern_frame(outer)?;
     assert!(queries.pattern_scope.is_none() && queries.pattern_dispatch.is_none());
     let regions = &queries.typing.facts.body_regions;
-    assert_eq!(regions[first as usize - 1].body, a);
-    assert_eq!(regions[first as usize].body, b);
+    let region = |id: u32| regions.get(a, RegionId(id)).ok_or("missing unit region");
+    assert_eq!(region(first)?.body, a);
+    assert_eq!(region(first + 1)?.body, b);
     let proofs = &queries.typing.facts.quantified_proofs;
     let parent = proofs
         .iter()
@@ -112,7 +118,7 @@ fn interleaved_dispatchers_keep_foreign_gaps_and_exact_owners() -> TestResult {
         .collect::<Vec<_>>();
     assert_eq!(child, [(RegionId(first + 1), RegionId::bound(0, 0)?)]);
     assert!(matches!(
-        regions[first as usize].origin,
+        region(first + 1)?.origin,
         crate::sema::model::BodyRegionOrigin::Inference
     ));
     assert_eq!(
@@ -140,7 +146,7 @@ fn abort_restores_context_without_publishing_parked_proofs() -> TestResult {
     queries.value_scope = Some(value);
     queries.work.context = Context(3);
     let outer = frame(&mut queries, body)?;
-    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries)?)?);
+    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries, body)?)?);
     let _inner = frame(&mut queries, body)?;
     queries.work.context = Context(17);
     queries.abort_pattern_frames();
@@ -167,7 +173,7 @@ fn duplicate_entry_and_storage_preflight_do_not_consume_active_state() -> TestRe
     let body = facts.initializers[0].semantic_source();
     let mut queries = Queries::new(&report, &mut facts);
     let id = frame(&mut queries, body)?;
-    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries)?)?);
+    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries, body)?)?);
     assert!(
         queries
             .install_pattern_frame(id, None, None, Context(0))
@@ -205,16 +211,18 @@ fn parent_pattern_owner_reserves_before_child_inference_allocations() -> TestRes
     let mut facts = declarations::analyze(&report)?;
     let a = facts.initializers[0].semantic_source();
     let b = facts.initializers[1].semantic_source();
+    // Foreign gaps arise only between owners sharing one numbering unit.
+    facts.body_regions.nest(b, a)?;
     let mut queries = Queries::new(&report, &mut facts);
     let outer = frame(&mut queries, a)?;
-    let first = frontier(&queries)?;
+    let first = frontier(&queries, a)?;
     queries.pattern_dispatch = Some(Dispatcher::new(1, first)?);
     queries.reserve_pattern_dispatch()?;
-    assert_eq!(frontier(&queries)?, first + 1);
+    assert_eq!(frontier(&queries, a)?, first + 1);
     let mut foreign = crate::sema::traits::obligations::Reservation::default();
     foreign.reserve(queries.typing.facts, b, b, first + 1..first + 2)?;
     let inner = frame(&mut queries, b)?;
-    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries)?)?);
+    queries.pattern_dispatch = Some(Dispatcher::new(1, frontier(&queries, a)?)?);
     queries.finish_pattern_frame(inner)?;
     assert!(
         queries
@@ -228,9 +236,10 @@ fn parent_pattern_owner_reserves_before_child_inference_allocations() -> TestRes
     );
     queries.finish_pattern_frame(outer)?;
     let regions = &queries.typing.facts.body_regions;
-    assert_eq!(regions[first as usize - 1].body, a);
-    assert_eq!(regions[first as usize].body, b);
-    assert_eq!(regions[first as usize + 1].body, b);
+    let region = |id: u32| regions.get(a, RegionId(id)).ok_or("missing unit region");
+    assert_eq!(region(first)?.body, a);
+    assert_eq!(region(first + 1)?.body, b);
+    assert_eq!(region(first + 2)?.body, b);
     let proof = queries
         .typing
         .facts

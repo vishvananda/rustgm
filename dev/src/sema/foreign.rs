@@ -1,11 +1,11 @@
 //! Canonical foreign records keep storage, bodies and const permissions separate.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     support::linkage::{Linkage, Naming, SymbolNameId, SymbolNames},
     syntax::item::Safety,
     types::TypeId,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Function {

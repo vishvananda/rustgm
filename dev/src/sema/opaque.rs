@@ -4,11 +4,11 @@ mod closing;
 pub(in crate::sema) mod overrides;
 pub(in crate::sema) mod refinement;
 mod reveal;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{TypeId, opaque::OpaqueId, parameters::clauses::Clause},
 };
-use std::collections::HashMap;
 
 pub struct Declaration {
     pub owner: DefId,

@@ -21,14 +21,14 @@ type 18 primitive f64
 type 19 tuple [2,2]
 type 20 function binders=0 parameters=[19] result=1 unsafe=false
 type 21 function-item def=14 signature=20
-root 0:27 pattern=0
-pattern 0 source=0:27 input=19 product variant=- fields=0:2
-pattern 1 source=0:23 input=2 or alternatives=0:2
-pattern 2 source=0:26 input=2 or alternatives=2:4
-pattern 3 source=0:21 input=2 range=0
-pattern 4 source=0:22 input=2 range=1
-pattern 5 source=0:24 input=2 range=2
-pattern 6 source=0:25 input=2 range=3
+root 0:19 pattern=0
+pattern 0 source=0:19 input=19 product variant=- fields=0:2
+pattern 1 source=0:15 input=2 or alternatives=0:2
+pattern 2 source=0:18 input=2 or alternatives=2:4
+pattern 3 source=0:13 input=2 range=0
+pattern 4 source=0:14 input=2 range=1
+pattern 5 source=0:16 input=2 range=2
+pattern 6 source=0:17 input=2 range=3
 field 0 tuple=0 pattern=1
 field 1 tuple=1 pattern=2
 alternative 0 pattern=3
@@ -39,6 +39,6 @@ range 0 ranks=1:1
 range 1 ranks=0:0
 range 2 ranks=1:1
 range 3 ranks=0:0
-match 0 source=0:30 input=0:20 arms=0:1 exhaustive=true uninhabited=false work=68
-arm 0 source=0:29 pattern=0 guard=- useful=true value=0:28
+match 0 source=0:22 input=0:12 arms=0:1 exhaustive=true uninhabited=false work=68
+arm 0 source=0:21 pattern=0 guard=- useful=true value=0:20
 eof roots=1 patterns=7 fields=2 alternatives=4 ranges=4 matches=1 arms=1 coverage-work=68 region-vars=0 region-equalities=0 conditions=0 chains=0

@@ -1,5 +1,6 @@
 //! A proved selected parent transports only its prepared anonymous request roots.
 use super::Declarations;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::{
         ir::{Action, Body, BodyKey, Owner, Rvalue, ValueId},
@@ -14,7 +15,6 @@ use crate::{
         substitute::{Bound, RegionEquations},
     },
 };
-use std::collections::{HashMap, HashSet};
 const WORK: usize = 1_000_000;
 const BYTES: usize = 64 * 1024 * 1024;
 #[cfg(test)]
@@ -201,7 +201,8 @@ fn folder(
     drop(arguments);
     let actual = selected.selected_arguments(facts)?;
     let (owned, mut equations) = identities(contract, owned_count, work)?;
-    let mut replacements = HashMap::with_capacity(count);
+    let mut replacements =
+        HashMap::with_capacity_and_hasher(count, crate::support::hash::BuildFxHasher::default());
     for region in observer.observed_regions() {
         let replacement = replacement(
             region,
@@ -250,7 +251,8 @@ fn identities(
     count: usize,
     work: &mut usize,
 ) -> Result<(HashSet<RegionId>, RegionEquations), &'static str> {
-    let mut owned = HashSet::with_capacity(count);
+    let mut owned =
+        HashSet::with_capacity_and_hasher(count, crate::support::hash::BuildFxHasher::default());
     for obligation in &contract.obligations {
         *work = work.saturating_add(1);
         if let Kind::Variable { id, .. } = obligation.kind {

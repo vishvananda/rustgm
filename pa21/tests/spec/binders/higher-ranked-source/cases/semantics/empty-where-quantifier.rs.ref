@@ -27,8 +27,8 @@ type 24 function-item def=14 signature=23
 type 25 tuple [11,11]
 type 26 function binders=0 parameters=[11] result=25 unsafe=false
 type 27 function-item def=13 signature=26 arguments=[type:11]
-def 13 type=22 name="f" source=0:28
-def 14 type=24 name="main" source=0:49
+def 13 type=22 name="f" source=0:15
+def 14 type=24 name="main" source=0:31
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -47,12 +47,12 @@ def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
 def 32 type=19 name="T" source=0:0
-def 40 type=19 name="x" source=0:3
-def 41 type=25 name="p" source=0:31
+def 40 type=19 name="x" source=0:1
+def 41 type=25 name="p" source=0:16
 parameter owner=13 binding=32 argument=type:19 default=-
-predicate owner=13 source=0:20 forall=0
+predicate owner=13 source=0:9 forall=0
 quantifier 0 regions=0 subject=19 bound=copy
-proof 0 body=0:48 source=0:33 pending
+proof 0 body=0:30 source=0:17 pending
 proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=1
 proof-block proof=0 index=1 scope=1 aliases=false source=0 start=1 end=1

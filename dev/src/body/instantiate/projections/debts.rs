@@ -1,10 +1,10 @@
 //! Normalize existing debts in their actual scopes without rewriting newly emitted evidence.
+use crate::support::hash::HashMap;
 use crate::{
     body::regions::Contract,
     sema::{model::Declarations, projections},
     types::lifetime_proof::{ScopeId, TypeRoot},
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/resumed_projection_debts.rs"]
 mod tests;
@@ -33,7 +33,7 @@ pub(super) fn normalize_with_owner(
     for (index, evidence) in contract.proofs.iter_mut().enumerate() {
         let original = &mut evidence.proof;
         let mut groups: Vec<Group> = Vec::new();
-        let mut scopes = HashMap::new();
+        let mut scopes = HashMap::default();
         for root in original.type_root_positions() {
             charge(&mut work, 1)?;
             if facts.types.contains_projections(root.ty) != Some(true) {

@@ -8,7 +8,7 @@ use crate::types::{
     parameters::{clauses::Clause, predicates::Bound},
     relations::Constraints,
 };
-pub(super) type Proofs = std::collections::HashMap<DefId, Vec<(NodeKey, Obligations)>>;
+pub(super) type Proofs = crate::support::hash::HashMap<DefId, Vec<(NodeKey, Obligations)>>;
 #[cfg(test)]
 #[path = "../../../tests/invariants/formation_lifetimes.rs"]
 mod tests;

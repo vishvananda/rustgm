@@ -28,7 +28,7 @@ fn header(
         owner: DefId(ordinal + 10),
         source: NodeKey {
             file: FileId(0),
-            node: NodeId(ordinal),
+            node: NodeId::new(ordinal),
         },
         predicate: Predicate {
             ty: TypeId::primitive(Primitive::U8),

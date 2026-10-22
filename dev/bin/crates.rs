@@ -1,6 +1,7 @@
 //! Filesystem transport stays outside the frontend's typed metadata consumers.
 use rustgm::support::crates::{self, CrateIdentity, Dependencies, Dependency};
-use std::{collections::HashMap, fs, io::Read, path::PathBuf, sync::Arc};
+use rustgm::support::hash::HashMap;
+use std::{fs, io::Read, path::PathBuf, sync::Arc};
 
 #[derive(Default)]
 pub struct Options {
@@ -105,7 +106,7 @@ impl Options {
         if self.externs.is_empty() {
             return Ok(None);
         }
-        let mut paths = HashMap::new();
+        let mut paths = HashMap::default();
         let mut artifacts = Vec::new();
         let mut aliases = Vec::new();
         let mut total = 0usize;

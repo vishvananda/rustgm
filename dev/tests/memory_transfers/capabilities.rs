@@ -45,7 +45,7 @@ fn input(width: usize, repeats: usize, unrelated: usize, owned: bool) -> String 
 #[test]
 fn repeated_memory_calls_reuse_layouts_and_shims_across_width_and_unrelated_types()
 -> Result<(), Box<dyn std::error::Error>> {
-    let mut peaks = std::collections::HashMap::new();
+    let mut peaks = rustgm::support::hash::HashMap::default();
     for owned in [false, true] {
         for width in [2, 16, 64] {
             for unrelated in [0, 64] {

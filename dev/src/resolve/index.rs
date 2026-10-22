@@ -12,7 +12,102 @@ use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
 };
-use std::collections::HashMap;
+/// Kinds whose `push_children` arm appends nothing. Declaration walks have no
+/// effect at these nodes, so they are not queued at all.
+pub(crate) const fn is_leaf(kind: &Kind) -> bool {
+    matches!(
+        kind,
+        Kind::CrateRoot(_)
+            | Kind::Receiver { .. }
+            | Kind::DeferredLiteral(_)
+            | Kind::Literal(_)
+            | Kind::Name(..)
+            | Kind::EmptyStatement
+            | Kind::Continue(_)
+            | Kind::Wildcard
+            | Kind::RestPattern
+            | Kind::InferType
+            | Kind::NeverType
+            | Kind::Variadic
+    )
+}
+/// Borrow a node's kind without copying the node record.
+fn kind_of<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> &Kind {
+    &ast.nodes[node.get() as usize].kind
+}
+/// Small expression, pattern and type subtrees built only from leaves, such as
+/// `a::b`, `x + f(y)`, `x: u64` or `u64`, contain no declaration, scope or
+/// expansion site; declaration walks skip them whole. Each arm inspects exactly
+/// the children `push_children` appends, to a fixed depth so repeated checks by
+/// ancestors stay constant per node.
+pub(crate) fn is_inert<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> bool {
+    match kind_of(ast, node) {
+        Kind::Type { elements: list, .. } | Kind::Tuple(list) | Kind::Array(list) => {
+            all_plain(ast, *list)
+        }
+        Kind::Pattern { path, elements, .. } => {
+            path.is_none_or(|path| plain(ast, path)) && all_plain(ast, *elements)
+        }
+        Kind::Binding {
+            subpattern: value, ..
+        }
+        | Kind::Return(value) => value.is_none_or(|value| plain(ast, value)),
+        Kind::Parameter { pattern, ty } => {
+            plain(ast, *pattern) && ty.is_none_or(|ty| plain_type(ast, ty))
+        }
+        Kind::Unary { operand: value, .. } | Kind::Field { value, .. } | Kind::Group(value) => {
+            plain(ast, *value)
+        }
+        Kind::Binary { left, right, .. }
+        | Kind::Cast {
+            value: left,
+            ty: right,
+        }
+        | Kind::Index {
+            value: left,
+            index: right,
+        } => plain(ast, *left) && plain_type(ast, *right),
+        Kind::Call {
+            callee: value,
+            arguments,
+        }
+        | Kind::MethodCall {
+            receiver: value,
+            arguments,
+            ..
+        } => plain(ast, *value) && all_plain(ast, *arguments),
+        kind => plain_kind(ast, kind),
+    }
+}
+/// A leaf, a path of leaf segments or a binding without a subpattern.
+fn plain<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> bool {
+    plain_kind(ast, kind_of(ast, node))
+}
+fn plain_kind<L>(ast: &crate::syntax::ast::Syntax<L>, kind: &Kind) -> bool {
+    match kind {
+        Kind::Path { segments, .. } => ast
+            .list(*segments)
+            .iter()
+            .all(|segment| is_leaf(kind_of(ast, *segment))),
+        Kind::Binding {
+            subpattern: None, ..
+        } => true,
+        kind => is_leaf(kind),
+    }
+}
+/// A plain node or a type whose elements are all plain, such as `u64`.
+fn plain_type<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> bool {
+    match kind_of(ast, node) {
+        Kind::Type { elements, .. } => all_plain(ast, *elements),
+        kind => plain_kind(ast, kind),
+    }
+}
+fn all_plain<L>(ast: &crate::syntax::ast::Syntax<L>, list: List) -> bool {
+    ast.list(list).iter().all(|child| plain(ast, *child))
+}
+#[cfg(test)]
+#[path = "../../tests/invariants/declaration_walks.rs"]
+mod tests;
 #[derive(Clone, Copy)]
 pub(crate) struct Context {
     pub module: ModuleId,
@@ -32,6 +127,21 @@ impl Context {
         }
     }
 }
+/// Spellings of the language primitive types, in definition order.
+pub(crate) const PRIMITIVES: [&str; 17] = [
+    "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64",
+    "u128", "usize", "f32", "f64",
+];
+/// Declarations the expansion scan leaves to resolution, in scan order: they
+/// keep the identities the second declaration walk used to give them.
+#[derive(Clone, Copy)]
+pub(crate) enum Pending {
+    /// Unnameable `impl Trait` inputs of a function, in its body context.
+    Anonymous(Context, NodeId, Item),
+    Generic(Context, NodeId, u32),
+    /// A restricted visibility no expansion step validated: textual macros.
+    Visibility(Context, NodeId, Visibility),
+}
 #[derive(Default)]
 pub(crate) struct State {
     pub facts: Resolution,
@@ -39,6 +149,9 @@ pub(crate) struct State {
     scratch: Vec<NodeId>,
     pending: Vec<(Context, NodeId)>,
     visits: Vec<(Context, NodeId, Namespace)>,
+    paths: Vec<Vec<NameId>>,
+    patterns: Vec<super::patterns::PatternFrame>,
+    builtin_names: Vec<u8>,
 }
 impl State {
     pub fn bind<'a>(&'a mut self, package: &'a mut Package) -> Resolver<'a> {
@@ -49,6 +162,9 @@ impl State {
             scratch: &mut self.scratch,
             pending: &mut self.pending,
             visits: &mut self.visits,
+            paths: &mut self.paths,
+            patterns: &mut self.patterns,
+            builtin_names: &mut self.builtin_names,
         }
     }
 }
@@ -59,8 +175,16 @@ pub(crate) struct Resolver<'a> {
     pub scratch: &'a mut Vec<NodeId>,
     pub pending: &'a mut Vec<(Context, NodeId)>,
     pub visits: &'a mut Vec<(Context, NodeId, Namespace)>,
+    /// Reusable path-name buffers; nested references borrow distinct entries.
+    pub paths: &'a mut Vec<Vec<NameId>>,
+    /// Reusable pattern-binding frames, likewise borrowed per nesting level.
+    pub patterns: &'a mut Vec<super::patterns::PatternFrame>,
+    /// Per-name cache: 0 unknown, 1 ordinary, 2 may select language metadata.
+    pub builtin_names: &'a mut Vec<u8>,
 }
 impl Resolver<'_> {
+    /// Declare scopes and forward-visible items of unexpanded modules. The
+    /// expansion scan does this work itself while it expands a crate.
     pub fn collect(&mut self) -> Result<(), Error> {
         self.facts
             .module_scopes
@@ -68,10 +192,20 @@ impl Resolver<'_> {
         if self.facts.scopes.is_empty() {
             self.new_scope(None, ModuleId(0), true)?;
         }
-        for spelling in [
-            "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32",
-            "u64", "u128", "usize", "f32", "f64",
-        ] {
+        self.primitives()?;
+        self.module(ModuleId(0), ScopeId(0));
+        while let Some((c, node)) = self.pending.pop() {
+            self.walk_inner(c, node)?;
+        }
+        Ok(())
+    }
+    /// Language primitive types, found after every lexical scope. Defined once:
+    /// resolution after expansion defines them unless an import needed them first.
+    pub fn primitives(&mut self) -> Result<(), Error> {
+        if !self.facts.primitives.is_empty() {
+            return Ok(());
+        }
+        for spelling in PRIMITIVES {
             let name = self
                 .package
                 .names
@@ -91,10 +225,6 @@ impl Resolver<'_> {
                 members: None,
             });
             self.facts.primitives.insert(name, id);
-        }
-        self.module(ModuleId(0), ScopeId(0));
-        while let Some((c, node)) = self.pending.pop() {
-            self.walk_inner(c, node)?;
         }
         Ok(())
     }
@@ -137,22 +267,75 @@ impl Resolver<'_> {
             trait_access: None,
             nominal_self: None,
             label_barrier: barrier,
-            bindings: HashMap::new(),
-            order: Vec::new(),
         });
         Ok(id)
     }
-    fn node_scope(&mut self, c: Context, node: NodeId, barrier: bool) -> Result<ScopeId, Error> {
-        if self.hygiene.is_some()
-            && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
-        {
-            let frame = &mut self.facts.scopes[scope.0 as usize];
-            frame.parent = Some(c.scope);
-            frame.barrier = barrier;
-            frame.label_barrier = barrier;
-            return Ok(scope);
+    /// A lexical scope introduced by an expression, binder or type node; only
+    /// closures stop label lookup. An `if` scope covers its condition and
+    /// consequence but not its alternative.
+    pub fn lexical_scope(&mut self, c: Context, node: NodeId) -> Result<ScopeId, Error> {
+        let scope = self.new_scope(Some(c.scope), c.module, false)?;
+        self.facts.scopes[scope.0 as usize].label_barrier =
+            matches!(self.kind(c, node), Kind::Closure { .. });
+        self.facts.node_scopes.insert(c.module, c.file, node, scope);
+        Ok(scope)
+    }
+    /// Define what the expansion scan recorded, publishing generic parameters
+    /// to the imports that observed their keys.
+    pub fn declare_pending(
+        &mut self,
+        pending: &[Pending],
+        work: &mut super::imports::Work,
+    ) -> Result<(), Error> {
+        work.extend(self.facts);
+        for declaration in pending {
+            let (Pending::Anonymous(c, node, _)
+            | Pending::Generic(c, node, _)
+            | Pending::Visibility(c, node, _)) = *declaration;
+            // Eager macro arguments the scan visited are retired after use.
+            if !self.active(c, node) {
+                continue;
+            }
+            match *declaration {
+                Pending::Anonymous(c, node, item) => {
+                    self.reserve_anonymous_parameters(c, node, item)?;
+                }
+                Pending::Visibility(c, _, visibility) => {
+                    self.visibility(c, visibility)?;
+                }
+                Pending::Generic(c, node, index) => {
+                    let id = self.generic(c, node, index)?;
+                    let definition = &self.facts.definitions[id.0 as usize];
+                    work.declared(
+                        &self.facts.bindings,
+                        (definition.scope, definition.name, definition.namespace),
+                    );
+                }
+            }
         }
-        self.new_scope(Some(c.scope), c.module, barrier)
+        Ok(())
+    }
+    /// Define a generic parameter in its owner's scope.
+    pub fn generic(&mut self, c: Context, node: NodeId, index: u32) -> Result<DefId, Error> {
+        let generic = self.package.unit(c.file).configured.ast.generics[index as usize];
+        let name = self.package.name(c.file, generic.name)?;
+        let namespace = match generic.flavor {
+            GenericFlavor::Lifetime => Namespace::Lifetime,
+            GenericFlavor::Type => Namespace::Type,
+            GenericFlavor::Const => Namespace::Value,
+        };
+        self.define(
+            Definition {
+                name,
+                namespace,
+                kind: DefKind::Generic,
+                scope: c.scope,
+                node: Some(NodeKey { file: c.file, node }),
+                access: Access::Within(c.module),
+                members: None,
+            },
+            false,
+        )
     }
     pub fn define(&mut self, definition: Definition, shadow: bool) -> Result<DefId, Error> {
         let id = DefId(
@@ -165,55 +348,60 @@ impl Resolver<'_> {
                 .ok_or_else(|| Error::at(FileId(0), 0, "local binding has no source"))?;
             let offset = super::hygiene::name_offset(self.package, key);
             let context = self.package.expansion_context(key.file, offset)?;
-            if let Some(hygiene) = self.hygiene {
-                hygiene
-                    .define(&definition, id, context, shadow)
-                    .map_err(|e| Error::at(key.file, offset, e))?;
-            }
+            self.facts
+                .bindings
+                .define_local(
+                    (definition.scope, definition.name, definition.namespace),
+                    context,
+                    Binding {
+                        target: id,
+                        access: definition.access,
+                        origin: Origin::Direct,
+                        ambiguous: false,
+                    },
+                    shadow,
+                )
+                .map_err(|e| Error::at(key.file, offset, e))?;
             self.facts.definitions.push(definition);
             return Ok(id);
         }
-        let scope = &mut self.facts.scopes[definition.scope.0 as usize];
-        let key = (definition.name, definition.namespace);
-        if scope
+        let binding = Binding {
+            target: id,
+            access: definition.access,
+            origin: Origin::Direct,
+            ambiguous: false,
+        };
+        if self
+            .facts
             .bindings
-            .get(&key)
-            .is_some_and(|binding| !matches!(binding.origin, Origin::Glob(_)))
-            && !shadow
+            .declare(
+                (definition.scope, definition.name, definition.namespace),
+                binding,
+                shadow,
+            )
+            .map_err(|e| Error::at(FileId(0), 0, e))?
         {
-            let node = definition.node;
-            return Err(Error::at(
-                node.map_or(FileId(0), |n| n.file),
-                node.map_or(0, |n| {
-                    self.package
-                        .unit(n.file)
-                        .configured
-                        .ast
-                        .node(n.node)
-                        .span
-                        .start
-                }),
-                format!(
-                    "duplicate {} name `{}`",
-                    definition.namespace.name(),
-                    self.package.names.get(definition.name)
-                ),
-            ));
+            self.facts.definitions.push(definition);
+            return Ok(id);
         }
-        if !scope.bindings.contains_key(&key) {
-            scope.order.push(key);
-        }
-        scope.bindings.insert(
-            key,
-            Binding {
-                target: id,
-                access: definition.access,
-                origin: Origin::Direct,
-                ambiguous: false,
-            },
-        );
-        self.facts.definitions.push(definition);
-        Ok(id)
+        let node = definition.node;
+        Err(Error::at(
+            node.map_or(FileId(0), |n| n.file),
+            node.map_or(0, |n| {
+                self.package
+                    .unit(n.file)
+                    .configured
+                    .ast
+                    .node(n.node)
+                    .span
+                    .start
+            }),
+            format!(
+                "duplicate {} name `{}`",
+                definition.namespace.name(),
+                self.package.names.get(definition.name)
+            ),
+        ))
     }
     fn module(&mut self, module: ModuleId, scope: ScopeId) {
         let context = self.context(module, scope);
@@ -232,7 +420,7 @@ impl Resolver<'_> {
         self.package.unit(c.file).configured.ast.node(node).kind
     }
     pub fn active(&self, c: Context, node: NodeId) -> bool {
-        self.package.unit(c.file).configured.active[node.0 as usize]
+        self.package.unit(c.file).configured.active[node.get() as usize]
     }
     fn list(&mut self, c: Context, list: List) {
         for offset in (list.start..list.end).rev() {
@@ -250,8 +438,7 @@ impl Resolver<'_> {
             otherwise,
         } = self.kind(c, node)
         {
-            let scope = self.node_scope(c, node, false)?;
-            self.facts.node_scopes.insert((c.module, node), scope);
+            let scope = self.lexical_scope(c, node)?;
             let condition_context = Context { scope, ..c };
             if let Some(otherwise) = otherwise {
                 self.pending.push((c, otherwise));
@@ -266,37 +453,13 @@ impl Resolver<'_> {
             | Kind::Closure { .. }
             | Kind::Arm { .. }
             | Kind::For { .. }
-            | Kind::If { .. }
             | Kind::While { .. }
             | Kind::Label { .. }
             | Kind::Bound { .. }
             | Kind::Where { .. }
-            | Kind::FunctionType(_) => {
-                c.scope = self.node_scope(c, node, false)?;
-                self.facts.scopes[c.scope.0 as usize].label_barrier =
-                    matches!(self.kind(c, node), Kind::Closure { .. });
-                self.facts.node_scopes.insert((c.module, node), c.scope);
-            }
+            | Kind::FunctionType(_) => c.scope = self.lexical_scope(c, node)?,
             Kind::Generic(index) => {
-                let generic = self.package.unit(c.file).configured.ast.generics[index as usize];
-                let name = self.package.name(c.file, generic.name)?;
-                let namespace = match generic.flavor {
-                    GenericFlavor::Lifetime => Namespace::Lifetime,
-                    GenericFlavor::Type => Namespace::Type,
-                    GenericFlavor::Const => Namespace::Value,
-                };
-                self.define(
-                    Definition {
-                        name,
-                        namespace,
-                        kind: DefKind::Generic,
-                        scope: c.scope,
-                        node: Some(NodeKey { file: c.file, node }),
-                        access: Access::Within(c.module),
-                        members: None,
-                    },
-                    false,
-                )?;
+                self.generic(c, node, index)?;
             }
             Kind::Macro { .. } => {
                 self.facts
@@ -306,32 +469,25 @@ impl Resolver<'_> {
             }
             _ => {}
         }
+        self.push_pending(c, node);
+        Ok(())
+    }
+    /// Queue a node's non-leaf children in source order for the LIFO worklist.
+    fn push_pending(&mut self, c: Context, node: NodeId) {
+        let ast = &self.package.unit(c.file).configured.ast;
         let mark = self.scratch.len();
-        self.package
-            .unit(c.file)
-            .configured
-            .ast
-            .push_children(node, self.scratch);
-        let end = self.scratch.len();
-        for index in (mark..end).rev() {
-            self.pending.push((c, self.scratch[index]));
+        ast.push_children(node, self.scratch);
+        for index in (mark..self.scratch.len()).rev() {
+            let child = self.scratch[index];
+            if !is_inert(ast, child) {
+                self.pending.push((c, child));
+            }
         }
         self.scratch.truncate(mark);
-        Ok(())
     }
     fn item(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
         let access = self.visibility(c, item.visibility)?;
-        if let Some(hygiene) = self.hygiene {
-            if matches!(item.kind, ItemKind::MacroRules { .. }) {
-                hygiene.scope(c.module, node, c.scope);
-                self.facts.node_scopes.insert((c.module, node), c.scope);
-                return Ok(());
-            }
-            if matches!(item.kind, ItemKind::Use(_)) {
-                return Ok(());
-            }
-        }
         if let ItemKind::Use(tree) = item.kind {
             return self.import(c, tree, &[], false, access);
         }
@@ -342,51 +498,25 @@ impl Resolver<'_> {
                 .children
                 .get(&(c.module, key))
                 .ok_or_else(|| self.error(c, node, "missing loaded module"))?;
-            let scope = if self.hygiene.is_some() {
-                self.facts.module_scopes[module.0 as usize]
-            } else {
-                self.new_scope(None, module, true)?
-            };
-            if self.hygiene.is_none() {
-                self.item_definition(
-                    c,
-                    node,
-                    item,
-                    (Namespace::Type, DefKind::Module),
-                    access,
-                    Some(scope),
-                )?;
-            }
+            let scope = self.new_scope(None, module, true)?;
+            self.item_definition(
+                c,
+                node,
+                item,
+                (Namespace::Type, DefKind::Module),
+                access,
+                Some(scope),
+            )?;
             self.module(module, scope);
             return Ok(());
         }
-        let body_context = if self.hygiene.is_some()
-            && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
-        {
-            Context {
-                scope,
-                foreign: c.foreign_children(node, item.kind),
-                ..c
-            }
-        } else {
-            self.declare_item(c, node, item, access)?
-        };
+        let body_context = self.declare_item(c, node, item, access)?;
         self.reserve_anonymous_parameters(body_context, node, item)?;
-        let mark = self.scratch.len();
-        self.package
-            .unit(c.file)
-            .configured
-            .ast
-            .push_children(node, self.scratch);
-        let end = self.scratch.len();
-        for index in (mark..end).rev() {
-            self.pending.push((body_context, self.scratch[index]));
-        }
-        self.scratch.truncate(mark);
+        self.push_pending(body_context, node);
         Ok(())
     }
     /// Register an ordinary item and its member namespaces without walking its
-    /// children. Expansion deliberately leaves generic parameters to resolution.
+    /// children; generic parameters are defined when the walk reaches them.
     #[expect(
         clippy::too_many_lines,
         reason = "one item-header dispatch defines its namespaces, member scope and enum variants"
@@ -426,7 +556,7 @@ impl Resolver<'_> {
                 | ItemKind::Static { .. }
         );
         let body = if owned {
-            self.node_scope(c, node, true)?
+            self.new_scope(Some(c.scope), c.module, true)?
         } else {
             c.scope
         };
@@ -436,7 +566,7 @@ impl Resolver<'_> {
             self.facts.scopes[body.0 as usize].trait_access =
                 matches!(item.kind, ItemKind::Trait { .. }).then_some(access);
         }
-        self.facts.node_scopes.insert((c.module, node), body);
+        self.facts.node_scopes.insert(c.module, c.file, node, body);
         let member = matches!(
             item.kind,
             ItemKind::Struct { .. }
@@ -470,7 +600,8 @@ impl Resolver<'_> {
                 self.facts.foreign_owners.insert(definition, owner);
             }
             if external.is_some() {
-                self.expose_external(c, definition);
+                self.expose_external(c, definition)
+                    .map_err(|e| self.error(c, node, e))?;
             }
             if matches!(kind, DefKind::Struct | DefKind::Enum) {
                 self.facts.scopes[body.0 as usize].nominal_self = Some(definition);
@@ -667,6 +798,16 @@ impl Resolver<'_> {
     }
     pub fn path_names(&mut self, c: Context, node: NodeId) -> Result<(bool, Vec<NameId>), Error> {
         self.package.path_names(c.file, node)
+    }
+    /// Read a path into a pooled buffer; return it with `recycle_path`.
+    pub fn pooled_path(&mut self, c: Context, node: NodeId) -> Result<(bool, Vec<NameId>), Error> {
+        let mut names = self.paths.pop().unwrap_or_default();
+        names.clear();
+        let absolute = self.package.path_names_into(c.file, node, &mut names)?;
+        Ok((absolute, names))
+    }
+    pub fn recycle_path(&mut self, names: Vec<NameId>) {
+        self.paths.push(names);
     }
     pub fn import(
         &mut self,

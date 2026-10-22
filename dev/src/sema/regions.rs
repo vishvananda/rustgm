@@ -1,6 +1,6 @@
 //! Canonical signature binders and elision, separate from later outlives checking.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{resolve::model::DefId, types::RegionId};
-use std::collections::{HashMap, HashSet};
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct BinderId(usize);
 #[derive(Clone, Copy)]
@@ -36,10 +36,6 @@ struct Binder {
     declared: Vec<DefId>,
     /// Membership is indexed before slot assignment; slots retain first-use order.
     named: HashMap<DefId, Option<u16>>,
-    #[expect(
-        clippy::box_collection,
-        reason = "reverse lifetime lookup is allocated only for object defaults"
-    )]
     slot_names: Option<Box<HashMap<u16, DefId>>>,
     count: u32,
     output: Option<RegionId>,
@@ -64,7 +60,7 @@ impl Regions {
             count: 0,
             output: None,
             receiver: None,
-            candidates: HashSet::new(),
+            candidates: HashSet::default(),
             candidate_count: 0,
         });
         id

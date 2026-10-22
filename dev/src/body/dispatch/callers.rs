@@ -112,7 +112,11 @@ fn first_region(
         .checked_add(1)
         .ok_or("dispatch region identity space exhausted")?;
     let first = if source_path {
-        u32::try_from(facts.body_regions.len() + 1)
+        // Source callers reserve these identities in the body's unit. Its
+        // registered namespace already numbered them past every actual.
+        facts
+            .body_regions
+            .frontier(contract.source)
             .map_err(|_| "source caller region identity space exhausted")?
             .max(first)
     } else {

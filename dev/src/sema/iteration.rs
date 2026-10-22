@@ -1,4 +1,5 @@
 //! Iteration plans retain distinct complete call contexts after ordinary selection.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         model::{BuiltinIteration, BuiltinIterationBlanket, DefId},
@@ -6,7 +7,6 @@ use crate::{
     },
     types::{TypeId, parameters::predicates::Predicate},
 };
-use std::collections::HashMap;
 pub(crate) mod collections;
 pub(crate) mod range_originals;
 
@@ -44,7 +44,7 @@ impl Registry {
         Self {
             canonical,
             originals: [None; 2],
-            plans: HashMap::new(),
+            plans: HashMap::default(),
             collections: None,
             ranges: None,
         }

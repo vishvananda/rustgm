@@ -10,7 +10,7 @@ use crate::{
     sema::model::Cast,
 };
 
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn pointer_cast(
         &mut self,
         kind: Cast,

@@ -24,13 +24,13 @@ type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=13 signature=21
 type 23 reference mutable=true region=region:1 referent=2
 type 24 reference mutable=true region=region:2 referent=2
-root 0:13 pattern=0
-pattern 0 source=0:13 input=20 deref mutable=true implicit=true pattern=1
-pattern 1 source=0:13 input=19 slice minimum=1 exact=false fields=0:1
-pattern 2 source=0:11 input=2 bind def=32 local=23 mutable=false capture=ref-mut region=region:1 loan=pending subpattern=-
+root 0:7 pattern=0
+pattern 0 source=0:7 input=20 deref mutable=true implicit=true pattern=1
+pattern 1 source=0:7 input=19 slice minimum=1 exact=false fields=0:1
+pattern 2 source=0:5 input=2 bind def=32 local=23 mutable=false capture=ref-mut region=region:1 loan=pending subpattern=-
 field 0 index=0 pattern=2
-condition source=0:16 input=0:15 pattern=0 otherwise=-
-region-var region:1 body=0:23 source=0:11 origin=pattern-borrow pending
-region-var region:2 body=0:23 source=0:19 origin=inference pending
-region-coercion body=0:23 source=0:19 actual=23 expected=24 kind=same-shape pending
+condition source=0:9 input=0:8 pattern=0 otherwise=-
+region-var region:1 body=0:15 source=0:5 origin=pattern-borrow pending
+region-var region:2 body=0:15 source=0:11 origin=inference pending
+region-coercion body=0:15 source=0:11 actual=23 expected=24 kind=same-shape pending
 eof roots=1 patterns=3 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=2 region-equalities=0 conditions=1 chains=1

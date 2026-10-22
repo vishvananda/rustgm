@@ -35,15 +35,14 @@ function @rg.15(%p0 : i32, %p1 : i32) -> i32 {
     branch %t6, ^b1, ^b2
   block ^b2:
     %t7 = load i32 $s1
-    %t8 = convert sext i64 i32 %t4
-    %t9 = convert sext i64 i32 %t7
-    %t10 = binary add i64 %t8, %t9
-    %t11 = convert trunc i32 i64 %t10
-    %t12 = convert sext i64 i32 %t11
-    %t13 = cmp ne i64 %t10, %t12
-    branch %t13, ^b1, ^b3
+    %t8 = binary add i32 %t4, %t7
+    %t9 = binary xor i32 %t4, %t8
+    %t10 = binary xor i32 %t8, %t7
+    %t11 = binary and i32 %t9, %t10
+    %t12 = cmp lt i32 %t11, 0
+    branch %t12, ^b1, ^b3
   block ^b3:
-    return i32 %t11
+    return i32 %t8
   block ^b1:
     call void @abort()
     unreachable

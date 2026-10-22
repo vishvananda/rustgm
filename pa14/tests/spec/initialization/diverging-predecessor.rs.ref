@@ -1,5 +1,5 @@
 ownership-crate 1
-body 0 source=0:28
+body 0 source=0:17
   path m0 type=2 root=l0 subtree=0..1
   path m1 type=11 root=l1 subtree=1..2
   use v1 copy

@@ -5,8 +5,8 @@ use super::super::{
     persistent::{Id, Map},
     structural::Compare,
 };
+use crate::support::hash::HashMap;
 use crate::types::{GenericArgs, ListId, Store, region_graph::VerificationId};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Default)]
 pub(super) struct Summary {

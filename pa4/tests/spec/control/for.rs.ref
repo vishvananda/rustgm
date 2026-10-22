@@ -1,28 +1,21 @@
-node 0 10 11 name "x"
-node 1 10 11 path false [0]
-node 2 6 11 binding true false "x" -
-node 3 14 15 literal 0
+node 0 6 11 binding true false "x" -
+node 1 14 15 literal 0
 value 0 integer 14 15 infer 0
-node 4 2 16 let 2 - 3 -
-node 5 21 22 name "i"
-node 6 21 22 path false [5]
-node 7 21 22 binding false false "i" -
-node 8 26 27 literal 1
+node 2 2 16 let 0 - 1 -
+node 3 21 22 binding false false "i" -
+node 4 26 27 literal 1
 value 1 integer 26 27 infer 0
-node 9 29 30 literal 2
+node 5 29 30 literal 2
 value 2 integer 29 30 infer 4
-node 10 26 30 range false 8 9
-node 11 33 34 name "x"
-node 12 33 34 path false [11]
-node 13 38 39 name "i"
-node 14 38 39 path false [13]
-node 15 33 39 binary += 12 14
-node 16 33 40 statement 15
-node 17 31 42 block Plain [16] -
-node 18 17 42 for 7 10 17
-node 19 17 42 statement 18
-node 20 43 44 name "x"
-node 21 43 44 path false [20]
-node 22 0 46 block Plain [4,19] 21
-root 22
+node 6 26 30 range false 4 5
+node 7 33 34 name "x"
+node 8 38 39 name "i"
+node 9 33 39 binary += 7 8
+node 10 33 40 statement 9
+node 11 31 42 block Plain [10] -
+node 12 17 42 for 3 6 11
+node 13 17 42 statement 12
+node 14 43 44 name "x"
+node 15 0 46 block Plain [2,13] 14
+root 15
 eof 47

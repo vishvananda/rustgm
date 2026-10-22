@@ -1,5 +1,6 @@
 //! Predicate substitution transforms both the subject and the complete trait arguments.
 use super::Bound;
+use crate::support::hash::HashMap;
 use crate::types::{
     Store,
     parameters::{
@@ -8,15 +9,10 @@ use crate::types::{
     },
     traits::{Application, ApplicationId},
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Applications {
     root: HashMap<ApplicationId, ApplicationId>,
-    #[expect(
-        clippy::box_collection,
-        reason = "ordinary predicate folders never allocate a scoped application table"
-    )]
     scoped: Option<Box<HashMap<(ApplicationId, u16), ApplicationId>>>,
 }
 impl Applications {

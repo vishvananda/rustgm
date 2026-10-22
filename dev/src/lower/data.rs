@@ -2,6 +2,7 @@
 mod initializer;
 mod zero;
 use super::context::Context;
+use crate::support::hash::HashMap;
 use crate::{
     abi::layout::{Layout, Shape},
     body::ir::ValueId,
@@ -18,7 +19,6 @@ use crate::{
     },
     types::TypeId,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Key {

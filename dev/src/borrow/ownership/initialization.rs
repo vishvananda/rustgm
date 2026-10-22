@@ -17,10 +17,7 @@ use crate::{
         copy::{Copies, Declaration},
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    hash::BuildHasher,
-};
+use std::hash::BuildHasher;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
@@ -59,7 +56,8 @@ pub struct Facts<'a> {
     body: &'a Body,
     pub ownership: BodyFacts,
     pub consumption: Effects,
-    pub storage: crate::borrow::storage::Analysis,
+    /// Proved for this body, or shared by every instance of its template.
+    pub storage: std::borrow::Cow<'a, crate::borrow::storage::Analysis>,
     owners: Owners,
     incoming: Vec<state::Word<u64>>,
     words: usize,
@@ -72,7 +70,7 @@ impl Facts<'_> {
     pub fn check_destructor_moves<S: BuildHasher>(
         &self,
         types: &Store,
-        custom: &HashSet<ItemId, S>,
+        custom: &std::collections::HashSet<ItemId, S>,
     ) -> Result<(), Error> {
         self.destructor_moves(types, |item| custom.contains(&item))
     }
@@ -213,19 +211,71 @@ fn validate_path(path: &Path, bits: u32, words: usize) -> Result<(), &'static st
 pub fn analyze<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &'a Body,
+) -> Result<Facts<'a>, Error> {
+    let order = crate::borrow::order::Order::new(body);
+    analyze_ordered(types, definitions, derives, copies, body, order.as_ref())
+}
+/// `analyze`, reusing a reverse-postorder walk already computed for the body.
+#[inline]
+pub(crate) fn analyze_ordered<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &'a Body,
+    order: Option<&crate::borrow::order::Order>,
+) -> Result<Facts<'a>, Error> {
+    analyze_with(types, definitions, derives, copies, body, order, None)
+}
+/// `analyze`, reusing the order walk and storage proof an instance shares with
+/// every other instance of its checked template (see `borrow::check::structure`).
+#[inline]
+pub(crate) fn analyze_shared<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &'a Body,
+    order: Option<&crate::borrow::order::Order>,
+    storage: &'a crate::borrow::storage::Analysis,
+) -> Result<Facts<'a>, Error> {
+    analyze_with(
+        types,
+        definitions,
+        derives,
+        copies,
+        body,
+        order,
+        Some(storage),
+    )
+}
+fn analyze_with<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &'a Body,
+    order: Option<&crate::borrow::order::Order>,
+    shared: Option<&'a crate::borrow::storage::Analysis>,
 ) -> Result<Facts<'a>, Error> {
     let mut ownership = super::prepare(types, definitions, derives, copies, body, true)?;
     let consumption = Effects::build(body, types, &ownership.paths).map_err(|message| Error {
         node: body.source,
         message,
     })?;
-    let storage = crate::borrow::storage::check(body).map_err(|error| Error {
-        node: error.node,
-        message: error.message,
-    })?;
+    let storage = if let Some(shared) = shared {
+        std::borrow::Cow::Borrowed(shared)
+    } else {
+        std::borrow::Cow::Owned(crate::borrow::storage::check_ordered(body, order).map_err(
+            |error| Error {
+                node: error.node,
+                message: error.message,
+            },
+        )?)
+    };
     let owners = Owners::build(body, &ownership.paths).map_err(|message| Error {
         node: body.source,
         message,
@@ -236,7 +286,7 @@ pub fn analyze<'a, S: BuildHasher>(
         owners: &owners,
         consumption: &consumption,
     };
-    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow))?;
+    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow), order)?;
     super::guards::verify(body, &ownership, types)?;
     let words = (ownership.paths.bits as usize).div_ceil(64);
     Ok(Facts {

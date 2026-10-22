@@ -1,4 +1,5 @@
 //! Selected partial inputs commit through current caller constraints and explicit lifetime closure.
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     ItemId, Kind, Primitive, RegionId, Store, TypeId,
     arguments::Constant,
@@ -7,7 +8,6 @@ use rustgm::types::{
     },
     substitute::Bound,
 };
-use std::collections::HashMap;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 const BYTE: TypeId = TypeId::primitive(Primitive::U8);
 fn ty(argument: Argument) -> Result<TermId, &'static str> {
@@ -18,7 +18,7 @@ fn ty(argument: Argument) -> Result<TermId, &'static str> {
     }
 }
 fn closed() -> Bound {
-    Bound::restore_regions(HashMap::new())
+    Bound::restore_regions(HashMap::default())
 }
 
 #[test]
@@ -239,7 +239,7 @@ fn closed_captures_preserve_nested_callable_locals_and_query_equations() -> Test
         .region_equalities
         .push((RegionId(41), RegionId(42)));
     let mut closing =
-        Bound::restore_regions(HashMap::from([(RegionId(41), RegionId::bound(0, 0)?)]));
+        Bound::restore_regions(HashMap::from_iter([(RegionId(41), RegionId::bound(0, 0)?)]));
     let committed = query.commit(&mut store, &mut source, &mut closing)?;
     assert_eq!(committed.equalities, vec![(RegionId(41), RegionId(42))]);
     let function = source.resolved(&mut store, input)?;
@@ -273,7 +273,7 @@ fn later_caller_lifetime_equations_are_retained_in_the_callers_scope() -> TestRe
         let term = context.known(&store, reference)?;
         context.equate(&store, root, term)?;
     }
-    let mut closing = Bound::restore_regions(HashMap::from([(RegionId(2), RegionId(2))]));
+    let mut closing = Bound::restore_regions(HashMap::from_iter([(RegionId(2), RegionId(2))]));
     let committed = query.commit(&mut store, &mut source, &mut closing)?;
     assert!(!committed.changed);
     assert!(committed.equalities.is_empty());

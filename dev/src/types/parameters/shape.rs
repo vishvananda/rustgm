@@ -1,12 +1,13 @@
 //! Structural well-formedness and sizedness under one immutable bound environment.
 mod size_demands;
 use super::environment::{BuiltinQuery, Environment};
+use crate::support::hash::HashMap;
 use crate::types::{
     Kind, Primitive, Store, TypeId, bound_uses::captures::Captures, lifetime_proof::ScopeId,
     substitute::lookup::Lookup,
 };
 pub(crate) use size_demands::{Progress, Request};
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Properties {
     pub sized: bool,
@@ -43,7 +44,7 @@ impl Shapes {
         Self {
             environment,
             builtins: None,
-            cache: HashMap::new(),
+            cache: HashMap::default(),
             normalized_queries: None,
             scoped: None,
             work: Vec::new(),

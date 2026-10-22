@@ -21,14 +21,14 @@ type 18 primitive f64
 type 19 tuple [2,11]
 type 20 function binders=0 parameters=[19] result=1 unsafe=false
 type 21 function-item def=13 signature=20
-root 0:22 pattern=0
-pattern 0 source=0:21 input=19 or alternatives=0:2
-pattern 1 source=0:15 input=19 product variant=- fields=0:2
-pattern 2 source=0:20 input=19 product variant=- fields=2:4
-pattern 3 source=0:11 input=2 range=0
-pattern 4 source=0:14 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
-pattern 5 source=0:16 input=2 range=1
-pattern 6 source=0:19 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
+root 0:12 pattern=0
+pattern 0 source=0:11 input=19 or alternatives=0:2
+pattern 1 source=0:7 input=19 product variant=- fields=0:2
+pattern 2 source=0:10 input=19 product variant=- fields=2:4
+pattern 3 source=0:5 input=2 range=0
+pattern 4 source=0:6 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
+pattern 5 source=0:8 input=2 range=1
+pattern 6 source=0:9 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
 field 0 tuple=0 pattern=3
 field 1 tuple=1 pattern=4
 field 2 tuple=0 pattern=5

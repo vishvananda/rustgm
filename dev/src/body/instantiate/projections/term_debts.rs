@@ -1,10 +1,10 @@
 //! Normalize scoped formation terms without converting selection debts into permissions.
+use crate::support::hash::HashMap;
 use crate::{
     body::regions::{Contract, Kind, Proof},
     sema::{model::Declarations, projections},
     types::lifetime_proof::ScopeId,
 };
-use std::collections::HashMap;
 
 pub(super) fn normalize(
     facts: &mut Declarations,
@@ -12,7 +12,7 @@ pub(super) fn normalize(
     evidence: &mut Proof,
 ) -> Result<(), &'static str> {
     let mut groups: Vec<(u32, Vec<usize>)> = Vec::new();
-    let mut arities = HashMap::new();
+    let mut arities = HashMap::default();
     let mut work = 0_usize;
     for (position, obligation) in contract.obligations.iter().enumerate() {
         charge(&mut work, 1)?;

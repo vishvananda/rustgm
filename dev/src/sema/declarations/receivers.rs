@@ -59,7 +59,7 @@ impl Checker<'_> {
             .list(list)
             .iter()
             .copied()
-            .filter(|node| unit.configured.active[node.0 as usize]);
+            .filter(|node| unit.configured.active[node.get() as usize]);
         let first = parameters.next();
         if first.is_none() || parameters.next().is_some() {
             return Err(self.error(key, "Drop requires exactly one receiver parameter"));

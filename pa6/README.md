@@ -83,8 +83,11 @@ Later phases consume these records directly; the text view is never reparsed.
 
 IDs are decimal and zero-based. Source node IDs retain PA5 identities within a
 file. File/module IDs follow configured source traversal; root module/scope are
-0. Name IDs follow first interning (module loading, primitive names, declarations,
-then uses). Scope/definition IDs follow deterministic creation order. Emit:
+0. Name IDs follow first interning. Parsing a loaded file interns its path,
+lifetime and binding names in source order, including those in syntax that
+configuration later disables; other names follow as resolution first needs them
+(module loading, primitive names, declarations, then uses). Scope/definition IDs
+follow deterministic creation order. Emit:
 
 ```text
 name ID "NFC_NAME"

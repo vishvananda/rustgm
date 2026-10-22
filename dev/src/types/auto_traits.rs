@@ -1,7 +1,7 @@
 //! Auto-trait dependencies are keyed by both the type and the required marker.
 mod structural;
 use super::{ItemId, Store, TypeId, aggregate::Definitions};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 pub use crate::support::marker_traits::AutoTrait;
 
@@ -56,7 +56,7 @@ impl Query {
                 value: true,
                 parents: None,
             }],
-            indices: HashMap::from([(root, 0)]),
+            indices: HashMap::from_iter([(root, 0)]),
             edges: Vec::new(),
             cursor: 0,
             waiting: None,

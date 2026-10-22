@@ -25,43 +25,35 @@ function @rg.18(%p0 : u8) -> void {
     %t6 = addr $s1
     copyobj 1x1 %t5, %t6
     %t7 = load u8 $s0
-    %t8 = convert zext i16 u8 %t7
-    %t9 = convert zext i16 u8 10
-    %t10 = binary add i16 %t8, %t9
-    %t11 = convert trunc u8 i16 %t10
-    %t12 = convert zext i16 u8 %t11
-    %t13 = cmp ne i16 %t10, %t12
-    branch %t13, ^b7, ^b8
+    %t8 = binary add u8 %t7, 10
+    %t9 = cmp ult u8 %t8, %t7
+    branch %t9, ^b7, ^b8
   block ^b8:
-    %t14 = addr $s3
-    call void @rg.15(%t14, %t11)
-    %t15 = addr $s3
-    call void @rg.drop.0(%t15)
-    %t16 = load u8 $s0
-    %t17 = convert zext i16 u8 %t16
-    %t18 = convert zext i16 u8 1
-    %t19 = binary sub i16 %t17, %t18
-    %t20 = convert trunc u8 i16 %t19
-    %t21 = convert zext i16 u8 %t20
-    %t22 = cmp ne i16 %t19, %t21
-    branch %t22, ^b7, ^b9
+    %t10 = addr $s3
+    call void @rg.15(%t10, %t8)
+    %t11 = addr $s3
+    call void @rg.drop.0(%t11)
+    %t12 = load u8 $s0
+    %t13 = binary sub u8 %t12, 1
+    %t14 = cmp ult u8 %t12, 1
+    branch %t14, ^b7, ^b9
   block ^b9:
-    store u8 %t20, $s0
-    %t23 = load u8 $s0
-    %t24 = cmp ugt u8 %t23, 0
-    %t25 = convert trunc i1 i64 %t24
-    branch %t25, ^b4, ^b5
+    store u8 %t13, $s0
+    %t15 = load u8 $s0
+    %t16 = cmp ugt u8 %t15, 0
+    %t17 = convert trunc i1 i64 %t16
+    branch %t17, ^b4, ^b5
   block ^b5:
     jump ^b6
   block ^b6:
-    %t26 = addr $s1
-    call void @rg.drop.0(%t26)
+    %t18 = addr $s1
+    call void @rg.drop.0(%t18)
     jump ^b2
   block ^b2:
     return void
   block ^b4:
-    %t27 = addr $s1
-    call void @rg.drop.0(%t27)
+    %t19 = addr $s1
+    call void @rg.drop.0(%t19)
     jump ^b1
   block ^b7:
     call void @abort()

@@ -3,6 +3,7 @@ mod context;
 mod owners;
 mod preconditions;
 use super::{Environment, Error, loans, regions};
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{BodyKey, Owner, Selection},
@@ -12,7 +13,7 @@ use crate::{
     types::{ItemId, TypeId, closure::ClosureId, variance::Variances},
 };
 pub(crate) use context::{Contexts, verify as verify_with_context};
-use std::{collections::HashMap, hash::BuildHasher};
+use std::hash::BuildHasher;
 
 pub struct Checked<'a> {
     templates: &'a Templates,

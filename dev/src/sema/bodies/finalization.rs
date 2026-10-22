@@ -3,11 +3,11 @@ use super::{
     AdjustmentKind, Checker, Declarations, Dependency, Error, NodeId, NodeKey, Operation,
     RegionEquality, field_storage::Batch, hidden_results::HiddenResults,
 };
+use crate::support::hash::HashMap;
 use crate::{
     sema::traits::selection::Source,
     types::{GenericArgs, infer::Solved, parameters::predicates::Predicate},
 };
-use std::collections::HashMap;
 
 pub(super) enum Finalization {
     Closures(HashMap<usize, Source>),
@@ -55,21 +55,22 @@ impl Checker<'_> {
     ) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         self.publish_nested_progress()?;
-        let (solved, predicates, arguments) = std::mem::take(&mut self.state.infer)
-            .finish_with_arguments(
-                &mut self.facts.types,
-                self.state
-                    .call_types
-                    .obligations
-                    .iter()
-                    .map(|(_, predicate)| predicate),
-                self.state
-                    .call_types
-                    .constants
-                    .iter()
-                    .map(|pending| pending.arguments.as_slice()),
-            )
-            .map_err(|e| self.error(body, e))?;
+        let mut infer = std::mem::take(&mut self.state.infer);
+        let finished = infer.finish_with_arguments(
+            &mut self.facts.types,
+            self.state
+                .call_types
+                .obligations
+                .iter()
+                .map(|(_, predicate)| predicate),
+            self.state
+                .call_types
+                .constants
+                .iter()
+                .map(|pending| pending.arguments.as_slice()),
+        );
+        self.state.infer = infer.recycled();
+        let (solved, predicates, arguments) = finished.map_err(|e| self.error(body, e))?;
         self.publish_nested_body(&solved)?;
         let hidden = self.check_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;
@@ -245,7 +246,7 @@ impl Checker<'_> {
                 file: self.state.file,
                 node,
             });
-            self.state.diverges.remove(node.0 as usize);
+            self.state.diverges.remove(node.get() as usize);
         }
         self.state.bindings.clear();
         self.state.checks.clear();

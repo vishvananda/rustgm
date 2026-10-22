@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     ItemId, Kind, Primitive, Store, TypeId,
     aggregate::Definitions,
@@ -10,7 +11,7 @@ use rustgm::types::{
         shape::Shapes,
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 fn parameter(types: &mut Store, owner: u32) -> Result<(ParameterId, TypeId), &'static str> {
     let id = types.intern_parameter(Parameter {
@@ -34,13 +35,14 @@ fn composite_assumptions_do_not_imply_member_bounds() -> Result<(), &'static str
         );
         let mut copies = Copies::in_environment(Arc::clone(&environment));
         let mut shapes = Shapes::new(environment);
-        let properties = copies.demand(&types, &Definitions::default(), &HashMap::new(), tuple)?;
+        let properties =
+            copies.demand(&types, &Definitions::default(), &HashMap::default(), tuple)?;
         assert_eq!(properties.copy, bound == Bound::Copy);
         assert_eq!(properties.clone_, bound != Bound::Sized);
         assert!(shapes.demand(&types, tuple)?.sized);
         assert!(!shapes.demand(&types, ty)?.sized);
         assert!(shapes.demand(&types, ty)?.well_formed);
-        let member = copies.demand(&types, &Definitions::default(), &HashMap::new(), ty)?;
+        let member = copies.demand(&types, &Definitions::default(), &HashMap::default(), ty)?;
         assert!(!member.copy && !member.clone_);
     }
     Ok(())
@@ -155,11 +157,16 @@ fn an_explicit_nominal_copy_assumption_needs_no_field_inspection() -> Result<(),
         }],
     )?;
     let mut copies = Copies::in_environment(Arc::new(environment));
-    let properties = copies.demand(&types, &Definitions::default(), &HashMap::new(), nominal)?;
+    let properties = copies.demand(
+        &types,
+        &Definitions::default(),
+        &HashMap::default(),
+        nominal,
+    )?;
     assert!(properties.copy && properties.clone_);
     assert!(
         !copies
-            .demand(&types, &Definitions::default(), &HashMap::new(), ty)?
+            .demand(&types, &Definitions::default(), &HashMap::default(), ty)?
             .copy
     );
     Ok(())

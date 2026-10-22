@@ -1,10 +1,9 @@
 node 0 2 11 name "stringify"
-node 1 2 11 path false [0]
-node 2 2 22 macro 1 0
-node 3 2 24 statement 2
-node 4 25 26 literal 0
+node 1 2 22 macro 0 0
+node 2 2 24 statement 1
+node 3 25 26 literal 0
 value 0 integer 25 26 infer 1
-node 5 0 28 block Plain [3] 4
+node 4 0 28 block Plain [2] 3
 capture 0 12 22 2 "{anything}"
-root 5
+root 4
 eof 29

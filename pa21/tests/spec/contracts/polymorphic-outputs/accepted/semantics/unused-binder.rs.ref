@@ -24,8 +24,8 @@ type 21 function-item def=13 signature=20
 type 22 function binders=0 parameters=[] result=1 unsafe=false
 type 23 function-item def=14 signature=22
 type 24 tuple [19,19]
-def 13 type=21 name="f" source=0:7
-def 14 type=23 name="main" source=0:23
+def 13 type=21 name="f" source=0:6
+def 14 type=23 name="main" source=0:17
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -43,15 +43,15 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 40 type=19 name="x" source=0:10
-region-var region:1 body=0:6 source=0:4 origin=quantified-proof pending
+def 40 type=19 name="x" source=0:7
+region-var region:1 body=0:5 source=0:3 origin=quantified-proof pending
 quantifier 0 regions=1 subject=19 bound=copy
 quantifier 1 regions=1 subject=11 bound=copy
-opaque 0 owner=13 source=0:4 application=19 hidden=11 role=defining-result storage-proof=pending
+opaque 0 owner=13 source=0:3 application=19 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 forall=0
 opaque-body-result def=13 type=11
-proof 0 body=0:6 source=0:6 pending
-proof-source proof=0 index=0 source=0:4
+proof 0 body=0:5 source=0:5 pending
+proof-source proof=0 index=0 source=0:3
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=0 start=1 end=2
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=2

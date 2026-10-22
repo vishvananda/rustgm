@@ -1,11 +1,9 @@
 //! Ordered trait clauses retain binders without widening each ordinary predicate.
 use super::super::premise_index::ClauseIndex;
 use super::{Bound, Clause, ParameterId, Predicate};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind, Store, parameters::clauses::QuantifiedId, substitute};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::{Arc, OnceLock},
-};
+use std::sync::{Arc, OnceLock};
 
 type ProjectionKey = (ItemId, ItemId);
 

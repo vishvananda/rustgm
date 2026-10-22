@@ -3,11 +3,12 @@
 #[path = "../../../tests/invariants/notification_routing.rs"]
 mod tests;
 use super::NodeId;
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     Store,
     infer::{Context, Error, dependencies::WatchId, predicates::Predicate},
 };
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
 #[derive(Default)]
 struct Data {
@@ -86,6 +87,12 @@ impl Notifications {
             }
         }
         Ok(None)
+    }
+    #[inline]
+    pub fn has_queued_projections(&self) -> bool {
+        self.data
+            .as_ref()
+            .is_some_and(|data| !data.projections.is_empty())
     }
     pub fn waiting(&self) -> bool {
         self.data

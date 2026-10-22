@@ -1,6 +1,6 @@
 //! Reconcile shared inputs together; validate cycles before publishing any result.
 use super::{Constructor, Context, Error, Store, TermId, Value, arguments::Argument};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 impl Context {
     /// Equate complete input pairs without rescanning every shared type prefix.
@@ -122,7 +122,7 @@ impl Context {
         store: &Store,
         pairs: &[(TermId, TermId)],
     ) -> Result<bool, Error> {
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut work: Vec<_> = pairs.iter().flat_map(|&(a, b)| [a, b]).collect();
         while let Some(id) = work.pop() {
             self.step()?;
@@ -159,7 +159,7 @@ impl Context {
     fn acyclic_inputs(&mut self, store: &Store, pairs: &[(TermId, TermId)]) -> Result<(), Error> {
         // All edges are now stable. Share colors across roots, including aliases;
         // a gray revisit is a cycle and a black revisit is an already proved DAG.
-        let mut active = HashMap::new();
+        let mut active = HashMap::default();
         let mut work: Vec<_> = pairs
             .iter()
             .flat_map(|&(a, b)| [(a, false), (b, false)])

@@ -15,8 +15,8 @@ use components::{ComponentKind, Components};
 pub(crate) mod storage;
 use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId};
 use super::{arguments::Argument, parameters::ParameterId};
+use crate::support::hash::{HashMap, HashSet};
 pub use contracts::Bounds;
-use std::collections::{HashMap, HashSet};
 
 pub type Pair = (RegionId, RegionId);
 pub type ParameterPair = (ParameterId, RegionId);

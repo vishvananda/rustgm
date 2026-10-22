@@ -1,6 +1,7 @@
 //! Output ports are semantic identities, not lifetime proof or execution authority.
+use crate::support::hash::HashMap;
 use crate::{resolve::unit::NodeKey, types::RegionId};
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub struct Registry {
@@ -113,7 +114,7 @@ mod tests {
     fn source(node: u32) -> NodeKey {
         NodeKey {
             file: FileId(0),
-            node: NodeId(node),
+            node: NodeId::new(node),
         }
     }
     fn link() -> Link {

@@ -1,5 +1,6 @@
 //! Exact outer constructors, before const arguments or field graphs are evaluated.
 use crate::sema::traits::heads::Head as Rigid;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
@@ -14,7 +15,6 @@ use crate::{
     },
     types::{ItemId, Primitive},
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/header_heads.rs"]
 mod tests;
@@ -69,9 +69,9 @@ impl<'a> Heads<'a> {
         Self {
             report,
             facts,
-            aliases: HashMap::new(),
-            parameters: HashMap::new(),
-            states: HashMap::new(),
+            aliases: HashMap::default(),
+            parameters: HashMap::default(),
+            states: HashMap::default(),
             work: Vec::new(),
             steps: 0,
         }
@@ -177,10 +177,6 @@ impl<'a> Heads<'a> {
         let ast = &self.report.package.unit(key.file).configured.ast;
         let node = match ast.node(key.node).kind {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => Some(node),
-            Kind::Type {
-                flavor: TypeFlavor::Path,
-                elements,
-            } => ast.list(elements).first().copied(),
             _ => None,
         };
         if let Some(node) = node {
@@ -223,7 +219,6 @@ impl<'a> Heads<'a> {
     fn syntax_shape(kind: Kind) -> Option<Rigid> {
         Some(match kind {
             Kind::Type { flavor, .. } => match flavor {
-                TypeFlavor::Path => return None,
                 TypeFlavor::Tuple => Rigid::Tuple,
                 TypeFlavor::Slice => Rigid::Slice,
                 TypeFlavor::Array => Rigid::Array,
@@ -254,7 +249,7 @@ impl<'a> Heads<'a> {
         let mut lifetimes = 0;
         let mut slot = 0;
         for &node in unit.configured.ast.list(item.generics) {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let mut key = NodeKey { node, ..source };
@@ -301,7 +296,7 @@ impl<'a> Heads<'a> {
         let ast = &self.report.package.unit(path.file).configured.ast;
         let supplied = list.map_or(&[][..], |list| ast.list(list));
         let explicit = supplied.first().is_some_and(|&node| {
-            matches!(ast.node(node).kind, Kind::Name(span)
+            matches!(ast.node(node).kind, Kind::Name(span, _)
                 if self.report.package.unit(path.file).spelling(span).is_ok_and(|s| s.starts_with('\'')))
         });
         let omitted = if explicit { 0 } else { alias.lifetimes };

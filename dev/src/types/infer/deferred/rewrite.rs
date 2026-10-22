@@ -1,7 +1,8 @@
 //! Build normalized input views while keeping original formation roots and shared holes.
 use super::super::{Constructor, Context, Error, Store, TermId, TypeId, Value};
+use crate::support::hash::HashMap;
 use crate::types::lifetime_proof::ScopeId;
-use std::{collections::HashMap, hash::Hash};
+use std::hash::Hash;
 
 struct Rewriting<K> {
     results: HashMap<K, TermId>,
@@ -11,7 +12,7 @@ struct Rewriting<K> {
 impl<K> Default for Rewriting<K> {
     fn default() -> Self {
         Self {
-            results: HashMap::new(),
+            results: HashMap::default(),
             work: Vec::new(),
             children: Vec::new(),
         }

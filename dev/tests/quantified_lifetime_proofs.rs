@@ -184,10 +184,10 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
     let callables = rustgm::types::callable::Templates::default();
     let source = NodeKey {
         file: FileId(0),
-        node: NodeId(1),
+        node: NodeId::new(1),
     };
     let debt = NodeKey {
-        node: NodeId(2),
+        node: NodeId::new(2),
         ..source
     };
     let universal = RegionId::bound(0, 0)?;

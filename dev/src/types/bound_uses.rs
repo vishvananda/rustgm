@@ -1,7 +1,7 @@
 //! Collect occurrences of one enclosing binder from already elaborated types.
 pub(crate) mod captures;
 use super::{GenericArgs, Kind, RegionId, Store, TypeId, arguments::Argument};
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 
 /// Validate a signature before normalizing its projections. Projected input
 /// occurrences do not constrain output lifetimes, even if their normal form would.
@@ -64,7 +64,7 @@ pub struct Uses {
 impl Uses {
     pub(crate) fn including_free() -> Self {
         Self {
-            free: Some(HashSet::new()),
+            free: Some(HashSet::default()),
             ..Self::default()
         }
     }

@@ -445,8 +445,59 @@ impl Checker<'_> {
     }
     fn constructor_match(&mut self, id: u32, ty: TypeId) -> Result<(), Error> {
         let decision = &self.facts.patterns.decisions[id as usize];
-        let (node, start, end) = (decision.source.node, decision.start, decision.end);
+        let (start, end) = (decision.start, decision.end);
         let valid = self.pattern_input_validity(decision.scrutinee.node)?;
+        let (mut key, mut work) = self.state.coverage_cache.take_key();
+        let keyed = patterns::coverage::match_key(
+            self.facts,
+            &self.facts.patterns.arms[start as usize..end as usize],
+            (ty, valid, self.state.module),
+            &mut key,
+            &mut work,
+        );
+        let cached = keyed
+            .then(|| self.state.coverage_cache.outcome(&key).cloned())
+            .flatten();
+        let outcome = if let Some(outcome) = cached {
+            outcome
+        } else {
+            let misses = self.state.coverage_cache.misses();
+            let outcome = self.cover_match(id, ty, valid)?;
+            if keyed && self.state.coverage_cache.misses() == misses {
+                self.state
+                    .coverage_cache
+                    .remember(key.clone(), outcome.clone());
+            }
+            outcome
+        };
+        self.state.coverage_cache.restore_key(key, work);
+        self.publish_match(id, outcome)
+    }
+    fn publish_match(
+        &mut self,
+        id: u32,
+        outcome: patterns::coverage::Outcome,
+    ) -> Result<(), Error> {
+        let decision = &self.facts.patterns.decisions[id as usize];
+        let (node, start) = (decision.source.node, decision.start);
+        if let Some(missing) = outcome.missing {
+            return Err(self.error(node, format!("non-exhaustive match; missing {missing}")));
+        }
+        for (index, useful) in (start..).zip(outcome.useful) {
+            self.facts.patterns.arms[index as usize].useful = useful;
+        }
+        self.facts.patterns.decisions[id as usize].work = outcome.work;
+        self.facts.patterns.decisions[id as usize].uninhabited = outcome.uninhabited;
+        Ok(())
+    }
+    fn cover_match(
+        &mut self,
+        id: u32,
+        ty: TypeId,
+        valid: bool,
+    ) -> Result<patterns::coverage::Outcome, Error> {
+        let decision = &self.facts.patterns.decisions[id as usize];
+        let (node, start, end) = (decision.source.node, decision.start, decision.end);
         let (report, source) = (self.report, self.key(node));
         let error =
             |message: &str| crate::sema::model::Declarations::error(report, source, message);
@@ -469,17 +520,12 @@ impl Checker<'_> {
             usefulness.push(coverage.arm(pattern, arm.guard.is_some()).map_err(error)?);
         }
         let missing = coverage.missing().map_err(error)?;
-        let work = coverage.work();
-        let uninhabited = coverage.uninhabited();
-        if let Some(missing) = missing {
-            return Err(self.error(node, format!("non-exhaustive match; missing {missing}")));
-        }
-        for (index, useful) in (start..end).zip(usefulness) {
-            self.facts.patterns.arms[index as usize].useful = useful;
-        }
-        self.facts.patterns.decisions[id as usize].work = work;
-        self.facts.patterns.decisions[id as usize].uninhabited = uninhabited;
-        Ok(())
+        Ok(patterns::coverage::Outcome {
+            useful: usefulness,
+            missing,
+            work: coverage.work(),
+            uninhabited: coverage.uninhabited(),
+        })
     }
     fn constructor_binding(&mut self, root: PatternId, valid: bool) -> Result<(), Error> {
         let pattern = &self.facts.patterns.nodes[root.0 as usize];
@@ -501,7 +547,9 @@ impl Checker<'_> {
         )
         .map_err(error)?;
         coverage.arm(root, false).map_err(error)?;
-        if let Some(missing) = coverage.missing().map_err(error)? {
+        let missing = coverage.missing().map_err(error)?;
+        drop(coverage);
+        if let Some(missing) = missing {
             return Err(self.error(node, format!("refutable binding; missing {missing}")));
         }
         Ok(())

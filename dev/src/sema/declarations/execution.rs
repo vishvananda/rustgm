@@ -1,10 +1,10 @@
 //! Demand const body typing through the existing resumable declaration worklist.
 use super::{Checker, DefId, Error, FileId, Work};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{bodies, values::execution::Requirement},
     types::Kind,
 };
-use std::collections::{HashMap, HashSet};
 
 #[cfg(test)]
 #[path = "../../../tests/invariants/provider_execution.rs"]

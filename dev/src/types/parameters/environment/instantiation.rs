@@ -1,4 +1,5 @@
 //! Builtin instantiation recipes preserve slot correlations without copying prefixes.
+use crate::support::hash::HashMap;
 use crate::{
     support::radix_map::{Id, Map},
     types::{
@@ -6,7 +7,6 @@ use crate::{
         relations::RegionEqualities, structural::Compare,
     },
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Pattern {

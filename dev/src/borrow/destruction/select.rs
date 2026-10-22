@@ -2,14 +2,14 @@
 use super::{
     Cleanup, Condition, Field, Flag, Interval, Node, NodeId, Operation, Plan, Variant, glue,
 };
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{Body, Selection},
     borrow::ownership::{
         Component, Error, PathId, Paths,
-        initialization::{self, Candidate, Event, Point, Status},
+        initialization::{self, Candidate, Event, Point, Status, Transition},
     },
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 enum Tracking {
@@ -47,6 +47,17 @@ pub fn select(
     catalog: &mut glue::Catalog<'_>,
     facts: &initialization::Facts<'_>,
 ) -> Result<Plan, Error> {
+    select_reusing(catalog, facts, &mut Vec::new())
+}
+/// `select`, recording transitions in `transitions`: an earlier body's
+/// emptied buffer, returned emptied for the next body.
+/// # Errors
+/// As `select`.
+pub(crate) fn select_reusing(
+    catalog: &mut glue::Catalog<'_>,
+    facts: &initialization::Facts<'_>,
+    transitions: &mut Vec<initialization::Transition>,
+) -> Result<Plan, Error> {
     facts.destructor_moves(catalog.types(), |item| catalog.custom(item))?;
     let body = facts.body();
     let error = |message| Error {
@@ -56,7 +67,7 @@ pub fn select(
     let mut builder = Builder {
         catalog,
         paths: &facts.ownership.paths,
-        fields: HashMap::new(),
+        fields: HashMap::default(),
         plan: Plan::default(),
         work: Vec::new(),
         retained: 0,
@@ -72,17 +83,24 @@ pub fn select(
                 .insert((parent, field), PathId(compact(index).map_err(error)?));
         }
     }
+    let mut recording = super::flags::Recording::for_body(body, std::mem::take(transitions));
     facts
-        .visit_events(|event, point| {
-            builder.charge(1)?;
-            if let Event::Cleanup(candidate) = event {
-                builder.cleanup(body, candidate, point)?;
+        .visit_transfers(|transition, point| {
+            recording.push(transition);
+            if let Transition::Observe(event) = transition {
+                builder.charge(1)?;
+                if let Event::Cleanup(candidate) = event {
+                    builder.cleanup(body, candidate, point)?;
+                }
             }
             Ok(())
         })
         .map_err(error)?;
     builder.flags().map_err(error)?;
-    super::flags::elaborate(&mut builder.plan, facts, builder.retained).map_err(error)?;
+    let elaborated =
+        super::flags::elaborate(&mut builder.plan, facts, &mut recording, builder.retained);
+    *transitions = recording.into_buffer();
+    elaborated.map_err(error)?;
     Ok(builder.plan)
 }
 impl Builder<'_, '_> {

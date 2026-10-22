@@ -4,7 +4,7 @@ use crate::types::{
     Kind, Store, TypeId,
     aggregate::{Definitions, NullableEnum, Representation, SharedMutation},
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/nullable_layout.rs"]
 mod tests;

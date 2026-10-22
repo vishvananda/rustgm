@@ -3,6 +3,7 @@ mod adapters;
 mod c_boundary;
 mod niches;
 use super::{Error, data, function, remainder};
+use crate::support::hash::HashMap;
 use crate::{
     abi::layout::{Layout, Layouts},
     body::ir::{self, Owner},
@@ -23,7 +24,6 @@ use crate::{
     syntax::ast::NodeId,
     types::{Kind, Primitive, Store, TypeId, aggregate::Definitions, instance::Instance},
 };
-use std::collections::HashMap;
 
 pub(super) struct Context<'a> {
     pub intrinsics: &'a crate::resolve::model::Intrinsics,
@@ -38,8 +38,12 @@ pub(super) struct Context<'a> {
     pub(super) crates: Option<&'a crate::sema::crates::Linkage>,
     imported_symbols: HashMap<DefId, SymbolId>,
     pub layouts: &'a mut Layouts,
-    pub bodies: &'a ir::Program,
+    bodies: Bodies<'a>,
     pub destruction: Option<&'a crate::borrow::destruction::Proof>,
+    /// Owned body plans, released with their body after emission.
+    plans: Option<Plans>,
+    /// Function lowering vectors reused across bodies.
+    pub(super) lowering: function::Scratch,
     pub output: Program,
     pub data: data::Storage,
     pub storage_mutation: Option<crate::types::interior_mutability::Query<'a>>,
@@ -49,6 +53,7 @@ pub(super) struct Context<'a> {
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
+    representations: Vec<Option<Representation>>,
     c_abi: Option<Box<crate::abi::classification::Plans>>,
     queue: Vec<usize>,
     pub drop_queue: Vec<crate::body::drops::glue::Id>,
@@ -61,13 +66,79 @@ pub(super) struct Context<'a> {
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
 }
+/// Owned per-body cleanup plans, indexed like the checked bodies.
+type Plans = Vec<Option<Box<crate::borrow::destruction::Plan>>>;
+/// Checked bodies in final proof order. Lowering consumes an owned body once and
+/// leaves only the owner, instance and source header that later demands read.
+enum Bodies<'a> {
+    Shared(&'a [ir::Body]),
+    Owned(Vec<ir::Body>),
+}
+#[expect(
+    clippy::large_enum_variant,
+    reason = "one short-lived local per lowered body moves the owned CFG without another allocation"
+)]
+enum Taken<'a> {
+    Shared(&'a ir::Body),
+    Owned(ir::Body),
+}
+impl std::ops::Deref for Taken<'_> {
+    type Target = ir::Body;
+    fn deref(&self) -> &ir::Body {
+        match self {
+            Self::Shared(body) => body,
+            Self::Owned(body) => body,
+        }
+    }
+}
+impl<'a> Bodies<'a> {
+    fn as_slice(&self) -> &[ir::Body] {
+        match self {
+            Self::Shared(bodies) => bodies,
+            Self::Owned(bodies) => bodies,
+        }
+    }
+    fn take(&mut self, index: usize) -> Option<Taken<'a>> {
+        match self {
+            Self::Shared(bodies) => {
+                let bodies: &'a [ir::Body] = bodies;
+                bodies.get(index).map(Taken::Shared)
+            }
+            Self::Owned(bodies) => {
+                let slot = bodies.get_mut(index)?;
+                let header = slot.header();
+                Some(Taken::Owned(std::mem::replace(slot, header)))
+            }
+        }
+    }
+}
 pub(super) fn build(
     facts: &mut Declarations,
-    bodies: &crate::borrow::Checked<'_>,
+    checked: &crate::borrow::Checked<'_>,
+    roots: super::roots::Selected<'_>,
+) -> Result<Program, Error> {
+    let bodies = Bodies::Shared(&checked.program().bodies);
+    run(facts, bodies, checked.destruction(), None, roots)
+}
+/// Lower owned proved bodies, releasing each body and plan after emission.
+pub(super) fn build_owned(
+    facts: &mut Declarations,
+    bodies: Vec<ir::Body>,
+    destruction: Option<&crate::borrow::destruction::Proof>,
+    plans: Option<Plans>,
+    roots: super::roots::Selected<'_>,
+) -> Result<Program, Error> {
+    run(facts, Bodies::Owned(bodies), destruction, plans, roots)
+}
+fn run(
+    facts: &mut Declarations,
+    bodies: Bodies<'_>,
+    destruction: Option<&crate::borrow::destruction::Proof>,
+    plans: Option<Plans>,
     roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
     let mut layouts = std::mem::take(&mut facts.layouts);
-    let result = Context::build(facts, &mut layouts, bodies, roots);
+    let result = Context::build(facts, &mut layouts, (bodies, destruction, plans), roots);
     facts.layouts = layouts;
     result
 }
@@ -93,23 +164,25 @@ impl Representation {
     }
 }
 impl<'a> Context<'a> {
-    pub fn build(
+    fn build(
         facts: &'a Declarations,
         layouts: &'a mut Layouts,
-        checked: &'a crate::borrow::Checked<'_>,
+        (bodies, destruction, plans): (
+            Bodies<'a>,
+            Option<&'a crate::borrow::destruction::Proof>,
+            Option<Plans>,
+        ),
         roots: super::roots::Selected<'_>,
     ) -> Result<Program, Error> {
-        let bodies = checked.program();
-        let destruction = checked.destruction();
-        let source = bodies.bodies.first().map_or(
+        let source = bodies.as_slice().first().map_or(
             NodeKey {
                 file: FileId(0),
-                node: NodeId(0),
+                node: NodeId::new(0),
             },
             |b| b.source,
         );
         let size = bodies
-            .bodies
+            .as_slice()
             .iter()
             .map(|body| match body.owner {
                 Owner::AnonymousConstant
@@ -125,7 +198,7 @@ impl<'a> Context<'a> {
             .unwrap_or(0);
         let mut context = Self {
             intrinsics: &facts.intrinsics,
-            intrinsic_symbols: HashMap::new(),
+            intrinsic_symbols: HashMap::default(),
             types: &facts.types,
             aggregates: &facts.aggregates,
             members: &facts.members,
@@ -134,27 +207,30 @@ impl<'a> Context<'a> {
             initializers: &facts.initializers,
             foreign: facts.foreign.as_deref(),
             crates: facts.crates.as_deref(),
-            imported_symbols: HashMap::new(),
+            imported_symbols: HashMap::default(),
             layouts,
+            symbols: vec![None; bodies.as_slice().len()],
             bodies,
             destruction,
+            plans,
+            lowering: function::Scratch::default(),
             output: Program::default(),
             data: data::Storage::default(),
             storage_mutation: None,
             body_indices: vec![None; size],
-            closure_indices: HashMap::new(),
-            adapter_indices: HashMap::new(),
-            instance_indices: HashMap::new(),
-            symbols: vec![None; bodies.bodies.len()],
-            signatures: HashMap::new(),
+            closure_indices: HashMap::default(),
+            adapter_indices: HashMap::default(),
+            instance_indices: HashMap::default(),
+            signatures: HashMap::default(),
+            representations: Vec::new(),
             c_abi: None,
             queue: Vec::new(),
             drop_queue: Vec::new(),
             drop_symbols: vec![None; destruction.map_or(0, |d| d.recipes().recipes().len())],
             objects: &facts.objects,
-            virtual_symbols: HashMap::new(),
+            virtual_symbols: HashMap::default(),
             object_callables: None,
-            table_symbols: HashMap::new(),
+            table_symbols: HashMap::default(),
             table_queue: Vec::new(),
             abort: None,
             remainders: [None; 2],
@@ -198,7 +274,6 @@ impl<'a> Context<'a> {
     /// Demand queues own their identities before any dependency is emitted.
     /// Newly discovered functions, drop glue and data append without recursion.
     fn emit_pending(&mut self, source: NodeKey) -> Result<(), Error> {
-        let bodies = self.bodies;
         let destruction = self.destruction;
         let (mut next, mut next_data, mut next_drop, mut next_table) = (0, 0, 0, 0);
         while next < self.queue.len()
@@ -247,22 +322,33 @@ impl<'a> Context<'a> {
                 node: source,
                 message: "missing demanded symbol",
             })?;
-            let body = &bodies.bodies[index];
-            let plan = destruction.and_then(|proof| proof.plan(index));
+            let body = self.bodies.take(index).ok_or(Error {
+                node: source,
+                message: "missing demanded body",
+            })?;
+            let owned_plan = self
+                .plans
+                .as_mut()
+                .and_then(|plans| plans.get_mut(index))
+                .and_then(Option::take);
+            let plan = owned_plan
+                .as_deref()
+                .or_else(|| destruction.and_then(|proof| proof.plan(index)));
             let signature = self.output.symbols[symbol.0 as usize].signature;
-            let lowered = function::lower(self, index, body, plan, signature)?;
+            let lowered = function::lower(self, index, &body, plan, signature)?;
             self.output
                 .define(symbol, lowered)
                 .map_err(|message| Error {
                     node: body.source,
                     message,
                 })?;
+            // An owned body and plan are released here; only its header remains.
             next += 1;
         }
         Ok(())
     }
     fn index_bodies(&mut self) -> Result<(), &'static str> {
-        for (index, body) in self.bodies.bodies.iter().enumerate() {
+        for (index, body) in self.bodies.as_slice().iter().enumerate() {
             if let Owner::ClosureAdapter { adapter, .. } = body.owner {
                 if body.instance != Some(adapter.instance())
                     || self.adapter_indices.insert(adapter, index).is_some()
@@ -309,6 +395,10 @@ impl<'a> Context<'a> {
             }
         }
         Ok(())
+    }
+    /// A checked body, or the header an already lowered owned body left behind.
+    fn body(&self, index: usize) -> &ir::Body {
+        &self.bodies.as_slice()[index]
     }
     pub fn signature(&mut self, ty: TypeId) -> Result<SignatureId, &'static str> {
         if let Some(id) = self.signatures.get(&ty) {
@@ -373,7 +463,22 @@ impl<'a> Context<'a> {
             .copied()
             .ok_or("missing demanded storage layout")
     }
+    /// Native value representation, memoized per canonical type: storage heads,
+    /// layouts and pointer metadata are fixed once queried.
     pub fn representation(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
+        if let Some(&Some(known)) = self.representations.get(ty.0 as usize) {
+            return Ok(known);
+        }
+        let known = self.represent(ty)?;
+        let index = ty.0 as usize;
+        if index >= self.representations.len() {
+            self.representations
+                .resize(index.max(self.types.len()) + 1, None);
+        }
+        self.representations[index] = Some(known);
+        Ok(known)
+    }
+    fn represent(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
         let ty = self.types.storage_head(ty)?;
         if let Some(
             Kind::Reference { referent, .. }
@@ -488,7 +593,7 @@ impl<'a> Context<'a> {
             signature,
             execution,
             ..
-        } = self.bodies.bodies[index].owner
+        } = self.body(index).owner
         else {
             return Err("closure body identity mismatch");
         };
@@ -504,7 +609,7 @@ impl<'a> Context<'a> {
             return Ok(symbol);
         }
         let signature = self.signature(signature)?;
-        let name = if self.bodies.bodies[index].instance.is_some() {
+        let name = if self.body(index).instance.is_some() {
             format!("rg.closure.{}.i{index}", identity.0)
         } else {
             format!("rg.closure.{}", identity.0)
@@ -577,7 +682,7 @@ impl<'a> Context<'a> {
         if let Some(symbol) = self.symbols[index] {
             return Ok(symbol);
         }
-        let Owner::Function { signature, .. } = self.bodies.bodies[index].owner else {
+        let Owner::Function { signature, .. } = self.body(index).owner else {
             return Err("call target is not a function");
         };
         let signature = self.signature(signature)?;
@@ -587,7 +692,7 @@ impl<'a> Context<'a> {
                 .and_then(|r| r.function(definition))
                 .map_or(crate::support::linkage::Naming::Rust, |f| f.naming),
             super::linkage::Identity::Callable(instance),
-            |identity| self.rust_name(identity, self.bodies.bodies[index].instance.map(|_| index)),
+            |identity| self.rust_name(identity, self.body(index).instance.map(|_| index)),
         )?;
         let symbol = self.output.declare(name, signature, false)?;
         self.symbols[index] = Some(symbol);

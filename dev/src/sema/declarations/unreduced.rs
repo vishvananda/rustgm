@@ -1,6 +1,6 @@
 //! Carry unreduced annotation identities through the same completed syntax edges.
 mod arguments;
-use super::{Checker, Error, Kind, List, NodeKey, Signature, Type, TypeFlavor, TypeId};
+use super::{Checker, Error, Kind, List, NodeKey, Signature, Type, TypeId};
 pub(super) use arguments::Arguments;
 
 impl Checker<'_> {
@@ -29,9 +29,7 @@ impl Checker<'_> {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => {
                 self.facts.unreduced.node(NodeKey { node, ..key })
             }
-            Kind::Type { flavor, elements } => {
-                self.unreduced_compound(key, ty, flavor, elements)?
-            }
+            Kind::Type { elements, .. } => self.unreduced_compound(key, ty, elements)?,
             _ => None,
         };
         if let Some(original) = original {
@@ -44,7 +42,6 @@ impl Checker<'_> {
         &mut self,
         key: NodeKey,
         ty: TypeId,
-        flavor: TypeFlavor,
         elements: List,
     ) -> Result<Option<TypeId>, Error> {
         let nodes = self
@@ -54,11 +51,6 @@ impl Checker<'_> {
             .configured
             .ast
             .list(elements);
-        if flavor == TypeFlavor::Path {
-            return Ok(nodes
-                .first()
-                .and_then(|node| self.facts.unreduced.node(NodeKey { node: *node, ..key })));
-        }
         let kind = self
             .facts
             .types
@@ -134,7 +126,7 @@ impl Checker<'_> {
         let mut inputs = Vec::new();
         let mut changed = false;
         for &node in unit.configured.ast.list(syntax.parameters) {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let parameter = self.unattributed(NodeKey { node, ..key });

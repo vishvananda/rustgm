@@ -91,7 +91,7 @@ fn clause_comparison_preserves_original_slots_and_shares_only_derived_keys() -> 
     )?;
     assert_ne!(left, right);
     assert!(store.same_clause(left, right)?.0);
-    let mut keys = std::collections::HashSet::new();
+    let mut keys = crate::support::hash::HashSet::default();
     for clause in [left, right] {
         let Clause::ForAll(id) = clause else {
             return Err("missing quantified comparison input".into());

@@ -1,5 +1,6 @@
 use crate::qualify as rustc;
 use crate::semantic;
+use rustgm::support::hash::HashMap;
 use rustgm::{
     body::{
         self,
@@ -11,7 +12,7 @@ use rustgm::{
         ownership::initialization::{self, Event, Status},
     },
 };
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 // Interpret only emitted flag stores. No body statement, move rule, ownership
 // path or cleanup clearing rule is used to reconstruct a missing write.
@@ -101,7 +102,7 @@ fn simulate(body: &Body, plan: &Plan) -> Result<HashMap<usize, Vec<u8>>, &'stati
             work.push_back(target);
         }
     }
-    let mut observed = HashMap::new();
+    let mut observed = HashMap::default();
     for (index, entry) in entries.into_iter().enumerate() {
         let Some(mut state) = entry else {
             continue;

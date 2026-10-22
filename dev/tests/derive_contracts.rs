@@ -1,5 +1,6 @@
 //! Each generated impl has its own assumptions, including under recursive references.
 use crate::qualify as rustc;
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::{self, Definitions, Repr, Variant},
@@ -11,7 +12,7 @@ use rustgm::types::{
         environment::{Abilities, Environment},
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn parameter(types: &mut Store, owner: u32) -> Result<(ParameterId, TypeId), &'static str> {
     let id = types.intern_parameter(Parameter {
@@ -57,7 +58,7 @@ fn clone_does_not_borrow_the_separate_copy_impls_stronger_assumptions() -> TestR
     define(&mut types, &mut definitions, 1, inner, true)?;
     let arguments = types.intern_arguments(&[Argument::Type(outer)])?;
     let field = types.intern(Kind::Adt(ItemId(1), arguments))?;
-    let selected = HashMap::from([(
+    let selected = HashMap::from_iter([(
         ItemId(1),
         Copy {
             copy: true,
@@ -65,7 +66,7 @@ fn clone_does_not_borrow_the_separate_copy_impls_stronger_assumptions() -> TestR
         }
         .into(),
     )]);
-    let equal = HashMap::from([(
+    let equal = HashMap::from_iter([(
         ItemId(1),
         Equal {
             partial_eq: true,
@@ -124,7 +125,7 @@ fn growing_recursive_reference_fields_use_their_conditional_contract() -> TestRe
         partial_eq: true,
         eq: true,
     };
-    let selected = HashMap::from([(ItemId(0), both)]);
+    let selected = HashMap::from_iter([(ItemId(0), both)]);
     let mut query = Equality::for_derive(ItemId(0), both);
     let before = types.len();
     for _ in 0..100 {

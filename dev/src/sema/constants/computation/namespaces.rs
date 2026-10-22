@@ -1,7 +1,8 @@
 //! One exact caller namespace transports source locals before actual arguments enter.
 use super::{CallerInstance, Declarations, NodeKey, catalog::CallerKey};
+use crate::support::hash::HashMap;
 use crate::{sema::traits::obligations::Reservation, types::lifetime_proof::OwnedTransport};
-use std::{collections::HashMap, ops::Range};
+use std::ops::Range;
 
 struct Entry {
     transport: Option<OwnedTransport>,
@@ -16,8 +17,8 @@ pub(super) struct Namespaces {
 impl Namespaces {
     pub(super) fn new() -> Self {
         Self {
-            entries: HashMap::new(),
-            observations: HashMap::new(),
+            entries: HashMap::default(),
+            observations: HashMap::default(),
             bytes: size_of::<Self>(),
         }
     }
@@ -86,13 +87,19 @@ fn take(
             .take()
             .ok_or("missing source caller namespace");
     }
-    let first = facts
+    let reserved = facts
         .body_regions
-        .len()
-        .checked_add(1)
-        .and_then(|n| u32::try_from(n).ok())
-        .ok_or("source namespace identity space exhausted")?;
+        .frontier(key.source)
+        .map_err(|_| "source namespace identity space exhausted")?;
     super::observed_arguments::prepare(facts, key.enclosing, scratch)?;
+    // Renamed locals join the source body's numbering unit after its current
+    // identities and after every observed actual, which another unit may have
+    // numbered; the reservation below covers any identities skipped between.
+    let first = super::observed_arguments::regions(facts, key.enclosing)?
+        .iter()
+        .filter(|region| region.bound_parts().is_none())
+        .map(|region| region.0.saturating_add(1))
+        .fold(reserved, u32::max);
     // `owned` comes from the exact original Contract, whose local proof IDs
     // may collide numerically with another body's diagnostic arena. Rename
     // those locals before inserting external actuals; never interpret the
@@ -142,7 +149,13 @@ fn take(
         return Err("source caller namespace count budget exceeded");
     }
     // These are diagnostic/ownership slots, never executable proof publication.
-    Reservation::default().reserve(facts, key.source, key.source, transport.interval_range())?;
+    let interval = transport.interval_range();
+    let allocated = if interval.is_empty() {
+        reserved..reserved
+    } else {
+        reserved..interval.end
+    };
+    Reservation::default().reserve(facts, key.source, key.source, allocated)?;
     let namespaces = facts
         .source_computations
         .as_deref_mut()

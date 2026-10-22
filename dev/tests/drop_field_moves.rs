@@ -57,7 +57,7 @@ fn custom_destructors_preserve_whole_objects_but_allow_copy_fields_and_replaceme
             .implementations()
             .iter()
             .map(|i| i.item)
-            .collect::<std::collections::HashSet<_>>();
+            .collect::<rustgm::support::hash::HashSet<_>>();
         let mut rejected = false;
         for cfg in &program.bodies {
             let init = initialization::analyze(

@@ -1,7 +1,7 @@
 //! Only explicit type-parameter lifetime bounds supply generic object defaults.
 use super::{Checker, DefId, Error, Kind, NodeKey, RegionId, regions};
+use crate::support::hash::HashMap;
 use crate::{resolve::model::Target, types::arguments::Argument};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Source {
@@ -33,7 +33,7 @@ impl Checker<'_> {
             self.facts.node(key).and_then(|facts| facts.reference)
         {
             Source::Parameter(id)
-        } else if matches!(self.kind(key), Kind::Name(span)
+        } else if matches!(self.kind(key), Kind::Name(span, _)
             if self.report.package.unit(key.file).spelling(span).is_ok_and(|s| s == "'static"))
         {
             Source::Static

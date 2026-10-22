@@ -20,7 +20,7 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=11 unsafe=false
 type 20 function-item def=13 signature=19
-def 13 type=20 name="f" source=0:13
+def 13 type=20 name="f" source=0:11
 def 14 type=2 name="bool"
 def 15 type=3 name="char"
 def 16 type=4 name="str"
@@ -38,21 +38,20 @@ def 27 type=15 name="u128"
 def 28 type=16 name="usize"
 def 29 type=17 name="f32"
 def 30 type=18 name="f64"
-function def=13 source=0:13 signature=19 body=0:12
-node 0:1 type=11 span=8:10
-node 0:2 type=11 span=8:10
-node 0:3 type=2 span=25:29
-scalar 0:3 bool true
-node 0:4 type=11 span=39:40
-scalar 0:4 integer bits=0x00000000000000000000000000000002
-node 0:5 type=0 span=30:40 control=0:10
-node 0:6 type=0 span=30:41
-node 0:7 type=0 span=29:42
-adjustment 0:7 never target=1
-node 0:8 type=1 span=19:42
-node 0:9 type=1 span=18:43
-node 0:10 type=11 span=14:43
-node 0:11 type=11 span=11:43 binding=31
-node 0:12 type=11 span=10:44
-node 0:13 type=20 span=0:44
-eof types=21 definitions=18 nodes=13 functions=1 initializers=0
+function def=13 source=0:11 signature=19 body=0:10
+node 0:0 type=11 span=8:10
+node 0:1 type=2 span=25:29
+scalar 0:1 bool true
+node 0:2 type=11 span=39:40
+scalar 0:2 integer bits=0x00000000000000000000000000000002
+node 0:3 type=0 span=30:40 control=0:8
+node 0:4 type=0 span=30:41
+node 0:5 type=0 span=29:42
+adjustment 0:5 never target=1
+node 0:6 type=1 span=19:42
+node 0:7 type=1 span=18:43
+node 0:8 type=11 span=14:43
+node 0:9 type=11 span=11:43 binding=31
+node 0:10 type=11 span=10:44
+node 0:11 type=20 span=0:44
+eof types=21 definitions=18 nodes=12 functions=1 initializers=0

@@ -19,6 +19,13 @@ impl Checker<'_> {
         if self.schedule_primitive_constant(key, context, steps, limit, scan)? {
             return Ok(true);
         }
+        // Every method path form below starts from one of these resolution entries.
+        let resolution = &self.report.resolution;
+        if !resolution.qualified_paths.contains_key(&key)
+            && !resolution.associated_paths.contains_key(&key)
+        {
+            return Ok(false);
+        }
         if self.schedule_trait_callable(key, context, steps, limit, scan)? {
             return Ok(true);
         }
@@ -193,22 +200,6 @@ impl Checker<'_> {
                 return Some(item);
             }
             key.node = match self.kind(key) {
-                Kind::Type {
-                    flavor: crate::syntax::ast::TypeFlavor::Path,
-                    elements,
-                } => {
-                    let [node] = self
-                        .report
-                        .package
-                        .unit(key.file)
-                        .configured
-                        .ast
-                        .list(elements)
-                    else {
-                        return None;
-                    };
-                    *node
-                }
                 Kind::Group(node) | Kind::Attributed { value: node, .. } => node,
                 _ => return None,
             };

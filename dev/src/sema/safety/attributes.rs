@@ -10,7 +10,7 @@ pub(super) fn collect(
     report: &Report,
     work: &mut Work,
 ) -> Result<HashMap<NodeKey, Vec<Change>>, Error> {
-    let mut changes: HashMap<NodeKey, Vec<Change>> = HashMap::new();
+    let mut changes: HashMap<NodeKey, Vec<Change>> = HashMap::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;

@@ -25,13 +25,13 @@ type 22 function binders=0 parameters=[] result=1 unsafe=false
 type 23 function-item def=20 signature=22
 type 24 projection def=15 self=11 trait=13 arguments=[region:bound:0:0] family arguments=[]
 type 25 reference mutable=false region=region:1 referent=11
-def 14 type=19 name="Self" source=0:14
+def 14 type=19 name="Self" source=0:10
 def 15 type=20 name="Out" source=0:1
-def 16 type=20 name="C" source=0:13
-def 17 type=11 name="Self" source=0:38
-def 18 type=21 name="Out" source=0:29
-def 19 type=21 name="C" source=0:37
-def 20 type=23 name="main" source=0:40
+def 16 type=20 name="C" source=0:9
+def 17 type=11 name="Self" source=0:27
+def 18 type=21 name="Out" source=0:20
+def 19 type=21 name="C" source=0:26
+def 20 type=23 name="main" source=0:29
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -49,19 +49,19 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-associated-owner 0 kind=trait self-def=14 self=19 source=0:14 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=17 self=11 source=0:38 unsafe=false
+associated-owner 0 kind=trait self-def=14 self=19 source=0:10 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=17 self=11 source=0:27 unsafe=false
 associated-member def=15 owner=0
 associated-member def=16 owner=0
 associated-member def=18 owner=1
 associated-member def=19 owner=1
 parameter owner=13 binding=38 argument=region:bound:0:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:14 subject=19 bound=trait:13 arguments=[region:bound:0:0]
-impl owner=17 source=0:38 subject=11 bound=trait:13 arguments=[region:bound:0:0]
+predicate owner=13 source=0:10 subject=19 bound=trait:13 arguments=[region:bound:0:0]
+impl owner=17 source=0:27 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=17 declaration=15 definition=18
-region-var region:1 body=0:36 source=0:36 origin=expression-borrow pending
-region-coercion body=0:36 source=0:36 actual=25 expected=21 kind=same-shape pending
+region-var region:1 body=0:25 source=0:25 origin=expression-borrow pending
+region-coercion body=0:25 source=0:25 actual=25 expected=21 kind=same-shape pending
 associated-type def=15 type=20
 result-contract def=15 projection=20
 result-bound def=15 index=0 subject=20 bound=sized
@@ -69,6 +69,5 @@ associated-constant def=16 type=20
 associated-type def=18 type=21
 associated-constant def=19 type=21
 impl-constant owner=17 declaration=16 selected=19 default=false
-normalized-node source=0:11 original=20 result=20
-normalized-node source=0:12 original=20 result=20
-eof owners=2 members=4 parameters=2 predicates=1 impls=1 calls=0 paths=0 impl-uses=0 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0
+normalized-node source=0:8 original=20 result=20
+eof owners=2 members=4 parameters=2 predicates=1 impls=1 calls=0 paths=0 impl-uses=0 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0

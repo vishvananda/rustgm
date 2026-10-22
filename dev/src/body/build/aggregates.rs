@@ -115,7 +115,7 @@ impl Builder<'_> {
                 }
                 self.scratch.work.push(Work::Place(value));
             }
-            Kind::Path { .. } | Kind::Name(_)
+            Kind::Path { .. } | Kind::Name(..)
                 if crate::sema::primitive_constants::selected(
                     self.facts,
                     crate::resolve::unit::NodeKey {
@@ -129,7 +129,7 @@ impl Builder<'_> {
                 self.scratch.work.push(Work::TemporaryPlace(node));
                 self.enter_materialized(node);
             }
-            Kind::Path { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Name(..) => {
                 let Some(Target::Definition(definition)) = self.fact(node)?.reference else {
                     return Err(self.error(node, "missing place resolution"));
                 };

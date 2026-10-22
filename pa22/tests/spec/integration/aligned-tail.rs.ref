@@ -98,17 +98,13 @@ function @rg.18(%p0 : ptr) -> void {
     store i64 %t34, $s2
     %t35 = load i64 $s2
     %t36 = load i64 $s1
-    %t37 = convert zext i128 i64 %t35
-    %t38 = convert zext i128 i64 %t36
-    %t39 = binary sub i128 %t37, %t38
-    %t40 = convert trunc i64 i128 %t39
-    %t41 = convert zext i128 i64 %t40
-    %t42 = cmp ne i128 %t39, %t41
-    branch %t42, ^b1, ^b4
+    %t37 = binary sub i64 %t35, %t36
+    %t38 = cmp ult i64 %t35, %t36
+    branch %t38, ^b1, ^b4
   block ^b4:
-    %t43 = cmp eq i64 %t40, 64
-    %t44 = convert trunc i1 i64 %t43
-    call void @rg.13(%t44)
+    %t39 = cmp eq i64 %t37, 64
+    %t40 = convert trunc i1 i64 %t39
+    call void @rg.13(%t40)
     return void
   block ^b1:
     call void @abort()

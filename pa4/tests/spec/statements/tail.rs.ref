@@ -1,20 +1,14 @@
-node 0 6 7 name "x"
-node 1 6 7 path false [0]
-node 2 6 7 binding false false "x" -
-node 3 10 11 literal 0
+node 0 6 7 binding false false "x" -
+node 1 10 11 literal 0
 value 0 integer 10 11 infer 1
-node 4 2 12 let 2 - 3 -
-node 5 17 18 name "y"
-node 6 17 18 path false [5]
-node 7 17 18 binding false false "y" -
-node 8 21 22 literal 1
+node 2 2 12 let 0 - 1 -
+node 3 17 18 binding false false "y" -
+node 4 21 22 literal 1
 value 1 integer 21 22 infer 2
-node 9 13 23 let 7 - 8 -
-node 10 24 25 name "x"
-node 11 24 25 path false [10]
-node 12 28 29 name "y"
-node 13 28 29 path false [12]
-node 14 24 29 binary + 11 13
-node 15 0 31 block Plain [4,9] 14
-root 15
+node 5 13 23 let 3 - 4 -
+node 6 24 25 name "x"
+node 7 28 29 name "y"
+node 8 24 29 binary + 6 7
+node 9 0 31 block Plain [2,5] 8
+root 9
 eof 32

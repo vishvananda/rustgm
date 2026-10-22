@@ -20,61 +20,57 @@ function @rg.15() -> void {
     %t7 = binary mul i64 1, 1
     %t8 = index u8 %t5, %t7
     %t9 = load u8 %t8
-    %t10 = convert zext i16 u8 %t9
-    %t11 = convert zext i16 u8 5
-    %t12 = binary add i16 %t10, %t11
-    %t13 = convert trunc u8 i16 %t12
-    %t14 = convert zext i16 u8 %t13
-    %t15 = cmp ne i16 %t12, %t14
-    branch %t15, ^b7, ^b9
+    %t10 = binary add u8 %t9, 5
+    %t11 = cmp ult u8 %t10, %t9
+    branch %t11, ^b7, ^b9
   block ^b9:
-    store u8 %t13, %t8
-    %t16 = load ptr $s0
-    %t17 = cmp uge i64 0, 3
-    branch %t17, ^b7, ^b10
+    store u8 %t10, %t8
+    %t12 = load ptr $s0
+    %t13 = cmp uge i64 0, 3
+    branch %t13, ^b7, ^b10
   block ^b10:
-    %t18 = binary mul i64 0, 1
-    %t19 = index u8 %t16, %t18
-    %t20 = load u8 %t19
-    %t21 = cmp eq u8 %t20, 1
-    %t22 = convert trunc i1 i64 %t21
-    branch %t22, ^b4, ^b5
+    %t14 = binary mul i64 0, 1
+    %t15 = index u8 %t12, %t14
+    %t16 = load u8 %t15
+    %t17 = cmp eq u8 %t16, 1
+    %t18 = convert trunc i1 i64 %t17
+    branch %t18, ^b4, ^b5
   block ^b5:
-    store i1 %t22, $s2
+    store i1 %t18, $s2
     jump ^b6
   block ^b4:
-    %t23 = load ptr $s0
-    %t24 = cmp uge i64 1, 3
-    branch %t24, ^b7, ^b11
+    %t19 = load ptr $s0
+    %t20 = cmp uge i64 1, 3
+    branch %t20, ^b7, ^b11
   block ^b11:
-    %t25 = binary mul i64 1, 1
-    %t26 = index u8 %t23, %t25
-    %t27 = load u8 %t26
-    %t28 = cmp eq u8 %t27, 7
-    %t29 = convert trunc i1 i64 %t28
-    store i1 %t29, $s2
+    %t21 = binary mul i64 1, 1
+    %t22 = index u8 %t19, %t21
+    %t23 = load u8 %t22
+    %t24 = cmp eq u8 %t23, 7
+    %t25 = convert trunc i1 i64 %t24
+    store i1 %t25, $s2
     jump ^b6
   block ^b6:
-    %t30 = load i1 $s2
-    branch %t30, ^b1, ^b2
+    %t26 = load i1 $s2
+    branch %t26, ^b1, ^b2
   block ^b2:
-    store i1 %t30, $s1
+    store i1 %t26, $s1
     jump ^b3
   block ^b1:
-    %t31 = load ptr $s0
-    %t32 = cmp uge i64 2, 3
-    branch %t32, ^b7, ^b12
+    %t27 = load ptr $s0
+    %t28 = cmp uge i64 2, 3
+    branch %t28, ^b7, ^b12
   block ^b12:
-    %t33 = binary mul i64 2, 1
-    %t34 = index u8 %t31, %t33
-    %t35 = load u8 %t34
-    %t36 = cmp eq u8 %t35, 3
-    %t37 = convert trunc i1 i64 %t36
-    store i1 %t37, $s1
+    %t29 = binary mul i64 2, 1
+    %t30 = index u8 %t27, %t29
+    %t31 = load u8 %t30
+    %t32 = cmp eq u8 %t31, 3
+    %t33 = convert trunc i1 i64 %t32
+    store i1 %t33, $s1
     jump ^b3
   block ^b3:
-    %t38 = load i1 $s1
-    call void @rg.13(%t38)
+    %t34 = load i1 $s1
+    call void @rg.13(%t34)
     return void
   block ^b7:
     call void @abort()

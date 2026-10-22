@@ -26,7 +26,7 @@ fn expression(
         .iter()
         .enumerate()
         .filter_map(|(index, node)| {
-            let id = NodeId(u32::try_from(index).ok()?);
+            let id = NodeId::new(u32::try_from(index).ok()?);
             (scopes.node(id).is_some()
                 && source.get(node.span.start as usize..node.span.end as usize) == Some(spelling))
             .then_some(id)
@@ -207,7 +207,7 @@ fn binding_endpoints_follow_blocks_and_condition_success() -> Result<(), String>
             continue;
         };
         let key = NodeKey {
-            node: NodeId(u32::try_from(index).map_err(|e| e.to_string())?),
+            node: NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?),
             ..body
         };
         let definition = types
@@ -303,7 +303,7 @@ fn statement_expansions_keep_their_enclosing_binding_scope() -> Result<(), Strin
     let ast = &report.package.unit(body.file).configured.ast;
     let mut temporaries = 0;
     for (index, node) in ast.nodes.iter().enumerate() {
-        let id = NodeId(u32::try_from(index).map_err(|e| e.to_string())?);
+        let id = NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?);
         let Some(info) = scopes.node(id) else {
             continue;
         };
@@ -330,7 +330,7 @@ fn expression_expansions_preserve_places_and_extending_constructor_paths() -> Re
         let ast = &report.package.unit(body.file).configured.ast;
         let mut extended = 0;
         for (index, node) in ast.nodes.iter().enumerate() {
-            let id = NodeId(u32::try_from(index).map_err(|e| e.to_string())?);
+            let id = NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?);
             if matches!(node.kind, Syntax::Call { .. })
                 && scopes.node(id).is_some_and(|n| n.extended)
             {

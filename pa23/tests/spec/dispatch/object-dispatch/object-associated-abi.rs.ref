@@ -114,23 +114,19 @@ function @rg.21(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {
     %t1 = load ptr $s0
     %t2 = load u8 %t1
     %t3 = load u8 $s1
-    %t4 = convert zext i16 u8 %t2
-    %t5 = convert zext i16 u8 %t3
-    %t6 = binary add i16 %t4, %t5
-    %t7 = convert trunc u8 i16 %t6
-    %t8 = convert zext i16 u8 %t7
-    %t9 = cmp ne i16 %t6, %t8
-    branch %t9, ^b1, ^b2
+    %t4 = binary add u8 %t2, %t3
+    %t5 = cmp ult u8 %t4, %t2
+    branch %t5, ^b1, ^b2
   block ^b2:
-    %t10 = addr $s1
-    %t11 = index u8 %t10, 2
-    %t12 = load u16 %t11
-    store u8 %t7, $s2
-    %t13 = addr $s2
-    %t14 = index u8 %t13, 2
-    store u16 %t12, %t14
-    %t15 = addr $s2
-    copyobj 4x2 %t15, %p0
+    %t6 = addr $s1
+    %t7 = index u8 %t6, 2
+    %t8 = load u16 %t7
+    store u8 %t4, $s2
+    %t9 = addr $s2
+    %t10 = index u8 %t9, 2
+    store u16 %t8, %t10
+    %t11 = addr $s2
+    copyobj 4x2 %t11, %p0
     return void
   block ^b1:
     call void @abort()

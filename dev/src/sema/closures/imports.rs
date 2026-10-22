@@ -1,6 +1,6 @@
 //! Resolved free bindings cross each closure boundary once, independently of capture mode.
 use crate::resolve::model::{DefId, DefKind, Namespace, Resolution, ScopeId, Target};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 /// Lexical type inputs only. A mention does not establish a read, loan or move.
 #[derive(Default)]
@@ -28,7 +28,7 @@ impl Imports {
             return Ok(result);
         }
         let owners = result.owners(resolution)?;
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         for reference in &resolution.references {
             result.charge()?;
             if reference.namespace != Namespace::Value {

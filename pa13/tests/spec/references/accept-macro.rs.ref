@@ -23,15 +23,15 @@ type 20 reference mutable=false region=bound:0:0 referent=11
 type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=15 signature=21
 type 23 reference mutable=false region=region:1 referent=11
-root 0:21 pattern=0
-root 0:24 pattern=1
-pattern 0 source=0:21 input=20 deref mutable=false implicit=false pattern=2
-pattern 1 source=0:24 input=20 wildcard
-pattern 2 source=0:21 input=11 range=0
+root 0:11 pattern=0
+root 0:14 pattern=1
+pattern 0 source=0:11 input=20 deref mutable=false implicit=false pattern=2
+pattern 1 source=0:14 input=20 wildcard
+pattern 2 source=0:11 input=11 range=0
 range 0 ranks=7:7
-match 0 source=0:27 input=0:18 arms=0:2 exhaustive=true uninhabited=false work=83
-arm 0 source=0:23 pattern=0 guard=- useful=true value=0:22
-arm 1 source=0:26 pattern=1 guard=- useful=true value=0:25
-region-var region:1 body=0:7 source=0:7 origin=expression-borrow pending
-region-coercion body=0:7 source=0:7 actual=23 expected=19 kind=same-shape pending
+match 0 source=0:17 input=0:10 arms=0:2 exhaustive=true uninhabited=false work=83
+arm 0 source=0:13 pattern=0 guard=- useful=true value=0:12
+arm 1 source=0:16 pattern=1 guard=- useful=true value=0:15
+region-var region:1 body=0:4 source=0:4 origin=expression-borrow pending
+region-coercion body=0:4 source=0:4 actual=23 expected=19 kind=same-shape pending
 eof roots=2 patterns=3 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=83 region-vars=1 region-equalities=0 conditions=0 chains=0

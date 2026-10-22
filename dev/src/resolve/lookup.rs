@@ -56,12 +56,11 @@ impl Resolver<'_> {
                 break;
             }
             dependencies.push((scope, name, Namespace::Macro));
-            let frame = &self.facts.scopes[scope.0 as usize];
-            if let Some(binding) = frame.bindings.get(&(name, Namespace::Macro)) {
+            if let Some(binding) = self.facts.bindings.get(scope, name, Namespace::Macro) {
                 return (binding.ambiguous || binding.target != target)
                     && (inside || !marks.ancestor(defined, marks.binding(*binding)));
             }
-            current = frame.parent;
+            current = self.facts.scopes[scope.0 as usize].parent;
         }
         more_expanded
             && self
@@ -146,7 +145,7 @@ impl Resolver<'_> {
                     },
                 ));
             }
-            if let Some(binding) = frame.bindings.get(&(name, namespace))
+            if let Some(binding) = self.facts.bindings.get(scope, name, namespace)
                 && binding.is_lexical(&self.facts.definitions, frame.associated)
                 && (barriers == 0
                     || !self.facts.definitions[binding.target.0 as usize]
@@ -302,12 +301,12 @@ impl Resolver<'_> {
                 }
             }
             let found = if let Some(scope) = scope {
-                self.facts.scopes[scope.0 as usize]
+                self.facts
                     .bindings
-                    .get(&(name, ns))
+                    .get(scope, name, ns)
                     .copied()
                     .map(|binding| (scope, binding))
-            } else if self.hygiene.is_some() {
+            } else if self.hygiene.is_some() && matches!(ns, Namespace::Value | Namespace::Label) {
                 let offset = super::hygiene::name_offset(
                     self.package,
                     super::unit::NodeKey { file: c.file, node },

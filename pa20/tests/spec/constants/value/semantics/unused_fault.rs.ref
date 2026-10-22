@@ -23,9 +23,9 @@ type 20 function binders=0 parameters=[] result=1 unsafe=false
 type 21 function-item def=17 signature=20
 def 13 type=19 name="S" source=0:0
 def 14 type=19 name="S" source=0:0
-def 15 type=19 name="Self" source=0:11
-def 16 type=11 name="C" source=0:10
-def 17 type=21 name="main" source=0:13
+def 15 type=19 name="Self" source=0:7
+def 16 type=11 name="C" source=0:6
+def 17 type=21 name="main" source=0:9
 def 18 type=2 name="bool"
 def 19 type=3 name="char"
 def 20 type=4 name="str"
@@ -43,7 +43,7 @@ def 31 type=15 name="u128"
 def 32 type=16 name="usize"
 def 33 type=17 name="f32"
 def 34 type=18 name="f64"
-associated-owner 0 kind=inherent self-def=15 self=19 source=0:11 unsafe=false
+associated-owner 0 kind=inherent self-def=15 self=19 source=0:7 unsafe=false
 associated-member def=16 owner=0
 associated-constant def=16 type=11
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

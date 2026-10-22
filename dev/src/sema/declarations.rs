@@ -161,34 +161,38 @@ struct Signature {
 }
 struct Checker<'a> {
     annotation_inputs: annotations::Inputs,
-    call_paths: std::collections::HashSet<NodeKey>,
-    linkage_sources: std::collections::HashMap<NodeKey, foreign::Attributes>,
-    target_feature_sources: std::collections::HashSet<NodeKey>,
-    method_queries: std::collections::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
+    call_paths: crate::support::hash::HashSet<NodeKey>,
+    linkage_sources: crate::support::hash::HashMap<NodeKey, foreign::Attributes>,
+    target_feature_sources: crate::support::hash::HashSet<NodeKey>,
+    method_queries:
+        crate::support::hash::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
     inherent_headers: inherent_headers::Pending,
     impl_headers: impl_headers::Pending,
     constant_members: traits::ConstantReadiness,
-    associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
-    opaque_syntax: std::collections::HashMap<NodeKey, abstract_types::Pending>,
+    associated_type_bounds: crate::support::hash::HashMap<DefId, traits::AssociatedBounds>,
+    opaque_syntax: crate::support::hash::HashMap<NodeKey, abstract_types::Pending>,
     object_syntax: objects::Syntax,
     associated_bindings: generics::bindings::Pending,
     projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
     method_trait_environments: Option<
-        std::collections::HashMap<NodeKey, std::sync::Arc<super::traits::assumptions::Assumptions>>,
+        crate::support::hash::HashMap<
+            NodeKey,
+            std::sync::Arc<super::traits::assumptions::Assumptions>,
+        >,
     >,
     nominals: aggregates::Pending,
     defaults: generics::Defaults,
     deferred_bounds: Vec<(DefId, regions::Context)>,
-    bound_syntax: std::collections::HashMap<DefId, Vec<generics::bounds::Syntax>>,
+    bound_syntax: crate::support::hash::HashMap<DefId, Vec<generics::bounds::Syntax>>,
     bound_captures: Option<Box<crate::types::substitute::Bound>>,
-    relaxed: std::collections::HashSet<DefId>,
+    relaxed: crate::support::hash::HashSet<DefId>,
     constant_modules:
-        Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
+        Option<crate::support::hash::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
     constant_scratch: super::constants::Scratch,
     constant_evaluations: evaluation::Pending,
     execution_bodies: execution::Pending,
-    constant_dependencies: std::collections::HashSet<NodeKey>,
+    constant_dependencies: crate::support::hash::HashSet<NodeKey>,
     constant_captures: generics::Captures,
     parameter_uses: crate::types::parameters::uses::Uses,
     report: &'a Report,
@@ -198,10 +202,10 @@ struct Checker<'a> {
     children: Vec<TypeId>,
     regions: Regions,
     discriminants: super::constants::Discriminants,
-    nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
-    function_binders: std::collections::HashMap<NodeKey, BinderId>,
-    constant_binders: std::collections::HashMap<NodeKey, BinderId>,
-    owner_binders: std::collections::HashMap<DefId, BinderId>,
+    nominal_regions: crate::support::hash::HashMap<ItemId, regions::Context>,
+    function_binders: crate::support::hash::HashMap<NodeKey, BinderId>,
+    constant_binders: crate::support::hash::HashMap<NodeKey, BinderId>,
+    owner_binders: crate::support::hash::HashMap<DefId, BinderId>,
 }
 /// Resolve declaration types and shape-affecting constants without reparsing source.
 ///
@@ -238,14 +242,14 @@ impl<'a> Checker<'a> {
         let mut checker = Self {
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
-            call_paths: std::collections::HashSet::new(),
+            call_paths: crate::support::hash::HashSet::default(),
             target_feature_sources: call_traits::target_feature_sources(report)?,
-            method_queries: std::collections::HashMap::new(),
+            method_queries: crate::support::hash::HashMap::default(),
             inherent_headers: inherent_headers::Pending::default(),
             impl_headers: impl_headers::Pending::default(),
             constant_members: traits::ConstantReadiness::default(),
-            associated_type_bounds: std::collections::HashMap::new(),
-            opaque_syntax: std::collections::HashMap::new(),
+            associated_type_bounds: crate::support::hash::HashMap::default(),
+            opaque_syntax: crate::support::hash::HashMap::default(),
             object_syntax: objects::Syntax::default(),
             associated_bindings: generics::bindings::Pending::default(),
             projections: projections::Pending::default(),
@@ -254,14 +258,14 @@ impl<'a> Checker<'a> {
             nominals: aggregates::Pending::default(),
             defaults: generics::Defaults::default(),
             deferred_bounds: Vec::new(),
-            bound_syntax: std::collections::HashMap::new(),
+            bound_syntax: crate::support::hash::HashMap::default(),
             bound_captures: None,
-            relaxed: std::collections::HashSet::new(),
+            relaxed: crate::support::hash::HashSet::default(),
             constant_modules: None,
             constant_scratch: super::constants::Scratch::default(),
             constant_evaluations: evaluation::Pending::default(),
             execution_bodies: execution::Pending::default(),
-            constant_dependencies: std::collections::HashSet::new(),
+            constant_dependencies: crate::support::hash::HashSet::default(),
             constant_captures: generics::Captures::default(),
             parameter_uses: crate::types::parameters::uses::Uses::default(),
             report,
@@ -271,10 +275,10 @@ impl<'a> Checker<'a> {
             children: Vec::new(),
             regions: Regions::default(),
             discriminants: super::constants::Discriminants::default(),
-            nominal_regions: std::collections::HashMap::new(),
-            function_binders: std::collections::HashMap::new(),
-            constant_binders: std::collections::HashMap::new(),
-            owner_binders: std::collections::HashMap::new(),
+            nominal_regions: crate::support::hash::HashMap::default(),
+            function_binders: crate::support::hash::HashMap::default(),
+            constant_binders: crate::support::hash::HashMap::default(),
+            owner_binders: crate::support::hash::HashMap::default(),
         };
         if let Some(imported) = &report.resolution.crates {
             for (definition, _) in imported.functions() {
@@ -532,8 +536,8 @@ impl Checker<'_> {
     }
     fn local_annotations(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
         let mut scan = Vec::new();
-        let mut nodes = Vec::new();
-        let mut contexts = Vec::new();
+        let mut stack = Vec::new();
+        let mut children = Vec::new();
         for (index, unit) in self.report.package.units.iter().enumerate() {
             if unit.include_context.is_some() {
                 continue;
@@ -542,16 +546,22 @@ impl Checker<'_> {
                 u32::try_from(index)
                     .map_err(|_| Error::at(FileId(0), 0, "too many source files"))?,
             );
-            let mut seen = vec![false; unit.configured.ast.nodes.len()];
-            nodes.push(unit.configured.ast.root);
-            contexts.push(regions::Context::ALIAS);
-            while let Some(node) = nodes.pop() {
-                let inherited = contexts.pop().ok_or_else(|| {
-                    self.error(NodeKey { file, node }, "missing annotation context")
-                })?;
-                let context = self.local_context(NodeKey { file, node }, inherited);
-                if !unit.configured.active[node.0 as usize]
-                    || std::mem::replace(&mut seen[node.0 as usize], true)
+            let ast = &unit.configured.ast;
+            let mut seen = vec![false; ast.nodes.len()];
+            stack.push((ast.root, regions::Context::ALIAS));
+            while let Some((node, inherited)) = stack.pop() {
+                let kind = ast.node(node).kind;
+                // Only bodies, closures and inline constants open a context.
+                let context = if matches!(
+                    kind,
+                    Kind::Item(_) | Kind::Closure { .. } | Kind::Block { .. }
+                ) {
+                    self.local_context_of(NodeKey { file, node }, kind, inherited)
+                } else {
+                    inherited
+                };
+                if !unit.configured.active[node.get() as usize]
+                    || std::mem::replace(&mut seen[node.get() as usize], true)
                 {
                     continue;
                 }
@@ -562,24 +572,69 @@ impl Checker<'_> {
                         "annotation traversal work budget exceeded",
                     ));
                 }
-                let mark = nodes.len();
-                unit.configured.ast.push_children(node, &mut nodes);
-                nodes[mark..].reverse();
-                contexts.resize(nodes.len(), context);
-                self.local_annotation(NodeKey { file, node }, context, steps, limit, &mut scan)?;
+                if matches!(kind, Kind::Closure { .. } | Kind::Block { .. }) {
+                    self.nest_local_body(NodeKey { file, node }, inherited, context)?;
+                }
+                children.clear();
+                ast.push_children(node, &mut children);
+                stack.extend(children.iter().rev().map(|&child| (child, context)));
+                self.local_annotation(
+                    NodeKey { file, node },
+                    kind,
+                    context,
+                    steps,
+                    limit,
+                    &mut scan,
+                )?;
             }
+        }
+        Ok(())
+    }
+    /// Closures and inline constants share their enclosing body's region identities.
+    fn nest_local_body(
+        &mut self,
+        key: NodeKey,
+        inherited: regions::Context,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if let (
+            regions::Position::Local(own),
+            regions::Position::Local(outer) | regions::Position::Constant(outer),
+        ) = (context.position, inherited.position)
+            && own == key.node
+            && outer != key.node
+        {
+            self.facts
+                .body_regions
+                .nest(key, NodeKey { node: outer, ..key })
+                .map_err(|e| self.error(key, e))?;
         }
         Ok(())
     }
     fn local_annotation(
         &mut self,
         key: NodeKey,
+        kind: Kind,
         context: regions::Context,
         steps: &mut usize,
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        if let Kind::GenericMethodCall { method, .. } = self.kind(key) {
+        // Method and alias paths are keyed by `Path`/`Qualified` nodes or need
+        // a resolved reference; every other check below names its own kind.
+        if !matches!(
+            kind,
+            Kind::GenericMethodCall { .. }
+                | Kind::Path { .. }
+                | Kind::Qualified { .. }
+                | Kind::Closure { .. }
+                | Kind::Let { .. }
+                | Kind::Cast { .. }
+        ) && self.facts.node(key).is_none_or(|f| f.reference.is_none())
+        {
+            return Ok(());
+        }
+        if let Kind::GenericMethodCall { method, .. } = kind {
             self.prepare_method_arguments(key, method, context, steps, limit, scan)?;
         }
         if self.schedule_method_path(key, context, steps, limit, scan)? {
@@ -589,18 +644,18 @@ impl Checker<'_> {
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             self.drain(steps, limit)?;
         }
-        if matches!(self.kind(key), Kind::Path { .. })
+        if matches!(kind, Kind::Name(..) | Kind::Path { .. })
             && let Some(owner) = self.generic_use_owner(key)
         {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
             self.drain(steps, limit)?;
         }
-        if matches!(self.kind(key), Kind::Closure { .. }) {
+        if matches!(kind, Kind::Closure { .. }) {
             self.work.push(Work::ClosureAnnotation(key, context, None));
             self.drain(steps, limit)?;
             return Ok(());
         }
-        let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) = self.kind(key) else {
+        let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) = kind else {
             return Ok(());
         };
         // Holes stay in the owning body, while the ordinary elaborator
@@ -920,7 +975,7 @@ impl Checker<'_> {
                 file: key.file,
                 node,
             })?,
-            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(..) => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(key).and_then(|facts| facts.reference)
                 else {
@@ -1071,7 +1126,7 @@ impl Checker<'_> {
         let unit = self.report.package.unit(key.file);
         let mut declared = Vec::new();
         for mut node in unit.configured.ast.list(list).iter().copied() {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
@@ -1137,7 +1192,7 @@ impl Checker<'_> {
         self.children.clear();
         let unit = self.report.package.unit(key.file);
         for node in unit.configured.ast.list(list).iter().copied() {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let key = self.unattributed(NodeKey {
@@ -1197,7 +1252,7 @@ impl Checker<'_> {
                     .list(signature.parameters)
                     .iter()
                     .copied()
-                    .find(|node| unit.configured.active[node.0 as usize]);
+                    .find(|node| unit.configured.active[node.get() as usize]);
                 for node in unit
                     .configured
                     .ast
@@ -1206,7 +1261,7 @@ impl Checker<'_> {
                     .rev()
                     .copied()
                 {
-                    if unit.configured.active[node.0 as usize] {
+                    if unit.configured.active[node.get() as usize] {
                         self.schedule_parameter(
                             NodeKey { node, ..key },
                             owner,
@@ -1411,7 +1466,7 @@ impl Checker<'_> {
                 file: key.file,
                 node,
             };
-            let Kind::Name(span) = self.kind(lifetime) else {
+            let Kind::Name(span, _) = self.kind(lifetime) else {
                 return Err(self.error(lifetime, "invalid lifetime syntax"));
             };
             let name = self
@@ -1420,6 +1475,10 @@ impl Checker<'_> {
                 .unit(key.file)
                 .spelling(span)
                 .map_err(|e| self.error(lifetime, e.message))?;
+            // A one-name type path is also a `Name`; only a quoted spelling is a lifetime.
+            if !name.starts_with('\'') {
+                return Err(self.error(lifetime, "invalid lifetime syntax"));
+            }
             if name == "'static" {
                 return Ok(RegionId::STATIC);
             }
@@ -1441,29 +1500,20 @@ impl Checker<'_> {
                     .constant_annotation_bodies
                     .insert(NodeKey { node: body, ..key });
             }
-            let ordinal = u32::try_from(self.facts.body_regions.len())
-                .ok()
-                .and_then(|n| n.checked_add(1))
-                .filter(|n| *n < 0x8000_0000)
-                .ok_or_else(|| self.error(key, "body region identity space exhausted"))?;
-            self.facts.body_regions.push(super::model::BodyRegion {
-                body: NodeKey {
-                    file: key.file,
-                    node: body,
-                },
-                source: key,
-                origin: super::model::BodyRegionOrigin::Annotation,
-            });
+            let owner = NodeKey { file: key.file, node: body };
+            let region = self
+                .facts
+                .body_regions
+                .allocate(super::model::BodyRegion {
+                    body: owner,
+                    source: key,
+                    origin: super::model::BodyRegionOrigin::Annotation,
+                })
+                .map_err(|e| self.error(key, e))?;
             // The annotation node's ordinary work charge also covers this
             // constant-time producer index; completion charges each retained ID.
-            self.annotation_inputs.record(
-                NodeKey {
-                    file: key.file,
-                    node: body,
-                },
-                RegionId(ordinal),
-            );
-            return Ok(RegionId(ordinal));
+            self.annotation_inputs.record(owner, region);
+            return Ok(region);
         }
         self.regions.elided(context).map_err(|e| self.error(key, e))
     }
@@ -1533,7 +1583,6 @@ impl Checker<'_> {
             node,
         })?;
         let kind = match flavor {
-            TypeFlavor::Path => return Ok(element),
             TypeFlavor::Slice => Type::Slice(element),
             TypeFlavor::PointerConst | TypeFlavor::PointerMut => Type::Pointer {
                 mutable: flavor == TypeFlavor::PointerMut,

@@ -25,15 +25,15 @@ type 22 function-item def=13 signature=21
 type 23 reference mutable=false region=region:1 referent=19
 type 24 reference mutable=false region=region:2 referent=11
 type 25 reference mutable=false region=region:3 referent=12
-root 0:18 pattern=0
-pattern 0 source=0:18 input=23 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:18 input=19 product variant=- fields=0:2
-pattern 2 source=0:14 input=11 bind def=32 local=24 mutable=false capture=ref region=region:2 loan=pending subpattern=-
-pattern 3 source=0:17 input=12 bind def=33 local=25 mutable=false capture=ref region=region:3 loan=pending subpattern=-
+root 0:8 pattern=0
+pattern 0 source=0:8 input=23 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:8 input=19 product variant=- fields=0:2
+pattern 2 source=0:6 input=11 bind def=32 local=24 mutable=false capture=ref region=region:2 loan=pending subpattern=-
+pattern 3 source=0:7 input=12 bind def=33 local=25 mutable=false capture=ref region=region:3 loan=pending subpattern=-
 field 0 tuple=0 pattern=2
 field 1 tuple=1 pattern=3
-region-var region:1 body=0:22 source=0:20 origin=inference pending
-region-var region:2 body=0:22 source=0:14 origin=pattern-borrow pending
-region-var region:3 body=0:22 source=0:17 origin=pattern-borrow pending
-region-coercion body=0:22 source=0:20 actual=20 expected=23 kind=same-shape pending
+region-var region:1 body=0:11 source=0:9 origin=inference pending
+region-var region:2 body=0:11 source=0:6 origin=pattern-borrow pending
+region-var region:3 body=0:11 source=0:7 origin=pattern-borrow pending
+region-coercion body=0:11 source=0:9 actual=20 expected=23 kind=same-shape pending
 eof roots=1 patterns=4 fields=2 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=3 region-equalities=0 conditions=0 chains=0

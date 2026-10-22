@@ -21,10 +21,11 @@ use super::{
     clauses::Clause,
     predicates::{Bound, Predicate},
 };
+use crate::support::hash::HashMap;
 use crate::types::Store;
 use crate::types::{Kind, TypeId};
 use premises::TraitAssumptions;
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::hash_map::Entry;
 use std::sync::Arc;
 
 /// Language-provided abilities used by move checking. Copy entails Clone.
@@ -52,7 +53,7 @@ pub struct Environment {
 #[derive(Clone, Default)]
 struct Assumptions {
     predicates: HashMap<TypeId, Abilities>,
-    sized: std::collections::HashSet<TypeId>,
+    sized: crate::support::hash::HashSet<TypeId>,
     region_mapping: bool,
 }
 impl Environment {
@@ -82,6 +83,11 @@ impl Environment {
         self.region_mapping
     }
 
+    /// No caller premise can contribute evidence for a goal without parameters,
+    /// projections or regions: only parameter abilities are present.
+    pub(crate) fn is_neutral(&self) -> bool {
+        self.has_only_parameters() && !self.shape_assumptions && self.projection_promises.is_none()
+    }
     /// Parameter identities and abilities contain no regions to substitute.
     /// Composite and trait predicates still need the ordinary binder mapping.
     pub(crate) fn has_only_parameters(&self) -> bool {
@@ -180,7 +186,7 @@ impl Environment {
         if assumptions.len() > 1_000_000 {
             return Err("parameter environment storage budget exceeded");
         }
-        let mut parameters: HashMap<ParameterId, Abilities> = HashMap::new();
+        let mut parameters: HashMap<ParameterId, Abilities> = HashMap::default();
         let mut shape_assumptions = false;
         for (id, bounds) in assumptions {
             if !matches!(

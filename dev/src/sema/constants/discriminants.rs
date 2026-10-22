@@ -3,7 +3,7 @@ use super::{
     Declarations, DefId, Error, NodeKey, Primitive, Queries, Query, Report, Scalar, Scratch, State,
     TypeId, Value, VariantId, Work, arithmetic,
 };
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) struct Discriminant {

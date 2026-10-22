@@ -2,8 +2,8 @@
 mod guarantees;
 mod promises;
 use super::{GenericArgs, ItemId, Store, arguments::Argument, auto_traits::AutoTrait};
+use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ShapeId(pub u32);

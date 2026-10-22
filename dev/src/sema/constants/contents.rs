@@ -2,7 +2,7 @@
 use super::references::{Access, Id, ProjectionView};
 use super::{Error, NodeKey, Queries, Query, State, Value, Work as Pending};
 use crate::sema::model::Scalar;
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 mod ranges;
 
 #[derive(Clone, Copy)]
@@ -334,7 +334,7 @@ impl Queries<'_> {
             return Ok(());
         }
         let mut work = vec![(root, false)];
-        let mut active = HashSet::new();
+        let mut active = HashSet::default();
         while let Some((value, finish)) = work.pop() {
             self.budget()?;
             if !matches!(value, Value::Reference(_) | Value::Product(_))

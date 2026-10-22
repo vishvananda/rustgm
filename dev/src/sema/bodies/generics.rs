@@ -65,18 +65,21 @@ impl Checker<'_> {
         self.bind_method_owner(node, &arguments, &bindings)?;
         self.bind_trait_arguments(node, &arguments, &bindings)?;
         let projected_signature = self.facts.types.contains_projections(signature) == Some(true);
-        let mut substitution =
-            infer::Instantiation::new(&mut self.state.infer, &self.facts.types, &bindings)
-                .map_err(|e| self.error(node, e))?;
+        let mut substitution = infer::Instantiation::pooled(
+            &mut self.state.infer,
+            &self.facts.types,
+            &bindings,
+            &mut self.state.call_types.instantiations,
+        )
+        .map_err(|e| self.error(node, e))?;
         let signature = self
             .state
             .infer
-            .instantiate_with(&mut self.facts.types, signature, &mut substitution)
+            .instantiate_signature(&mut self.facts.types, signature, &mut substitution)
             .map_err(|e| self.error(node, e))?;
-        if projected_signature
-            || substitution.shifted_projections()
-            || self.state.projections.active()
-        {
+        let shifted_projections = substitution.shifted_projections();
+        substitution.recycle(&mut self.state.call_types.instantiations);
+        if projected_signature || shifted_projections || self.state.projections.active() {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
         }
         self.bound_obligations(node, owner, &arguments, &bindings)?;
@@ -170,6 +173,13 @@ impl Checker<'_> {
                 let ty = self.alias_type(node, ty)?;
                 self.known(node, ty)
             }
+            // Without body lifetime parameters there is no universal to alias,
+            // so the fold would only copy the graph; nothing awaits normalization.
+            Err(infer::Error::Unresolved)
+                if self.state.body_binders == 0 && !self.state.projections.active() =>
+            {
+                return Ok(term);
+            }
             Err(infer::Error::Unresolved) => self.alias_inferred_mapped(node, term, mapping),
             Err(e) => Err(self.error(node, e)),
         }?;
@@ -201,8 +211,10 @@ impl Checker<'_> {
             arguments.push(self.body_region(node, BodyRegionOrigin::CallArgument)?);
         }
         let mut children = Vec::with_capacity(parameters as usize + 1);
-        let mut opened = infer::RegionMapping::default();
-        let mut aliases = infer::RegionMapping::default();
+        let mut openings = self.state.call_types.openings.take().unwrap_or_default();
+        let (opened, aliases) = &mut *openings;
+        opened.clear();
+        aliases.clear();
         let mut substitution = crate::types::substitute::Bound::new(arguments);
         // Share each fold across all inputs and the result while retaining the
         // canonicalization order. Transport must not intern a synthetic tuple.
@@ -216,8 +228,9 @@ impl Checker<'_> {
                     &mut substitution,
                 )
                 .map_err(|e| self.error(node, e))?;
-            children.push(self.alias_argument_mapped(node, child, &mut aliases)?);
+            children.push(self.alias_argument_mapped(node, child, aliases)?);
         }
+        self.state.call_types.openings = Some(openings);
         self.state
             .infer
             .construct(
@@ -235,7 +248,7 @@ impl Checker<'_> {
         &mut self,
         solved: &infer::Solved,
         predicates: &[crate::types::parameters::predicates::Predicate],
-        evidence: &std::collections::HashMap<usize, Source>,
+        evidence: &crate::support::hash::HashMap<usize, Source>,
     ) -> Result<(), Error> {
         for index in 0..self.state.call_types.generic.len() {
             let (node, owner, term) = self.state.call_types.generic[index];

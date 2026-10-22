@@ -1,9 +1,7 @@
 //! Shared wire graphs summarize lifetime slots once; roots never denote frontend IDs.
 use super::{RecordRef, Scalar};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use crate::support::hash::{HashMap, HashSet};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TypeRef(pub u16);
@@ -68,7 +66,10 @@ impl TypeGraph {
         }
         let mut depths = Vec::with_capacity(nodes.len());
         let mut regions: Vec<[u64; 4]> = Vec::with_capacity(nodes.len());
-        let mut unique = HashSet::with_capacity(nodes.len());
+        let mut unique = HashSet::with_capacity_and_hasher(
+            nodes.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for (index, &node) in nodes.iter().enumerate() {
             if !unique.insert(node) {
                 return Err("duplicate metadata type graph node");
@@ -166,7 +167,7 @@ impl Signature {
         unsafe_: bool,
     ) -> Result<Self, &'static str> {
         let mut nodes = Vec::new();
-        let mut indices = HashMap::new();
+        let mut indices = HashMap::default();
         let mut intern = |scalar| -> Result<_, &'static str> {
             if let Some(&id) = indices.get(&scalar) {
                 return Ok(id);

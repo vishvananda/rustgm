@@ -1,4 +1,5 @@
 //! Const expressions may bind their own lifetimes, but cannot capture outer generics.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
@@ -9,7 +10,6 @@ use crate::{
     sema::model::Declarations,
     syntax::ast::Kind,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 struct Capture {
@@ -80,21 +80,21 @@ impl Captures {
                 false,
             );
         }
-        if self.complete[file][root.node.0 as usize] {
+        if self.complete[file][root.node.get() as usize] {
             return Ok(());
         }
         let mut work = vec![(root, false)];
         let mut children = Vec::new();
         while let Some((key, finish)) = work.pop() {
-            if self.complete[file][key.node.0 as usize] {
+            if self.complete[file][key.node.get() as usize] {
                 continue;
             }
             let unit = report.package.unit(key.file);
-            if !unit.configured.active[key.node.0 as usize]
+            if !unit.configured.active[key.node.get() as usize]
                 || matches!(unit.configured.ast.node(key.node).kind, Kind::Item(_))
             {
                 // Nested items have independent capture barriers in resolution.
-                self.complete[file][key.node.0 as usize] = true;
+                self.complete[file][key.node.get() as usize] = true;
                 self.nodes += 1;
                 continue;
             }
@@ -120,7 +120,7 @@ impl Captures {
                         last: capture,
                     },
                 );
-                self.complete[file][key.node.0 as usize] = true;
+                self.complete[file][key.node.get() as usize] = true;
                 self.nodes += 1;
                 continue;
             }
@@ -137,7 +137,7 @@ impl Captures {
             if finish {
                 let mut range: Option<Range> = None;
                 for &node in &children {
-                    if !self.complete[file][node.0 as usize] {
+                    if !self.complete[file][node.get() as usize] {
                         return Err("missing constant capture dependency");
                     }
                     if let Some(child) = self.summaries.get(&NodeKey { node, ..key }) {
@@ -153,7 +153,7 @@ impl Captures {
                 if let Some(range) = range {
                     self.summaries.insert(key, range);
                 }
-                self.complete[file][key.node.0 as usize] = true;
+                self.complete[file][key.node.get() as usize] = true;
                 self.nodes += 1;
             } else {
                 work.push((key, true));

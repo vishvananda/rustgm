@@ -1,17 +1,15 @@
 //! Stable dependency ordering publishes each selected pattern scope exactly once.
 use super::PreparedScope;
 use crate::sema::{constants::PatternValue, model::Declarations};
-use std::{
-    cmp::Reverse,
-    collections::{BinaryHeap, HashMap},
-};
+use crate::support::hash::HashMap;
+use std::{cmp::Reverse, collections::BinaryHeap};
 
 pub(super) fn schedule(
     facts: &mut Declarations,
     scopes: &[Option<PreparedScope>],
 ) -> Result<Vec<usize>, &'static str> {
     charge(facts, scopes.len())?;
-    let mut owners = HashMap::new();
+    let mut owners = HashMap::default();
     for (index, prepared) in scopes.iter().enumerate() {
         let prepared = prepared.as_ref().ok_or("missing pending pattern scope")?;
         if let Some(owner) = prepared.scope.values.owner {

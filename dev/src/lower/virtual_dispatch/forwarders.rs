@@ -1,5 +1,6 @@
 //! Function and pointer object entries are mechanical forwarding after source proof.
 use super::{Context, Representation, parameters};
+use crate::support::hash::HashMap;
 use crate::{
     lowir::{
         builder::Builder,
@@ -9,7 +10,6 @@ use crate::{
     sema::vtable_plans::{Callable, Operator, ShapeId},
     types::{Kind, TypeId, instance::Instance},
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(in crate::lower) struct Callables {

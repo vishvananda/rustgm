@@ -20,12 +20,12 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[11] result=1 unsafe=false
 type 20 function-item def=13 signature=19
-root 0:9 pattern=0
-root 0:12 pattern=1
-pattern 0 source=0:9 input=11 wildcard
-pattern 1 source=0:12 input=11 range=0
+root 0:4 pattern=0
+root 0:7 pattern=1
+pattern 0 source=0:4 input=11 wildcard
+pattern 1 source=0:7 input=11 range=0
 range 0 ranks=0:0
-match 0 source=0:15 input=0:8 arms=0:2 exhaustive=true uninhabited=false work=6
-arm 0 source=0:11 pattern=0 guard=- useful=true value=0:10
-arm 1 source=0:14 pattern=1 guard=- useful=false value=0:13
+match 0 source=0:10 input=0:3 arms=0:2 exhaustive=true uninhabited=false work=6
+arm 0 source=0:6 pattern=0 guard=- useful=true value=0:5
+arm 1 source=0:9 pattern=1 guard=- useful=false value=0:8
 eof roots=2 patterns=2 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=6 region-vars=0 region-equalities=0 conditions=0 chains=0

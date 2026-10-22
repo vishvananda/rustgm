@@ -2,7 +2,7 @@ ownership-crate 1
 body 0 source=0:0
   block b0 reachable=true
 end-body
-body 1 source=0:20
+body 1 source=0:11
   path m0 type=20 root=l0 subtree=0..1
   path m1 type=20 root=l1 subtree=1..2
   path m2 type=20 root=l2 subtree=2..3

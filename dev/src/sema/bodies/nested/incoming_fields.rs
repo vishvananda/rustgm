@@ -1,6 +1,6 @@
 //! Only retained capture fields can supply an incoming conditional proof port.
+use crate::support::hash::HashSet;
 use crate::types::{RegionId, Store, TypeId, substitute::Bound};
-use std::collections::HashSet;
 
 #[derive(Default)]
 pub(super) struct Inputs {
@@ -30,7 +30,7 @@ impl Inputs {
                 if !matches!(region.bound_parts(), Some((0, _))) {
                     continue;
                 }
-                let regions = this.regions.get_or_insert_with(HashSet::new);
+                let regions = this.regions.get_or_insert_with(HashSet::default);
                 if regions.len() >= 65_536 {
                     return Err("capture input lifetime index exceeds source binder budget");
                 }
@@ -90,10 +90,10 @@ impl super::Checker<'_> {
         region: RegionId,
         parent: crate::resolve::unit::NodeKey,
     ) -> Result<(), super::Error> {
-        if !region
-            .0
-            .checked_sub(1)
-            .and_then(|index| self.facts.body_regions.get(index as usize))
+        if !self
+            .facts
+            .body_regions
+            .get(parent, region)
             .is_some_and(|fact| fact.body == parent)
         {
             return Err(self.error(

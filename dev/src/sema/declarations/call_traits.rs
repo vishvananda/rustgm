@@ -74,7 +74,7 @@ impl Checker<'_> {
             .declare_callable(definition, kind, output, origin);
         let mut header = Header {
             self_type,
-            self_bounds: std::collections::HashSet::new(),
+            self_bounds: crate::support::hash::HashSet::default(),
             parameters: self.facts.generics.parameters[&definition].clone(),
             predicates: Vec::new(),
             results: Vec::new(),
@@ -266,12 +266,12 @@ impl Checker<'_> {
 /// item, whereas configured owners retain the outer attributed syntax node.
 pub(super) fn target_feature_sources(
     report: &crate::resolve::expansion::Report,
-) -> Result<std::collections::HashSet<NodeKey>, Error> {
+) -> Result<crate::support::hash::HashSet<NodeKey>, Error> {
     use crate::{
         resolve::unit::FileId,
         syntax::{ast::Kind, item::ItemKind},
     };
-    let mut result = std::collections::HashSet::new();
+    let mut result = crate::support::hash::HashSet::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;

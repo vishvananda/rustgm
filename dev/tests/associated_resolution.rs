@@ -95,12 +95,12 @@ fn anonymous_imports_keep_identity_and_scope_without_binding_an_underscore()
         for (index, binding) in bindings.into_iter().enumerate() {
             assert_eq!(binding.origin, Origin::Import(u32::try_from(index)?));
         }
-        assert!(facts.scopes.iter().all(|scope| {
-            scope
+        assert!(
+            facts
                 .bindings
-                .keys()
-                .all(|(name, _)| report.package.names.get(*name) != "_")
-        }));
+                .iter()
+                .all(|(_, name, _, _)| report.package.names.get(name) != "_")
+        );
     }
     Ok(())
 }
@@ -120,8 +120,12 @@ fn anonymous_imports_follow_replaced_globs_and_do_not_retain_provisional_targets
             .position(|m| report.package.names.get(m.name) == "e")
             .ok_or("missing final module")?;
         let scope = report.resolution.module_scopes[module];
-        let final_target =
-            report.resolution.scopes[scope.0 as usize].bindings[&(name, Namespace::Type)].target;
+        let final_target = report
+            .resolution
+            .bindings
+            .get(scope, name, Namespace::Type)
+            .ok_or("missing final target")?
+            .target;
         assert_eq!(report.resolution.anonymous_types.len(), 1);
         assert_eq!(report.resolution.anonymous_types[&0].target, final_target);
     }

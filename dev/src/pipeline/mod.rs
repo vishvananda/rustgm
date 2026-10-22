@@ -1,6 +1,7 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
 pub(crate) mod execution;
 mod original_contexts;
+use crate::support::hash::HashMap;
 use crate::{
     body::{self, regions::Collector, templates},
     borrow,
@@ -11,7 +12,6 @@ use crate::{
     },
     types::{ItemId, opaque::OpaqueId},
 };
-use std::collections::HashMap;
 
 /// Definition CFGs and contracts already demanded during semantic analysis.
 #[derive(Default)]

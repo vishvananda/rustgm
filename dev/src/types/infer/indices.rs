@@ -67,14 +67,14 @@ mod tests {
         let mut links = Vec::new();
         context.exchange_root_changes(&mut links)?;
         assert_eq!(links.len(), 2);
-        let mut roots = std::collections::HashMap::from([(origin, 7), (next, 9)]);
+        let mut roots = crate::support::hash::HashMap::from_iter([(origin, 7), (next, 9)]);
         for (source, target) in links.drain(..) {
             if let Some(value) = roots.remove(&source) {
                 let current = roots.entry(target).or_insert(value);
                 *current = (*current).min(value);
             }
         }
-        assert_eq!(roots, std::collections::HashMap::from([(ty, 7)]));
+        assert_eq!(roots, crate::support::hash::HashMap::from_iter([(ty, 7)]));
         assert_eq!(context.root(first)?, ty);
         assert_eq!(context.root(next)?, ty);
         context.exchange_root_changes(&mut links)?;

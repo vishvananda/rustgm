@@ -1,7 +1,7 @@
 //! The packed declaration restriction follows named struct and union fields.
 use super::{Definitions, Kind};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind as Type, Store};
-use std::collections::{HashMap, HashSet};
 
 impl Definitions {
     /// Check the pinned language's declaration restriction once. It follows
@@ -25,8 +25,8 @@ impl Definitions {
         Ok(())
     }
     fn packing_graph(&self, types: &Store) -> Result<(), (ItemId, &'static str)> {
-        let mut reverse: HashMap<ItemId, Vec<ItemId>> = HashMap::new();
-        let mut aligned = HashSet::new();
+        let mut reverse: HashMap<ItemId, Vec<ItemId>> = HashMap::default();
+        let mut aligned = HashSet::default();
         let mut work = Vec::new();
         let mut steps = 0_usize;
         for definition in &self.entries {

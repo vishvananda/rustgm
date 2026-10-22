@@ -34,11 +34,11 @@ type 31 function binders=0 parameters=[11,28,29] result=30 unsafe=false
 type 32 function-item def=19 signature=27
 def 14 type=20 name="Self" source=0:7
 def 15 type=21 name="Out" source=0:6
-def 16 type=11 name="Self" source=0:27
-def 17 type=11 name="Out" source=0:26
-def 18 type=19 name="Hold" source=0:57
-def 19 type=32 name="Hold" source=0:57
-def 20 type=23 name="main" source=0:59
+def 16 type=11 name="Self" source=0:22
+def 17 type=11 name="Out" source=0:21
+def 18 type=19 name="Hold" source=0:44
+def 19 type=32 name="Hold" source=0:44
+def 20 type=23 name="main" source=0:46
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -57,23 +57,22 @@ def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
 associated-owner 0 kind=trait self-def=14 self=20 source=0:7 trait=13 unsafe=false name="Q"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:27 unsafe=false
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:22 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
 parameter owner=13 binding=38 argument=region:bound:0:0 default=-
 parameter owner=13 binding=39 argument=region:bound:0:1 default=-
 parameter owner=14 binding=14 argument=type:20 default=-
 predicate owner=13 source=0:7 subject=20 bound=trait:13 arguments=[region:bound:0:0,region:bound:0:1]
-impl owner=16 source=0:27 subject=11 bound=trait:13 arguments=[region:bound:0:0,region:bound:0:1]
+impl owner=16 source=0:22 subject=11 bound=trait:13 arguments=[region:bound:0:0,region:bound:0:1]
 impl-type owner=16 declaration=15 definition=17
 associated-type def=15 type=21
 result-contract def=15 projection=21
 result-bound def=15 index=0 subject=21 bound=sized
 associated-type def=17 type=11
-normalized-node source=0:42 original=26 result=11
-normalized-node source=0:43 original=26 result=11
+normalized-node source=0:34 original=26 result=11
 family def=15 captures=2 regions=2 complete=true
 family-region def=15 index=0 longer=bound:0:0 shorter=bound:0:1
 family def=17 captures=2 regions=2 complete=true
 family-region def=17 index=0 longer=bound:0:0 shorter=bound:0:1
-eof owners=2 members=2 parameters=3 predicates=1 impls=1 calls=0 paths=0 impl-uses=0 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0 quantifiers=0 families=2 family-bounds=0 family-regions=2 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0
+eof owners=2 members=2 parameters=3 predicates=1 impls=1 calls=0 paths=0 impl-uses=0 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0 quantifiers=0 families=2 family-bounds=0 family-regions=2 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

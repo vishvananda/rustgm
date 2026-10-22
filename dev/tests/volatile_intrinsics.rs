@@ -236,8 +236,9 @@ fn unused_volatile_reads_and_reified_shims_remain_explicit()
 #[test]
 fn volatile_instances_share_canonical_identity_and_additive_body_work()
 -> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::support::hash::HashSet;
     use rustgm::{body::ir::Rvalue, support::intrinsics::Intrinsic};
-    use std::{collections::HashSet, fmt::Write};
+    use std::fmt::Write;
     for callers in [8, 32, 128] {
         let mut text = String::new();
         for caller in 0..callers {
@@ -254,7 +255,7 @@ fn volatile_instances_share_canonical_identity_and_additive_body_work()
                 .iter()
                 .map(|entry| entry.kind)
                 .collect::<HashSet<_>>(),
-            HashSet::from([
+            HashSet::from_iter([
                 Intrinsic::ReadVolatile,
                 Intrinsic::WriteVolatile,
                 Intrinsic::Read,
@@ -279,7 +280,7 @@ fn volatile_instances_share_canonical_identity_and_additive_body_work()
         assert!(facts.body_work.steps < 128 * (callers + 1));
         let program = rustgm::body::build(&report, &facts)?;
         assert_eq!(program.bodies.len(), callers);
-        let mut instances = HashSet::new();
+        let mut instances = HashSet::default();
         let mut operations = 0;
         for body in &program.bodies {
             for value in &body.values {

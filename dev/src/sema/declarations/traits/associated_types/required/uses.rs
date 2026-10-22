@@ -1,5 +1,6 @@
 //! Canonical graph traversal preserves argument positions across nested binders.
 use super::{DefId, Family, Use, charge};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     GenericArgs, Kind, RegionId, Store, TypeId,
     arguments::Argument,
@@ -8,7 +9,6 @@ use crate::types::{
     projection::Application,
     substitute,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Collector {
@@ -146,9 +146,9 @@ impl Collector {
         item: DefId,
     ) -> Result<Vec<Use>, &'static str> {
         let mut found =
-            HashMap::<DefId, (HashSet<(TypeId, TypeId)>, HashSet<(RegionId, RegionId)>)>::new();
+            HashMap::<DefId, (HashSet<(TypeId, TypeId)>, HashSet<(RegionId, RegionId)>)>::default();
         let mut captures = TypeComponents::default();
-        let mut lowering = HashMap::<u16, substitute::Bound>::new();
+        let mut lowering = HashMap::<u16, substitute::Bound>::default();
         for &(application, depth) in &self.applications {
             let target = DefId(application.item.0);
             let Some(family) = families
@@ -206,7 +206,7 @@ impl Collector {
                     target,
                     types,
                     regions,
-                    contributed: HashSet::new(),
+                    contributed: HashSet::default(),
                 }
             })
             .collect();

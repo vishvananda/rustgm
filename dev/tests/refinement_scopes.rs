@@ -1,4 +1,5 @@
 //! Reconciliation must preserve callable binders and reject jointly cyclic inputs.
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     Primitive, RegionId, Store, TypeId,
     infer::{
@@ -6,7 +7,6 @@ use rustgm::types::{
     },
     substitute::Bound,
 };
-use std::collections::HashMap;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn ty(argument: Argument) -> Result<TermId, &'static str> {
     if let Argument::Type(id) = argument {
@@ -16,7 +16,7 @@ fn ty(argument: Argument) -> Result<TermId, &'static str> {
     }
 }
 fn closed() -> Bound {
-    Bound::restore_regions(HashMap::new())
+    Bound::restore_regions(HashMap::default())
 }
 fn callable(context: &mut Context, store: &Store, parameters: &[TermId]) -> Result<TermId, Error> {
     let mut children = parameters.to_vec();

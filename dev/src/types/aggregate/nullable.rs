@@ -1,6 +1,6 @@
 //! Canonical nullable-enum policy precedes all concrete layout queries.
 use super::{Definitions, ItemId, Kind, Representation, Store};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct NullableEnum {
     pub empty: u32,

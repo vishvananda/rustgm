@@ -621,8 +621,9 @@ fn borrowed_patterns_keep_input_types_capture_modes_and_region_provenance() -> R
     assert_eq!(
         facts
             .body_regions
+            .log()
             .iter()
-            .filter(|r| matches!(r.origin, BodyRegionOrigin::PatternBorrow))
+            .filter(|r| matches!(r.region.origin, BodyRegionOrigin::PatternBorrow))
             .count(),
         3
     );
@@ -636,7 +637,14 @@ fn borrowed_patterns_keep_input_types_capture_modes_and_region_provenance() -> R
         assert_eq!(*mutable, index != 0);
         assert_ne!(*region, RegionId::STATIC);
         assert_eq!(region.bound_parts(), None);
-        let origin = &facts.body_regions[region.0 as usize - 1];
+        // Identities are unit-local: find this pattern's allocation in the log.
+        let origin = &facts
+            .body_regions
+            .log()
+            .iter()
+            .find(|allocated| allocated.id == *region && allocated.region.source == pattern.source)
+            .ok_or("missing pattern borrow region")?
+            .region;
         assert!(matches!(origin.origin, BodyRegionOrigin::PatternBorrow));
         assert_eq!(origin.source, pattern.source);
         if let Some(previous) = previous_body {
@@ -693,9 +701,10 @@ fn alternatives_share_local_types_without_erasing_per_occurrence_captures() -> R
         assert_eq!(
             facts
                 .body_regions
+                .log()
                 .iter()
                 .filter(|r| matches!(
-                    r.origin,
+                    r.region.origin,
                     rustgm::sema::model::BodyRegionOrigin::PatternBorrow
                 ))
                 .count(),

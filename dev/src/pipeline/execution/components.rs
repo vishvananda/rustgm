@@ -2,7 +2,7 @@
 use super::component_index::{Index, Node, Owner};
 use super::{BodyKey, Contract, Declarations, Engine, Error, Report, Template, Templates, body};
 use crate::pipeline::original_contexts::Original;
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 const BYTES: usize = 64 * 1024 * 1024;
 pub(super) struct Retained {
     index: Index,
@@ -45,8 +45,8 @@ impl Engine {
                     .saturating_add(header);
                 Box::new(Retained {
                     index,
-                    rows: HashMap::new(),
-                    members: HashSet::new(),
+                    rows: HashMap::default(),
+                    members: HashSet::default(),
                     order: Vec::new(),
                 })
             };

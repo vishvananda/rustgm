@@ -50,15 +50,11 @@ function @rg.15(%p0 : u32, %p1 : u32) -> u32 {
     store u32 %p1, $s1
     %t0 = load u32 $s0
     %t1 = load u32 $s1
-    %t2 = convert zext i64 u32 %t0
-    %t3 = convert zext i64 u32 %t1
-    %t4 = binary add i64 %t2, %t3
-    %t5 = convert trunc u32 i64 %t4
-    %t6 = convert zext i64 u32 %t5
-    %t7 = cmp ne i64 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add u32 %t0, %t1
+    %t3 = cmp ult u32 %t2, %t0
+    branch %t3, ^b1, ^b2
   block ^b2:
-    return u32 %t5
+    return u32 %t2
   block ^b1:
     call void @abort()
     unreachable
@@ -86,15 +82,11 @@ function @rg.16(%p0 : u32, %p1 : u32) -> u32 {
     store u32 %p1, $s1
     %t0 = load u32 $s0
     %t1 = load u32 $s1
-    %t2 = convert zext i64 u32 %t0
-    %t3 = convert zext i64 u32 %t1
-    %t4 = binary sub i64 %t2, %t3
-    %t5 = convert trunc u32 i64 %t4
-    %t6 = convert zext i64 u32 %t5
-    %t7 = cmp ne i64 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary sub u32 %t0, %t1
+    %t3 = cmp ult u32 %t0, %t1
+    branch %t3, ^b1, ^b2
   block ^b2:
-    return u32 %t5
+    return u32 %t2
   block ^b1:
     call void @abort()
     unreachable

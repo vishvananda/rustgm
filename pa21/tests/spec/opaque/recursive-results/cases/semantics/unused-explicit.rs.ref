@@ -27,8 +27,8 @@ type 24 function-item def=14 signature=23
 type 25 reference mutable=false region=region:1 referent=11
 type 26 function binders=0 parameters=[11,25] result=20 unsafe=false
 type 27 reference mutable=false region=region:2 referent=11
-def 13 type=22 name="f" source=0:46
-def 14 type=24 name="main" source=0:48
+def 13 type=22 name="f" source=0:31
+def 14 type=24 name="main" source=0:33
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -46,13 +46,13 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 33 type=11 name="n" source=0:3
-def 34 type=19 name="x" source=0:10
-def 42 type=11 name="y" source=0:30
-region-var region:1 body=0:45 source=0:42 origin=call-argument pending
-region-var region:2 body=0:45 source=0:41 origin=expression-borrow pending
-region-coercion body=0:45 source=0:41 actual=27 expected=25 kind=same-shape pending
-opaque 0 owner=13 source=0:21 application=20 hidden=11 role=defining-result storage-proof=pending
+def 33 type=11 name="n" source=0:1
+def 34 type=19 name="x" source=0:4
+def 42 type=11 name="y" source=0:18
+region-var region:1 body=0:30 source=0:27 origin=call-argument pending
+region-var region:2 body=0:30 source=0:26 origin=expression-borrow pending
+region-coercion body=0:30 source=0:26 actual=27 expected=25 kind=same-shape pending
+opaque 0 owner=13 source=0:12 application=20 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=20 bound=copy
 opaque-body-result def=13 type=11
 eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

@@ -14,7 +14,7 @@ impl Extents<'_> {
         self.solver
             .charge(self.solver.result.masks.len())
             .map_err(|_| Error::Budget)?;
-        let mut words: HashMap<Region, Vec<(u32, u64)>> = HashMap::new();
+        let mut words: HashMap<Region, Vec<(u32, u64)>> = HashMap::default();
         for (&(region, word), &bits) in &self.solver.result.masks {
             words.entry(region).or_default().push((word, bits));
         }

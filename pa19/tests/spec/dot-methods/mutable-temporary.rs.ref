@@ -30,18 +30,14 @@ function @rg.18(%p0 : ptr, %p1 : u8) -> u8 {
     %t0 = load u8 $s1
     %t1 = load ptr $s0
     %t2 = load u8 %t1
-    %t3 = convert zext i16 u8 %t2
-    %t4 = convert zext i16 u8 %t0
-    %t5 = binary add i16 %t3, %t4
-    %t6 = convert trunc u8 i16 %t5
-    %t7 = convert zext i16 u8 %t6
-    %t8 = cmp ne i16 %t5, %t7
-    branch %t8, ^b1, ^b2
+    %t3 = binary add u8 %t2, %t0
+    %t4 = cmp ult u8 %t3, %t2
+    branch %t4, ^b1, ^b2
   block ^b2:
-    store u8 %t6, %t1
-    %t9 = load ptr $s0
-    %t10 = load u8 %t9
-    return u8 %t10
+    store u8 %t3, %t1
+    %t5 = load ptr $s0
+    %t6 = load u8 %t5
+    return u8 %t6
   block ^b1:
     call void @abort()
     unreachable

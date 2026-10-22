@@ -8,7 +8,7 @@ use crate::{
         copy::{Copies, Declaration},
     },
 };
-use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
+use std::{hash::BuildHasher, sync::Arc};
 
 /// Reuse the ordinary move/initialization proof without granting an executable
 /// token. Generic cleanup, loans and specialization still require separate proof.
@@ -17,7 +17,7 @@ use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
 pub fn analyze<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     custom: Option<&impl Fn(ItemId) -> bool>,
     templates: &Templates,
 ) -> Result<Vec<BodyFacts>, Error> {

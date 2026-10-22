@@ -1,10 +1,10 @@
 //! Const arguments suspend only for the selected initializer's declaration dependencies.
 use super::{Checker, DefId, Error, NodeKey, TypeId, Work, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{arguments, constants},
     types::arguments::{ConstId, Constant},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub(super) struct Request {

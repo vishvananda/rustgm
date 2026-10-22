@@ -21,7 +21,7 @@ type 18 primitive f64
 type 19 aggregate def=13
 type 20 aggregate def=15
 def 13 type=19 name="Z" source=0:0
-def 15 type=20 name="C" source=0:14
+def 15 type=20 name="C" source=0:8
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"

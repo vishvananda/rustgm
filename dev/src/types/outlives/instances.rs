@@ -138,6 +138,13 @@ impl Projected {
     }
 
     fn prepare(&mut self, types: &mut Store, root: TypeId) -> Result<(), &'static str> {
+        // Only nominal instances and projection families have prepared state;
+        // structural properties cover every child edge of the walk below.
+        if types.contains_nominals(root) == Some(false)
+            && types.contains_projections(root) == Some(false)
+        {
+            return Ok(());
+        }
         if self.prepared.contains(&root) {
             return Ok(());
         }

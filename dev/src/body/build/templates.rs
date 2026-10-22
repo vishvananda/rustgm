@@ -28,7 +28,7 @@ pub struct Templates {
 }
 #[derive(Default)]
 struct ClosureTemplates {
-    bodies: std::collections::HashMap<crate::types::closure::ClosureId, Template>,
+    bodies: crate::support::hash::HashMap<crate::types::closure::ClosureId, Template>,
 }
 /// Every original child belongs to the same defining source family as its parent.
 pub(crate) fn owns(facts: &Declarations, owner: crate::resolve::model::DefId) -> bool {
@@ -48,8 +48,8 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> 
 pub struct Prepared {
     scratch: Option<Box<Scratch>>,
     query: Option<NeedsDrop>,
-    bodies: std::collections::HashMap<crate::resolve::model::DefId, Template>,
-    anonymous: std::collections::HashMap<crate::resolve::unit::NodeKey, Template>,
+    bodies: crate::support::hash::HashMap<crate::resolve::model::DefId, Template>,
+    anonymous: crate::support::hash::HashMap<crate::resolve::unit::NodeKey, Template>,
     closures: Option<Box<ClosureTemplates>>,
     built: usize,
     reused: usize,
@@ -233,7 +233,7 @@ impl Prepared {
         &mut self,
         templates: Vec<Template>,
     ) -> Result<(), &'static str> {
-        let mut keys = std::collections::HashSet::with_capacity(templates.len());
+        let mut keys = crate::support::hash::HashSet::with_capacity(templates.len());
         for template in &templates {
             let body = &template.body;
             let present = match body.owner {

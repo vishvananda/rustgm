@@ -1,5 +1,6 @@
 //! Implied bounds exclude whole predicates mentioning quantified or callable locals.
 use super::{Budget, Pair, Store, free};
+use crate::support::hash::HashMap;
 use crate::types::{
     bound_uses::captures::Captures,
     parameters::{
@@ -8,7 +9,6 @@ use crate::types::{
     },
     substitute,
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/implied_clauses.rs"]
 mod tests;
@@ -123,7 +123,7 @@ struct Scoped {
 impl Default for Scoped {
     fn default() -> Self {
         Self {
-            completed: HashMap::new(),
+            completed: HashMap::default(),
             scope: Scope::new(1),
         }
     }

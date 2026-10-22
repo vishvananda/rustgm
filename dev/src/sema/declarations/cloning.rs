@@ -76,7 +76,7 @@ impl super::comparisons::LibraryContracts<'_> {
                 ItemId(declaration.definition.0),
                 Header {
                     self_type: subject,
-                    self_bounds: std::collections::HashSet::from([source]),
+                    self_bounds: crate::support::hash::HashSet::from_iter([source]),
                     parameters: Vec::new(),
                     predicates: builtins.to_vec(),
                     results: Vec::new(),

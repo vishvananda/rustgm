@@ -1,5 +1,6 @@
 //! Retain normalized member shapes and discharge their contracts during impl validation.
 use super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefKind, names::NameId},
     sema::{model::Declarations, traits::conformance::Definitions},
@@ -12,7 +13,6 @@ use crate::{
         parameters::predicates::{Bound, Predicate},
     },
 };
-use std::collections::HashMap;
 
 /// Normalized shape and formation debts are retained until nominal facts exist.
 pub(super) struct Contract {

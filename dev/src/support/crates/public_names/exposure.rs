@@ -3,7 +3,7 @@ use super::{
     ExternalDef, ExternalKind, Interface, PublicBinding, PublicModule, owned_public_definitions,
 };
 use crate::support::crates::CrateIdentity;
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 struct Exposed<'a> {
     definitions: HashSet<&'a ExternalDef>,
@@ -24,7 +24,7 @@ impl<'a> Exposed<'a> {
             };
         }
         let definitions: HashSet<_> = owned_public_definitions(artifact).collect();
-        let mut modules = HashSet::from([&[][..]]);
+        let mut modules = HashSet::from_iter([&[][..]]);
         for definition in &definitions {
             for length in 1..definition.path().len() {
                 modules.insert(&definition.path()[..length]);
@@ -47,7 +47,7 @@ pub(crate) fn validate(
     artifacts: &[Interface],
     indices: &HashMap<&CrateIdentity, usize>,
 ) -> Result<(), &'static str> {
-    let mut exposed = HashMap::new();
+    let mut exposed = HashMap::default();
     for artifact in artifacts {
         let Some(names) = artifact.public_names() else {
             continue;

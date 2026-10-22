@@ -254,7 +254,8 @@ pub enum BodyRegionOrigin {
     PatternBorrow,
     PatternInput,
 }
-/// Existential region identity `1 + ordinal`; these are obligations, not proofs.
+/// Existential region identity `1 + ordinal` within the numbering unit of its
+/// body (see [`super::body_regions`]); these are obligations, not proofs.
 #[derive(Clone, Copy)]
 pub struct BodyRegion {
     pub body: NodeKey,
@@ -343,15 +344,15 @@ pub struct Declarations {
     pub union_work: UnionWork,
     pub(super) safety_policies: super::safety::Policies,
     /// Immutable declaration permissions, shared by checked bodies and instances.
-    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
+    pub mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<DefId>>>,
     pub constant_work: super::values::execution::Work,
     pub(crate) constant_executor: Option<Box<dyn super::values::execution::Executor>>,
-    pub(crate) function_indices: std::collections::HashMap<DefId, usize>,
-    pub(crate) typed_function_bodies: std::collections::HashSet<DefId>,
-    pub(crate) array_lengths: std::collections::HashMap<NodeKey, u64>,
+    pub(crate) function_indices: crate::support::hash::HashMap<DefId, usize>,
+    pub(crate) typed_function_bodies: crate::support::hash::HashSet<DefId>,
+    pub(crate) array_lengths: crate::support::hash::HashMap<NodeKey, u64>,
     /// Const permission belongs to a selected declaration, not its callable type.
-    pub(crate) constant_functions: std::collections::HashSet<DefId>,
-    pub(super) target_feature_functions: std::collections::HashSet<DefId>,
+    pub(crate) constant_functions: crate::support::hash::HashSet<DefId>,
+    pub(super) target_feature_functions: crate::support::hash::HashSet<DefId>,
     pub closures: super::closures::Bodies,
     pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
@@ -359,54 +360,55 @@ pub struct Declarations {
     pub unreduced: super::unreduced::Types,
     pub inline_constants: Option<Box<super::inline_constants::Registry>>,
     pub nested_outputs: Option<Box<super::nested_outputs::Registry>>,
-    pub(super) anonymous_constants: std::collections::HashMap<NodeKey, TypeId>,
-    pub(super) constant_annotation_bodies: std::collections::HashSet<NodeKey>,
+    pub(super) anonymous_constants: crate::support::hash::HashMap<NodeKey, TypeId>,
+    pub(super) constant_annotation_bodies: crate::support::hash::HashSet<NodeKey>,
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
-    pub constant_repeats: std::collections::HashSet<NodeKey>,
+    pub constant_repeats: crate::support::hash::HashSet<NodeKey>,
     pub(crate) constant_targets:
-        std::collections::HashMap<super::values::Instance, super::values::Instance>,
+        crate::support::hash::HashMap<super::values::Instance, super::values::Instance>,
     pub(crate) dispatch_dependencies: super::dispatch::Dependencies,
     pub(crate) objects: super::vtable_plans::Objects,
     pub(crate) constant_dependencies:
-        std::collections::HashMap<DefId, Vec<super::values::Dependency>>,
-    pub constant_uses: std::collections::HashMap<NodeKey, super::values::Instance>,
+        crate::support::hash::HashMap<DefId, Vec<super::values::Dependency>>,
+    pub constant_uses: crate::support::hash::HashMap<NodeKey, super::values::Instance>,
     pub(super) constant_instances:
-        std::collections::HashMap<super::values::Instance, super::values::Completed>,
+        crate::support::hash::HashMap<super::values::Instance, super::values::Completed>,
     pub associated: super::associated::Inventory,
     pub(crate) stored_fields: Option<Box<super::stored_fields::Registry>>,
     pub methods: super::methods::Methods,
-    pub(crate) invocations: std::collections::HashMap<NodeKey, super::invocations::Invocation>,
-    pub receivers: std::collections::HashMap<NodeKey, super::associated::Receiver>,
+    pub(crate) invocations: crate::support::hash::HashMap<NodeKey, super::invocations::Invocation>,
+    pub receivers: crate::support::hash::HashMap<NodeKey, super::associated::Receiver>,
     pub destructors: super::destructors::Destructors,
     /// Packed source places remain checked even when their CFG is unreachable.
     pub reference_alignment: Vec<ReferenceAlignment>,
-    pub reference_adjustments: std::collections::HashMap<NodeKey, ReferenceAdjustment>,
+    pub reference_adjustments: crate::support::hash::HashMap<NodeKey, ReferenceAdjustment>,
     pub(crate) unsizing_rules: Option<Box<crate::types::unsizing::Rules>>,
     /// Selected terminal conversion; lowering consumes its retained proof inputs.
     pub unsizing_adjustments:
-        std::collections::HashMap<NodeKey, crate::types::unsizing::Conversion<TypeId>>,
+        crate::support::hash::HashMap<NodeKey, crate::types::unsizing::Conversion<TypeId>>,
     /// Raw pointer type before a separately selected storage-tail unsizing.
-    pub pointer_adjustments: std::collections::HashMap<NodeKey, TypeId>,
-    pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
+    pub pointer_adjustments: crate::support::hash::HashMap<NodeKey, TypeId>,
+    pub partial_annotations: crate::support::hash::HashMap<NodeKey, PartialAnnotation>,
     pub well_formed: Vec<WellFormed>,
     pub coercions: Vec<Coercion>,
     pub outlives: Vec<Outlives>,
     pub type_outlives: Vec<TypeOutlives>,
     pub quantified_proofs: Vec<QuantifiedProof>,
     pub lifetimes: super::lifetimes::Lifetimes,
-    pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
+    pub(super) constant_values: crate::support::hash::HashMap<DefId, super::constants::Value>,
     pub(super) constant_products: super::constants::products::Products,
     pub(super) constant_images: Option<Box<super::constants::images::Images>>,
     pub(super) constant_references: super::constants::references::References,
-    pub autoderefs: std::collections::HashMap<NodeKey, u32>,
+    pub autoderefs: crate::support::hash::HashMap<NodeKey, u32>,
     pub texts: super::text::Texts,
-    pub text_literals: std::collections::HashMap<NodeKey, super::text::Id>,
+    pub text_literals: crate::support::hash::HashMap<NodeKey, super::text::Id>,
     pub patterns: super::patterns::Patterns,
-    pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
-    pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Declaration>,
+    pub enum_casts: crate::support::hash::HashSet<crate::types::ItemId>,
+    pub derives:
+        crate::support::hash::HashMap<crate::types::ItemId, crate::types::copy::Declaration>,
     pub equality_derives:
-        std::collections::HashMap<crate::types::ItemId, crate::types::equality::Properties>,
+        crate::support::hash::HashMap<crate::types::ItemId, crate::types::equality::Properties>,
     pub equality: crate::types::equality::Equality,
     pub copies: crate::types::copy::Copies,
     pub aggregates: crate::types::aggregate::Definitions,
@@ -417,7 +419,7 @@ pub struct Declarations {
     pub(crate) primitive_methods: Option<Box<super::primitive_methods::Registry>>,
     pub layouts: crate::abi::layout::Layouts,
     pub region_equalities: Vec<RegionEquality>,
-    pub body_regions: Vec<BodyRegion>,
+    pub body_regions: super::body_regions::BodyRegions,
     initializer_indices: Option<Box<[Option<std::num::NonZeroU32>]>>,
     pub initializers: Vec<Initializer>,
     pub types: Store,
@@ -490,11 +492,11 @@ impl Declarations {
             .iter()
             .map(|(&key, &ty)| (key, ty))
             .collect();
-        bodies.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.0));
+        bodies.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.get()));
         bodies
     }
     pub(super) fn lifetime_fact_count(&self) -> usize {
-        self.body_regions.len()
+        self.body_regions.log().len()
             + self.region_equalities.len()
             + self.coercions.len()
             + self.outlives.len()
@@ -536,59 +538,59 @@ impl Declarations {
             union_work: UnionWork::default(),
             safety_policies: super::safety::Policies::analyze(report)?,
             mutable_statics: None,
-            constant_functions: std::collections::HashSet::new(),
-            target_feature_functions: std::collections::HashSet::new(),
+            constant_functions: crate::support::hash::HashSet::default(),
+            target_feature_functions: crate::support::hash::HashSet::default(),
             closures: super::closures::Bodies::default(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             constant_executor: None,
             constant_work: super::values::execution::Work::default(),
-            function_indices: std::collections::HashMap::new(),
-            typed_function_bodies: std::collections::HashSet::new(),
-            array_lengths: std::collections::HashMap::new(),
+            function_indices: crate::support::hash::HashMap::default(),
+            typed_function_bodies: crate::support::hash::HashSet::default(),
+            array_lengths: crate::support::hash::HashMap::default(),
             alias_requirements: super::alias_requirements::Requirements::default(),
             unreduced: super::unreduced::Types::default(),
             inline_constants: None,
             nested_outputs: None,
-            anonymous_constants: std::collections::HashMap::new(),
-            constant_annotation_bodies: std::collections::HashSet::new(),
+            anonymous_constants: crate::support::hash::HashMap::default(),
+            constant_annotation_bodies: crate::support::hash::HashSet::default(),
             generics: super::generics::Generics::default(),
-            constant_repeats: std::collections::HashSet::new(),
-            constant_targets: std::collections::HashMap::new(),
+            constant_repeats: crate::support::hash::HashSet::default(),
+            constant_targets: crate::support::hash::HashMap::default(),
             dispatch_dependencies: super::dispatch::Dependencies::default(),
             objects: super::vtable_plans::Objects::default(),
-            constant_dependencies: std::collections::HashMap::new(),
-            constant_uses: std::collections::HashMap::new(),
-            constant_instances: std::collections::HashMap::new(),
+            constant_dependencies: crate::support::hash::HashMap::default(),
+            constant_uses: crate::support::hash::HashMap::default(),
+            constant_instances: crate::support::hash::HashMap::default(),
             associated: super::associated::collect(report)?,
             stored_fields: None,
             methods: super::methods::Methods::default(),
-            invocations: std::collections::HashMap::new(),
-            receivers: std::collections::HashMap::new(),
+            invocations: crate::support::hash::HashMap::default(),
+            receivers: crate::support::hash::HashMap::default(),
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
-            reference_adjustments: std::collections::HashMap::new(),
+            reference_adjustments: crate::support::hash::HashMap::default(),
             unsizing_rules: None,
-            unsizing_adjustments: std::collections::HashMap::new(),
-            pointer_adjustments: std::collections::HashMap::new(),
-            partial_annotations: std::collections::HashMap::new(),
+            unsizing_adjustments: crate::support::hash::HashMap::default(),
+            pointer_adjustments: crate::support::hash::HashMap::default(),
+            partial_annotations: crate::support::hash::HashMap::default(),
             well_formed: Vec::new(),
             type_outlives: Vec::new(),
             quantified_proofs: Vec::new(),
             coercions: Vec::new(),
             outlives: Vec::new(),
             lifetimes: super::lifetimes::Lifetimes::default(),
-            constant_values: std::collections::HashMap::new(),
+            constant_values: crate::support::hash::HashMap::default(),
             constant_references: super::constants::references::References::default(),
-            autoderefs: std::collections::HashMap::new(),
+            autoderefs: crate::support::hash::HashMap::default(),
             constant_products: super::constants::products::Products::default(),
             constant_images: None,
             texts: super::text::Texts::default(),
-            text_literals: std::collections::HashMap::new(),
+            text_literals: crate::support::hash::HashMap::default(),
             patterns: super::patterns::Patterns::default(),
-            enum_casts: std::collections::HashSet::new(),
-            derives: std::collections::HashMap::new(),
-            equality_derives: std::collections::HashMap::new(),
+            enum_casts: crate::support::hash::HashSet::default(),
+            derives: crate::support::hash::HashMap::default(),
+            equality_derives: crate::support::hash::HashMap::default(),
             equality: crate::types::equality::Equality::default(),
             copies: crate::types::copy::Copies::default(),
             aggregates: crate::types::aggregate::Definitions::default(),
@@ -599,7 +601,7 @@ impl Declarations {
             primitive_methods: None,
             layouts: crate::abi::layout::Layouts::default(),
             region_equalities: Vec::new(),
-            body_regions: Vec::new(),
+            body_regions: super::body_regions::BodyRegions::default(),
             initializer_indices: None,
             initializers: Vec::new(),
             types: Store::default(),
@@ -680,7 +682,7 @@ impl Declarations {
     pub fn node(&self, key: NodeKey) -> Option<&NodeFacts> {
         self.nodes
             .get(key.file.0 as usize)?
-            .get(key.node.0 as usize)
+            .get(key.node.get() as usize)
     }
     /// Selected constructor formation keeps block values distinct from transparent wrappers.
     pub(crate) fn direct_variant(
@@ -701,7 +703,7 @@ impl Declarations {
     pub(super) fn node_mut(&mut self, key: NodeKey) -> Option<&mut NodeFacts> {
         self.nodes
             .get_mut(key.file.0 as usize)?
-            .get_mut(key.node.0 as usize)
+            .get_mut(key.node.get() as usize)
     }
     pub(crate) fn error(report: &Report, key: NodeKey, message: impl Into<String>) -> Error {
         Error::at(

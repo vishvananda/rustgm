@@ -4,6 +4,7 @@ use super::{
     flags::Recorder,
     schedule::{Cleanup, Schedule},
 };
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::Selection,
     borrow::ownership::{
@@ -12,7 +13,6 @@ use crate::{
     },
     types::{ItemId, Kind, Store, TypeId, aggregate::Definitions, destruction::NeedsDrop},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 enum Tracking {
@@ -66,7 +66,7 @@ pub fn select(
         needed,
         custom,
         paths: &facts.ownership.paths,
-        fields: HashMap::new(),
+        fields: HashMap::default(),
         work: Vec::new(),
         plan: Plan::default(),
         retained: 0,
@@ -97,8 +97,13 @@ pub fn select(
             }
         }
     }
+    let mut recording = super::flags::Recording::for_body(facts.body(), Vec::new());
     facts
-        .visit_events(|event, point| {
+        .visit_transfers(|transition, point| {
+            recording.push(transition);
+            let initialization::Transition::Observe(event) = transition else {
+                return Ok(());
+            };
             builder.charge(1)?;
             if let initialization::Event::Cleanup(candidate) = event {
                 let body = facts.body();
@@ -127,7 +132,11 @@ pub fn select(
         steps: &mut builder.plan.steps,
         retained: builder.retained,
     }
-    .record(facts, builder.plan.cleanups.iter().map(|c| c.candidate))
+    .record_from(
+        facts,
+        &mut recording,
+        builder.plan.cleanups.iter().map(|c| c.candidate),
+    )
     .map_err(error)?;
     Ok(builder.plan)
 }

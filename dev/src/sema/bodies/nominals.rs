@@ -97,8 +97,13 @@ impl Checker<'_> {
         }
         let mut fields = Fields {
             regions: Bound::new(regions),
-            parameters: Instantiation::new(&mut self.state.infer, &self.facts.types, &bindings)
-                .map_err(|e| self.error(node, e))?,
+            parameters: Instantiation::pooled(
+                &mut self.state.infer,
+                &self.facts.types,
+                &bindings,
+                &mut self.state.call_types.instantiations,
+            )
+            .map_err(|e| self.error(node, e))?,
         };
         if !supplied.is_empty() {
             for index in count + supplied.len()..parameters.len() {

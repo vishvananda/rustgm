@@ -1,46 +1,32 @@
-active [0,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,24,25,26,27,28,29,30,31,32,33,34,35,36]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
 node 0 9 21 item 0
 item 0 "Output" private [] [] type-alias [] -
-node 1 28 32 name "self"
-node 2 28 32 path false [1]
-node 3 28 32 binding false false "self" -
-node 4 27 32 reference-pattern false 3
-node 5 27 32 parameter 4 -
-node 6 35 39 name "Self"
-node 7 41 47 name "Output"
-node 8 35 47 path false [6,7]
-node 9 35 47 type Path [8]
-node 10 22 48 item 1
-item 1 "f" private [] [] function false false false false - [5] 9 -
-node 11 0 49 item 2
-item 2 "A" private [] [] trait false [] [0,10]
-node 12 55 56 name "A"
-node 13 55 56 path false [12]
-node 14 55 56 type Path [13]
-node 15 61 64 name "i32"
-node 16 61 64 path false [15]
-node 17 61 64 type Path [16]
-node 18 78 81 name "i32"
-node 19 78 81 path false [18]
-node 20 78 81 type Path [19]
-node 21 66 82 item 3
-item 3 "Output" private [] [] type-alias [] 20
-node 22 89 93 name "self"
-node 23 89 93 path false [22]
-node 24 89 93 binding false false "self" -
-node 25 88 93 reference-pattern false 24
-node 26 88 93 parameter 25 -
-node 27 96 99 name "i32"
-node 28 96 99 path false [27]
-node 29 96 99 type Path [28]
-node 30 101 105 name "self"
-node 31 101 105 path false [30]
-node 32 100 105 unary deref 31
-node 33 99 106 block Plain [] 32
-node 34 83 106 item 4
-item 4 "f" private [] [] function false false false false - [26] 29 33
-node 35 50 107 item 5
-item 5 - private [] [] impl false false 14 17 [21,34]
-node 36 0 107 crate [11,35]
-root 36
+node 1 28 32 binding false false "self" -
+node 2 27 32 reference-pattern false 1
+node 3 27 32 parameter 2 -
+node 4 35 39 name "Self"
+node 5 41 47 name "Output"
+node 6 35 47 path false [4,5]
+node 7 22 48 item 1
+item 1 "f" private [] [] function false false false false - [3] 6 -
+node 8 0 49 item 2
+item 2 "A" private [] [] trait false [] [0,7]
+node 9 55 56 name "A"
+node 10 61 64 name "i32"
+node 11 78 81 name "i32"
+node 12 66 82 item 3
+item 3 "Output" private [] [] type-alias [] 11
+node 13 89 93 binding false false "self" -
+node 14 88 93 reference-pattern false 13
+node 15 88 93 parameter 14 -
+node 16 96 99 name "i32"
+node 17 101 105 name "self"
+node 18 100 105 unary deref 17
+node 19 99 106 block Plain [] 18
+node 20 83 106 item 4
+item 4 "f" private [] [] function false false false false - [15] 16 19
+node 21 50 107 item 5
+item 5 - private [] [] impl false false 9 10 [12,20]
+node 22 0 107 crate [8,21]
+root 22
 eof 108

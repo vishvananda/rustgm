@@ -4,6 +4,7 @@ use super::{
     package::{Error, Module, ModuleId, Package},
     unit::{FileId, NodeKey, Unit},
 };
+use crate::support::hash::HashMap;
 use crate::{
     expand::{config::Config, configured::Effect},
     literal::Value,
@@ -14,10 +15,7 @@ use crate::{
         item::ItemKind,
     },
 };
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 pub struct InputFile {
     /// Canonical identity supplied by the driver, used only for cache/cycle keys.
@@ -105,7 +103,7 @@ pub fn load_with_context(
         let module = &loader.package.modules[visit.module.0 as usize];
         let file = module.file;
         let unit = loader.package.unit(file);
-        if !unit.configured.active[visit.node.0 as usize] {
+        if !unit.configured.active[visit.node.get() as usize] {
             continue;
         }
         let kind = unit.configured.ast.node(visit.node).kind;
@@ -153,12 +151,12 @@ impl<'a, S: Sources> Loader<'a, S> {
         config: &'a Config,
         context: &super::bindings::Context,
     ) -> Result<Self, Error> {
-        let unit = Unit::parse(root.source, config)
-            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let mut names = Names::default();
         let name = names
             .intern("crate")
             .map_err(|e| Error::at(FileId(0), 0, e))?;
+        let unit = Unit::parse(root.source, config, &mut names)
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let root_node = unit.configured.ast.root;
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
@@ -192,7 +190,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                     root: root_node,
                 }],
                 names,
-                children: HashMap::new(),
+                children: HashMap::default(),
             },
             sources,
             config,
@@ -201,12 +199,12 @@ impl<'a, S: Sources> Loader<'a, S> {
                 relative: None,
             }],
             identities: vec![root.identity.clone()],
-            cache: HashMap::from([(root.identity, FileId(0))]),
+            cache: HashMap::from_iter([(root.identity, FileId(0))]),
             separate_instances: false,
-            includes: HashMap::new(),
-            include_requests: HashMap::new(),
-            resources: HashMap::new(),
-            environment: HashMap::new(),
+            includes: HashMap::default(),
+            include_requests: HashMap::default(),
+            resources: HashMap::default(),
+            environment: HashMap::default(),
         };
         if loader.package.source_core.is_some() {
             loader.package.crate_name = super::expansion::attributes::crate_name(
@@ -378,7 +376,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                     u32::try_from(self.package.units.len())
                         .map_err(|_| Error::at(file, span.start, "too many source files"))?,
                 );
-                let unit = Unit::parse(selected.source, self.config)
+                let unit = Unit::parse(selected.source, self.config, &mut self.package.names)
                     .map_err(|e| Error::at(id, e.offset, e.message))?;
                 self.cache.insert(selected.identity.clone(), id);
                 self.identities.push(selected.identity);
@@ -430,7 +428,7 @@ impl<'a, S: Sources> Loader<'a, S> {
     fn path(&self, file: FileId, owner: Option<NodeId>) -> Result<Option<String>, Error> {
         let unit = self.package.unit(file);
         let Some(owner) = owner
-            .and_then(|id| unit.owner_indices[id.0 as usize])
+            .and_then(|id| unit.owner_indices[id.get() as usize])
             .map(|index| &unit.configured.owners[(index.get() - 1) as usize])
         else {
             return Ok(None);
@@ -526,7 +524,7 @@ impl<S: Sources> Loader<'_, S> {
             (self.package.unit(*file).fresh_instance(), false)
         } else {
             (
-                Unit::parse_include(input.source, self.config, grammar),
+                Unit::parse_include(input.source, self.config, grammar, &mut self.package.names),
                 true,
             )
         };

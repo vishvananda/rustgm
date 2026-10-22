@@ -1,5 +1,6 @@
 //! Fresh output witnesses transport identities while retaining every child obligation.
 use super::{Checker, Error};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::unit::NodeKey,
     sema::{
@@ -9,7 +10,6 @@ use crate::{
     },
     types::{RegionId, substitute::Bound},
 };
-use std::collections::{HashMap, HashSet};
 
 pub(in crate::sema::bodies) struct Ports {
     pub pairs: HashMap<RegionId, RegionId>,
@@ -98,7 +98,7 @@ impl Checker<'_> {
                     && self
                         .facts
                         .body_regions
-                        .get(caller.0 as usize - 1)
+                        .get(parent, *caller)
                         .is_some_and(|fact| fact.body == parent)
             })
             .map(|(caller, private)| (private, caller))
@@ -114,7 +114,7 @@ impl Checker<'_> {
                     && self
                         .facts
                         .body_regions
-                        .get(region.0 as usize - 1)
+                        .get(source, region)
                         .is_some_and(|fact| {
                             fact.body == source
                                 && !matches!(fact.origin, BodyRegionOrigin::UniversalAlias)
@@ -150,7 +150,7 @@ impl Checker<'_> {
             };
             let ports = interface.outputs.get_or_insert_with(|| {
                 Box::new(Ports {
-                    pairs: HashMap::new(),
+                    pairs: HashMap::default(),
                     parent,
                 })
             });

@@ -11,9 +11,14 @@ pub use super::builtins::{
     RangeImplementation as BuiltinRangeImplementation, Ranges as BuiltinRanges,
     SliceLength as LibrarySliceLength, Traits as BuiltinTraits,
 };
-use super::{names::NameId, package::ModuleId, unit::NodeKey};
+pub use super::table::BindingTable;
+use super::{
+    names::NameId,
+    package::ModuleId,
+    unit::{FileId, NodeKey},
+};
+use crate::support::hash::HashMap;
 use crate::syntax::ast::NodeId;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ScopeId(pub u32);
@@ -154,8 +159,6 @@ pub struct Scope {
     pub trait_access: Option<Access>,
     pub nominal_self: Option<DefId>,
     pub label_barrier: bool,
-    pub bindings: HashMap<(NameId, Namespace), Binding>,
-    pub order: Vec<(NameId, Namespace)>,
 }
 #[derive(Clone, Debug)]
 pub struct Import {
@@ -246,6 +249,88 @@ impl Introductions {
         false
     }
 }
+/// Lexical scopes introduced at syntax nodes. Each module's nodes live in its
+/// file, so one dense slot per file node answers ordinary queries; a file
+/// instantiated by several modules keeps the other modules' scopes sparse.
+#[derive(Default)]
+pub struct NodeScopes {
+    /// The file owning each module's nodes, recorded by its first insertion.
+    files: Vec<Option<FileId>>,
+    slots: Vec<Vec<NodeScope>>,
+    overflow: HashMap<(ModuleId, NodeId), ScopeId>,
+    /// Distinct keys in first-insertion order.
+    keys: Vec<(ModuleId, NodeId)>,
+}
+#[derive(Clone, Copy)]
+struct NodeScope {
+    module: ModuleId,
+    scope: ScopeId,
+}
+const VACANT: NodeScope = NodeScope {
+    module: ModuleId(u32::MAX),
+    scope: ScopeId(u32::MAX),
+};
+impl NodeScopes {
+    #[must_use]
+    pub fn get(&self, key: &(ModuleId, NodeId)) -> Option<&ScopeId> {
+        let (module, node) = *key;
+        if let Some(Some(file)) = self.files.get(module.0 as usize)
+            && let Some(slot) = self.slots[file.0 as usize].get(node.get() as usize)
+            && slot.module == module
+        {
+            return Some(&slot.scope);
+        }
+        if self.overflow.is_empty() {
+            return None;
+        }
+        self.overflow.get(key)
+    }
+    /// Record `scope` for a node of `module`, whose syntax belongs to `file`.
+    pub fn insert(&mut self, module: ModuleId, file: FileId, node: NodeId, scope: ScopeId) {
+        let index = module.0 as usize;
+        if index >= self.files.len() {
+            self.files.resize(index + 1, None);
+        }
+        let owner = *self.files[index].get_or_insert(file);
+        if file.0 as usize >= self.slots.len() {
+            self.slots.resize_with(file.0 as usize + 1, Vec::new);
+        }
+        let slots = &mut self.slots[file.0 as usize];
+        if owner == file {
+            if node.get() as usize >= slots.len() {
+                // Scopes spread over the whole file: grow geometrically.
+                slots.resize(
+                    (node.get() as usize + 1).next_power_of_two().max(64),
+                    VACANT,
+                );
+            }
+            let slot = &mut slots[node.get() as usize];
+            if slot.module == module {
+                slot.scope = scope;
+                return;
+            }
+            if slot.module == VACANT.module {
+                *slot = NodeScope { module, scope };
+                self.keys.push((module, node));
+                return;
+            }
+        }
+        if self.overflow.insert((module, node), scope).is_none() {
+            self.keys.push((module, node));
+        }
+    }
+    pub fn keys(&self) -> impl Iterator<Item = &(ModuleId, NodeId)> {
+        self.keys.iter()
+    }
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.keys.len()
+    }
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.keys.is_empty()
+    }
+}
 /// Associated binding names are canonical, while their member is selected from typed bounds.
 #[derive(Clone, Copy)]
 pub struct AssociatedBinding {
@@ -260,7 +345,7 @@ pub struct Resolution {
     pub crates: Option<Box<super::crates::Imported>>,
     /// Actual external-block ownership, retained through expansion by declaration identity.
     pub foreign_owners: HashMap<DefId, NodeKey>,
-    pub foreign_blocks: std::collections::HashSet<NodeKey>,
+    pub foreign_blocks: crate::support::hash::HashSet<NodeKey>,
     /// Unnameable `impl Trait` input parameters, grouped by their owning function.
     pub anonymous_parameters: HashMap<NodeKey, Vec<NodeKey>>,
     pub builtin_traits: BuiltinTraits,
@@ -282,6 +367,8 @@ pub struct Resolution {
     pub anonymous_types: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,
     pub scopes: Vec<Scope>,
+    /// Every scope's bindings, in one table keyed by scope, name and namespace.
+    pub bindings: BindingTable,
     pub definitions: Vec<Definition>,
     pub references: Vec<Reference>,
     pub associated_paths: HashMap<NodeKey, AssociatedPath>,
@@ -290,7 +377,7 @@ pub struct Resolution {
     pub method_calls: HashMap<NodeKey, MethodCall>,
     pub imports: Vec<Import>,
     pub module_scopes: Vec<ScopeId>,
-    pub node_scopes: HashMap<(ModuleId, NodeId), ScopeId>,
+    pub node_scopes: NodeScopes,
     pub item_definitions: HashMap<(ModuleId, NodeId, Namespace), DefId>,
     pub primitives: HashMap<NameId, DefId>,
     pub expansions: Vec<(ScopeId, NodeKey)>,

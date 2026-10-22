@@ -50,29 +50,21 @@ function @rg.17(%p0 : u8) -> u8 {
     %t10 = addr $s2
     copyobj 1x1 %t9, %t10
     %t11 = load u8 $s2
-    %t12 = convert zext i16 u8 %t11
-    %t13 = convert zext i16 u8 1
-    %t14 = binary add i16 %t12, %t13
-    %t15 = convert trunc u8 i16 %t14
-    %t16 = convert zext i16 u8 %t15
-    %t17 = cmp ne i16 %t14, %t16
-    branch %t17, ^b4, ^b5
+    %t12 = binary add u8 %t11, 1
+    %t13 = cmp ult u8 %t12, %t11
+    branch %t13, ^b4, ^b5
   block ^b5:
-    %t18 = addr $s5
-    call void @rg.16(%t18, %t15)
-    %t19 = addr $s5
-    %t20 = addr $s1
-    copyobj 1x1 %t19, %t20
-    %t21 = load u8 $s0
-    %t22 = convert zext i16 u8 %t21
-    %t23 = convert zext i16 u8 1
-    %t24 = binary sub i16 %t22, %t23
-    %t25 = convert trunc u8 i16 %t24
-    %t26 = convert zext i16 u8 %t25
-    %t27 = cmp ne i16 %t24, %t26
-    branch %t27, ^b4, ^b6
+    %t14 = addr $s5
+    call void @rg.16(%t14, %t12)
+    %t15 = addr $s5
+    %t16 = addr $s1
+    copyobj 1x1 %t15, %t16
+    %t17 = load u8 $s0
+    %t18 = binary sub u8 %t17, 1
+    %t19 = cmp ult u8 %t17, 1
+    branch %t19, ^b4, ^b6
   block ^b6:
-    store u8 %t25, $s0
+    store u8 %t18, $s0
     jump ^b1
   block ^b4:
     call void @abort()

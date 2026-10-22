@@ -6,17 +6,13 @@ function @rg.17() -> void {
     store u8 9, $s1
     %t0 = load u8 $s0
     %t1 = load u8 $s1
-    %t2 = convert zext i16 u8 %t0
-    %t3 = convert zext i16 u8 %t1
-    %t4 = binary add i16 %t2, %t3
-    %t5 = convert trunc u8 i16 %t4
-    %t6 = convert zext i16 u8 %t5
-    %t7 = cmp ne i16 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add u8 %t0, %t1
+    %t3 = cmp ult u8 %t2, %t0
+    branch %t3, ^b1, ^b2
   block ^b2:
-    %t8 = cmp eq u8 %t5, 16
-    %t9 = convert trunc i1 i64 %t8
-    call void @rg.16(%t9)
+    %t4 = cmp eq u8 %t2, 16
+    %t5 = convert trunc i1 i64 %t4
+    call void @rg.16(%t5)
     return void
   block ^b1:
     call void @abort()

@@ -117,7 +117,9 @@ pub(super) fn constants(facts: &Declarations, out: &mut impl Write) -> io::Resul
         write!(
             out,
             "constant-use source={}:{} definition={}",
-            key.file.0, key.node.0, instance.definition.0
+            key.file.0,
+            key.node.get(),
+            instance.definition.0
         )?;
         type_view::generic_arguments(&facts.types, instance.arguments, out)?;
         writeln!(out)?;
@@ -149,7 +151,10 @@ pub(super) fn normalized(facts: &Declarations, out: &mut impl Write) -> io::Resu
         writeln!(
             out,
             "normalized-node source={}:{} original={} result={}",
-            key.file.0, key.node.0, original.0, result.0
+            key.file.0,
+            key.node.get(),
+            original.0,
+            result.0
         )?;
     }
     let mut definitions: Vec<_> = facts.unreduced.definition_entries().collect();

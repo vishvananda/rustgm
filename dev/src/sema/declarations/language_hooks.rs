@@ -234,7 +234,7 @@ impl Checker<'_> {
         } = declaration;
         let mut header = Header {
             self_type: subject,
-            self_bounds: std::collections::HashSet::new(),
+            self_bounds: crate::support::hash::HashSet::default(),
             parameters,
             predicates: Vec::new(),
             results: bounds

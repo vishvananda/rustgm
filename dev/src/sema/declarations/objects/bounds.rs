@@ -1,12 +1,12 @@
 //! Preserve complete associated applications and one enclosing trait binder.
 use super::graph::{Graph, quantified_value};
 use super::{Bound, Checker, DefId, Error, NodeKey, Pending, Predicate, RegionId, Type, TypeId};
+use crate::support::hash::HashSet;
 use crate::types::{ItemId, arguments::Argument, dynamic, parameters::clauses::Clause, substitute};
 use crate::types::{
     parameters::clauses::{Comparison, Quantified},
     traits::Application,
 };
-use std::collections::HashSet;
 
 struct Equality {
     binding: dynamic::Binding,
@@ -186,7 +186,7 @@ impl Checker<'_> {
         queries: &mut crate::sema::dyn_compat::Queries,
     ) -> Result<(), Error> {
         let mut inputs = self.object_bound_inputs(source, ty, principal)?;
-        let mut required = HashSet::new();
+        let mut required = HashSet::default();
         let mut graph = Graph::new(inputs.root);
         while let Some(visit) = graph
             .next(&mut self.facts)
@@ -318,7 +318,7 @@ impl Checker<'_> {
             .dynamic_bindings(shape)
             .ok_or_else(|| self.error(source, "invalid object equalities"))?
             .to_vec();
-        let mut supplied = HashSet::new();
+        let mut supplied = HashSet::default();
         let mut start = value.principal_arguments as usize;
         for binding in bindings {
             let end = start + binding.arguments as usize;

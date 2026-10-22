@@ -3238,6 +3238,40 @@ candidates, not unrelated declarations. Lowering should be linear in emitted
 IR; fixed points must make monotonic progress in a bounded lattice/worklist.
 Any broader bound needs a documented semantic reason and adversarial tests.
 
+The [frontend performance series](https://github.com/vishvananda/rustgm/compare/907dcd0c...d43ca889)
+is the implementation precedent for subsequent work. Prefer removing repeated
+work and reducing retained representation before tuning individual instructions:
+
+- Intern names during the existing parse and pass their identities downstream.
+  Keep common syntax compact, including single-component paths and optional IDs.
+  Preserve Unicode and source-span behavior on byte-oriented lexer fast paths.
+- Build scope parents and bindings in the existing crate walk. Use shared flat
+  tables for lookup, with ordered records for observable declaration and import
+  order; hash iteration must not define output. Fast deterministic hashing gives
+  expected throughput, not a worst-case bound against colliding source keys.
+- Number inferred regions within their actual body numbering unit. Every lookup
+  retains its body identity; equal numeric IDs in unrelated units are not equal
+  lifetimes. Nested bodies sharing an inference graph share a unit, while exact
+  owner indexes avoid scanning a unit's unrelated allocation suffixes.
+- Compile reusable signature shapes once. Share only substitution-invariant
+  storage and CFG analysis across instances with the same template and promotion
+  structure. Keep ownership, initialization, destruction, region and loan checks
+  under each complete instance's own inputs and proof scope. Debug revalidation
+  checks the structural sharing premise; public validation remains available.
+- Reuse per-body recording and traversal buffers without retaining previous
+  bodies' semantic authority. Answer empty work queues before allocating their
+  continuation machinery. Box rare large diagnostics rather than inflating every
+  successful result; keep ordinary values and identities inline.
+
+For each such change, state the work removed, its cache or ownership boundary,
+and the input dimensions that could still multiply work. Test those dimensions
+independently and together, including cold, warm and invalidated states where
+applicable. Record compact record sizes and bounded work/storage counts as well
+as end-to-end measurements. Do not accept a faster common case as evidence that
+a quadratic path has been removed. A representation-only change preserves
+language outcomes; separately qualify semantic repairs such as arithmetic-width
+overflow checks before regenerating affected inspection references.
+
 Telemetry observes work already being done: bytes/tokens, retained token bytes,
 allocations or arena high water, solver goals, retries, region edges, demanded
 instances and phase time. Disabled instrumentation must not change semantics.

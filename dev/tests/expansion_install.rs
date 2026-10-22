@@ -72,7 +72,7 @@ fn install(unit: &mut Unit, original: &str, corrupt: bool) -> Result<(), String>
         configured.ast.nodes[0].span.end = u32::MAX;
     }
     unit.install_expansion(
-        NodeId(u32::try_from(index).map_err(|e| e.to_string())?),
+        NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?),
         &stream.source,
         configured,
         &stream.origins,
@@ -119,14 +119,15 @@ fn generated_configuration_and_literal_ownership_survive_installation() -> Resul
     let mut unit = Unit::parse(
         SourceFile::new(source.as_bytes().to_vec())?,
         &Config::default(),
+        &mut rustgm::support::names::Names::default(),
     )
     .map_err(|e| format!("{e:?}"))?;
     install(&mut unit, source, false)?;
     let owner = &unit.configured.owners[0];
     assert!(!owner.enabled);
-    assert!(!unit.configured.active[owner.node.0 as usize]);
+    assert!(!unit.configured.active[owner.node.get() as usize]);
     assert_eq!(
-        unit.owner_indices[owner.node.0 as usize].map(std::num::NonZeroU32::get),
+        unit.owner_indices[owner.node.get() as usize].map(std::num::NonZeroU32::get),
         Some(1)
     );
     let hidden = unit
@@ -161,6 +162,7 @@ fn failed_installation_restores_syntax_literals_and_source() -> Result<(), Strin
     let mut unit = Unit::parse(
         SourceFile::new(source.as_bytes().to_vec())?,
         &Config::default(),
+        &mut rustgm::support::names::Names::default(),
     )
     .map_err(|e| format!("{e:?}"))?;
     let nodes = unit.configured.ast.nodes.len();

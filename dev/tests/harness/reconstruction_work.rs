@@ -5,7 +5,7 @@ pub fn compare(
     suite: &str,
     input: impl Fn(bool, usize) -> String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut ordinary = std::collections::HashMap::new();
+    let mut ordinary = rustgm::support::hash::HashMap::default();
     let mut overhead = None;
     for raw in [false, true] {
         let mut previous = None;

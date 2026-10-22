@@ -11,15 +11,11 @@ function @rg.13(%p0 : i64, %p1 : i64) -> i64 {
     store i64 %p1, $s1
     %t0 = load i64 $s0
     %t1 = load i64 $s1
-    %t2 = convert zext i128 i64 %t0
-    %t3 = convert zext i128 i64 %t1
-    %t4 = binary add i128 %t2, %t3
-    %t5 = convert trunc i64 i128 %t4
-    %t6 = convert zext i128 i64 %t5
-    %t7 = cmp ne i128 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add i64 %t0, %t1
+    %t3 = cmp ult i64 %t2, %t0
+    branch %t3, ^b1, ^b2
   block ^b2:
-    return i64 %t5
+    return i64 %t2
   block ^b1:
     call void @abort()
     unreachable

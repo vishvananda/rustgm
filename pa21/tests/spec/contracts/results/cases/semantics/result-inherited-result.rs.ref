@@ -47,16 +47,16 @@ type 44 function-item def=26 signature=32 arguments=[type:12]
 type 45 reference mutable=false region=region:2 referent=11
 def 14 type=19 name="Self" source=0:2
 def 15 type=24 name="Out" source=0:1
-def 16 type=11 name="Self" source=0:18
-def 17 type=22 name="Out" source=0:17
-def 19 type=20 name="Self" source=0:34
-def 20 type=11 name="Self" source=0:41
-def 22 type=21 name="Self" source=0:46
-def 23 type=25 name="Item" source=0:45
-def 24 type=12 name="Self" source=0:57
-def 25 type=11 name="Item" source=0:56
-def 26 type=34 name="f" source=0:92
-def 27 type=37 name="main" source=0:116
+def 16 type=11 name="Self" source=0:13
+def 17 type=22 name="Out" source=0:12
+def 19 type=20 name="Self" source=0:25
+def 20 type=11 name="Self" source=0:28
+def 22 type=21 name="Self" source=0:32
+def 23 type=25 name="Item" source=0:31
+def 24 type=12 name="Self" source=0:37
+def 25 type=11 name="Item" source=0:36
+def 26 type=34 name="f" source=0:59
+def 27 type=37 name="main" source=0:78
 def 28 type=2 name="bool"
 def 29 type=3 name="char"
 def 30 type=4 name="str"
@@ -74,15 +74,15 @@ def 41 type=15 name="u128"
 def 42 type=16 name="usize"
 def 43 type=17 name="f32"
 def 44 type=18 name="f64"
-def 49 type=26 name="T" source=0:62
-def 50 type=22 name="x" source=0:65
-def 51 type=11 name="n" source=0:95
+def 49 type=26 name="T" source=0:41
+def 50 type=22 name="x" source=0:42
+def 51 type=11 name="n" source=0:60
 associated-owner 0 kind=trait self-def=14 self=19 source=0:2 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:18 unsafe=false
-associated-owner 2 kind=trait self-def=19 self=20 source=0:34 trait=18 unsafe=false name="Mid"
-associated-owner 3 kind=trait-impl self-def=20 self=11 source=0:41 unsafe=false
-associated-owner 4 kind=trait self-def=22 self=21 source=0:46 trait=21 unsafe=false name="Family"
-associated-owner 5 kind=trait-impl self-def=24 self=12 source=0:57 unsafe=false
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:13 unsafe=false
+associated-owner 2 kind=trait self-def=19 self=20 source=0:25 trait=18 unsafe=false name="Mid"
+associated-owner 3 kind=trait-impl self-def=20 self=11 source=0:28 unsafe=false
+associated-owner 4 kind=trait self-def=22 self=21 source=0:32 trait=21 unsafe=false name="Family"
+associated-owner 5 kind=trait-impl self-def=24 self=12 source=0:37 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
 associated-member def=23 owner=4
@@ -93,23 +93,23 @@ parameter owner=19 binding=19 argument=type:20 default=-
 parameter owner=22 binding=22 argument=type:21 default=-
 parameter owner=26 binding=49 argument=type:26 default=-
 predicate owner=13 source=0:2 subject=19 bound=trait:13 arguments=[region:bound:0:0]
-predicate owner=18 source=0:33 forall=0
-predicate owner=18 source=0:34 subject=20 bound=trait:18 arguments=[]
-predicate owner=18 source=0:30 forall=1
-predicate owner=21 source=0:46 subject=21 bound=trait:21 arguments=[]
-predicate owner=23 source=0:44 subject=25 bound=trait:18 arguments=[]
-predicate owner=23 source=0:44 forall=2
-predicate owner=23 source=0:44 forall=3
-predicate owner=26 source=0:61 subject=26 bound=trait:21 arguments=[]
-impl owner=16 source=0:18 subject=11 bound=trait:13 arguments=[region:bound:0:0]
+predicate owner=18 source=0:24 forall=0
+predicate owner=18 source=0:25 subject=20 bound=trait:18 arguments=[]
+predicate owner=18 source=0:21 forall=1
+predicate owner=21 source=0:32 subject=21 bound=trait:21 arguments=[]
+predicate owner=23 source=0:30 subject=25 bound=trait:18 arguments=[]
+predicate owner=23 source=0:30 forall=2
+predicate owner=23 source=0:30 forall=3
+predicate owner=26 source=0:40 subject=26 bound=trait:21 arguments=[]
+impl owner=16 source=0:13 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=16 declaration=15 definition=17
-impl owner=20 source=0:41 subject=11 bound=trait:18 arguments=[]
-impl owner=24 source=0:57 subject=12 bound=trait:21 arguments=[]
+impl owner=20 source=0:28 subject=11 bound=trait:18 arguments=[]
+impl owner=24 source=0:37 subject=12 bound=trait:21 arguments=[]
 impl-type owner=24 declaration=23 definition=25
-implementation-use source=0:103 owner=24 arguments=[]
-region-var region:1 body=0:115 source=0:107 origin=call-argument pending
-region-var region:2 body=0:115 source=0:106 origin=expression-borrow pending
-region-coercion body=0:115 source=0:106 actual=45 expected=40 kind=same-shape pending
+implementation-use source=0:66 owner=24 arguments=[]
+region-var region:1 body=0:77 source=0:69 origin=call-argument pending
+region-var region:2 body=0:77 source=0:68 origin=expression-borrow pending
+region-coercion body=0:77 source=0:68 actual=45 expected=40 kind=same-shape pending
 associated-type def=15 type=24
 result-contract def=15 projection=24
 result-bound def=15 index=0 subject=24 bound=sized
@@ -119,11 +119,9 @@ result-contract def=23 projection=25
 result-bound def=23 index=0 subject=25 bound=sized
 result-bound def=23 index=1 subject=25 bound=trait:18 arguments=[]
 associated-type def=25 type=11
-normalized-node source=0:79 original=27 result=27
-normalized-node source=0:80 original=27 result=27
-normalized-node source=0:87 original=28 result=22
-normalized-node source=0:88 original=28 result=22
-normalized-node source=0:92 original=35 result=34
+normalized-node source=0:50 original=27 result=27
+normalized-node source=0:56 original=28 result=22
+normalized-node source=0:59 original=35 result=34
 quantifier 0 regions=1 subject=20 bound=trait:13 arguments=[region:bound:0:0]
 quantifier 1 regions=1 subject=23 bound=projection-equal:22
 quantifier 2 regions=1 subject=25 bound=trait:13 arguments=[region:bound:0:0]
@@ -132,4 +130,4 @@ quantifier 4 regions=1 subject=27 bound=trait:13 arguments=[region:bound:0:0]
 quantifier 5 regions=1 subject=28 bound=projection-equal:22
 quantifier 6 regions=1 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 quantifier 7 regions=1 subject=38 bound=projection-equal:22
-eof owners=6 members=4 parameters=5 predicates=9 impls=3 calls=0 paths=0 impl-uses=1 type-members=4 constant-members=0 result-contracts=2 result-bounds=3 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=5 normalized-definitions=0 quantifiers=8 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0
+eof owners=6 members=4 parameters=5 predicates=9 impls=3 calls=0 paths=0 impl-uses=1 type-members=4 constant-members=0 result-contracts=2 result-bounds=3 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0 quantifiers=8 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

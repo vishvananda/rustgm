@@ -203,7 +203,7 @@ impl super::super::comparisons::LibraryContracts<'_> {
             mutable: None,
             canonical,
             originals,
-            prefixes: std::collections::HashMap::new(),
+            prefixes: crate::support::hash::HashMap::default(),
         };
         self.facts
             .iteration

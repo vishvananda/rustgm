@@ -1,5 +1,5 @@
 ownership-crate 1
-body 0 source=0:21
+body 0 source=0:11
   path m0 type=19 root=l0 subtree=0..1
   path m1 type=22 root=l1 subtree=1..2
   path m2 type=23 root=l2 subtree=2..3

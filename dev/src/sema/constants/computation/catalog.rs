@@ -1,11 +1,11 @@
 //! Compiler-local handles retain caller/result identity, never a proof graph or permit.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::{inline_constants::InlineInstance, values::Instance},
     types::TypeId,
 };
 use std::{
-    collections::HashMap,
     num::NonZeroU32,
     sync::atomic::{AtomicU32, Ordering},
 };
@@ -133,10 +133,10 @@ impl Catalog {
         Ok(Self {
             epoch,
             callers: Vec::new(),
-            caller_indices: HashMap::new(),
-            originals: HashMap::new(),
+            caller_indices: HashMap::default(),
+            originals: HashMap::default(),
             uses: Vec::new(),
-            use_indices: HashMap::new(),
+            use_indices: HashMap::default(),
             bytes: size_of::<Self>(),
             namespaces: None,
         })

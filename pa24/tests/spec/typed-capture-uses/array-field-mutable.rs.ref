@@ -54,15 +54,11 @@ function @rg.closure.0(%p0 : ptr) -> void {
     %t3 = binary mul i64 0, 1
     %t4 = index u8 %t1, %t3
     %t5 = load u8 %t4
-    %t6 = convert zext i16 u8 %t5
-    %t7 = convert zext i16 u8 1
-    %t8 = binary add i16 %t6, %t7
-    %t9 = convert trunc u8 i16 %t8
-    %t10 = convert zext i16 u8 %t9
-    %t11 = cmp ne i16 %t8, %t10
-    branch %t11, ^b1, ^b3
+    %t6 = binary add u8 %t5, 1
+    %t7 = cmp ult u8 %t6, %t5
+    branch %t7, ^b1, ^b3
   block ^b3:
-    store u8 %t9, %t4
+    store u8 %t6, %t4
     return void
   block ^b1:
     call void @abort()

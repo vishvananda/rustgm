@@ -99,7 +99,10 @@ pub fn check_templates(
     contracts: &Contracts<'_>,
     templates: &crate::body::templates::Templates,
 ) -> Result<Analysis, Error> {
-    let mut index = std::collections::HashMap::with_capacity(contracts.bodies.len());
+    let mut index = crate::support::hash::HashMap::with_capacity_and_hasher(
+        contracts.bodies.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for input in &contracts.bodies {
         if index.insert(input.key, input).is_some() {
             return Err(Error {
@@ -232,7 +235,7 @@ fn run(
             message: "specialized bodies require ordered instance contracts".into(),
         });
     }
-    let cfgs: std::collections::HashMap<_, _> = program
+    let cfgs: crate::support::hash::HashMap<_, _> = program
         .into_iter()
         .flat_map(|p| &p.bodies)
         .map(|b| (b.key(), b))

@@ -1,12 +1,10 @@
 //! Resumable declaration bodies retain only their own slots, independent of crate size.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::unit::{FileId, NodeKey},
     types::infer::TermId,
 };
-use std::{
-    collections::HashMap,
-    ops::{Index, IndexMut},
-};
+use std::ops::{Index, IndexMut};
 
 pub(super) enum Terms {
     Dense(Vec<Vec<Option<TermId>>>),
@@ -25,7 +23,7 @@ impl Terms {
         }
     }
     pub fn sparse() -> Self {
-        Self::Sparse(HashMap::new())
+        Self::Sparse(HashMap::default())
     }
     /// Keep the suspended owner's entries, without scanning unrelated file slots.
     pub fn retain_sparse(&mut self, keys: impl Iterator<Item = NodeKey>) {
@@ -48,19 +46,19 @@ impl Terms {
     }
     pub fn get(&self, key: NodeKey) -> Option<TermId> {
         match self {
-            Self::Dense(files) => files[key.file.0 as usize][key.node.0 as usize],
+            Self::Dense(files) => files[key.file.0 as usize][key.node.get() as usize],
             Self::Sparse(values) => values.get(&key).copied(),
         }
     }
     pub fn insert(&mut self, key: NodeKey, term: TermId) -> Option<TermId> {
         match self {
-            Self::Dense(files) => files[key.file.0 as usize][key.node.0 as usize].replace(term),
+            Self::Dense(files) => files[key.file.0 as usize][key.node.get() as usize].replace(term),
             Self::Sparse(values) => values.insert(key, term),
         }
     }
     pub fn remove(&mut self, key: NodeKey) {
         match self {
-            Self::Dense(files) => files[key.file.0 as usize][key.node.0 as usize] = None,
+            Self::Dense(files) => files[key.file.0 as usize][key.node.get() as usize] = None,
             Self::Sparse(values) => {
                 values.remove(&key);
             }
@@ -93,7 +91,7 @@ impl<T: Default + Copy> Slots<T> {
     }
     pub fn sparse() -> Self {
         Self {
-            storage: Storage::Sparse(HashMap::new()),
+            storage: Storage::Sparse(HashMap::default()),
             empty: T::default(),
         }
     }
@@ -148,7 +146,7 @@ mod tests {
                 let file = FileId(100_000 + index);
                 let key = NodeKey {
                     file,
-                    node: NodeId(10_000_000 + index),
+                    node: NodeId::new(10_000_000 + index),
                 };
                 let mut terms = Terms::sparse();
                 terms.files(1_000_000);

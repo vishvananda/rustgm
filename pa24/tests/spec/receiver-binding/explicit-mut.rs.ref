@@ -53,15 +53,11 @@ function @rg.closure.0(%p0 : ptr) -> void {
     store ptr %t2, $s0
     %t3 = load ptr $s0
     %t4 = load u8 %t3
-    %t5 = convert zext i16 u8 %t4
-    %t6 = convert zext i16 u8 1
-    %t7 = binary add i16 %t5, %t6
-    %t8 = convert trunc u8 i16 %t7
-    %t9 = convert zext i16 u8 %t8
-    %t10 = cmp ne i16 %t7, %t9
-    branch %t10, ^b1, ^b2
+    %t5 = binary add u8 %t4, 1
+    %t6 = cmp ult u8 %t5, %t4
+    branch %t6, ^b1, ^b2
   block ^b2:
-    store u8 %t8, %t3
+    store u8 %t5, %t3
     return void
   block ^b1:
     call void @abort()

@@ -1,34 +1,34 @@
 name 0 "crate"
-name 1 "outer"
-name 2 "inner"
-name 3 "bool"
-name 4 "char"
-name 5 "str"
-name 6 "i8"
-name 7 "i16"
-name 8 "i32"
-name 9 "i64"
-name 10 "i128"
-name 11 "isize"
-name 12 "u8"
-name 13 "u16"
-name 14 "u32"
-name 15 "u64"
-name 16 "u128"
-name 17 "usize"
-name 18 "f32"
-name 19 "f64"
-name 20 "S"
-name 21 "super"
-name 22 "A"
-name 23 "Self"
-name 24 "get"
-name 25 "call"
-name 26 "main"
-name 27 "self"
+name 1 "super"
+name 2 "self"
+name 3 "u8"
+name 4 "A"
+name 5 "S"
+name 6 "inner"
+name 7 "get"
+name 8 "outer"
+name 9 "call"
+name 10 "bool"
+name 11 "char"
+name 12 "str"
+name 13 "i8"
+name 14 "i16"
+name 15 "i32"
+name 16 "i64"
+name 17 "i128"
+name 18 "isize"
+name 19 "u16"
+name 20 "u32"
+name 21 "u64"
+name 22 "u128"
+name 23 "usize"
+name 24 "f32"
+name 25 "f64"
+name 26 "Self"
+name 27 "main"
 module 0 name=0 file=0 scope=0 parent=root
-module 1 name=1 file=0 scope=1 parent=0
-module 2 name=2 file=0 scope=2 parent=1
+module 1 name=8 file=0 scope=1 parent=0
+module 2 name=6 file=0 scope=2 parent=1
 scope 0 module=0 barrier=true parent=root
 scope 1 module=1 barrier=true parent=root
 scope 2 module=2 barrier=true parent=root
@@ -41,49 +41,49 @@ scope 8 module=1 barrier=true parent=1
 scope 9 module=1 barrier=false parent=8
 scope 10 module=0 barrier=true parent=0
 scope 11 module=0 barrier=false parent=10
-def 0 type primitive name=3 scope=0 access=public
-def 1 type primitive name=4 scope=0 access=public
-def 2 type primitive name=5 scope=0 access=public
-def 3 type primitive name=6 scope=0 access=public
-def 4 type primitive name=7 scope=0 access=public
-def 5 type primitive name=8 scope=0 access=public
-def 6 type primitive name=9 scope=0 access=public
-def 7 type primitive name=10 scope=0 access=public
-def 8 type primitive name=11 scope=0 access=public
-def 9 type primitive name=12 scope=0 access=public
-def 10 type primitive name=13 scope=0 access=public
-def 11 type primitive name=14 scope=0 access=public
-def 12 type primitive name=15 scope=0 access=public
-def 13 type primitive name=16 scope=0 access=public
-def 14 type primitive name=17 scope=0 access=public
-def 15 type primitive name=18 scope=0 access=public
-def 16 type primitive name=19 scope=0 access=public
-def 17 type module name=1 scope=0 access=module:0 source=0:36 members=1
-def 18 type module name=2 scope=1 access=module:1 source=0:22 members=2
-def 19 type struct name=20 scope=2 access=public source=0:0 members=3
-def 20 value constructor name=20 scope=2 access=public source=0:0
-def 21 type trait name=22 scope=2 access=module:1 source=0:14 members=4
-def 22 type self-type name=23 scope=4 access=module:2 source=0:14 members=4
-def 23 value function name=24 scope=4 access=module:1 source=0:13
-def 24 type self-type name=23 scope=7 access=module:2 source=0:21 members=7
-def 25 value function name=25 scope=1 access=public source=0:35
-def 26 value function name=26 scope=0 access=module:0 source=0:43
-def 27 value parameter name=27 scope=5 access=module:2 source=0:5
-binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=26 def=26 Direct ambiguous=false access=module:0
-binding scope=1 type name=2 def=18 Direct ambiguous=false access=module:1
-binding scope=1 value name=25 def=25 Direct ambiguous=false access=public
-binding scope=2 type name=20 def=19 Direct ambiguous=false access=public
-binding scope=2 value name=20 def=20 Direct ambiguous=false access=public
-binding scope=2 type name=22 def=21 Direct ambiguous=false access=module:1
-binding scope=4 type name=23 def=22 Direct ambiguous=false access=module:2
-binding scope=4 value name=24 def=23 Direct ambiguous=false access=module:1
-binding scope=5 value name=27 def=27 Direct ambiguous=false access=module:2
-binding scope=7 type name=23 def=24 Direct ambiguous=false access=module:2
-ref 0:39 scope=11 value def=25
-ref 0:27 scope=9 value def=23
-ref 0:30 scope=9 value def=20
-ref 0:9 scope=5 type def=9
-ref 0:16 scope=7 type def=21
-ref 0:19 scope=7 type def=19
+def 0 type primitive name=10 scope=0 access=public
+def 1 type primitive name=11 scope=0 access=public
+def 2 type primitive name=12 scope=0 access=public
+def 3 type primitive name=13 scope=0 access=public
+def 4 type primitive name=14 scope=0 access=public
+def 5 type primitive name=15 scope=0 access=public
+def 6 type primitive name=16 scope=0 access=public
+def 7 type primitive name=17 scope=0 access=public
+def 8 type primitive name=18 scope=0 access=public
+def 9 type primitive name=3 scope=0 access=public
+def 10 type primitive name=19 scope=0 access=public
+def 11 type primitive name=20 scope=0 access=public
+def 12 type primitive name=21 scope=0 access=public
+def 13 type primitive name=22 scope=0 access=public
+def 14 type primitive name=23 scope=0 access=public
+def 15 type primitive name=24 scope=0 access=public
+def 16 type primitive name=25 scope=0 access=public
+def 17 type module name=8 scope=0 access=module:0 source=0:27 members=1
+def 18 type module name=6 scope=1 access=module:1 source=0:13 members=2
+def 19 type struct name=5 scope=2 access=public source=0:0 members=3
+def 20 value constructor name=5 scope=2 access=public source=0:0
+def 21 type trait name=4 scope=2 access=module:1 source=0:9 members=4
+def 22 type self-type name=26 scope=4 access=module:2 source=0:9 members=4
+def 23 value function name=7 scope=4 access=module:1 source=0:8
+def 24 type self-type name=26 scope=7 access=module:2 source=0:12 members=7
+def 25 value function name=9 scope=1 access=public source=0:26
+def 26 value function name=27 scope=0 access=module:0 source=0:34
+def 27 value parameter name=2 scope=5 access=module:2 source=0:2
+binding scope=0 type name=8 def=17 Direct ambiguous=false access=module:0
+binding scope=0 value name=27 def=26 Direct ambiguous=false access=module:0
+binding scope=1 type name=6 def=18 Direct ambiguous=false access=module:1
+binding scope=1 value name=9 def=25 Direct ambiguous=false access=public
+binding scope=2 type name=5 def=19 Direct ambiguous=false access=public
+binding scope=2 value name=5 def=20 Direct ambiguous=false access=public
+binding scope=2 type name=4 def=21 Direct ambiguous=false access=module:1
+binding scope=4 type name=26 def=22 Direct ambiguous=false access=module:2
+binding scope=4 value name=7 def=23 Direct ambiguous=false access=module:1
+binding scope=5 value name=2 def=27 Direct ambiguous=false access=module:2
+binding scope=7 type name=26 def=24 Direct ambiguous=false access=module:2
+ref 0:30 scope=11 value def=25
+ref 0:18 scope=9 value def=23
+ref 0:21 scope=9 value def=20
+ref 0:5 scope=5 type def=9
+ref 0:10 scope=7 type def=21
+ref 0:11 scope=7 type def=19
 eof files=1 modules=3 definitions=28 references=6

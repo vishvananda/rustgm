@@ -1,10 +1,10 @@
 ownership-crate 1
-body 0 source=0:13
+body 0 source=0:7
   use v0 copy
   use v1 copy
   block b0 reachable=true
 end-body
-body 1 source=0:3
+body 1 source=0:1
   block b0 reachable=true
 end-body
 eof bodies=2 paths=0 copies=2 moves=0

@@ -20,85 +20,85 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=14 source=0:39
-  local l0 type=2 binding def=31 mutable=false storage-parent=- source=5
-  local l1 type=2 binding def=32 mutable=false storage-parent=l0 source=10
-  local l2 type=2 merge mutable=true storage-parent=l1 source=33
-  local l3 type=2 merge mutable=true storage-parent=l2 source=21
-  local l4 type=2 merge mutable=true storage-parent=l3 source=19
-  local l5 type=2 merge mutable=true storage-parent=l2 source=31
-  local l6 type=2 merge mutable=true storage-parent=l5 source=29
+body 0 function def=13 signature=19 result=14 source=0:25
+  local l0 type=2 binding def=31 mutable=false storage-parent=- source=1
+  local l1 type=2 binding def=32 mutable=false storage-parent=l0 source=4
+  local l2 type=2 merge mutable=true storage-parent=l1 source=21
+  local l3 type=2 merge mutable=true storage-parent=l2 source=12
+  local l4 type=2 merge mutable=true storage-parent=l3 source=10
+  local l5 type=2 merge mutable=true storage-parent=l2 source=19
+  local l6 type=2 merge mutable=true storage-parent=l5 source=17
   block b0:
-    v0 type=2 = bool false source=6
-    live l0 source=5
-    store l0 v0 source=7
-    v1 type=1 = unit source=7
-    v2 type=2 = bool true source=11
-    live l1 source=10
-    store l1 v2 source=12
-    v3 type=1 = unit source=12
-    live l2 source=33
-    live l3 source=21
-    v4 type=2 = read l0 source=14
-    branch v4 b4 b5 source=21
+    v0 type=2 = bool false source=2
+    live l0 source=1
+    store l0 v0 source=3
+    v1 type=1 = unit source=3
+    v2 type=2 = bool true source=5
+    live l1 source=4
+    store l1 v2 source=6
+    v3 type=1 = unit source=6
+    live l2 source=21
+    live l3 source=12
+    v4 type=2 = read l0 source=7
+    branch v4 b4 b5 source=12
   block b1:
-    store l2 v8 source=33
-    jump b3 source=33
+    store l2 v8 source=21
+    jump b3 source=21
   block b2:
-    live l5 source=31
-    v9 type=2 = read l1 source=24
-    branch v9 b10 b11 source=31
+    live l5 source=19
+    v9 type=2 = read l1 source=14
+    branch v9 b10 b11 source=19
   block b3:
-    v14 type=2 = read l2 source=33
-    v15 type=14 = cast BoolToInteger v14 source=38
-    end-storage first=l0 last=l2 source=39
-    return v15 source=39
+    v14 type=2 = read l2 source=21
+    v15 type=14 = cast BoolToInteger v14 source=24
+    end-storage first=l0 last=l2 source=25
+    return v15 source=25
   block b4:
-    live l4 source=19
-    v5 type=2 = read l1 source=16
-    branch v5 b7 b8 source=19
+    live l4 source=10
+    v5 type=2 = read l1 source=8
+    branch v5 b7 b8 source=10
   block b5:
-    store l3 v4 source=21
-    jump b6 source=21
+    store l3 v4 source=12
+    jump b6 source=12
   block b6:
-    v8 type=2 = read l3 source=21
-    dead l3 source=33
-    branch v8 b1 b2 source=33
+    v8 type=2 = read l3 source=12
+    dead l3 source=21
+    branch v8 b1 b2 source=21
   block b7:
-    store l4 v5 source=19
-    jump b9 source=19
+    store l4 v5 source=10
+    jump b9 source=10
   block b8:
-    v6 type=2 = read l0 source=18
-    store l4 v6 source=19
-    jump b9 source=19
+    v6 type=2 = read l0 source=9
+    store l4 v6 source=10
+    jump b9 source=10
   block b9:
-    v7 type=2 = read l4 source=19
-    store l3 v7 source=21
-    dead l4 source=21
-    jump b6 source=21
+    v7 type=2 = read l4 source=10
+    store l3 v7 source=12
+    dead l4 source=12
+    jump b6 source=12
   block b10:
-    live l6 source=29
-    v10 type=2 = read l0 source=26
-    branch v10 b13 b14 source=29
+    live l6 source=17
+    v10 type=2 = read l0 source=15
+    branch v10 b13 b14 source=17
   block b11:
-    store l5 v9 source=31
-    jump b12 source=31
+    store l5 v9 source=19
+    jump b12 source=19
   block b12:
-    v13 type=2 = read l5 source=31
-    store l2 v13 source=33
-    dead l5 source=33
-    jump b3 source=33
+    v13 type=2 = read l5 source=19
+    store l2 v13 source=21
+    dead l5 source=21
+    jump b3 source=21
   block b13:
-    store l6 v10 source=29
-    jump b15 source=29
+    store l6 v10 source=17
+    jump b15 source=17
   block b14:
-    v11 type=2 = read l1 source=28
-    store l6 v11 source=29
-    jump b15 source=29
+    v11 type=2 = read l1 source=16
+    store l6 v11 source=17
+    jump b15 source=17
   block b15:
-    v12 type=2 = read l6 source=29
-    store l5 v12 source=31
-    dead l6 source=31
-    jump b12 source=31
+    v12 type=2 = read l6 source=17
+    store l5 v12 source=19
+    dead l6 source=19
+    jump b12 source=19
 end-body
 eof bodies=1 locals=7 values=16 statements=40 blocks=16

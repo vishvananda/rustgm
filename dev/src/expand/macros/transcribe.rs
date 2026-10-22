@@ -6,12 +6,12 @@ use super::{
     matcher::Matched,
     model::{Definition, Kind, List, Repetition, Rule, VariableId},
 };
+use crate::support::hash::HashMap;
 use crate::{
     lex::token::{Kind as TokenKind, LexError, Token},
     support::names::NameId,
     syntax::token_tree::{Span, error},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Origin {
@@ -61,7 +61,7 @@ pub fn transcribe(
         .rules
         .get(matched.rule)
         .ok_or_else(|| error(0, "invalid matched macro rule"))?;
-    let mut variables = HashMap::new();
+    let mut variables = HashMap::default();
     for (index, variable) in rule.variables.iter().enumerate() {
         variables.insert(
             variable.name,

@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::{
     body,
     borrow::ownership,
@@ -14,7 +15,7 @@ use rustgm::{
         copy::{Copies, Properties},
     },
 };
-use std::{collections::HashMap, path::Path, process::Command};
+use std::{path::Path, process::Command};
 
 struct NoFiles;
 impl Sources for NoFiles {
@@ -280,7 +281,7 @@ fn copy_queries_are_iterative_cached_and_independent_of_pointer_referents()
     }
     let mut copies = Copies::default();
     let definitions = Definitions::default();
-    let derives = HashMap::new();
+    let derives = HashMap::default();
     assert_eq!(
         copies.demand(&types, &definitions, &derives, ty)?,
         Properties {
@@ -361,7 +362,7 @@ fn failed_copy_dependencies_are_cached_without_poisoning_independent_queries()
             discriminant: 0,
         }],
     )?;
-    let derives = HashMap::from([(
+    let derives = HashMap::from_iter([(
         item,
         Properties {
             copy: true,

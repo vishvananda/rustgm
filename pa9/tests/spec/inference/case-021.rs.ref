@@ -20,7 +20,7 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=18 unsafe=false
 type 20 function-item def=13 signature=19
-def 13 type=20 name="f" source=0:5
+def 13 type=20 name="f" source=0:3
 def 14 type=2 name="bool"
 def 15 type=3 name="char"
 def 16 type=4 name="str"
@@ -38,11 +38,10 @@ def 27 type=15 name="u128"
 def 28 type=16 name="usize"
 def 29 type=17 name="f32"
 def 30 type=18 name="f64"
-function def=13 source=0:5 signature=19 body=0:4
-node 0:1 type=18 span=8:11
-node 0:2 type=18 span=8:11
-node 0:3 type=18 span=12:17
-scalar 0:3 f64 bits=0x54b249ad2594c37d
-node 0:4 type=18 span=11:18
-node 0:5 type=20 span=0:18
-eof types=21 definitions=18 nodes=5 functions=1 initializers=0
+function def=13 source=0:3 signature=19 body=0:2
+node 0:0 type=18 span=8:11
+node 0:1 type=18 span=12:17
+scalar 0:1 f64 bits=0x54b249ad2594c37d
+node 0:2 type=18 span=11:18
+node 0:3 type=20 span=0:18
+eof types=21 definitions=18 nodes=4 functions=1 initializers=0

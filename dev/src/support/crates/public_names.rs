@@ -3,7 +3,7 @@ pub(super) mod exposure;
 use super::{
     ExternalDef, ExternalKind, Interface, MAX_COMPONENTS, MAX_FUNCTIONS, MAX_NAME_BYTES, Namespace,
 };
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PublicBinding {
@@ -123,7 +123,7 @@ impl PublicNames {
             .collect();
         let definitions: HashSet<_> = owned_public_definitions(interface).collect();
         let dependencies: HashSet<_> = interface.dependencies().iter().collect();
-        let mut exposed = HashSet::new();
+        let mut exposed = HashSet::default();
         let mut reached = vec![false; self.modules.len()];
         reached[0] = true;
         let mut pending = vec![0];

@@ -2,13 +2,13 @@
 mod arrays;
 pub use arrays::Segment;
 mod views;
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{
         Action, Body, LocalId, LocalKind, Place, ProjectionKind, Rvalue, Selection, ValueId,
     },
     types::{Kind, Store, TypeId},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PathId(pub u32);
@@ -95,13 +95,39 @@ impl PlaceInfo {
         }
     }
 }
+/// Move paths of materialized temporaries, dense by value identity. Bodies
+/// without temporary places allocate nothing.
+#[derive(Default)]
+pub(super) struct TemporaryPaths {
+    slots: Vec<u32>,
+}
+const NO_PATH: u32 = u32::MAX;
+impl TemporaryPaths {
+    pub(super) fn get(&self, value: ValueId) -> Option<PathId> {
+        self.slots
+            .get(value.0 as usize)
+            .copied()
+            .filter(|&path| path != NO_PATH)
+            .map(PathId)
+    }
+    fn insert(&mut self, values: usize, value: ValueId, path: PathId) {
+        if self.slots.is_empty() {
+            self.slots = vec![NO_PATH; values];
+        }
+        let index = value.0 as usize;
+        if index >= self.slots.len() {
+            self.slots.resize(index + 1, NO_PATH);
+        }
+        self.slots[index] = path.0;
+    }
+}
 pub struct Paths {
-    mutable_statics: Option<std::sync::Arc<std::collections::HashSet<crate::body::ir::DefId>>>,
+    mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<crate::body::ir::DefId>>>,
     partitions: Option<Box<arrays::Partitions>>,
     pub entries: Vec<Path>,
     pub bits: u32,
     pub(super) projections: Vec<PlaceInfo>,
-    pub(super) temporaries: HashMap<ValueId, PathId>,
+    pub(super) temporaries: TemporaryPaths,
     pub(super) views: HashMap<LocalId, Vec<PlaceInfo>>,
     pub(super) guard_places: Vec<Vec<PlaceInfo>>,
 }
@@ -114,18 +140,21 @@ impl Paths {
         let mut paths = Self {
             mutable_statics: body.mutable_statics.clone(),
             partitions: None,
-            entries: Vec::new(),
+            entries: Vec::with_capacity(body.locals.len() + body.projections.len()),
             bits: 0,
-            projections: Vec::new(),
-            temporaries: HashMap::new(),
-            views: HashMap::new(),
+            projections: Vec::with_capacity(body.projections.len()),
+            temporaries: TemporaryPaths::default(),
+            views: HashMap::default(),
             guard_places: Vec::new(),
         };
         for (index, local) in body.locals.iter().enumerate() {
             let id = LocalId(u32::try_from(index).map_err(|_| "too many move locals")?);
             paths.insert(Root::Local(id), None, None, local.ty)?;
         }
-        let mut fields = HashMap::new();
+        let mut fields = HashMap::with_capacity_and_hasher(
+            body.projections.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         let mut arrays = arrays::Arrays::default();
         for projection in &body.projections {
             let info = paths.project(body, types, projection, &mut fields, &mut arrays)?;
@@ -170,7 +199,7 @@ impl Paths {
     /// A materialized place or destructible rvalue retained by this analysis.
     #[must_use]
     pub fn temporary_path(&self, value: ValueId) -> Option<PathId> {
-        self.temporaries.get(&value).copied()
+        self.temporaries.get(value)
     }
     /// Sparse element/gap intervals retained by initialization analysis.
     #[must_use]
@@ -239,14 +268,14 @@ impl Paths {
         Ok(info)
     }
     fn temporary(&mut self, body: &Body, value: ValueId) -> Result<(), &'static str> {
-        if !self.temporaries.contains_key(&value) {
+        if self.temporaries.get(value).is_none() {
             let ty = body
                 .values
                 .get(value.0 as usize)
                 .ok_or("invalid temporary place")?
                 .ty;
             let id = self.insert(Root::Temporary(value), None, None, ty)?;
-            self.temporaries.insert(value, id);
+            self.temporaries.insert(body.values.len(), value, id);
         }
         Ok(())
     }
@@ -365,9 +394,8 @@ impl Paths {
         let path = match place {
             Place::Local(id) => Some(PathId(id.0)),
             Place::Temporary(id) => Some(
-                *self
-                    .temporaries
-                    .get(&id)
+                self.temporaries
+                    .get(id)
                     .ok_or("missing temporary move path")?,
             ),
             Place::Projection(id) => {

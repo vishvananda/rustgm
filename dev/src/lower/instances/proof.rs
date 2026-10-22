@@ -25,7 +25,7 @@ pub(super) struct Builder {
     dependencies: Dependencies,
     adapters: bool,
     original_regions:
-        Option<std::collections::HashMap<crate::body::ir::BodyKey, borrow::regions::Body>>,
+        Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, borrow::regions::Body>>,
 }
 enum Original<'a> {
     Ordinary,
@@ -35,6 +35,12 @@ enum Original<'a> {
 impl Builder {
     pub(super) fn new(mut program: Program) -> Result<(Self, Vec<Body>), &'static str> {
         let ordinary = std::mem::take(&mut program.bodies);
+        // Whole-program region tables exist only for body inspection views;
+        // proofs and lowering read the per-body contracts instead.
+        program.region_equalities = Vec::new();
+        program.coercions = Vec::new();
+        program.outlives = Vec::new();
+        program.body_regions = Vec::new();
         let methods = program.drops.as_ref().map(|d| d.methods.as_slice());
         let recipes = methods.map(glue::Cache::new).transpose()?;
         let verifier = incremental::Verifier::new(methods)?;
@@ -64,7 +70,7 @@ impl Builder {
     pub(super) fn prepare_original_regions(
         &mut self,
         facts: &mut Declarations,
-        inputs: &std::collections::HashMap<crate::body::ir::BodyKey, Contract>,
+        inputs: &crate::support::hash::HashMap<crate::body::ir::BodyKey, Contract>,
         bodies: &[Body],
     ) -> Result<(), borrow::Error> {
         if !bodies.iter().any(|body| {
@@ -74,7 +80,7 @@ impl Builder {
         }) {
             return Ok(());
         }
-        let sources: std::collections::HashSet<_> = bodies
+        let sources: crate::support::hash::HashSet<_> = bodies
             .iter()
             .filter_map(|body| {
                 inputs
@@ -123,7 +129,10 @@ impl Builder {
             node: e.source,
             message: e.message,
         })?;
-        let mut retained = std::collections::HashMap::with_capacity(regions.bodies.len());
+        let mut retained = crate::support::hash::HashMap::with_capacity_and_hasher(
+            regions.bodies.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for proof in regions.bodies {
             if retained.insert(proof.key, proof).is_some() {
                 return Err(borrow::Error {
@@ -427,10 +436,16 @@ impl Builder {
         }
         Ok(methods)
     }
+    #[cfg(test)]
     pub(super) fn with_checked<T>(
         self,
         use_checked: impl FnOnce(&borrow::Checked<'_>) -> T,
     ) -> Result<T, borrow::Error> {
+        Ok(self.assemble()?.with_checked(use_checked))
+    }
+    /// Complete the append-only proof; every original nested region proof
+    /// must have been consumed by its body.
+    pub(super) fn assemble(self) -> Result<incremental::Assembled, borrow::Error> {
         if self
             .original_regions
             .as_ref()
@@ -441,11 +456,10 @@ impl Builder {
                 message: "unconsumed original nested region proof".into(),
             });
         }
-        incremental::with_checked(
+        incremental::assemble(
             self.program,
             self.bodies,
             self.recipes.map(glue::Cache::into_recipes),
-            use_checked,
         )
     }
 }

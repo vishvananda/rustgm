@@ -4,6 +4,7 @@ mod opaque_bounds;
 pub(in crate::sema) use opaque_bounds::prepare_outlives as prepare_opaque_outlives;
 mod templates;
 use super::assumptions::Assumptions;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -16,7 +17,7 @@ use crate::{
         },
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 /// Pure mapped clauses, never caller permission or implementation proof.
 #[derive(Default)]

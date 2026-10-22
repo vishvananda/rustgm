@@ -23,26 +23,18 @@ function @rg.15() -> void {
     store i64 %t10, $s2
     %t11 = load i64 $s0
     %t12 = load i64 $s1
-    %t13 = convert zext i128 i64 %t11
-    %t14 = convert zext i128 i64 %t12
-    %t15 = binary add i128 %t13, %t14
-    %t16 = convert trunc i64 i128 %t15
-    %t17 = convert zext i128 i64 %t16
-    %t18 = cmp ne i128 %t15, %t17
-    branch %t18, ^b1, ^b2
+    %t13 = binary add i64 %t11, %t12
+    %t14 = cmp ult i64 %t13, %t11
+    branch %t14, ^b1, ^b2
   block ^b2:
-    %t19 = load i64 $s2
-    %t20 = convert zext i128 i64 %t16
-    %t21 = convert zext i128 i64 %t19
-    %t22 = binary add i128 %t20, %t21
-    %t23 = convert trunc i64 i128 %t22
-    %t24 = convert zext i128 i64 %t23
-    %t25 = cmp ne i128 %t22, %t24
-    branch %t25, ^b1, ^b3
+    %t15 = load i64 $s2
+    %t16 = binary add i64 %t13, %t15
+    %t17 = cmp ult i64 %t16, %t13
+    branch %t17, ^b1, ^b3
   block ^b3:
-    %t26 = cmp eq i64 %t23, 10
-    %t27 = convert trunc i1 i64 %t26
-    call void @rg.13(%t27)
+    %t18 = cmp eq i64 %t16, 10
+    %t19 = convert trunc i1 i64 %t18
+    call void @rg.13(%t19)
     return void
   block ^b1:
     call void @abort()

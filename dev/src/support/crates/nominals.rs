@@ -3,7 +3,8 @@ use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, Function, Lifetime, MAX_COMPONENTS,
     MAX_NAME_BYTES, Storage, TypeGraph, TypeNode, TypeRef,
 };
-use std::collections::{HashSet, VecDeque};
+use crate::support::hash::HashSet;
+use std::collections::VecDeque;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct RecordRef(pub u16);
@@ -62,7 +63,10 @@ impl Record {
         if definition.kind() != ExternalKind::Record || fields.len() > MAX_COMPONENTS {
             return Err("invalid metadata named record");
         }
-        let mut names = HashSet::with_capacity(fields.len());
+        let mut names = HashSet::with_capacity_and_hasher(
+            fields.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         if fields.iter().any(|field| !names.insert(field.name())) {
             return Err("duplicate metadata record field");
         }

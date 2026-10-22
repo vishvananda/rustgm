@@ -11,6 +11,7 @@ pub(super) mod obligations;
 pub(super) mod results;
 pub(super) mod selection;
 use super::{generics::Parameter, generics::Predicate as Located, generics::parameter_id};
+use crate::support::hash::HashMap;
 use crate::types::{
     ItemId, Store, TypeId,
     arguments::Argument,
@@ -20,11 +21,11 @@ use crate::types::{
     },
     substitute,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 pub(super) struct Header {
     pub self_type: TypeId,
-    pub self_bounds: std::collections::HashSet<crate::resolve::unit::NodeKey>,
+    pub self_bounds: crate::support::hash::HashSet<crate::resolve::unit::NodeKey>,
     pub parameters: Vec<Parameter>,
     pub predicates: Vec<Located>,
     pub results: Vec<(ItemId, Located)>,
@@ -165,7 +166,7 @@ impl Contracts {
 
     /// Check definition identities before expansion, including argument-growing cycles.
     pub fn check_cycles(&self, store: &Store) -> Result<(), (ItemId, &'static str)> {
-        let mut states = HashMap::new();
+        let mut states = HashMap::default();
         let mut steps = 0_usize;
         for &root in &self.order {
             let mut work = vec![(root, false)];

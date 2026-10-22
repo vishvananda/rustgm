@@ -1,7 +1,7 @@
 //! A predicate's normalization plan owns its callable occurrences and replacement identities.
 use super::super::{Constructor, Context, Error, Store, TermId, TypeId, predicates::Predicate};
+use crate::support::hash::HashMap;
 use crate::types::lifetime_proof::ScopeId;
-use std::collections::HashMap;
 
 /// Structural input rewriting retains the original inference graph. Every
 /// replacement belongs to one callable occurrence; this plan grants no proof.
@@ -24,7 +24,7 @@ impl Context {
         predicate: &Predicate,
     ) -> Result<ProjectionInputs, Error> {
         let mut binders = Vec::new();
-        let mut callables = HashMap::new();
+        let mut callables = HashMap::default();
         let roots =
             self.predicate_roots(store, predicate, ScopeId::ROOT, |parent, term, count| {
                 binders.push((parent, count));

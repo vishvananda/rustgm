@@ -20,14 +20,14 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=14 signature=19
-body 0 function def=14 signature=19 result=14 source=0:10
+body 0 function def=14 signature=19 result=14 source=0:5
   block b0:
-    v0 type=14 = read static:13 source=9
-    return v0 source=10
+    v0 type=14 = read static:13 source=4
+    return v0 source=5
 end-body
-body 1 static def=13 result=14 source=0:3
+body 1 static def=13 result=14 source=0:1
   block b0:
-    v0 type=14 = integer bits=0x00000000000000000000000000000011 source=3
-    return v0 source=3
+    v0 type=14 = integer bits=0x00000000000000000000000000000011 source=1
+    return v0 source=1
 end-body
 eof bodies=2 locals=0 values=2 statements=2 blocks=2

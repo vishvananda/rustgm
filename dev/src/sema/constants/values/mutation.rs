@@ -1,12 +1,12 @@
 //! Evaluated storage refines the conservative type fact without following pointer slots.
 mod ranges;
 use super::{Constant, Error, Evaluator, Origin, Reader, View};
+use crate::support::hash::HashSet;
 use crate::types::{
     Kind, TypeId,
     aggregate::{ShapeReadiness, SharedMutation},
     interior_mutability::{Answer, Query},
 };
-use std::collections::HashSet;
 
 struct Inspection<'a> {
     reader: Reader<'a>,
@@ -67,7 +67,7 @@ impl Reader<'_> {
             reader: self,
             types: Query::new(&self.facts.types, &self.facts.aggregates),
             pending: vec![(ty, value)],
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             steps: 0,
             references,
         };

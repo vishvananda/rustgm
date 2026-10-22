@@ -5,7 +5,7 @@ use crate::sema::{
     traits::implementations::{Availability, ConstantRequest},
     values::{Dependency, Instance},
 };
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 
 impl Queries<'_> {
     pub(super) fn demand_members(
@@ -25,13 +25,11 @@ impl Queries<'_> {
             .typing
             .facts
             .body_regions
-            .len()
-            .checked_add(1)
-            .and_then(|n| u32::try_from(n).ok())
-            .ok_or_else(|| self.error(query, "constant member region overflow"))?;
+            .frontier(body)
+            .map_err(|_| self.error(query, "constant member region overflow"))?;
         let mut dispatch = Dispatcher::declaration(first).map_err(|e| self.error(query, e))?;
-        let mut seen = HashSet::new();
-        let mut pending = HashSet::new();
+        let mut seen = HashSet::default();
+        let mut pending = HashSet::default();
         for mut instance in instances {
             self.budget()?;
             if let Some(fold) = &mut substitution {

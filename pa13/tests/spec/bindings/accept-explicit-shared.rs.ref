@@ -23,11 +23,11 @@ type 20 reference mutable=false region=bound:0:0 referent=19
 type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=13 signature=21
 type 23 reference mutable=false region=region:1 referent=19
-root 0:14 pattern=0
-pattern 0 source=0:14 input=23 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:13 input=19 product variant=- fields=0:1
-pattern 2 source=0:12 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
+root 0:8 pattern=0
+pattern 0 source=0:8 input=23 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:7 input=19 product variant=- fields=0:1
+pattern 2 source=0:6 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
 field 0 index=0 pattern=2
-region-var region:1 body=0:18 source=0:16 origin=inference pending
-region-coercion body=0:18 source=0:16 actual=20 expected=23 kind=same-shape pending
+region-var region:1 body=0:11 source=0:9 origin=inference pending
+region-coercion body=0:11 source=0:9 actual=20 expected=23 kind=same-shape pending
 eof roots=1 patterns=3 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0

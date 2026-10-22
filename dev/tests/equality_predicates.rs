@@ -89,14 +89,14 @@ fn equality_result_occurrences_are_not_lost() -> TestResult {
     assert_eq!(predicate.escaping_binders(&store)?, 1);
     let mut uses = Uses::default();
     uses.predicate(&store, predicate)?;
-    assert_eq!(uses.parameters, [t].into());
-    assert_eq!(uses.constants, [n].into());
+    assert_eq!(uses.parameters, [t].into_iter().collect());
+    assert_eq!(uses.constants, [n].into_iter().collect());
     let steps = uses.steps;
     uses.predicate(&store, predicate)?;
     assert!(uses.steps <= steps + 2);
     let mut regions = bound_uses::Uses::default();
     regions.predicate(&store, predicate)?;
-    assert_eq!(regions.indices, [2].into());
+    assert_eq!(regions.indices, [2].into_iter().collect());
     let invalid = Predicate {
         ty: projected,
         bound: Bound::ProjectionEqual(TypeId(u32::MAX)),
@@ -413,7 +413,8 @@ fn normalized_views_preserve_original_roots_and_shared_holes() -> TestResult {
     let root = context.known(&store, projected)?;
     let hole = context.variable(Domain::Any)?;
     let original = context.construct(Constructor::Tuple, &[root, hole, root])?;
-    let view = context.rewritten_projections(&store, original, &[(root, WORD)].into())?;
+    let view =
+        context.rewritten_projections(&store, original, &[(root, WORD)].into_iter().collect())?;
     let elements = store.intern_list(&[WORD, BYTE, WORD])?;
     let expected = store.intern(Kind::Tuple(elements))?;
     let known = context.known(&store, expected)?;
@@ -426,7 +427,7 @@ fn normalized_views_preserve_original_roots_and_shared_holes() -> TestResult {
     assert_eq!(context.resolved(&mut store, original)?, expected_original);
     assert!(
         context
-            .rewritten_projections(&store, original, &[(original, WORD)].into())
+            .rewritten_projections(&store, original, &[(original, WORD)].into_iter().collect())
             .is_err()
     );
     Ok(())
@@ -505,7 +506,11 @@ fn repeated_projected_predicate_inputs_share_one_transformed_graph() -> TestResu
         |_, _| Err(infer::Error::InvalidIdentity),
     )?;
     assert_eq!(roots.len(), 1);
-    let view = context.rewritten_projection_inputs(&store, &goal, &[(roots[0].1, WORD)].into())?;
+    let view = context.rewritten_projection_inputs(
+        &store,
+        &goal,
+        &[(roots[0].1, WORD)].into_iter().collect(),
+    )?;
     let (_, arguments) = view
         .trait_arguments()
         .ok_or("missing normalized trait arguments")?;

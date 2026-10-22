@@ -22,27 +22,27 @@ type 19 function binders=0 parameters=[6,17] result=18 unsafe=false
 type 20 function-item def=13 signature=19
 type 21 function binders=0 parameters=[3] result=13 unsafe=false
 type 22 function-item def=14 signature=21
-body 0 function def=13 signature=19 result=18 source=0:31
-  local l0 type=6 parameter=0 def=32 mutable=false storage-parent=- source=2
-  local l1 type=17 parameter=1 def=33 mutable=false storage-parent=l0 source=9
+body 0 function def=13 signature=19 result=18 source=0:15
+  local l0 type=6 parameter=0 def=32 mutable=false storage-parent=- source=0
+  local l1 type=17 parameter=1 def=33 mutable=false storage-parent=l0 source=3
   block b0:
-    live l0 source=2
-    live l1 source=9
-    v0 type=6 = read l0 source=18
-    v1 type=17 = cast IntegerToFloat v0 source=22
-    v2 type=17 = read l1 source=24
-    v3 type=17 = binary Plus v1 v2 source=25
-    v4 type=18 = cast FloatToFloat v3 source=30
-    end-storage first=l0 last=l1 source=31
-    return v4 source=31
+    live l0 source=0
+    live l1 source=3
+    v0 type=6 = read l0 source=7
+    v1 type=17 = cast IntegerToFloat v0 source=9
+    v2 type=17 = read l1 source=10
+    v3 type=17 = binary Plus v1 v2 source=11
+    v4 type=18 = cast FloatToFloat v3 source=14
+    end-storage first=l0 last=l1 source=15
+    return v4 source=15
 end-body
-body 1 function def=14 signature=21 result=13 source=0:49
-  local l0 type=3 parameter=0 def=34 mutable=false storage-parent=- source=35
+body 1 function def=14 signature=21 result=13 source=0:24
+  local l0 type=3 parameter=0 def=34 mutable=false storage-parent=- source=17
   block b0:
-    live l0 source=35
-    v0 type=3 = read l0 source=44
-    v1 type=13 = cast CharToInteger v0 source=48
-    dead l0 source=49
-    return v1 source=49
+    live l0 source=17
+    v0 type=3 = read l0 source=21
+    v1 type=13 = cast CharToInteger v0 source=23
+    dead l0 source=24
+    return v1 source=24
 end-body
 eof bodies=2 locals=3 values=7 statements=12 blocks=2

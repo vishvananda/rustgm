@@ -1,7 +1,7 @@
 //! Initializers retain declaration proof ownership and a separate executable root.
 use super::{Body, Builder, Declarations, Error, Owner, Program, Report, Scratch, scopes};
+use crate::support::hash::HashMap;
 use crate::{body::ir::BodyKey, sema::model::Initializer, types::destruction::NeedsDrop};
-use std::collections::HashMap;
 pub(super) fn concrete(
     report: &Report,
     facts: &Declarations,

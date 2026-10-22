@@ -27,15 +27,15 @@ type 24 function binders=0 parameters=[11] result=19 unsafe=false
 type 25 function-item def=14 signature=24
 type 26 reference mutable=false region=region:1 referent=19
 type 27 reference mutable=false region=region:2 referent=26
-root 0:35 pattern=0
-root 0:38 pattern=1
-pattern 0 source=0:35 input=11 range=0
-pattern 1 source=0:38 input=11 wildcard
+root 0:20 pattern=0
+root 0:23 pattern=1
+pattern 0 source=0:20 input=11 range=0
+pattern 1 source=0:23 input=11 wildcard
 range 0 ranks=7:7
-match 0 source=0:41 input=0:32 arms=0:2 exhaustive=true uninhabited=false work=7
-arm 0 source=0:37 pattern=0 guard=- useful=true value=0:36
-arm 1 source=0:40 pattern=1 guard=- useful=true value=0:39
-region-var region:1 body=0:15 source=0:14 origin=expression-borrow pending
-region-var region:2 body=0:15 source=0:15 origin=expression-borrow pending
-region-coercion body=0:15 source=0:15 actual=27 expected=21 kind=same-shape pending
+match 0 source=0:26 input=0:19 arms=0:2 exhaustive=true uninhabited=false work=7
+arm 0 source=0:22 pattern=0 guard=- useful=true value=0:21
+arm 1 source=0:25 pattern=1 guard=- useful=true value=0:24
+region-var region:1 body=0:10 source=0:9 origin=expression-borrow pending
+region-var region:2 body=0:10 source=0:10 origin=expression-borrow pending
+region-coercion body=0:10 source=0:10 actual=27 expected=21 kind=same-shape pending
 eof roots=2 patterns=2 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=7 region-vars=2 region-equalities=0 conditions=0 chains=0

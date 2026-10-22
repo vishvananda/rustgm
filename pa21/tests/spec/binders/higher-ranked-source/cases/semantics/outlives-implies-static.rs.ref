@@ -27,8 +27,8 @@ type 24 function-item def=15 signature=20
 type 25 function-item def=13 signature=20 arguments=[type:22]
 type 26 function-item def=14 signature=20 arguments=[type:11]
 def 13 type=21 name="need" source=0:4
-def 14 type=23 name="f" source=0:22
-def 15 type=24 name="main" source=0:32
+def 14 type=23 name="f" source=0:18
+def 15 type=24 name="main" source=0:26
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -51,11 +51,11 @@ def 34 type=22 name="T" source=0:5
 parameter owner=13 binding=33 argument=type:19 default=-
 parameter owner=14 binding=34 argument=type:22 default=-
 predicate owner=13 source=0:1 subject=19 bound=outlives:static
-predicate owner=14 source=0:11 forall=0
-region-var region:1 body=0:31 source=0:28 origin=quantified-proof pending
-type-outlives body=0:21 source=0:18 type=22 shorter=static pending
+predicate owner=14 source=0:9 forall=0
+region-var region:1 body=0:25 source=0:22 origin=quantified-proof pending
+type-outlives body=0:17 source=0:14 type=22 shorter=static pending
 quantifier 0 regions=1 subject=22 bound=outlives:bound:0:0
-proof 0 body=0:31 source=0:28 pending
+proof 0 body=0:25 source=0:22 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=0 start=1 end=2
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=2

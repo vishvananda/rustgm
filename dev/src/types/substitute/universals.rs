@@ -1,6 +1,6 @@
 //! Abstract argument lifetimes into one instance's own proof context.
 use super::{Action, Bound, RegionId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 pub(super) struct Mapping {
     first: u32,
@@ -62,7 +62,7 @@ impl Bound {
         bound.action = Action::Universals(Box::new(Mapping {
             first,
             locals_only: false,
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         bound
     }

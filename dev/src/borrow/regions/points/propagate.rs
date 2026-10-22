@@ -53,7 +53,7 @@ impl Plan {
         Ok(())
     }
     fn index_edges(&mut self, solver: &mut Solver, proof: &Solution) -> Result<(), &'static str> {
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         for (region, _) in proof.nodes() {
             solver.charge(1)?;
             if region == Region::LOCAL || solver.result.full.contains(&region) {

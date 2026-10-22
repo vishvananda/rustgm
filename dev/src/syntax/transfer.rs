@@ -55,6 +55,7 @@ impl Extent {
             captures: prefix(&ast.captures, self.captures)?,
             root: self.root,
             lookahead_high_water: self.lookahead_high_water,
+            pending: super::ast::Pending::default(),
         })
     }
 }
@@ -103,7 +104,10 @@ impl Bases {
         })
     }
     fn node(&self, node: &mut NodeId) {
-        node.0 += self.nodes;
+        *node = self.rebased(*node);
+    }
+    fn rebased(&self, node: NodeId) -> NodeId {
+        NodeId::new(node.get() + self.nodes)
     }
     fn optional(&self, node: &mut Option<NodeId>) {
         if let Some(node) = node {
@@ -147,7 +151,7 @@ pub fn append<L, M>(
     mut span: impl FnMut(Span) -> Result<Span, LexError>,
     mut literal: impl FnMut(&L) -> Result<M, LexError>,
 ) -> Result<NodeId, LexError> {
-    if source.root.0 as usize >= source.nodes.len() {
+    if source.root.get() as usize >= source.nodes.len() {
         return Err(error(0, "syntax fragment has no root"));
     }
     let bases = Bases::new(source, destination)?;
@@ -158,8 +162,16 @@ pub fn append<L, M>(
         destination.lookahead_high_water = destination
             .lookahead_high_water
             .max(source.lookahead_high_water);
+        // Appended IDs follow every existing one, so both lists stay ascending.
+        let pending = &mut destination.pending;
+        pending
+            .owners
+            .extend(source.pending.owners.iter().map(|n| bases.rebased(*n)));
+        pending
+            .literals
+            .extend(source.pending.literals.iter().map(|n| bases.rebased(*n)));
     }
-    result.map(|()| NodeId(source.root.0 + bases.nodes))
+    result.map(|()| NodeId::new(source.root.get() + bases.nodes))
 }
 fn optional_span(
     span: &mut Option<Span>,
@@ -184,9 +196,12 @@ impl Bases {
             self.kind(&mut node.kind, span)?;
             destination.nodes.push(node);
         }
-        destination
-            .edges
-            .extend(source.edges.iter().map(|n| NodeId(n.0 + self.nodes)));
+        destination.edges.extend(
+            source
+                .edges
+                .iter()
+                .map(|n| NodeId::new(n.get() + self.nodes)),
+        );
         for value in &source.literals {
             destination.literals.push(literal(value)?);
         }
@@ -260,7 +275,7 @@ impl Bases {
                 *lifetime = span(*lifetime)?;
             }
             Kind::LibraryValue { value, .. } => self.optional(value),
-            Kind::Name(name) => *name = span(*name)?,
+            Kind::Name(name, _) => *name = span(*name)?,
             Kind::GenericMethodCall {
                 receiver,
                 method,

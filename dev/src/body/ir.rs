@@ -362,9 +362,9 @@ pub enum BodyKey {
 #[derive(Clone)]
 pub struct Body {
     /// Canonical types of static places actually referenced by this CFG.
-    pub static_types: Option<std::sync::Arc<std::collections::HashMap<DefId, TypeId>>>,
+    pub static_types: Option<std::sync::Arc<crate::support::hash::HashMap<DefId, TypeId>>>,
     /// Immutable declaration permissions, shared by checked bodies and instances.
-    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
+    pub mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<DefId>>>,
     /// Constant eligibility applies independently of whether execution is demanded.
     pub const_context: bool,
     /// Concrete specialization identity; diagnostics keep the original source owner.
@@ -394,7 +394,7 @@ pub struct Body {
 }
 #[derive(Clone, Default)]
 pub struct ResolvedCallables {
-    targets: std::collections::HashMap<
+    targets: crate::support::hash::HashMap<
         crate::types::instance::Instance,
         crate::types::instance::Instance,
     >,
@@ -409,6 +409,35 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    /// The identity a consumed body leaves behind: owner, source, result type,
+    /// instance and constant context, without any CFG payload.
+    #[must_use]
+    pub(crate) fn header(&self) -> Self {
+        Self {
+            static_types: None,
+            mutable_statics: None,
+            const_context: self.const_context,
+            instance: self.instance,
+            owned: None,
+            storage: None,
+            promotions: None,
+            resolved_callables: None,
+            closure_calls: None,
+            temporaries: Vec::new(),
+            guards: Vec::new(),
+            guard_places: Vec::new(),
+            projections: Vec::new(),
+            owner: self.owner,
+            source: self.source,
+            result: self.result,
+            locals: Vec::new(),
+            values: Vec::new(),
+            scalars: Vec::new(),
+            arguments: Vec::new(),
+            statements: Vec::new(),
+            blocks: Vec::new(),
+        }
+    }
     /// Owned payload only: shared static metadata and canonical arena values
     /// remain charged to their original owners, never to each cloned body.
     pub(crate) fn allocation_bytes(&self) -> usize {
@@ -474,11 +503,13 @@ impl Body {
     }
     pub(crate) fn callable_targets(
         &self,
-    ) -> std::collections::HashMap<crate::types::instance::Instance, crate::types::instance::Instance>
-    {
+    ) -> crate::support::hash::HashMap<
+        crate::types::instance::Instance,
+        crate::types::instance::Instance,
+    > {
         self.resolved_callables
             .as_ref()
-            .map_or_else(std::collections::HashMap::new, |resolved| {
+            .map_or_else(crate::support::hash::HashMap::default, |resolved| {
                 resolved.targets.clone()
             })
     }
@@ -556,5 +587,5 @@ pub struct Program {
     pub region_equalities: Vec<RegionEquality>,
     pub coercions: Vec<crate::sema::model::Coercion>,
     pub outlives: Vec<crate::sema::model::Outlives>,
-    pub body_regions: Vec<crate::sema::model::BodyRegion>,
+    pub body_regions: Vec<crate::sema::body_regions::AllocatedRegion>,
 }

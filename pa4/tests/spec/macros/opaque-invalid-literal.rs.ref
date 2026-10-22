@@ -1,6 +1,5 @@
 node 0 0 9 name "stringify"
-node 1 0 9 path false [0]
-node 2 0 16 macro 1 0
+node 1 0 16 macro 0 0
 capture 0 10 16 2 "(\"\\q\")"
-root 2
+root 1
 eof 17

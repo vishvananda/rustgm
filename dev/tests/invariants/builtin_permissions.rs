@@ -2,6 +2,7 @@
 #[path = "builtin_permissions/equalities.rs"]
 mod equalities;
 use super::{Abilities, Environment};
+use crate::support::hash::HashMap;
 use crate::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::Definitions,
@@ -15,7 +16,7 @@ use crate::types::{
     },
     substitute,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn parameter(types: &mut Store) -> Result<(ParameterId, TypeId)> {
@@ -73,7 +74,7 @@ fn builtin_parameter_permissions_reach_copy_shape_and_drop_consumers() -> Result
             assert!(environment.has_shape_assumptions());
             assert!(!environment.has_only_parameters());
             let mut copies = Copies::in_environment(Arc::clone(&environment));
-            let properties = copies.demand(&types, &definitions, &HashMap::new(), ty)?;
+            let properties = copies.demand(&types, &definitions, &HashMap::default(), ty)?;
             assert_eq!(properties.copy, bound == Bound::Copy);
             assert_eq!(properties.clone_, bound != Bound::Sized);
             let mut shapes = Shapes::new(Arc::clone(&environment));

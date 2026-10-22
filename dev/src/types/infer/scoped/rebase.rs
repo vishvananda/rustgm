@@ -1,6 +1,6 @@
 //! A body inference variable cannot capture a surrounding callable's local slots.
 use super::super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Default)]
 pub(super) struct Rebasing {
@@ -43,7 +43,7 @@ impl Context {
         inward: bool,
     ) -> Result<TermId, Error> {
         let mut work = vec![((root, 0_u16), false)];
-        let mut completed = HashMap::new();
+        let mut completed = HashMap::default();
         let mut children = Vec::new();
         while let Some(((id, depth), finish)) = work.pop() {
             self.step()?;

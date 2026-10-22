@@ -161,11 +161,21 @@ impl Executor for Capture {
                 regions.first().copied().ok_or("missing source lifetime")
             })
             .map_err(|e| Error::at(super::super::FileId(0), 0, e))?;
-        let record = &mut facts.body_regions[region.0 as usize - 1];
+        let caller = source
+            .entry(facts)
+            .map_err(|e| Error::at(super::super::FileId(0), 0, e))?
+            .1
+            .source;
+        let record = facts
+            .body_regions
+            .get_mut(caller, region)
+            .ok_or_else(|| Error::at(super::super::FileId(0), 0, "missing source region"))?;
         let previous = *record;
         record.body = other;
         assert!(source.validate(facts, result).is_err());
-        facts.body_regions[region.0 as usize - 1] = previous;
+        if let Some(record) = facts.body_regions.get_mut(caller, region) {
+            *record = previous;
+        }
         assert!(source.validate(facts, result).is_ok());
         self.0.set(self.0.get() + 1);
         Err(Error::at(
@@ -295,8 +305,8 @@ fn common_request_layout_and_closed_argument_rules_are_unchanged() {
     assert_eq!(size_of::<Target>(), 28);
     assert_eq!(size_of::<Request>(), 56);
     assert_eq!(size_of::<(Target, usize)>(), 40);
-    // Checked source initializer execution adds one lazy SourceIndex box slot.
-    assert_eq!(size_of::<crate::const_eval::code::Catalog>(), 200);
+    // Source initializers and pure layout results each add one lazy owner slot.
+    assert_eq!(size_of::<crate::const_eval::code::Catalog>(), 160);
     eprintln!(
         "caller-layout source={} target={} request={} code={} declarations={}",
         size_of::<SourceComputation>(),
@@ -305,10 +315,10 @@ fn common_request_layout_and_closed_argument_rules_are_unchanged() {
         size_of::<crate::const_eval::code::Code>(),
         size_of::<Declarations>()
     );
-    assert_eq!(size_of::<crate::const_eval::code::Code>(), 336);
+    assert_eq!(size_of::<crate::const_eval::code::Code>(), 304);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 464);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
 }
 
 #[test]

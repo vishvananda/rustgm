@@ -94,29 +94,21 @@ function @rg.16(%p0 : ptr) -> u8 {
     %t30 = load u8 %t29
     %t31 = load ptr $s3
     %t32 = load u8 %t31
-    %t33 = convert zext i16 u8 %t30
-    %t34 = convert zext i16 u8 %t32
-    %t35 = binary add i16 %t33, %t34
-    %t36 = convert trunc u8 i16 %t35
-    %t37 = convert zext i16 u8 %t36
-    %t38 = cmp ne i16 %t35, %t37
-    branch %t38, ^b11, ^b12
+    %t33 = binary add u8 %t30, %t32
+    %t34 = cmp ult u8 %t33, %t30
+    branch %t34, ^b11, ^b12
   block ^b12:
-    %t39 = load ptr $s4
-    %t40 = load u8 %t39
-    %t41 = convert zext i16 u8 %t36
-    %t42 = convert zext i16 u8 %t40
-    %t43 = binary add i16 %t41, %t42
-    %t44 = convert trunc u8 i16 %t43
-    %t45 = convert zext i16 u8 %t44
-    %t46 = cmp ne i16 %t43, %t45
-    branch %t46, ^b11, ^b13
+    %t35 = load ptr $s4
+    %t36 = load u8 %t35
+    %t37 = binary add u8 %t33, %t36
+    %t38 = cmp ult u8 %t37, %t33
+    branch %t38, ^b11, ^b13
   block ^b13:
-    store u8 %t44, $s1
+    store u8 %t37, $s1
     jump ^b1
   block ^b1:
-    %t47 = load u8 $s1
-    return u8 %t47
+    %t39 = load u8 $s1
+    return u8 %t39
   block ^b9:
     unreachable
   block ^b10:

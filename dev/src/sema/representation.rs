@@ -29,8 +29,8 @@ pub(super) struct Attributes {
 }
 pub(super) fn analyze(
     report: &Report,
-) -> Result<std::collections::HashMap<NodeKey, Attributes>, Error> {
-    let mut representations = std::collections::HashMap::new();
+) -> Result<crate::support::hash::HashMap<NodeKey, Attributes>, Error> {
+    let mut representations = crate::support::hash::HashMap::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;

@@ -3,7 +3,7 @@ use super::{
     Action, Bound, RegionId,
     region_mapping::{Mapping, Mode},
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 struct Vertex {
     parent: usize,
@@ -293,7 +293,8 @@ mod tests {
     fn selected_equations_close_witnesses_and_preserve_nested_binders() -> Result<(), &'static str>
     {
         let local = RegionId::bound(0, 0)?;
-        let mut fold = Bound::close_projection_regions(10, 1, [(RegionId(10), local)].into())?;
+        let mut fold =
+            Bound::close_projection_regions(10, 1, [(RegionId(10), local)].into_iter().collect())?;
         let mut equations = RegionEquations::default();
         equations.extend([(RegionId(11), RegionId(12)), (RegionId(12), RegionId(10))])?;
         fold.exchange_projection_equations(&mut equations)?;
@@ -332,7 +333,11 @@ mod tests {
     fn incrementally_closing_wide_selected_prefixes_has_linear_work() -> Result<(), &'static str> {
         for width in [16, 64, 256, 1024] {
             let local = RegionId::bound(0, 0)?;
-            let mut fold = Bound::close_projection_regions(10, 1, [(RegionId(10), local)].into())?;
+            let mut fold = Bound::close_projection_regions(
+                10,
+                1,
+                [(RegionId(10), local)].into_iter().collect(),
+            )?;
             let mut equations = RegionEquations::default();
             let mut steps = 0;
             for offset in 1..=width {
@@ -356,13 +361,17 @@ mod tests {
     #[test]
     fn shared_equations_preserve_each_closures_visible_aliases() -> Result<(), &'static str> {
         let local = RegionId::bound(0, 0)?;
-        let mut parent = Bound::close_projection_regions(10, 1, [(RegionId(10), local)].into())?;
+        let mut parent =
+            Bound::close_projection_regions(10, 1, [(RegionId(10), local)].into_iter().collect())?;
         let mut child = Bound::close_projection_regions(
             10,
             1,
-            [(RegionId(10), RegionId(10)), (RegionId(20), local)].into(),
+            [(RegionId(10), RegionId(10)), (RegionId(20), local)]
+                .into_iter()
+                .collect(),
         )?;
-        let mut sibling = Bound::close_projection_regions(10, 1, [(RegionId(30), local)].into())?;
+        let mut sibling =
+            Bound::close_projection_regions(10, 1, [(RegionId(30), local)].into_iter().collect())?;
         let mut equations = RegionEquations::default();
         equations.extend([(RegionId(11), RegionId(10)), (RegionId(21), RegionId(20))])?;
         child.exchange_projection_equations(&mut equations)?;
@@ -381,7 +390,7 @@ mod tests {
 
     #[test]
     fn selected_witnesses_restore_surrounding_bound_captures() -> Result<(), &'static str> {
-        let mut fold = Bound::close_projection_regions(10, 1, HashMap::new())?;
+        let mut fold = Bound::close_projection_regions(10, 1, HashMap::default())?;
         let mut equations = RegionEquations::default();
         equations.extend([(RegionId(11), RegionId::bound(0, 2)?)])?;
         fold.exchange_projection_equations(&mut equations)?;

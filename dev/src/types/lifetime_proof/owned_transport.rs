@@ -1,7 +1,7 @@
 //! Alpha transport uses exact owned segments before external arguments are introduced.
 use super::{Obligations, Range};
+use crate::support::hash::HashMap;
 use crate::types::{RegionId, Store, substitute::Bound};
-use std::collections::HashMap;
 
 pub(crate) struct OwnedTransport {
     ranges: Vec<(Range<u32>, Range<u32>)>,
@@ -64,7 +64,10 @@ impl OwnedTransport {
             .checked_add(u32::try_from(count).map_err(|_| "too many caller lifetimes")?)
             .filter(|&end| end < 0x8000_0000)
             .ok_or("caller lifetime transport identity space exhausted")?;
-        let mut replacements = HashMap::with_capacity(entries);
+        let mut replacements = HashMap::with_capacity_and_hasher(
+            entries,
+            crate::support::hash::BuildFxHasher::default(),
+        );
         let mut ranges = Vec::with_capacity(owned.len());
         let mut next = first;
         for interval in owned {

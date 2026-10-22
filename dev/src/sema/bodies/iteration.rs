@@ -1,5 +1,6 @@
 //! The two implicit calls keep separate inference terms and ordinary trait evidence.
 use super::{Checker, Error, NodeId, TermId, Type, Work};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::BuiltinIterationDeclaration,
     sema::iteration::{Call, ForPlan},
@@ -10,7 +11,6 @@ use crate::{
         lifetime_proof::ScopeId,
     },
 };
-use std::collections::HashMap;
 #[derive(Default)]
 pub(super) struct Pending {
     plans: HashMap<NodeId, Plan>,

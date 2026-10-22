@@ -30,12 +30,12 @@ type 27 function binders=0 parameters=[26] result=26 unsafe=false
 type 28 function-item def=18 signature=27
 type 29 function binders=0 parameters=[] result=1 unsafe=false
 type 30 function-item def=19 signature=29
-def 13 type=22 name="check" source=0:19
-def 14 type=24 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:37
-def 17 type=20 name="Out" source=0:36
-def 18 type=28 name="f" source=0:63
-def 19 type=30 name="main" source=0:65
+def 13 type=22 name="check" source=0:13
+def 14 type=24 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:24
+def 17 type=20 name="Out" source=0:23
+def 18 type=28 name="f" source=0:38
+def 19 type=30 name="main" source=0:40
 def 20 type=2 name="bool"
 def 21 type=3 name="char"
 def 22 type=4 name="str"
@@ -53,21 +53,19 @@ def 33 type=15 name="u128"
 def 34 type=16 name="usize"
 def 35 type=17 name="f32"
 def 36 type=18 name="f64"
-def 37 type=25 name="T" source=0:41
-def 38 type=2 name="ok" source=0:2
-def 39 type=11 name="x" source=0:22
-def 40 type=26 name="x" source=0:44
-associated-owner 0 kind=trait self-def=16 self=19 source=0:37 trait=15 unsafe=false name="A"
+def 37 type=25 name="T" source=0:27
+def 38 type=2 name="ok" source=0:0
+def 39 type=11 name="x" source=0:14
+def 40 type=26 name="x" source=0:28
+associated-owner 0 kind=trait self-def=16 self=19 source=0:24 trait=15 unsafe=false name="A"
 associated-member def=17 owner=0
 parameter owner=16 binding=16 argument=type:19 default=-
 parameter owner=18 binding=37 argument=type:25 default=-
-predicate owner=15 source=0:37 subject=19 bound=trait:15 arguments=[]
-predicate owner=18 source=0:40 subject=25 bound=trait:15 arguments=[]
+predicate owner=15 source=0:24 subject=19 bound=trait:15 arguments=[]
+predicate owner=18 source=0:26 subject=25 bound=trait:15 arguments=[]
 associated-type def=17 type=20
 result-contract def=17 projection=20
 result-bound def=17 index=0 subject=20 bound=sized
-normalized-node source=0:50 original=26 result=26
-normalized-node source=0:51 original=26 result=26
-normalized-node source=0:58 original=26 result=26
-normalized-node source=0:59 original=26 result=26
-eof owners=1 members=1 parameters=2 predicates=2 impls=0 calls=0 paths=0 impl-uses=0 type-members=1 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=4 normalized-definitions=0
+normalized-node source=0:31 original=26 result=26
+normalized-node source=0:35 original=26 result=26
+eof owners=1 members=1 parameters=2 predicates=2 impls=0 calls=0 paths=0 impl-uses=0 type-members=1 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0

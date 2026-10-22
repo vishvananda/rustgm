@@ -42,7 +42,7 @@ fn append(
     let signature = context.known(store, signature)?;
     let input = context.variable(Domain::Any)?;
     let term = context.function_item(ItemId(12), signature, &[Argument::Type(input)])?;
-    let source = NodeId(index);
+    let source = NodeId::new(index);
     calls.generic.push((source, DefId(12), term));
     calls
         .obligations
@@ -58,19 +58,40 @@ fn applications_and_variable_aliases_keep_distinct_owners() -> Result {
     let (first, a) = append(&mut context, &mut store, &mut calls, 1)?;
     let (second, b) = append(&mut context, &mut store, &mut calls, 2)?;
     assert_eq!(
-        index.owner(&mut context, &store, &calls, &[], Some(first), NodeId(40))?,
-        Some((NodeId(1), vec![0]))
+        index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &[],
+            Some(first),
+            NodeId::new(40)
+        )?,
+        Some((NodeId::new(1), vec![0]))
     );
     let alias = context.variable(Domain::Any)?;
     context.equate(&store, alias, first)?;
     context.equate(&store, a, b)?;
     assert_eq!(
-        index.owner(&mut context, &store, &calls, &[], Some(alias), NodeId(41))?,
-        Some((NodeId(1), vec![]))
+        index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &[],
+            Some(alias),
+            NodeId::new(41)
+        )?,
+        Some((NodeId::new(1), vec![]))
     );
     assert_eq!(
-        index.owner(&mut context, &store, &calls, &[], Some(second), NodeId(42))?,
-        Some((NodeId(2), vec![1]))
+        index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &[],
+            Some(second),
+            NodeId::new(42)
+        )?,
+        Some((NodeId::new(2), vec![1]))
     );
     Ok(())
 }
@@ -86,7 +107,7 @@ fn freshening_requires_real_edge_and_shared_complete_arguments() -> Result {
         let signature = context.child(&store, first, 0)?;
         let fresh = context.function_item(ItemId(12), signature, &[Argument::Type(input)])?;
         let edges = [super::super::PendingAdjustment {
-            node: NodeId(1),
+            node: NodeId::new(1),
             actual: first,
             expected: fresh,
             kind: super::super::AdjustmentKind::Equality,
@@ -95,7 +116,14 @@ fn freshening_requires_real_edge_and_shared_complete_arguments() -> Result {
         if witnessed {
             index.freshening(0);
         }
-        let result = index.owner(&mut context, &store, &calls, &edges, Some(fresh), NodeId(3))?;
+        let result = index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &edges,
+            Some(fresh),
+            NodeId::new(3),
+        )?;
         assert_eq!(result.is_some(), witnessed);
         let mut forged = edges;
         forged[0].expected = other;
@@ -108,9 +136,9 @@ fn freshening_requires_real_edge_and_shared_complete_arguments() -> Result {
                 &calls,
                 &forged,
                 Some(other),
-                NodeId(4)
+                NodeId::new(4)
             )?,
-            Some((NodeId(2), vec![1]))
+            Some((NodeId::new(2), vec![1]))
         );
     }
     Ok(())
@@ -124,15 +152,29 @@ fn repeated_prefix_lookups_visit_only_appended_inputs() -> Result {
         let mut index = Inputs::default();
         for ordinal in 0..width {
             let (term, _) = append(&mut context, &mut store, &mut calls, ordinal)?;
-            let expected = Some((NodeId(ordinal), vec![ordinal as usize]));
+            let expected = Some((NodeId::new(ordinal), vec![ordinal as usize]));
             assert_eq!(
-                index.owner(&mut context, &store, &calls, &[], Some(term), NodeId(999))?,
+                index.owner(
+                    &mut context,
+                    &store,
+                    &calls,
+                    &[],
+                    Some(term),
+                    NodeId::new(999)
+                )?,
                 expected
             );
             for _ in 0..4 {
                 assert_eq!(
-                    index.owner(&mut context, &store, &calls, &[], Some(term), NodeId(999))?,
-                    Some((NodeId(ordinal), vec![]))
+                    index.owner(
+                        &mut context,
+                        &store,
+                        &calls,
+                        &[],
+                        Some(term),
+                        NodeId::new(999)
+                    )?,
+                    Some((NodeId::new(ordinal), vec![]))
                 );
             }
         }
@@ -159,7 +201,7 @@ fn prefix_storage_preserves_compact_public_records() {
     );
     assert_eq!(size_of::<super::super::Work>(), 40);
     // Iteration adds one demand-only pending-plan owner to the existing boxed calls.
-    assert_eq!(size_of::<super::super::calls::CallTypes>(), 728);
+    assert_eq!(size_of::<super::super::calls::CallTypes>(), 672);
     assert_eq!(size_of::<Inputs>(), 8);
     assert_eq!(size_of::<TypeId>(), 4);
     assert_eq!(size_of::<Kind>(), 24);
@@ -175,21 +217,42 @@ fn restored_application_seeds_only_later_appended_requirements() -> Result {
     let (term, input) = append(&mut context, &mut store, &mut calls, 1)?;
     let mut index = Inputs::default();
     assert_eq!(
-        index.owner(&mut context, &store, &calls, &[], Some(term), NodeId(7))?,
-        Some((NodeId(1), vec![0]))
+        index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &[],
+            Some(term),
+            NodeId::new(7)
+        )?,
+        Some((NodeId::new(1), vec![0]))
     );
     let retained = std::mem::take(&mut index);
     calls
         .obligations
-        .push((NodeId(1), goal(&mut context, &mut store, input)?));
+        .push((NodeId::new(1), goal(&mut context, &mut store, input)?));
     index = retained;
     assert_eq!(
-        index.owner(&mut context, &store, &calls, &[], Some(term), NodeId(7))?,
-        Some((NodeId(1), vec![1]))
+        index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &[],
+            Some(term),
+            NodeId::new(7)
+        )?,
+        Some((NodeId::new(1), vec![1]))
     );
     assert_eq!(
-        index.owner(&mut context, &store, &calls, &[], Some(term), NodeId(7))?,
-        Some((NodeId(1), vec![]))
+        index.owner(
+            &mut context,
+            &store,
+            &calls,
+            &[],
+            Some(term),
+            NodeId::new(7)
+        )?,
+        Some((NodeId::new(1), vec![]))
     );
     Ok(())
 }
@@ -223,7 +286,7 @@ fn reference_frontiers_are_bounded_and_known_inputs_need_no_index() -> Result {
         let mut index = Inputs::default();
         assert!(
             index
-                .owner(&mut context, &store, &calls, &[], None, NodeId(0))?
+                .owner(&mut context, &store, &calls, &[], None, NodeId::new(0))?
                 .is_none()
         );
         assert!(index.data.is_none());

@@ -3,10 +3,7 @@ use crate::semantic;
 use rustc::qualify;
 use rustgm::{
     resolve::model::{DefKind, Target},
-    syntax::{
-        ast::{Kind, TypeFlavor},
-        item::ItemKind,
-    },
+    syntax::item::ItemKind,
 };
 
 use crate::resolve as names;
@@ -142,11 +139,10 @@ fn drop_identity_survives_imports_expansion_and_lexical_shadowing()
             let mut checked = 0;
             for reference in &report.resolution.references {
                 let ast = &report.package.unit(reference.node.file).configured.ast;
+                // A path type is its path node, which carries the reference.
                 if !ast.items.iter().any(|item| {
                     matches!(item.kind,
-                    ItemKind::Impl{trait_path:Some(path),..} if matches!(ast.node(path).kind,
-                        Kind::Type{flavor:TypeFlavor::Path,elements}
-                            if ast.list(elements).contains(&reference.node.node)))
+                    ItemKind::Impl{trait_path:Some(path),..} if path == reference.node.node)
                 }) {
                     continue;
                 }

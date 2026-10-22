@@ -24,6 +24,10 @@ impl Allocations {
     pub fn end(&self) -> u32 {
         self.end
     }
+    /// No trial or scope allocated a caller region identity.
+    pub fn untouched(&self) -> bool {
+        self.end == self.first && !self.monotonic && self.stream.is_none()
+    }
     pub fn record(&mut self, end: u32) {
         self.end = self.end.max(end);
         if self.monotonic {
@@ -78,7 +82,7 @@ fn reference_comparison_layout_remains_compact() {
             std::mem::size_of::<super::mechanical::Pending>(),
             std::mem::size_of::<super::Node>(),
         ),
-        (1408, 80, 160),
+        (1312, 80, 160),
         "reference comparison must retain the qualified x86-64 search layout",
     );
 }

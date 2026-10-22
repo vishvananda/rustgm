@@ -1,5 +1,6 @@
 //! Clause terms share normalization work while retaining their universal proof scope.
 use super::{Declarations, State};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         projections::{Cursor, Progress},
@@ -7,7 +8,6 @@ use crate::{
     },
     types::{RegionId, TypeId, lifetime_proof::ScopeId, substitute::Bound},
 };
-use std::collections::HashMap;
 
 pub(super) struct Terms {
     owner: (u32, u32),
@@ -17,7 +17,7 @@ pub(super) struct Terms {
 impl Terms {
     fn new(owner: (u32, u32)) -> Result<Self, &'static str> {
         let (count, first) = owner;
-        let mut replacements = HashMap::new();
+        let mut replacements = HashMap::default();
         for slot in 0..count {
             let index = u16::try_from(slot).map_err(|_| "too many declaration lifetimes")?;
             let region = first
@@ -29,7 +29,7 @@ impl Terms {
         Ok(Self {
             owner,
             close: Bound::restore_regions(replacements),
-            cursors: HashMap::new(),
+            cursors: HashMap::default(),
         })
     }
 }

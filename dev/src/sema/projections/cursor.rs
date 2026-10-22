@@ -1,5 +1,6 @@
 //! An owned semantic cursor retains the exact fold and selection across definition waits.
 use super::{Declarations, DefId, Definition, Obligations, ScopeId, TypeId};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         nominals::traits::{Projected, normal_form},
@@ -11,7 +12,7 @@ use crate::{
         substitute::{self, Bound, Normalizer, Request, Resolution, Step},
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 /// Concrete proofs without debts can outlive a single normalization's witnesses.
 /// The owner must retain the same environment and implementation availability.
@@ -67,7 +68,7 @@ impl Cursor {
             availability,
             fold: Normalizer::default(),
             scopes: Vec::new(),
-            environments: HashMap::new(),
+            environments: HashMap::default(),
             reusable: Completed::default(),
             step: None,
             selected: None,

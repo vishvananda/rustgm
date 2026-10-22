@@ -8,7 +8,7 @@ use crate::{
     },
     sema::{associated::OwnerKind, model::Declarations},
     syntax::{
-        ast::{Kind, TypeFlavor},
+        ast::Kind,
         item::{Item, ItemKind, Safety, Visibility},
     },
 };
@@ -43,19 +43,8 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
             continue;
         };
         let source = owner.source;
-        let ast = &report.package.unit(source.file).configured.ast;
-        let Kind::Type {
-            flavor: TypeFlavor::Path,
-            elements,
-        } = ast.node(path.node).kind
-        else {
-            continue;
-        };
-        let Some(&path) = ast.list(elements).first() else {
-            continue;
-        };
         let path = NodeKey {
-            node: path,
+            node: path.node,
             ..source
         };
         if facts.node(path).and_then(|f| f.reference) != Some(Target::Definition(drop_trait)) {

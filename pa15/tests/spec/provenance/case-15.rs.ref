@@ -1,5 +1,5 @@
 regions-crate 1
-body 0 source=0:16
+body 0 source=0:11
   variable r1=g2
   region g0 static
   region g1 local
@@ -7,7 +7,7 @@ body 0 source=0:16
   require g2:g0
   require g2:g1
 end-body
-body 1 source=0:18
+body 1 source=0:13
   region g0 static
   region g1 local
 end-body

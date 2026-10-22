@@ -22,41 +22,41 @@ type 19 function binders=0 parameters=[14] result=14 unsafe=false
 type 20 function-item def=13 signature=19
 type 21 function binders=0 parameters=[] result=14 unsafe=false
 type 22 function-item def=14 signature=21
-body 0 function def=13 signature=19 result=14 source=0:28
-  local l0 type=14 parameter=0 def=32 mutable=false storage-parent=- source=2
-  local l1 type=14 merge mutable=true storage-parent=l0 source=27
+body 0 function def=13 signature=19 result=14 source=0:18
+  local l0 type=14 parameter=0 def=32 mutable=false storage-parent=- source=0
+  local l1 type=14 merge mutable=true storage-parent=l0 source=17
   block b0:
-    live l0 source=2
-    live l1 source=27
-    v0 type=14 = read l0 source=11
-    v1 type=14 = integer bits=0x00000000000000000000000000000000 source=12
-    v2 type=2 = binary EqualEqual v0 v1 source=13
-    branch v2 b1 b2 source=27
+    live l0 source=0
+    live l1 source=17
+    v0 type=14 = read l0 source=4
+    v1 type=14 = integer bits=0x00000000000000000000000000000000 source=5
+    v2 type=2 = binary EqualEqual v0 v1 source=6
+    branch v2 b1 b2 source=17
   block b1:
-    v3 type=14 = integer bits=0x00000000000000000000000000000001 source=14
-    store l1 v3 source=27
-    jump b3 source=27
+    v3 type=14 = integer bits=0x00000000000000000000000000000001 source=7
+    store l1 v3 source=17
+    jump b3 source=17
   block b2:
-    v4 type=14 = read l0 source=17
-    v5 type=20 = function def=13 source=19
-    v6 type=14 = read l0 source=21
-    v7 type=14 = integer bits=0x00000000000000000000000000000001 source=22
-    v8 type=14 = binary Minus v6 v7 source=23
-    v9 type=14 = call signature=19 v5 [v8] source=24
-    v10 type=14 = binary Star v4 v9 source=25
-    store l1 v10 source=27
-    jump b3 source=27
+    v4 type=14 = read l0 source=9
+    v5 type=20 = function def=13 source=10
+    v6 type=14 = read l0 source=11
+    v7 type=14 = integer bits=0x00000000000000000000000000000001 source=12
+    v8 type=14 = binary Minus v6 v7 source=13
+    v9 type=14 = call signature=19 v5 [v8] source=14
+    v10 type=14 = binary Star v4 v9 source=15
+    store l1 v10 source=17
+    jump b3 source=17
   block b3:
-    v11 type=14 = read l1 source=27
-    dead l1 source=28
-    dead l0 source=28
-    return v11 source=28
+    v11 type=14 = read l1 source=17
+    dead l1 source=18
+    dead l0 source=18
+    return v11 source=18
 end-body
-body 1 function def=14 signature=21 result=14 source=0:37
+body 1 function def=14 signature=21 result=14 source=0:24
   block b0:
-    v0 type=20 = function def=13 source=34
-    v1 type=14 = integer bits=0x00000000000000000000000000000005 source=35
-    v2 type=14 = call signature=19 v0 [v1] source=36
-    return v2 source=37
+    v0 type=20 = function def=13 source=21
+    v1 type=14 = integer bits=0x00000000000000000000000000000005 source=22
+    v2 type=14 = call signature=19 v0 [v1] source=23
+    return v2 source=24
 end-body
 eof bodies=2 locals=2 values=15 statements=21 blocks=5

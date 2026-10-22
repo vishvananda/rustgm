@@ -20,24 +20,20 @@ function @rg.15.i3(%p0 : u16, %p1 : u8) -> u16 {
   block ^b2:
     %t3 = load u16 $s0
     %t4 = load u8 $s1
-    %t5 = convert zext i16 u8 %t4
-    %t6 = convert zext i16 u8 1
-    %t7 = binary sub i16 %t5, %t6
-    %t8 = convert trunc u8 i16 %t7
-    %t9 = convert zext i16 u8 %t8
-    %t10 = cmp ne i16 %t7, %t9
-    branch %t10, ^b4, ^b5
+    %t5 = binary sub u8 %t4, 1
+    %t6 = cmp ult u8 %t4, 1
+    branch %t6, ^b4, ^b5
   block ^b5:
-    %t11 = call u16 @rg.16.i4(%t3, %t8)
-    store u16 %t11, $s2
+    %t7 = call u16 @rg.16.i4(%t3, %t5)
+    store u16 %t7, $s2
     jump ^b3
   block ^b1:
-    %t12 = load u16 $s0
-    store u16 %t12, $s2
+    %t8 = load u16 $s0
+    store u16 %t8, $s2
     jump ^b3
   block ^b3:
-    %t13 = load u16 $s2
-    return u16 %t13
+    %t9 = load u16 $s2
+    return u16 %t9
   block ^b4:
     call void @abort()
     unreachable

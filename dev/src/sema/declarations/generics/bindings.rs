@@ -2,6 +2,7 @@
 mod selectors;
 use super::bounds::lexical::Scope;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::Namespace,
     syntax::ast::{List, NodeId},
@@ -11,7 +12,6 @@ use crate::{
         projection,
     },
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 struct Arguments {
@@ -270,7 +270,7 @@ impl Checker<'_> {
     ) -> Result<projection::Application, Error> {
         let root = predicate;
         let mut work = vec![predicate];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut selected = None;
         while let Some(predicate) = work.pop() {
             if !seen.insert(predicate) {
@@ -289,9 +289,11 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "missing associated binding trait"))?;
             let owner = DefId(application.item.0);
             if let Some(scope) = self.report.resolution.definitions[owner.0 as usize].members {
-                let member = self.report.resolution.scopes[scope.0 as usize]
+                let member = self
+                    .report
+                    .resolution
                     .bindings
-                    .get(&(name, Namespace::Type))
+                    .get(scope, name, Namespace::Type)
                     .map(|b| b.target);
                 if let Some(member) = member.filter(|id| {
                     self.facts.associated.trait_owner(*id) == Some(owner)

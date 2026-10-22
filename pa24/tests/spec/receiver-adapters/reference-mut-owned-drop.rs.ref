@@ -74,17 +74,13 @@ function @rg.closure.0(%p0 : ptr) -> u8 {
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load u8 %t0
-    %t2 = convert zext i16 u8 %t1
-    %t3 = convert zext i16 u8 1
-    %t4 = binary add i16 %t2, %t3
-    %t5 = convert trunc u8 i16 %t4
-    %t6 = convert zext i16 u8 %t5
-    %t7 = cmp ne i16 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add u8 %t1, 1
+    %t3 = cmp ult u8 %t2, %t1
+    branch %t3, ^b1, ^b2
   block ^b2:
-    store u8 %t5, %t0
-    %t8 = load u8 %t0
-    return u8 %t8
+    store u8 %t2, %t0
+    %t4 = load u8 %t0
+    return u8 %t4
   block ^b1:
     call void @abort()
     unreachable
@@ -130,15 +126,11 @@ function @rg.17(%p0 : ptr) -> void {
     %t1 = index u8 %t0, 8
     %t2 = load ptr %t1
     %t3 = load u8 %t2
-    %t4 = convert zext i16 u8 %t3
-    %t5 = convert zext i16 u8 1
-    %t6 = binary add i16 %t4, %t5
-    %t7 = convert trunc u8 i16 %t6
-    %t8 = convert zext i16 u8 %t7
-    %t9 = cmp ne i16 %t6, %t8
-    branch %t9, ^b1, ^b2
+    %t4 = binary add u8 %t3, 1
+    %t5 = cmp ult u8 %t4, %t3
+    branch %t5, ^b1, ^b2
   block ^b2:
-    store u8 %t7, %t2
+    store u8 %t4, %t2
     return void
   block ^b1:
     call void @abort()

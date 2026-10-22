@@ -1,5 +1,5 @@
 //! Monotone Boolean equations: alternatives activate once; products need both inputs.
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Term(usize);
 impl Term {
@@ -24,7 +24,7 @@ impl Default for Conditions {
                 remaining: 0,
                 dependents: Vec::new(),
             }],
-            products: HashMap::new(),
+            products: HashMap::default(),
             pending: vec![Term::ALWAYS],
             steps: 0,
         }

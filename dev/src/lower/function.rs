@@ -56,20 +56,62 @@ impl Selected {
         }
     }
 }
-struct Lower<'a, 'b> {
+/// Dense per-projection facts of one body.
+pub(super) struct ProjectionMap<V> {
+    slots: Vec<Option<V>>,
+}
+impl<V> Default for ProjectionMap<V> {
+    fn default() -> Self {
+        Self { slots: Vec::new() }
+    }
+}
+impl<V: Copy> ProjectionMap<V> {
+    fn reset(&mut self, projections: usize) {
+        self.slots.clear();
+        self.slots.resize(projections, None);
+    }
+    fn get(&self, id: ir::ProjectionId) -> Option<&V> {
+        self.slots.get(id.0 as usize)?.as_ref()
+    }
+    fn insert(&mut self, id: ir::ProjectionId, value: V) {
+        let index = id.0 as usize;
+        if index >= self.slots.len() {
+            self.slots.resize(index + 1, None);
+        }
+        self.slots[index] = Some(value);
+    }
+}
+/// Per-body lowering vectors whose capacity is reused by the next body.
+#[derive(Default)]
+pub(super) struct Scratch {
+    object_arguments: Vec<crate::lowir::boundary::Value>,
+    locals: Vec<Option<Address>>,
+    place_metadata: ProjectionMap<Value>,
+    projections: Vec<Projected>,
+    selections: ProjectionMap<selections::Recipe>,
+    selection_paths: ProjectionMap<std::num::NonZeroU32>,
+    selection_work: Vec<(ir::ProjectionId, selections::Step)>,
+    selection_steps: Vec<selections::Dynamic>,
+    address_work: Vec<usize>,
+    values: Vec<Option<Selected>>,
+    blocks: Vec<BlockId>,
+    arguments: Vec<Value>,
+    order: BlockOrder,
+}
+struct Lower<'a, 'b, 'c> {
     body_index: usize,
     native: crate::lowir::program::SignatureId,
     object_arguments: Vec<crate::lowir::boundary::Value>,
-    context: &'a mut Context<'b>,
+    context: &'a mut Context<'c>,
     body: &'b ir::Body,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
     builder: Builder,
     locals: Vec<Option<Address>>,
     addresses: references::Storage,
-    place_metadata: std::collections::HashMap<ir::ProjectionId, Value>,
+    place_metadata: ProjectionMap<Value>,
     projections: Vec<Projected>,
-    selections: std::collections::HashMap<ir::ProjectionId, selections::Recipe>,
-    selection_paths: std::collections::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
+    selections: ProjectionMap<selections::Recipe>,
+    selection_paths: ProjectionMap<std::num::NonZeroU32>,
     selection_work: Vec<(ir::ProjectionId, selections::Step)>,
     selection_steps: Vec<selections::Dynamic>,
     address_work: Vec<usize>,
@@ -78,12 +120,13 @@ struct Lower<'a, 'b> {
     panic: Option<BlockId>,
     source: NodeId,
     arguments: Vec<Value>,
+    order: BlockOrder,
 }
-pub(super) fn lower<'a>(
-    context: &mut Context<'a>,
+pub(super) fn lower<'b>(
+    context: &mut Context<'_>,
     body_index: usize,
-    body: &'a ir::Body,
-    plan: Option<&'a crate::borrow::destruction::Plan>,
+    body: &'b ir::Body,
+    plan: Option<&'b crate::borrow::destruction::Plan>,
     native: crate::lowir::program::SignatureId,
 ) -> Result<Function, Error> {
     let cleanup = plan
@@ -93,28 +136,47 @@ pub(super) fn lower<'a>(
             node: body.source,
             message,
         })?;
+    let builder = context.output.body_builder();
+    let mut scratch = std::mem::take(&mut context.lowering);
+    scratch.object_arguments.clear();
+    scratch.locals.clear();
+    scratch.place_metadata.reset(body.projections.len());
+    scratch.projections.clear();
+    scratch
+        .projections
+        .resize(body.projections.len(), Projected::Pending);
+    scratch.selections.reset(body.projections.len());
+    scratch.selection_paths.reset(body.projections.len());
+    scratch.selection_work.clear();
+    scratch.selection_steps.clear();
+    scratch.address_work.clear();
+    scratch.values.clear();
+    scratch.values.resize(body.values.len(), None);
+    scratch.blocks.clear();
+    scratch.arguments.clear();
     let mut lower = Lower {
         body_index,
         native,
-        object_arguments: Vec::new(),
+        object_arguments: scratch.object_arguments,
         context,
         body,
         cleanup,
-        builder: Builder::default(),
-        locals: Vec::new(),
+        builder,
+        locals: scratch.locals,
         addresses: references::Storage::default(),
-        place_metadata: std::collections::HashMap::new(),
-        projections: vec![Projected::Pending; body.projections.len()],
-        selections: std::collections::HashMap::new(),
-        selection_paths: std::collections::HashMap::new(),
-        selection_work: Vec::new(),
-        selection_steps: Vec::new(),
-        address_work: Vec::new(),
-        values: vec![None; body.values.len()],
-        blocks: Vec::new(),
+        place_metadata: scratch.place_metadata,
+        projections: scratch.projections,
+        selections: scratch.selections,
+        selection_paths: scratch.selection_paths,
+        selection_work: scratch.selection_work,
+        selection_steps: scratch.selection_steps,
+        address_work: scratch.address_work,
+        values: scratch.values,
+        blocks: scratch.blocks,
         panic: None,
         source: body.source.node,
-        arguments: Vec::new(),
+        arguments: scratch.arguments,
+        order: scratch.order,
     };
     lower.run().map_err(|message| Error {
         node: NodeKey {
@@ -123,22 +185,38 @@ pub(super) fn lower<'a>(
         },
         message,
     })?;
+    lower.context.lowering = Scratch {
+        object_arguments: lower.object_arguments,
+        locals: lower.locals,
+        place_metadata: lower.place_metadata,
+        projections: lower.projections,
+        selections: lower.selections,
+        selection_paths: lower.selection_paths,
+        selection_work: lower.selection_work,
+        selection_steps: lower.selection_steps,
+        address_work: lower.address_work,
+        values: lower.values,
+        blocks: lower.blocks,
+        arguments: lower.arguments,
+        order: lower.order,
+    };
     lower.builder.finish().map_err(|message| Error {
         node: body.source,
         message,
     })
 }
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     fn run(&mut self) -> Result<(), &'static str> {
-        let (order, seen, checked_edges) = order(self.body)?;
-        self.initialize_storage(&order, checked_edges)?;
+        let mut order = std::mem::take(&mut self.order);
+        let checked_edges = order.compute(self.body)?;
+        self.initialize_storage(&order.blocks, checked_edges)?;
         for _ in &self.body.blocks {
             self.blocks.push(self.builder.block()?);
         }
         if let Some(cleanup) = &mut self.cleanup {
-            cleanup.allocate(&mut self.builder, self.body, &seen)?;
+            cleanup.allocate(&mut self.builder, self.body, &order.seen)?;
         }
-        for (position, id) in order.into_iter().enumerate() {
+        for (position, &id) in order.blocks.iter().enumerate() {
             self.builder.enter(self.blocks[id])?;
             if position == 0 {
                 self.parameters()?;
@@ -181,12 +259,13 @@ impl Lower<'_, '_> {
             };
             self.builder.terminate(terminator)?;
         }
-        for (index, visited) in seen.into_iter().enumerate() {
+        for (index, &visited) in order.seen.iter().enumerate() {
             if !visited {
                 self.builder.enter(self.blocks[index])?;
                 self.builder.terminate(Terminator::Unreachable)?;
             }
         }
+        self.order = order;
         self.cleanup_edges()?;
         if let Some(panic) = self.panic {
             self.builder.enter(panic)?;
@@ -841,40 +920,56 @@ impl Lower<'_, '_> {
     }
 }
 
-/// Reverse postorder places dominating snapshots before uses without recursion.
-fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>, bool), &'static str> {
-    if body.blocks.is_empty() {
-        return Err("body has no entry block");
-    }
-    let mut seen = vec![false; body.blocks.len()];
-    let mut stack = vec![(0, false)];
-    let mut order = Vec::with_capacity(body.blocks.len());
-    let mut checked_edges = false;
-    while let Some((index, exiting)) = stack.pop() {
-        if exiting {
-            order.push(index);
-            continue;
+/// A body's blocks in reverse postorder and their reachability. The buffers
+/// are reused across the bodies one context lowers.
+#[derive(Default)]
+struct BlockOrder {
+    blocks: Vec<usize>,
+    seen: Vec<bool>,
+    stack: Vec<(usize, bool)>,
+}
+impl BlockOrder {
+    /// Reverse postorder places dominating snapshots before uses without
+    /// recursion. Returns whether the body has checked (false) edges.
+    fn compute(&mut self, body: &ir::Body) -> Result<bool, &'static str> {
+        if body.blocks.is_empty() {
+            return Err("body has no entry block");
         }
-        if seen[index] {
-            continue;
-        }
-        seen[index] = true;
-        stack.push((index, true));
-        match body.blocks[index].terminator {
-            ir::Terminator::Jump(target) => stack.push((target.0 as usize, false)),
-            ir::Terminator::FalseEdge { real, .. } => {
-                checked_edges = true;
-                stack.push((real.0 as usize, false));
+        let (order, seen, stack) = (&mut self.blocks, &mut self.seen, &mut self.stack);
+        seen.clear();
+        seen.resize(body.blocks.len(), false);
+        stack.clear();
+        stack.reserve(body.blocks.len() * 2 + 1);
+        stack.push((0, false));
+        order.clear();
+        order.reserve(body.blocks.len());
+        let mut checked_edges = false;
+        while let Some((index, exiting)) = stack.pop() {
+            if exiting {
+                order.push(index);
+                continue;
             }
-            ir::Terminator::Branch { yes, no, .. } => {
-                stack.push((no.0 as usize, false));
-                stack.push((yes.0 as usize, false));
+            if seen[index] {
+                continue;
             }
-            _ => {}
+            seen[index] = true;
+            stack.push((index, true));
+            match body.blocks[index].terminator {
+                ir::Terminator::Jump(target) => stack.push((target.0 as usize, false)),
+                ir::Terminator::FalseEdge { real, .. } => {
+                    checked_edges = true;
+                    stack.push((real.0 as usize, false));
+                }
+                ir::Terminator::Branch { yes, no, .. } => {
+                    stack.push((no.0 as usize, false));
+                    stack.push((yes.0 as usize, false));
+                }
+                _ => {}
+            }
         }
+        order.reverse();
+        Ok(checked_edges)
     }
-    order.reverse();
-    Ok((order, seen, checked_edges))
 }
 
 #[cfg(test)]

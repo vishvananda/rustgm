@@ -2,6 +2,7 @@
 use super::{
     BlockId, Builder, Error, LocalId, LocalKind, NodeId, Place, Rvalue, ScalarId, Terminator,
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     lex::token::Punctuation as Op,
     sema::{
@@ -10,7 +11,6 @@ use crate::{
     },
     types::{Primitive, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 pub(super) struct Plan {
     pub(super) choices: HashMap<PatternId, LocalId>,
@@ -245,8 +245,8 @@ impl Builder<'_> {
         let mut order = Vec::new();
         let mut work = vec![root];
         let mut bindings = Vec::new();
-        let mut borrowed = HashSet::new();
-        let mut definitions = HashSet::new();
+        let mut borrowed = HashSet::default();
+        let mut definitions = HashSet::default();
         while let Some(id) = work.pop() {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
             order.push(id);
@@ -289,7 +289,7 @@ impl Builder<'_> {
             }
         }
         let captures = self.captured_patterns(&order);
-        let mut choices = HashMap::new();
+        let mut choices = HashMap::default();
         for id in order {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
             if matches!(pattern.kind, Kind::Or(_)) && (retries || captures.contains(&id)) {
@@ -323,7 +323,7 @@ impl Builder<'_> {
         })
     }
     fn captured_patterns(&self, order: &[PatternId]) -> HashSet<PatternId> {
-        let mut captures = HashSet::new();
+        let mut captures = HashSet::default();
         for &id in order.iter().rev() {
             let has_capture = match self.facts.patterns.nodes[id.0 as usize].kind {
                 Kind::Binding { .. } => true,
@@ -568,7 +568,7 @@ impl Builder<'_> {
         plan: &Plan,
         guard: Option<crate::body::ir::GuardId>,
     ) -> Result<HashMap<crate::resolve::model::DefId, super::LocalId>, Error> {
-        let mut borrowed = HashMap::new();
+        let mut borrowed = HashMap::default();
         if guard.is_some() {
             for &id in &plan.bindings {
                 let pattern = &self.facts.patterns.nodes[id.0 as usize];

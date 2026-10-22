@@ -226,12 +226,12 @@ fn literal(
         kind: Kind::Literal(0),
     });
     if context == MacroContext::Statements {
-        ast.root = NodeId(1);
+        ast.root = NodeId::new(1);
         ast.nodes.push(Node {
             span,
             kind: Kind::Expansion {
                 children: List { start: 0, end: 0 },
-                tail: Some(NodeId(0)),
+                tail: Some(NodeId::new(0)),
             },
         });
     }

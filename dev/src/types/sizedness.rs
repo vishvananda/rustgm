@@ -4,7 +4,7 @@
 mod late_tests;
 mod schemas;
 use super::{GenericArgs, ItemId, Kind, Property, Store, TypeId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// A declaration's condition, interpreted only after proving its formation bounds.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

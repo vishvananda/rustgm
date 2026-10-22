@@ -5,7 +5,7 @@ use crate::resolve::{
     package::{Error, ModuleId},
     unit::NodeKey,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Level {
@@ -119,7 +119,7 @@ impl Policies {
                 return Err(Error::at(key.file, 0, "safety policy work budget exceeded"));
             }
             let unit = package.unit(key.file);
-            if !unit.configured.active[key.node.0 as usize] {
+            if !unit.configured.active[key.node.get() as usize] {
                 continue;
             }
             if let Some(changes) = changes.get(&key) {
@@ -127,7 +127,7 @@ impl Policies {
                     policy.apply(key, change)?;
                 }
             }
-            nodes[key.file.0 as usize][key.node.0 as usize] = policy;
+            nodes[key.file.0 as usize][key.node.get() as usize] = policy;
             if let Some(child) = package.children.get(&(module, key)) {
                 let child_module = &package.modules[child.0 as usize];
                 work.push((
@@ -155,7 +155,7 @@ impl Policies {
     }
     fn at(&self, key: NodeKey) -> Policy {
         self.nodes.as_ref().map_or_else(Policy::default, |files| {
-            files[key.file.0 as usize][key.node.0 as usize]
+            files[key.file.0 as usize][key.node.get() as usize]
         })
     }
     pub(super) fn denies_operation(&self, key: NodeKey) -> bool {

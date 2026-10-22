@@ -132,7 +132,7 @@ fn only_active_variant_fields_contribute() -> Result<(), String> {
     )?;
     let origin = NodeKey {
         file: FileId(0),
-        node: NodeId(0),
+        node: NodeId::new(0),
     };
     let none = facts
         .members

@@ -90,49 +90,41 @@ function @rg.20(%p0 : ptr) -> i64 {
     %t15 = load i64 $s4
     %t16 = load u8 $s5
     %t17 = convert zext i64 u8 %t16
-    %t18 = convert zext i128 i64 %t15
-    %t19 = convert zext i128 i64 %t17
-    %t20 = binary sub i128 %t18, %t19
-    %t21 = convert trunc i64 i128 %t20
-    %t22 = convert zext i128 i64 %t21
-    %t23 = cmp ne i128 %t20, %t22
-    branch %t23, ^b12, ^b13
+    %t18 = binary sub i64 %t15, %t17
+    %t19 = cmp ult i64 %t15, %t17
+    branch %t19, ^b12, ^b13
   block ^b13:
-    store i64 %t21, $s1
+    store i64 %t18, $s1
     jump ^b1
   block ^b4:
-    %t24 = addr $s0
-    %t25 = index u8 %t24, 1
+    %t20 = addr $s0
+    %t21 = index u8 %t20, 1
     jump ^b5
   block ^b5:
-    %t26 = addr $s0
-    %t27 = index u8 %t26, 8
+    %t22 = addr $s0
+    %t23 = index u8 %t22, 8
     jump ^b2
   block ^b2:
-    %t28 = addr $s0
-    %t29 = index u8 %t28, 1
-    %t30 = load u8 %t29
-    store u8 %t30, $s2
-    %t31 = addr $s0
-    %t32 = index u8 %t31, 8
-    %t33 = load i64 %t32
-    store i64 %t33, $s3
-    %t34 = load u8 $s2
-    %t35 = convert zext i64 u8 %t34
-    %t36 = load i64 $s3
-    %t37 = convert zext i128 i64 %t35
-    %t38 = convert zext i128 i64 %t36
-    %t39 = binary add i128 %t37, %t38
-    %t40 = convert trunc i64 i128 %t39
-    %t41 = convert zext i128 i64 %t40
-    %t42 = cmp ne i128 %t39, %t41
-    branch %t42, ^b12, ^b14
+    %t24 = addr $s0
+    %t25 = index u8 %t24, 1
+    %t26 = load u8 %t25
+    store u8 %t26, $s2
+    %t27 = addr $s0
+    %t28 = index u8 %t27, 8
+    %t29 = load i64 %t28
+    store i64 %t29, $s3
+    %t30 = load u8 $s2
+    %t31 = convert zext i64 u8 %t30
+    %t32 = load i64 $s3
+    %t33 = binary add i64 %t31, %t32
+    %t34 = cmp ult i64 %t33, %t31
+    branch %t34, ^b12, ^b14
   block ^b14:
-    store i64 %t40, $s1
+    store i64 %t33, $s1
     jump ^b1
   block ^b1:
-    %t43 = load i64 $s1
-    return i64 %t43
+    %t35 = load i64 $s1
+    return i64 %t35
   block ^b12:
     call void @abort()
     unreachable

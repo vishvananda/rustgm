@@ -39,18 +39,18 @@ type 36 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
 type 37 array element=11 length=3
 type 38 function binders=0 parameters=[37] result=36 unsafe=false
 type 39 function-item def=16 signature=38 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=26 name="check" source=0:19
-def 14 type=28 name="fail" source=0:35
-def 15 type=19 name="X" source=0:47
-def 16 type=33 name="X" source=0:47
-def 17 type=21 name="S" source=0:53
-def 18 type=35 name="S" source=0:53
-def 19 type=30 name="main" source=0:88
-def 20 type=24 name="Self" source=0:101
-def 21 type=16 name="C" source=0:100
-def 23 type=22 name="Self" source=0:107
-def 24 type=16 name="C" source=0:106
-def 25 type=23 name="Self" source=0:118
+def 13 type=26 name="check" source=0:13
+def 14 type=28 name="fail" source=0:22
+def 15 type=19 name="X" source=0:29
+def 16 type=33 name="X" source=0:29
+def 17 type=21 name="S" source=0:33
+def 18 type=35 name="S" source=0:33
+def 19 type=30 name="main" source=0:60
+def 20 type=24 name="Self" source=0:68
+def 21 type=16 name="C" source=0:67
+def 23 type=22 name="Self" source=0:72
+def 24 type=16 name="C" source=0:71
+def 25 type=23 name="Self" source=0:78
 def 26 type=2 name="bool"
 def 27 type=3 name="char"
 def 28 type=4 name="str"
@@ -68,26 +68,26 @@ def 39 type=15 name="u128"
 def 40 type=16 name="usize"
 def 41 type=17 name="f32"
 def 42 type=18 name="f64"
-def 43 type=16 name="N" source=0:39
-def 44 type=20 name="T" source=0:48
-def 45 type=2 name="ok" source=0:2
-def 46 type=11 name="x" source=0:22
-def 47 type=36 name="x" source=0:56
-associated-owner 0 kind=inherent self-def=20 self=24 source=0:101 unsafe=false
-associated-owner 1 kind=trait self-def=23 self=22 source=0:107 trait=22 unsafe=false name="A"
-associated-owner 2 kind=trait-impl self-def=25 self=23 source=0:118 unsafe=false
+def 43 type=16 name="N" source=0:24
+def 44 type=20 name="T" source=0:30
+def 45 type=2 name="ok" source=0:0
+def 46 type=11 name="x" source=0:14
+def 47 type=36 name="x" source=0:34
+associated-owner 0 kind=inherent self-def=20 self=24 source=0:68 unsafe=false
+associated-owner 1 kind=trait self-def=23 self=22 source=0:72 trait=22 unsafe=false name="A"
+associated-owner 2 kind=trait-impl self-def=25 self=23 source=0:78 unsafe=false
 associated-member def=21 owner=0
 associated-member def=24 owner=1
 parameter owner=15 binding=43 argument=const-parameter:15:0 default=-
 parameter owner=17 binding=44 argument=type:20 default=-
 parameter owner=23 binding=23 argument=type:22 default=-
-predicate owner=22 source=0:107 subject=22 bound=trait:22 arguments=[]
-impl owner=25 source=0:118 subject=23 bound=trait:22 arguments=[]
-trait-path source=0:64 method=24 trait=22 qualifier=implicit origin=ordinary subject-source=0:62
-implementation-use source=0:64 owner=25 arguments=[]
+predicate owner=22 source=0:72 subject=22 bound=trait:22 arguments=[]
+impl owner=25 source=0:78 subject=23 bound=trait:22 arguments=[]
+trait-path source=0:40 method=24 trait=22 qualifier=implicit origin=ordinary subject-source=0:38
+implementation-use source=0:40 owner=25 arguments=[]
 associated-constant def=21 type=16
 associated-constant def=24 type=16
 impl-constant owner=25 declaration=24 selected=24 default=true
-constant-use source=0:64 definition=24 arguments=[type:23]
+constant-use source=0:40 definition=24 arguments=[type:23]
 constant-dispatch declaration=24 arguments=[type:23] selected=24 arguments=[type:23]
 eof owners=3 members=2 parameters=3 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=2 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

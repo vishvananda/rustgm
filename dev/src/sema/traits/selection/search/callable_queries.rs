@@ -1,11 +1,11 @@
 //! Callable input scopes own normalizer caches, selected equations and result restoration.
 use super::{Context, Declarations, Query, inference};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     TypeId,
     lifetime_proof::{ScopeId, map_scopes},
     substitute::{Bound, Normalizer, RegionEquations, Resolution},
 };
-use std::collections::{HashMap, HashSet};
 
 struct Closure {
     fold: Bound,
@@ -29,7 +29,7 @@ impl Local {
             scope,
             bindings: Vec::new(),
             root: None,
-            requests: HashMap::new(),
+            requests: HashMap::default(),
         }
     }
 }
@@ -37,9 +37,9 @@ impl Scoped {
     pub fn new(scope: ScopeId, caller_end: u32) -> Self {
         Self {
             active: Local::new(scope),
-            saved: HashMap::new(),
+            saved: HashMap::default(),
             caller_end,
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             equations: RegionEquations::default(),
         }
     }

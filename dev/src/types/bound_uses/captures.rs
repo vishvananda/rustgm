@@ -1,11 +1,11 @@
 //! Shared DAG folds for captured binders and the required local lifetime slot count.
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, Kind, ListId, RegionId, Store, TypeId,
     arguments::Argument,
     parameters::predicates::{Bound, Predicate},
     traits::ApplicationId,
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/slot_groups.rs"]
 mod tests;
@@ -108,8 +108,8 @@ impl<Q: Query> Occurrences<Q> {
     fn query(query: Q) -> Self {
         Self {
             query,
-            completed: HashMap::new(),
-            applications: HashMap::new(),
+            completed: HashMap::default(),
+            applications: HashMap::default(),
             scoped_applications: None,
             groups: None,
             work: Vec::new(),

@@ -9,7 +9,7 @@ use crate::{
     sema::text::Id,
 };
 
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn text_equals(&mut self, place: Place, text: Id) -> Result<Value, &'static str> {
         let count = self.context.constants.bytes(text)?.len();
         let actual = self.slice_length(place)?;

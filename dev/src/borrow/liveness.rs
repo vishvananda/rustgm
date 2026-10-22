@@ -29,13 +29,10 @@ impl Analysis {
     #[must_use]
     pub fn point_before(&self, block: BlockId, statement: u32) -> Option<Point> {
         if let Some(points) = &self.ordered {
-            return points
-                .points
-                .get(&crate::body::storage::Location::At {
-                    block,
-                    before: statement,
-                })
-                .copied();
+            return points.point(crate::body::storage::Location::At {
+                block,
+                before: statement,
+            });
         }
         let &(start, end, base) = self.locations.get(block.0 as usize)?;
         (start..=end)

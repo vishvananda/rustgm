@@ -17,7 +17,7 @@ impl Checker<'_> {
             .list(function.parameters)
             .iter()
             .copied()
-            .find(|node| unit.configured.active[node.0 as usize])
+            .find(|node| unit.configured.active[node.get() as usize])
         else {
             return Ok(());
         };

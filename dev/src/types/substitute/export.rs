@@ -3,7 +3,8 @@ use super::{
     Action, Bound, RegionId, WORK_LIMIT,
     region_mapping::{Mapping, Mode},
 };
-use std::{collections::HashMap, ops::Range};
+use crate::support::hash::HashMap;
+use std::ops::Range;
 
 /// Only the semantic owner can classify a lifetime's proof scope. Universal
 /// aliases are omitted; they must never become an exported caller lifetime.
@@ -109,7 +110,7 @@ impl Bound {
         export.resume(sources, first)?;
         fold.action = Action::Regions(Box::new(Mapping {
             mode: Mode::Export(Box::new(export)),
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         Ok(fold)
     }

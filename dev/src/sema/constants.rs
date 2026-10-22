@@ -40,6 +40,7 @@ use super::{
     members::VariantId,
     model::{Cast, Declarations, InitializerKind, Operation, Scalar},
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     lex::token::Punctuation as Op,
     resolve::{
@@ -51,7 +52,6 @@ use crate::{
     syntax::ast::{BlockFlavor, Kind, Unary},
     types::{Kind as Type, Primitive, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Value {
@@ -282,8 +282,8 @@ impl<'a> Queries<'a> {
             report,
             typing: bodies::Checker::with_scratch(report, facts, scratch.typing),
             discriminants,
-            expressions: HashMap::new(),
-            states: HashMap::new(),
+            expressions: HashMap::default(),
+            states: HashMap::default(),
             work: instances::Worklist::default(),
             instances: instances::Instances::default(),
             scan: scratch.scan,
@@ -291,14 +291,14 @@ impl<'a> Queries<'a> {
             limit,
             source_work,
             preparation_steps: scratch.preparation_steps,
-            pattern_values: HashSet::new(),
+            pattern_values: HashSet::default(),
             pattern_frames: None,
             drop_scratch: scratch.drops,
             layout_scratch: scratch.layouts,
             pattern_scope: None,
             pattern_dispatch: None,
             value_scope: None,
-            checked_members: HashSet::new(),
+            checked_members: HashSet::default(),
         }
     }
     fn into_scratch(self) -> Scratch {
@@ -347,7 +347,7 @@ impl Queries<'_> {
                 .and_then(|definition| definition.node)
                 .unwrap_or(NodeKey {
                     file: FileId(0),
-                    node: crate::syntax::ast::NodeId(0),
+                    node: crate::syntax::ast::NodeId::new(0),
                 }),
         };
         Declarations::error(self.report, key, message)
@@ -942,7 +942,7 @@ impl Queries<'_> {
         }
         if matches!(
             Declarations::kind(self.report, key),
-            Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. }
+            Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
         ) && let Some(ty) = facts.ty
             && let Some(Type::FunctionItem { item, .. }) = self.typing.facts.types.kind(ty)
             && facts.reference == Some(Target::Definition(DefId(item.0)))
@@ -981,7 +981,9 @@ impl Queries<'_> {
                         .ast
                         .list(statements)
                         .iter()
-                        .any(|n| self.report.package.unit(key.file).configured.active[n.0 as usize])
+                        .any(|n| {
+                            self.report.package.unit(key.file).configured.active[n.get() as usize]
+                        })
                     {
                         return if self.typing.facts.constant_executor.is_some() {
                             Ok(Expression::Execute)
@@ -991,7 +993,7 @@ impl Queries<'_> {
                     }
                     Expression::Forward(child(tail))
                 }
-                (Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. }, _) => {
+                (Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. }, _) => {
                     let Some(Target::Definition(id)) = facts.reference else {
                         return Err(self.error(query, "missing constant path identity"));
                     };

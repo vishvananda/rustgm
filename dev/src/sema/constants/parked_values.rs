@@ -54,7 +54,11 @@ impl Queries<'_> {
         frames.children = remaining;
         let result = (|| {
             if dispatcher.is_none() {
-                let first = u32::try_from(self.typing.facts.body_regions.len() + 1)
+                let first = self
+                    .typing
+                    .facts
+                    .body_regions
+                    .frontier(scope.body)
                     .map_err(|_| "source caller region overflow")?;
                 dispatcher = Some(Dispatcher::pattern(
                     self.typing.facts,
@@ -198,7 +202,7 @@ mod tests {
         let original = PatternScope {
             body: crate::resolve::unit::NodeKey {
                 file: crate::support::source::FileId(0),
-                node: crate::syntax::ast::NodeId(1),
+                node: crate::syntax::ast::NodeId::new(1),
             },
             owner: Some(crate::resolve::model::DefId(2)),
             binders: 1,

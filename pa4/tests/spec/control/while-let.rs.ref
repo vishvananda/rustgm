@@ -1,32 +1,22 @@
-node 0 10 11 name "x"
-node 1 10 11 path false [0]
-node 2 6 11 binding true false "x" -
-node 3 14 18 name "Some"
-node 4 14 18 path false [3]
-node 5 19 20 literal 0
+node 0 6 11 binding true false "x" -
+node 1 14 18 name "Some"
+node 2 19 20 literal 0
 value 0 integer 19 20 infer 3
-node 6 14 21 call 4 [5]
-node 7 2 22 let 2 - 6 -
-node 8 33 37 name "Some"
-node 9 33 37 path false [8]
-node 10 38 39 name "y"
-node 11 38 39 path false [10]
-node 12 38 39 binding false false "y" -
-node 13 33 40 pattern Variant 9 [12]
-node 14 43 44 name "x"
-node 15 43 44 path false [14]
-node 16 29 44 let-condition 13 15
-node 17 47 48 name "x"
-node 18 47 48 path false [17]
-node 19 51 55 name "None"
-node 20 51 55 path false [19]
-node 21 47 55 binary = 18 20
-node 22 47 56 statement 21
-node 23 57 58 name "y"
-node 24 57 58 path false [23]
-node 25 57 59 statement 24
-node 26 45 61 block Plain [22,25] -
-node 27 23 61 while 16 26
-node 28 0 63 block Plain [7] 27
-root 28
+node 3 14 21 call 1 [2]
+node 4 2 22 let 0 - 3 -
+node 5 33 37 name "Some"
+node 6 38 39 binding false false "y" -
+node 7 33 40 pattern Variant 5 [6]
+node 8 43 44 name "x"
+node 9 29 44 let-condition 7 8
+node 10 47 48 name "x"
+node 11 51 55 name "None"
+node 12 47 55 binary = 10 11
+node 13 47 56 statement 12
+node 14 57 58 name "y"
+node 15 57 59 statement 14
+node 16 45 61 block Plain [13,15] -
+node 17 23 61 while 9 16
+node 18 0 63 block Plain [4] 17
+root 18
 eof 64

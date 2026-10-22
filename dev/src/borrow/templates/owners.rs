@@ -6,9 +6,12 @@ pub(super) struct Indices {
     pub anonymous: HashMap<BodyKey, usize>,
 }
 pub(super) fn indices(templates: &Templates) -> Result<Indices, Error> {
-    let mut index = HashMap::with_capacity(templates.bodies.len());
-    let mut closures = HashMap::new();
-    let mut anonymous = HashMap::new();
+    let mut index = HashMap::with_capacity_and_hasher(
+        templates.bodies.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
+    let mut closures = HashMap::default();
+    let mut anonymous = HashMap::default();
     for (ordinal, template) in templates.bodies.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {

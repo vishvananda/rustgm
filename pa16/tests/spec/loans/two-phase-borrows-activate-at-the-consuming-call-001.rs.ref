@@ -1,7 +1,7 @@
 loans-crate 1
-body 0 source=0:11
+body 0 source=0:7
 end-body
-body 1 source=0:30
+body 1 source=0:19
   place p0 root=l0 shared=false
   place p1 root=l0 parent=p0 dereference mutable=true shared=false
   loan q0 borrow=v1 place=p1 region=g4 kind=two-phase
@@ -26,6 +26,6 @@ body 1 source=0:30
   state t6 word=0 live=0000000000000001 activated=0000000000000000
   state t7 word=0 live=0000000000000001 activated=0000000000000001
 end-body
-body 2 source=0:32
+body 2 source=0:21
 end-body
 eof bodies=3 loans=1 places=2 points=12 region_words=4 state_words=4

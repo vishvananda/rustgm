@@ -42,12 +42,12 @@ type 39 function binders=1 parameters=[30,26] result=26 unsafe=false
 type 40 function-item def=15 signature=39 arguments=[type:29,const:16:0x00000000000000000000000000000002]
 type 41 reference mutable=false region=region:1 referent=29
 type 42 function binders=0 parameters=[41,26] result=26 unsafe=false
-def 14 type=19 name="Self" source=0:26
-def 15 type=24 name="f" source=0:25
-def 16 type=20 name="Self" source=0:59
-def 17 type=28 name="f" source=0:58
-def 18 type=32 name="g" source=0:91
-def 19 type=34 name="main" source=0:93
+def 14 type=19 name="Self" source=0:14
+def 15 type=24 name="f" source=0:13
+def 16 type=20 name="Self" source=0:35
+def 17 type=28 name="f" source=0:34
+def 18 type=32 name="g" source=0:60
+def 19 type=34 name="main" source=0:62
 def 20 type=2 name="bool"
 def 21 type=3 name="char"
 def 22 type=4 name="str"
@@ -65,29 +65,29 @@ def 33 type=15 name="u128"
 def 34 type=16 name="usize"
 def 35 type=17 name="f32"
 def 36 type=18 name="f64"
-def 37 type=16 name="N" source=0:3
-def 38 type=20 name="T" source=0:27
-def 39 type=29 name="T" source=0:70
-def 42 type=25 name="self" source=0:38
-def 43 type=26 name="x" source=0:43
-def 44 type=30 name="x" source=0:73
-associated-owner 0 kind=trait self-def=14 self=19 source=0:26 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=20 source=0:59 unsafe=false
+def 37 type=16 name="N" source=0:1
+def 38 type=20 name="T" source=0:15
+def 39 type=29 name="T" source=0:46
+def 42 type=25 name="self" source=0:21
+def 43 type=26 name="x" source=0:24
+def 44 type=30 name="x" source=0:47
+associated-owner 0 kind=trait self-def=14 self=19 source=0:14 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=20 source=0:35 unsafe=false
 associated-member def=15 owner=0 receiver=21 references=1
 associated-member def=17 owner=1 receiver=25 references=1
 parameter owner=13 binding=37 argument=const-parameter:13:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=16 binding=38 argument=type:20 default=-
 parameter owner=18 binding=39 argument=type:29 default=-
-predicate owner=13 source=0:26 subject=19 bound=trait:13 arguments=[const-parameter:13:0]
-predicate owner=18 source=0:64 subject=29 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000001]
-predicate owner=18 source=0:69 subject=29 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
-impl owner=16 source=0:59 subject=20 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
+predicate owner=13 source=0:14 subject=19 bound=trait:13 arguments=[const-parameter:13:0]
+predicate owner=18 source=0:40 subject=29 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000001]
+predicate owner=18 source=0:45 subject=29 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
+impl owner=16 source=0:35 subject=20 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
 impl-method owner=16 declaration=15 selected=17 default=false
-method-call source=0:89 method=15 callable=40 dereferences=1 borrow=38 receiver=41 origin=bound
-region-var region:1 body=0:90 source=0:89 origin=call-argument pending
-region-var region:2 body=0:90 source=0:89 origin=universal-alias pending
-region-var region:3 body=0:90 source=0:89 origin=expression-borrow pending
-region-equal body=0:90 left=region:2 right=bound:0:0
-region-coercion body=0:90 source=0:89 actual=38 expected=41 kind=same-shape pending
+method-call source=0:58 method=15 callable=40 dereferences=1 borrow=38 receiver=41 origin=bound
+region-var region:1 body=0:59 source=0:58 origin=call-argument pending
+region-var region:2 body=0:59 source=0:58 origin=universal-alias pending
+region-var region:3 body=0:59 source=0:58 origin=expression-borrow pending
+region-equal body=0:59 left=region:2 right=bound:0:0
+region-coercion body=0:59 source=0:58 actual=38 expected=41 kind=same-shape pending
 eof owners=2 members=2 parameters=4 predicates=3 impls=1 calls=1 paths=0 impl-uses=0

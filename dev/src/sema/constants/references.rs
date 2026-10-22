@@ -1,9 +1,9 @@
 //! Constant locations carry value, access and packed-field provenance in a flat arena.
 mod ranges;
 use super::{Declarations, Error, Kind, NodeKey, Operation, Queries, Query, Value};
+use crate::support::hash::HashMap;
 use crate::{resolve::model::DefId, sema::members::Selection, types::TypeId};
 pub(super) use ranges::ProjectionView;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Id(u32);
@@ -427,7 +427,7 @@ fn pointer_write_permission_is_per_value_and_projection() -> Result<(), &'static
         Some(WritePermission::SharedDerived)
     );
     assert!(shared == shared.restrict_shared());
-    let distinct = std::collections::HashSet::from([writable, shared]);
+    let distinct = crate::support::hash::HashSet::from_iter([writable, shared]);
     assert_eq!(distinct.len(), 2);
     for value in [writable, shared] {
         let Value::Reference(pointer) = value.0 else {

@@ -16,9 +16,9 @@ mod domains;
 mod ordering;
 mod referential;
 mod sequences;
+use crate::support::hash::HashMap;
 use domains::comparison_candidate;
 pub(in crate::sema) use ordering::register_ordering;
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../tests/invariants/primitive_factories.rs"]
 mod tests;

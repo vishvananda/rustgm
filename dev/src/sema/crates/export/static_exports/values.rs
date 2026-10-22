@@ -1,5 +1,6 @@
 //! Encode each completed typed value once, retaining named address identities.
 use super::{Declarations, Error, OriginValue, Prepared, error};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::{
@@ -12,7 +13,6 @@ use crate::{
     },
     types::{ItemId, Kind, TypeId},
 };
-use std::collections::HashMap;
 
 impl Prepared {
     pub(in crate::sema::crates::export) fn encode(
@@ -40,7 +40,7 @@ impl Prepared {
             records,
             definitions,
             nodes: Vec::new(),
-            remap: HashMap::new(),
+            remap: HashMap::default(),
             steps: 0,
         };
         let mut entries = Vec::with_capacity(self.entries.len());

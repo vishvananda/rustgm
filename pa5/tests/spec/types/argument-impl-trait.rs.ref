@@ -1,17 +1,15 @@
-active [2,3,4,5,6,7,8,9,10,11,12]
-node 0 5 6 name "x"
-node 1 5 6 path false [0]
-node 2 5 6 binding false false "x" -
-node 3 12 16 name "core"
-node 4 18 21 name "fmt"
-node 5 23 28 name "Debug"
-node 6 12 28 path false [3,4,5]
-node 7 12 28 bound false [] 6
-node 8 7 28 trait-type true [7]
-node 9 5 28 parameter 2 8
-node 10 29 31 block Plain [] -
-node 11 0 31 item 0
-item 0 "f" private [] [] function false false false false - [9] - 10
-node 12 0 31 crate [11]
-root 12
+active [0,1,2,3,4,5,6,7,8,9,10]
+node 0 5 6 binding false false "x" -
+node 1 12 16 name "core"
+node 2 18 21 name "fmt"
+node 3 23 28 name "Debug"
+node 4 12 28 path false [1,2,3]
+node 5 12 28 bound false [] 4
+node 6 7 28 trait-type true [5]
+node 7 5 28 parameter 0 6
+node 8 29 31 block Plain [] -
+node 9 0 31 item 0
+item 0 "f" private [] [] function false false false false - [7] - 8
+node 10 0 31 crate [9]
+root 10
 eof 32

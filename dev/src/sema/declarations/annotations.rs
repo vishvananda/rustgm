@@ -38,10 +38,7 @@ impl Checker<'_> {
                 }
                 #[cfg(test)]
                 tests::visit(true);
-                let fact = region
-                    .0
-                    .checked_sub(1)
-                    .and_then(|index| self.facts.body_regions.get(index as usize))
+                let fact = self.facts.body_regions.get(key, *region)
                     .ok_or_else(|| self.error(key, "closure input region is not retained"))?;
                 if fact.body != key
                     || !matches!(
@@ -71,7 +68,7 @@ impl Checker<'_> {
         for index in (parameters.start..parameters.end).rev() {
             let unit = self.report.package.unit(key.file);
             let mut node = unit.configured.ast.edges[index as usize];
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             while let Kind::Attributed { value, .. } = self.kind(NodeKey { node, ..key }) {
@@ -120,7 +117,7 @@ impl Checker<'_> {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => {
                 self.node_work(key.file, node, context);
             }
-            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(..) => {
                 self.schedule_type_path(key, context)?;
             }
             Kind::Type { flavor, elements } => {
@@ -195,7 +192,7 @@ impl Checker<'_> {
         }
         let unit = self.report.package.unit(key.file);
         for parameter in unit.configured.ast.list(parameters) {
-            if !unit.configured.active[parameter.0 as usize] {
+            if !unit.configured.active[parameter.get() as usize] {
                 continue;
             }
             let node = super::parameter_type(

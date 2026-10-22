@@ -5,7 +5,7 @@ use super::{
     region_mapping::{Mapping, Mode},
     restored::Owner,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 impl Bound {
     pub(crate) fn observe_budgeted_regions(
@@ -20,7 +20,7 @@ impl Bound {
                 budget: Budget::new(bytes, work),
                 external: 0,
             })),
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         Ok(fold)
     }

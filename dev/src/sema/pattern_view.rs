@@ -13,12 +13,14 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "selected-patterns 1")?;
     type_view::types(&facts.types, out)?;
     let mut roots: Vec<_> = facts.patterns.roots.iter().collect();
-    roots.sort_unstable_by_key(|(source, _)| (source.file.0, source.node.0));
+    roots.sort_unstable_by_key(|(source, _)| (source.file.0, source.node.get()));
     for (source, id) in roots {
         writeln!(
             out,
             "root {}:{} pattern={}",
-            source.file.0, source.node.0, id.0
+            source.file.0,
+            source.node.get(),
+            id.0
         )?;
     }
     nodes(facts, out)?;
@@ -49,9 +51,9 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             out,
             "match {ordinal} source={}:{} input={}:{} arms={}:{} exhaustive=true uninhabited={} work={}",
             decision.source.file.0,
-            decision.source.node.0,
+            decision.source.node.get(),
             decision.scrutinee.file.0,
-            decision.scrutinee.node.0,
+            decision.scrutinee.node.get(),
             decision.start,
             decision.end,
             decision.uninhabited,
@@ -65,38 +67,42 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         write!(
             out,
             "arm {ordinal} source={}:{} pattern={} guard=",
-            arm.source.file.0, arm.source.node.0, pattern.0
+            arm.source.file.0,
+            arm.source.node.get(),
+            pattern.0
         )?;
         if let Some(guard) = arm.guard {
-            write!(out, "{}:{}", guard.file.0, guard.node.0)?;
+            write!(out, "{}:{}", guard.file.0, guard.node.get())?;
         } else {
             write!(out, "-")?;
         }
         writeln!(
             out,
             " useful={} value={}:{}",
-            arm.useful, arm.value.file.0, arm.value.node.0
+            arm.useful,
+            arm.value.file.0,
+            arm.value.node.get()
         )?;
     }
     let mut conditions: Vec<_> = facts.patterns.conditions.iter().collect();
-    conditions.sort_unstable_by_key(|(source, _)| (source.file.0, source.node.0));
+    conditions.sort_unstable_by_key(|(source, _)| (source.file.0, source.node.get()));
     for (source, condition) in conditions {
         write!(
             out,
             "condition source={}:{} input={}:{} pattern={} otherwise=",
             source.file.0,
-            source.node.0,
+            source.node.get(),
             condition.input.file.0,
-            condition.input.node.0,
+            condition.input.node.get(),
             condition.pattern.0
         )?;
         if let Some(otherwise) = condition.otherwise {
-            writeln!(out, "{}:{}", otherwise.file.0, otherwise.node.0)?;
+            writeln!(out, "{}:{}", otherwise.file.0, otherwise.node.get())?;
         } else {
             writeln!(out, "-")?;
         }
     }
-    type_view::body_regions(&facts.body_regions, out)?;
+    type_view::body_regions(facts.body_regions.log(), out)?;
     type_view::regions(&facts.region_equalities, out)?;
     type_view::coercions(&facts.coercions, out)?;
     type_view::outlives(&facts.outlives, out)?;
@@ -111,7 +117,9 @@ fn nodes(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         write!(
             out,
             "pattern {ordinal} source={}:{} input={} ",
-            pattern.source.file.0, pattern.source.node.0, ty.0
+            pattern.source.file.0,
+            pattern.source.node.get(),
+            ty.0
         )?;
         match pattern.kind {
             Kind::Pending => return Err(io::Error::other("incomplete selected pattern")),
@@ -210,7 +218,7 @@ pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         facts.patterns.decisions.len(),
         facts.patterns.arms.len(),
         facts.patterns.decisions.iter().map(|m| m.work).sum::<u64>(),
-        facts.body_regions.len(),
+        facts.body_regions.log().len(),
         facts.region_equalities.len(),
         facts.patterns.conditions.len(),
         facts.patterns.chains.len()

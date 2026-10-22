@@ -53,7 +53,9 @@ fn written_local_regions_keep_exact_inline_ownership() -> Result<(), Box<dyn std
         let regions: Vec<_> = analysis
             .facts
             .body_regions
+            .log()
             .iter()
+            .map(|allocated| &allocated.region)
             .filter(|region| {
                 matches!(
                     region.origin,
@@ -98,12 +100,10 @@ fn inline_local_context_preserves_enclosing_named_binders() -> Result<(), Box<dy
     )?;
     let report = super::source::resolve(source, true)?;
     let facts = sema::declarations::analyze(&report)?;
-    assert!(
-        facts
-            .body_regions
-            .iter()
-            .all(|region| !matches!(region.origin, sema::model::BodyRegionOrigin::Annotation))
-    );
+    assert!(facts.body_regions.log().iter().all(|allocated| !matches!(
+        allocated.region.origin,
+        sema::model::BodyRegionOrigin::Annotation
+    )));
     let expected = RegionId::bound(0, 0)?;
     assert!(
         facts

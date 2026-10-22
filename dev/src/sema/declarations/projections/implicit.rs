@@ -1,5 +1,6 @@
 //! Shorthand selects a unique declaration application; ordinary normalization proves its use.
 use super::{Checker, DefId, Error, NodeKey, Type, Work, regions};
+use crate::support::hash::HashSet;
 use crate::{
     resolve::{
         model::{DefKind, Namespace},
@@ -12,7 +13,6 @@ use crate::{
         projection,
     },
 };
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 struct Path {
@@ -268,7 +268,7 @@ impl Checker<'_> {
             return Ok(cached);
         }
         let mut work = vec![root];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut selected = None;
         while let Some(predicate) = work.pop() {
             if !seen.insert(predicate) {
@@ -289,9 +289,11 @@ impl Checker<'_> {
             let scope = self.report.resolution.definitions[trait_item.0 as usize]
                 .members
                 .ok_or_else(|| self.error(key, "missing shorthand trait scope"))?;
-            if let Some(binding) = self.report.resolution.scopes[scope.0 as usize]
+            if let Some(binding) = self
+                .report
+                .resolution
                 .bindings
-                .get(&(name, Namespace::Type))
+                .get(scope, name, Namespace::Type)
                 && self.facts.associated.trait_owner(binding.target) == Some(DefId(trait_item.0))
                 && self
                     .facts

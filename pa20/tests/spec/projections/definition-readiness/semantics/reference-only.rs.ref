@@ -53,26 +53,26 @@ type 50 function-item def=30 signature=49
 type 51 array element=11 length=3
 type 52 function binders=0 parameters=[51] result=38 unsafe=false
 type 53 function-item def=16 signature=52 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=29 name="check" source=0:19
-def 14 type=31 name="fail" source=0:35
-def 15 type=19 name="X" source=0:47
-def 16 type=46 name="X" source=0:47
-def 17 type=20 name="V" source=0:52
-def 18 type=48 name="V" source=0:52
-def 19 type=40 name="f" source=0:76
-def 21 type=25 name="Self" source=0:78
-def 22 type=27 name="Out" source=0:77
-def 23 type=11 name="Self" source=0:89
-def 24 type=20 name="Out" source=0:88
-def 25 type=22 name="W" source=0:99
-def 26 type=24 name="O" source=0:107
-def 28 type=24 name="None" source=0:101
-def 30 type=50 name="Some" source=0:106
-def 32 type=26 name="Self" source=0:122
-def 33 type=34 name="C" source=0:121
-def 34 type=11 name="Self" source=0:146
-def 35 type=34 name="C" source=0:145
-def 36 type=42 name="main" source=0:160
+def 13 type=29 name="check" source=0:13
+def 14 type=31 name="fail" source=0:22
+def 15 type=19 name="X" source=0:29
+def 16 type=46 name="X" source=0:29
+def 17 type=20 name="V" source=0:32
+def 18 type=48 name="V" source=0:32
+def 19 type=40 name="f" source=0:50
+def 21 type=25 name="Self" source=0:52
+def 22 type=27 name="Out" source=0:51
+def 23 type=11 name="Self" source=0:57
+def 24 type=20 name="Out" source=0:56
+def 25 type=22 name="W" source=0:65
+def 26 type=24 name="O" source=0:71
+def 28 type=24 name="None" source=0:67
+def 30 type=50 name="Some" source=0:70
+def 32 type=26 name="Self" source=0:82
+def 33 type=34 name="C" source=0:81
+def 34 type=11 name="Self" source=0:98
+def 35 type=34 name="C" source=0:97
+def 36 type=42 name="main" source=0:110
 def 37 type=2 name="bool"
 def 38 type=3 name="char"
 def 39 type=4 name="str"
@@ -90,15 +90,15 @@ def 50 type=15 name="u128"
 def 51 type=16 name="usize"
 def 52 type=17 name="f32"
 def 53 type=18 name="f64"
-def 54 type=16 name="N" source=0:39
-def 55 type=21 name="T" source=0:93
-def 56 type=23 name="T" source=0:100
-def 57 type=2 name="ok" source=0:2
-def 58 type=11 name="x" source=0:22
-associated-owner 0 kind=trait self-def=21 self=25 source=0:78 trait=20 unsafe=false name="P"
-associated-owner 1 kind=trait-impl self-def=23 self=11 source=0:89 unsafe=false
-associated-owner 2 kind=trait self-def=32 self=26 source=0:122 trait=31 unsafe=false name="A"
-associated-owner 3 kind=trait-impl self-def=34 self=11 source=0:146 unsafe=false
+def 54 type=16 name="N" source=0:24
+def 55 type=21 name="T" source=0:60
+def 56 type=23 name="T" source=0:66
+def 57 type=2 name="ok" source=0:0
+def 58 type=11 name="x" source=0:14
+associated-owner 0 kind=trait self-def=21 self=25 source=0:52 trait=20 unsafe=false name="P"
+associated-owner 1 kind=trait-impl self-def=23 self=11 source=0:57 unsafe=false
+associated-owner 2 kind=trait self-def=32 self=26 source=0:82 trait=31 unsafe=false name="A"
+associated-owner 3 kind=trait-impl self-def=34 self=11 source=0:98 unsafe=false
 associated-member def=22 owner=0
 associated-member def=24 owner=1
 associated-member def=33 owner=2
@@ -108,18 +108,18 @@ parameter owner=21 binding=21 argument=type:25 default=-
 parameter owner=25 binding=55 argument=type:21 default=-
 parameter owner=26 binding=56 argument=type:23 default=-
 parameter owner=32 binding=32 argument=type:26 default=-
-predicate owner=20 source=0:78 subject=25 bound=trait:20 arguments=[]
-predicate owner=25 source=0:92 subject=21 bound=trait:20 arguments=[]
-predicate owner=31 source=0:122 subject=26 bound=trait:31 arguments=[]
-impl owner=23 source=0:89 subject=11 bound=trait:20 arguments=[]
+predicate owner=20 source=0:52 subject=25 bound=trait:20 arguments=[]
+predicate owner=25 source=0:59 subject=21 bound=trait:20 arguments=[]
+predicate owner=31 source=0:82 subject=26 bound=trait:31 arguments=[]
+impl owner=23 source=0:57 subject=11 bound=trait:20 arguments=[]
 impl-type owner=23 declaration=22 definition=24
-impl owner=34 source=0:146 subject=11 bound=trait:31 arguments=[]
-trait-path source=0:61 method=33 trait=31 qualifier=explicit origin=ordinary subject-source=0:56
-implementation-use source=0:61 owner=34 arguments=[]
-implementation-use source=0:63 owner=23 arguments=[]
-implementation-use source=0:144 owner=23 arguments=[]
-region-var region:1 body=0:65 source=0:61 origin=inference pending
-region-coercion body=0:65 source=0:61 actual=34 expected=36 kind=same-shape pending
+impl owner=34 source=0:98 subject=11 bound=trait:31 arguments=[]
+trait-path source=0:37 method=33 trait=31 qualifier=explicit origin=ordinary subject-source=0:34
+implementation-use source=0:37 owner=34 arguments=[]
+implementation-use source=0:39 owner=23 arguments=[]
+implementation-use source=0:96 owner=23 arguments=[]
+region-var region:1 body=0:41 source=0:37 origin=inference pending
+region-coercion body=0:41 source=0:37 actual=34 expected=36 kind=same-shape pending
 associated-type def=22 type=27
 result-contract def=22 projection=27
 result-bound def=22 index=0 subject=27 bound=sized
@@ -127,8 +127,7 @@ associated-type def=24 type=20
 associated-constant def=33 type=34
 associated-constant def=35 type=34
 impl-constant owner=34 declaration=33 selected=35 default=false
-constant-use source=0:61 definition=33 arguments=[type:11]
+constant-use source=0:37 definition=33 arguments=[type:11]
 constant-dispatch declaration=33 arguments=[type:11] selected=35 arguments=[]
-normalized-node source=0:96 original=44 result=44
-normalized-node source=0:97 original=44 result=44
-eof owners=4 members=4 parameters=5 predicates=3 impls=2 calls=0 paths=1 impl-uses=3 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=2 normalized-definitions=0
+normalized-node source=0:63 original=44 result=44
+eof owners=4 members=4 parameters=5 predicates=3 impls=2 calls=0 paths=1 impl-uses=3 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=1 normalized-definitions=0

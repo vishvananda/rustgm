@@ -4,11 +4,11 @@ use super::{
     unit::{FileId, NodeKey, Unit},
 };
 use crate::expand::stream::{ContextId, Origin};
+use crate::support::hash::HashMap;
 use crate::syntax::{
     ast::{Kind, NodeId},
     token_tree::Span,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ModuleId(pub u32);
@@ -36,8 +36,11 @@ pub struct ExpansionTrace {
     pub call: crate::expand::stream::Location,
     pub definition: Option<crate::expand::stream::Location>,
 }
+/// A frontend diagnostic. It is one pointer, so the results that carry it
+/// return in registers; diagnostics are rare and their data lives on the heap.
+pub struct Error(Box<ErrorData>);
 #[derive(Debug)]
-pub struct Error {
+pub struct ErrorData {
     pub file: FileId,
     pub span: Span,
     pub message: String,
@@ -47,7 +50,7 @@ pub struct Error {
 impl Error {
     #[must_use]
     pub fn at(file: FileId, offset: u32, message: impl Into<String>) -> Self {
-        Self {
+        Self::from(ErrorData {
             file,
             span: Span {
                 start: offset,
@@ -56,7 +59,29 @@ impl Error {
             message: message.into(),
             expansions: Vec::new(),
             introduction: ContextId(0),
-        }
+        })
+    }
+}
+impl From<ErrorData> for Error {
+    #[cold]
+    fn from(data: ErrorData) -> Self {
+        Self(Box::new(data))
+    }
+}
+impl std::ops::Deref for Error {
+    type Target = ErrorData;
+    fn deref(&self) -> &ErrorData {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for Error {
+    fn deref_mut(&mut self) -> &mut ErrorData {
+        &mut self.0
+    }
+}
+impl std::fmt::Debug for Error {
+    fn fmt(&self, output: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(output)
     }
 }
 impl std::fmt::Display for Error {
@@ -89,6 +114,14 @@ impl std::error::Error for Error {}
 impl Package {
     pub(crate) fn origin(&self, file: FileId, offset: u32) -> Option<Origin> {
         let origins = &self.unit(file).origins;
+        // Generated text is appended after the original source, so offsets
+        // before the first generated span belong to no expansion.
+        if origins
+            .first()
+            .is_none_or(|origin| offset < origin.generated.start)
+        {
+            return None;
+        }
         let index = origins.partition_point(|origin| {
             origin.generated.end <= offset && origin.generated.start != offset
         });
@@ -127,6 +160,20 @@ impl Package {
         file: super::unit::FileId,
         node: NodeId,
     ) -> Result<(bool, Vec<NameId>), Error> {
+        let mut names = Vec::new();
+        let absolute = self.path_names_into(file, node, &mut names)?;
+        Ok((absolute, names))
+    }
+
+    /// Append a path's canonical names to caller-owned scratch storage.
+    /// # Errors
+    /// Rejects malformed path facts, unsupported crate identities and name overflow.
+    pub fn path_names_into(
+        &mut self,
+        file: super::unit::FileId,
+        node: NodeId,
+        names: &mut Vec<NameId>,
+    ) -> Result<bool, Error> {
         match self.unit(file).configured.ast.node(node).kind {
             Kind::CrateRoot(0) => {
                 let name = self.names.intern("crate").map_err(|e| {
@@ -136,22 +183,26 @@ impl Package {
                         e,
                     )
                 })?;
-                Ok((false, vec![name]))
+                names.push(name);
+                Ok(false)
             }
             Kind::CrateRoot(_) => Err(Error::at(
                 file,
                 self.unit(file).configured.ast.node(node).span.start,
                 "external defining crate requires metadata",
             )),
-            Kind::Name(span) => Ok((false, vec![self.name(file, span)?])),
-            Kind::Applied { base, .. } => self.path_names(file, base),
+            Kind::Name(span, name) => {
+                names.push(self.parsed_name(file, span, name)?);
+                Ok(false)
+            }
+            Kind::Applied { base, .. } => self.path_names_into(file, base, names),
             Kind::Path { absolute, segments } => {
-                let mut names = Vec::with_capacity((segments.end - segments.start) as usize);
+                names.reserve((segments.end - segments.start) as usize);
                 for offset in segments.start..segments.end {
                     let id = self.unit(file).configured.ast.edges[offset as usize];
-                    names.extend(self.path_names(file, id)?.1);
+                    self.path_names_into(file, id, names)?;
                 }
-                Ok((absolute, names))
+                Ok(absolute)
             }
             _ => Err(Error::at(
                 file,
@@ -164,6 +215,20 @@ impl Package {
     #[must_use]
     pub fn unit(&self, file: FileId) -> &Unit {
         &self.units[file.0 as usize]
+    }
+    /// A name the parser interned, or the span's interned spelling.
+    /// # Errors
+    /// Rejects invalid source spans and name-arena overflow.
+    pub fn parsed_name(
+        &mut self,
+        file: FileId,
+        span: Span,
+        parsed: Option<NameId>,
+    ) -> Result<NameId, Error> {
+        match parsed {
+            Some(name) => Ok(name),
+            None => self.name(file, span),
+        }
     }
     /// # Errors
     /// Rejects invalid source spans and name-arena overflow.

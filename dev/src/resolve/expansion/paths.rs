@@ -2,6 +2,7 @@
 use super::{
     Builtin, Call, Error, MacroTarget, ModuleId, NodeId, NodeKey, Package, bindings::Bindings,
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     expand::{
         stream::ContextId,
@@ -9,14 +10,14 @@ use crate::{
     },
     resolve::{
         imports::{TextualSource, Work},
-        index::{Context, State},
+        index::{Context, Pending, State},
         lookup::{BindingKey, Lookup, LookupMode, Observations},
         model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
     },
     support::names::NameId,
     syntax::item::Visibility,
 };
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
 pub(super) struct Paths {
     pub state: State,
@@ -27,6 +28,7 @@ pub(super) struct Paths {
     text_ready: VecDeque<usize>,
     text_queued: Vec<bool>,
     waiting: HashMap<BindingKey, HashSet<usize>>,
+    pending: Vec<Pending>,
 }
 impl Paths {
     pub fn new(
@@ -46,7 +48,7 @@ impl Paths {
             access: Access::Public,
             members: Some(scope),
         });
-        let mut macro_targets = HashMap::new();
+        let mut macro_targets = HashMap::default();
         let bootstrap = package.source_core.is_none();
         for builtin in Builtin::ALL
             .into_iter()
@@ -85,7 +87,8 @@ impl Paths {
             textual: Vec::new(),
             text_ready: VecDeque::new(),
             text_queued: Vec::new(),
-            waiting: HashMap::new(),
+            waiting: HashMap::default(),
+            pending: Vec::new(),
         })
     }
     pub fn item(
@@ -113,11 +116,18 @@ impl Paths {
                     .definitions
                     .insert(id, introduction);
             }
-            self.work
-                .declared((definition.scope, definition.name, definition.namespace));
+            self.work.declared(
+                &resolver.facts.bindings,
+                (definition.scope, definition.name, definition.namespace),
+            );
+        }
+        // Unnameable `impl Trait` parameters have no binding to publish.
+        if matches!(item.kind, crate::syntax::item::ItemKind::Function { .. }) {
+            self.pending.push(Pending::Anonymous(body, node, item));
         }
         Ok(body.scope)
     }
+    /// A block's scope, which may declare items and textual macros.
     pub fn block(
         &mut self,
         package: &mut Package,
@@ -129,9 +139,36 @@ impl Paths {
             .state
             .bind(package)
             .new_scope(Some(parent), module, false)?;
-        self.state.facts.node_scopes.insert((module, node), scope);
+        let file = package.modules[module.0 as usize].file;
+        self.state
+            .facts
+            .node_scopes
+            .insert(module, file, node, scope);
         self.work.extend(&self.state.facts);
         Ok(scope)
+    }
+    /// Any other lexical scope (closure, arm, loop, label, binder or `if`),
+    /// created on first visit so later phases see each scope's real parent.
+    pub fn lexical(
+        &mut self,
+        package: &mut Package,
+        context: Context,
+        node: NodeId,
+    ) -> Result<ScopeId, Error> {
+        let scope = self.state.bind(package).lexical_scope(context, node)?;
+        self.work.extend(&self.state.facts);
+        Ok(scope)
+    }
+    /// Generic parameters are declared by resolution, after expansion.
+    pub fn generic(&mut self, context: Context, node: NodeId, index: u32) {
+        self.pending.push(Pending::Generic(context, node, index));
+    }
+    /// Resolution validates a textual macro's restricted visibility.
+    pub fn macro_visibility(&mut self, context: Context, node: NodeId, visibility: Visibility) {
+        if matches!(visibility, Visibility::Restricted(_)) {
+            self.pending
+                .push(Pending::Visibility(context, node, visibility));
+        }
     }
     pub fn module(
         &mut self,
@@ -221,6 +258,11 @@ impl Paths {
                 .definitions
                 .insert(id, expansion);
         }
+        // Hygienic lookups from this macro's expansions resume at its scope.
+        resolver
+            .facts
+            .node_scopes
+            .insert(context.module, context.file, node, context.scope);
         self.macro_targets
             .insert(id, MacroTarget::Declarative(index));
         self.macros.resize(index + 1, None);
@@ -248,9 +290,10 @@ impl Paths {
     ) -> Result<(), Error> {
         let definition = &resolver.facts.definitions[target.0 as usize];
         let (name, namespace, access) = (definition.name, definition.namespace, definition.access);
-        if resolver.facts.scopes[context.scope.0 as usize]
+        if resolver
+            .facts
             .bindings
-            .get(&(name, namespace))
+            .get(context.scope, name, namespace)
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
             return Err(resolver.error(context, node, "duplicate macro-path binding"));
@@ -264,8 +307,7 @@ impl Paths {
                 ambiguous: false,
             }),
             work,
-        );
-        Ok(())
+        )
     }
     pub fn import(
         &mut self,
@@ -282,8 +324,10 @@ impl Paths {
         resolver.import(context, node, &[], false, access)?;
         self.work.extend(resolver.facts);
         for definition in &resolver.facts.definitions[first_definition..] {
-            self.work
-                .declared((definition.scope, definition.name, definition.namespace));
+            self.work.declared(
+                &resolver.facts.bindings,
+                (definition.scope, definition.name, definition.namespace),
+            );
         }
         let library_builtin = resolver.facts.imports[first..].iter().any(|import| {
             import
@@ -364,7 +408,9 @@ impl Paths {
         self.state.bind(package).drive_imports(&mut self.work)?;
         let mut ready = Vec::new();
         for key in self.work.events.drain(..) {
-            if let Some(calls) = self.waiting.remove(&key) {
+            if !self.waiting.is_empty()
+                && let Some(calls) = self.waiting.remove(&key)
+            {
                 let mut calls: Vec<_> = calls.into_iter().collect();
                 calls.sort_unstable();
                 ready.extend(calls);
@@ -491,10 +537,15 @@ impl Paths {
         self.macro_targets
             .insert(target, MacroTarget::Builtin(Builtin::OptionEnv));
         self.work.extend(resolver.facts);
-        self.work.declared((scope, name, Namespace::Macro));
+        self.work
+            .declared(&resolver.facts.bindings, (scope, name, Namespace::Macro));
         Ok(())
     }
     pub fn take_error(&mut self) -> Option<Error> {
         self.work.take_error()
+    }
+    /// The declared facts and the import worklist, which resolution finishes.
+    pub fn finish(self) -> (crate::resolve::model::Resolution, Work, Vec<Pending>) {
+        (self.state.facts, self.work, self.pending)
     }
 }

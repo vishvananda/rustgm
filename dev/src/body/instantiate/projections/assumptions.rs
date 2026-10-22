@@ -1,4 +1,5 @@
 //! Concrete caller premises retain their binder and every normalization requirement.
+use crate::support::hash::HashMap;
 use crate::{
     body::regions::Contract,
     sema::{model::Declarations, projections},
@@ -12,7 +13,6 @@ use crate::{
         },
     },
 };
-use std::collections::HashMap;
 
 struct Group {
     count: u32,
@@ -25,7 +25,7 @@ pub(super) fn normalize(
     proof: &mut Obligations,
 ) -> Result<usize, &'static str> {
     let mut groups: Vec<Group> = Vec::new();
-    let mut arities = HashMap::new();
+    let mut arities = HashMap::default();
     let mut work = 0;
     for &clause in &contract.type_assumptions {
         charge(&mut work, 1)?;
@@ -48,7 +48,7 @@ pub(super) fn normalize(
         });
         groups[index].roots.push((value.predicate.ty, shorter));
     }
-    let mut targets = HashMap::new();
+    let mut targets = HashMap::default();
     let mut components: Vec<(RegionId, Vec<TypeId>)> = Vec::new();
     for group in groups {
         let scope = proof.scope(ScopeId::ROOT, group.count)?;

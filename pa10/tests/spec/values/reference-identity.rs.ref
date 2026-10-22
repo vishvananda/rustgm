@@ -22,23 +22,23 @@ type 19 reference mutable=false region=bound:0:0 referent=11
 type 20 function binders=1 parameters=[19] result=19 unsafe=false
 type 21 function-item def=13 signature=20
 type 22 reference mutable=false region=region:1 referent=11
-region-var region:1 body=0:23 source=0:19 origin=inference pending
-region-coercion body=0:23 source=0:19 actual=19 expected=22 kind=same-shape pending
-region-coercion body=0:23 source=0:23 actual=22 expected=19 kind=same-shape pending
-body 0 function def=13 signature=20 result=19 source=0:23
-  local l0 type=19 parameter=0 def=32 mutable=false storage-parent=- source=3
-  local l1 type=22 binding def=33 mutable=false storage-parent=l0 source=17
+region-var region:1 body=0:13 source=0:10 origin=inference pending
+region-coercion body=0:13 source=0:10 actual=19 expected=22 kind=same-shape pending
+region-coercion body=0:13 source=0:13 actual=22 expected=19 kind=same-shape pending
+body 0 function def=13 signature=20 result=19 source=0:13
+  local l0 type=19 parameter=0 def=32 mutable=false storage-parent=- source=1
+  local l1 type=22 binding def=33 mutable=false storage-parent=l0 source=9
   block b0:
-    live l0 source=3
-    v0 type=19 = read l0 source=19
-    v1 type=22 = constrain v0 source=19
-    live l1 source=17
-    store l1 v1 source=20
-    v2 type=1 = unit source=20
-    v3 type=22 = read l1 source=22
-    v4 type=19 = constrain v3 source=23
-    dead l1 source=23
-    dead l0 source=23
-    return v4 source=23
+    live l0 source=1
+    v0 type=19 = read l0 source=10
+    v1 type=22 = constrain v0 source=10
+    live l1 source=9
+    store l1 v1 source=11
+    v2 type=1 = unit source=11
+    v3 type=22 = read l1 source=12
+    v4 type=19 = constrain v3 source=13
+    dead l1 source=13
+    dead l0 source=13
+    return v4 source=13
 end-body
 eof bodies=1 locals=2 values=5 statements=10 blocks=1

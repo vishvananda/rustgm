@@ -1,5 +1,6 @@
 //! Lookup retains one trial while independent declarations allocate body lifetimes.
 use super::super::{Mode, OwnedCaller, Progress, Query};
+use crate::support::hash::HashMap;
 use crate::{
     expand::config::Config,
     resolve::{
@@ -20,7 +21,7 @@ use crate::{
         ItemId, Kind, Primitive, RegionId, TypeId, infer::Context, parameters::predicates::Bound,
     },
 };
-use std::{collections::HashMap, fmt::Write as _, path::Path};
+use std::{fmt::Write as _, path::Path};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 struct NoFiles;
 impl Sources for NoFiles {
@@ -61,7 +62,7 @@ fn fixture(depth: usize) -> TestResult<(Report, Declarations, DefId)> {
 }
 
 fn delay(facts: &mut Declarations) -> TestResult<HashMap<DefId, (ItemId, Implementation)>> {
-    let mut delayed = HashMap::new();
+    let mut delayed = HashMap::default();
     let mut seeds = Vec::new();
     for header in facts.generics.implementations() {
         let Bound::Trait(application) = header.predicate.bound else {
@@ -115,7 +116,7 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
             source: key,
             origin: BodyRegionOrigin::Annotation,
         };
-        facts.body_regions.push(region);
+        facts.body_regions.allocate(region)?;
         let ty = facts.types.intern(Kind::Reference {
             region: RegionId(1),
             mutable: false,
@@ -161,7 +162,9 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
                 );
                 assert_eq!(observations(&query, &facts)?, before);
             }
-            facts.body_regions.extend([region; 3]);
+            for _ in 0..3 {
+                facts.body_regions.allocate(region)?;
+            }
             let crate::sema::traits::selection::Dependency::Header(owner) = owner else {
                 return Err("expected an implementation header dependency".into());
             };
@@ -176,7 +179,7 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
         }
         assert!(delayed.is_empty());
         assert_eq!(waits, depth + 2);
-        assert_eq!(facts.body_regions.len(), 1 + 3 * waits);
+        assert_eq!(facts.body_regions.log().len(), 1 + 3 * waits);
         assert_eq!(
             (
                 facts.quantified_proofs.len(),
@@ -201,7 +204,7 @@ fn observations(
         query.prefix.steps,
         trial.context.steps,
         facts.methods.selection_probes,
-        facts.body_regions.len(),
+        facts.body_regions.log().len(),
         trial.pending.cursor,
         trial.pending.first,
     ))

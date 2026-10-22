@@ -1,19 +1,13 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+active [0,1,2,3,4,5,6,7,8]
 node 0 12 13 generic Type "T" - [] -
 node 1 16 19 name "i32"
-node 2 16 19 path false [1]
-node 3 16 19 type Path [2]
-node 4 14 19 generic Type "U" - [] 3
-node 5 27 28 name "T"
-node 6 27 28 path false [5]
-node 7 27 28 type Path [6]
-node 8 21 28 field-definition "first" private 7
-node 9 36 37 name "U"
-node 10 36 37 path false [9]
-node 11 36 37 type Path [10]
-node 12 29 37 field-definition "second" private 11
-node 13 0 38 item 0
-item 0 "Pair" private [0,4] [] struct Record [8,12]
-node 14 0 38 crate [13]
-root 14
+node 2 14 19 generic Type "U" - [] 1
+node 3 27 28 name "T"
+node 4 21 28 field-definition "first" private 3
+node 5 36 37 name "U"
+node 6 29 37 field-definition "second" private 5
+node 7 0 38 item 0
+item 0 "Pair" private [0,2] [] struct Record [4,6]
+node 8 0 38 crate [7]
+root 8
 eof 39

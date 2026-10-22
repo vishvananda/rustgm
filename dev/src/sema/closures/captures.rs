@@ -1,7 +1,7 @@
 //! Canonical capture prefixes are selected in two passes over a flat place forest.
 use crate::resolve::model::DefId;
 use crate::sema::members::Selection;
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// Required capture strength, independent of the closure's eventual call trait.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -59,8 +59,8 @@ impl Default for Graph {
     fn default() -> Self {
         Self {
             paths: Vec::new(),
-            roots: HashMap::new(),
-            edges: HashMap::new(),
+            roots: HashMap::default(),
+            edges: HashMap::default(),
             work: 0,
             limit: 1_000_000,
             failed: false,

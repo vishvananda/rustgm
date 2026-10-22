@@ -1,7 +1,7 @@
 //! Deterministic diagnostic view of typed name facts; never consumed by semantics.
 use super::{
     expansion::{Body, Report},
-    model::{Access, Resolution, Target},
+    model::{Access, Resolution, ScopeId, Target},
     names::NameId,
     package::Package,
 };
@@ -51,23 +51,21 @@ pub fn write(package: &Package, facts: &Resolution, out: &mut impl Write) -> io:
         )?;
         access(out, definition.access)?;
         if let Some(node) = definition.node {
-            write!(out, " source={}:{}", node.file.0, node.node.0)?;
+            write!(out, " source={}:{}", node.file.0, node.node.get())?;
         }
         if let Some(members) = definition.members {
             write!(out, " members={}", members.0)?;
         }
         writeln!(out)?;
     }
-    for (index, scope) in facts.scopes.iter().enumerate() {
-        for key in &scope.order {
-            let Some(binding) = scope.bindings.get(key) else {
-                continue;
-            };
+    for index in 0..facts.scopes.len() {
+        let scope = ScopeId(u32::try_from(index).map_err(|_| io::Error::other("too many scopes"))?);
+        for (name, namespace, binding) in facts.bindings.scope(scope) {
             write!(
                 out,
                 "binding scope={index} {} name={} def={} {:?} ambiguous={} access=",
-                key.1.name(),
-                key.0.0,
+                namespace.name(),
+                name.0,
                 binding.target.0,
                 binding.origin,
                 binding.ambiguous
@@ -81,7 +79,7 @@ pub fn write(package: &Package, facts: &Resolution, out: &mut impl Write) -> io:
             out,
             "ref {}:{} scope={} {} ",
             reference.node.file.0,
-            reference.node.node.0,
+            reference.node.node.get(),
             reference.scope.0,
             reference.namespace.name()
         )?;
@@ -95,7 +93,9 @@ pub fn write(package: &Package, facts: &Resolution, out: &mut impl Write) -> io:
         writeln!(
             out,
             "expansion {}:{} scope={}",
-            node.file.0, node.node.0, scope.0
+            node.file.0,
+            node.node.get(),
+            scope.0
         )?;
     }
     writeln!(
@@ -144,7 +144,7 @@ pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
             definition.name.0, definition.module.0, definition.context.0, definition.introduction.0
         )?;
         if let Some(node) = definition.node {
-            write!(out, "{}:{}", node.file.0, node.node.0)?;
+            write!(out, "{}:{}", node.file.0, node.node.get())?;
         } else {
             write!(out, "builtin")?;
         }
@@ -166,7 +166,7 @@ pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
             invocation.parent.0,
             invocation.definition,
             invocation.node.file.0,
-            invocation.node.node.0,
+            invocation.node.node.get(),
             invocation.original.start,
             invocation.original.end,
             invocation.generated.start,

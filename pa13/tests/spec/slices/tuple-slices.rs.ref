@@ -24,30 +24,30 @@ type 21 reference mutable=false region=bound:0:1 referent=19
 type 22 tuple [20,21]
 type 23 function binders=2 parameters=[22] result=1 unsafe=false
 type 24 function-item def=13 signature=23
-root 0:23 pattern=0
-root 0:30 pattern=8
-root 0:39 pattern=14
-pattern 0 source=0:23 input=22 product variant=- fields=0:2
-pattern 1 source=0:21 input=20 or alternatives=0:2
-pattern 2 source=0:22 input=21 wildcard
-pattern 3 source=0:17 input=20 deref mutable=false implicit=true pattern=5
-pattern 4 source=0:20 input=20 deref mutable=false implicit=true pattern=6
-pattern 5 source=0:17 input=19 slice minimum=0 exact=true fields=2:2
-pattern 6 source=0:20 input=19 slice minimum=1 exact=false fields=2:3
-pattern 7 source=0:18 input=2 range=0
-pattern 8 source=0:30 input=22 product variant=- fields=3:5
-pattern 9 source=0:28 input=20 deref mutable=false implicit=true pattern=11
-pattern 10 source=0:29 input=21 deref mutable=false implicit=true pattern=13
-pattern 11 source=0:28 input=19 slice minimum=1 exact=false fields=5:6
-pattern 12 source=0:26 input=2 range=1
-pattern 13 source=0:29 input=19 slice minimum=0 exact=true fields=6:6
-pattern 14 source=0:39 input=22 product variant=- fields=6:8
-pattern 15 source=0:35 input=20 deref mutable=false implicit=true pattern=17
-pattern 16 source=0:38 input=21 deref mutable=false implicit=true pattern=19
-pattern 17 source=0:35 input=19 slice minimum=1 exact=false fields=8:9
-pattern 18 source=0:33 input=2 range=2
-pattern 19 source=0:38 input=19 slice minimum=1 exact=false fields=9:10
-pattern 20 source=0:36 input=2 wildcard
+root 0:16 pattern=0
+root 0:23 pattern=8
+root 0:32 pattern=14
+pattern 0 source=0:16 input=22 product variant=- fields=0:2
+pattern 1 source=0:14 input=20 or alternatives=0:2
+pattern 2 source=0:15 input=21 wildcard
+pattern 3 source=0:10 input=20 deref mutable=false implicit=true pattern=5
+pattern 4 source=0:13 input=20 deref mutable=false implicit=true pattern=6
+pattern 5 source=0:10 input=19 slice minimum=0 exact=true fields=2:2
+pattern 6 source=0:13 input=19 slice minimum=1 exact=false fields=2:3
+pattern 7 source=0:11 input=2 range=0
+pattern 8 source=0:23 input=22 product variant=- fields=3:5
+pattern 9 source=0:21 input=20 deref mutable=false implicit=true pattern=11
+pattern 10 source=0:22 input=21 deref mutable=false implicit=true pattern=13
+pattern 11 source=0:21 input=19 slice minimum=1 exact=false fields=5:6
+pattern 12 source=0:19 input=2 range=1
+pattern 13 source=0:22 input=19 slice minimum=0 exact=true fields=6:6
+pattern 14 source=0:32 input=22 product variant=- fields=6:8
+pattern 15 source=0:28 input=20 deref mutable=false implicit=true pattern=17
+pattern 16 source=0:31 input=21 deref mutable=false implicit=true pattern=19
+pattern 17 source=0:28 input=19 slice minimum=1 exact=false fields=8:9
+pattern 18 source=0:26 input=2 range=2
+pattern 19 source=0:31 input=19 slice minimum=1 exact=false fields=9:10
+pattern 20 source=0:29 input=2 wildcard
 field 0 tuple=0 pattern=1
 field 1 tuple=1 pattern=2
 field 2 index=0 pattern=7
@@ -63,8 +63,8 @@ alternative 1 pattern=4
 range 0 ranks=1:1
 range 1 ranks=0:0
 range 2 ranks=0:0
-match 0 source=0:42 input=0:16 arms=0:3 exhaustive=true uninhabited=false work=4523
-arm 0 source=0:25 pattern=0 guard=- useful=true value=0:24
-arm 1 source=0:32 pattern=8 guard=- useful=true value=0:31
-arm 2 source=0:41 pattern=14 guard=- useful=true value=0:40
-eof roots=3 patterns=21 fields=10 alternatives=2 ranges=3 matches=1 arms=3 coverage-work=4523 region-vars=0 region-equalities=0 conditions=0 chains=0
+match 0 source=0:35 input=0:9 arms=0:3 exhaustive=true uninhabited=false work=4528
+arm 0 source=0:18 pattern=0 guard=- useful=true value=0:17
+arm 1 source=0:25 pattern=8 guard=- useful=true value=0:24
+arm 2 source=0:34 pattern=14 guard=- useful=true value=0:33
+eof roots=3 patterns=21 fields=10 alternatives=2 ranges=3 matches=1 arms=3 coverage-work=4528 region-vars=0 region-equalities=0 conditions=0 chains=0

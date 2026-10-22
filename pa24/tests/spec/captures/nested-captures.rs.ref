@@ -30,15 +30,11 @@ function @rg.closure.0(%p0 : ptr) -> u8 {
     copyobj 8x8 %t2, %t3
     %t4 = addr $s1
     %t5 = call u8 @rg.closure.1(%t4)
-    %t6 = convert zext i16 u8 %t5
-    %t7 = convert zext i16 u8 2
-    %t8 = binary add i16 %t6, %t7
-    %t9 = convert trunc u8 i16 %t8
-    %t10 = convert zext i16 u8 %t9
-    %t11 = cmp ne i16 %t8, %t10
-    branch %t11, ^b1, ^b2
+    %t6 = binary add u8 %t5, 2
+    %t7 = cmp ult u8 %t6, %t5
+    branch %t7, ^b1, ^b2
   block ^b2:
-    return u8 %t9
+    return u8 %t6
   block ^b1:
     call void @abort()
     unreachable

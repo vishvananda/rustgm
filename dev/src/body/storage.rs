@@ -15,7 +15,7 @@ pub struct Range {
     pub inner: scopes::Id,
     pub outer: Option<scopes::Id>,
 }
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum End {
     Scopes(Range),
     /// A let-else failure ends its initializer's places, including extended ones,

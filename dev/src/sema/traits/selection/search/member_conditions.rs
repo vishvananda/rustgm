@@ -1,5 +1,6 @@
 //! Associated member input conditions remain on the parent's proof stack.
 use super::{Action, Context, Decision, Declarations, Frame, Node, Search, inference};
+use crate::support::hash::HashMap;
 use crate::{
     sema::projections::families,
     types::{
@@ -7,7 +8,6 @@ use crate::{
         projection::Application,
     },
 };
-use std::collections::HashMap;
 
 pub(super) type Key = (Application, ScopeId);
 pub(super) struct Formation {
@@ -56,7 +56,7 @@ impl Frame {
             parent: None,
             cursor: 0,
             children: Vec::new(),
-            universes: HashMap::new(),
+            universes: HashMap::default(),
             stopped: None,
             registered: false,
             finished: false,

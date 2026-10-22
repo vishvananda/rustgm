@@ -8,29 +8,155 @@ use super::{
     unit::NodeKey,
 };
 use crate::expand::stream::ContextId;
+use crate::support::hash::HashMap;
 use crate::syntax::ast::{Kind, NodeId, PatternFlavor};
-use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 #[derive(Clone, Copy)]
-struct Local {
+pub(crate) struct Local {
     name: NameId,
     node: NodeId,
     mutable: bool,
     by_ref: bool,
 }
+/// Patterns bind a handful of names: search them linearly and index only
+/// unusually large binding sets.
+pub(crate) struct SmallMap<K, V> {
+    entries: Vec<(K, V)>,
+    index: HashMap<K, usize>,
+}
+impl<K, V> Default for SmallMap<K, V> {
+    fn default() -> Self {
+        Self {
+            entries: Vec::new(),
+            index: HashMap::default(),
+        }
+    }
+}
+impl<K: Copy + Eq + Hash, V: Copy> SmallMap<K, V> {
+    const LINEAR: usize = 8;
+    fn position(&self, key: K) -> Option<usize> {
+        if self.index.is_empty() {
+            self.entries.iter().position(|(entry, _)| *entry == key)
+        } else {
+            self.index.get(&key).copied()
+        }
+    }
+    pub fn get(&self, key: K) -> Option<V> {
+        self.position(key).map(|index| self.entries[index].1)
+    }
+    /// Insert or replace, returning the previous value like `HashMap::insert`.
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        if let Some(index) = self.position(key) {
+            return Some(std::mem::replace(&mut self.entries[index].1, value));
+        }
+        self.entries.push((key, value));
+        if self.entries.len() > Self::LINEAR {
+            if self.index.is_empty() {
+                self.index.extend(
+                    self.entries
+                        .iter()
+                        .enumerate()
+                        .map(|(index, (entry, _))| (*entry, index)),
+                );
+            } else {
+                self.index.insert(key, self.entries.len() - 1);
+            }
+        }
+        None
+    }
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+    pub fn clear(&mut self) {
+        self.entries.clear();
+        self.index.clear();
+    }
+}
+/// Reusable binding storage for one pattern or alternative. Patterns nested in
+/// const arguments take another frame from the resolver's pool.
+#[derive(Default)]
+pub(crate) struct PatternFrame {
+    locals: Vec<Local>,
+    aliases: Vec<(NodeId, NodeId)>,
+    names: SmallMap<super::hygiene::Ident, Local>,
+    representatives: SmallMap<NodeId, super::model::DefId>,
+    seen: SmallMap<super::hygiene::Ident, ()>,
+}
 impl Resolver<'_> {
-    pub fn bind_pattern(
+    fn take_frame(&mut self) -> PatternFrame {
+        let mut frame = self.patterns.pop().unwrap_or_default();
+        frame.locals.clear();
+        frame.aliases.clear();
+        frame.names.clear();
+        frame.representatives.clear();
+        frame.seen.clear();
+        frame
+    }
+    pub fn bind_pattern(&mut self, c: Context, node: NodeId, kind: DefKind) -> Result<(), Error> {
+        let mut frame = self.take_frame();
+        let result = self.bind_with(c, node, kind, &mut frame, None);
+        self.patterns.push(frame);
+        result
+    }
+    /// Bind several patterns that must not repeat an identity, such as parameters.
+    pub fn bind_patterns(
+        &mut self,
+        c: Context,
+        parameters: crate::syntax::ast::List,
+    ) -> Result<(), Error> {
+        let mut shared = self.take_frame();
+        let result = self.parameter_patterns(c, parameters, &mut shared.seen);
+        self.patterns.push(shared);
+        result
+    }
+    fn parameter_patterns(
+        &mut self,
+        c: Context,
+        parameters: crate::syntax::ast::List,
+        seen: &mut SmallMap<super::hygiene::Ident, ()>,
+    ) -> Result<(), Error> {
+        for offset in parameters.start..parameters.end {
+            let mut node = self.package.unit(c.file).configured.ast.edges[offset as usize];
+            if !self.active(c, node) {
+                continue;
+            }
+            while let Kind::Attributed { value, .. } = self.kind(c, node) {
+                node = value;
+            }
+            if let Kind::Parameter { pattern, ty } = self.kind(c, node) {
+                if let Some(ty) = ty {
+                    self.visit(c, ty, Namespace::Type)?;
+                }
+                let mut frame = self.take_frame();
+                let result = self.bind_with(c, pattern, DefKind::Parameter, &mut frame, Some(seen));
+                self.patterns.push(frame);
+                result?;
+            } else {
+                self.visit(c, node, Namespace::Value)?;
+            }
+        }
+        Ok(())
+    }
+    fn bind_with(
         &mut self,
         c: Context,
         node: NodeId,
         kind: DefKind,
-        seen: &mut HashSet<super::hygiene::Ident>,
+        frame: &mut PatternFrame,
+        shared: Option<&mut SmallMap<super::hygiene::Ident, ()>>,
     ) -> Result<(), Error> {
-        let mut bindings = Vec::new();
-        let mut aliases = Vec::new();
-        self.pattern(c, node, &mut bindings, &mut aliases)?;
-        let mut representatives = (!aliases.is_empty()).then(HashMap::new);
-        for local in bindings {
-            if !seen.insert(self.pattern_identity(c, local)?) {
+        let PatternFrame {
+            locals: bindings,
+            aliases,
+            representatives,
+            seen: own,
+            ..
+        } = frame;
+        let seen = shared.unwrap_or(own);
+        self.pattern(c, node, bindings, aliases)?;
+        let linked = !aliases.is_empty();
+        for &local in bindings.iter() {
+            if seen.insert(self.pattern_identity(c, local)?, ()).is_some() {
                 return Err(self.error(
                     c,
                     local.node,
@@ -52,19 +178,18 @@ impl Resolver<'_> {
                 },
                 true,
             )?;
-            if let Some(representatives) = &mut representatives {
+            if linked {
                 representatives.insert(local.node, definition);
             }
         }
-        let Some(mut representatives) = representatives else {
+        if !linked {
             return Ok(());
-        };
+        }
         // An outer alternative links representatives only after visiting its
         // nested alternatives. Reverse order resolves parents before children.
-        for (alias, representative) in aliases.into_iter().rev() {
+        for &(alias, representative) in aliases.iter().rev() {
             let definition = representatives
-                .get(&representative)
-                .copied()
+                .get(representative)
                 .ok_or_else(|| self.error(c, alias, "missing pattern binding representative"))?;
             representatives.insert(alias, definition);
             self.facts.pattern_aliases.push((
@@ -74,6 +199,63 @@ impl Resolver<'_> {
                 },
                 definition,
             ));
+        }
+        Ok(())
+    }
+    /// Every alternative binds the first alternative's identities and modes.
+    fn alternatives(
+        &mut self,
+        c: Context,
+        elements: crate::syntax::ast::List,
+        first: &mut PatternFrame,
+        branch: &mut PatternFrame,
+        aliases: &mut Vec<(NodeId, NodeId)>,
+    ) -> Result<(), Error> {
+        let mut expected = false;
+        for offset in elements.start..elements.end {
+            let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
+            branch.locals.clear();
+            branch.names.clear();
+            self.pattern(c, child, &mut branch.locals, aliases)?;
+            for &local in &branch.locals {
+                if branch
+                    .names
+                    .insert(self.pattern_identity(c, local)?, local)
+                    .is_some()
+                {
+                    return Err(self.error(c, local.node, "duplicate binding in pattern"));
+                }
+            }
+            if expected {
+                if first.names.len() != branch.names.len() {
+                    return Err(self.error(
+                        c,
+                        child,
+                        "or-pattern alternatives bind different names or modes",
+                    ));
+                }
+                // Iterate source order; hash seeds must not order the
+                // retained identity facts consumed by later phases.
+                for &local in &branch.locals {
+                    let first = first
+                        .names
+                        .get(self.pattern_identity(c, local)?)
+                        .filter(|first| {
+                            first.mutable == local.mutable && first.by_ref == local.by_ref
+                        })
+                        .ok_or_else(|| {
+                            self.error(
+                                c,
+                                child,
+                                "or-pattern alternatives bind different names or modes",
+                            )
+                        })?;
+                    aliases.push((local.node, first.node));
+                }
+            } else {
+                std::mem::swap(first, branch);
+                expected = true;
+            }
         }
         Ok(())
     }
@@ -113,7 +295,7 @@ impl Resolver<'_> {
                 mutable,
             } => {
                 if lifetime.end > lifetime.start {
-                    self.lifetime(c, node, lifetime)?;
+                    self.lifetime(c, node, lifetime, None)?;
                 }
                 bindings.push(Local {
                     name: self.package.name(c.file, name)?,
@@ -124,11 +306,12 @@ impl Resolver<'_> {
             }
             Kind::Binding {
                 name,
+                symbol,
                 mutable,
                 by_ref,
                 subpattern,
             } => {
-                let name = self.package.name(c.file, name)?;
+                let name = self.package.parsed_name(c.file, name, symbol)?;
                 if let Lookup::Found(binding) = self.lexical(c.scope, name, Namespace::Value)
                     && matches!(
                         self.facts.definitions[binding.target.0 as usize].kind,
@@ -169,53 +352,13 @@ impl Resolver<'_> {
                 elements,
                 ..
             } => {
-                let mut expected = None;
-                let mut first = Vec::new();
-                for offset in elements.start..elements.end {
-                    let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
-                    let mut branch = Vec::new();
-                    self.pattern(c, child, &mut branch, aliases)?;
-                    let mut names = HashMap::new();
-                    for local in &branch {
-                        if names
-                            .insert(self.pattern_identity(c, *local)?, *local)
-                            .is_some()
-                        {
-                            return Err(self.error(c, local.node, "duplicate binding in pattern"));
-                        }
-                    }
-                    if let Some(expected) = &expected {
-                        let expected: &HashMap<_, Local> = expected;
-                        if expected.len() != names.len() {
-                            return Err(self.error(
-                                c,
-                                child,
-                                "or-pattern alternatives bind different names or modes",
-                            ));
-                        }
-                        // Iterate source order; hash seeds must not order the
-                        // retained identity facts consumed by later phases.
-                        for local in &branch {
-                            let first = expected
-                                .get(&self.pattern_identity(c, *local)?)
-                                .filter(|first| {
-                                    first.mutable == local.mutable && first.by_ref == local.by_ref
-                                })
-                                .ok_or_else(|| {
-                                    self.error(
-                                        c,
-                                        child,
-                                        "or-pattern alternatives bind different names or modes",
-                                    )
-                                })?;
-                            aliases.push((local.node, first.node));
-                        }
-                    } else {
-                        expected = Some(names);
-                        first = branch;
-                    }
-                }
-                bindings.extend(first);
+                let mut first = self.take_frame();
+                let mut branch = self.take_frame();
+                let result = self.alternatives(c, elements, &mut first, &mut branch, aliases);
+                bindings.extend_from_slice(&first.locals);
+                self.patterns.push(branch);
+                self.patterns.push(first);
+                result?;
             }
             Kind::Pattern { path, elements, .. } => {
                 if let Some(path) = path {
@@ -233,11 +376,17 @@ impl Resolver<'_> {
                     self.pattern(c, child, bindings, aliases)?;
                 }
             }
-            Kind::Path { .. } | Kind::Qualified { .. } => self.visit(c, node, Namespace::Value)?,
+            // A one-name path pattern only arises from an opaque path fragment.
+            Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. } => {
+                self.visit(c, node, Namespace::Value)?;
+            }
             Kind::PatternRange { start, end, .. } => {
                 for bound in [start, end].into_iter().flatten() {
-                    if let Kind::Binding { name: span, .. } = self.kind(c, bound) {
-                        let name = self.package.name(c.file, span)?;
+                    if let Kind::Binding {
+                        name: span, symbol, ..
+                    } = self.kind(c, bound)
+                    {
+                        let name = self.package.parsed_name(c.file, span, symbol)?;
                         let target =
                             self.hygienic_name(c, bound, span.start, name, Namespace::Value)?;
                         self.facts.references.push(Reference {

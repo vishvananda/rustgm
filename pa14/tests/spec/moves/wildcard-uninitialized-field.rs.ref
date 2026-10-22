@@ -1,5 +1,5 @@
 ownership-crate 1
-body 0 source=0:17
+body 0 source=0:10
   path m0 type=22 root=l0 subtree=0..2
   path m1 type=19 root=l0 parent=m0 tuple-field=0 subtree=1..2
   block b0 reachable=true

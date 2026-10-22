@@ -1,5 +1,5 @@
 //! Pattern and type atoms needed by PA4 bodies. PA5 owns full item/type grammar.
-use super::{Kind, LexError, NORMAL, NodeId, P, Parser, Span, TokenKind, error};
+use super::{Kind, LexError, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error};
 use crate::{
     literal,
     syntax::ast::{PatternFlavor, TypeFlavor},
@@ -72,32 +72,34 @@ impl Parser<'_, '_> {
             }
             return Ok(node);
         }
-        let token = self
-            .cursor
-            .peek(0)?
-            .ok_or_else(|| error(self.cursor.end(), "expected pattern"))?;
+        let Some((token, word)) = self.cursor.current()? else {
+            return Err(error(self.cursor.end(), "expected pattern"));
+        };
         let start = token.start;
-        if self.word("_")? {
-            return self.node(start, Kind::Wildcard);
-        }
-        if self.eat(P::DotDot)? {
-            return self.node(start, Kind::RestPattern);
-        }
-        if self.cursor.at(P::And)? || self.cursor.at(P::AndAnd)? {
-            if self.cursor.at(P::AndAnd)? {
-                self.cursor.split(P::And, P::And)?;
-            } else {
+        match token.kind {
+            TokenKind::Identifier if word == Word::Underscore => {
                 self.required()?;
+                return self.node(start, Kind::Wildcard);
             }
-            let mutable = self.word("mut")?;
-            let pattern = self.pattern(false)?;
-            return self.node(start, Kind::ReferencePattern { mutable, pattern });
+            TokenKind::Punctuation(P::DotDot) => {
+                self.required()?;
+                return self.node(start, Kind::RestPattern);
+            }
+            TokenKind::Punctuation(P::And | P::AndAnd) => {
+                if token.kind == TokenKind::Punctuation(P::AndAnd) {
+                    self.cursor.split(P::And, P::And)?;
+                } else {
+                    self.required()?;
+                }
+                let mutable = self.eat_word(Word::Mut)?;
+                let pattern = self.pattern(false)?;
+                return self.node(start, Kind::ReferencePattern { mutable, pattern });
+            }
+            _ => {}
         }
-        if self.cursor.at(P::OpenParen)? || self.cursor.at(P::OpenBracket)? {
-            let tuple = self.eat(P::OpenParen)?;
-            if !tuple {
-                self.expect(P::OpenBracket)?;
-            }
+        if let TokenKind::Punctuation(open @ (P::OpenParen | P::OpenBracket)) = token.kind {
+            self.required()?;
+            let tuple = open == P::OpenParen;
             let close = if tuple {
                 P::CloseParen
             } else {
@@ -120,11 +122,14 @@ impl Parser<'_, '_> {
                 },
             );
         }
-        if self.cursor.at(P::Minus)? || literal::is_token(self.cursor.source, token) {
+        if token.kind == TokenKind::Punctuation(P::Minus)
+            || (super::literal_candidate(token.kind, word)
+                && literal::is_token(self.cursor.source, token))
+        {
             return self.literal_pattern();
         }
-        let by_ref = self.word("ref")?;
-        let mutable = self.word("mut")?;
+        let by_ref = self.eat_word(Word::Ref)?;
+        let mutable = self.eat_word(Word::Mut)?;
         let opaque_path = self
             .splice()?
             .is_some_and(|splice| splice.syntax_kind() == Some(F::Path));
@@ -158,26 +163,17 @@ impl Parser<'_, '_> {
             }
             return Ok(path);
         }
-        let simple = match self.ast.node(path).kind {
-            Kind::Path {
-                absolute: false,
-                segments,
-            } if self.ast.list(segments).len() == 1 => {
-                let segment = self.ast.node(self.ast.list(segments)[0]);
-                if matches!(segment.kind, Kind::Name(_)) {
-                    Some(segment.span)
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-        let Some(name) = simple else {
+        let Kind::Name(name, symbol) = self.ast.node(path).kind else {
             if by_ref || mutable {
                 return Err(error(start, "binding modifier requires an identifier"));
             }
             return Ok(path);
         };
+        // The one-name path was the newest node and has no other owner: the
+        // binding replaces it instead of leaving it unreachable.
+        if path.get() as usize + 1 == self.ast.nodes.len() {
+            self.ast.nodes.pop();
+        }
         let subpattern = if self.eat(P::At)? {
             Some(self.pattern(false)?)
         } else {
@@ -187,6 +183,7 @@ impl Parser<'_, '_> {
             start,
             Kind::Binding {
                 name,
+                symbol,
                 mutable,
                 by_ref,
                 subpattern,
@@ -229,7 +226,7 @@ impl Parser<'_, '_> {
                         | TokenKind::CrateRoot(_)
                         | TokenKind::Punctuation(P::Minus | P::ColonColon | P::Less)
                 )
-            }) && !self.cursor.word("if")?
+            }) && !self.cursor.at_word(Word::If)?
             {
                 Some(self.pattern_atom()?)
             } else {
@@ -246,6 +243,7 @@ impl Parser<'_, '_> {
                     self.ast.node(bound).kind,
                     Kind::Literal(_)
                         | Kind::DeferredLiteral(_)
+                        | Kind::Name(..)
                         | Kind::Path { .. }
                         | Kind::Qualified { .. }
                         | Kind::Unary {
@@ -293,10 +291,10 @@ impl Parser<'_, '_> {
                 break;
             }
             let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
-            let by_ref = self.word("ref")?;
-            let mutable = self.word("mut")?;
+            let by_ref = self.eat_word(Word::Ref)?;
+            let mutable = self.eat_word(Word::Mut)?;
             let token = self.required()?;
-            if !self.field_name(token) {
+            if !self.field_name(token, self.cursor.last_word()) {
                 return Err(error(token.start, "expected pattern field"));
             }
             let name = Span {
@@ -315,10 +313,12 @@ impl Parser<'_, '_> {
                         "numeric pattern field requires a pattern",
                     ));
                 }
+                let symbol = self.intern(name)?;
                 self.node(
                     start,
                     Kind::Binding {
                         name,
+                        symbol,
                         by_ref,
                         mutable,
                         subpattern: None,
@@ -369,7 +369,7 @@ impl Parser<'_, '_> {
             if !literal::is_token(self.cursor.source, token) {
                 return Err(error(token.start, "expected literal pattern"));
             }
-            let literal = self.node(token.start, Kind::DeferredLiteral(token))?;
+            let literal = self.deferred_literal(token)?;
             return if negative {
                 self.node(
                     start,
@@ -428,7 +428,7 @@ impl Parser<'_, '_> {
             .peek(0)?
             .ok_or_else(|| error(self.cursor.end(), "expected type"))?;
         let start = token.start;
-        if self.word("_")? {
+        if self.eat_word(Word::Underscore)? {
             return self.node(start, Kind::InferType);
         }
         if self.eat(P::Bang)? {
@@ -447,16 +447,10 @@ impl Parser<'_, '_> {
                 .is_some_and(|t| matches!(t.kind, TokenKind::Lifetime | TokenKind::RawLifetime))
             {
                 let lifetime = self.required()?;
-                let node = self.node(
-                    lifetime.start,
-                    Kind::Name(Span {
-                        start: lifetime.start,
-                        end: lifetime.end,
-                    }),
-                )?;
+                let node = self.name_node(lifetime)?;
                 self.scratch.push(node);
             }
-            let mutable = self.word("mut")?;
+            let mutable = self.eat_word(Word::Mut)?;
             let ty = self.ty()?;
             self.scratch.push(ty);
             if mutable {
@@ -465,9 +459,9 @@ impl Parser<'_, '_> {
                 TypeFlavor::Ref
             }
         } else if self.eat(P::Star)? {
-            let flavor = if self.word("const")? {
+            let flavor = if self.eat_word(Word::Const)? {
                 TypeFlavor::PointerConst
-            } else if self.word("mut")? {
+            } else if self.eat_word(Word::Mut)? {
                 TypeFlavor::PointerMut
             } else {
                 return Err(self.error("pointer type requires const or mut")?);
@@ -505,9 +499,8 @@ impl Parser<'_, '_> {
             self.expect(P::CloseBracket)?;
             flavor
         } else {
-            let path = self.path()?;
-            self.scratch.push(path);
-            TypeFlavor::Path
+            // A path type is its path node; no wrapper records the type position.
+            return self.path();
         };
         let elements = self.list(mark)?;
         self.node(start, Kind::Type { flavor, elements })

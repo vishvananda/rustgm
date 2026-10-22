@@ -22,9 +22,9 @@ type 19 function binders=0 parameters=[] result=11 unsafe=false
 type 20 function-item def=13 signature=19
 type 21 function-item def=14 signature=19
 type 22 function-item def=15 signature=19
-def 13 type=20 name="f" source=0:29
-def 14 type=21 name="a" source=0:35
-def 15 type=22 name="b" source=0:41
+def 13 type=20 name="f" source=0:20
+def 14 type=21 name="a" source=0:24
+def 15 type=22 name="b" source=0:28
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -42,49 +42,45 @@ def 29 type=15 name="u128"
 def 30 type=16 name="usize"
 def 31 type=17 name="f32"
 def 32 type=18 name="f64"
-def 33 type=19 name="f" source=0:5
-function def=13 source=0:29 signature=19 body=0:28
-function def=14 source=0:35 signature=19 body=0:34
-function def=15 source=0:41 signature=19 body=0:40
-node 0:1 type=11 span=8:10
-node 0:2 type=11 span=8:10
-node 0:5 type=19 span=15:16 binding=33
-node 0:7 type=11 span=23:25
-node 0:8 type=11 span=23:25
-node 0:9 type=19 span=17:25
-node 0:10 type=2 span=34:38
-scalar 0:10 bool true
-node 0:12 type=21 span=45:46
-adjustment 0:12 function-pointer target=19
-node 0:13 type=0 span=39:46 control=0:23
-node 0:14 type=0 span=39:47
-node 0:15 type=0 span=38:48
-adjustment 0:15 never target=1
-node 0:16 type=1 span=31:48
-node 0:17 type=1 span=31:48
-node 0:19 type=22 span=54:55
-adjustment 0:19 function-pointer target=19
-node 0:20 type=0 span=48:55 control=0:23
-node 0:21 type=0 span=48:56
-node 0:22 type=0 span=30:57
-adjustment 0:22 never target=1
-node 0:23 type=19 span=26:57
-node 0:24 type=1 span=11:58
-node 0:26 type=19 span=58:59
-node 0:27 type=11 span=58:61
-operation 0:27 call signature=19
-node 0:28 type=11 span=10:62
-node 0:29 type=20 span=0:62
-node 0:31 type=11 span=71:73
-node 0:32 type=11 span=71:73
-node 0:33 type=11 span=74:75
-scalar 0:33 integer bits=0x00000000000000000000000000000001
-node 0:34 type=11 span=73:76
-node 0:35 type=21 span=63:76
-node 0:37 type=11 span=85:87
-node 0:38 type=11 span=85:87
-node 0:39 type=11 span=88:89
-scalar 0:39 integer bits=0x00000000000000000000000000000002
-node 0:40 type=11 span=87:90
-node 0:41 type=22 span=77:90
-eof types=23 definitions=21 nodes=33 functions=3 initializers=0
+def 33 type=19 name="f" source=0:1
+function def=13 source=0:20 signature=19 body=0:19
+function def=14 source=0:24 signature=19 body=0:23
+function def=15 source=0:28 signature=19 body=0:27
+node 0:0 type=11 span=8:10
+node 0:1 type=19 span=15:16 binding=33
+node 0:2 type=11 span=23:25
+node 0:3 type=19 span=17:25
+node 0:4 type=2 span=34:38
+scalar 0:4 bool true
+node 0:5 type=21 span=45:46
+adjustment 0:5 function-pointer target=19
+node 0:6 type=0 span=39:46 control=0:15
+node 0:7 type=0 span=39:47
+node 0:8 type=0 span=38:48
+adjustment 0:8 never target=1
+node 0:9 type=1 span=31:48
+node 0:10 type=1 span=31:48
+node 0:11 type=22 span=54:55
+adjustment 0:11 function-pointer target=19
+node 0:12 type=0 span=48:55 control=0:15
+node 0:13 type=0 span=48:56
+node 0:14 type=0 span=30:57
+adjustment 0:14 never target=1
+node 0:15 type=19 span=26:57
+node 0:16 type=1 span=11:58
+node 0:17 type=19 span=58:59
+node 0:18 type=11 span=58:61
+operation 0:18 call signature=19
+node 0:19 type=11 span=10:62
+node 0:20 type=20 span=0:62
+node 0:21 type=11 span=71:73
+node 0:22 type=11 span=74:75
+scalar 0:22 integer bits=0x00000000000000000000000000000001
+node 0:23 type=11 span=73:76
+node 0:24 type=21 span=63:76
+node 0:25 type=11 span=85:87
+node 0:26 type=11 span=88:89
+scalar 0:26 integer bits=0x00000000000000000000000000000002
+node 0:27 type=11 span=87:90
+node 0:28 type=22 span=77:90
+eof types=23 definitions=21 nodes=29 functions=3 initializers=0

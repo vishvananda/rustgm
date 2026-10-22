@@ -165,10 +165,11 @@ impl Checker<'_> {
     }
 
     pub(super) fn inferred_regions(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "body region identity space exhausted"))?;
         let fresh = if self.facts.aggregates.has_projected_templates() {
             let facts = &mut *self.facts;
             self.state.infer.fresh_regions_with(
@@ -206,7 +207,8 @@ impl Checker<'_> {
         };
         self.facts
             .body_regions
-            .extend(std::iter::repeat_n(region, fresh.regions as usize));
+            .allocate_reserved(region, first, fresh.regions as usize)
+            .map_err(|e| self.error(node, e))?;
         if fresh.needs_normalization {
             self.defer_normalization(
                 node,
@@ -278,7 +280,7 @@ impl Checker<'_> {
     }
 
     pub(super) fn local_region(&mut self, node: NodeId) -> Result<RegionId, Error> {
-        let Kind::Name(span) = self.kind(node) else {
+        let Kind::Name(span, _) = self.kind(node) else {
             return Err(self.error(node, "expected lifetime argument"));
         };
         let name = self
@@ -288,6 +290,8 @@ impl Checker<'_> {
             .spelling(span)
             .map_err(|e| self.error(node, e.message))?;
         match name {
+            // A one-name type path is also a `Name`; only a quoted spelling is a lifetime.
+            _ if !name.starts_with('\'') => Err(self.error(node, "expected lifetime argument")),
             "'static" => Ok(RegionId::STATIC),
             "'_" => self.body_region(node, BodyRegionOrigin::ItemArgument),
             _ => {

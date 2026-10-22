@@ -5,8 +5,9 @@ use super::{
     model::{Definition, NodeId, Rule, VariableId},
     nfa::Action,
 };
+use crate::support::hash::HashMap;
 use crate::{lex::token::LexError, syntax::token_tree::error};
-use std::{collections::HashMap, ops::Range};
+use std::ops::Range;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct IterationId(pub u32);

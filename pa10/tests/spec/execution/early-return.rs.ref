@@ -20,19 +20,19 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=14 source=0:11
+body 0 function def=13 signature=19 result=14 source=0:9
   block b0:
-    v0 type=2 = bool true source=3
-    branch v0 b1 b2 source=8
+    v0 type=2 = bool true source=1
+    branch v0 b1 b2 source=6
   block b1:
-    v1 type=14 = integer bits=0x0000000000000000000000000000000c source=4
-    return v1 source=5
+    v1 type=14 = integer bits=0x0000000000000000000000000000000c source=2
+    return v1 source=3
   block b2:
-    jump b3 source=8
+    jump b3 source=6
   block b3:
-    v2 type=1 = unit source=8
-    v3 type=1 = unit source=9
-    v4 type=14 = integer bits=0x00000000000000000000000000000063 source=10
-    return v4 source=11
+    v2 type=1 = unit source=6
+    v3 type=1 = unit source=7
+    v4 type=14 = integer bits=0x00000000000000000000000000000063 source=8
+    return v4 source=9
 end-body
 eof bodies=1 locals=0 values=5 statements=5 blocks=4

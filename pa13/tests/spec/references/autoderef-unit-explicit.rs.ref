@@ -21,12 +21,12 @@ type 18 primitive f64
 type 19 reference mutable=false region=bound:0:0 referent=1
 type 20 function binders=1 parameters=[19] result=1 unsafe=false
 type 21 function-item def=14 signature=20
-root 0:14 pattern=0
-root 0:17 pattern=2
-pattern 0 source=0:14 input=19 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:13 input=1 product variant=- fields=0:0
-pattern 2 source=0:17 input=19 wildcard
-match 0 source=0:20 input=0:10 arms=0:2 exhaustive=true uninhabited=false work=16
-arm 0 source=0:16 pattern=0 guard=- useful=true value=0:15
-arm 1 source=0:19 pattern=2 guard=- useful=false value=0:18
+root 0:9 pattern=0
+root 0:12 pattern=2
+pattern 0 source=0:9 input=19 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:8 input=1 product variant=- fields=0:0
+pattern 2 source=0:12 input=19 wildcard
+match 0 source=0:15 input=0:7 arms=0:2 exhaustive=true uninhabited=false work=16
+arm 0 source=0:11 pattern=0 guard=- useful=true value=0:10
+arm 1 source=0:14 pattern=2 guard=- useful=false value=0:13
 eof roots=2 patterns=3 fields=0 alternatives=0 ranges=0 matches=1 arms=2 coverage-work=16 region-vars=0 region-equalities=0 conditions=0 chains=0

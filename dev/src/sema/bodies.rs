@@ -54,6 +54,7 @@ use super::{
     model::{AdjustmentKind, Declarations, Function, Operation, RegionEquality},
     scalar,
 };
+use crate::support::hash::HashSet;
 use crate::{
     lex::token::Punctuation as Op,
     literal::{Value, value::FloatType},
@@ -69,7 +70,6 @@ use crate::{
         infer::{Constructor, Context, Domain, TermId},
     },
 };
-use std::collections::HashSet;
 
 /// Check function bodies and remaining initializers using completed declaration facts.
 ///
@@ -232,11 +232,7 @@ pub(super) struct State {
     result: TypeId,
     result_term: Option<TermId>,
     opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
-    #[expect(
-        clippy::box_collection,
-        reason = "keep every ordinary and parked body state compact; only defining callable opaque results allocate this index"
-    )]
-    opaque_callables: Option<Box<std::collections::HashMap<TermId, TypeId>>>,
+    opaque_callables: Option<Box<crate::support::hash::HashMap<TermId, TypeId>>>,
     in_function: bool,
     safety: safety::Context,
     infer: Context,
@@ -260,23 +256,23 @@ pub(super) struct State {
     negated: HashSet<NodeId>,
     adjustments: Vec<PendingAdjustment>,
     reference_adjustments:
-        std::collections::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
-    unsizing_adjustments: std::collections::HashMap<usize, unsizing::Pending>,
-    pointer_adjustments: std::collections::HashMap<usize, pointers::Pending>,
-    callable_adjustments: std::collections::HashMap<usize, TermId>,
+        crate::support::hash::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
+    unsizing_adjustments: crate::support::hash::HashMap<usize, unsizing::Pending>,
+    pointer_adjustments: crate::support::hash::HashMap<usize, pointers::Pending>,
+    callable_adjustments: crate::support::hash::HashMap<usize, TermId>,
     pointer_casts: Vec<NodeId>,
     reference_expected: HashSet<NodeId>,
     address_dereferences: HashSet<NodeId>,
     raw_address_places: HashSet<NodeId>,
     union_write_places: HashSet<NodeId>,
     language_places: Option<Box<language_hooks::Places>>,
-    unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
+    unsizing_contexts: crate::support::hash::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
-    break_roots: std::collections::HashMap<NodeId, usize>,
-    discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
+    break_roots: crate::support::hash::HashMap<NodeId, usize>,
+    discarded_adjustments: crate::support::hash::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
-    pending_indexes: std::collections::HashMap<NodeId, TermId>,
+    pending_indexes: crate::support::hash::HashMap<NodeId, TermId>,
     call_types: Box<calls::CallTypes>,
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
@@ -342,7 +338,7 @@ impl<'a> Checker<'a> {
                 file: FileId(0),
                 body: NodeKey {
                     file: FileId(0),
-                    node: NodeId(0),
+                    node: NodeId::new(0),
                 },
                 module: ModuleId(0),
                 field_seen: Vec::new(),
@@ -367,25 +363,25 @@ impl<'a> Checker<'a> {
                 work: scratch.work,
                 children: Vec::new(),
                 checks: scratch.checks,
-                negated: HashSet::new(),
+                negated: HashSet::default(),
                 adjustments: Vec::new(),
-                reference_adjustments: std::collections::HashMap::new(),
-                unsizing_adjustments: std::collections::HashMap::new(),
-                pointer_adjustments: std::collections::HashMap::new(),
-                callable_adjustments: std::collections::HashMap::new(),
+                reference_adjustments: crate::support::hash::HashMap::default(),
+                unsizing_adjustments: crate::support::hash::HashMap::default(),
+                pointer_adjustments: crate::support::hash::HashMap::default(),
+                callable_adjustments: crate::support::hash::HashMap::default(),
                 pointer_casts: Vec::new(),
-                reference_expected: HashSet::new(),
-                address_dereferences: HashSet::new(),
-                raw_address_places: HashSet::new(),
-                union_write_places: HashSet::new(),
+                reference_expected: HashSet::default(),
+                address_dereferences: HashSet::default(),
+                raw_address_places: HashSet::default(),
+                union_write_places: HashSet::default(),
                 language_places: None,
-                unsizing_contexts: std::collections::HashMap::new(),
+                unsizing_contexts: crate::support::hash::HashMap::default(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
-                break_roots: std::collections::HashMap::new(),
-                discarded_adjustments: std::collections::HashMap::new(),
+                break_roots: crate::support::hash::HashMap::default(),
+                discarded_adjustments: crate::support::hash::HashMap::default(),
                 calls: Vec::new(),
-                pending_indexes: std::collections::HashMap::new(),
+                pending_indexes: crate::support::hash::HashMap::default(),
                 call_types: scratch.call_types.unwrap_or_default(),
                 parameter_copies: None,
                 parameter_shapes: None,
@@ -406,8 +402,8 @@ impl<'a> Checker<'a> {
                 trait_goals: None,
                 type_children: Vec::new(),
                 annotation_checks: Vec::new(),
-                annotation_children: HashSet::new(),
-                type_annotations: HashSet::new(),
+                annotation_children: HashSet::default(),
+                type_annotations: HashSet::default(),
                 frames: Vec::new(),
                 pending_label: None,
                 assignments: Vec::new(),
@@ -433,6 +429,12 @@ impl<'a> Checker<'a> {
     }
     fn prepare_constant(&mut self, initializer: super::model::Initializer) -> Result<(), Error> {
         let key = initializer.semantic_source();
+        // Annotation regions were numbered for the syntax root; the semantic
+        // owner continues in that unit.
+        self.facts
+            .body_regions
+            .nest(key, initializer.value)
+            .map_err(|e| Declarations::error(self.report, key, e))?;
         let ty = initializer.ty;
         let owner = initializer.definition;
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
@@ -465,6 +467,7 @@ impl<'a> Checker<'a> {
         self.state.parameter_copies = None;
         self.state.parameter_shapes = None;
         self.state.body = key;
+        self.facts.body_regions.activate(key);
         self.prepare_file(key.file);
         self.state.module = module;
         self.state.result = ty;
@@ -610,7 +613,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
     fn active(&self, node: NodeId) -> bool {
-        self.report.package.unit(self.state.file).configured.active[node.0 as usize]
+        self.report.package.unit(self.state.file).configured.active[node.get() as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
         if function.body.is_none()
@@ -674,6 +677,7 @@ impl Checker<'_> {
         };
         self.prepare_file(body.file);
         self.state.body = body;
+        self.facts.body_regions.activate(body);
         self.prepare_bound_environment(body.node, function.definition, Some(function.signature))?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
@@ -943,7 +947,9 @@ impl Checker<'_> {
     }
     fn exit_expression(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         self.leave_safety(node)?;
-        self.state.type_annotations.remove(&node);
+        if !self.state.type_annotations.is_empty() {
+            self.state.type_annotations.remove(&node);
+        }
         self.save(node, term);
         let mut local_exit = false;
         if self
@@ -970,7 +976,7 @@ impl Checker<'_> {
         body: NodeId,
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
-        let mut well_formed = HashSet::new();
+        let mut well_formed = HashSet::default();
         let mut nominal_types = bounds::Requirements::default();
         // A pointer conversion's immediate reborrow introduces a dereferenced
         // storage place even when the source expression is only a reference.
@@ -990,35 +996,7 @@ impl Checker<'_> {
             let ty = solved.types[receiver.0 as usize];
             self.prepare_storage(body, ty)?;
         }
-        for index in 0..self.state.touched.len() {
-            let node = self.state.touched[index];
-            let term = self.term(node)?;
-            let key = self.key(node);
-            let ty = solved.types[term.0 as usize];
-            self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
-            if key != self.state.body
-                && self
-                    .facts
-                    .inline_constants
-                    .as_deref()
-                    .and_then(|registry| registry.get(key))
-                    .is_some_and(|body| body.root.is_some())
-            {
-                self.facts
-                    .node_mut(key)
-                    .ok_or_else(|| {
-                        Declarations::error(self.report, key, "missing inline expression facts")
-                    })?
-                    .adjustment = None;
-                self.facts.reference_adjustments.remove(&key);
-                self.facts.pointer_adjustments.remove(&key);
-                self.facts.unsizing_adjustments.remove(&key);
-            }
-            self.facts
-                .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
-                .ty = Some(ty);
-        }
+        self.publish_touched_types(solved, &mut well_formed, &mut nominal_types)?;
         for index in 0..self.state.call_types.methods.len() {
             let (node, pending) = &self.state.call_types.methods[index];
             let (node, types) = (*node, pending.value_types(solved));
@@ -1084,6 +1062,61 @@ impl Checker<'_> {
             }
         }
         nominal_types.finish(self)
+    }
+    /// Publish each touched node's solved type. A value type repeated under the
+    /// same node conditions adds no fact: its requirements, storage and
+    /// formation were already published. Bodies repeat a few types, so a
+    /// short list finds them.
+    fn publish_touched_types(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+        well_formed: &mut HashSet<TypeId>,
+        nominal_types: &mut bounds::Requirements,
+    ) -> Result<(), Error> {
+        const PUBLISHED: usize = 32;
+        let mut published = std::mem::take(&mut self.state.call_types.published);
+        published.clear();
+        for index in 0..self.state.touched.len() {
+            let node = self.state.touched[index];
+            let term = self.term(node)?;
+            let key = self.key(node);
+            let ty = solved.types[term.0 as usize];
+            let conditions = (
+                ty,
+                self.state.type_annotations.contains(&node),
+                self.state.annotation_children.contains(&node),
+            );
+            if !published.contains(&conditions) {
+                if published.len() < PUBLISHED {
+                    published.push(conditions);
+                }
+                self.value_type(node, ty, well_formed, nominal_types)?;
+            }
+            if key != self.state.body
+                && self
+                    .facts
+                    .inline_constants
+                    .as_deref()
+                    .and_then(|registry| registry.get(key))
+                    .is_some_and(|body| body.root.is_some())
+            {
+                self.facts
+                    .node_mut(key)
+                    .ok_or_else(|| {
+                        Declarations::error(self.report, key, "missing inline expression facts")
+                    })?
+                    .adjustment = None;
+                self.facts.reference_adjustments.remove(&key);
+                self.facts.pointer_adjustments.remove(&key);
+                self.facts.unsizing_adjustments.remove(&key);
+            }
+            self.facts
+                .node_mut(key)
+                .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
+                .ty = Some(ty);
+        }
+        self.state.call_types.published = published;
+        Ok(())
     }
     fn value_type(
         &mut self,
@@ -1259,7 +1292,7 @@ impl Checker<'_> {
             Kind::Struct { path, fields, base } => {
                 return self.enter_struct(node, path, fields, base, expected);
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } | Kind::Item(_) => {}
+            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } | Kind::Item(_) => {}
             Kind::Let {
                 pattern,
                 ty,
@@ -1431,7 +1464,7 @@ impl Checker<'_> {
             } => self.term(node),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),
-            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(self.key(node)).and_then(|f| f.reference)
                 else {
@@ -1511,7 +1544,7 @@ impl Checker<'_> {
                 let mut diverges = false;
                 for statement in unit.configured.ast.list(statements) {
                     if self.active(*statement) {
-                        diverges |= self.state.diverges[statement.0 as usize];
+                        diverges |= self.state.diverges[statement.get() as usize];
                     }
                 }
                 self.known(
@@ -1547,7 +1580,7 @@ impl Checker<'_> {
                 }
                 let mut diverges = false;
                 if let Some(value) = value {
-                    diverges = self.state.diverges[value.0 as usize];
+                    diverges = self.state.diverges[value.get() as usize];
                     // Compound patterns were constrained after their initializer
                     // by BindPattern; a literal's node type may now be adjusted.
                     if otherwise.is_none() && self.simple_pattern(pattern) {
@@ -2077,8 +2110,8 @@ impl Checker<'_> {
         if let Some(condition) = condition {
             let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
             self.coerce(condition, boolean)?;
-            self.state.diverges[node.0 as usize] =
-                frame.breaks.is_none() && self.state.diverges[condition.0 as usize];
+            self.state.diverges[node.get() as usize] =
+                frame.breaks.is_none() && self.state.diverges[condition.get() as usize];
         }
         self.finish_frame(
             frame,

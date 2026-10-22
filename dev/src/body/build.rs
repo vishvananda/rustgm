@@ -31,6 +31,7 @@ use super::ir::{
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
 };
 use super::{scopes, storage::Range as ScopeRange};
+use crate::support::hash::HashMap;
 use crate::{
     lex::token::Punctuation as Op,
     resolve::{
@@ -43,7 +44,6 @@ use crate::{
     syntax::ast::{BlockFlavor, Kind, List, NodeId},
     types::{Kind as Type, TypeId},
 };
-use std::collections::HashMap;
 
 /// Construct function and initializer CFGs from the completed type-checking result.
 ///
@@ -67,7 +67,7 @@ pub(crate) fn concrete_except(
     facts: &Declarations,
     template: impl Fn(DefId) -> bool,
 ) -> Result<Program, Error> {
-    concrete_prepared(report, facts, template, HashMap::new())
+    concrete_prepared(report, facts, template, HashMap::default())
 }
 pub(crate) fn concrete_prepared(
     report: &Report,
@@ -83,11 +83,11 @@ pub(crate) fn concrete_prepared(
     let mut scratch = Scratch::new(facts);
     let mut program = Program {
         drops: None,
-        bodies: Vec::new(),
+        bodies: Vec::with_capacity(facts.functions.len()),
         region_equalities: facts.region_equalities.clone(),
         coercions: facts.coercions.clone(),
         outlives: facts.outlives.clone(),
-        body_regions: facts.body_regions.clone(),
+        body_regions: facts.body_regions.log().to_vec(),
     };
     for function in &facts.functions {
         if function.body.is_none()
@@ -326,10 +326,6 @@ enum Work {
 }
 struct Scratch {
     receivers: HashMap<NodeId, ValueId>,
-    #[expect(
-        clippy::box_collection,
-        reason = "comparison-only scratch stays pointer-sized and unallocated for ordinary CFG construction"
-    )]
     comparison_arguments: Option<Box<HashMap<NodeId, ValueId>>>,
     unadjusted: Vec<NodeId>,
     scopes: scopes::Scratch,
@@ -340,7 +336,8 @@ struct Scratch {
     pattern_work: Vec<patterns::Work>,
     places: Vec<Option<Place>>,
     field_values: Vec<Option<ValueId>>,
-    values: Vec<Vec<Option<ValueId>>>,
+    /// Evaluated value per syntax node, `NO_VALUE` when absent; reset through `touched`.
+    values: Vec<Vec<u32>>,
     definitions: Vec<Option<LocalId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
@@ -348,11 +345,49 @@ struct Scratch {
     live: Vec<LocalId>,
     controls: HashMap<NodeId, Control>,
     reach: Vec<Reach>,
+    cfg: Cfg,
+}
+/// Absent node value. Value identities stay below `u32::MAX` (see `Builder::index`).
+const NO_VALUE: u32 = u32::MAX;
+/// Construction vectors reused across bodies. Each finished body receives
+/// exact-size copies, so retained CFGs carry no growth slack and later bodies
+/// do not regrow their vectors from empty.
+#[derive(Default)]
+struct Cfg {
+    statements: Vec<Statement>,
+    values: Vec<Value>,
+    blocks: Vec<Block>,
+    locals: Vec<Local>,
+    arguments: Vec<ValueId>,
+    scalars: Vec<crate::sema::model::Scalar>,
+    projections: Vec<super::ir::Projection>,
+    exits: Vec<super::storage::Exit>,
+}
+/// Lend reusable capacity to an empty construction vector.
+fn lend<T>(target: &mut Vec<T>, scratch: &mut Vec<T>) {
+    if target.capacity() == 0 {
+        std::mem::swap(target, scratch);
+    }
+}
+/// Replace a construction vector with an exact copy, keeping the larger
+/// allocation for the next body.
+fn settle<T: Copy>(target: &mut Vec<T>, scratch: &mut Vec<T>) {
+    if target.capacity() == target.len() {
+        return;
+    }
+    let mut used = std::mem::replace(target, target.as_slice().to_vec());
+    if used.capacity() > scratch.capacity() {
+        used.clear();
+        *scratch = used;
+    }
 }
 struct Builder<'a> {
     drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
     report: &'a Report,
     facts: &'a Declarations,
+    /// The owner file's configured syntax and typed node facts, resolved once.
+    syntax: &'a crate::expand::crate_syntax::ConfiguredSyntax<crate::literal::storage::StoredValue>,
+    node_facts: &'a [NodeFacts],
     scratch: &'a mut Scratch,
     body: Body,
     current: Option<BlockId>,
@@ -363,17 +398,21 @@ struct Builder<'a> {
 impl Scratch {
     fn new(facts: &Declarations) -> Self {
         Self {
-            receivers: HashMap::new(),
+            receivers: HashMap::default(),
             comparison_arguments: None,
             scopes: scopes::Scratch::default(),
             unadjusted: Vec::new(),
-            values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
+            values: facts
+                .nodes
+                .iter()
+                .map(|n| vec![NO_VALUE; n.len()])
+                .collect(),
             definitions: vec![None; facts.definitions.len()],
             touched: Vec::new(),
             bindings: Vec::new(),
             work: Vec::new(),
             live: Vec::new(),
-            controls: HashMap::new(),
+            controls: HashMap::default(),
             reach: Vec::new(),
             places: Vec::new(),
             field_values: Vec::new(),
@@ -382,6 +421,7 @@ impl Scratch {
             guard_frames: Vec::new(),
             match_patterns: Vec::new(),
             conditional_live: Vec::new(),
+            cfg: Cfg::default(),
         }
     }
 }
@@ -395,60 +435,68 @@ impl<'a> Builder<'a> {
         drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
     ) -> Self {
         body.mutable_statics.clone_from(&facts.mutable_statics);
+        let cfg = &mut scratch.cfg;
+        lend(&mut body.statements, &mut cfg.statements);
+        lend(&mut body.values, &mut cfg.values);
+        lend(&mut body.blocks, &mut cfg.blocks);
+        lend(&mut body.locals, &mut cfg.locals);
+        lend(&mut body.arguments, &mut cfg.arguments);
+        lend(&mut body.scalars, &mut cfg.scalars);
+        lend(&mut body.projections, &mut cfg.projections);
+        let mut scope_exits = Vec::new();
+        lend(&mut scope_exits, &mut cfg.exits);
+        let file = body.source.file;
         Self {
             drop_query,
             report,
             facts,
+            syntax: &report.package.unit(file).configured,
+            node_facts: facts.nodes.get(file.0 as usize).map_or(&[], Vec::as_slice),
             scratch,
             body,
             current: None,
             scope_plan,
-            scope_exits: Vec::new(),
+            scope_exits,
             capture_places: None,
         }
+    }
+    /// Give the finished body exact-size vectors and recycle construction capacity.
+    fn settle(&mut self) {
+        let (body, cfg) = (&mut self.body, &mut self.scratch.cfg);
+        settle(&mut body.statements, &mut cfg.statements);
+        settle(&mut body.values, &mut cfg.values);
+        settle(&mut body.blocks, &mut cfg.blocks);
+        settle(&mut body.locals, &mut cfg.locals);
+        settle(&mut body.arguments, &mut cfg.arguments);
+        settle(&mut body.scalars, &mut cfg.scalars);
+        settle(&mut body.projections, &mut cfg.projections);
+        settle(&mut self.scope_exits, &mut cfg.exits);
     }
     fn error(&self, node: NodeId, message: impl Into<String>) -> Error {
         Error::at(
             self.body.source.file,
-            self.report
-                .package
-                .unit(self.body.source.file)
-                .configured
-                .ast
-                .node(node)
-                .span
-                .start,
+            self.syntax.ast.node(node).span.start,
             message,
         )
     }
     fn index(&self, node: NodeId, n: usize) -> Result<u32, Error> {
-        u32::try_from(n).map_err(|_| self.error(node, "body identity space exhausted"))
+        u32::try_from(n)
+            .ok()
+            .filter(|&n| n != NO_VALUE)
+            .ok_or_else(|| self.error(node, "body identity space exhausted"))
     }
     fn kind(&self, node: NodeId) -> Kind {
-        self.report
-            .package
-            .unit(self.body.source.file)
-            .configured
-            .ast
-            .node(node)
-            .kind
+        self.syntax.ast.node(node).kind
     }
     fn active(&self, node: NodeId) -> bool {
-        self.report
-            .package
-            .unit(self.body.source.file)
-            .configured
-            .active[node.0 as usize]
+        self.syntax.active[node.get() as usize]
     }
     fn fact(&self, node: NodeId) -> Result<&NodeFacts, Error> {
         if let Some(root) = self.inline_root(node) {
             return Ok(&root.node);
         }
-        self.facts
-            .node(NodeKey {
-                file: self.body.source.file,
-                node,
-            })
+        self.node_facts
+            .get(node.get() as usize)
             .ok_or_else(|| self.error(node, "missing node facts"))
     }
     fn ty(&self, node: NodeId) -> Result<TypeId, Error> {
@@ -457,8 +505,11 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing solved type"))
     }
     fn value(&self, node: NodeId) -> Result<ValueId, Error> {
-        self.scratch.values[self.body.source.file.0 as usize][node.0 as usize]
-            .ok_or_else(|| self.error(node, "missing evaluated value"))
+        let value = self.scratch.values[self.body.source.file.0 as usize][node.get() as usize];
+        if value == NO_VALUE {
+            return Err(self.error(node, "missing evaluated value"));
+        }
+        Ok(ValueId(value))
     }
     fn save(&mut self, node: NodeId, mut value: ValueId) -> Result<(), Error> {
         // A transparent wrapper can add a coercion after the tail scope closed.
@@ -499,11 +550,11 @@ impl<'a> Builder<'a> {
                 AdjustmentKind::Never => {}
             }
         }
-        let slot = &mut self.scratch.values[self.body.source.file.0 as usize][node.0 as usize];
-        if slot.is_none() {
+        let slot = &mut self.scratch.values[self.body.source.file.0 as usize][node.get() as usize];
+        if *slot == NO_VALUE {
             self.scratch.touched.push(node);
         }
-        *slot = Some(value);
+        *slot = value.0;
         self.forward_owned(node, value);
         Ok(())
     }
@@ -662,13 +713,7 @@ impl<'a> Builder<'a> {
                 ..
             }
         ));
-        let nodes = self
-            .report
-            .package
-            .unit(self.body.source.file)
-            .configured
-            .ast
-            .list(list);
+        let nodes = self.syntax.ast.list(list);
         for &node in nodes {
             if !self.active(node) {
                 continue;
@@ -754,7 +799,7 @@ impl<'a> Builder<'a> {
             self.return_value(root, value, self.boundary(root, scopes::Kind::Body)?)?;
         }
         for node in self.scratch.touched.drain(..) {
-            self.scratch.values[self.body.source.file.0 as usize][node.0 as usize] = None;
+            self.scratch.values[self.body.source.file.0 as usize][node.get() as usize] = NO_VALUE;
         }
         for definition in self.scratch.bindings.drain(..) {
             self.scratch.definitions[definition.0 as usize] = None;
@@ -778,8 +823,10 @@ impl<'a> Builder<'a> {
         if !self.scratch.unadjusted.is_empty() {
             return Err(self.error(root, "unbalanced reference adjustment continuations"));
         }
+        self.settle();
         let scope_work = self.scope_plan.work;
-        let (scopes, scratch) = self.scope_plan.finish();
+        let (mut scopes, scratch) = self.scope_plan.finish();
+        scopes.shrink_to_fit();
         self.scratch.scopes = scratch;
         self.body.storage = Some(super::storage::Facts {
             scope_work,
@@ -984,13 +1031,7 @@ impl<'a> Builder<'a> {
         Ok(())
     }
     fn children(&mut self, list: List) {
-        let children = self
-            .report
-            .package
-            .unit(self.body.source.file)
-            .configured
-            .ast
-            .list(list);
+        let children = self.syntax.ast.list(list);
         self.scratch
             .work
             .extend(children.iter().rev().copied().map(Work::Enter));
@@ -1331,7 +1372,7 @@ impl<'a> Builder<'a> {
         if self.projected_syntax(value) {
             return Ok(true);
         }
-        if !matches!(self.kind(value), Kind::Path { .. } | Kind::Name(_)) {
+        if !matches!(self.kind(value), Kind::Path { .. } | Kind::Name(..)) {
             return Ok(false);
         }
         let Some(Target::Definition(definition)) = self.fact(value)?.reference else {
@@ -1545,7 +1586,7 @@ impl<'a> Builder<'a> {
                 self.value(value)?
             }
             Kind::Literal(_) => self.literal_value(node, ty)?,
-            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } => {
                 let value = self.path(node)?;
                 self.evaluate(node, ty, value)?
             }

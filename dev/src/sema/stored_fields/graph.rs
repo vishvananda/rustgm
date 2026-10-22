@@ -1,7 +1,7 @@
 //! Append-only structural recipes remain stable while other queries publish completed nodes.
 use super::{Declarations, TypeId, dependencies::Reader};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind, ListId};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) struct RecipeId(usize);
@@ -29,6 +29,10 @@ impl Registry {
         }
     }
 
+    /// The completed recipe published for this root, if any.
+    pub(super) fn root(&self, ty: TypeId) -> Option<RecipeId> {
+        self.roots.get(&ty).copied()
+    }
     pub(crate) fn contains_projection(&self, ty: TypeId) -> Option<bool> {
         self.roots.get(&ty).map(|&id| id != RecipeId::EMPTY)
     }
@@ -83,7 +87,7 @@ impl Registry {
     }
     fn join(&mut self, mut children: Vec<RecipeId>) -> Result<RecipeId, &'static str> {
         self.charge(children.len())?;
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         children.retain(|&id| id != RecipeId::EMPTY && seen.insert(id));
         match children.as_slice() {
             [] => Ok(RecipeId::EMPTY),
@@ -145,7 +149,7 @@ impl Build {
             root,
             started: false,
             work: Vec::new(),
-            active: HashSet::new(),
+            active: HashSet::default(),
             reader: None,
         }
     }

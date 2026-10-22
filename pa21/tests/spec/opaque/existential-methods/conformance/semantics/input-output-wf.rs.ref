@@ -35,11 +35,11 @@ type 32 function binders=0 parameters=[21] result=31 unsafe=false
 type 33 reference mutable=false region=region:1 referent=20
 type 34 function binders=0 parameters=[33] result=33 unsafe=false
 type 35 function binders=0 parameters=[21] result=21 unsafe=false
-def 14 type=19 name="Self" source=0:18
-def 15 type=24 name="f" source=0:17
-def 16 type=11 name="Self" source=0:45
-def 17 type=28 name="f" source=0:44
-def 18 type=30 name="main" source=0:47
+def 14 type=19 name="Self" source=0:13
+def 15 type=24 name="f" source=0:12
+def 16 type=11 name="Self" source=0:29
+def 17 type=28 name="f" source=0:28
+def 18 type=30 name="main" source=0:31
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -58,19 +58,19 @@ def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
 def 37 type=20 name="T" source=0:1
-def 39 type=25 name="T" source=0:26
-def 48 type=26 name="x" source=0:29
-associated-owner 0 kind=trait self-def=14 self=19 source=0:18 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:45 unsafe=false
+def 39 type=25 name="T" source=0:17
+def 48 type=26 name="x" source=0:18
+associated-owner 0 kind=trait self-def=14 self=19 source=0:13 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:29 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=15 binding=37 argument=type:20 default=-
 parameter owner=17 binding=39 argument=type:25 default=-
-predicate owner=13 source=0:18 subject=19 bound=trait:13 arguments=[]
-impl owner=16 source=0:45 subject=11 bound=trait:13 arguments=[]
+predicate owner=13 source=0:13 subject=19 bound=trait:13 arguments=[]
+impl owner=16 source=0:29 subject=11 bound=trait:13 arguments=[]
 impl-method owner=16 declaration=15 selected=17 default=false
-opaque 0 owner=15 source=0:16 application=22 hidden=- role=trait-result storage-proof=pending
+opaque 0 owner=15 source=0:11 application=22 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=0 index=0 subject=22 bound=sized
 opaque-bound id=0 index=1 subject=22 bound=outlives:bound:0:0
 opaque-implementation owner=16 id=0 type=21 parent-regions=0 regions=[bound:0:0]

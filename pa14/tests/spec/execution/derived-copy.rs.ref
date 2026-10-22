@@ -70,45 +70,33 @@ function @rg.17(%p0 : ptr) -> u8 {
     copyobj 2x1 %t18, %t19
     %t20 = load u8 $s1
     %t21 = load u8 $s2
-    %t22 = convert zext i16 u8 %t20
-    %t23 = convert zext i16 u8 %t21
-    %t24 = binary add i16 %t22, %t23
-    %t25 = convert trunc u8 i16 %t24
-    %t26 = convert zext i16 u8 %t25
-    %t27 = cmp ne i16 %t24, %t26
-    branch %t27, ^b4, ^b5
+    %t22 = binary add u8 %t20, %t21
+    %t23 = cmp ult u8 %t22, %t20
+    branch %t23, ^b4, ^b5
   block ^b5:
-    %t28 = cmp uge i64 0, 2
-    branch %t28, ^b4, ^b6
+    %t24 = cmp uge i64 0, 2
+    branch %t24, ^b4, ^b6
   block ^b6:
-    %t29 = binary mul i64 0, 1
-    %t30 = addr $s3
-    %t31 = index u8 %t30, %t29
-    %t32 = load u8 %t31
-    %t33 = convert zext i16 u8 %t25
-    %t34 = convert zext i16 u8 %t32
-    %t35 = binary add i16 %t33, %t34
-    %t36 = convert trunc u8 i16 %t35
-    %t37 = convert zext i16 u8 %t36
-    %t38 = cmp ne i16 %t35, %t37
-    branch %t38, ^b4, ^b7
+    %t25 = binary mul i64 0, 1
+    %t26 = addr $s3
+    %t27 = index u8 %t26, %t25
+    %t28 = load u8 %t27
+    %t29 = binary add u8 %t22, %t28
+    %t30 = cmp ult u8 %t29, %t22
+    branch %t30, ^b4, ^b7
   block ^b7:
-    %t39 = cmp uge i64 1, 2
-    branch %t39, ^b4, ^b8
+    %t31 = cmp uge i64 1, 2
+    branch %t31, ^b4, ^b8
   block ^b8:
-    %t40 = binary mul i64 1, 1
-    %t41 = addr $s3
-    %t42 = index u8 %t41, %t40
-    %t43 = load u8 %t42
-    %t44 = convert zext i16 u8 %t36
-    %t45 = convert zext i16 u8 %t43
-    %t46 = binary add i16 %t44, %t45
-    %t47 = convert trunc u8 i16 %t46
-    %t48 = convert zext i16 u8 %t47
-    %t49 = cmp ne i16 %t46, %t48
-    branch %t49, ^b4, ^b9
+    %t32 = binary mul i64 1, 1
+    %t33 = addr $s3
+    %t34 = index u8 %t33, %t32
+    %t35 = load u8 %t34
+    %t36 = binary add u8 %t29, %t35
+    %t37 = cmp ult u8 %t36, %t29
+    branch %t37, ^b4, ^b9
   block ^b9:
-    return u8 %t47
+    return u8 %t36
   block ^b4:
     call void @abort()
     unreachable

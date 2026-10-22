@@ -44,8 +44,8 @@ type 41 tuple [27,11]
 type 42 tuple [41,41]
 type 43 function binders=0 parameters=[41] result=42 unsafe=false
 type 44 reference mutable=false region=region:2 referent=11
-def 13 type=24 name="f" source=0:54
-def 14 type=26 name="main" source=0:86
+def 13 type=24 name="f" source=0:33
+def 14 type=26 name="main" source=0:57
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -64,20 +64,20 @@ def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
 def 33 type=19 name="T" source=0:1
-def 42 type=21 name="x" source=0:4
-def 43 type=11 name="v" source=0:57
-def 44 type=36 name="p" source=0:62
+def 42 type=21 name="x" source=0:2
+def 43 type=11 name="v" source=0:34
+def 44 type=36 name="p" source=0:37
 parameter owner=13 binding=33 argument=type:19 default=-
-predicate owner=13 source=0:46 forall=0
-region-var region:1 body=0:85 source=0:70 origin=call-argument pending
-region-var region:2 body=0:85 source=0:67 origin=expression-borrow pending
-region-var region:3 body=0:85 source=0:70 origin=inference pending
-region-var region:4 body=0:85 source=0:70 origin=inference pending
-region-var region:5 body=0:85 source=0:64 origin=quantified-proof pending
-region-coercion body=0:85 source=0:67 actual=44 expected=27 kind=same-shape pending
-region-coercion body=0:85 source=0:70 actual=42 expected=36 kind=same-shape pending
+predicate owner=13 source=0:27 forall=0
+region-var region:1 body=0:56 source=0:43 origin=call-argument pending
+region-var region:2 body=0:56 source=0:40 origin=expression-borrow pending
+region-var region:3 body=0:56 source=0:43 origin=inference pending
+region-var region:4 body=0:56 source=0:43 origin=inference pending
+region-var region:5 body=0:56 source=0:38 origin=quantified-proof pending
+region-coercion body=0:56 source=0:40 actual=44 expected=27 kind=same-shape pending
+region-coercion body=0:56 source=0:43 actual=42 expected=36 kind=same-shape pending
 quantifier 0 regions=1 subject=21 bound=copy
-proof 0 body=0:85 source=0:64 pending
+proof 0 body=0:56 source=0:38 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=0 start=5 end=6
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=5 end=6

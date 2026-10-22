@@ -59,22 +59,18 @@ function @rg.17.i4(%p0 : ptr) -> u8 {
   block ^b0:
     %t0 = addr $s0
     copyobj 3x1 %p0, %t0
-    %t1 = convert zext i128 i64 3
-    %t2 = convert zext i128 i64 1
-    %t3 = binary sub i128 %t1, %t2
-    %t4 = convert trunc i64 i128 %t3
-    %t5 = convert zext i128 i64 %t4
-    %t6 = cmp ne i128 %t3, %t5
-    branch %t6, ^b1, ^b2
+    %t1 = binary sub i64 3, 1
+    %t2 = cmp ult i64 3, 1
+    branch %t2, ^b1, ^b2
   block ^b2:
-    %t7 = cmp uge i64 %t4, 3
-    branch %t7, ^b1, ^b3
+    %t3 = cmp uge i64 %t1, 3
+    branch %t3, ^b1, ^b3
   block ^b3:
-    %t8 = binary mul i64 %t4, 1
-    %t9 = addr $s0
-    %t10 = index u8 %t9, %t8
-    %t11 = load u8 %t10
-    return u8 %t11
+    %t4 = binary mul i64 %t1, 1
+    %t5 = addr $s0
+    %t6 = index u8 %t5, %t4
+    %t7 = load u8 %t6
+    return u8 %t7
   block ^b1:
     call void @abort()
     unreachable

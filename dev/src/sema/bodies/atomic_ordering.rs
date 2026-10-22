@@ -40,7 +40,7 @@ impl Checker<'_> {
                 continue;
             };
             let argument = self.ordering_expression(argument)?;
-            if !matches!(self.kind(argument), Kind::Path { .. } | Kind::Name(_)) {
+            if !matches!(self.kind(argument), Kind::Path { .. } | Kind::Name(..)) {
                 continue;
             }
             let Some(Target::Definition(definition)) = self

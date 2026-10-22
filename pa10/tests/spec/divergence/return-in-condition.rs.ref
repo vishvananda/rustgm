@@ -20,18 +20,18 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=11 unsafe=false
 type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=11 source=0:11
-  local l0 type=11 merge mutable=true storage-parent=- source=10
+body 0 function def=13 signature=19 result=11 source=0:9
+  local l0 type=11 merge mutable=true storage-parent=- source=8
   block b0:
-    live l0 source=10
-    v0 type=11 = integer bits=0x00000000000000000000000000000002 source=3
-    dead l0 source=4
-    return v0 source=4
+    live l0 source=8
+    v0 type=11 = integer bits=0x00000000000000000000000000000002 source=1
+    dead l0 source=2
+    return v0 source=2
   block b1:
-    unreachable source=10
+    unreachable source=8
   block b2:
-    unreachable source=10
+    unreachable source=8
   block b3:
-    unreachable source=10
+    unreachable source=8
 end-body
 eof bodies=1 locals=1 values=1 statements=3 blocks=4

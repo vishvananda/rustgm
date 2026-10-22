@@ -56,15 +56,11 @@ function @rg.17(%p0 : ptr) -> u8 {
     copyobj 1x1 %t8, %t9
     %t10 = load u8 $s1
     %t11 = load u8 $s2
-    %t12 = convert zext i16 u8 %t10
-    %t13 = convert zext i16 u8 %t11
-    %t14 = binary add i16 %t12, %t13
-    %t15 = convert trunc u8 i16 %t14
-    %t16 = convert zext i16 u8 %t15
-    %t17 = cmp ne i16 %t14, %t16
-    branch %t17, ^b1, ^b2
+    %t12 = binary add u8 %t10, %t11
+    %t13 = cmp ult u8 %t12, %t10
+    branch %t13, ^b1, ^b2
   block ^b2:
-    return u8 %t15
+    return u8 %t12
   block ^b1:
     call void @abort()
     unreachable

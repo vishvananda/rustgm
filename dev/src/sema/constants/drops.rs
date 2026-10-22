@@ -2,12 +2,12 @@
 use super::{
     Declarations, Error, Expression, Kind, NodeKey, Report, constructors, products, references,
 };
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::{DefKind, Target},
     sema::scopes,
     types::destruction::NeedsDrop,
 };
-use std::collections::HashMap;
 
 pub(super) struct Scratch {
     scopes: scopes::Scratch,
@@ -38,7 +38,7 @@ impl Check {
                 scopes: scopes::Scratch::default(),
                 needs_drop: NeedsDrop::new(facts.destructors.declared()),
                 declared_owners: count,
-                places: HashMap::new(),
+                places: HashMap::default(),
             })
         });
         // Early impl-target constants already see all reserved owners. Keep the
@@ -136,7 +136,7 @@ impl Check {
                     root = None;
                     break;
                 }
-                Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. }
+                Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
                     if facts
                         .node(current)
                         .and_then(|f| f.reference)

@@ -63,11 +63,10 @@ impl Resolver<'_> {
                 .ok_or_else(|| self.error(c, node, "missing self-core root"));
         }
         if self.facts.crates.is_some()
-            && let Some(binding) = self.facts.extern_scope.and_then(|scope| {
-                self.facts.scopes[scope.0 as usize]
-                    .bindings
-                    .get(&(name, Namespace::Type))
-            })
+            && let Some(binding) = self
+                .facts
+                .extern_scope
+                .and_then(|scope| self.facts.bindings.get(scope, name, Namespace::Type))
         {
             return Ok(self.facts.definitions[binding.target.0 as usize].members);
         }
@@ -84,38 +83,57 @@ impl Resolver<'_> {
             .names
             .intern("core")
             .map_err(|e| self.error(c, node, e))?;
-        let target =
-            self.facts.scopes[external.0 as usize].bindings[&(core, Namespace::Type)].target;
+        let target = self
+            .facts
+            .bindings
+            .get(external, core, Namespace::Type)
+            .ok_or_else(|| self.error(c, node, "missing external core crate"))?
+            .target;
         Ok(self.facts.definitions[target.0 as usize].members)
     }
 
-    pub(super) fn expose_external(&mut self, c: Context, target: DefId) {
+    pub(super) fn expose_external(
+        &mut self,
+        c: Context,
+        target: DefId,
+    ) -> Result<(), &'static str> {
         if c.scope != ScopeId(0) {
-            return;
+            return Ok(());
         }
         let Some(external) = self.facts.extern_scope else {
-            return;
+            return Ok(());
         };
-        let definition = &self.facts.definitions[target.0 as usize];
-        let key = (definition.name, Namespace::Type);
-        let scope = &mut self.facts.scopes[external.0 as usize];
-        if scope
-            .bindings
-            .insert(
-                key,
-                Binding {
-                    target,
-                    access: Access::Public,
-                    origin: super::model::Origin::Direct,
-                    ambiguous: false,
-                },
-            )
-            .is_none()
-        {
-            scope.order.push(key);
-        }
+        let name = self.facts.definitions[target.0 as usize].name;
+        self.facts.bindings.insert(
+            external,
+            name,
+            Namespace::Type,
+            Binding {
+                target,
+                access: Access::Public,
+                origin: super::model::Origin::Direct,
+                ambiguous: false,
+            },
+        )?;
+        Ok(())
     }
 
+    /// Whether this name's spelling is compared by builtin path preparation.
+    pub(super) fn builtin_name(&mut self, name: NameId) -> bool {
+        let index = name.0 as usize;
+        match self.builtin_names.get(index) {
+            Some(1) => return false,
+            Some(2) => return true,
+            _ => {}
+        }
+        let relevant = builtin_spelling(self.package.names.get(name));
+        if index >= self.builtin_names.len() {
+            let len = self.package.names.len().max(index + 1);
+            self.builtin_names.resize(len, 0);
+        }
+        self.builtin_names[index] = if relevant { 2 } else { 1 };
+        relevant
+    }
     pub(super) fn prepare_builtin_path(
         &mut self,
         c: Context,
@@ -125,6 +143,14 @@ impl Resolver<'_> {
         path: &[NameId],
     ) -> Result<(), Error> {
         if self.package.source_core.is_some() {
+            return Ok(());
+        }
+        // Every step below keys on a spelling recognized by `builtin_spelling`.
+        let mut relevant = false;
+        for &name in path {
+            relevant |= self.builtin_name(name);
+        }
+        if !relevant {
             return Ok(());
         }
         if path
@@ -301,11 +327,7 @@ impl Resolver<'_> {
     ) -> Result<ScopeId, Error> {
         self.facts
             .extern_scope
-            .filter(|scope| {
-                self.facts.scopes[scope.0 as usize]
-                    .bindings
-                    .contains_key(&(name, Namespace::Type))
-            })
+            .filter(|scope| self.facts.bindings.contains(*scope, name, Namespace::Type))
             .ok_or_else(|| self.error(c, node, "external-crate paths require external metadata"))
     }
 
@@ -321,9 +343,10 @@ impl Resolver<'_> {
         let external = self.facts.extern_scope?;
         if let Some(target) = self.facts.library_types.prelude(name, namespace) {
             let scope = self.facts.definitions[target.0 as usize].scope;
-            return self.facts.scopes[scope.0 as usize]
+            return self
+                .facts
                 .bindings
-                .get(&(name, namespace))
+                .get(scope, name, namespace)
                 .copied()
                 .map(|binding| (scope, binding));
         }
@@ -337,9 +360,72 @@ impl Resolver<'_> {
             .chain(self.facts.builtin_traits.identities())
             .find(|id| self.facts.definitions[id.0 as usize].name == name);
         let scope = builtin.map_or(external, |id| self.facts.definitions[id.0 as usize].scope);
-        self.facts.scopes[scope.0 as usize]
+        self.facts
             .bindings
-            .get(&(name, Namespace::Type))
+            .get(scope, name, Namespace::Type)
             .map(|binding| (scope, *binding))
     }
+}
+
+/// Spellings that can select demand-created language metadata in
+/// `prepare_builtin_path` and its trait, library and intrinsic helpers. A path
+/// naming none of them leaves every preparation step a no-op. Keep this a
+/// superset of those comparisons when adding language items. `builtin_name`
+/// caches the answer, so this runs once per name.
+#[cold]
+#[inline(never)]
+fn builtin_spelling(spelling: &str) -> bool {
+    use crate::support::{
+        call_traits::CallTrait, comparisons::Comparison, comparisons::Method,
+        intrinsics::Intrinsic, iteration::Trait as IterationTrait, language_hooks::Hook,
+        library_types::LibraryType, marker_traits::AutoTrait,
+    };
+    matches!(
+        spelling,
+        "len"
+            | "Drop"
+            | "core"
+            | "std"
+            | "Copy"
+            | "Clone"
+            | "Sized"
+            | "Send"
+            | "Sync"
+            | "Unpin"
+            | "UnwindSafe"
+            | "RefUnwindSafe"
+            | "marker"
+            | "clone"
+            | "panic"
+            | "Some"
+            | "None"
+            | "Ok"
+            | "Err"
+            | "Less"
+            | "Equal"
+            | "Greater"
+            | "Ordering"
+            | "cmp"
+            | "sync"
+            | "ptr"
+            | "read_volatile"
+            | "write_volatile"
+            | "write_bytes"
+            | "add"
+            | "primitive"
+            | "iter"
+    ) || Method::from_name(spelling).is_some()
+        || Comparison::ALL.iter().any(|kind| kind.name() == spelling)
+        || Hook::ALL.iter().any(|kind| kind.name() == spelling)
+        || CallTrait::ALL.iter().any(|kind| kind.name() == spelling)
+        || IterationTrait::ALL
+            .iter()
+            .any(|kind| kind.name() == spelling || kind.method().name() == spelling)
+        || AutoTrait::ALL.iter().any(|kind| kind.name() == spelling)
+        || Intrinsic::ALL.iter().any(|kind| kind.name() == spelling)
+        || LibraryType::ALL.iter().any(|kind| {
+            kind.name() == spelling
+                || kind.module() == spelling
+                || kind.variants().iter().any(|(name, _)| *name == spelling)
+        })
 }

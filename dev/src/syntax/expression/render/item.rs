@@ -6,7 +6,7 @@ fn visibility(visibility: Visibility, output: &mut impl Write) -> io::Result<()>
     match visibility {
         Visibility::Private => write!(output, "private"),
         Visibility::Public => write!(output, "public"),
-        Visibility::Restricted(path) => write!(output, "restricted:{}", path.0),
+        Visibility::Restricted(path) => write!(output, "restricted:{}", path.get()),
     }
 }
 
@@ -37,8 +37,8 @@ pub(super) fn node<L>(
         } => write!(
             output,
             "generic-method-call {} {} {}",
-            receiver.0,
-            method.0,
+            receiver.get(),
+            method.get(),
             Children(ast, arguments)
         ),
         Kind::Variadic => write!(output, "variadic"),
@@ -46,7 +46,9 @@ pub(super) fn node<L>(
         Kind::Attributed { attributes, value } => write!(
             output,
             "attributed {} {} {}",
-            attributes.start, attributes.end, value.0
+            attributes.start,
+            attributes.end,
+            value.get()
         ),
         Kind::Applied {
             base,
@@ -56,7 +58,7 @@ pub(super) fn node<L>(
         } => write!(
             output,
             "applied {} {} {}",
-            base.0,
+            base.get(),
             Children(ast, arguments),
             Optional(result)
         ),
@@ -67,9 +69,9 @@ pub(super) fn node<L>(
         } => write!(
             output,
             "qualified {} {} {}",
-            ty.0,
+            ty.get(),
             Optional(trait_path),
-            path.0
+            path.get()
         ),
         Kind::Constraint {
             target,
@@ -78,7 +80,7 @@ pub(super) fn node<L>(
         } => write!(
             output,
             "constraint {} {} {}",
-            target.0,
+            target.get(),
             Optional(value),
             Children(ast, bounds)
         ),
@@ -91,7 +93,7 @@ pub(super) fn node<L>(
             output,
             "bound {optional} {} {}",
             Children(ast, binders),
-            value.0
+            value.get()
         ),
         Kind::Generic(index) => {
             let crate::syntax::item::GenericParameter {
@@ -120,7 +122,7 @@ pub(super) fn node<L>(
             output,
             "where {} {} {}",
             Children(ast, binders),
-            ty.0,
+            ty.get(),
             Children(ast, bounds)
         ),
         Kind::FunctionType(index) => {
@@ -152,7 +154,7 @@ pub(super) fn node<L>(
             label(source, name, output)?;
             write!(output, " ")?;
             visibility(vis, output)?;
-            write!(output, " {}", ty.0)
+            write!(output, " {}", ty.get())
         }
         Kind::Variant(index) => {
             let crate::syntax::item::Variant {
@@ -188,13 +190,13 @@ pub(super) fn node<L>(
         Kind::StructPattern { path, fields, rest } => write!(
             output,
             "struct-pattern {} {} {rest}",
-            path.0,
+            path.get(),
             Children(ast, fields)
         ),
         Kind::PatternField { name, pattern } => {
             write!(output, "pattern-field ")?;
             spelling(source, name, output)?;
-            write!(output, " {}", pattern.0)
+            write!(output, " {}", pattern.get())
         }
         Kind::PatternRange {
             start,
@@ -269,10 +271,10 @@ pub(super) fn item<L>(
             output,
             "impl {unsafe_} {negative} {} {} {}",
             Optional(trait_path),
-            ty.0,
+            ty.get(),
             Children(ast, items)
         ),
-        ItemKind::Const { ty, value } => write!(output, "const {} {}", ty.0, Optional(value)),
+        ItemKind::Const { ty, value } => write!(output, "const {} {}", ty.get(), Optional(value)),
         ItemKind::Static {
             safety,
             mutable,
@@ -281,7 +283,7 @@ pub(super) fn item<L>(
         } => {
             write!(output, "static ")?;
             static_safety(safety, output)?;
-            write!(output, "{mutable} {} {}", ty.0, Optional(value))
+            write!(output, "{mutable} {} {}", ty.get(), Optional(value))
         }
         ItemKind::TypeAlias { bounds, ty } => write!(
             output,
@@ -297,7 +299,7 @@ pub(super) fn item<L>(
                 write!(output, "external")
             }
         }
-        ItemKind::Use(tree) => write!(output, "use {}", tree.0),
+        ItemKind::Use(tree) => write!(output, "use {}", tree.get()),
         ItemKind::ExternCrate { rename } => {
             write!(output, "extern-crate ")?;
             label(source, rename, output)
@@ -313,7 +315,7 @@ pub(super) fn item<L>(
             Children(ast, items)
         ),
         ItemKind::MacroRules { capture } => write!(output, "macro-rules {capture}"),
-        ItemKind::MacroInvocation(value) => write!(output, "macro-invocation {}", value.0),
+        ItemKind::MacroInvocation(value) => write!(output, "macro-invocation {}", value.get()),
     }
 }
 

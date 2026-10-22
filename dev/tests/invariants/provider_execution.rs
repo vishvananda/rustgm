@@ -85,7 +85,7 @@ fn closure_input_completion_filters_exact_owners_and_preserves_memoized_inputs()
         .keys()
         .copied()
         .collect::<Vec<_>>();
-    closures.sort_by_key(|key| key.node.0);
+    closures.sort_by_key(|key| key.node.get());
     assert_eq!(closures.len(), 2);
     let key = closures[0];
     let original = checker.facts.closures.inputs[&key].clone();
@@ -153,7 +153,7 @@ fn input_completion_rejects_forged_regions_before_changing_completed_inputs() ->
         .keys()
         .copied()
         .collect::<Vec<_>>();
-    keys.sort_by_key(|key| key.node.0);
+    keys.sort_by_key(|key| key.node.get());
     let own = keys[0];
     let previous = checker.facts.closures.inputs[&own].clone();
     for region in [

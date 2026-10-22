@@ -1,7 +1,7 @@
 //! Verify inferred lower bounds without promoting obligations into assumptions.
 use super::{super::Solver, Relations};
+use crate::support::hash::HashMap;
 use crate::types::region_graph::{Error, Kind, Region};
-use std::collections::HashMap;
 
 struct Symbolic<'s, 'g> {
     solver: &'s mut Solver<'g>,
@@ -60,7 +60,7 @@ impl Solver<'_> {
             return Ok(Vec::new());
         }
         self.charge_many(self.reached.len())?;
-        let mut lower: HashMap<Region, Vec<Region>> = HashMap::new();
+        let mut lower: HashMap<Region, Vec<Region>> = HashMap::default();
         for &(region, bound) in &self.reached {
             if matches!(self.graph.kind(region)?, Kind::Variable { .. }) {
                 lower.entry(region).or_default().push(bound);

@@ -112,9 +112,11 @@ impl Checker<'_> {
             let scope = self.report.resolution.definitions[owner.0 as usize]
                 .members
                 .ok_or_else(|| self.error(key, "trait declaration has no member scope"))?;
-            let method = self.report.resolution.scopes[scope.0 as usize]
+            let method = self
+                .report
+                .resolution
                 .bindings
-                .get(&(path.suffix[0].1, Namespace::Value))
+                .get(scope, path.suffix[0].1, Namespace::Value)
                 .map(|binding| binding.target)
                 .filter(|id| {
                     matches!(
@@ -203,18 +205,6 @@ impl Checker<'_> {
             }
             key.node = match self.kind(key) {
                 crate::syntax::ast::Kind::Group(node) => node,
-                crate::syntax::ast::Kind::Type {
-                    flavor: crate::syntax::ast::TypeFlavor::Path,
-                    elements,
-                } => *self
-                    .report
-                    .package
-                    .unit(key.file)
-                    .configured
-                    .ast
-                    .list(elements)
-                    .first()
-                    .ok_or_else(|| self.error(key, "empty trait implementation path"))?,
                 _ => return Err(self.error(key, "implementation requires a resolved trait path")),
             };
         }
@@ -224,7 +214,7 @@ impl Checker<'_> {
         &mut self,
         owner: crate::sema::associated::Owner,
         definition: DefId,
-        self_bounds: std::collections::HashSet<NodeKey>,
+        self_bounds: crate::support::hash::HashSet<NodeKey>,
     ) -> Result<(), Error> {
         let schema = self
             .facts

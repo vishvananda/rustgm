@@ -2,6 +2,7 @@
 mod input_proof;
 mod original_inputs;
 use super::{model::Declarations, nominals::traits::State};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     types::{
@@ -15,7 +16,6 @@ use crate::{
 };
 pub(crate) use input_proof::Inputs;
 pub(in crate::sema) use original_inputs::OriginalInputs;
-use std::collections::HashMap;
 
 pub(crate) struct Assumptions {
     pub universals: u32,
@@ -146,7 +146,7 @@ fn witnesses(
         regions: Vec::new(),
         types: Vec::new(),
     };
-    let mut mapping = HashMap::new();
+    let mut mapping = HashMap::default();
     for index in 0..first {
         let region = universal(index)?;
         mapping.insert(region, region);

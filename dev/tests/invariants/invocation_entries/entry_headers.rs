@@ -26,7 +26,7 @@ fn malformed_opened_headers_cannot_select_execution()
         .is_none()
     );
     let wrong = crate::resolve::unit::NodeKey {
-        node: crate::syntax::ast::NodeId(u32::MAX),
+        node: crate::syntax::ast::NodeId::new(u32::MAX),
         ..caller
     };
     assert!(

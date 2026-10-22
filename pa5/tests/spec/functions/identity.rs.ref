@@ -1,19 +1,12 @@
-active [2,3,4,5,6,7,8,9,10,11,12,13,14]
-node 0 10 11 name "x"
-node 1 10 11 path false [0]
-node 2 10 11 binding false false "x" -
-node 3 12 15 name "i32"
-node 4 12 15 path false [3]
-node 5 12 15 type Path [4]
-node 6 10 15 parameter 2 5
-node 7 18 21 name "i32"
-node 8 18 21 path false [7]
-node 9 18 21 type Path [8]
-node 10 24 25 name "x"
-node 11 24 25 path false [10]
-node 12 22 27 block Plain [] 11
-node 13 0 27 item 0
-item 0 "id" public [] [] function false false false false - [6] 9 12
-node 14 0 27 crate [13]
-root 14
+active [0,1,2,3,4,5,6,7]
+node 0 10 11 binding false false "x" -
+node 1 12 15 name "i32"
+node 2 10 15 parameter 0 1
+node 3 18 21 name "i32"
+node 4 24 25 name "x"
+node 5 22 27 block Plain [] 4
+node 6 0 27 item 0
+item 0 "id" public [] [] function false false false false - [2] 3 5
+node 7 0 27 crate [6]
+root 7
 eof 28

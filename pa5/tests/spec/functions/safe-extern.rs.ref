@@ -1,20 +1,14 @@
-active [0,3,4,5,6,7,8,9,10,11,12,13]
+active [0,1,2,3,4,5,6,7]
 node 0 14 17 literal 0
 value 0 string 14 17 1 "C"
-node 1 32 33 name "x"
-node 2 32 33 path false [1]
-node 3 32 33 binding false false "x" -
-node 4 34 37 name "i32"
-node 5 34 37 path false [4]
-node 6 34 37 type Path [5]
-node 7 32 37 parameter 3 6
-node 8 40 43 name "i32"
-node 9 40 43 path false [8]
-node 10 40 43 type Path [9]
-node 11 20 44 item 0
-item 0 "abs" private [] [] function false false false true - [7] 10 -
-node 12 0 46 item 1
-item 1 - private [] [] extern-block true 0 [11]
-node 13 0 46 crate [12]
-root 13
+node 1 32 33 binding false false "x" -
+node 2 34 37 name "i32"
+node 3 32 37 parameter 1 2
+node 4 40 43 name "i32"
+node 5 20 44 item 0
+item 0 "abs" private [] [] function false false false true - [3] 4 -
+node 6 0 46 item 1
+item 1 - private [] [] extern-block true 0 [5]
+node 7 0 46 crate [6]
+root 7
 eof 47

@@ -3,6 +3,7 @@ mod images;
 mod rows;
 use super::{Inventory, Limits};
 use crate::sema::model::Declarations;
+use crate::support::hash::HashMap;
 use crate::{
     borrow::Checked,
     resolve::model::DefId,
@@ -12,7 +13,6 @@ use crate::{
     },
     types::TypeId,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Backing {
@@ -50,8 +50,8 @@ pub(super) fn build(
             values: Vec::new(),
             allocations: Vec::new(),
         },
-        values: HashMap::new(),
-        allocations: HashMap::new(),
+        values: HashMap::default(),
+        allocations: HashMap::default(),
         pending: Vec::new(),
         work: 0,
         bytes: 0,

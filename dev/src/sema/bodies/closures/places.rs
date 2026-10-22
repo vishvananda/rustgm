@@ -1,5 +1,6 @@
 //! Cache typed source places once; every projection shares its interned prefix.
 use super::{Checker, Constructor, Error, Kind, NodeId, TermId};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         model::{DefId, Target},
@@ -12,7 +13,6 @@ use crate::{
     syntax::ast::Unary,
     types::aggregate,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 pub(super) struct Place {
@@ -193,7 +193,7 @@ impl Places {
     }
     fn build(&mut self, checker: &mut Checker<'_>, node: NodeId) -> Result<Option<Place>, Error> {
         match checker.kind(node) {
-            Kind::Name(_) | Kind::Path { .. } => {
+            Kind::Name(..) | Kind::Path { .. } => {
                 let Some(Target::Definition(definition)) = checker
                     .facts
                     .node(checker.key(node))

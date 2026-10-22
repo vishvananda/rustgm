@@ -7,7 +7,7 @@ use crate::{
         program::{MemorySpan, SignatureId},
     },
 };
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn object_parameters(&mut self) -> Result<(), &'static str> {
         let mut parameter = 0_u32;
         for (index, local) in self.body.locals.iter().enumerate() {

@@ -32,14 +32,14 @@ fn contract_view_distinguishes_assumptions_variables_and_retained_requirements()
         bodies: vec![regions::Body {
             key: body::ir::BodyKey::Anonymous(NodeKey {
                 file: FileId(0),
-                node: NodeId(1),
+                node: NodeId::new(1),
             }),
             hidden_regions: Vec::new(),
             builtins: None,
             output: None,
             source: NodeKey {
                 file: FileId(0),
-                node: NodeId(1),
+                node: NodeId::new(1),
             },
             solution: proof.solution,
             instance: None,

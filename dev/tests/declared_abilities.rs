@@ -1,4 +1,5 @@
 //! Declaration abilities describe the result; formation remains the caller's duty.
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, RegionId, Store, TypeId,
     aggregate::Definitions,
@@ -7,7 +8,6 @@ use rustgm::types::{
     projection::{Application, Schema},
     traits,
 };
-use std::collections::HashMap;
 
 const BOTH: Properties = Properties {
     copy: true,
@@ -57,7 +57,7 @@ fn only_copy_promises_remove_destruction_requirements() -> Result<(), &'static s
     let clone = projected(&mut store, 12, CLONE, TypeId::UNIT)?;
     let copy = projected(&mut store, 13, BOTH, subject)?;
     let definitions = Definitions::default();
-    let selected = HashMap::new();
+    let selected = HashMap::default();
     let mut copies = Copies::default();
     let mut drop = NeedsDrop::new([]);
     let mut regions = Regions::new([])?;
@@ -107,7 +107,7 @@ fn declarations_cannot_change_under_cached_property_queries() -> Result<(), &'st
     let unknown = projected(&mut store, 11, Properties::default(), TypeId::UNIT)?;
     let mut copies = Copies::default();
     let definitions = Definitions::default();
-    let selected = HashMap::new();
+    let selected = HashMap::default();
     assert!(
         copies
             .demand(&store, &definitions, &selected, unknown)

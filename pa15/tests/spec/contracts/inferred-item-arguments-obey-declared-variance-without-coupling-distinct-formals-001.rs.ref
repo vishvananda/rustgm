@@ -1,12 +1,12 @@
 regions-crate 1
-body 0 source=0:10
+body 0 source=0:8
   universal b0=g2
   region g0 static
   region g1 local
   region g2 universal universe=0
   assume g2:g2
 end-body
-body 1 source=0:29
+body 1 source=0:24
   universal b0=g2
   variable r1=g3
   variable r2=g4
@@ -22,7 +22,7 @@ body 1 source=0:29
   require g4:g1
   require g4:g3
 end-body
-body 2 source=0:31
+body 2 source=0:26
   region g0 static
   region g1 local
 end-body

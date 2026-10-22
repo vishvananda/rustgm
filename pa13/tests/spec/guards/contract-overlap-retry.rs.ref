@@ -29,30 +29,26 @@ function @rg.15() -> i64 {
     jump ^b2
   block ^b2:
     %t5 = load i64 $s0
-    %t6 = convert zext i128 i64 %t5
-    %t7 = convert zext i128 i64 1
-    %t8 = binary add i128 %t6, %t7
-    %t9 = convert trunc i64 i128 %t8
-    %t10 = convert zext i128 i64 %t9
-    %t11 = cmp ne i128 %t8, %t10
-    branch %t11, ^b24, ^b25
+    %t6 = binary add i64 %t5, 1
+    %t7 = cmp ult i64 %t6, %t5
+    branch %t7, ^b24, ^b25
   block ^b25:
-    store i64 %t9, $s0
+    store i64 %t6, $s0
     branch 0, ^b19, ^b21
   block ^b21:
     jump ^b20
   block ^b20:
     jump ^b5
   block ^b5:
-    %t12 = load u32 $s2
-    %t13 = cmp eq u32 %t12, 0
-    %t14 = convert trunc i1 i64 %t13
-    branch %t14, ^b8, ^b11
+    %t8 = load u32 $s2
+    %t9 = cmp eq u32 %t8, 0
+    %t10 = convert trunc i1 i64 %t9
+    branch %t10, ^b8, ^b11
   block ^b11:
-    %t15 = load u32 $s2
-    %t16 = cmp eq u32 %t15, 1
-    %t17 = convert trunc i1 i64 %t16
-    branch %t17, ^b12, ^b15
+    %t11 = load u32 $s2
+    %t12 = cmp eq u32 %t11, 1
+    %t13 = convert trunc i1 i64 %t12
+    branch %t13, ^b12, ^b15
   block ^b15:
     jump ^b16
   block ^b16:
@@ -64,20 +60,20 @@ function @rg.15() -> i64 {
   block ^b18:
     jump ^b22
   block ^b22:
-    %t18 = load i64 $s0
-    store i64 %t18, $s1
+    %t14 = load i64 $s0
+    store i64 %t14, $s1
     jump ^b1
   block ^b12:
     jump ^b14
   block ^b8:
     jump ^b10
   block ^b10:
-    %t19 = cmp uge u8 7, 5
-    %t20 = convert trunc i1 i64 %t19
-    %t21 = cmp ule u8 7, 15
-    %t22 = convert trunc i1 i64 %t21
-    %t23 = binary and i1 %t20, %t22
-    branch %t23, ^b13, ^b14
+    %t15 = cmp uge u8 7, 5
+    %t16 = convert trunc i1 i64 %t15
+    %t17 = cmp ule u8 7, 15
+    %t18 = convert trunc i1 i64 %t17
+    %t19 = binary and i1 %t16, %t18
+    branch %t19, ^b13, ^b14
   block ^b14:
     jump ^b17
   block ^b17:
@@ -90,8 +86,8 @@ function @rg.15() -> i64 {
     store i64 99, $s1
     jump ^b1
   block ^b1:
-    %t24 = load i64 $s1
-    return i64 %t24
+    %t20 = load i64 $s1
+    return i64 %t20
   block ^b23:
     unreachable
   block ^b24:

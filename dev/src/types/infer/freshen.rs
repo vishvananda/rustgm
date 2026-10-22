@@ -1,8 +1,8 @@
 //! Fresh free-region slots at inferred type boundaries; late binders stay shared.
 use super::arguments::{Argument, ArgumentsId, Slot};
 use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
+use crate::support::hash::HashSet;
 use crate::types::{GenericArgs, ItemId, Kind, callable::Templates, substitute::Bound};
-use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FreshRegions {

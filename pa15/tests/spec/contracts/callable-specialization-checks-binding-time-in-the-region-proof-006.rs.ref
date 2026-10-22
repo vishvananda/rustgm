@@ -1,11 +1,11 @@
 regions-crate 1
-body 0 source=0:33
+body 0 source=0:22
   region g0 static
   region g1 local
   region g2 variable universe=1
   require g2:g0
 end-body
-body 1 source=0:35
+body 1 source=0:24
   region g0 static
   region g1 local
 end-body

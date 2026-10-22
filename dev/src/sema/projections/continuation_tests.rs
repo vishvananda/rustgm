@@ -1,5 +1,6 @@
 //! Definition waits preserve graph sharing, exact member authority and callable lifetimes.
 use super::{Availability, Cursor, Declarations, DefId, Obligations, Progress, ScopeId, TypeId};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
         self,
@@ -12,11 +13,7 @@ use crate::{
         projection::Application, substitute::Request,
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Write as _,
-    path::Path,
-};
+use std::{fmt::Write as _, path::Path};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 struct NoFiles;
@@ -158,7 +155,7 @@ fn a_wait_retains_complete_arguments_and_never_reselects_a_member() -> TestResul
 fn shared_graphs_resume_each_selection_once_and_reuse_completed_roots() -> TestResult {
     for count in [8, 32, 128] {
         let Fixture { mut facts, roots } = fixture(count, false, false)?;
-        let mut templates = HashMap::new();
+        let mut templates = HashMap::default();
         let mut child = TypeId::primitive(Primitive::U8);
         let mut expected = child;
         for &(definition, root) in &roots {
@@ -169,13 +166,13 @@ fn shared_graphs_resume_each_selection_once_and_reuse_completed_roots() -> TestR
         }
         let mut proof = Obligations::new(1);
         let mut cursor = Cursor::new(None, &proof, ScopeId::ROOT, Availability::Validated)?;
-        let mut requests = HashSet::new();
+        let mut requests = HashSet::default();
         let mut provider = |_: &mut Declarations, request: Request| {
             assert!(requests.insert(request.alias), "selection was replayed");
             Ok(None)
         };
         cursor.start(&mut facts, child)?;
-        let mut waited = HashSet::new();
+        let mut waited = HashSet::default();
         let steps = loop {
             match cursor.advance(&mut facts, &mut proof, &mut provider)? {
                 Progress::Dependency(_) => {
@@ -242,7 +239,7 @@ fn require(facts: &Declarations, proof: &Obligations) -> Result<usize, String> {
 fn callable_proofs_survive_interleaved_waits_without_gaining_permissions() -> TestResult {
     for restricted in [false, true] {
         let Fixture { mut facts, roots } = fixture(16, true, restricted)?;
-        let mut templates = HashMap::new();
+        let mut templates = HashMap::default();
         let mut functions = Vec::new();
         let mut expected = Vec::new();
         for &(definition, projection) in &roots {
@@ -272,7 +269,7 @@ fn callable_proofs_survive_interleaved_waits_without_gaining_permissions() -> Te
         let expected = facts.types.intern(Kind::Tuple(expected))?;
         let mut proof = Obligations::new(1);
         let mut cursor = Cursor::new(None, &proof, ScopeId::ROOT, Availability::Validated)?;
-        let mut requests = HashSet::new();
+        let mut requests = HashSet::default();
         let mut provider = |_: &mut Declarations, request: Request| {
             assert!(requests.insert((request.alias, request.scope)));
             Ok(None)

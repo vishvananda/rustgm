@@ -1,6 +1,7 @@
 //! Close builtin Self promises before projection identities acquire cached properties.
 use super::super::generics::bounds::Written;
 use super::super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::HashMap;
 pub(super) use crate::types::projection::Builtins;
 use crate::{
     sema::associated::OwnerKind,
@@ -9,15 +10,14 @@ use crate::{
         parameters::{clauses::Clause, predicates::Bound},
     },
 };
-use std::collections::HashMap;
 
 impl Checker<'_> {
     /// The decoded bounds already retain resolved declaration identities. Their
     /// builtin Self promises are independent of application arguments, but remain
     /// conditional on proving the complete application through ordinary semantics.
     pub(super) fn inherited_builtins(&self) -> Result<HashMap<DefId, Builtins>, Error> {
-        let mut promises = HashMap::new();
-        let mut dependents: HashMap<DefId, Vec<DefId>> = HashMap::new();
+        let mut promises = HashMap::default();
+        let mut dependents: HashMap<DefId, Vec<DefId>> = HashMap::default();
         let mut work = Vec::new();
         let mut steps = 0_usize;
         for owner in self.facts.associated.owners() {
@@ -93,7 +93,7 @@ impl Checker<'_> {
             return Ok(());
         }
         let inherited = self.typed_builtin_promises()?;
-        let mut promises = HashMap::new();
+        let mut promises = HashMap::default();
         for (&member, bounds) in &self.associated_type_bounds {
             let key = self.report.resolution.definitions[member.0 as usize]
                 .node
@@ -158,10 +158,10 @@ impl Checker<'_> {
 
     fn typed_builtin_promises(&self) -> Result<HashMap<DefId, Builtins>, Error> {
         let Some(contracts) = &self.facts.generics.traits else {
-            return Ok(HashMap::new());
+            return Ok(HashMap::default());
         };
-        let mut promises = HashMap::new();
-        let mut dependents: HashMap<DefId, Vec<DefId>> = HashMap::new();
+        let mut promises = HashMap::default();
+        let mut dependents: HashMap<DefId, Vec<DefId>> = HashMap::default();
         let mut work = Vec::new();
         let mut steps = 0_usize;
         for (item, header) in contracts.headers() {

@@ -1,5 +1,6 @@
 //! Selected captures build one typed environment and retain both lifetime views.
 use super::{CallKind, Checker, Constructor, Entry, Error, NodeId, TypeId};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::unit::NodeKey,
     sema::{
@@ -9,7 +10,6 @@ use crate::{
     },
     types::{Kind, RegionId, infer::Solved, substitute::Bound},
 };
-use std::collections::HashMap;
 
 impl Checker<'_> {
     pub(super) fn collect_capture_environment(
@@ -188,7 +188,7 @@ impl Checker<'_> {
         source: NodeId,
         bindings: &[(crate::resolve::model::DefId, super::TermId)],
     ) -> Result<HashMap<crate::resolve::model::DefId, bool>, Error> {
-        let mut binding_mutability = HashMap::new();
+        let mut binding_mutability = HashMap::default();
         for &(definition, _) in bindings {
             let key = self.report.resolution.definitions[definition.0 as usize]
                 .node
@@ -212,7 +212,7 @@ impl Checker<'_> {
             .extend(solved.region_equalities.iter().copied())
             .map_err(|e| self.error(source, e))?;
         self.facts.body_work.canonical_steps += work;
-        let mut fold = Bound::close_projection_regions(1, 0, HashMap::new())
+        let mut fold = Bound::close_projection_regions(1, 0, HashMap::default())
             .map_err(|e| self.error(source, e))?;
         fold.exchange_projection_equations(&mut equations)
             .map_err(|e| self.error(source, e))?;

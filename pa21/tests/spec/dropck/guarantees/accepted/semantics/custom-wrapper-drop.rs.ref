@@ -38,24 +38,23 @@ type 35 function-item def=20 signature=34
 type 36 function binders=0 parameters=[19] result=20 unsafe=false
 type 37 function-item def=16 signature=36
 type 38 opaque id=0 arguments=[region:region:1]
-type 39 reference mutable=false region=region:2 referent=11
-type 40 opaque id=0 arguments=[region:region:2]
-type 41 function binders=0 parameters=[39] result=40 unsafe=false
-type 42 opaque id=0 arguments=[region:region:4]
-type 43 aggregate def=15 arguments=[type:42]
-type 44 function binders=0 parameters=[42] result=43 unsafe=false
-type 45 function-item def=16 signature=44 arguments=[type:42]
-type 46 reference mutable=false region=region:3 referent=11
-type 47 opaque id=0 arguments=[region:region:5]
-type 48 aggregate def=15 arguments=[type:47]
-def 13 type=24 name="check" source=0:19
-def 14 type=26 name="fail" source=0:35
-def 15 type=20 name="W" source=0:41
-def 16 type=37 name="W" source=0:41
-def 17 type=22 name="Self" source=0:65
-def 18 type=29 name="drop" source=0:64
-def 19 type=33 name="f" source=0:82
-def 20 type=35 name="main" source=0:112
+type 39 reference mutable=false region=region:1 referent=11
+type 40 function binders=0 parameters=[39] result=38 unsafe=false
+type 41 opaque id=0 arguments=[region:region:3]
+type 42 aggregate def=15 arguments=[type:41]
+type 43 function binders=0 parameters=[41] result=42 unsafe=false
+type 44 function-item def=16 signature=43 arguments=[type:41]
+type 45 reference mutable=false region=region:2 referent=11
+type 46 opaque id=0 arguments=[region:region:4]
+type 47 aggregate def=15 arguments=[type:46]
+def 13 type=24 name="check" source=0:13
+def 14 type=26 name="fail" source=0:22
+def 15 type=20 name="W" source=0:26
+def 16 type=37 name="W" source=0:26
+def 17 type=22 name="Self" source=0:42
+def 18 type=29 name="drop" source=0:41
+def 19 type=33 name="f" source=0:56
+def 20 type=35 name="main" source=0:77
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -73,28 +72,28 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 38 type=19 name="T" source=0:36
-def 39 type=21 name="T" source=0:42
-def 41 type=2 name="ok" source=0:2
-def 42 type=11 name="x" source=0:22
-def 47 type=27 name="self" source=0:55
-def 51 type=43 name="x" source=0:85
-def 52 type=11 name="a" source=0:89
-associated-owner 0 kind=trait-impl self-def=17 self=22 source=0:65 unsafe=false
+def 38 type=19 name="T" source=0:23
+def 39 type=21 name="T" source=0:27
+def 41 type=2 name="ok" source=0:0
+def 42 type=11 name="x" source=0:14
+def 47 type=27 name="self" source=0:33
+def 51 type=42 name="x" source=0:57
+def 52 type=11 name="a" source=0:59
+associated-owner 0 kind=trait-impl self-def=17 self=22 source=0:42 unsafe=false
 associated-member def=18 owner=0 receiver=27 references=1
 parameter owner=15 binding=38 argument=type:19 default=-
 parameter owner=17 binding=39 argument=type:21 default=-
-region-var region:1 body=0:81 source=0:81 origin=universal-alias pending
-region-var region:2 body=0:111 source=0:101 origin=call-argument pending
-region-var region:3 body=0:111 source=0:100 origin=expression-borrow pending
-region-var region:4 body=0:111 source=0:101 origin=inference pending
-region-var region:5 body=0:111 source=0:109 origin=inference pending
-region-equal body=0:81 left=region:1 right=bound:0:0
-region-coercion body=0:111 source=0:100 actual=46 expected=39 kind=same-shape pending
-region-coercion body=0:111 source=0:101 actual=40 expected=42 kind=same-shape pending
-region-coercion body=0:111 source=0:109 actual=43 expected=48 kind=same-shape pending
-type-outlives body=0:81 source=0:79 type=11 shorter=static pending
-opaque 0 owner=19 source=0:79 application=31 hidden=11 role=defining-result storage-proof=pending
+region-var region:1 body=0:55 source=0:55 origin=universal-alias pending
+region-var region:1 body=0:76 source=0:67 origin=call-argument pending
+region-var region:2 body=0:76 source=0:66 origin=expression-borrow pending
+region-var region:3 body=0:76 source=0:67 origin=inference pending
+region-var region:4 body=0:76 source=0:74 origin=inference pending
+region-equal body=0:55 left=region:1 right=bound:0:0
+region-coercion body=0:76 source=0:66 actual=45 expected=39 kind=same-shape pending
+region-coercion body=0:76 source=0:67 actual=38 expected=41 kind=same-shape pending
+region-coercion body=0:76 source=0:74 actual=42 expected=47 kind=same-shape pending
+type-outlives body=0:55 source=0:53 type=11 shorter=static pending
+opaque 0 owner=19 source=0:53 application=31 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=31 bound=copy
 opaque-bound id=0 index=1 subject=31 bound=outlives:static
 opaque-body-result def=19 type=11

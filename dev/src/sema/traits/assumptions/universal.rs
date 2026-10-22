@@ -1,11 +1,12 @@
 //! Universal premises supply fresh existential instances in the requesting proof.
 use super::{Assumptions, Clause, Context, Goal, Selection, Store, alternatives, infer};
+use crate::support::hash::HashMap;
 use crate::types::{
     RegionId,
     parameters::{clauses::QuantifiedId, predicates::Predicate},
     substitute::Bound,
 };
-use std::{collections::HashMap, ops::Range};
+use std::ops::Range;
 
 pub(in crate::sema) struct ScopedEvidence {
     pub clause: Clause,

@@ -38,12 +38,12 @@ type 35 projection def=15 self=34 trait=13 arguments=[] family arguments=[]
 type 36 projection def=18 self=20 trait=16 arguments=[] family arguments=[region:region:1]
 def 14 type=19 name="Self" source=0:1
 def 15 type=21 name="Item" source=0:0
-def 17 type=20 name="Self" source=0:48
+def 17 type=20 name="Self" source=0:39
 def 18 type=22 name="X" source=0:3
-def 19 type=23 name="Y" source=0:25
-def 20 type=27 name="f" source=0:35
-def 21 type=31 name="g" source=0:47
-def 22 type=33 name="main" source=0:50
+def 19 type=23 name="Y" source=0:20
+def 20 type=27 name="f" source=0:29
+def 21 type=31 name="g" source=0:38
+def 22 type=33 name="main" source=0:41
 def 23 type=2 name="bool"
 def 24 type=3 name="char"
 def 25 type=4 name="str"
@@ -62,7 +62,7 @@ def 37 type=16 name="usize"
 def 38 type=17 name="f32"
 def 39 type=18 name="f64"
 associated-owner 0 kind=trait self-def=14 self=19 source=0:1 trait=13 unsafe=false name="Has"
-associated-owner 1 kind=trait self-def=17 self=20 source=0:48 trait=16 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=17 self=20 source=0:39 trait=16 unsafe=false name="A"
 associated-member def=15 owner=0
 associated-member def=18 owner=1
 associated-member def=19 owner=1
@@ -73,10 +73,10 @@ parameter owner=17 binding=17 argument=type:20 default=-
 parameter owner=18 binding=40 argument=region:bound:0:0 default=-
 parameter owner=19 binding=41 argument=region:bound:0:0 default=-
 predicate owner=13 source=0:1 subject=19 bound=trait:13 arguments=[]
-predicate owner=16 source=0:48 subject=20 bound=trait:16 arguments=[]
-predicate owner=19 source=0:23 subject=20 bound=outlives:bound:0:0
-predicate owner=19 source=0:18 subject=23 bound=trait:13 arguments=[]
-predicate owner=19 source=0:15 subject=24 bound=projection-equal:22
+predicate owner=16 source=0:39 subject=20 bound=trait:16 arguments=[]
+predicate owner=19 source=0:18 subject=20 bound=outlives:bound:0:0
+predicate owner=19 source=0:15 subject=23 bound=trait:13 arguments=[]
+predicate owner=19 source=0:12 subject=24 bound=projection-equal:22
 associated-type def=15 type=21
 result-contract def=15 projection=21
 result-bound def=15 index=0 subject=21 bound=sized
@@ -88,13 +88,10 @@ result-contract def=19 projection=23
 result-bound def=19 index=0 subject=23 bound=sized
 result-bound def=19 index=1 subject=23 bound=trait:13 arguments=[]
 result-bound def=19 index=2 subject=24 bound=projection-equal:22
-normalized-node source=0:13 original=22 result=22
-normalized-node source=0:14 original=22 result=22
-normalized-node source=0:33 original=23 result=23
-normalized-node source=0:34 original=23 result=23
-normalized-node source=0:44 original=22 result=22
-normalized-node source=0:45 original=22 result=22
+normalized-node source=0:11 original=22 result=22
+normalized-node source=0:28 original=23 result=23
+normalized-node source=0:36 original=22 result=22
 family def=18 captures=0 regions=1 complete=true
 family def=19 captures=0 regions=1 complete=true
 family-bound def=19 index=0 subject=20 bound=outlives:bound:0:0
-eof owners=2 members=5 parameters=4 predicates=5 impls=0 calls=0 paths=0 impl-uses=0 type-members=3 constant-members=0 result-contracts=3 result-bounds=5 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=6 normalized-definitions=0 quantifiers=0 families=2 family-bounds=1 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0
+eof owners=2 members=5 parameters=4 predicates=5 impls=0 calls=0 paths=0 impl-uses=0 type-members=3 constant-members=0 result-contracts=3 result-bounds=5 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0 quantifiers=0 families=2 family-bounds=1 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

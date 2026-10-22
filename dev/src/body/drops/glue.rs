@@ -56,7 +56,7 @@ pub struct Recipes {
     entries: Vec<Recipe>,
     fields: Vec<Field>,
     variants: Vec<Variant>,
-    exposed: std::collections::HashMap<TypeId, Option<Id>>,
+    exposed: crate::support::hash::HashMap<TypeId, Option<Id>>,
 }
 impl Recipes {
     pub(crate) fn exposed(&self, ty: TypeId) -> Result<Option<Id>, &'static str> {

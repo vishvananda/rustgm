@@ -1,46 +1,41 @@
 //! Literal boundaries and suffixes; values and escape validity belong to PA2.
 use super::token::{Kind, LexError};
-use super::{Lexer, is_identifier_continue, is_identifier_start};
+use super::{Lexer, is_identifier_start};
 
 impl Lexer<'_> {
-    pub(super) fn literal_prefix(&mut self) -> Result<Option<Kind>, LexError> {
-        for (prefix, kind) in [
-            ("br", Kind::RawByteString),
-            ("cr", Kind::RawCString),
-            ("r", Kind::RawString),
-        ] {
-            if let Some(tail) = self.rest().strip_prefix(prefix) {
-                let hashes = tail.bytes().take_while(|byte| *byte == b'#').count();
-                if tail.as_bytes().get(hashes) == Some(&b'"') {
-                    let start = self.at;
-                    for _ in prefix.bytes() {
-                        self.bump();
-                    }
-                    return self.raw_string(start, hashes, kind).map(Some);
-                }
+    /// Raw strings, raw identifiers and prefixed quoted literals. `first` is
+    /// `b`, `c` or `r`; any other spelling continues as an identifier.
+    pub(super) fn literal_prefix(&mut self, first: u8) -> Result<Option<Kind>, LexError> {
+        let second = self.byte(1);
+        let raw = match (first, second) {
+            (b'b', Some(b'r')) => Some((2, Kind::RawByteString)),
+            (b'c', Some(b'r')) => Some((2, Kind::RawCString)),
+            (b'r', _) => Some((1, Kind::RawString)),
+            _ => None,
+        };
+        if let Some((prefix, kind)) = raw {
+            let tail = &self.text.as_bytes()[self.at as usize + prefix..];
+            let hashes = tail.iter().take_while(|byte| **byte == b'#').count();
+            if tail.get(hashes) == Some(&b'"') {
+                let start = self.at;
+                self.skip(prefix);
+                return self.raw_string(start, hashes, kind).map(Some);
             }
         }
-        if self.rest().starts_with("r#")
-            && self.rest()[2..]
-                .chars()
-                .next()
-                .is_some_and(is_identifier_start)
+        if first == b'r' && second == Some(b'#') && self.char_at(2).is_some_and(is_identifier_start)
         {
             self.at += 2;
-            self.eat_while(is_identifier_continue);
+            self.eat_identifier_continue();
             return Ok(Some(Kind::RawIdentifier));
         }
-        for (prefix, quote, kind) in [
-            ("b\"", '"', Kind::ByteString),
-            ("c\"", '"', Kind::CString),
-            ("b'", '\'', Kind::Byte),
-        ] {
-            if self.rest().starts_with(prefix) {
-                self.bump();
-                return self.quoted(quote, kind).map(Some);
-            }
-        }
-        Ok(None)
+        let (quote, kind) = match (first, second) {
+            (b'b', Some(b'"')) => (b'"', Kind::ByteString),
+            (b'c', Some(b'"')) => (b'"', Kind::CString),
+            (b'b', Some(b'\'')) => (b'\'', Kind::Byte),
+            _ => return Ok(None),
+        };
+        self.at += 1;
+        self.quoted(quote, kind).map(Some)
     }
 
     fn raw_string(&mut self, start: u32, hashes: usize, kind: Kind) -> Result<Kind, LexError> {
@@ -50,112 +45,116 @@ impl Lexer<'_> {
                 "raw string has more than 255 delimiter hashes",
             ));
         }
-        for _ in 0..=hashes {
-            self.bump();
-        }
-        while let Some(ch) = self.peek() {
-            self.bump();
-            if ch == '"'
-                && self
-                    .rest()
-                    .bytes()
-                    .take(hashes)
-                    .filter(|b| *b == b'#')
-                    .count()
-                    == hashes
+        self.skip(hashes + 1);
+        let bytes = self.text.as_bytes();
+        let mut index = self.at as usize;
+        while let Some(offset) = bytes
+            .get(index..)
+            .and_then(|rest| rest.iter().position(|byte| *byte == b'"'))
+        {
+            index += offset + 1;
+            if bytes
+                .get(index..index + hashes)
+                .is_some_and(|closing| closing.iter().all(|byte| *byte == b'#'))
             {
-                for _ in 0..hashes {
-                    self.bump();
-                }
-                self.eat_while(is_identifier_continue);
+                self.skip(index + hashes - self.at as usize);
+                self.eat_identifier_continue();
                 return Ok(kind);
             }
         }
+        self.skip(bytes.len() - self.at as usize);
         Err(Self::error(start, "unterminated raw string"))
     }
 
-    pub(super) fn quoted(&mut self, quote: char, kind: Kind) -> Result<Kind, LexError> {
+    /// Scan bytes to the closing ASCII quote. A backslash skips the next byte;
+    /// continuation bytes of a multibyte scalar never match a delimiter.
+    pub(super) fn quoted(&mut self, quote: u8, kind: Kind) -> Result<Kind, LexError> {
         let start = self.at;
-        self.bump();
-        while let Some(ch) = self.peek() {
-            self.bump();
-            if ch == quote {
-                self.eat_while(is_identifier_continue);
+        let bytes = self.text.as_bytes();
+        let mut index = start as usize + 1;
+        while let Some(&byte) = bytes.get(index) {
+            index += 1;
+            if byte == quote {
+                self.skip(index - start as usize);
+                self.eat_identifier_continue();
                 return Ok(kind);
             }
-            if ch == '\\' {
-                self.bump();
-            } else if ch == '\n' && quote == '\'' {
+            if byte == b'\\' {
+                index = (index + 1).min(bytes.len());
+            } else if byte == b'\n' && quote == b'\'' {
                 break;
             }
         }
+        self.skip(index - start as usize);
         Err(Self::error(start, "unterminated quoted literal"))
     }
 
     pub(super) fn character_or_lifetime(&mut self) -> Result<Kind, LexError> {
         let start = self.at;
-        self.bump();
-        if self.rest().starts_with("r#")
-            && self.rest()[2..]
-                .chars()
-                .next()
-                .is_some_and(is_identifier_start)
-        {
+        self.at += 1;
+        if self.starts_with(b"r#") && self.char_at(2).is_some_and(is_identifier_start) {
             self.at += 2;
-            self.eat_while(is_identifier_continue);
+            self.eat_identifier_continue();
             return Ok(Kind::RawLifetime);
         }
         if self
-            .peek()
+            .char_at(0)
             .is_some_and(|ch| is_identifier_start(ch) || ch.is_ascii_digit())
         {
-            self.eat_while(is_identifier_continue);
-            if self.peek() != Some('\'') {
+            self.eat_identifier_continue();
+            if self.byte(0) != Some(b'\'') {
                 return Ok(Kind::Lifetime);
             }
-            self.bump();
-            self.eat_while(is_identifier_continue);
+            self.at += 1;
+            self.eat_identifier_continue();
             return Ok(Kind::Character);
         }
         self.at = start;
-        self.quoted('\'', Kind::Character)
+        self.quoted(b'\'', Kind::Character)
+    }
+
+    fn eat_digits(&mut self, hexadecimal: bool) {
+        while let Some(byte) = self.byte(0) {
+            if !(byte == b'_' || byte.is_ascii_digit() || (hexadecimal && byte.is_ascii_hexdigit()))
+            {
+                return;
+            }
+            self.at += 1;
+        }
     }
 
     pub(super) fn number(&mut self) -> Kind {
         let mut kind = Kind::Integer;
-        let mut radix = 10;
-        if self.rest().starts_with("0x") {
-            radix = 16;
-            self.at += 2;
-        } else if self.rest().starts_with("0o") || self.rest().starts_with("0b") {
-            radix = 2;
+        let (decimal, hexadecimal) = match (self.byte(0), self.byte(1)) {
+            (Some(b'0'), Some(b'x')) => (false, true),
+            (Some(b'0'), Some(b'o' | b'b')) => (false, false),
+            _ => (true, false),
+        };
+        if !decimal {
             self.at += 2;
         }
-        self.eat_while(|ch| {
-            ch == '_' || ch.is_ascii_digit() || (radix == 16 && ch.is_ascii_hexdigit())
-        });
-        if radix == 10 {
-            let mut ahead = self.rest().chars();
-            if ahead.next() == Some('.')
-                && !ahead
-                    .next()
+        self.eat_digits(hexadecimal);
+        if decimal {
+            if self.byte(0) == Some(b'.')
+                && !self
+                    .char_at(1)
                     .is_some_and(|ch| ch == '.' || is_identifier_start(ch))
             {
                 kind = Kind::Float;
-                self.bump();
-                self.eat_while(|ch| ch.is_ascii_digit() || ch == '_');
+                self.at += 1;
+                self.eat_digits(false);
             }
-            if matches!(self.peek(), Some('e' | 'E')) {
+            if matches!(self.byte(0), Some(b'e' | b'E')) {
                 kind = Kind::Float;
-                self.bump();
-                if matches!(self.peek(), Some('+' | '-')) {
-                    self.bump();
+                self.at += 1;
+                if matches!(self.byte(0), Some(b'+' | b'-')) {
+                    self.at += 1;
                 }
-                self.eat_while(|ch| ch.is_ascii_digit() || ch == '_');
+                self.eat_digits(false);
             }
         }
-        if self.peek().is_some_and(is_identifier_start) {
-            self.eat_while(is_identifier_continue);
+        if self.char_at(0).is_some_and(is_identifier_start) {
+            self.eat_identifier_continue();
         }
         kind
     }

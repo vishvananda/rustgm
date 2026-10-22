@@ -13,6 +13,7 @@ mod transfers;
 mod values;
 
 use crate::sema::values::execution::{Progress, Requirement};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::ir::{Action, BlockId, Body, LocalKind, Owner, Terminator, ValueId},
     resolve::{model::DefId, unit::NodeKey},
@@ -20,7 +21,6 @@ use crate::{
 };
 pub(crate) use reached_layout::Call as SourceLayoutCall;
 use static_reads::EvaluationContext;
-use std::collections::{HashMap, HashSet};
 
 /// Deterministic execution limits are independent of the host stack and time.
 #[derive(Clone, Copy)]
@@ -146,10 +146,10 @@ impl<'a, 'b> Machine<'a, 'b> {
             limits,
             work: Work::default(),
             slots: 0,
-            active_initializers: HashSet::new(),
-            active_associated: HashSet::new(),
-            active_inline: HashSet::new(),
-            active_anonymous: HashSet::new(),
+            active_initializers: HashSet::default(),
+            active_associated: HashSet::default(),
+            active_inline: HashSet::default(),
+            active_anonymous: HashSet::default(),
             waiting: None,
             read_operation: None,
             context: EvaluationContext::Constant,
@@ -175,7 +175,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             .ok_or(Error {
                 source: NodeKey {
                     file: crate::resolve::unit::FileId(0),
-                    node: crate::syntax::ast::NodeId(0),
+                    node: crate::syntax::ast::NodeId::new(0),
                 },
                 message: "missing constant execution body",
             })?;
@@ -324,10 +324,10 @@ impl<'a, 'b> Machine<'a, 'b> {
             return_to,
             locals: vec![None; body.locals.len()],
             values: vec![None; body.values.len()],
-            temporaries: HashMap::new(),
-            projections: HashMap::new(),
-            raw_views: HashMap::new(),
-            union_views: HashMap::new(),
+            temporaries: HashMap::default(),
+            projections: HashMap::default(),
+            raw_views: HashMap::default(),
+            union_views: HashMap::default(),
             allocations: Vec::new(),
         };
         let mut parameters = 0;

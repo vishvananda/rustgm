@@ -276,7 +276,7 @@ fn inherited_signature(
     if body.universals.checked_sub(body.inherited) != Some(bound_regions) {
         return Err("closure signature lifetime interface differs from its body");
     }
-    let mut mapping = std::collections::HashMap::new();
+    let mut mapping = crate::support::hash::HashMap::default();
     for (index, &capture) in captures.iter().enumerate() {
         let index = u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?;
         let capture = match capture.bound_parts() {

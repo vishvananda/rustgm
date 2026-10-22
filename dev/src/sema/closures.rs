@@ -5,6 +5,7 @@ pub mod imports;
 mod source_roots;
 pub use source_roots::FormationInput;
 
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     syntax::ast::List,
@@ -13,7 +14,6 @@ use crate::{
         closure::{CallKind, ClosureId},
     },
 };
-use std::collections::HashMap;
 
 /// Source body identity is independent of its enclosing function's declaration.
 #[derive(Clone, Copy)]

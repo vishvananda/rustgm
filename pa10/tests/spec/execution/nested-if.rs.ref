@@ -20,37 +20,37 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=14 source=0:14
-  local l0 type=14 merge mutable=true storage-parent=- source=13
-  local l1 type=14 merge mutable=true storage-parent=l0 source=9
+body 0 function def=13 signature=19 result=14 source=0:12
+  local l0 type=14 merge mutable=true storage-parent=- source=11
+  local l1 type=14 merge mutable=true storage-parent=l0 source=7
   block b0:
-    live l0 source=13
-    v0 type=2 = bool true source=3
-    branch v0 b1 b2 source=13
+    live l0 source=11
+    v0 type=2 = bool true source=1
+    branch v0 b1 b2 source=11
   block b1:
-    live l1 source=9
-    v1 type=2 = bool false source=4
-    branch v1 b4 b5 source=9
+    live l1 source=7
+    v1 type=2 = bool false source=2
+    branch v1 b4 b5 source=7
   block b2:
-    v5 type=14 = integer bits=0x00000000000000000000000000000003 source=11
-    store l0 v5 source=13
-    jump b3 source=13
+    v5 type=14 = integer bits=0x00000000000000000000000000000003 source=9
+    store l0 v5 source=11
+    jump b3 source=11
   block b3:
-    v6 type=14 = read l0 source=13
-    dead l0 source=14
-    return v6 source=14
+    v6 type=14 = read l0 source=11
+    dead l0 source=12
+    return v6 source=12
   block b4:
-    v2 type=14 = integer bits=0x00000000000000000000000000000001 source=5
-    store l1 v2 source=9
-    jump b6 source=9
+    v2 type=14 = integer bits=0x00000000000000000000000000000001 source=3
+    store l1 v2 source=7
+    jump b6 source=7
   block b5:
-    v3 type=14 = integer bits=0x00000000000000000000000000000002 source=7
-    store l1 v3 source=9
-    jump b6 source=9
+    v3 type=14 = integer bits=0x00000000000000000000000000000002 source=5
+    store l1 v3 source=7
+    jump b6 source=7
   block b6:
-    v4 type=14 = read l1 source=9
-    dead l1 source=10
-    store l0 v4 source=13
-    jump b3 source=13
+    v4 type=14 = read l1 source=7
+    dead l1 source=8
+    store l0 v4 source=11
+    jump b3 source=11
 end-body
 eof bodies=1 locals=2 values=7 statements=15 blocks=7

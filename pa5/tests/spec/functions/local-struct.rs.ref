@@ -1,23 +1,18 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+active [0,1,2,3,4,5,6,7,8,9,10,11]
 node 0 8 11 name "i32"
-node 1 8 11 path false [0]
-node 2 8 11 type Path [1]
-node 3 27 30 name "i32"
-node 4 27 30 path false [3]
-node 5 27 30 type Path [4]
-node 6 25 30 field-definition "x" private 5
-node 7 14 32 item 0
-item 0 "S" private [] [] struct Record [6]
-node 8 33 34 name "S"
-node 9 33 34 path false [8]
-node 10 37 38 literal 0
+node 1 27 30 name "i32"
+node 2 25 30 field-definition "x" private 1
+node 3 14 32 item 0
+item 0 "S" private [] [] struct Record [2]
+node 4 33 34 name "S"
+node 5 37 38 literal 0
 value 0 integer 37 38 infer 4
-node 11 35 38 field-init "x" 10
-node 12 33 39 struct 9 [11] -
-node 13 33 41 field 12 "x"
-node 14 12 43 block Plain [7] 13
-node 15 0 43 item 1
-item 1 "f" private [] [] function false false false false - [] 2 14
-node 16 0 43 crate [15]
-root 16
+node 6 35 38 field-init "x" 5
+node 7 33 39 struct 4 [6] -
+node 8 33 41 field 7 "x"
+node 9 12 43 block Plain [3] 8
+node 10 0 43 item 1
+item 1 "f" private [] [] function false false false false - [] 0 9
+node 11 0 43 crate [10]
+root 11
 eof 44

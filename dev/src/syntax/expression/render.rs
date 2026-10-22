@@ -13,7 +13,7 @@ struct Optional(Option<NodeId>);
 impl fmt::Display for Optional {
     fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(id) = self.0 {
-            write!(output, "{}", id.0)
+            write!(output, "{}", id.get())
         } else {
             output.write_str("-")
         }
@@ -25,7 +25,7 @@ impl fmt::Display for CallableAbi {
         match self.0 {
             crate::syntax::item::Abi::Rust => output.write_str("-"),
             crate::syntax::item::Abi::Extern(None) => output.write_str("extern"),
-            crate::syntax::item::Abi::Extern(Some(node)) => write!(output, "{}", node.0),
+            crate::syntax::item::Abi::Extern(Some(node)) => write!(output, "{}", node.get()),
         }
     }
 }
@@ -37,7 +37,7 @@ impl<L> fmt::Display for Children<'_, L> {
             if index != 0 {
                 output.write_str(",")?;
             }
-            write!(output, "{}", id.0)?;
+            write!(output, "{}", id.get())?;
         }
         output.write_str("]")
     }
@@ -146,20 +146,26 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         | Kind::PatternRange { .. } => item::node(source, ast, kind, output),
         Kind::Literal(id) => write!(output, "literal {id}"),
         Kind::CrateRoot(id) => write!(output, "crate-root {id}"),
-        Kind::Name(span) => {
+        Kind::Name(span, _) => {
             write!(output, "name ")?;
             spelling(source, span, output)
         }
         Kind::Path { absolute, segments } => {
             write!(output, "path {absolute} {}", Children(ast, segments))
         }
-        Kind::Group(value) => write!(output, "group {}", value.0),
+        Kind::Group(value) => write!(output, "group {}", value.get()),
         Kind::Tuple(list) => write!(output, "tuple {}", Children(ast, list)),
         Kind::Array(list) => write!(output, "array {}", Children(ast, list)),
-        Kind::Repeat { value, count } => write!(output, "repeat {} {}", value.0, count.0),
-        Kind::Unary { op, operand } => write!(output, "unary {} {}", op.name(), operand.0),
+        Kind::Repeat { value, count } => write!(output, "repeat {} {}", value.get(), count.get()),
+        Kind::Unary { op, operand } => write!(output, "unary {} {}", op.name(), operand.get()),
         Kind::Binary { op, left, right } => {
-            write!(output, "binary {} {} {}", operator(op), left.0, right.0)
+            write!(
+                output,
+                "binary {} {} {}",
+                operator(op),
+                left.get(),
+                right.get()
+            )
         }
         Kind::Range {
             inclusive,
@@ -171,35 +177,35 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             Optional(start),
             Optional(end)
         ),
-        Kind::Cast { value, ty } => write!(output, "cast {} {}", value.0, ty.0),
+        Kind::Cast { value, ty } => write!(output, "cast {} {}", value.get(), ty.get()),
         Kind::Call { callee, arguments } => {
-            write!(output, "call {} {}", callee.0, Children(ast, arguments))
+            write!(output, "call {} {}", callee.get(), Children(ast, arguments))
         }
         Kind::MethodCall {
             receiver,
             name,
             arguments,
         } => {
-            write!(output, "method-call {} ", receiver.0)?;
+            write!(output, "method-call {} ", receiver.get())?;
             spelling(source, name, output)?;
             write!(output, " {}", Children(ast, arguments))
         }
-        Kind::Index { value, index } => write!(output, "index {} {}", value.0, index.0),
+        Kind::Index { value, index } => write!(output, "index {} {}", value.get(), index.get()),
         Kind::Field { value, name } => {
-            write!(output, "field {} ", value.0)?;
+            write!(output, "field {} ", value.get())?;
             spelling(source, name, output)
         }
         Kind::Struct { path, fields, base } => write!(
             output,
             "struct {} {} {}",
-            path.0,
+            path.get(),
             Children(ast, fields),
             Optional(base)
         ),
         Kind::FieldInit { name, value } => {
             write!(output, "field-init ")?;
             spelling(source, name, output)?;
-            write!(output, " {}", value.0)
+            write!(output, " {}", value.get())
         }
         Kind::Block {
             flavor,
@@ -212,7 +218,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             Optional(tail)
         ),
         Kind::EmptyStatement => write!(output, "empty-statement"),
-        Kind::Statement(value) => write!(output, "statement {}", value.0),
+        Kind::Statement(value) => write!(output, "statement {}", value.get()),
         Kind::Let {
             pattern,
             ty,
@@ -221,13 +227,13 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         } => write!(
             output,
             "let {} {} {} {}",
-            pattern.0,
+            pattern.get(),
             Optional(ty),
             Optional(value),
             Optional(otherwise)
         ),
         Kind::LetCondition { pattern, value } => {
-            write!(output, "let-condition {} {}", pattern.0, value.0)
+            write!(output, "let-condition {} {}", pattern.get(), value.get())
         }
         Kind::If {
             condition,
@@ -236,21 +242,29 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         } => write!(
             output,
             "if {} {} {}",
-            condition.0,
-            then.0,
+            condition.get(),
+            then.get(),
             Optional(otherwise)
         ),
-        Kind::Loop { body } => write!(output, "loop {}", body.0),
-        Kind::While { condition, body } => write!(output, "while {} {}", condition.0, body.0),
+        Kind::Loop { body } => write!(output, "loop {}", body.get()),
+        Kind::While { condition, body } => {
+            write!(output, "while {} {}", condition.get(), body.get())
+        }
         Kind::For {
             pattern,
             iterator,
             body,
-        } => write!(output, "for {} {} {}", pattern.0, iterator.0, body.0),
+        } => write!(
+            output,
+            "for {} {} {}",
+            pattern.get(),
+            iterator.get(),
+            body.get()
+        ),
         Kind::Label { name, value } => {
             write!(output, "label ")?;
             spelling(source, name, output)?;
-            write!(output, " {}", value.0)
+            write!(output, " {}", value.get())
         }
         Kind::Return(value) => write!(output, "return {}", Optional(value)),
         Kind::Break { label: name, value } => {
@@ -262,12 +276,20 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             write!(output, "continue ")?;
             label(source, name, output)
         }
-        Kind::Match { value, arms } => write!(output, "match {} {}", value.0, Children(ast, arms)),
+        Kind::Match { value, arms } => {
+            write!(output, "match {} {}", value.get(), Children(ast, arms))
+        }
         Kind::Arm {
             pattern,
             guard,
             value,
-        } => write!(output, "arm {} {} {}", pattern.0, Optional(guard), value.0),
+        } => write!(
+            output,
+            "arm {} {} {}",
+            pattern.get(),
+            Optional(guard),
+            value.get()
+        ),
         Kind::Closure {
             parameters,
             result,
@@ -279,17 +301,18 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             "closure {moving} {asynchronous} {} {} {}",
             Children(ast, parameters),
             Optional(result),
-            body.0
+            body.get()
         ),
         Kind::Parameter { pattern, ty } => {
-            write!(output, "parameter {} {}", pattern.0, Optional(ty))
+            write!(output, "parameter {} {}", pattern.get(), Optional(ty))
         }
-        Kind::Macro { path, capture, .. } => write!(output, "macro {} {capture}", path.0),
+        Kind::Macro { path, capture, .. } => write!(output, "macro {} {capture}", path.get()),
         Kind::Binding {
             name,
             mutable,
             by_ref,
             subpattern,
+            ..
         } => {
             write!(output, "binding {mutable} {by_ref} ")?;
             spelling(source, name, output)?;
@@ -308,7 +331,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             Children(ast, elements)
         ),
         Kind::ReferencePattern { mutable, pattern } => {
-            write!(output, "reference-pattern {mutable} {}", pattern.0)
+            write!(output, "reference-pattern {mutable} {}", pattern.get())
         }
         Kind::Type { flavor, elements } => {
             write!(output, "type {flavor:?} {}", Children(ast, elements))
@@ -384,6 +407,6 @@ pub fn write_syntax<L, W: Write>(
             writeln!(output)?;
         }
     }
-    writeln!(output, "root {}", ast.root.0)?;
+    writeln!(output, "root {}", ast.root.get())?;
     writeln!(output, "eof {}", source.len())
 }

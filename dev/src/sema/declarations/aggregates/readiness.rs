@@ -3,7 +3,7 @@ use super::{
     Checker, DefId, DefKind, Error, Group, ItemId, NodeKey, Repr, State, Type, TypeId, Work,
     aggregate,
 };
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 pub(super) struct Entry {
     pub item: ItemId,

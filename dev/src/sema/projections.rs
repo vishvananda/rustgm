@@ -170,10 +170,7 @@ where
                             "projection selection requires a prepared implementation header",
                         );
                     }
-                    let first = u32::try_from(facts.body_regions.len())
-                        .ok()
-                        .and_then(|n| n.checked_add(1))
-                        .ok_or("projection readiness region space exhausted")?
+                    let first = facts.body_regions.probe_frontier()?
                         .max(self.cursor.allocation_end(self.proof));
                     self.cursor.resume_at(self.proof, first)?;
                     waits += 1;

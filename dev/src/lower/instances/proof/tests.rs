@@ -214,7 +214,7 @@ fn concrete_proofs_require_the_matching_instance_owner_and_original() -> TestRes
         .ok_or("swapped proof accepted")?;
     assert!(error.message.contains("another body"));
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
-    contract.source.node.0 += 1;
+    contract.source.node = crate::syntax::ast::NodeId::new(contract.source.node.get() + 1);
     assert!(prove(&mut f.facts, &checked, body, &contract).is_err());
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
     contract.key = crate::body::ir::BodyKey::Anonymous(body.source);
@@ -301,5 +301,79 @@ fn unresolved_bodies_cannot_supply_callable_proof_results() -> TestResult {
         .err()
         .ok_or("unproved target table was accepted")?;
     assert!(error.message.contains("completed body proof"));
+    Ok(())
+}
+
+/// Compile `source` through demanded instances, either sharing each template's
+/// substitution-invariant facts or re-proving them for every instance.
+fn shared_lowir(source: &str, reprove: bool) -> TestResult<(Vec<u8>, usize, usize)> {
+    let mut report = resolve::expansion::analyze(
+        InputFile {
+            identity: "lib.rs".into(),
+            path: "lib.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut NoFiles,
+        &crate::expand::config::Config::default(),
+    )
+    .and_then(resolve::analyze_expanded)?;
+    let mut facts =
+        sema::declarations::analyze(&report).and_then(|f| sema::bodies::analyze(&report, f))?;
+    let entry = sema::entry::select(&mut report, &facts)?;
+    borrow::structure::REPROVE.set(reprove);
+    borrow::structure::SHARED.set(0);
+    borrow::structure::SPLIT.set(0);
+    let program = crate::lower::instances::build(&report, &mut facts, entry);
+    borrow::structure::REPROVE.set(false);
+    let mut text = Vec::new();
+    crate::lowir::writer::write(&program?, &mut text)?;
+    Ok((
+        text,
+        borrow::structure::SHARED.get(),
+        borrow::structure::SPLIT.get(),
+    ))
+}
+
+#[test]
+fn instances_share_template_structure_exactly_as_full_reproof() -> TestResult {
+    // One template body each, demanded with Copy, non-Copy, Drop and reference
+    // arguments. A promotable `&O::N` is promoted only where `O<T>` needs no
+    // destructor, so `literal` has two structures for one template.
+    let prefix = "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\
+        #[derive(Clone,Copy)]struct P(u64);struct N(u64);\
+        struct D<'a>(&'a mut u64,u64);impl Drop for D<'_>{fn drop(&mut self){*self.0+=self.1;}}\
+        struct W<T>{v:T,n:u64}enum O<T>{S(T),N}\
+        fn make<T>(v:T,n:u64)->W<T>{let w=W{v,n};if n>3{w}else{W{v:w.v,n:n+1}}}\
+        fn count<T>(w:W<T>,k:u64)->u64{let mut i=0;let mut s=w.n;while i<k{if s>9{s=s-7;}else{s=s+i;}i=i+1;}let t=&s;*t}\
+        fn pick<T>(a:T,b:T,c:bool)->T{let r=if c{a}else{b};let _q=&c;r}\
+        fn first<'a,T>(x:&'a W<T>)->&'a T{&x.v}\
+        fn literal<T>(x:T)->bool{let r=&O::<T>::N;let _x=x;match r{O::N=>true,O::S(_)=>false}}";
+    let main = "fn main(){let mut dropped=0u64;let x=5u64;\
+        let a=count(make(P(1),2),3);let b=count(make(N(1),2),3);let c=count(make(&x,2),3);\
+        {let d=count(make(D(&mut dropped,1),2),3);check(d==6);}\
+        let p=pick(P(1),P(2),true);let q=pick(N(1),N(2),false);let r=pick(&x,&x,true);\
+        {let mut other=0u64;let e=pick(D(&mut dropped,2),D(&mut other,3),true);let _f=e.1;}\
+        let w=make(N(9),5);let f=first(&w).0;let g=**first(&make(&x,5));\
+        check(literal(P(1))&&literal(N(2))&&literal(&x)&&literal(D(&mut dropped,0)));\
+        check(a==6&&b==6&&c==6&&p.0==1&&q.0==2&&*r==5&&f==9&&g==5);}";
+    for (with_drop, source) in [
+        (true, format!("{prefix}{main}")),
+        (
+            false,
+            format!(
+                "{prefix}fn main(){{let x=5u64;check(count(make(P(1),2),3)==count(make(N(1),2),3));check(count(make(&x,2),3)==6&&literal(P(1))&&literal(&x)&&pick(N(1),N(2),true).0==1&&*pick(&x,&x,false)==5);}}"
+            ),
+        ),
+    ] {
+        let (shared, reused, split) = shared_lowir(&source, false)?;
+        let (reproved, none, _) = shared_lowir(&source, true)?;
+        assert_eq!(none, 0, "the re-proof path shared facts");
+        assert!(reused >= 2, "only {reused} instances shared facts");
+        assert_eq!(split, usize::from(with_drop), "promotion keys");
+        assert!(
+            shared == reproved,
+            "shared instance structure changed LowIR (destructors: {with_drop})"
+        );
+    }
     Ok(())
 }

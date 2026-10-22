@@ -1,9 +1,9 @@
 //! Precise lists select resolved parameter identities in declaration order.
 use super::{Checker, DefId, Error, Kind, NodeKey, Target, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     RegionId, Store, TypeId, arguments::Argument, bound_uses::Uses, parameters::clauses::Clause,
 };
-use std::collections::{HashMap, HashSet};
 
 impl Checker<'_> {
     pub(super) fn opaque_captures(
@@ -55,7 +55,7 @@ impl Checker<'_> {
             .into_iter()
             .map(|p| (p.binding, p.argument))
             .collect::<HashMap<_, _>>();
-        let mut selected = HashSet::new();
+        let mut selected = HashSet::default();
         let mut non_lifetime = false;
         for node in nodes {
             let node = NodeKey { node, ..source };

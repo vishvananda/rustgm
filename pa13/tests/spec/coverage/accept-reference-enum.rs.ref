@@ -24,21 +24,21 @@ type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=18 signature=21
 type 23 function binders=0 parameters=[2] result=19 unsafe=false
 type 24 function-item def=15 signature=23
-root 0:23 pattern=0
-root 0:28 pattern=5
-pattern 0 source=0:23 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:23 input=19 product variant=0 fields=0:1
-pattern 2 source=0:22 input=2 or alternatives=0:2
-pattern 3 source=0:20 input=2 range=0
-pattern 4 source=0:21 input=2 range=1
-pattern 5 source=0:28 input=20 deref mutable=false implicit=true pattern=6
-pattern 6 source=0:28 input=19 product variant=1 fields=1:1
+root 0:16 pattern=0
+root 0:21 pattern=5
+pattern 0 source=0:16 input=20 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:16 input=19 product variant=0 fields=0:1
+pattern 2 source=0:15 input=2 or alternatives=0:2
+pattern 3 source=0:13 input=2 range=0
+pattern 4 source=0:14 input=2 range=1
+pattern 5 source=0:21 input=20 deref mutable=false implicit=true pattern=6
+pattern 6 source=0:21 input=19 product variant=1 fields=1:1
 field 0 nominal=0 pattern=2
 alternative 0 pattern=3
 alternative 1 pattern=4
 range 0 ranks=1:1
 range 1 ranks=0:0
-match 0 source=0:31 input=0:16 arms=0:2 exhaustive=true uninhabited=false work=69
-arm 0 source=0:25 pattern=0 guard=- useful=true value=0:24
-arm 1 source=0:30 pattern=5 guard=- useful=true value=0:29
+match 0 source=0:24 input=0:9 arms=0:2 exhaustive=true uninhabited=false work=69
+arm 0 source=0:18 pattern=0 guard=- useful=true value=0:17
+arm 1 source=0:23 pattern=5 guard=- useful=true value=0:22
 eof roots=2 patterns=7 fields=1 alternatives=2 ranges=2 matches=1 arms=2 coverage-work=69 region-vars=0 region-equalities=0 conditions=0 chains=0

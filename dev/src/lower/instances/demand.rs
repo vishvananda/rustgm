@@ -1,5 +1,6 @@
 //! Iterative depth-first demand distinguishes recursion from unbounded instance growth.
 use super::{dependencies::Dependencies, diagnostic, proof};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::{
         self,
@@ -11,7 +12,6 @@ use crate::{
     sema::model::Declarations,
     types::{ItemId, Kind, instance::Instance},
 };
-use std::collections::{HashMap, HashSet};
 
 enum Work {
     Adapter(body::invocation_entries::Entry, NodeKey),
@@ -246,8 +246,8 @@ fn materialize(
     ordinary: &Ordinary,
 ) -> Result<proof::Builder, Error> {
     let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
-    let mut instances = HashMap::new();
-    let mut visited = HashSet::new();
+    let mut instances = HashMap::default();
+    let mut visited = HashSet::default();
     let mut budget = Budget::default();
     let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {
@@ -556,7 +556,13 @@ fn prepare_ordinary(
         .prepare_original_regions(facts, &inputs, &bodies)
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     let mut ordinary = Ordinary::default();
-    for body in bodies {
+    // Prove in program order while releasing the moved-from body records.
+    let mut bodies = bodies;
+    bodies.reverse();
+    while let Some(body) = bodies.pop() {
+        if bodies.len() < bodies.capacity() / 2 {
+            bodies.shrink_to_fit();
+        }
         let source = body.source;
         let closure = if let Owner::Closure { identity, .. } = body.owner {
             Some(identity)

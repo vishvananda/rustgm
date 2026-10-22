@@ -1,5 +1,6 @@
 //! Only selected aliases owned by this Dispatcher may bypass source restoration.
 use super::*;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::values::Instance,
@@ -9,7 +10,6 @@ use crate::{
         substitute::{Bound, RegionEquations},
     },
 };
-use std::collections::HashMap;
 fn make_facts() -> Result<Declarations, Box<dyn std::error::Error>> {
     let report = crate::test_source::resolve("fn main(){}", true)?;
     Ok(Declarations::new(&report)?)
@@ -23,7 +23,7 @@ fn selected(facts: &mut Declarations, region: RegionId) -> Result<Instance, &'st
     })
 }
 fn source() -> Result<Bound, &'static str> {
-    let mut fold = Bound::close_projection_regions(1, 0, HashMap::new())?;
+    let mut fold = Bound::close_projection_regions(1, 0, HashMap::default())?;
     let mut equations = RegionEquations::default();
     equations.extend([(RegionId(1), RegionId::bound(0, 0)?)])?;
     fold.exchange_projection_equations(&mut equations)?;

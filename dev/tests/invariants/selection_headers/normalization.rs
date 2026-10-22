@@ -112,15 +112,15 @@ fn ready(
     Ok(())
 }
 
-fn foreign(fixture: &mut Fixture, count: usize) {
-    fixture
-        .facts
-        .body_regions
-        .extend((0..count).map(|_| BodyRegion {
+fn foreign(fixture: &mut Fixture, count: usize) -> TestResult {
+    for _ in 0..count {
+        fixture.facts.body_regions.allocate(BodyRegion {
             body: fixture.source,
             source: fixture.source,
             origin: BodyRegionOrigin::Annotation,
-        }));
+        })?;
+    }
+    Ok(())
 }
 
 fn prove(facts: &Declarations, proof: &Obligations, universals: u32) -> TestResult<usize> {
@@ -143,7 +143,7 @@ fn prove(facts: &Declarations, proof: &Obligations, universals: u32) -> TestResu
 fn scoped_projection_waits_preserve_one_provider_and_exclude_foreign_regions() -> TestResult {
     for (depth, restricted) in [(8, false), (32, false), (128, false), (8, true)] {
         let mut f = fixture(depth, restricted, "u8", RegionId::bound(0, 0)?)?;
-        assert!(f.facts.body_regions.is_empty());
+        assert!(f.facts.body_regions.log().is_empty());
         let mut proof = Obligations::new(1);
         let scope = proof.scope(ScopeId::ROOT, 1)?;
         let mut cursor = Cursor::new(None, &proof, scope, Availability::Declarations)?;
@@ -167,7 +167,7 @@ fn scoped_projection_waits_preserve_one_provider_and_exclude_foreign_regions() -
                         proof.regions.start..end,
                     )?;
                     gaps.push(end..end + 3);
-                    foreign(&mut f, 3);
+                    foreign(&mut f, 3)?;
                     let first = reservation.resume(&f.facts)?;
                     let types = f.facts.types.len();
                     for _ in 0..8 {
@@ -230,7 +230,7 @@ fn declaration_projection_templates_restore_results_before_fresh_rebasing() -> T
     let projected = loop {
         match progress {
             normal_form::Progress::Pending(owner, query) => {
-                foreign(&mut f, 3);
+                foreign(&mut f, 3)?;
                 ready(&mut f, owner)?;
                 progress = query.resume_template(&mut f.facts)?;
             }
@@ -311,7 +311,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                             query.allocation_start()..end,
                         )?;
                     }
-                    foreign(&mut f, 3);
+                    foreign(&mut f, 3)?;
                     ready(&mut f, owner)?;
                     progress = if template {
                         query.resume_template(&mut f.facts)?

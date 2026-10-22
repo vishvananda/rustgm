@@ -13,7 +13,9 @@ mod freshen;
 pub use freshen::FreshRegions;
 mod import;
 mod indices;
+mod memo;
 pub mod objects;
+pub(crate) mod plans;
 pub mod predicates;
 pub mod probe;
 pub mod projections;
@@ -27,8 +29,8 @@ mod signature_slots;
 mod specialize;
 mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
-use std::collections::{HashMap, HashSet};
-pub use substitute::Instantiation;
+use crate::support::hash::{HashMap, HashSet};
+pub use substitute::{Instantiation, InstantiationPool};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TermId(pub u32);
@@ -121,11 +123,12 @@ pub struct Context {
     arguments: Option<Box<arguments::Storage>>,
     dependencies: Option<Box<dependencies::Storage>>,
     resolution: Option<Box<resolve::Resolution>>,
+    /// Completed graph facts, dense by term identity.
     #[expect(
         clippy::box_collection,
-        reason = "contexts without completed composite inputs keep only one pointer for this cache"
+        reason = "search frames embed two contexts; one pointer keeps their qualified layout"
     )]
-    settled: Option<Box<HashMap<TermId, completed::Completed>>>,
+    settled: Option<Box<Vec<Option<completed::Completed>>>>,
     generalization: freshen::Scratch,
     terms: Vec<Term>,
     edges: Vec<TermId>,
@@ -141,6 +144,74 @@ pub struct Context {
     pub steps: usize,
 }
 impl Context {
+    /// A context equivalent to `Context::default()` that keeps this finished
+    /// context's flat storage, bounded so one large body cannot make every
+    /// later small body clear a large table.
+    #[must_use]
+    pub fn recycled(self) -> Self {
+        const RETAINED: usize = 1 << 12;
+        fn keep<T>(mut values: Vec<T>) -> Vec<T> {
+            values.clear();
+            if values.capacity() > RETAINED {
+                Vec::new()
+            } else {
+                values
+            }
+        }
+        // Clearing a table visits its capacity: keep only tables this body
+        // actually filled, so a small body after a large one stays cheap.
+        let retained =
+            |len: usize, capacity: usize| capacity <= RETAINED.min(len.saturating_mul(4).max(64));
+        let Self {
+            terms,
+            edges,
+            mut known,
+            pairs,
+            mut seen,
+            occurs_work,
+            child_scratch,
+            marks,
+            region_equalities,
+            settled,
+            ..
+        } = self;
+        let known = if retained(known.len(), known.capacity()) {
+            known.clear();
+            known
+        } else {
+            HashMap::default()
+        };
+        let seen = if retained(seen.len(), seen.capacity()) {
+            seen.clear();
+            seen
+        } else {
+            HashSet::default()
+        };
+        Self {
+            terms: keep(terms),
+            edges: keep(edges),
+            known,
+            pairs: keep(pairs),
+            seen,
+            occurs_work: keep(occurs_work),
+            child_scratch: keep(child_scratch),
+            marks: keep(marks),
+            region_equalities: keep(region_equalities),
+            settled: settled.map(|values| Box::new(keep(*values))),
+            ..Self::default()
+        }
+    }
+    fn settled_facts(&self, id: TermId) -> Option<completed::Completed> {
+        self.settled.as_ref()?.get(id.0 as usize).copied().flatten()
+    }
+    fn set_settled(&mut self, id: TermId, facts: completed::Completed) {
+        let settled = self.settled.get_or_insert_with(Box::default);
+        let index = id.0 as usize;
+        if index >= settled.len() {
+            settled.resize(index + 1, None);
+        }
+        settled[index] = Some(facts);
+    }
     fn append_edges(&mut self, children: &[TermId]) -> Result<(u32, u32), Error> {
         let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
         let end = self
@@ -676,16 +747,25 @@ impl Context {
         );
         Ok(())
     }
+    /// The constructor of a root term, expanding a known type on first use.
+    #[inline]
+    fn materialize(&mut self, store: &Store, id: TermId) -> Result<Constructor, Error> {
+        match self.terms[id.0 as usize].value {
+            Value::Construct(kind) => Ok(kind),
+            Value::Known(ty) => self.materialize_known(store, id, ty),
+            Value::Variable(_) => Err(Error::InvalidIdentity),
+        }
+    }
     #[expect(
         clippy::too_many_lines,
         reason = "one exhaustive constructor dispatch keeps canonical children and inference arity together"
     )]
-    fn materialize(&mut self, store: &Store, id: TermId) -> Result<Constructor, Error> {
-        let ty = match self.terms[id.0 as usize].value {
-            Value::Construct(kind) => return Ok(kind),
-            Value::Known(ty) => ty,
-            Value::Variable(_) => return Err(Error::InvalidIdentity),
-        };
+    fn materialize_known(
+        &mut self,
+        store: &Store,
+        id: TermId,
+        ty: TypeId,
+    ) -> Result<Constructor, Error> {
         let mut children = std::mem::take(&mut self.child_scratch);
         children.clear();
         let constructor = match store.kind(ty).ok_or(Error::InvalidIdentity)? {
@@ -852,6 +932,11 @@ impl Context {
                                 Domain::Float => TypeId::primitive(Primitive::F64),
                                 Domain::Any => return Err(Error::Unresolved),
                             });
+                        }
+                        // A materialized canonical subtree keeps its identity;
+                        // rebuilding it would only re-find the same type.
+                        Value::Construct(_) if let Some(ty) = self.settled_type(id) => {
+                            resolved[id.0 as usize] = Some(ty);
                         }
                         Value::Construct(_) => {
                             if state[id.0 as usize] == 1 {

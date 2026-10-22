@@ -10,7 +10,7 @@ pub fn check(body: &Function, maximum: Option<bool>) -> Result<(), Error> {
     assert_eq!(body.slots.len(), 1);
     assert!(matches!(body.slots[0], Storage::Scalar(Type::U32)));
     let (mut seeds, mut exchanges, mut scratch, mut tags, mut stores) = (0, 0, 0, 0, 0);
-    let mut orders = std::collections::HashSet::new();
+    let mut orders = rustgm::support::hash::HashSet::default();
     for instruction in &body.instructions {
         match instruction.operation {
             Operation::AtomicLoad {
@@ -63,7 +63,10 @@ pub fn check(body: &Function, maximum: Option<bool>) -> Result<(), Error> {
         }
     }
     assert_eq!((seeds, exchanges, scratch, tags, stores), (5, 5, 5, 1, 5));
-    assert_eq!(orders, std::collections::HashSet::from([0, 2, 3, 4, 5]));
+    assert_eq!(
+        orders,
+        rustgm::support::hash::HashSet::from_iter([0, 2, 3, 4, 5])
+    );
     let mut loops = 0;
     for (index, block) in body.blocks.iter().enumerate() {
         let instructions =

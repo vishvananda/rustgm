@@ -106,26 +106,16 @@ impl Splice<'_> {
         else {
             return Ok(false);
         };
-        let mut root = parsed.ast.node(parsed.ast.root);
-        if let Kind::Type {
-            flavor: super::ast::TypeFlavor::Path,
-            elements,
-        } = root.kind
-        {
-            let [path] = parsed.ast.list(elements) else {
-                return Err(error(self.destination.start, "invalid captured path type"));
-            };
-            root = parsed.ast.node(*path);
-        }
-        let Kind::Path { absolute, segments } = root.kind else {
+        let root = parsed.ast.node(parsed.ast.root);
+        let Some((absolute, segments)) = parsed.ast.path_segments(parsed.ast.root) else {
             return Err(error(
                 self.destination.start,
                 "attribute requires a simple path",
             ));
         };
         let mut previous = root.span.start;
-        for (index, node) in parsed.ast.list(segments).iter().enumerate() {
-            let Kind::Name(name) = parsed.ast.node(*node).kind else {
+        for (index, node) in segments.iter().enumerate() {
+            let Kind::Name(name, _) = parsed.ast.node(*node).kind else {
                 return Err(error(
                     self.destination.start,
                     "attribute requires simple path segments",

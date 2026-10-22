@@ -10,7 +10,7 @@ fn signature(facts: &crate::sema::model::Declarations) -> TestResult<TypeId> {
 }
 #[test]
 fn shifted_classes_preserve_public_records_and_flat_path_allocation() -> TestResult {
-    assert_eq!(size_of::<Plans>(), 120);
+    assert_eq!(size_of::<Plans>(), 88);
     assert_eq!(size_of::<Passing>(), 16);
     assert_eq!(size_of::<Object>(), 16);
     assert_eq!(size_of::<Plan>(), 40);

@@ -18,15 +18,11 @@ function @rgc$15_636c6f737572655f66697874757265$4_70613234$f$3_72756e$() -> u8 {
     %t7 = call u8 @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.13.i2(%t6)
     %t8 = call u16 @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.13.i3(2)
     %t9 = convert trunc u8 u16 %t8
-    %t10 = convert zext i16 u8 %t7
-    %t11 = convert zext i16 u8 %t9
-    %t12 = binary add i16 %t10, %t11
-    %t13 = convert trunc u8 i16 %t12
-    %t14 = convert zext i16 u8 %t13
-    %t15 = cmp ne i16 %t12, %t14
-    branch %t15, ^b1, ^b2
+    %t10 = binary add u8 %t7, %t9
+    %t11 = cmp ult u8 %t10, %t7
+    branch %t11, ^b1, ^b2
   block ^b2:
-    return u8 %t13
+    return u8 %t10
   block ^b1:
     call void @abort()
     unreachable

@@ -4,6 +4,7 @@ use super::{
     population::{Population, State},
     successors,
 };
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{Action, BlockId, Place, Terminator},
@@ -17,7 +18,7 @@ use crate::{
     },
     types::{Store, aggregate::Definitions, destruction::regions::Regions, outlives::LiveRegions},
 };
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 struct Flow<'a> {
     uses: Uses<'a>,
@@ -72,7 +73,7 @@ impl<'a> Flow<'a> {
             plan,
             paths: &facts.ownership.paths,
             components: components::Components::default(),
-            drop_entities: HashMap::new(),
+            drop_entities: HashMap::default(),
             intervals: Vec::new(),
         };
         for cleanup in plan.cleanups() {

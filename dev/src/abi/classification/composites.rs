@@ -2,7 +2,7 @@
 mod classes;
 mod shapes;
 use super::{Class, Classes, Definitions, Layouts, Store, TypeId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[derive(Clone, Copy)]
 struct Field {
     ty: TypeId,

@@ -4,11 +4,12 @@ use super::{
     Assumptions, Caller, Context, Declarations, DefId, Environment, Error, ItemId, NameId, NodeKey,
     Prefix, Report, ScopeId, TermId, account_probe, applicability, candidates, trait_groups,
 };
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{model::Access, package::ModuleId},
     sema::{annotations::Scratch, traits::implementations::Availability},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 pub(in crate::sema) struct OwnedCaller {
     pub availability: Availability,
@@ -63,7 +64,7 @@ impl Query {
             report,
             facts,
             infer: Context::default(),
-            terms: HashMap::new(),
+            terms: HashMap::default(),
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
         let members = candidates(source.facts, &mut source.infer, term, bucket)
@@ -97,7 +98,7 @@ impl Query {
             report,
             facts,
             infer: Context::default(),
-            terms: HashMap::new(),
+            terms: HashMap::default(),
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
         let [bound, lexical] = trait_groups(

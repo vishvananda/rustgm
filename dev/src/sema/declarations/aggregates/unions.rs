@@ -1,5 +1,6 @@
 //! Union field eligibility follows exact language identities, not destruction guesses.
 use super::{Checker, Error, ItemId, NodeKey};
+use crate::support::hash::HashSet;
 use crate::{
     sema::{members::Field, nominals::Proof},
     support::library_types::LibraryType,
@@ -8,7 +9,6 @@ use crate::{
         parameters::predicates::{Bound, Predicate},
     },
 };
-use std::collections::HashSet;
 
 #[derive(Default)]
 pub(super) struct Fields {

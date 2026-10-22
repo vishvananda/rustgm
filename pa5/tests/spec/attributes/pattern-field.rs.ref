@@ -1,36 +1,26 @@
-configured 18 false
-attribute-effect 18 0 0 root cfg=false
-active [0,1,2,3,4,7,8,9,10,11,12,13,19,20,21,22,23,24,25,26,27]
+configured 9 false
+attribute-effect 9 0 0 root cfg=false
+active [0,1,2,3,4,5,6,10,11,12,13,14,15,16,17]
 node 0 11 14 name "i32"
-node 1 11 14 path false [0]
-node 2 11 14 type Path [1]
-node 3 9 14 field-definition "x" private 2
-node 4 0 15 item 0
-item 0 "S" private [] [] struct Record [3]
-node 5 21 22 name "s"
-node 6 21 22 path false [5]
-node 7 21 22 binding false false "s" -
-node 8 23 24 name "S"
-node 9 23 24 path false [8]
-node 10 23 24 type Path [9]
-node 11 21 24 parameter 7 10
-node 12 30 31 name "S"
-node 13 30 31 path false [12]
-node 14 54 61 name "unknown"
-node 15 54 61 path false [14]
-node 16 54 61 binding false false "unknown" -
-node 17 46 61 pattern-field "missing" 16
-node 18 32 61 attributed 0 1 17
-node 19 62 63 binding false false "x" -
-node 20 62 63 pattern-field "x" 19
-node 21 30 64 struct-pattern 13 [18,20] false
-node 22 65 66 name "s"
-node 23 65 66 path false [22]
-node 24 26 67 let 21 - 23 -
-node 25 25 68 block Plain [24] -
-node 26 16 68 item 1
-item 1 "f" private [] [] function false false false false - [11] - 25
-node 27 0 68 crate [4,26]
+node 1 9 14 field-definition "x" private 0
+node 2 0 15 item 0
+item 0 "S" private [] [] struct Record [1]
+node 3 21 22 binding false false "s" -
+node 4 23 24 name "S"
+node 5 21 24 parameter 3 4
+node 6 30 31 name "S"
+node 7 54 61 binding false false "unknown" -
+node 8 46 61 pattern-field "missing" 7
+node 9 32 61 attributed 0 1 8
+node 10 62 63 binding false false "x" -
+node 11 62 63 pattern-field "x" 10
+node 12 30 64 struct-pattern 6 [9,11] false
+node 13 65 66 name "s"
+node 14 26 67 let 12 - 13 -
+node 15 25 68 block Plain [14] -
+node 16 16 68 item 1
+item 1 "f" private [] [] function false false false false - [5] - 15
+node 17 0 68 crate [2,16]
 attribute-capture 0 outer 32 45 "#[cfg(false)]"
-root 27
+root 17
 eof 69

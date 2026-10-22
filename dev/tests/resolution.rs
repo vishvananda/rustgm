@@ -118,16 +118,20 @@ fn namespace_and_glob_aliases_preserve_target_identity() -> Result<(), String> {
     )?;
     let facts = resolve::analyze(&mut package).map_err(|e| format!("{e:?}"))?;
     let name = package.names.intern("S")?;
-    let root = &facts.scopes[facts.module_scopes[0].0 as usize];
-    let ty = root.bindings[&(name, Namespace::Type)].target;
-    let value = root.bindings[&(name, Namespace::Value)].target;
+    let target = |scope: usize, namespace| {
+        facts
+            .bindings
+            .get(facts.module_scopes[scope], name, namespace)
+            .map(|binding| binding.target)
+    };
+    let ty = target(0, Namespace::Type).ok_or("missing type binding")?;
+    let value = target(0, Namespace::Value).ok_or("missing value binding")?;
     assert_ne!(ty, value);
     assert_eq!(facts.definitions[ty.0 as usize].kind, DefKind::Struct);
     assert_eq!(facts.definitions[value.0 as usize].kind, DefKind::Function);
     for module in 1..3 {
-        let scope = &facts.scopes[facts.module_scopes[module].0 as usize];
-        assert_eq!(scope.bindings[&(name, Namespace::Type)].target, ty);
-        assert_eq!(scope.bindings[&(name, Namespace::Value)].target, value);
+        assert_eq!(target(module, Namespace::Type), Some(ty));
+        assert_eq!(target(module, Namespace::Value), Some(value));
     }
     Ok(())
 }
@@ -192,14 +196,18 @@ fn a_late_explicit_import_retargets_downstream_aliases_and_globs() -> Result<(),
             .iter()
             .position(|m| package.names.get(m.name) == "e")
             .ok_or("missing module")?;
-        let expected = &facts.scopes[facts.module_scopes[origin].0 as usize];
-        let root = &facts.scopes[facts.module_scopes[0].0 as usize];
+        let expected = facts.module_scopes[origin];
+        let root = facts.module_scopes[0];
         for ns in [Namespace::Type, Namespace::Value] {
+            let found = facts
+                .bindings
+                .get(root, name, ns)
+                .ok_or("missing root binding")?;
             assert_eq!(
-                root.bindings[&(name, ns)].target,
-                expected.bindings[&(name, ns)].target
+                Some(found.target),
+                facts.bindings.get(expected, name, ns).map(|b| b.target)
             );
-            assert!(!root.bindings[&(name, ns)].ambiguous);
+            assert!(!found.ambiguous);
         }
     }
     Ok(())

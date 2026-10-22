@@ -1,7 +1,8 @@
 //! Canonical Clone bodies and marker premises keep separate proof authority.
 use super::*;
+use crate::support::hash::HashMap;
 use crate::{body, sema, types};
-use std::{collections::HashMap, fmt::Write};
+use std::fmt::Write;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn fixture(source: &str) -> Result<(crate::resolve::expansion::Report, Declarations)> {
     let report = crate::test_source::resolve(source, true)?;
@@ -145,7 +146,7 @@ fn fields_only_candidate_possibility_does_not_grant_actual_clone_permission() ->
         }],
     )?;
     let nominal = store.intern(Kind::Adt(item, types::GenericArgs::EMPTY))?;
-    let selected = HashMap::from([(item, Declaration::fields_only_clone())]);
+    let selected = HashMap::from_iter([(item, Declaration::fields_only_clone())]);
     let environment = Arc::new(Environment::new(&store, &[])?);
     for known in [false, true] {
         let mut context = Context::default();
@@ -222,9 +223,9 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
         size_of::<types::Store>()
     );
     // Nullable policy/layout caches add 16 bytes; source bindings add one cold pointer.
-    assert_eq!(size_of::<Declarations>(), 8576);
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2160);
+    assert_eq!(size_of::<Declarations>(), 7040);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<Kind>(), 24);
-    assert_eq!(size_of::<types::infer::Context>(), 448);
-    assert_eq!(size_of::<types::Store>(), 448);
+    assert_eq!(size_of::<types::infer::Context>(), 400);
+    assert_eq!(size_of::<types::Store>(), 464);
 }

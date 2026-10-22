@@ -1,4 +1,4 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
 node 0 23 25 block Plain [] -
 node 1 13 25 item 0
 item 0 "g" public [] [] function false false false false - [] - 0
@@ -11,12 +11,11 @@ node 6 31 35 use-tree 5 [] false -
 node 7 27 36 item 2
 item 2 - private [] [] use 6
 node 8 37 38 name "g"
-node 9 37 38 path false [8]
-node 10 37 40 call 9 []
-node 11 37 41 statement 10
-node 12 6 42 block Plain [2,7,11] -
-node 13 0 42 item 3
-item 3 "f" private [] [] function false false false false - [] - 12
-node 14 0 42 crate [13]
-root 14
+node 9 37 40 call 8 []
+node 10 37 41 statement 9
+node 11 6 42 block Plain [2,7,10] -
+node 12 0 42 item 3
+item 3 "f" private [] [] function false false false false - [] - 11
+node 13 0 42 crate [12]
+root 13
 eof 43

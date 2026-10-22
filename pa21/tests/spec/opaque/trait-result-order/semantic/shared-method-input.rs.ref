@@ -53,32 +53,31 @@ type 50 opaque id=3 arguments=[region:region:1,type:27]
 type 51 reference mutable=false region=region:2 referent=27
 type 52 reference mutable=false region=region:3 referent=27
 type 53 tuple [51,52]
-type 54 opaque id=2 arguments=[region:region:4,type:20]
-type 55 opaque id=3 arguments=[region:region:5,type:20]
-type 56 opaque id=0 arguments=[region:bound:0:0,type:11,type:11]
-type 57 opaque id=2 arguments=[region:region:8,type:11]
-type 58 opaque id=2 arguments=[region:bound:0:0,type:11]
-type 59 opaque id=1 arguments=[region:bound:0:0,type:11,type:11]
-type 60 opaque id=3 arguments=[region:region:9,type:11]
-type 61 opaque id=3 arguments=[region:bound:0:0,type:11]
-type 62 opaque id=2 arguments=[region:region:10,type:11]
-type 63 opaque id=3 arguments=[region:region:11,type:11]
-type 64 tuple [62,63]
-type 65 reference mutable=false region=bound:0:0 referent=11
-type 66 tuple [58,61]
-type 67 function binders=1 parameters=[65] result=66 unsafe=false
-type 68 function-item def=15 signature=67 arguments=[type:11,type:11]
-type 69 reference mutable=false region=region:6 referent=11
-type 70 opaque id=2 arguments=[region:region:6,type:11]
-type 71 opaque id=3 arguments=[region:region:6,type:11]
-type 72 tuple [70,71]
-type 73 function binders=0 parameters=[69] result=72 unsafe=false
-type 74 reference mutable=false region=region:7 referent=11
-def 14 type=19 name="Self" source=0:28
-def 15 type=26 name="f" source=0:27
-def 16 type=11 name="Self" source=0:69
-def 17 type=33 name="f" source=0:68
-def 18 type=35 name="main" source=0:90
+type 54 opaque id=3 arguments=[region:region:2,type:20]
+type 55 opaque id=0 arguments=[region:bound:0:0,type:11,type:11]
+type 56 opaque id=2 arguments=[region:region:5,type:11]
+type 57 opaque id=2 arguments=[region:bound:0:0,type:11]
+type 58 opaque id=1 arguments=[region:bound:0:0,type:11,type:11]
+type 59 opaque id=3 arguments=[region:region:6,type:11]
+type 60 opaque id=3 arguments=[region:bound:0:0,type:11]
+type 61 opaque id=2 arguments=[region:region:7,type:11]
+type 62 opaque id=3 arguments=[region:region:8,type:11]
+type 63 tuple [61,62]
+type 64 reference mutable=false region=bound:0:0 referent=11
+type 65 tuple [57,60]
+type 66 function binders=1 parameters=[64] result=65 unsafe=false
+type 67 function-item def=15 signature=66 arguments=[type:11,type:11]
+type 68 reference mutable=false region=region:3 referent=11
+type 69 opaque id=2 arguments=[region:region:3,type:11]
+type 70 opaque id=3 arguments=[region:region:3,type:11]
+type 71 tuple [69,70]
+type 72 function binders=0 parameters=[68] result=71 unsafe=false
+type 73 reference mutable=false region=region:4 referent=11
+def 14 type=19 name="Self" source=0:21
+def 15 type=26 name="f" source=0:20
+def 16 type=11 name="Self" source=0:49
+def 17 type=33 name="f" source=0:48
+def 18 type=35 name="main" source=0:63
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -96,79 +95,79 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 37 type=20 name="T" source=0:4
-def 39 type=27 name="T" source=0:39
-def 48 type=28 name="x" source=0:42
-def 49 type=11 name="n" source=0:72
-associated-owner 0 kind=trait self-def=14 self=19 source=0:28 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:69 unsafe=false
+def 37 type=20 name="T" source=0:3
+def 39 type=27 name="T" source=0:27
+def 48 type=28 name="x" source=0:28
+def 49 type=11 name="n" source=0:50
+associated-owner 0 kind=trait self-def=14 self=19 source=0:21 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:49 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=15 binding=37 argument=type:20 default=-
 parameter owner=17 binding=39 argument=type:27 default=-
-predicate owner=13 source=0:28 subject=19 bound=trait:13 arguments=[]
-predicate owner=15 source=0:3 subject=20 bound=copy
-predicate owner=17 source=0:38 subject=27 bound=copy
-impl owner=16 source=0:69 subject=11 bound=trait:13 arguments=[]
+predicate owner=13 source=0:21 subject=19 bound=trait:13 arguments=[]
+predicate owner=15 source=0:2 subject=20 bound=copy
+predicate owner=17 source=0:26 subject=27 bound=copy
+impl owner=16 source=0:49 subject=11 bound=trait:13 arguments=[]
 impl-method owner=16 declaration=15 selected=17 default=false
-trait-path source=0:83 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=0:78
-implementation-use source=0:83 owner=16 arguments=[]
-region-var region:1 body=0:67 source=0:67 origin=universal-alias pending
-region-var region:2 body=0:67 source=0:63 origin=inference pending
-region-var region:3 body=0:67 source=0:65 origin=inference pending
-region-var region:4 body=0:89 source=0:83 origin=quantified-proof pending
-region-var region:5 body=0:89 source=0:83 origin=quantified-proof pending
-region-var region:6 body=0:89 source=0:87 origin=call-argument pending
-region-var region:7 body=0:89 source=0:86 origin=expression-borrow pending
-region-var region:8 body=0:89 source=0:83 origin=quantified-proof pending
-region-var region:9 body=0:89 source=0:83 origin=quantified-proof pending
-region-var region:10 body=0:89 source=0:87 origin=inference pending
-region-var region:11 body=0:89 source=0:87 origin=inference pending
-region-equal body=0:67 left=region:1 right=bound:0:0
-region-coercion body=0:67 source=0:63 actual=28 expected=51 kind=same-shape pending
-region-coercion body=0:67 source=0:65 actual=28 expected=52 kind=same-shape pending
-region-coercion body=0:89 source=0:86 actual=74 expected=69 kind=same-shape pending
-region-coercion body=0:89 source=0:87 actual=72 expected=64 kind=same-shape pending
-type-outlives body=0:67 source=0:54 type=51 shorter=bound:0:0 pending
-type-outlives body=0:67 source=0:60 type=52 shorter=bound:0:0 pending
-opaque 0 owner=15 source=0:19 application=22 hidden=- role=trait-result storage-proof=pending
+trait-path source=0:57 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=0:54
+implementation-use source=0:57 owner=16 arguments=[]
+region-var region:1 body=0:47 source=0:47 origin=universal-alias pending
+region-var region:2 body=0:47 source=0:44 origin=inference pending
+region-var region:3 body=0:47 source=0:45 origin=inference pending
+region-var region:1 body=0:62 source=0:57 origin=quantified-proof pending
+region-var region:2 body=0:62 source=0:57 origin=quantified-proof pending
+region-var region:3 body=0:62 source=0:60 origin=call-argument pending
+region-var region:4 body=0:62 source=0:59 origin=expression-borrow pending
+region-var region:5 body=0:62 source=0:57 origin=quantified-proof pending
+region-var region:6 body=0:62 source=0:57 origin=quantified-proof pending
+region-var region:7 body=0:62 source=0:60 origin=inference pending
+region-var region:8 body=0:62 source=0:60 origin=inference pending
+region-equal body=0:47 left=region:1 right=bound:0:0
+region-coercion body=0:47 source=0:44 actual=28 expected=51 kind=same-shape pending
+region-coercion body=0:47 source=0:45 actual=28 expected=52 kind=same-shape pending
+region-coercion body=0:62 source=0:59 actual=73 expected=68 kind=same-shape pending
+region-coercion body=0:62 source=0:60 actual=71 expected=63 kind=same-shape pending
+type-outlives body=0:47 source=0:37 type=51 shorter=bound:0:0 pending
+type-outlives body=0:47 source=0:42 type=52 shorter=bound:0:0 pending
+opaque 0 owner=15 source=0:13 application=22 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=0 index=0 subject=22 bound=copy
 opaque-bound id=0 index=1 subject=22 bound=outlives:bound:0:0
-opaque 1 owner=15 source=0:25 application=23 hidden=- role=trait-result storage-proof=pending
+opaque 1 owner=15 source=0:18 application=23 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=1 index=0 subject=23 bound=copy
 opaque-bound id=1 index=1 subject=23 bound=outlives:bound:0:0
-opaque 2 owner=17 source=0:54 application=29 hidden=- role=defining-result storage-proof=pending
+opaque 2 owner=17 source=0:37 application=29 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=2 index=0 subject=29 bound=copy
 opaque-bound id=2 index=1 subject=29 bound=outlives:bound:0:0
-opaque 3 owner=17 source=0:60 application=30 hidden=- role=defining-result storage-proof=pending
+opaque 3 owner=17 source=0:42 application=30 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=3 index=0 subject=30 bound=copy
 opaque-bound id=3 index=1 subject=30 bound=outlives:bound:0:0
 opaque-body-result def=17 type=53
 opaque-implementation owner=16 id=0 type=45 parent-regions=0 regions=[bound:0:0]
 opaque-implementation owner=16 id=1 type=46 parent-regions=0 regions=[bound:0:0]
-proof 0 body=0:89 source=0:83 pending
+proof 0 body=0:62 source=0:57 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=0 start=4 end=5
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=4 end=5
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=4 end=5
-proof-relation proof=0 block=1 kind=equal left=region:4 right=bound:0:0
-proof 1 body=0:89 source=0:83 pending
+proof-owned proof=0 start=1 end=2
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=2
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=1 end=2
+proof-relation proof=0 block=1 kind=equal left=region:1 right=bound:0:0
+proof 1 body=0:62 source=0:57 pending
 proof-scope proof=1 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=1 start=5 end=6
-proof-block proof=1 index=0 scope=0 aliases=false source=0 start=5 end=6
-proof-block proof=1 index=1 scope=1 aliases=false source=0 start=5 end=6
-proof-relation proof=1 block=1 kind=equal left=region:5 right=bound:0:0
-proof 2 body=0:89 source=0:83 pending
+proof-owned proof=1 start=2 end=3
+proof-block proof=1 index=0 scope=0 aliases=false source=0 start=2 end=3
+proof-block proof=1 index=1 scope=1 aliases=false source=0 start=2 end=3
+proof-relation proof=1 block=1 kind=equal left=region:2 right=bound:0:0
+proof 2 body=0:62 source=0:57 pending
 proof-scope proof=2 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=2 start=8 end=9
-proof-block proof=2 index=0 scope=0 aliases=false source=0 start=8 end=9
-proof-block proof=2 index=1 scope=1 aliases=false source=0 start=8 end=9
-proof-relation proof=2 block=1 kind=equal left=region:8 right=bound:0:0
-proof 3 body=0:89 source=0:83 pending
+proof-owned proof=2 start=5 end=6
+proof-block proof=2 index=0 scope=0 aliases=false source=0 start=5 end=6
+proof-block proof=2 index=1 scope=1 aliases=false source=0 start=5 end=6
+proof-relation proof=2 block=1 kind=equal left=region:5 right=bound:0:0
+proof 3 body=0:62 source=0:57 pending
 proof-scope proof=3 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=3 start=9 end=10
-proof-block proof=3 index=0 scope=0 aliases=false source=0 start=9 end=10
-proof-block proof=3 index=1 scope=1 aliases=false source=0 start=9 end=10
-proof-relation proof=3 block=1 kind=equal left=region:9 right=bound:0:0
+proof-owned proof=3 start=6 end=7
+proof-block proof=3 index=0 scope=0 aliases=false source=0 start=6 end=7
+proof-block proof=3 index=1 scope=1 aliases=false source=0 start=6 end=7
+proof-relation proof=3 block=1 kind=equal left=region:6 right=bound:0:0
 eof owners=2 members=2 parameters=3 predicates=3 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=4 opaque-bounds=8 hidden-types=0 opaque-body-results=1 opaque-implementations=2 proofs=4 proof-scopes=4 proof-blocks=8 proof-sources=0 proof-owned=4 proof-relations=4 proof-types=0

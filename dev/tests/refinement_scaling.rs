@@ -1,10 +1,10 @@
 //! Partial exported prefixes share traversal and validation work across input roots.
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     Store,
     infer::{Constructor, Context, Domain, arguments::Argument, refinement::Refinement},
     substitute::Bound,
 };
-use std::collections::HashMap;
 #[test]
 fn shared_partial_refinements_do_not_rescan_every_prefix() -> Result<(), Box<dyn std::error::Error>>
 {
@@ -31,7 +31,7 @@ fn shared_partial_refinements_do_not_rescan_every_prefix() -> Result<(), Box<dyn
         let committed = query.commit(
             &mut store,
             &mut source,
-            &mut Bound::restore_regions(HashMap::new()),
+            &mut Bound::restore_regions(HashMap::default()),
         )?;
         assert!(committed.changed);
         let work = source.steps - before;
@@ -81,7 +81,7 @@ fn shared_partial_parent_changes_are_reconciled_in_one_graph()
             let committed = query.commit(
                 &mut store,
                 &mut source,
-                &mut Bound::restore_regions(HashMap::new()),
+                &mut Bound::restore_regions(HashMap::default()),
             )?;
             assert!(committed.changed);
             assert_eq!(

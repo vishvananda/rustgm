@@ -32,11 +32,11 @@ type 29 function-item def=18 signature=28
 type 30 function binders=0 parameters=[] result=1 unsafe=false
 type 31 function-item def=19 signature=30
 type 32 function-item def=17 signature=28 arguments=[type:27,type:11]
-def 14 type=19 name="Self" source=0:8
-def 16 type=20 name="Self" source=0:10
-def 17 type=26 name="g" source=0:28
-def 18 type=29 name="f" source=0:50
-def 19 type=31 name="main" source=0:52
+def 14 type=19 name="Self" source=0:6
+def 16 type=20 name="Self" source=0:8
+def 17 type=26 name="g" source=0:20
+def 18 type=29 name="f" source=0:34
+def 19 type=31 name="main" source=0:36
 def 20 type=2 name="bool"
 def 21 type=3 name="char"
 def 22 type=4 name="str"
@@ -55,14 +55,14 @@ def 34 type=16 name="usize"
 def 35 type=17 name="f32"
 def 36 type=18 name="f64"
 def 37 type=21 name="U" source=0:0
-def 38 type=22 name="U" source=0:9
-def 39 type=23 name="T" source=0:18
-def 40 type=24 name="U" source=0:19
-def 41 type=27 name="T" source=0:36
-def 42 type=23 name="x" source=0:22
-def 43 type=27 name="x" source=0:39
-associated-owner 0 kind=trait self-def=14 self=19 source=0:8 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait self-def=16 self=20 source=0:10 trait=15 unsafe=false name="B"
+def 38 type=22 name="U" source=0:7
+def 39 type=23 name="T" source=0:14
+def 40 type=24 name="U" source=0:15
+def 41 type=27 name="T" source=0:26
+def 42 type=23 name="x" source=0:16
+def 43 type=27 name="x" source=0:27
+associated-owner 0 kind=trait self-def=14 self=19 source=0:6 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=16 self=20 source=0:8 trait=15 unsafe=false name="B"
 parameter owner=13 binding=37 argument=type:21 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=15 binding=38 argument=type:22 default=-
@@ -70,10 +70,10 @@ parameter owner=16 binding=16 argument=type:20 default=-
 parameter owner=17 binding=39 argument=type:23 default=-
 parameter owner=17 binding=40 argument=type:24 default=-
 parameter owner=18 binding=41 argument=type:27 default=-
-predicate owner=13 source=0:7 subject=19 bound=trait:15 arguments=[type:21]
-predicate owner=13 source=0:8 subject=19 bound=trait:13 arguments=[type:21]
-predicate owner=15 source=0:10 subject=20 bound=trait:15 arguments=[type:22]
-predicate owner=17 source=0:17 subject=23 bound=trait:15 arguments=[type:24]
-predicate owner=18 source=0:35 subject=27 bound=trait:13 arguments=[type:11]
-predicate owner=18 source=0:35 subject=27 bound=trait:15 arguments=[type:11]
+predicate owner=13 source=0:5 subject=19 bound=trait:15 arguments=[type:21]
+predicate owner=13 source=0:6 subject=19 bound=trait:13 arguments=[type:21]
+predicate owner=15 source=0:8 subject=20 bound=trait:15 arguments=[type:22]
+predicate owner=17 source=0:13 subject=23 bound=trait:15 arguments=[type:24]
+predicate owner=18 source=0:25 subject=27 bound=trait:13 arguments=[type:11]
+predicate owner=18 source=0:25 subject=27 bound=trait:15 arguments=[type:11]
 eof owners=2 members=0 parameters=7 predicates=6 impls=0 calls=0 paths=0 impl-uses=0

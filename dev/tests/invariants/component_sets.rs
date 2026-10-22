@@ -82,8 +82,8 @@ fn policies_depths_and_targets_preserve_exact_components() -> Result {
     for reverse in [false, true] {
         let mut query = Sets::default();
         let mut budget = Budget::default();
-        let mut expected = HashSet::new();
-        let mut actual = HashSet::new();
+        let mut expected = HashSet::default();
+        let mut actual = HashSet::default();
         let policies = if reverse {
             [ComponentKind::TypeBound, ComponentKind::Outlives]
         } else {
@@ -159,7 +159,7 @@ fn shared_wide_lists_are_summarized_once_per_scope_and_policy() -> Result {
                 .collect();
             assert_eq!(
                 found,
-                HashSet::from([Atom::Parameter(parameter), Atom::Region(target)])
+                HashSet::from_iter([Atom::Parameter(parameter), Atom::Region(target)])
             );
         }
         assert!(

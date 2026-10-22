@@ -2,8 +2,8 @@
 #[cfg(test)]
 mod tests;
 use super::{Action, Bound, Key};
+use crate::support::hash::HashMap;
 use crate::types::{Kind, Store, TypeId, bound_uses::captures::Captures};
-use std::collections::HashMap;
 
 pub(super) struct Replacements {
     values: HashMap<TypeId, TypeId>,
@@ -51,7 +51,7 @@ impl Bound {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Items(Box::new(Replacements {
             values,
-            scopes: HashMap::new(),
+            scopes: HashMap::default(),
             recursive,
         }));
         fold

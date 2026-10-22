@@ -1,16 +1,12 @@
-node 0 10 11 name "x"
-node 1 10 11 path false [0]
-node 2 6 11 binding true false "x" -
-node 3 14 15 literal 0
+node 0 6 11 binding true false "x" -
+node 1 14 15 literal 0
 value 0 integer 14 15 infer 1
-node 4 2 16 let 2 - 3 -
-node 5 29 30 name "x"
-node 6 29 30 path false [5]
-node 7 18 30 unary raw-const 6
-node 8 41 42 name "x"
-node 9 41 42 path false [8]
-node 10 32 42 unary raw-mut 9
-node 11 17 43 tuple [7,10]
-node 12 0 45 block Plain [4] 11
-root 12
+node 2 2 16 let 0 - 1 -
+node 3 29 30 name "x"
+node 4 18 30 unary raw-const 3
+node 5 41 42 name "x"
+node 6 32 42 unary raw-mut 5
+node 7 17 43 tuple [4,6]
+node 8 0 45 block Plain [2] 7
+root 8
 eof 46

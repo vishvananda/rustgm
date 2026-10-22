@@ -1,5 +1,6 @@
 //! Source dependency aliases close before external initializer arguments are substituted.
 use super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{model::Declarations, values::Dependency},
     types::{
@@ -7,7 +8,7 @@ use crate::{
         substitute::{Bound, RegionEquations},
     },
 };
-use std::{collections::HashMap, ops::Range};
+use std::ops::Range;
 const LIMIT: usize = 64 * 1024 * 1024;
 const WORK: usize = 1_000_000;
 
@@ -240,7 +241,10 @@ fn source_folder(
         return Err("constant dependency alias storage budget exceeded");
     }
     let mut closure = published_equations(facts, source, ranges, work)?;
-    let mut replacements = HashMap::with_capacity(map_count);
+    let mut replacements = HashMap::with_capacity_and_hasher(
+        map_count,
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for region in observer.observed_regions() {
         *work = work.saturating_add(2);
         original(facts, source, universals, region)?;
@@ -297,7 +301,7 @@ fn original(
     }
     if facts
         .body_regions
-        .get(region.0 as usize - 1)
+        .get(source, region)
         .is_some_and(|row| row.body == source)
     {
         Ok(())

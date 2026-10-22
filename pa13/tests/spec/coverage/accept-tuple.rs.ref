@@ -21,18 +21,18 @@ type 18 primitive f64
 type 19 tuple [2,2]
 type 20 function binders=0 parameters=[19] result=1 unsafe=false
 type 21 function-item def=13 signature=20
-root 0:15 pattern=0
-root 0:20 pattern=3
-root 0:25 pattern=6
-pattern 0 source=0:15 input=19 product variant=- fields=0:2
-pattern 1 source=0:13 input=2 range=0
-pattern 2 source=0:14 input=2 wildcard
-pattern 3 source=0:20 input=19 product variant=- fields=2:4
-pattern 4 source=0:18 input=2 wildcard
-pattern 5 source=0:19 input=2 range=1
-pattern 6 source=0:25 input=19 product variant=- fields=4:6
-pattern 7 source=0:23 input=2 range=2
-pattern 8 source=0:24 input=2 range=3
+root 0:8 pattern=0
+root 0:13 pattern=3
+root 0:18 pattern=6
+pattern 0 source=0:8 input=19 product variant=- fields=0:2
+pattern 1 source=0:6 input=2 range=0
+pattern 2 source=0:7 input=2 wildcard
+pattern 3 source=0:13 input=19 product variant=- fields=2:4
+pattern 4 source=0:11 input=2 wildcard
+pattern 5 source=0:12 input=2 range=1
+pattern 6 source=0:18 input=19 product variant=- fields=4:6
+pattern 7 source=0:16 input=2 range=2
+pattern 8 source=0:17 input=2 range=3
 field 0 tuple=0 pattern=1
 field 1 tuple=1 pattern=2
 field 2 tuple=0 pattern=4
@@ -43,8 +43,8 @@ range 0 ranks=1:1
 range 1 ranks=1:1
 range 2 ranks=0:0
 range 3 ranks=0:0
-match 0 source=0:28 input=0:12 arms=0:3 exhaustive=true uninhabited=false work=105
-arm 0 source=0:17 pattern=0 guard=- useful=true value=0:16
-arm 1 source=0:22 pattern=3 guard=- useful=true value=0:21
-arm 2 source=0:27 pattern=6 guard=- useful=true value=0:26
+match 0 source=0:21 input=0:5 arms=0:3 exhaustive=true uninhabited=false work=105
+arm 0 source=0:10 pattern=0 guard=- useful=true value=0:9
+arm 1 source=0:15 pattern=3 guard=- useful=true value=0:14
+arm 2 source=0:20 pattern=6 guard=- useful=true value=0:19
 eof roots=3 patterns=9 fields=6 alternatives=0 ranges=4 matches=1 arms=3 coverage-work=105 region-vars=0 region-equalities=0 conditions=0 chains=0

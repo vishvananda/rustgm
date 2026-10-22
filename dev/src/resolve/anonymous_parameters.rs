@@ -24,13 +24,56 @@ impl Resolver<'_> {
             file: context.file,
             node,
         };
+        let mark = self.scratch.len();
+        let result = self.anonymous_inputs(context, owner, parameters, mark);
+        self.scratch.truncate(mark);
+        let inputs = result?;
+        if inputs.is_empty() {
+            return Ok(());
+        }
+        for &source in &inputs {
+            let name = self
+                .package
+                .names
+                .intern(&format!(
+                    "#impl-trait-{}-{}",
+                    source.file.0,
+                    source.node.get()
+                ))
+                .map_err(|e| self.error(context, source.node, e))?;
+            u32::try_from(self.facts.definitions.len())
+                .map_err(|_| self.error(context, source.node, "too many definitions"))?;
+            // These identities deliberately have no lexical binding or hygiene entry.
+            self.facts.definitions.push(Definition {
+                name,
+                namespace: Namespace::Type,
+                kind: DefKind::Generic,
+                scope: context.scope,
+                node: Some(source),
+                access: Access::Within(context.module),
+                members: None,
+            });
+        }
+        self.facts.anonymous_parameters.insert(owner, inputs);
+        Ok(())
+    }
+    /// Find argument-position `impl Trait` types, using the shared scratch
+    /// stack above `mark` as the worklist.
+    fn anonymous_inputs(
+        &mut self,
+        context: Context,
+        owner: NodeKey,
+        parameters: crate::syntax::ast::List,
+        mark: usize,
+    ) -> Result<Vec<NodeKey>, Error> {
         let ast = &self.package.unit(context.file).configured.ast;
-        let mut work = ast.list(parameters).to_vec();
-        work.reverse();
+        self.scratch.extend(ast.list(parameters).iter().rev());
         let mut inputs = Vec::new();
-        let mut children = Vec::new();
         let mut steps = 0;
-        while let Some(node) = work.pop() {
+        while self.scratch.len() > mark {
+            let Some(node) = self.scratch.pop() else {
+                break;
+            };
             if !self.active(context, node) {
                 continue;
             }
@@ -54,7 +97,7 @@ impl Resolver<'_> {
                                 ));
                             }
                             Kind::Bound { value, .. } => {
-                                trait_bound |= !matches!(ast.node(value).kind, Kind::Name(span)
+                                trait_bound |= !matches!(ast.node(value).kind, Kind::Name(span, _)
                                     if self.package.unit(context.file).spelling(span)
                                         .is_ok_and(|name| name.starts_with('\'')));
                             }
@@ -70,41 +113,19 @@ impl Resolver<'_> {
                     }
                     inputs.push(NodeKey { node, ..owner });
                 }
-                Kind::Parameter { ty: Some(ty), .. } => work.push(ty),
+                Kind::Parameter { ty: Some(ty), .. } => self.scratch.push(ty),
                 Kind::Type { .. }
                 | Kind::Path { .. }
                 | Kind::Applied { .. }
                 | Kind::Group(_)
                 | Kind::Attributed { .. } => {
-                    ast.push_children(node, &mut children);
-                    work.extend(children.drain(..).rev());
+                    let start = self.scratch.len();
+                    ast.push_children(node, self.scratch);
+                    self.scratch[start..].reverse();
                 }
                 _ => {}
             }
         }
-        if inputs.is_empty() {
-            return Ok(());
-        }
-        for &source in &inputs {
-            let name = self
-                .package
-                .names
-                .intern(&format!("#impl-trait-{}-{}", source.file.0, source.node.0))
-                .map_err(|e| self.error(context, source.node, e))?;
-            u32::try_from(self.facts.definitions.len())
-                .map_err(|_| self.error(context, source.node, "too many definitions"))?;
-            // These identities deliberately have no lexical binding or hygiene entry.
-            self.facts.definitions.push(Definition {
-                name,
-                namespace: Namespace::Type,
-                kind: DefKind::Generic,
-                scope: context.scope,
-                node: Some(source),
-                access: Access::Within(context.module),
-                members: None,
-            });
-        }
-        self.facts.anonymous_parameters.insert(owner, inputs);
-        Ok(())
+        Ok(inputs)
     }
 }

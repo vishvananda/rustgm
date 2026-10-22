@@ -1,5 +1,6 @@
 //! Match direct methods once by owner/name, retaining overrides separately from defaults.
 use super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, names::NameId},
     sema::{
@@ -9,7 +10,6 @@ use crate::{
     syntax::item::{ItemKind, Safety, Visibility},
     types::parameters::predicates::{Bound, Predicate},
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Members {

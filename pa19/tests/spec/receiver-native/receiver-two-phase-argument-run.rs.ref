@@ -5,19 +5,15 @@ function @rg.22() -> void {
     %t0 = addr $s0
     %t1 = addr $s0
     %t2 = call u8 @rg.20(%t1)
-    %t3 = convert zext i16 u8 %t2
-    %t4 = convert zext i16 u8 1
-    %t5 = binary add i16 %t3, %t4
-    %t6 = convert trunc u8 i16 %t5
-    %t7 = convert zext i16 u8 %t6
-    %t8 = cmp ne i16 %t5, %t7
-    branch %t8, ^b1, ^b2
+    %t3 = binary add u8 %t2, 1
+    %t4 = cmp ult u8 %t3, %t2
+    branch %t4, ^b1, ^b2
   block ^b2:
-    call void @rg.21(%t0, %t6)
-    %t9 = load u8 $s0
-    %t10 = cmp eq u8 %t9, 8
-    %t11 = convert trunc i1 i64 %t10
-    call void @rg.13(%t11)
+    call void @rg.21(%t0, %t3)
+    %t5 = load u8 $s0
+    %t6 = cmp eq u8 %t5, 8
+    %t7 = convert trunc i1 i64 %t6
+    call void @rg.13(%t7)
     return void
   block ^b1:
     call void @abort()

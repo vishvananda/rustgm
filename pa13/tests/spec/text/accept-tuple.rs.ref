@@ -24,26 +24,26 @@ type 21 reference mutable=false region=bound:0:0 referent=4
 type 22 tuple [21,2]
 type 23 function binders=1 parameters=[22] result=1 unsafe=false
 type 24 function-item def=14 signature=23
-root 0:28 pattern=0
-root 0:33 pattern=1
-root 0:36 pattern=4
-pattern 0 source=0:28 input=22 product variant=- fields=2:4
-pattern 1 source=0:33 input=22 product variant=- fields=0:2
-pattern 2 source=0:31 input=21 deref mutable=false implicit=false pattern=8
-pattern 3 source=0:32 input=2 range=0
-pattern 4 source=0:36 input=22 wildcard
-pattern 5 source=0:28 input=21 deref mutable=false implicit=false pattern=7
-pattern 6 source=0:28 input=2 range=1
-pattern 7 source=0:28 input=4 text="a"
-pattern 8 source=0:31 input=4 text="a"
+root 0:15 pattern=0
+root 0:20 pattern=1
+root 0:23 pattern=4
+pattern 0 source=0:15 input=22 product variant=- fields=2:4
+pattern 1 source=0:20 input=22 product variant=- fields=0:2
+pattern 2 source=0:18 input=21 deref mutable=false implicit=false pattern=8
+pattern 3 source=0:19 input=2 range=0
+pattern 4 source=0:23 input=22 wildcard
+pattern 5 source=0:15 input=21 deref mutable=false implicit=false pattern=7
+pattern 6 source=0:15 input=2 range=1
+pattern 7 source=0:15 input=4 text="a"
+pattern 8 source=0:18 input=4 text="a"
 field 0 tuple=0 pattern=2
 field 1 tuple=1 pattern=3
 field 2 tuple=0 pattern=5
 field 3 tuple=1 pattern=6
 range 0 ranks=0:0
 range 1 ranks=1:1
-match 0 source=0:39 input=0:25 arms=0:3 exhaustive=true uninhabited=false work=116
-arm 0 source=0:30 pattern=0 guard=- useful=true value=0:29
-arm 1 source=0:35 pattern=1 guard=- useful=true value=0:34
-arm 2 source=0:38 pattern=4 guard=- useful=true value=0:37
+match 0 source=0:26 input=0:14 arms=0:3 exhaustive=true uninhabited=false work=116
+arm 0 source=0:17 pattern=0 guard=- useful=true value=0:16
+arm 1 source=0:22 pattern=1 guard=- useful=true value=0:21
+arm 2 source=0:25 pattern=4 guard=- useful=true value=0:24
 eof roots=3 patterns=9 fields=4 alternatives=0 ranges=2 matches=1 arms=3 coverage-work=116 region-vars=0 region-equalities=0 conditions=0 chains=0

@@ -1,6 +1,7 @@
 //! Dyn compatibility is a demand-driven query over completed declaration contracts.
 mod contracts;
 use super::model::Declarations;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefId},
     types::{
@@ -8,7 +9,6 @@ use crate::{
         parameters::{clauses::Clause, predicates::Bound},
     },
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Rule {

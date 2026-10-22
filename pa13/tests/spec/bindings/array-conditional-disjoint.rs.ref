@@ -86,15 +86,11 @@ function @rg.17(%p0 : i1) -> u8 {
     %t30 = addr $s3
     %t31 = index u8 %t30, %t29
     %t32 = load u8 %t31
-    %t33 = convert zext i16 u8 %t27
-    %t34 = convert zext i16 u8 %t32
-    %t35 = binary add i16 %t33, %t34
-    %t36 = convert trunc u8 i16 %t35
-    %t37 = convert zext i16 u8 %t36
-    %t38 = cmp ne i16 %t35, %t37
-    branch %t38, ^b4, ^b7
+    %t33 = binary add u8 %t27, %t32
+    %t34 = cmp ult u8 %t33, %t27
+    branch %t34, ^b4, ^b7
   block ^b7:
-    return u8 %t36
+    return u8 %t33
   block ^b4:
     call void @abort()
     unreachable

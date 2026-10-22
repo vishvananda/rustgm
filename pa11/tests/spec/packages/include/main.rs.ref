@@ -19,15 +19,11 @@ function @rg.15() -> void {
     return void
   block ^b3:
     %t7 = load i64 $s0
-    %t8 = convert zext i128 i64 %t7
-    %t9 = convert zext i128 i64 1
-    %t10 = binary add i128 %t8, %t9
-    %t11 = convert trunc i64 i128 %t10
-    %t12 = convert zext i128 i64 %t11
-    %t13 = cmp ne i128 %t10, %t12
-    branch %t13, ^b4, ^b5
+    %t8 = binary add i64 %t7, 1
+    %t9 = cmp ult i64 %t8, %t7
+    branch %t9, ^b4, ^b5
   block ^b5:
-    store i64 %t11, $s0
+    store i64 %t8, $s0
     jump ^b1
   block ^b4:
     call void @abort()

@@ -1,11 +1,11 @@
 //! Object defaults distinguish lexical lifetimes from callable quantifiers.
 use super::graph::{Graph, quantified_value};
 use super::{Bound, Checker, Error, NodeKey, Pending, Predicate, RegionId, regions};
+use crate::support::hash::HashSet;
 use crate::types::{
     parameters::clauses::{Clause, Quantifier},
     substitute,
 };
-use std::collections::HashSet;
 
 impl Checker<'_> {
     pub(super) fn prepare_object_guarantees(
@@ -36,7 +36,7 @@ impl Checker<'_> {
         let root = self.object_trait_clause(key, None, template)?;
         let mut graph = Graph::new(root);
         let mut regions = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut autos = 0_u8;
         while let Some(visit) = graph
             .next(&mut self.facts)
@@ -92,7 +92,7 @@ impl Checker<'_> {
             let clause = self.object_trait_clause(key, scope, predicate)?;
             self.object_lifetime_candidates(key, clause, context)?
         } else {
-            HashSet::new()
+            HashSet::default()
         };
         if candidates.contains(&RegionId::STATIC) {
             return Ok(RegionId::STATIC);
@@ -145,7 +145,7 @@ impl Checker<'_> {
         root: Clause,
         context: regions::Context,
     ) -> Result<HashSet<RegionId>, Error> {
-        let mut candidates = HashSet::new();
+        let mut candidates = HashSet::default();
         let mut graph = Graph::new(root);
         while let Some(visit) = graph
             .next(&mut self.facts)

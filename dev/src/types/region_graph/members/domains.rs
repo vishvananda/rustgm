@@ -1,7 +1,7 @@
 //! Canonical candidate sets share intersection, filtering and minimum queries.
 use super::{ChoicesId, Error, Members, Region};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{support::intern_slice::Slices, types::region_graph::Solver};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Domains {
@@ -126,7 +126,7 @@ impl Domains {
         if let Some(&domain) = self.reachable.get(&region) {
             return Ok(domain);
         }
-        let mut reached = HashSet::from([region]);
+        let mut reached = HashSet::from_iter([region]);
         let mut work = vec![region];
         let mut all = false;
         while let Some(node) = work.pop() {
@@ -236,7 +236,7 @@ impl Domains {
             return Ok(true);
         }
         if !self.ancestors.contains_key(&shorter) {
-            let mut seen = HashSet::from([shorter]);
+            let mut seen = HashSet::from_iter([shorter]);
             let mut work = vec![shorter];
             while let Some(region) = work.pop() {
                 solver.charge()?;

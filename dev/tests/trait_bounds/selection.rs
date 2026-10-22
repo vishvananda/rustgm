@@ -386,7 +386,7 @@ fn failed_candidates_cannot_publish_lifetime_variables() -> Result<(), Box<dyn s
         )?;
         super::prove(&source)?;
         let (_, facts) = semantic::analyze(&source)?;
-        assert_eq!(facts.body_regions.len(), expected_regions);
+        assert_eq!(facts.body_regions.log().len(), expected_regions);
         let mut regions = Vec::new();
         for selection in facts.generics.trait_selections.values().flatten() {
             for argument in facts

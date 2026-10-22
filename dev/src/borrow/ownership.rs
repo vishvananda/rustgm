@@ -23,7 +23,7 @@ use crate::{
 use paths::Access;
 pub use paths::{Component, Path, PathId, Paths, Root, Segment};
 use state::State;
-use std::{collections::HashMap, hash::BuildHasher};
+use std::hash::BuildHasher;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Use {
@@ -76,7 +76,7 @@ impl<'a> Analysis<'a> {
 pub fn check<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     program: &'a Program,
 ) -> Result<Analysis<'a>, Error> {
@@ -94,7 +94,7 @@ pub fn check<'a, S: BuildHasher>(
 pub fn verify<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     program: &'a Program,
 ) -> Result<Checked<'a>, Error> {
@@ -103,7 +103,7 @@ pub fn verify<'a, S: BuildHasher>(
 fn visit<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     program: &'a Program,
     mut record: impl FnMut(BodyFacts),
@@ -144,19 +144,30 @@ fn visit<'a, S: BuildHasher>(
 pub fn analyze_body<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &Body,
 ) -> Result<BodyFacts, Error> {
+    analyze_body_ordered(types, definitions, derives, copies, body, None)
+}
+/// `analyze_body`, reusing a reverse-postorder walk already computed for it.
+pub(crate) fn analyze_body_ordered<S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &Body,
+    order: Option<&super::order::Order>,
+) -> Result<BodyFacts, Error> {
     let mut facts = prepare(types, definitions, derives, copies, body, false)?;
-    state::verify::<()>(body, &mut facts, types, None)?;
+    state::verify::<()>(body, &mut facts, types, None, order)?;
     guards::verify(body, &facts, types)?;
     Ok(facts)
 }
 fn prepare<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &Body,
     retain_initialization: bool,
@@ -244,7 +255,7 @@ impl BodyFacts {
                         state.fill(&self.paths.entries[path.0 as usize], false)?;
                     }
                 }
-                if let Some(path) = self.paths.temporaries.get(&id) {
+                if let Some(path) = self.paths.temporaries.get(id) {
                     state.fill(&self.paths.entries[path.0 as usize], true)?;
                 }
             }

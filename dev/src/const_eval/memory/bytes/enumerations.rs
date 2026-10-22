@@ -1,7 +1,7 @@
 //! A cold per-type tag index never turns byte transport into a typed enum read.
 use super::{Backing, Constant, Failure, Machine, Reader, TypeId, continuations::Source};
 use crate::sema::{members::VariantId, values::View};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/enum_bytes.rs"]
 mod tests;

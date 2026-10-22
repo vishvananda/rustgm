@@ -110,17 +110,13 @@ function @rg.22.i5(%p0 : ptr) -> void {
     %t8 = cmp ne i32 %t5, %t7
     branch %t8, ^b1, ^b2
   block ^b2:
-    %t9 = convert zext i32 u16 %t6
-    %t10 = convert zext i32 u16 2
-    %t11 = binary add i32 %t9, %t10
-    %t12 = convert trunc u16 i32 %t11
-    %t13 = convert zext i32 u16 %t12
-    %t14 = cmp ne i32 %t11, %t13
-    branch %t14, ^b1, ^b3
+    %t9 = binary add u16 %t6, 2
+    %t10 = cmp ult u16 %t9, %t6
+    branch %t10, ^b1, ^b3
   block ^b3:
-    %t15 = load ptr $s0
-    %t16 = load ptr %t15
-    store u16 %t12, %t16
+    %t11 = load ptr $s0
+    %t12 = load ptr %t11
+    store u16 %t9, %t12
     return void
   block ^b1:
     call void @abort()
@@ -146,17 +142,13 @@ function @rg.18.i6(%p0 : ptr) -> void {
     %t8 = cmp ne i32 %t5, %t7
     branch %t8, ^b1, ^b2
   block ^b2:
-    %t9 = convert zext i32 u16 %t6
-    %t10 = convert zext i32 u16 1
-    %t11 = binary add i32 %t9, %t10
-    %t12 = convert trunc u16 i32 %t11
-    %t13 = convert zext i32 u16 %t12
-    %t14 = cmp ne i32 %t11, %t13
-    branch %t14, ^b1, ^b3
+    %t9 = binary add u16 %t6, 1
+    %t10 = cmp ult u16 %t9, %t6
+    branch %t10, ^b1, ^b3
   block ^b3:
-    %t15 = load ptr $s0
-    %t16 = load ptr %t15
-    store u16 %t12, %t16
+    %t11 = load ptr $s0
+    %t12 = load ptr %t11
+    store u16 %t9, %t12
     return void
   block ^b1:
     call void @abort()

@@ -1,6 +1,6 @@
 //! Default templates have query states independent of alias expansion and parameter identity.
 use super::{Argument, Checker, Declaration, DefId, Error, NodeKey, State, Work};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy)]
 pub(in super::super) struct DefaultId(usize);

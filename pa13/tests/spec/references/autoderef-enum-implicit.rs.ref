@@ -22,12 +22,12 @@ type 19 aggregate def=13
 type 20 reference mutable=false region=bound:0:0 referent=19
 type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=19 signature=21
-root 0:23 pattern=0
-root 0:26 pattern=2
-pattern 0 source=0:23 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:23 input=19 product variant=0 fields=0:0
-pattern 2 source=0:26 input=20 wildcard
-match 0 source=0:29 input=0:20 arms=0:2 exhaustive=true uninhabited=false work=29
-arm 0 source=0:25 pattern=0 guard=- useful=true value=0:24
-arm 1 source=0:28 pattern=2 guard=- useful=true value=0:27
+root 0:14 pattern=0
+root 0:17 pattern=2
+pattern 0 source=0:14 input=20 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:14 input=19 product variant=0 fields=0:0
+pattern 2 source=0:17 input=20 wildcard
+match 0 source=0:20 input=0:13 arms=0:2 exhaustive=true uninhabited=false work=29
+arm 0 source=0:16 pattern=0 guard=- useful=true value=0:15
+arm 1 source=0:19 pattern=2 guard=- useful=true value=0:18
 eof roots=2 patterns=3 fields=0 alternatives=0 ranges=0 matches=1 arms=2 coverage-work=29 region-vars=0 region-equalities=0 conditions=0 chains=0

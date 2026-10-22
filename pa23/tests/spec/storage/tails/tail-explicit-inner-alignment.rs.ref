@@ -112,42 +112,34 @@ function @rg.24(%p0 : ptr) -> u16 {
     %t32 = load ptr %t31
     %t33 = load u8 %t29
     %t34 = convert zext u16 u8 %t33
-    %t35 = convert zext i32 u16 %t28
-    %t36 = convert zext i32 u16 %t34
-    %t37 = binary add i32 %t35, %t36
-    %t38 = convert trunc u16 i32 %t37
-    %t39 = convert zext i32 u16 %t38
-    %t40 = cmp ne i32 %t37, %t39
-    branch %t40, ^b1, ^b2
+    %t35 = binary add u16 %t28, %t34
+    %t36 = cmp ult u16 %t35, %t28
+    branch %t36, ^b1, ^b2
   block ^b2:
-    %t41 = load ptr $s0
-    %t42 = addr $s0
-    %t43 = index u8 %t42, 8
-    %t44 = load ptr %t43
-    %t45 = index u8 %t44, 16
-    %t46 = load i64 %t45
-    %t47 = cmp ult i64 %t46, 32
-    %t48 = convert zext i64 i64 %t47
-    %t49 = binary sub i64 0, %t48
-    %t50 = binary xor i64 %t46, 32
-    %t51 = binary and i64 %t50, %t49
-    %t52 = binary xor i64 %t46, %t51
-    %t53 = binary sub i64 %t52, 1
-    %t54 = binary add i64 1, %t53
-    %t55 = unary bitnot i64 %t53
-    %t56 = binary and i64 %t54, %t55
-    %t57 = index u8 %t41, %t56
-    %t58 = load u8 %t57
-    %t59 = convert zext u16 u8 %t58
-    %t60 = convert zext i32 u16 %t38
-    %t61 = convert zext i32 u16 %t59
-    %t62 = binary add i32 %t60, %t61
-    %t63 = convert trunc u16 i32 %t62
-    %t64 = convert zext i32 u16 %t63
-    %t65 = cmp ne i32 %t62, %t64
-    branch %t65, ^b1, ^b3
+    %t37 = load ptr $s0
+    %t38 = addr $s0
+    %t39 = index u8 %t38, 8
+    %t40 = load ptr %t39
+    %t41 = index u8 %t40, 16
+    %t42 = load i64 %t41
+    %t43 = cmp ult i64 %t42, 32
+    %t44 = convert zext i64 i64 %t43
+    %t45 = binary sub i64 0, %t44
+    %t46 = binary xor i64 %t42, 32
+    %t47 = binary and i64 %t46, %t45
+    %t48 = binary xor i64 %t42, %t47
+    %t49 = binary sub i64 %t48, 1
+    %t50 = binary add i64 1, %t49
+    %t51 = unary bitnot i64 %t49
+    %t52 = binary and i64 %t50, %t51
+    %t53 = index u8 %t37, %t52
+    %t54 = load u8 %t53
+    %t55 = convert zext u16 u8 %t54
+    %t56 = binary add u16 %t35, %t55
+    %t57 = cmp ult u16 %t56, %t35
+    branch %t57, ^b1, ^b3
   block ^b3:
-    return u16 %t63
+    return u16 %t56
   block ^b1:
     call void @abort()
     unreachable

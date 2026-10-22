@@ -1,7 +1,7 @@
 //! Named lifetime equivalence from caller assumptions or a completed body proof.
 use super::{Constraints, Error, Graph, Identities, Region, RegionId, RegionKind, Solution};
+use crate::support::hash::HashMap;
 use crate::types::substitute;
-use std::collections::HashMap;
 
 #[derive(Clone, Default)]
 pub(crate) struct RegionEqualities {
@@ -46,7 +46,7 @@ impl RegionEqualities {
         Ok(Self::from_classes(&solution.established_classes()?, &names))
     }
     fn from_classes(classes: &[Region], names: &[(RegionId, Region)]) -> Self {
-        let mut representatives = HashMap::<Region, RegionId>::new();
+        let mut representatives = HashMap::<Region, RegionId>::default();
         for &(name, region) in names {
             representatives
                 .entry(classes[region.0 as usize])
@@ -108,7 +108,7 @@ impl RegionEqualities {
     }
     pub(crate) fn substitute(&self, fold: &mut substitute::Bound) -> Result<Self, &'static str> {
         let mut graph = Graph::new(1_000_000);
-        let mut names = HashMap::from([(RegionId::STATIC, Region::STATIC)]);
+        let mut names = HashMap::from_iter([(RegionId::STATIC, Region::STATIC)]);
         let mut pairs: Vec<_> = self.representatives.iter().map(|(&a, &b)| (a, b)).collect();
         pairs.sort_unstable_by_key(|&(a, _)| a.0);
         for (a, b) in pairs {

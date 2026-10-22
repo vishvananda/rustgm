@@ -1,26 +1,18 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,14,15,16,17,18,19,20,21]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
 node 0 7 15 name "Iterator"
 node 1 16 20 name "Item"
-node 2 16 20 path false [1]
-node 3 16 20 type Path [2]
-node 4 21 23 name "u8"
-node 5 21 23 path false [4]
-node 6 21 23 type Path [5]
-node 7 16 23 constraint 3 6 []
-node 8 7 24 applied 0 [7] -
-node 9 7 24 path false [8]
-node 10 7 24 bound false [] 9
-node 11 5 24 generic Type "T" - [10] -
-node 12 26 27 name "x"
-node 13 26 27 path false [12]
-node 14 26 27 binding false false "x" -
-node 15 28 29 name "T"
-node 16 28 29 path false [15]
-node 17 28 29 type Path [16]
-node 18 26 29 parameter 14 17
-node 19 30 32 block Plain [] -
-node 20 0 32 item 0
-item 0 "f" private [11] [] function false false false false - [18] - 19
-node 21 0 32 crate [20]
-root 21
+node 2 21 23 name "u8"
+node 3 16 23 constraint 1 2 []
+node 4 7 24 applied 0 [3] -
+node 5 7 24 path false [4]
+node 6 7 24 bound false [] 5
+node 7 5 24 generic Type "T" - [6] -
+node 8 26 27 binding false false "x" -
+node 9 28 29 name "T"
+node 10 26 29 parameter 8 9
+node 11 30 32 block Plain [] -
+node 12 0 32 item 0
+item 0 "f" private [7] [] function false false false false - [10] - 11
+node 13 0 32 crate [12]
+root 13
 eof 33

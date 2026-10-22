@@ -157,7 +157,7 @@ impl Checker<'_> {
         }) else {
             return Ok(());
         };
-        let mut seen = std::collections::HashSet::new();
+        let mut seen = crate::support::hash::HashSet::default();
         for &node in &self.state.touched {
             let ty = self.ty(node)?;
             let Some(crate::types::Kind::FunctionItem { item, .. }) = self.facts.types.kind(ty)

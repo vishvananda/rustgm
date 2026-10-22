@@ -11,7 +11,7 @@ use crate::{
         substitute::RegionEquations,
     },
 };
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 const LIMIT: usize = 1_000_000;
 const BYTES: usize = 64 * 1024 * 1024;
 
@@ -123,7 +123,7 @@ impl Inputs<'_> {
         let seeded_steps = queries.steps();
         *work = work.saturating_add(seeded_steps);
         let mut constraints = seeded?;
-        let mut variables = HashSet::new();
+        let mut variables = HashSet::default();
         let mut equations = RegionEquations::default();
         let result = (|| {
             for (left, right) in equalities {
@@ -137,7 +137,7 @@ impl Inputs<'_> {
                     }
                     if facts
                         .body_regions
-                        .get(id.0 as usize - 1)
+                        .get(self.source, id)
                         .is_none_or(|region| region.body != self.source)
                     {
                         return Err("source caller alias has a foreign body identity");

@@ -52,7 +52,7 @@ fn inherited_universal_outlives_is_required_instead_of_assumed() -> Result {
     let variances = Variances::default();
     let source = NodeKey {
         file: FileId(0),
-        node: NodeId(0),
+        node: NodeId::new(0),
     };
     for assumption in 0..3 {
         let mut queries = Queries::new(&types, &bounds, &templates);
@@ -97,7 +97,7 @@ fn other_quantified_bound_kinds_do_not_become_lifetime_obligations() -> Result {
     let mut queries = Queries::new(&types, &bounds, &templates);
     let source = NodeKey {
         file: FileId(0),
-        node: NodeId(0),
+        node: NodeId::new(0),
     };
     assert!(Pending::collect(&types, source, &formation, &mut queries, &mut 0)?.is_none());
     Ok(())

@@ -1,54 +1,54 @@
 name 0 "crate"
-name 1 "bool"
-name 2 "char"
-name 3 "str"
-name 4 "i8"
-name 5 "i16"
-name 6 "i32"
-name 7 "i64"
-name 8 "i128"
-name 9 "isize"
-name 10 "u8"
-name 11 "u16"
-name 12 "u32"
-name 13 "u64"
-name 14 "u128"
-name 15 "usize"
-name 16 "f32"
-name 17 "f64"
-name 18 "f"
-name 19 "x"
+name 1 "x"
+name 2 "bool"
+name 3 "char"
+name 4 "str"
+name 5 "i8"
+name 6 "i16"
+name 7 "i32"
+name 8 "i64"
+name 9 "i128"
+name 10 "isize"
+name 11 "u8"
+name 12 "u16"
+name 13 "u32"
+name 14 "u64"
+name 15 "u128"
+name 16 "usize"
+name 17 "f32"
+name 18 "f64"
+name 19 "f"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
 scope 2 module=0 barrier=false parent=1
 scope 3 module=0 barrier=false parent=2
-def 0 type primitive name=1 scope=0 access=public
-def 1 type primitive name=2 scope=0 access=public
-def 2 type primitive name=3 scope=0 access=public
-def 3 type primitive name=4 scope=0 access=public
-def 4 type primitive name=5 scope=0 access=public
-def 5 type primitive name=6 scope=0 access=public
-def 6 type primitive name=7 scope=0 access=public
-def 7 type primitive name=8 scope=0 access=public
-def 8 type primitive name=9 scope=0 access=public
-def 9 type primitive name=10 scope=0 access=public
-def 10 type primitive name=11 scope=0 access=public
-def 11 type primitive name=12 scope=0 access=public
-def 12 type primitive name=13 scope=0 access=public
-def 13 type primitive name=14 scope=0 access=public
-def 14 type primitive name=15 scope=0 access=public
-def 15 type primitive name=16 scope=0 access=public
-def 16 type primitive name=17 scope=0 access=public
-def 17 value function name=18 scope=0 access=module:0 source=0:30
-def 18 value local name=19 scope=2 access=module:0 source=0:2
-def 19 value local name=19 scope=2 access=module:0 source=0:7
-def 20 value local name=19 scope=3 access=module:0 source=0:15
-binding scope=0 value name=18 def=17 Direct ambiguous=false access=module:0
-binding scope=2 value name=19 def=19 Direct ambiguous=false access=module:0
-binding scope=3 value name=19 def=20 Direct ambiguous=false access=module:0
-ref 0:9 scope=2 value def=18
-ref 0:17 scope=3 value def=19
-ref 0:22 scope=3 value def=20
-ref 0:27 scope=2 value def=19
+def 0 type primitive name=2 scope=0 access=public
+def 1 type primitive name=3 scope=0 access=public
+def 2 type primitive name=4 scope=0 access=public
+def 3 type primitive name=5 scope=0 access=public
+def 4 type primitive name=6 scope=0 access=public
+def 5 type primitive name=7 scope=0 access=public
+def 6 type primitive name=8 scope=0 access=public
+def 7 type primitive name=9 scope=0 access=public
+def 8 type primitive name=10 scope=0 access=public
+def 9 type primitive name=11 scope=0 access=public
+def 10 type primitive name=12 scope=0 access=public
+def 11 type primitive name=13 scope=0 access=public
+def 12 type primitive name=14 scope=0 access=public
+def 13 type primitive name=15 scope=0 access=public
+def 14 type primitive name=16 scope=0 access=public
+def 15 type primitive name=17 scope=0 access=public
+def 16 type primitive name=18 scope=0 access=public
+def 17 value function name=19 scope=0 access=module:0 source=0:20
+def 18 value local name=1 scope=2 access=module:0 source=0:0
+def 19 value local name=1 scope=2 access=module:0 source=0:3
+def 20 value local name=1 scope=3 access=module:0 source=0:8
+binding scope=0 value name=19 def=17 Direct ambiguous=false access=module:0
+binding scope=2 value name=1 def=19 Direct ambiguous=false access=module:0
+binding scope=3 value name=1 def=20 Direct ambiguous=false access=module:0
+ref 0:4 scope=2 value def=18
+ref 0:9 scope=3 value def=19
+ref 0:13 scope=3 value def=20
+ref 0:17 scope=2 value def=19
 eof files=1 modules=1 definitions=21 references=4

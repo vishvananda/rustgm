@@ -36,11 +36,11 @@ fn environment(depth: usize) -> Result<(Environment, Vec<FormationInput>), &'sta
             formation_types: parent,
             field_types: Vec::new(),
             formation_fields: Vec::new(),
-            accesses: std::collections::HashMap::new(),
-            adjusted_accesses: std::collections::HashMap::new(),
-            nested_accesses: std::collections::HashMap::new(),
+            accesses: crate::support::hash::HashMap::default(),
+            adjusted_accesses: crate::support::hash::HashMap::default(),
+            nested_accesses: crate::support::hash::HashMap::default(),
             mentions: vec![mentioned, mentioned],
-            binding_mutability: std::collections::HashMap::new(),
+            binding_mutability: crate::support::hash::HashMap::default(),
         },
         vec![
             FormationInput {

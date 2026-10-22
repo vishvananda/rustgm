@@ -27,8 +27,8 @@ type 24 function binders=0 parameters=[19] result=20 unsafe=false
 type 25 function-item def=16 signature=24
 type 26 function binders=0 parameters=[20] result=21 unsafe=false
 type 27 function-item def=20 signature=26
-root 0:25 pattern=0
-pattern 0 source=0:25 input=20 product variant=1 fields=0:0
-match 0 source=0:28 input=0:22 arms=0:1 exhaustive=true uninhabited=false work=15
-arm 0 source=0:27 pattern=0 guard=- useful=true value=0:26
+root 0:16 pattern=0
+pattern 0 source=0:16 input=20 product variant=1 fields=0:0
+match 0 source=0:19 input=0:13 arms=0:1 exhaustive=true uninhabited=false work=15
+arm 0 source=0:18 pattern=0 guard=- useful=true value=0:17
 eof roots=1 patterns=1 fields=0 alternatives=0 ranges=0 matches=1 arms=1 coverage-work=15 region-vars=0 region-equalities=0 conditions=0 chains=0

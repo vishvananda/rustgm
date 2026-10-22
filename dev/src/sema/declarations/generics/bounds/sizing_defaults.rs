@@ -3,7 +3,7 @@ use super::{Checker, DefId, Error, GenericFlavor, NodeKey, Subject, Syntax, Writ
 use crate::{
     support::bindings::LangItem, syntax::item::ItemKind, types::parameters::predicates::Bound,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 const SIZED: u8 = 1;
 const META: u8 = 2;
 const POINTEE: u8 = 4;
@@ -49,7 +49,7 @@ impl Checker<'_> {
             .language(LangItem::PointeeSized)
             .ok_or_else(|| self.error(key, "source sizing defaults require PointeeSized"))?
             .definition;
-        let mut levels: HashMap<DefId, u8> = HashMap::new();
+        let mut levels: HashMap<DefId, u8> = HashMap::default();
         for bound in syntax.iter() {
             let binding = match bound.subject {
                 Subject::Parameter(id) => Some(id),

@@ -1,8 +1,9 @@
 //! Typed bound subjects and arguments form assumptions before normalization.
 use super::{Checker, DefId, Error, NodeKey, Work, regions};
 use crate::sema::declarations::generics::bounds::Syntax;
+use crate::support::hash::HashSet;
 use crate::types::arguments::Argument;
-use std::{collections::HashSet, sync::Arc};
+use std::sync::Arc;
 
 pub(super) struct Bounds {
     syntax: Vec<Syntax>,
@@ -122,7 +123,7 @@ impl Checker<'_> {
         context: regions::Context,
     ) -> Result<(), Error> {
         let mut roots = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         for bound in &syntax {
             if let Some(key) = bound.subject() {
                 self.retain_bound_root(key, bound.subject_context(context), &mut seen, &mut roots)?;

@@ -2,8 +2,8 @@
 mod collections;
 mod progression_heads;
 use super::{DefId, Head, Identity, Subject};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::infer::{Context, Error};
-use std::collections::{HashMap, HashSet};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/pending_headers.rs"]
 mod tests;

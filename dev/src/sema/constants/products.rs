@@ -145,7 +145,7 @@ impl Expression {
             Self::Fields(fields) => {
                 let unit = report.package.unit(key.file);
                 for &node in unit.configured.ast.list(fields).iter().rev() {
-                    if unit.configured.active[node.0 as usize] {
+                    if unit.configured.active[node.get() as usize] {
                         visit(NodeKey { node, ..key });
                     }
                 }
@@ -188,7 +188,7 @@ impl Queries<'_> {
                     .list(statements)
                     .iter()
                     .all(|node| {
-                        !self.report.package.unit(key.file).configured.active[node.0 as usize]
+                        !self.report.package.unit(key.file).configured.active[node.get() as usize]
                     }) =>
                 {
                     Some(Expression::Fields(statements))
@@ -221,7 +221,7 @@ impl Queries<'_> {
                 let unit = self.report.package.unit(key.file);
                 let mut values = Vec::new();
                 for &node in unit.configured.ast.list(fields) {
-                    if unit.configured.active[node.0 as usize] {
+                    if unit.configured.active[node.get() as usize] {
                         self.budget()?;
                         values.push(self.value(Query::Node(NodeKey { node, ..key }))?);
                     }

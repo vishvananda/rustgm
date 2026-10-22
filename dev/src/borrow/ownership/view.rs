@@ -12,7 +12,8 @@ pub fn write(checked: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
         writeln!(
             out,
             "body {index} source={}:{}",
-            body.source.file.0, body.source.node.0
+            body.source.file.0,
+            body.source.node.get()
         )?;
         for (id, path) in facts.paths.entries.iter().enumerate() {
             write!(out, "  path m{id} type={} root=", path.ty.0)?;

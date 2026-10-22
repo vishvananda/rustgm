@@ -3,8 +3,9 @@
 #[path = "../../../tests/invariants/promised_regions.rs"]
 mod tests;
 use super::OpaqueId;
+use crate::support::hash::HashMap;
 use crate::types::{GenericArgs, Kind, RegionId, Store, TypeId, arguments::Argument};
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::hash_map::Entry;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Promise {

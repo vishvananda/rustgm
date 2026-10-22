@@ -82,15 +82,11 @@ function @rg.19(%p0 : ptr, %p1 : u16) -> u16 {
     store ptr %p0, $s0
     store u16 %p1, $s1
     %t0 = load u16 $s1
-    %t1 = convert zext i32 u16 %t0
-    %t2 = convert zext i32 u16 2
-    %t3 = binary add i32 %t1, %t2
-    %t4 = convert trunc u16 i32 %t3
-    %t5 = convert zext i32 u16 %t4
-    %t6 = cmp ne i32 %t3, %t5
-    branch %t6, ^b1, ^b2
+    %t1 = binary add u16 %t0, 2
+    %t2 = cmp ult u16 %t1, %t0
+    branch %t2, ^b1, ^b2
   block ^b2:
-    return u16 %t4
+    return u16 %t1
   block ^b1:
     call void @abort()
     unreachable

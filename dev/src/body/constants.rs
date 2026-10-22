@@ -1,10 +1,10 @@
 //! Complete named values required by typed bodies before the read-only lowerer.
 use super::ir::{Place, Program, Rvalue};
+use crate::support::hash::HashSet;
 use crate::{
     resolve::{expansion::Report, package::Error},
     sema::{model::Declarations, values::Evaluator},
 };
-use std::collections::HashSet;
 
 /// Evaluate each demanded definition once, retaining values in semantic arenas.
 /// # Errors
@@ -36,15 +36,15 @@ fn prepare<'a>(
     bodies: impl Iterator<Item = &'a super::ir::Body>,
     globals: &[crate::resolve::model::DefId],
 ) -> Result<(), Error> {
-    let mut seen = HashSet::new();
+    let mut seen = HashSet::default();
     let mut demands = Vec::new();
-    let mut inline_seen = HashSet::new();
+    let mut inline_seen = HashSet::default();
     let mut inline = Vec::new();
     let mut instances = Vec::new();
-    let mut instance_seen = HashSet::new();
-    let mut source_seen = HashSet::new();
+    let mut instance_seen = HashSet::default();
+    let mut source_seen = HashSet::default();
     let mut sources = Vec::new();
-    let mut associated_seen = HashSet::new();
+    let mut associated_seen = HashSet::default();
     let mut associated = Vec::new();
     let mut demand = |id, static_| {
         if seen.insert(id) {
@@ -239,7 +239,7 @@ pub(crate) fn alias_cycles(
     templates: &[super::templates::Template],
 ) -> Result<(), Error> {
     use super::ir::{Owner, Terminator};
-    let mut aliases = std::collections::HashMap::new();
+    let mut aliases = crate::support::hash::HashMap::default();
     let mut order = Vec::new();
     for template in templates {
         let body = &template.body;
@@ -289,8 +289,8 @@ pub(crate) fn alias_cycles(
             }
         }
     }
-    let mut done = HashSet::new();
-    let mut active = HashSet::new();
+    let mut done = HashSet::default();
+    let mut active = HashSet::default();
     for (mut current, source) in order {
         active.clear();
         while let Some(&next) = aliases.get(&current) {

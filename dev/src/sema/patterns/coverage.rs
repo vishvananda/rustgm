@@ -8,6 +8,7 @@ mod text;
 mod witness;
 
 use super::{Arm, Kind, PatternId, Projection, scalar::Domain};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, package::ModuleId},
     sema::{members::VariantId, model::Declarations},
@@ -16,7 +17,7 @@ use crate::{
 use decision::{Graph, Id, Operation, Variable};
 pub use inhabited::Cache;
 use inhabited::Inhabited;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct PlaceId(u32);
@@ -41,6 +42,116 @@ enum Values {
     Length,
     Text,
 }
+/// Published coverage results of one match.
+#[derive(Clone)]
+pub struct Outcome {
+    pub useful: Vec<bool>,
+    pub missing: Option<String>,
+    pub work: u64,
+    pub uninhabited: bool,
+}
+/// Everything coverage reads from a match: input, module, validity, and
+/// each arm's guard and pattern structure, including pattern identity offsets
+/// (sharing) and node types. Bindings contribute only their subpatterns.
+/// Each record starts with a tag word, so the encoding is a prefix code.
+/// Returns false for patterns that coverage would reject.
+pub fn match_key(
+    facts: &Declarations,
+    arms: &[Arm],
+    (ty, valid, module): (TypeId, bool, ModuleId),
+    key: &mut Vec<u64>,
+    work: &mut Vec<PatternId>,
+) -> bool {
+    key.clear();
+    work.clear();
+    key.extend([
+        u64::from(ty.0) << 1 | u64::from(valid),
+        u64::from(module.0) << 32 | arms.len() as u64,
+    ]);
+    let Some(base) = arms.iter().filter_map(|arm| arm.pattern).map(|p| p.0).min() else {
+        return false;
+    };
+    for arm in arms {
+        let Some(root) = arm.pattern else {
+            return false;
+        };
+        key.push(u64::from(arm.guard.is_some()));
+        work.push(root);
+        while let Some(id) = work.pop() {
+            let pattern = &facts.patterns.nodes[id.0 as usize];
+            let Some(node_ty) = pattern.ty else {
+                return false;
+            };
+            key.push(u64::from(id.0.wrapping_sub(base)) << 32 | u64::from(node_ty.0));
+            match pattern.kind {
+                Kind::Pending => return false,
+                Kind::Wildcard => key.push(0),
+                Kind::Range(range) => {
+                    let interval = facts.patterns.ranges[range.0 as usize];
+                    #[expect(clippy::cast_possible_truncation, reason = "split rank halves")]
+                    key.extend([
+                        1,
+                        interval.lower as u64,
+                        (interval.lower >> 64) as u64,
+                        interval.upper as u64,
+                        (interval.upper >> 64) as u64,
+                    ]);
+                }
+                Kind::Text(text) => key.push(2 | u64::from(text.0) << 8),
+                Kind::Binding { subpattern, .. } => {
+                    key.push(3 | u64::from(subpattern.is_some()) << 8);
+                    work.extend(subpattern);
+                }
+                Kind::Dereference { pattern, .. } => {
+                    key.push(4);
+                    work.push(pattern);
+                }
+                Kind::Product { variant, fields } => {
+                    key.push(5 | u64::from(variant.map_or(u32::MAX, |v| v.0)) << 8);
+                    fields_key(facts, fields, key, work);
+                }
+                Kind::Slice {
+                    minimum,
+                    exact,
+                    fields,
+                } => {
+                    key.extend([6 | u64::from(exact) << 8, minimum]);
+                    fields_key(facts, fields, key, work);
+                }
+                Kind::Or(alternatives) => {
+                    let alternatives = facts.patterns.alternatives(alternatives);
+                    key.push(7 | (alternatives.len() as u64) << 8);
+                    work.extend(alternatives.iter().rev());
+                }
+            }
+        }
+    }
+    true
+}
+fn fields_key(
+    facts: &Declarations,
+    fields: super::Fields,
+    key: &mut Vec<u64>,
+    work: &mut Vec<PatternId>,
+) {
+    let fields = facts.patterns.fields(fields);
+    key.push(fields.len() as u64);
+    for field in fields {
+        match field.selection {
+            Projection::Field(crate::sema::members::Selection::Tuple(index)) => {
+                key.push(u64::from(index) << 8);
+            }
+            Projection::Field(crate::sema::members::Selection::Nominal(id)) => {
+                key.push(1 | u64::from(id.0) << 8);
+            }
+            Projection::Index(index) => key.extend([2, index]),
+            Projection::FromEnd { offset, minimum } => key.extend([3, offset, minimum]),
+            Projection::Subarray { start, end } => key.extend([4, start, end]),
+            Projection::Subslice { prefix, suffix } => key.extend([5, prefix, suffix]),
+        }
+    }
+    work.extend(fields.iter().rev().map(|field| field.pattern));
+}
 pub enum Roots<'a> {
     Pattern(PatternId),
     Arms(&'a [Arm]),
@@ -56,16 +167,30 @@ struct Query {
 }
 enum Work {
     Enter(Query),
+    /// Children occupy `children[start..]` of the shared child stack; every
+    /// descendant's entries have been released when this finish runs.
     Finish {
         query: Query,
         operation: Operation,
         initial: Id,
-        children: Vec<Query>,
+        start: usize,
     },
     Slices {
         query: Query,
         branches: Vec<slices::Branch>,
     },
+}
+/// Storage retained between coverage queries of one checker. Every query
+/// starts from cleared tables; only capacity crosses query boundaries.
+#[derive(Default)]
+struct Scratch {
+    graph: Graph,
+    places: Vec<Place>,
+    projections: HashMap<(PlaceId, Step), PlaceId>,
+    inputs: Vec<Input>,
+    patterns: HashMap<Query, Id>,
+    work: Vec<Work>,
+    children: Vec<Query>,
 }
 pub struct Coverage<'a> {
     facts: &'a Declarations,
@@ -76,11 +201,26 @@ pub struct Coverage<'a> {
     projections: HashMap<(PlaceId, Step), PlaceId>,
     inputs: Vec<Input>,
     patterns: HashMap<Query, Id>,
+    work: Vec<Work>,
+    children: Vec<Query>,
     covered: Id,
     universe: Id,
     roots: Roots<'a>,
     slice_aliases: Option<HashMap<TypeId, Vec<u64>>>,
     texts: Option<text::Domain>,
+}
+impl Drop for Coverage<'_> {
+    fn drop(&mut self) {
+        self.inhabited.cache.scratch = Scratch {
+            graph: std::mem::take(&mut self.graph),
+            places: std::mem::take(&mut self.places),
+            projections: std::mem::take(&mut self.projections),
+            inputs: std::mem::take(&mut self.inputs),
+            patterns: std::mem::take(&mut self.patterns),
+            work: std::mem::take(&mut self.work),
+            children: std::mem::take(&mut self.children),
+        };
+    }
 }
 impl<'a> Coverage<'a> {
     pub fn new(
@@ -92,7 +232,22 @@ impl<'a> Coverage<'a> {
         roots: Roots<'a>,
         cache: &'a mut Cache,
     ) -> Result<Self, &'static str> {
-        let mut graph = Graph::new(super::scalar::Coverage::LIMIT);
+        let Scratch {
+            mut graph,
+            mut places,
+            mut projections,
+            mut inputs,
+            mut patterns,
+            mut work,
+            mut children,
+        } = std::mem::take(&mut cache.scratch);
+        graph.reset(super::scalar::Coverage::LIMIT);
+        places.clear();
+        projections.clear();
+        inputs.clear();
+        patterns.clear();
+        work.clear();
+        children.clear();
         let mut inhabited = Inhabited::new(facts, report, module, cache);
         // Dereferenced places need not contain valid field values. Only an
         // explicitly empty root domain permits an empty match in that case.
@@ -108,20 +263,23 @@ impl<'a> Coverage<'a> {
             }
         };
         let universe = if possible { Id::ALL } else { Id::EMPTY };
+        places.push(Place {
+            ty,
+            valid: root_valid,
+            parent: None,
+            variable: None,
+        });
         Ok(Self {
             facts,
             report,
             inhabited,
             graph,
-            places: vec![Place {
-                ty,
-                valid: root_valid,
-                parent: None,
-                variable: None,
-            }],
-            projections: HashMap::new(),
-            inputs: Vec::new(),
-            patterns: HashMap::new(),
+            places,
+            projections,
+            inputs,
+            patterns,
+            work,
+            children,
             covered: Id::EMPTY,
             universe,
             roots,
@@ -258,37 +416,38 @@ impl<'a> Coverage<'a> {
                     query,
                     operation: Operation::Intersection,
                     initial: Id::EMPTY,
-                    children: Vec::new(),
+                    start: self.children.len(),
                 });
             };
             self.graph.interval(variable, rank as u128, rank as u128)?
         } else {
             Id::ALL
         };
-        let mut children = Vec::new();
+        let start = self.children.len();
         for field in self.facts.patterns.fields(fields) {
-            children.push(self.child(query.place, field.pattern, Step::Field(field.selection))?);
+            let child = self.child(query.place, field.pattern, Step::Field(field.selection))?;
+            self.children.push(child);
         }
         Ok(Work::Finish {
             query,
             operation: Operation::Intersection,
             initial,
-            children,
+            start,
         })
     }
     fn enter(&mut self, query: Query) -> Result<Work, &'static str> {
         let place = self.places[query.place.0 as usize];
+        let start = self.children.len();
         if place.valid && !self.inhabited.get(place.ty, &mut self.graph)? {
             return Ok(Work::Finish {
                 query,
                 operation: Operation::Intersection,
                 initial: Id::EMPTY,
-                children: Vec::new(),
+                start,
             });
         }
         let mut initial = Id::ALL;
         let mut operation = Operation::Intersection;
-        let mut children = Vec::new();
         match self.facts.patterns.nodes[query.pattern.0 as usize].kind {
             Kind::Wildcard
             | Kind::Binding {
@@ -297,7 +456,7 @@ impl<'a> Coverage<'a> {
             Kind::Binding {
                 subpattern: Some(pattern),
                 ..
-            } => children.push(Query { pattern, ..query }),
+            } => self.children.push(Query { pattern, ..query }),
             Kind::Text(text) => {
                 let variable = self.variable(query.place)?;
                 let rank = self
@@ -316,7 +475,8 @@ impl<'a> Coverage<'a> {
                     .interval(variable, interval.lower, interval.upper)?;
             }
             Kind::Dereference { pattern, .. } => {
-                children.push(self.child(query.place, pattern, Step::Dereference)?);
+                let child = self.child(query.place, pattern, Step::Dereference)?;
+                self.children.push(child);
             }
             Kind::Product { variant, fields } => return self.product(query, variant, fields),
             Kind::Slice {
@@ -328,7 +488,7 @@ impl<'a> Coverage<'a> {
                 initial = Id::EMPTY;
                 operation = Operation::Union;
                 for &pattern in self.facts.patterns.alternatives(alternatives) {
-                    children.push(Query { pattern, ..query });
+                    self.children.push(Query { pattern, ..query });
                 }
             }
             Kind::Pending => return Err("incomplete coverage pattern"),
@@ -337,7 +497,7 @@ impl<'a> Coverage<'a> {
             query,
             operation,
             initial,
-            children,
+            start,
         })
     }
     fn pattern(&mut self, pattern: PatternId) -> Result<Id, &'static str> {
@@ -345,7 +505,20 @@ impl<'a> Coverage<'a> {
             pattern,
             place: PlaceId(0),
         };
-        let mut work = vec![Work::Enter(root)];
+        let mut work = std::mem::take(&mut self.work);
+        work.clear();
+        self.children.clear();
+        work.push(Work::Enter(root));
+        let result = self.pattern_work(&mut work);
+        work.clear();
+        self.work = work;
+        result?;
+        self.patterns
+            .get(&root)
+            .copied()
+            .ok_or("missing selected coverage result")
+    }
+    fn pattern_work(&mut self, work: &mut Vec<Work>) -> Result<(), &'static str> {
         while let Some(next) = work.pop() {
             self.graph.charge()?;
             match next {
@@ -354,34 +527,42 @@ impl<'a> Coverage<'a> {
                         continue;
                     }
                     let next = self.enter(query)?;
-                    let pending: Vec<_> = match &next {
-                        Work::Finish { children, .. } => {
-                            children.iter().map(|q| Work::Enter(*q)).collect()
+                    match &next {
+                        &Work::Finish { start, .. } => {
+                            work.push(next);
+                            work.extend(
+                                self.children[start..].iter().rev().map(|q| Work::Enter(*q)),
+                            );
                         }
-                        Work::Slices { branches, .. } => branches
-                            .iter()
-                            .flat_map(|b| b.children.iter())
-                            .map(|q| Work::Enter(*q))
-                            .collect(),
+                        Work::Slices { branches, .. } => {
+                            let mark = work.len();
+                            work.extend(
+                                branches
+                                    .iter()
+                                    .flat_map(|b| b.children.iter())
+                                    .map(|q| Work::Enter(*q)),
+                            );
+                            work[mark..].reverse();
+                            work.insert(mark, next);
+                        }
                         Work::Enter(_) => return Err("missing coverage continuation"),
-                    };
-                    work.push(next);
-                    work.extend(pending.into_iter().rev());
+                    }
                 }
                 Work::Finish {
                     query,
                     operation,
                     initial,
-                    children,
+                    start,
                 } => {
                     let mut result = initial;
-                    for child in children {
+                    for index in start..self.children.len() {
                         let child = *self
                             .patterns
-                            .get(&child)
+                            .get(&self.children[index])
                             .ok_or("missing selected coverage child")?;
                         result = self.graph.apply(operation, result, child)?;
                     }
+                    self.children.truncate(start);
                     self.patterns.insert(query, result);
                 }
                 Work::Slices { query, branches } => {
@@ -401,9 +582,6 @@ impl<'a> Coverage<'a> {
                 }
             }
         }
-        self.patterns
-            .get(&root)
-            .copied()
-            .ok_or("missing selected coverage result")
+        Ok(())
     }
 }

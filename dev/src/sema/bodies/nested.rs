@@ -3,11 +3,11 @@ mod completion;
 mod incoming_fields;
 pub(super) mod output;
 use super::{Checker, Dependency, Error, NodeId, State, Work, closures, inline};
+use crate::support::hash::HashMap;
 use crate::{
     sema::traits::selection::Source,
     types::infer::{Solved, arguments::Argument, refinement::Refinement},
 };
-use std::collections::HashMap;
 
 enum Direction {
     Inward,
@@ -127,6 +127,11 @@ impl Checker<'_> {
         if scheduler.entries.len() >= 1_000_000 {
             return Err(self.error(entry.source, "nested body work limit exceeded"));
         }
+        // A nested body shares its parent's inference graph and region identities.
+        self.facts
+            .body_regions
+            .nest(child.body, self.state.body)
+            .map_err(|e| self.error(entry.source, e))?;
         let index = scheduler.entries.len();
         scheduler.entries.push(entry);
         self.state.closure_children.push(index);

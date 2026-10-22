@@ -48,38 +48,30 @@ function @rg.15(%p0 : ptr) -> i64 {
     %t18 = cmp ne i128 %t15, %t17
     branch %t18, ^b1, ^b3
   block ^b3:
-    %t19 = convert zext i128 i64 %t7
-    %t20 = convert zext i128 i64 %t16
-    %t21 = binary add i128 %t19, %t20
-    %t22 = convert trunc i64 i128 %t21
-    %t23 = convert zext i128 i64 %t22
-    %t24 = cmp ne i128 %t21, %t23
-    branch %t24, ^b1, ^b4
+    %t19 = binary add i64 %t7, %t16
+    %t20 = cmp ult i64 %t19, %t7
+    branch %t20, ^b1, ^b4
   block ^b4:
-    %t25 = cmp uge i64 1, 2
-    branch %t25, ^b1, ^b5
+    %t21 = cmp uge i64 1, 2
+    branch %t21, ^b1, ^b5
   block ^b5:
-    %t26 = binary mul i64 1, 8
-    %t27 = addr $s2
-    %t28 = index u8 %t27, %t26
-    %t29 = load i64 %t28
+    %t22 = binary mul i64 1, 8
+    %t23 = addr $s2
+    %t24 = index u8 %t23, %t22
+    %t25 = load i64 %t24
+    %t26 = convert zext i128 i64 %t25
+    %t27 = convert zext i128 i64 3
+    %t28 = binary mul i128 %t26, %t27
+    %t29 = convert trunc i64 i128 %t28
     %t30 = convert zext i128 i64 %t29
-    %t31 = convert zext i128 i64 3
-    %t32 = binary mul i128 %t30, %t31
-    %t33 = convert trunc i64 i128 %t32
-    %t34 = convert zext i128 i64 %t33
-    %t35 = cmp ne i128 %t32, %t34
-    branch %t35, ^b1, ^b6
+    %t31 = cmp ne i128 %t28, %t30
+    branch %t31, ^b1, ^b6
   block ^b6:
-    %t36 = convert zext i128 i64 %t22
-    %t37 = convert zext i128 i64 %t33
-    %t38 = binary add i128 %t36, %t37
-    %t39 = convert trunc i64 i128 %t38
-    %t40 = convert zext i128 i64 %t39
-    %t41 = cmp ne i128 %t38, %t40
-    branch %t41, ^b1, ^b7
+    %t32 = binary add i64 %t19, %t29
+    %t33 = cmp ult i64 %t32, %t19
+    branch %t33, ^b1, ^b7
   block ^b7:
-    return i64 %t39
+    return i64 %t32
   block ^b1:
     call void @abort()
     unreachable

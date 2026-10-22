@@ -1,4 +1,5 @@
 //! Walk complete trait applications without storing transitive prefixes.
+use crate::support::hash::HashSet;
 use crate::{
     sema::model::Declarations,
     types::{
@@ -9,7 +10,6 @@ use crate::{
         },
     },
 };
-use std::collections::HashSet;
 
 pub(in crate::sema) struct Graph {
     work: Vec<Clause>,
@@ -27,7 +27,7 @@ impl Graph {
     pub fn new(root: Clause) -> Self {
         Self {
             work: vec![root],
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             steps: 0,
             fixed: None,
         }

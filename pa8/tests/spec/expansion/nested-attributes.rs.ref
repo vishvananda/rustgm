@@ -1,33 +1,31 @@
 expanded-crate 1
-macro 0 name=13 module=0 context=0 introduction=0 source=0:0 rules=1 local-inner=false
-invocation 0 context=1 parent=0 macro=0 source=0:3 original=74:78 generated=81:157 rule=0 parser-calls=0
+macro 0 name=1 module=0 context=0 introduction=0 source=0:0 rules=1 local-inner=false
+invocation 0 context=1 parent=0 macro=0 source=0:2 original=74:78 generated=81:157 rule=0 parser-calls=0
 file 0
-configured 12 false
-attribute-effect 12 0 0 root cfg_attr=true
-attribute-effect 12 1 0 0 cfg=false
-active [0,3,4,5]
+configured 10 false
+attribute-effect 10 0 0 root cfg_attr=true
+attribute-effect 10 1 0 0 cfg=false
+active [0,2,3,4]
 node 0 0 73 item 0
 item 0 "m" private [] [] macro-rules 0
 node 1 74 75 name "m"
-node 2 74 75 path false [1]
-node 3 81 156 expansion [12] tail=-
-node 4 74 79 item 1
-item 1 - private [] [] macro-invocation 3
-node 5 0 79 crate [0,4]
-node 6 139 146 name "missing"
-node 7 139 146 path false [6]
-node 8 139 152 macro 7 2
-node 9 139 154 statement 8
-node 10 137 156 block Plain [9] -
-node 11 126 156 item 2
-item 2 "off" private [] [] function false false false false - [] - 10
-node 12 81 156 attributed 0 1 11
-node 13 81 156 expansion [12] tail=-
+node 2 81 156 expansion [10] tail=-
+node 3 74 79 item 1
+item 1 - private [] [] macro-invocation 2
+node 4 0 79 crate [0,3]
+node 5 139 146 name "missing"
+node 6 139 152 macro 5 2
+node 7 139 154 statement 6
+node 8 137 156 block Plain [7] -
+node 9 126 156 item 2
+item 2 "off" private [] [] function false false false false - [] - 8
+node 10 81 156 attributed 0 1 9
+node 11 81 156 expansion [10] tail=-
 attribute-capture 0 outer 81 125 "# [ cfg_attr ( all ( ) , cfg ( any ( ) ) ) ]"
 capture 0 14 73 23 "{()=>{#[cfg_attr(all(),cfg(any()))] fn off(){missing!();}}}"
 capture 1 76 78 1 "()"
 capture 2 149 152 1 "( )"
-root 5
+root 4
 eof 157
 origin 81:82 source=0:20:21 context=1
 origin 83:84 source=0:21:22 context=1
@@ -58,19 +56,19 @@ origin 153:154 source=0:69:70 context=1
 origin 155:156 source=0:70:71 context=1
 end-file 0
 name 0 "crate"
-name 1 "cfg"
-name 2 "line"
-name 3 "column"
-name 4 "file"
-name 5 "module_path"
-name 6 "stringify"
-name 7 "concat"
-name 8 "compile_error"
-name 9 "env"
-name 10 "include_str"
-name 11 "include_bytes"
-name 12 "include"
-name 13 "m"
+name 1 "m"
+name 2 "cfg"
+name 3 "line"
+name 4 "column"
+name 5 "file"
+name 6 "module_path"
+name 7 "stringify"
+name 8 "concat"
+name 9 "compile_error"
+name 10 "env"
+name 11 "include_str"
+name 12 "include_bytes"
+name 13 "include"
 name 14 "cfg_attr"
 name 15 "all"
 name 16 "any"
@@ -97,19 +95,19 @@ name 36 "f64"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 def 0 type module name=0 scope=0 access=public members=0
-def 1 macro builtin-macro name=1 scope=0 access=public
-def 2 macro builtin-macro name=2 scope=0 access=public
-def 3 macro builtin-macro name=3 scope=0 access=public
-def 4 macro builtin-macro name=4 scope=0 access=public
-def 5 macro builtin-macro name=5 scope=0 access=public
-def 6 macro builtin-macro name=6 scope=0 access=public
-def 7 macro builtin-macro name=7 scope=0 access=public
-def 8 macro builtin-macro name=8 scope=0 access=public
-def 9 macro builtin-macro name=9 scope=0 access=public
-def 10 macro builtin-macro name=10 scope=0 access=public
-def 11 macro builtin-macro name=11 scope=0 access=public
-def 12 macro builtin-macro name=12 scope=0 access=public
-def 13 macro macro name=13 scope=0 access=module:0 source=0:0
+def 1 macro builtin-macro name=2 scope=0 access=public
+def 2 macro builtin-macro name=3 scope=0 access=public
+def 3 macro builtin-macro name=4 scope=0 access=public
+def 4 macro builtin-macro name=5 scope=0 access=public
+def 5 macro builtin-macro name=6 scope=0 access=public
+def 6 macro builtin-macro name=7 scope=0 access=public
+def 7 macro builtin-macro name=8 scope=0 access=public
+def 8 macro builtin-macro name=9 scope=0 access=public
+def 9 macro builtin-macro name=10 scope=0 access=public
+def 10 macro builtin-macro name=11 scope=0 access=public
+def 11 macro builtin-macro name=12 scope=0 access=public
+def 12 macro builtin-macro name=13 scope=0 access=public
+def 13 macro macro name=1 scope=0 access=module:0 source=0:0
 def 14 type primitive name=20 scope=0 access=public
 def 15 type primitive name=21 scope=0 access=public
 def 16 type primitive name=22 scope=0 access=public

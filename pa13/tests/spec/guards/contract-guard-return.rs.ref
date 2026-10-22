@@ -31,17 +31,13 @@ function @rg.15() -> i64 {
     jump ^b2
   block ^b2:
     %t2 = load i64 $s0
-    %t3 = convert zext i128 i64 %t2
-    %t4 = convert zext i128 i64 1
-    %t5 = binary add i128 %t3, %t4
-    %t6 = convert trunc i64 i128 %t5
-    %t7 = convert zext i128 i64 %t6
-    %t8 = cmp ne i128 %t5, %t7
-    branch %t8, ^b19, ^b20
+    %t3 = binary add i64 %t2, 1
+    %t4 = cmp ult i64 %t3, %t2
+    branch %t4, ^b19, ^b20
   block ^b20:
-    store i64 %t6, $s0
-    %t9 = load i64 $s0
-    return i64 %t9
+    store i64 %t3, $s0
+    %t5 = load i64 $s0
+    return i64 %t5
   block ^b1:
     unreachable
   block ^b3:

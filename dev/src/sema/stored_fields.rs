@@ -2,10 +2,10 @@
 mod dependencies;
 mod graph;
 use super::{model::Declarations, projections::Concrete};
+use crate::support::hash::HashSet;
 use crate::types::{ItemId, TypeId};
 pub(crate) use graph::Registry;
 use graph::{Recipe, RecipeId};
-use std::collections::HashSet;
 #[cfg(test)]
 #[path = "../../tests/invariants/stored_fields.rs"]
 mod tests;
@@ -35,7 +35,7 @@ impl Query {
         Self {
             graph: Some(graph::Build::new(root)),
             work: Vec::new(),
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             field: None,
             complete: false,
         }
@@ -73,6 +73,23 @@ impl Preparation {
             .filter(|steps| *steps <= 4_000_000)
             .ok_or("storage normalization work budget exceeded")?;
         Ok(())
+    }
+    /// Whether a published root needs no further field proof in this body.
+    /// This is exactly the immediate completion of [`Self::prepare`], which
+    /// then neither normalizes nor adds caller evidence.
+    pub(crate) fn completed(
+        &mut self,
+        facts: &Declarations,
+        root: TypeId,
+    ) -> Result<bool, &'static str> {
+        let Some(recipe) = facts.stored_fields.as_ref().and_then(|r| r.root(root)) else {
+            return Ok(false);
+        };
+        if recipe == RecipeId::EMPTY || self.complete.contains(&recipe) {
+            self.charge(1)?;
+            return Ok(true);
+        }
+        Ok(false)
     }
     pub(crate) fn prepare(
         &mut self,

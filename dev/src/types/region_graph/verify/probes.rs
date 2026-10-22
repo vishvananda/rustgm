@@ -1,7 +1,7 @@
 //! Independent tests share assumption reachability and never introduce proof debt.
 use super::{Error, Graph, Region, Relations, VerificationId};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::region_graph::Kind;
-use std::collections::{HashMap, HashSet};
 
 pub(crate) struct Answers {
     pub values: Vec<bool>,
@@ -35,7 +35,7 @@ impl Relations for Assumptions<'_> {
             shorter
         };
         if !self.reachable.contains_key(&longer) {
-            let mut reached = HashSet::from([longer]);
+            let mut reached = HashSet::from_iter([longer]);
             self.work.push(longer);
             while let Some(region) = self.work.pop() {
                 self.charge(1)?;
@@ -82,7 +82,7 @@ impl Graph {
         let tests = self.verifications.as_ref().ok_or(Error::Identity)?;
         let mut context = Assumptions {
             graph: self,
-            reachable: HashMap::new(),
+            reachable: HashMap::default(),
             work: Vec::new(),
             steps: 0,
         };

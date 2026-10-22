@@ -1,12 +1,12 @@
 //! Checked associated definitions are local to this impl's method conformance.
 use super::{Contract, Declarations, DefId, Predicate, TypeId};
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, ItemId, Kind,
     lifetime_proof::{Obligations, ScopeId},
     parameters::predicates::Bound,
     substitute::{self, Request},
 };
-use std::collections::HashMap;
 
 /// Construct only after every associated definition has passed impl conformance.
 pub(in crate::sema) struct Definitions {
@@ -19,7 +19,7 @@ impl Definitions {
         parent: Predicate,
         checked: &[(DefId, DefId)],
     ) -> Result<Self, &'static str> {
-        let mut results = HashMap::new();
+        let mut results = HashMap::default();
         for &(declaration, definition) in checked {
             let ty = facts.definitions[definition.0 as usize]
                 .ok_or("missing checked associated definition")?;

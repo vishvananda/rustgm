@@ -1,5 +1,6 @@
 //! Assumptions instantiate a caller premise; requirements introduce fresh universal scopes.
 use super::{Constraints, Error, Kind, ProofScope, RegionId};
+use crate::support::hash::HashMap;
 use crate::types::{
     TypeId,
     outlives::Queries,
@@ -8,7 +9,6 @@ use crate::types::{
         predicates::Bound,
     },
 };
-use std::collections::HashMap;
 
 impl Constraints<'_> {
     /// Consume the outlives part of a complete caller clause. Other bound kinds
@@ -32,7 +32,7 @@ impl Constraints<'_> {
         queries: &mut Queries<'_>,
         clauses: impl IntoIterator<Item = Clause>,
     ) -> Result<(), String> {
-        let mut targets = HashMap::new();
+        let mut targets = HashMap::default();
         let mut groups: Vec<(RegionId, Vec<TypeId>)> = Vec::new();
         for clause in clauses {
             self.steps = self.steps.saturating_add(1);

@@ -1,9 +1,9 @@
 loans-crate 1
-body 0 source=0:26
+body 0 source=0:17
 end-body
-body 1 source=0:28
+body 1 source=0:19
 end-body
-body 2 source=0:5
+body 2 source=0:3
   place p0 root=v0 shared=false
   loan q0 borrow=v1 place=p0 region=g2 kind=shared
   point t0 block=b0 at=s0 reachable=true

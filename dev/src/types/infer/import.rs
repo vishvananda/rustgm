@@ -4,7 +4,7 @@ use super::{
     arguments::{Argument, Slot},
     constants::ConstTermId,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/binder_import.rs"]
 mod object_tests;
@@ -103,9 +103,7 @@ impl Context {
             let copied = mappings.construct(store, source, self, kind, &children)?;
             self.import_slot_facts(source, id, copied, true)?;
             if let Some(facts) = source.remember_structure(store, id)? {
-                self.settled
-                    .get_or_insert_with(Default::default)
-                    .insert(copied, facts);
+                self.set_settled(copied, facts);
                 if !facts.regions && facts.identity.is_none() {
                     mappings.tracker.stable(id, copied);
                 }

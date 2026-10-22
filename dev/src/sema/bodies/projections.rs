@@ -7,6 +7,7 @@ mod normalization;
 mod parents;
 mod selection;
 use super::{Checker, Error, NodeId, TermId};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{alias_requirements::Expansion, annotations::Fields, generics::AnnotationArgument},
     types::{
@@ -20,7 +21,6 @@ use crate::{
         parameters::{ParameterId, uses::Uses},
     },
 };
-use std::collections::{HashMap, HashSet};
 
 struct Contract {
     expansion: Expansion,
@@ -89,12 +89,12 @@ impl Default for Data {
             scopes: Obligations::new(1),
             continuation: None,
             environment: std::cell::OnceCell::new(),
-            tasks: HashMap::new(),
-            equations: HashMap::new(),
-            normalizations: HashSet::new(),
-            normalization_waiters: HashMap::new(),
-            input_scopes: HashMap::new(),
-            normal_forms: HashMap::new(),
+            tasks: HashMap::default(),
+            equations: HashMap::default(),
+            normalizations: HashSet::default(),
+            normalization_waiters: HashMap::default(),
+            input_scopes: HashMap::default(),
+            normal_forms: HashMap::default(),
         }
     }
 }
@@ -127,6 +127,12 @@ impl Pending {
                 .data
                 .as_ref()
                 .is_some_and(|data| !data.normalizations.is_empty())
+    }
+    #[inline]
+    pub fn has_continuation(&self) -> bool {
+        self.data
+            .as_ref()
+            .is_some_and(|data| data.continuation.is_some())
     }
     pub fn active(&self) -> bool {
         self.data.as_ref().is_some_and(|data| {
@@ -306,7 +312,14 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    #[inline]
     pub(super) fn advance_projections(&mut self, body: NodeId) -> Result<bool, Error> {
+        if !self.state.projections.active() && !self.state.notifications.waiting() {
+            return Ok(false);
+        }
+        self.advance_pending_projections(body)
+    }
+    fn advance_pending_projections(&mut self, body: NodeId) -> Result<bool, Error> {
         loop {
             match self.poll_projections(body)? {
                 Advance::Ready(progress) => return Ok(progress),
@@ -330,10 +343,20 @@ impl Checker<'_> {
         }
     }
 
+    /// Empty polls avoid allocating the continuation and notification frame.
+    #[inline]
     pub(super) fn poll_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
-        if !self.state.projections.active() && !self.state.notifications.waiting() {
+        if !self.state.projections.active() && !self.state.notifications.waiting()
+            || !self.state.projections.has_continuation()
+                && !self.state.notifications.has_queued_projections()
+                && !self.state.infer.has_pending_notifications()
+        {
             return Ok(Advance::Ready(false));
         }
+        self.poll_pending_projections(body)
+    }
+    #[inline(never)]
+    fn poll_pending_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
         let mut progress = false;
         if let Some(continuation) = self
             .state
@@ -491,10 +514,11 @@ impl Checker<'_> {
         {
             return Ok(Completion::Waiting(query, false));
         }
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "body projection region space exhausted"))?;
         let mut proof = Obligations::new(first);
         let scope = self
             .state

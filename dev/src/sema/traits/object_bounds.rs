@@ -5,6 +5,7 @@ pub(in crate::sema) mod graph;
 #[path = "../../../tests/invariants/object_bound_index.rs"]
 mod tests;
 use super::assumptions::Assumptions;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::model::Declarations,
     types::{
@@ -12,10 +13,7 @@ use crate::{
         parameters::{clauses::Clause, predicates::Bound},
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub(super) struct Cache {
@@ -59,10 +57,10 @@ pub(in crate::sema) fn get(
     }
     let (clauses, mut steps) = facts.types.dynamic_clauses(ty)?;
     let mut rules = Assumptions::default();
-    let mut traits = HashSet::new();
+    let mut traits = HashSet::default();
     let mut applications = Vec::new();
-    let mut equalities = HashMap::<ItemId, Vec<Clause>>::new();
-    let mut seen = HashSet::new();
+    let mut equalities = HashMap::<ItemId, Vec<Clause>>::default();
+    let mut seen = HashSet::default();
     for clause in clauses {
         if matches!(
             graph::quantified_value(&facts.types, clause)?.bound,

@@ -28,16 +28,16 @@ type 25 reference mutable=true region=region:1 referent=11
 type 26 reference mutable=true region=region:2 referent=20
 type 27 tuple [25,26]
 type 28 reference mutable=true region=region:3 referent=11
-root 0:27 pattern=0
-pattern 0 source=0:26 input=27 or alternatives=0:2
-pattern 1 source=0:19 input=27 product variant=- fields=0:2
-pattern 2 source=0:25 input=27 product variant=- fields=2:4
-pattern 3 source=0:17 input=25 bind def=32 local=25 mutable=false capture=value subpattern=-
-pattern 4 source=0:18 input=26 wildcard
-pattern 5 source=0:20 input=25 wildcard
-pattern 6 source=0:24 input=26 deref mutable=true implicit=true pattern=7
-pattern 7 source=0:24 input=20 product variant=- fields=4:5
-pattern 8 source=0:23 input=11 bind def=32 local=25 mutable=false capture=ref-mut region=region:3 loan=pending subpattern=-
+root 0:17 pattern=0
+pattern 0 source=0:16 input=27 or alternatives=0:2
+pattern 1 source=0:11 input=27 product variant=- fields=0:2
+pattern 2 source=0:15 input=27 product variant=- fields=2:4
+pattern 3 source=0:9 input=25 bind def=32 local=25 mutable=false capture=value subpattern=-
+pattern 4 source=0:10 input=26 wildcard
+pattern 5 source=0:12 input=25 wildcard
+pattern 6 source=0:14 input=26 deref mutable=true implicit=true pattern=7
+pattern 7 source=0:14 input=20 product variant=- fields=4:5
+pattern 8 source=0:13 input=11 bind def=32 local=25 mutable=false capture=ref-mut region=region:3 loan=pending subpattern=-
 field 0 tuple=0 pattern=3
 field 1 tuple=1 pattern=4
 field 2 tuple=0 pattern=5
@@ -45,9 +45,9 @@ field 3 tuple=1 pattern=6
 field 4 index=0 pattern=8
 alternative 0 pattern=1
 alternative 1 pattern=2
-region-var region:1 body=0:31 source=0:29 origin=inference pending
-region-var region:2 body=0:31 source=0:29 origin=inference pending
-region-var region:3 body=0:31 source=0:23 origin=pattern-borrow pending
-region-equal body=0:31 left=region:1 right=region:3
-region-coercion body=0:31 source=0:29 actual=22 expected=27 kind=same-shape pending
+region-var region:1 body=0:20 source=0:18 origin=inference pending
+region-var region:2 body=0:20 source=0:18 origin=inference pending
+region-var region:3 body=0:20 source=0:13 origin=pattern-borrow pending
+region-equal body=0:20 left=region:1 right=region:3
+region-coercion body=0:20 source=0:18 actual=22 expected=27 kind=same-shape pending
 eof roots=1 patterns=9 fields=5 alternatives=2 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=3 region-equalities=1 conditions=0 chains=0

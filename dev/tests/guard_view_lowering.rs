@@ -102,7 +102,7 @@ fn install_view(body: &mut Body, local: LocalId) -> Result<(), &'static str> {
         _ => Place::Temporary(value),
     };
     let old = std::mem::take(&mut body.statements);
-    let mut locations = std::collections::HashMap::new();
+    let mut locations = rustgm::support::hash::HashMap::default();
     let mut birth = None;
     for (index, block) in body.blocks.iter_mut().enumerate() {
         let block_id = BlockId(u32::try_from(index).map_err(|_| "blocks")?);
@@ -166,7 +166,7 @@ fn install_view(body: &mut Body, local: LocalId) -> Result<(), &'static str> {
 }
 fn remap_storage(
     body: &mut Body,
-    locations: &std::collections::HashMap<(BlockId, u32), u32>,
+    locations: &rustgm::support::hash::HashMap<(BlockId, u32), u32>,
 ) -> Result<(), &'static str> {
     for temporary in &mut body.temporaries {
         temporary.before = *locations

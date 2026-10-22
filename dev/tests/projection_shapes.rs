@@ -1,5 +1,6 @@
 //! Canonical projections preserve inputs without granting properties of their unknown result.
 use crate::qualify as rustc;
+use rustgm::support::hash::HashMap;
 use rustgm::{
     abi::layout::Layouts,
     types::{
@@ -19,7 +20,7 @@ use rustgm::{
         variance::{Variance, Variances},
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[test]
@@ -132,13 +133,13 @@ fn projection_occurrences_do_not_constrain_impl_parameters() -> TestResult {
     let mut occurrences = parameters::uses::Uses::default();
     occurrences.collect(&store, projected)?;
     assert_eq!(occurrences.parameters.len(), 2);
-    assert_eq!(occurrences.constants, [c].into());
+    assert_eq!(occurrences.constants, [c].into_iter().collect());
     let mut constrained = parameters::uses::Uses::constraining();
     constrained.collect(&store, projected)?;
     assert!(constrained.parameters.is_empty() && constrained.constants.is_empty());
     let mut regions = bound_uses::Uses::default();
     regions.collect(&store, projected)?;
-    assert_eq!(regions.indices, [0, 1].into());
+    assert_eq!(regions.indices, [0, 1].into_iter().collect());
     let mut fixed = bound_uses::Uses::constraining();
     fixed.collect(&store, projected)?;
     assert!(fixed.indices.is_empty());
@@ -151,9 +152,9 @@ fn projection_occurrences_do_not_constrain_impl_parameters() -> TestResult {
     let root = store.intern(Kind::Tuple(list))?;
     constrained.collect(&store, root)?;
     assert_eq!(constrained.parameters.len(), 1);
-    assert_eq!(constrained.constants, [c].into());
+    assert_eq!(constrained.constants, [c].into_iter().collect());
     fixed.collect(&store, root)?;
-    assert_eq!(fixed.indices, [1].into());
+    assert_eq!(fixed.indices, [1].into_iter().collect());
     Ok(())
 }
 
@@ -399,23 +400,23 @@ fn projections_do_not_invent_concrete_properties_or_reverse_inference() -> TestR
     let mut copies = Copies::default();
     assert!(
         copies
-            .demand(&store, &definitions, &HashMap::new(), first)
+            .demand(&store, &definitions, &HashMap::default(), first)
             .is_err()
     );
     assert!(
         copies
-            .demand(&store, &definitions, &HashMap::new(), byte)?
+            .demand(&store, &definitions, &HashMap::default(), byte)?
             .copy
     );
     let mut equality = Equality::default();
     assert!(
         equality
-            .demand(&store, &definitions, &HashMap::new(), first)
+            .demand(&store, &definitions, &HashMap::default(), first)
             .is_err()
     );
     assert!(
         equality
-            .demand(&store, &definitions, &HashMap::new(), byte)?
+            .demand(&store, &definitions, &HashMap::default(), byte)?
             .eq
     );
     let mut drop = NeedsDrop::new([]);
@@ -492,7 +493,7 @@ fn projected_shapes_require_exact_trait_inputs_and_grant_only_declared_sizedness
     let definitions = Definitions::default();
     let mut copies = Copies::in_environment(Arc::clone(&environment));
     assert_eq!(
-        copies.demand(&store, &definitions, &HashMap::new(), projected)?,
+        copies.demand(&store, &definitions, &HashMap::default(), projected)?,
         rustgm::types::copy::Properties::default()
     );
     let mut drops = NeedsDrop::in_environment([], Arc::clone(&environment));

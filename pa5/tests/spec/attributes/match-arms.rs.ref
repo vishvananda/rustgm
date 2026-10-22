@@ -1,38 +1,27 @@
-configured 16 false
-attribute-effect 16 0 0 root cfg=false
-configured 23 true
-attribute-effect 23 1 1 root cfg=true
-active [2,3,4,5,6,7,8,9,10,11,19,20,21,22,23,24,25,26,27]
-node 0 10 15 name "value"
-node 1 10 15 path false [0]
-node 2 10 15 binding false false "value" -
-node 3 17 19 name "u8"
-node 4 17 19 path false [3]
-node 5 17 19 type Path [4]
-node 6 10 19 parameter 2 5
-node 7 24 26 name "u8"
-node 8 24 26 path false [7]
-node 9 24 26 type Path [8]
-node 10 39 44 name "value"
-node 11 39 44 path false [10]
-node 12 77 78 wildcard
-node 13 82 94 name "missing_name"
-node 14 82 94 path false [13]
-node 15 77 94 arm 12 - 14
-node 16 55 94 attributed 0 1 15
-node 17 126 133 name "binding"
-node 18 126 133 path false [17]
-node 19 126 133 binding false false "binding" -
-node 20 137 144 name "binding"
-node 21 137 144 path false [20]
-node 22 126 144 arm 19 - 21
-node 23 104 144 attributed 1 2 22
-node 24 33 151 match 11 [16,23]
-node 25 27 153 block Plain [] 24
-node 26 0 153 item 0
-item 0 "select" private [] [] function false false false false - [6] 9 25
-node 27 0 153 crate [26]
+configured 8 false
+attribute-effect 8 0 0 root cfg=false
+configured 12 true
+attribute-effect 12 1 1 root cfg=true
+active [0,1,2,3,4,9,10,11,12,13,14,15,16]
+node 0 10 15 binding false false "value" -
+node 1 17 19 name "u8"
+node 2 10 19 parameter 0 1
+node 3 24 26 name "u8"
+node 4 39 44 name "value"
+node 5 77 78 wildcard
+node 6 82 94 name "missing_name"
+node 7 77 94 arm 5 - 6
+node 8 55 94 attributed 0 1 7
+node 9 126 133 binding false false "binding" -
+node 10 137 144 name "binding"
+node 11 126 144 arm 9 - 10
+node 12 104 144 attributed 1 2 11
+node 13 33 151 match 4 [8,12]
+node 14 27 153 block Plain [] 13
+node 15 0 153 item 0
+item 0 "select" private [] [] function false false false false - [2] 3 14
+node 16 0 153 crate [15]
 attribute-capture 0 outer 55 68 "#[cfg(any())]"
 attribute-capture 1 outer 104 117 "#[cfg(all())]"
-root 27
+root 16
 eof 154

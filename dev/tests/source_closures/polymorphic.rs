@@ -124,7 +124,7 @@ fn templates_keep_separate_closure_owners_and_share_the_generic_environment()
         .iter()
         .find(|t| matches!(t.body.owner, Owner::Function { .. }))
         .ok_or("missing generic owner template")?;
-    let mut identities = std::collections::HashSet::new();
+    let mut identities = rustgm::support::hash::HashSet::default();
     for template in &templates.bodies {
         if let Owner::Closure { identity, .. } = template.body.owner {
             assert!(identities.insert(identity));
@@ -154,8 +154,9 @@ fn formal_closure_signatures_bind_their_own_lifetimes() -> Result<(), String> {
         .map(|body| body.signature)
         .collect();
     assert_eq!(signatures.len(), 2);
-    let mut closed =
-        rustgm::types::substitute::Bound::restore_regions(std::collections::HashMap::new());
+    let mut closed = rustgm::types::substitute::Bound::restore_regions(
+        rustgm::support::hash::HashMap::default(),
+    );
     for signature in signatures {
         assert_eq!(facts.types.needs_region_context(signature), Some(false));
         assert_eq!(closed.apply(&mut facts.types, signature)?, signature);

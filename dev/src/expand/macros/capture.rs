@@ -1,5 +1,6 @@
 //! Parser results retained by identity; failed rule alternatives reuse demanded fragments.
 use super::{input::Input, model::Fragment};
+use crate::support::hash::HashMap;
 use crate::{
     lex::{
         keyword,
@@ -14,7 +15,6 @@ use crate::{
         token_tree::{Forest, error},
     },
 };
-use std::collections::HashMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct CaptureId(pub u32);
 pub use crate::syntax::interpolation::ParsedSyntax;
@@ -71,7 +71,7 @@ pub struct Captures {
 }
 impl Captures {
     pub(super) fn finish(&mut self) {
-        self.memo = HashMap::new();
+        self.memo = HashMap::default();
     }
     /// # Errors
     /// Returns fragment grammar failures and capture identity overflow.

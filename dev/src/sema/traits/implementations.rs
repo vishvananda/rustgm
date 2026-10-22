@@ -6,12 +6,12 @@ mod pending;
 pub(in crate::sema) use pending::{Candidates, Header as PendingHeader};
 pub(in crate::sema) mod overlap;
 use super::heads::{Head, Subject};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, shape_key::ShapeKey},
 };
 pub(in crate::sema) use member_contracts::ConstantRequest;
-use std::collections::HashMap;
 #[cfg(test)]
 mod tests;
 
@@ -356,7 +356,7 @@ impl Implementations {
         self.entries.push(Entry {
             value,
             validated: false,
-            checked_constants: HashMap::new(),
+            checked_constants: HashMap::default(),
         });
         Ok(())
     }

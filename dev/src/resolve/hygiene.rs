@@ -1,31 +1,18 @@
 //! Local binding histories preserve definition-site visibility across shadowing.
 use super::{
     expansion,
-    model::{Binding, DefId, DefKind, Definition, Namespace, Origin, Resolution, ScopeId},
+    model::{Binding, DefKind, Namespace, NodeScopes, Resolution, ScopeId},
     package::ModuleId,
     unit::NodeKey,
 };
+use crate::support::hash::HashMap;
 use crate::{expand::stream::ContextId, support::names::NameId, syntax::ast::NodeId};
-use std::collections::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Ident(u64);
 impl Ident {
     pub const fn new(name: NameId, context: ContextId) -> Self {
         Self((context.0 as u64) << 32 | name.0 as u64)
     }
-}
-#[derive(Clone, Copy)]
-enum History {
-    One(Binding),
-    Many(usize),
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-struct Key {
-    scope: ScopeId,
-    name: NameId,
-    namespace: Namespace,
-    context: ContextId,
 }
 struct MacroSite {
     context: ContextId,
@@ -39,24 +26,28 @@ pub(crate) struct Query {
     pub context: ContextId,
     pub visible: usize,
 }
+/// Macro definition sites; the locals themselves live in the binding table.
 pub(crate) struct Hygiene {
     sites: Vec<MacroSite>,
     definitions: HashMap<(ModuleId, NodeId), usize>,
     expansions: Vec<usize>,
-    locals: HashMap<Key, History>,
-    shadowed: Vec<Vec<Binding>>,
 }
 impl Hygiene {
+    /// Macro sites start at the scopes the expansion scan recorded for their
+    /// definitions; the bodies walk later records what each site can see.
     pub fn new(
         definitions: &[expansion::Definition],
         invocations: &[expansion::Invocation],
+        scopes: &NodeScopes,
     ) -> Self {
         Self {
             sites: definitions
                 .iter()
                 .map(|d| MacroSite {
                     context: d.context,
-                    scope: None,
+                    scope: d
+                        .node
+                        .and_then(|node| scopes.get(&(d.module, node.node)).copied()),
                     visible: 0,
                 })
                 .collect(),
@@ -66,13 +57,6 @@ impl Hygiene {
                 .filter_map(|(index, d)| d.node.map(|node| ((d.module, node.node), index)))
                 .collect(),
             expansions: invocations.iter().map(|i| i.definition).collect(),
-            locals: HashMap::new(),
-            shadowed: Vec::new(),
-        }
-    }
-    pub fn scope(&mut self, module: ModuleId, node: NodeId, scope: ScopeId) {
-        if let Some(index) = self.definitions.get(&(module, node)) {
-            self.sites[*index].scope = Some(scope);
         }
     }
     pub fn snapshot(&mut self, module: ModuleId, node: NodeId, scope: ScopeId, visible: usize) {
@@ -83,42 +67,6 @@ impl Hygiene {
     }
     pub const fn is_local(kind: DefKind) -> bool {
         matches!(kind, DefKind::Local | DefKind::Parameter | DefKind::Label)
-    }
-    pub fn define(
-        &mut self,
-        definition: &Definition,
-        target: DefId,
-        context: ContextId,
-        shadow: bool,
-    ) -> Result<(), &'static str> {
-        let key = Key {
-            scope: definition.scope,
-            name: definition.name,
-            namespace: definition.namespace,
-            context,
-        };
-        let binding = Binding {
-            target,
-            access: definition.access,
-            origin: Origin::Direct,
-            ambiguous: false,
-        };
-        if let Some(history) = self.locals.get_mut(&key) {
-            if !shadow {
-                return Err("duplicate hygienic local binding");
-            }
-            match *history {
-                History::One(previous) => {
-                    let index = self.shadowed.len();
-                    self.shadowed.push(vec![previous, binding]);
-                    *history = History::Many(index);
-                }
-                History::Many(index) => self.shadowed[index].push(binding),
-            }
-        } else {
-            self.locals.insert(key, History::One(binding));
-        }
-        Ok(())
     }
     fn site(&self, context: ContextId) -> Result<&MacroSite, &'static str> {
         let index = context
@@ -158,30 +106,14 @@ impl Hygiene {
                 .scopes
                 .get(scope.0 as usize)
                 .ok_or("invalid hygienic scope")?;
-            if barriers == 0 && !label_barrier {
-                let key = Key {
-                    scope,
-                    name: query.name,
-                    namespace: query.namespace,
-                    context: query.context,
-                };
-                if let Some(history) = self.locals.get(&key) {
-                    let found = match *history {
-                        History::One(binding) => {
-                            ((binding.target.0 as usize) < query.visible).then_some(binding)
-                        }
-                        History::Many(index) => {
-                            let history = &self.shadowed[index];
-                            let end = history.partition_point(|binding| {
-                                (binding.target.0 as usize) < query.visible
-                            });
-                            end.checked_sub(1).map(|index| history[index])
-                        }
-                    };
-                    if let Some(binding) = found {
-                        return Ok(Some((scope, binding)));
-                    }
-                }
+            // One probe answers both the local history and the ordinary binding.
+            let entry = facts.bindings.probe(scope, query.name, query.namespace);
+            if barriers == 0
+                && !label_barrier
+                && let Some(entry) = entry
+                && let Some(binding) = facts.bindings.local(entry, query.context, query.visible)
+            {
+                return Ok(Some((scope, binding)));
             }
             if query.context.0 != 0 {
                 let site = self.site(query.context)?;
@@ -191,7 +123,7 @@ impl Hygiene {
                     continue;
                 }
             }
-            if let Some(binding) = frame.bindings.get(&(query.name, query.namespace))
+            if let Some(binding) = entry.and_then(|entry| facts.bindings.binding(entry))
                 && binding.is_lexical(&facts.definitions, frame.associated)
                 && (barriers == 0
                     || !facts.definitions[binding.target.0 as usize].kind.is_local()
@@ -220,7 +152,7 @@ pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u3
     loop {
         let value = ast.node(node);
         match value.kind {
-            Kind::Name(name)
+            Kind::Name(name, _)
             | Kind::Binding { name, .. }
             | Kind::Label { name, .. }
             | Kind::Receiver { name, .. } => {

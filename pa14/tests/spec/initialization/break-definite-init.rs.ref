@@ -1,5 +1,5 @@
 ownership-crate 1
-body 0 source=0:18
+body 0 source=0:12
   path m0 type=11 root=l0 subtree=0..1
   use v6 copy
   block b0 reachable=true

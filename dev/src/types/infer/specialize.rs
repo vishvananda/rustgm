@@ -1,7 +1,7 @@
 //! Open source binders only where a partial destination supplies callable structure.
 use super::{Constructor, Context, Error, Kind, Store, TermId, TypeId, Value};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{RegionId, arguments::Argument, specialize::Specialized, substitute::Bound};
-use std::collections::{HashMap, HashSet};
 
 type Key = (TypeId, TermId);
 enum Work {
@@ -18,7 +18,7 @@ impl Context {
     pub fn contains_late_callables(&mut self, store: &Store, root: TermId) -> Result<bool, Error> {
         let mut current = root;
         let mut work = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         loop {
             self.step()?;
             let id = self.root(current)?;
@@ -69,7 +69,7 @@ impl Context {
         let mut next = first;
         let mut work = vec![Work::Enter((actual, expected))];
         let mut values = Vec::new();
-        let mut unchanged = HashMap::new();
+        let mut unchanged = HashMap::default();
         let mut children = Vec::new();
         while let Some(task) = work.pop() {
             self.step()?;

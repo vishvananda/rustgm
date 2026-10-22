@@ -196,16 +196,20 @@ fn header_preparation_can_allocate_foreign_lifetimes_during_a_parent_query()
         let proof = &retained.evidence.proof;
         let mut count = 0;
         for id in proof.owned_regions().flatten() {
-            assert_eq!(facts.body_regions[id as usize - 1].body, retained.body);
+            let region = facts
+                .body_regions
+                .get(retained.body, rustgm::types::RegionId(id))
+                .ok_or("missing owned proof region")?;
+            assert_eq!(region.body, retained.body);
             count += 1;
         }
         gaps += usize::try_from(proof.regions.end - proof.regions.start)? - count;
         owned += count;
     }
-    assert!(
-        gaps > 0 && owned > 0,
-        "the source must interleave distinct proof owners"
-    );
+    // Interleaved owners belong to other bodies, whose regions are numbered in
+    // their own units: no proof interval has a foreign gap.
+    assert!(owned > 0, "the source must allocate owned proof regions");
+    assert_eq!(gaps, 0, "foreign bodies must not occupy a proof interval");
     Ok(())
 }
 

@@ -2,7 +2,7 @@
 mod propagate;
 mod verify;
 use super::graph::{Region, Solution};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Point(pub u32);
@@ -78,6 +78,11 @@ impl Liveness {
                 .masks
                 .get(&(region, point.0 / 64))
                 .is_some_and(|bits| bits & (1 << (point.0 % 64)) != 0))
+    }
+    /// CFG points covered by this liveness proof.
+    #[must_use]
+    pub(crate) const fn point_count(&self) -> u32 {
+        self.points
     }
     #[must_use]
     pub fn mask_count(&self) -> usize {
@@ -205,8 +210,8 @@ pub fn infer(
         result: Liveness {
             points,
             regions: proof.regions,
-            masks: HashMap::new(),
-            full: HashSet::new(),
+            masks: HashMap::default(),
+            full: HashSet::default(),
             word_count: 0,
             steps: 0,
         },

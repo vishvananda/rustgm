@@ -37,7 +37,7 @@ impl Checker<'_> {
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             return Ok(());
         }
-        if matches!(self.kind(key), Kind::Path { .. })
+        if matches!(self.kind(key), Kind::Name(..) | Kind::Path { .. })
             && let Some(owner) = self.generic_use_owner(key)
         {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
@@ -202,7 +202,7 @@ impl Checker<'_> {
             return Ok(self.report.resolution.scopes[scope.0 as usize].module);
         }
         let modules = self.constant_modules.get_or_insert_with(|| {
-            let mut modules = std::collections::HashMap::new();
+            let mut modules = crate::support::hash::HashMap::default();
             for &(module, node) in self.report.resolution.node_scopes.keys() {
                 let file = self.report.package.modules[module.0 as usize].file;
                 modules
@@ -240,14 +240,15 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut work = vec![(root, context)];
         let mut children = Vec::new();
-        while let Some((key, context)) = work.pop() {
+        while let Some((key, inherited)) = work.pop() {
             // Nested items own separate declaration preparation and binders.
             // Their bodies must not be memoized under an enclosing const call.
             if matches!(self.kind(key), Kind::Item(_)) {
                 continue;
             }
-            let context = self.local_context(key, context);
-            if !self.report.package.unit(key.file).configured.active[key.node.0 as usize]
+            let kind = self.kind(key);
+            let context = self.local_context_of(key, kind, inherited);
+            if !self.report.package.unit(key.file).configured.active[key.node.get() as usize]
                 || !self.constant_dependencies.insert(key)
             {
                 continue;
@@ -255,7 +256,10 @@ impl Checker<'_> {
             if self.constant_dependencies.len() > 1_000_000 {
                 return Err(self.error(root, "const argument dependency budget exceeded"));
             }
-            match self.kind(key) {
+            if matches!(kind, Kind::Closure { .. } | Kind::Block { .. }) {
+                self.nest_local_body(key, inherited, context)?;
+            }
+            match kind {
                 Kind::Closure { .. } => {
                     self.work.push(Work::ClosureAnnotation(key, context, None));
                 }

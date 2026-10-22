@@ -1,11 +1,11 @@
 //! Partial publication keeps query identities and debts available for later conditions.
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     Primitive, RegionId, Store, TypeId,
     arguments::Constant,
     infer::{Constructor, Context, Domain, Error, arguments::Argument, refinement::Refinement},
     substitute::Bound,
 };
-use std::collections::HashMap;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[test]
 fn repeated_publication_reuses_fresh_type_and_const_holes_then_refreshes_the_query() -> TestResult {
@@ -31,7 +31,7 @@ fn repeated_publication_reuses_fresh_type_and_const_holes_then_refreshes_the_que
     assert!(query.publish(
         &mut store,
         &mut source,
-        &mut Bound::restore_regions(HashMap::new())
+        &mut Bound::restore_regions(HashMap::default())
     )?);
     assert_eq!(query.context.steps, 0);
     let sentinel = source.variable(Domain::Any)?;
@@ -39,7 +39,7 @@ fn repeated_publication_reuses_fresh_type_and_const_holes_then_refreshes_the_que
         assert!(!query.publish(
             &mut store,
             &mut source,
-            &mut Bound::restore_regions(HashMap::new())
+            &mut Bound::restore_regions(HashMap::default())
         )?);
         assert_eq!(query.context.steps, 0);
         assert_eq!(
@@ -64,7 +64,7 @@ fn repeated_publication_reuses_fresh_type_and_const_holes_then_refreshes_the_que
     let completed = query.commit(
         &mut store,
         &mut source,
-        &mut Bound::restore_regions(HashMap::new()),
+        &mut Bound::restore_regions(HashMap::default()),
     )?;
     assert!(!completed.changed);
     assert_eq!(completed.equalities, [(RegionId(41), RegionId(42))]);
@@ -87,7 +87,7 @@ fn a_later_conflict_cannot_publish_new_caller_bindings() -> TestResult {
     assert!(query.publish(
         &mut store,
         &mut source,
-        &mut Bound::restore_regions(HashMap::new())
+        &mut Bound::restore_regions(HashMap::default())
     )?);
     let caller_child = source.child(&store, input, 0)?;
     let byte = source.known(&store, TypeId::primitive(Primitive::U8))?;
@@ -101,7 +101,7 @@ fn a_later_conflict_cannot_publish_new_caller_bindings() -> TestResult {
         query.publish(
             &mut store,
             &mut source,
-            &mut Bound::restore_regions(HashMap::new())
+            &mut Bound::restore_regions(HashMap::default())
         ),
         Err(Error::Mismatch)
     ));

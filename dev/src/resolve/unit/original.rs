@@ -1,5 +1,6 @@
 //! Sparse overwrite journals retain original syntax for demanded module instances.
 use super::Unit;
+use crate::support::hash::HashMap;
 use crate::{
     expand::crate_syntax::ConfiguredSyntax,
     lex::token::LexError,
@@ -10,7 +11,7 @@ use crate::{
         transfer::Extent,
     },
 };
-use std::{collections::HashMap, num::NonZeroU32};
+use std::num::NonZeroU32;
 struct Saved {
     node: Node,
     active: bool,
@@ -30,11 +31,11 @@ impl Original {
             owners: configured.owners.len(),
             effects: configured.effects.len(),
             decoded: literals.decoded_bytes(),
-            overwritten: HashMap::new(),
+            overwritten: HashMap::default(),
         }
     }
     pub(super) fn save(&mut self, id: NodeId, node: Node, active: bool, owner: Option<NonZeroU32>) {
-        if (id.0 as usize) < self.syntax.nodes {
+        if (id.get() as usize) < self.syntax.nodes {
             self.overwritten.entry(id).or_insert(Saved {
                 node,
                 active,
@@ -65,9 +66,9 @@ impl Unit {
             .ok_or_else(|| error(0, "invalid original owner-index prefix"))?
             .to_vec();
         for (id, saved) in &original.overwritten {
-            ast.nodes[id.0 as usize] = saved.node;
-            active[id.0 as usize] = saved.active;
-            owner_indices[id.0 as usize] = saved.owner;
+            ast.nodes[id.get() as usize] = saved.node;
+            active[id.get() as usize] = saved.active;
+            owner_indices[id.get() as usize] = saved.owner;
         }
         let configured = ConfiguredSyntax {
             ast,

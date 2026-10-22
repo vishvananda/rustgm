@@ -1,9 +1,9 @@
 //! Immutable component sets are shared by independent value and cleanup entities.
+use crate::support::hash::HashMap;
 use crate::{
     support::{intern_slice::Slices, retained},
     types::{RegionId, TypeId, outlives::Parts, parameters::ParameterId},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Component {

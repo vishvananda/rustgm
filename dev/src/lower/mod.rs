@@ -50,7 +50,7 @@ pub fn build_roots(
         node: bodies.program().bodies.first().map_or(
             NodeKey {
                 file: crate::resolve::unit::FileId(0),
-                node: crate::syntax::ast::NodeId(0),
+                node: crate::syntax::ast::NodeId::new(0),
             },
             |body| body.source,
         ),
@@ -66,4 +66,18 @@ pub(crate) fn build_exact_roots(
     let program = bodies.program();
     alignment::check(facts, program)?;
     context::build(facts, bodies, roots)
+}
+/// Lower an assembled proof in demand order, releasing each body and cleanup
+/// plan once it is emitted. Emission order and identities are unchanged.
+pub(crate) fn build_assembled(
+    facts: &mut Declarations,
+    assembled: crate::borrow::incremental::Assembled,
+    roots: roots::Selected<'_>,
+) -> Result<program::Program, Error> {
+    let (program, mut destruction) = assembled.into_lowering();
+    alignment::check(facts, &program)?;
+    let plans = destruction
+        .as_deref_mut()
+        .map(crate::borrow::destruction::Proof::take_plans);
+    context::build_owned(facts, program.bodies, destruction.as_deref(), plans, roots)
 }

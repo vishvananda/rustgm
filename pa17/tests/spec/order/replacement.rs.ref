@@ -26,20 +26,16 @@ function @rg.18(%p0 : ptr, %p1 : u8) -> void {
   block ^b0:
     store u8 %p1, $s0
     %t0 = load u8 $s0
-    %t1 = convert zext i16 u8 %t0
-    %t2 = convert zext i16 u8 10
-    %t3 = binary add i16 %t1, %t2
-    %t4 = convert trunc u8 i16 %t3
-    %t5 = convert zext i16 u8 %t4
-    %t6 = cmp ne i16 %t3, %t5
-    branch %t6, ^b1, ^b2
+    %t1 = binary add u8 %t0, 10
+    %t2 = cmp ult u8 %t1, %t0
+    branch %t2, ^b1, ^b2
   block ^b2:
-    call void @rg.13(%t4)
-    %t7 = load u8 $s0
-    %t8 = addr $s1
-    call void @rg.15(%t8, %t7)
-    %t9 = addr $s1
-    copyobj 1x1 %t9, %p0
+    call void @rg.13(%t1)
+    %t3 = load u8 $s0
+    %t4 = addr $s1
+    call void @rg.15(%t4, %t3)
+    %t5 = addr $s1
+    copyobj 1x1 %t5, %p0
     return void
   block ^b1:
     call void @abort()

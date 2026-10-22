@@ -1,6 +1,6 @@
 macro-matching 1
 definition 0 0 33 "m" rules 1
 invocation 0 34 45 definition 0 rule 0
-capture 0 pat 0:0 6:0 "S{a,..}" nodes 5
+capture 0 pat 0:0 6:0 "S{a,..}" nodes 4
 end-invocation parser-calls 1
 end-macro-matching definitions 1 invocations 1

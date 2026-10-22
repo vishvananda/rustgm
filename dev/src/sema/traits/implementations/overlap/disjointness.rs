@@ -1,4 +1,5 @@
 //! Only a proven unsized storage tail excludes an existential Sized requirement.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{
         model::Declarations,
@@ -13,7 +14,6 @@ use crate::{
         sizedness::{Condition, Rule},
     },
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 struct Storage {

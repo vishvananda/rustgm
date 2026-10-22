@@ -2,7 +2,16 @@
 use super::fragment::FragmentKind;
 use super::{LexError, NodeId, Parser, TokenKind};
 impl<'inputs> Parser<'_, 'inputs> {
-    #[inline]
+    // Forced only without debug assertions: debug builds keep the call so
+    // recursive-descent frames stay small enough for the nesting limit.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-entry check that ordinary source never takes; callgrind shows calls dominate"
+        )
+    )]
     pub(super) fn splice(
         &mut self,
     ) -> Result<Option<crate::syntax::interpolation::Splice<'inputs>>, LexError> {
@@ -17,11 +26,25 @@ impl<'inputs> Parser<'_, 'inputs> {
         }
         self.inputs.get(token)
     }
-    #[inline]
+    /// Ordinary source has no opaque inputs; only expansions reach the import.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-entry check that ordinary source never takes; callgrind shows calls dominate"
+        )
+    )]
     pub(super) fn interpolated(
         &mut self,
         kinds: &[FragmentKind],
     ) -> Result<Option<NodeId>, LexError> {
+        if !self.has_opaque {
+            return Ok(None);
+        }
+        self.import_interpolated(kinds)
+    }
+    fn import_interpolated(&mut self, kinds: &[FragmentKind]) -> Result<Option<NodeId>, LexError> {
         let Some(splice) = self.splice()? else {
             return Ok(None);
         };

@@ -22,12 +22,12 @@ type 19 function binders=0 parameters=[11] result=1 unsafe=false
 type 20 function-item def=14 signature=19
 type 21 array element=11 length=2
 type 22 reference mutable=false region=static referent=21
-root 0:18 pattern=0
-root 0:21 pattern=1
-pattern 0 source=0:18 input=11 range=0
-pattern 1 source=0:21 input=11 wildcard
+root 0:9 pattern=0
+root 0:12 pattern=1
+pattern 0 source=0:9 input=11 range=0
+pattern 1 source=0:12 input=11 wildcard
 range 0 ranks=98:98
-match 0 source=0:24 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=7
-arm 0 source=0:20 pattern=0 guard=- useful=true value=0:19
-arm 1 source=0:23 pattern=1 guard=- useful=true value=0:22
+match 0 source=0:15 input=0:8 arms=0:2 exhaustive=true uninhabited=false work=7
+arm 0 source=0:11 pattern=0 guard=- useful=true value=0:10
+arm 1 source=0:14 pattern=1 guard=- useful=true value=0:13
 eof roots=2 patterns=2 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=7 region-vars=0 region-equalities=0 conditions=0 chains=0

@@ -165,7 +165,7 @@ impl Walker<'_> {
                     children,
                     tail: Some(value),
                 } if children.start == children.end => node = value,
-                Syntax::Name(_) | Syntax::Path { .. } => {
+                Syntax::Name(..) | Syntax::Path { .. } => {
                     let key = super::NodeKey {
                         node,
                         ..self.source

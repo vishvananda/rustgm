@@ -1,5 +1,6 @@
 //! Match each associated type once, then prove its definition in the impl environment.
 use super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefKind, names::NameId},
     sema::model::Declarations,
@@ -11,7 +12,6 @@ use crate::{
         },
     },
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(in super::super) struct Members {

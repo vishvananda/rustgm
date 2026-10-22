@@ -1,21 +1,16 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+active [0,1,2,3,4,5,6,7,8,9,10,11]
 node 0 7 10 name "Vec"
 node 1 11 14 name "Vec"
 node 2 15 21 name "Option"
 node 3 22 24 name "u8"
-node 4 22 24 path false [3]
-node 5 22 24 type Path [4]
-node 6 15 25 applied 2 [5] -
-node 7 15 25 path false [6]
-node 8 15 25 type Path [7]
-node 9 11 26 applied 1 [8] -
-node 10 11 26 path false [9]
-node 11 11 26 type Path [10]
-node 12 7 27 applied 0 [11] -
-node 13 7 27 path false [12]
-node 14 7 27 type Path [13]
-node 15 0 28 item 0
-item 0 "T" private [] [] type-alias [] 14
-node 16 0 28 crate [15]
-root 16
+node 4 15 25 applied 2 [3] -
+node 5 15 25 path false [4]
+node 6 11 26 applied 1 [5] -
+node 7 11 26 path false [6]
+node 8 7 27 applied 0 [7] -
+node 9 7 27 path false [8]
+node 10 0 28 item 0
+item 0 "T" private [] [] type-alias [] 9
+node 11 0 28 crate [10]
+root 11
 eof 29

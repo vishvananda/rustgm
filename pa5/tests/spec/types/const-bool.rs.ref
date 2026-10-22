@@ -1,18 +1,15 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11]
+active [0,1,2,3,4,5,6,7,8]
 node 0 17 21 name "bool"
-node 1 17 21 path false [0]
-node 2 17 21 type Path [1]
-node 3 9 21 generic Const "B" 2 [] -
-node 4 0 23 item 0
-item 0 "A" private [3] [] struct Unit []
-node 5 31 32 name "A"
-node 6 33 37 literal 0
+node 1 9 21 generic Const "B" 0 [] -
+node 2 0 23 item 0
+item 0 "A" private [1] [] struct Unit []
+node 3 31 32 name "A"
+node 4 33 37 literal 0
 value 0 boolean 33 37 true
-node 7 31 38 applied 5 [6] -
-node 8 31 38 path false [7]
-node 9 31 38 type Path [8]
-node 10 24 39 item 1
-item 1 "T" private [] [] type-alias [] 9
-node 11 0 39 crate [4,10]
-root 11
+node 5 31 38 applied 3 [4] -
+node 6 31 38 path false [5]
+node 7 24 39 item 1
+item 1 "T" private [] [] type-alias [] 6
+node 8 0 39 crate [2,7]
+root 8
 eof 40

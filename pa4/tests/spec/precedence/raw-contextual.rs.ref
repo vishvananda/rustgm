@@ -1,14 +1,11 @@
-node 0 6 9 name "raw"
-node 1 6 9 path false [0]
-node 2 6 9 binding false false "raw" -
-node 3 12 13 literal 0
+node 0 6 9 binding false false "raw" -
+node 1 12 13 literal 0
 value 0 integer 12 13 infer 1
-node 4 2 14 let 2 - 3 -
-node 5 16 19 name "raw"
-node 6 16 19 path false [5]
-node 7 15 19 unary borrow 6
-node 8 15 20 statement 7
-node 9 21 23 tuple []
-node 10 0 25 block Plain [4,8] 9
-root 10
+node 2 2 14 let 0 - 1 -
+node 3 16 19 name "raw"
+node 4 15 19 unary borrow 3
+node 5 15 20 statement 4
+node 6 21 23 tuple []
+node 7 0 25 block Plain [2,5] 6
+root 7
 eof 26

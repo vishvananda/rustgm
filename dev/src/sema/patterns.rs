@@ -2,11 +2,11 @@
 pub(super) mod coverage;
 pub mod scalar;
 use super::members::{Selection, VariantId};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{RegionId, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub struct Conditional {

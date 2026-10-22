@@ -30,21 +30,21 @@ type 27 function-item def=14 signature=26
 type 28 function binders=0 parameters=[] result=1 unsafe=false
 type 29 function-item def=31 signature=28
 type 30 aggregate def=22 arguments=[const:10:0x00000000000000000000000000000005]
-def 13 type=25 name="check" source=0:19
-def 14 type=27 name="fail" source=0:35
-def 16 type=22 name="Self" source=0:41
-def 17 type=10 name="C" source=0:40
-def 18 type=11 name="Self" source=0:48
-def 19 type=19 name="E" source=0:58
-def 21 type=19 name="A" source=0:57
-def 22 type=20 name="S" source=0:63
-def 23 type=20 name="S" source=0:63
-def 24 type=23 name="Self" source=0:89
-def 25 type=10 name="C" source=0:88
-def 26 type=21 name="F" source=0:97
-def 28 type=21 name="A" source=0:95
-def 30 type=21 name="B" source=0:96
-def 31 type=29 name="main" source=0:125
+def 13 type=25 name="check" source=0:13
+def 14 type=27 name="fail" source=0:22
+def 16 type=22 name="Self" source=0:26
+def 17 type=10 name="C" source=0:25
+def 18 type=11 name="Self" source=0:29
+def 19 type=19 name="E" source=0:35
+def 21 type=19 name="A" source=0:34
+def 22 type=20 name="S" source=0:38
+def 23 type=20 name="S" source=0:38
+def 24 type=23 name="Self" source=0:54
+def 25 type=10 name="C" source=0:53
+def 26 type=21 name="F" source=0:62
+def 28 type=21 name="A" source=0:60
+def 30 type=21 name="B" source=0:61
+def 31 type=29 name="main" source=0:84
 def 32 type=2 name="bool"
 def 33 type=3 name="char"
 def 34 type=4 name="str"
@@ -62,27 +62,27 @@ def 45 type=15 name="u128"
 def 46 type=16 name="usize"
 def 47 type=17 name="f32"
 def 48 type=18 name="f64"
-def 49 type=10 name="N" source=0:62
-def 50 type=10 name="N" source=0:67
-def 51 type=2 name="ok" source=0:2
-def 52 type=11 name="x" source=0:22
-associated-owner 0 kind=trait self-def=16 self=22 source=0:41 trait=15 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:48 unsafe=false
-associated-owner 2 kind=inherent self-def=24 self=23 source=0:89 unsafe=false
+def 49 type=10 name="N" source=0:37
+def 50 type=10 name="N" source=0:40
+def 51 type=2 name="ok" source=0:0
+def 52 type=11 name="x" source=0:14
+associated-owner 0 kind=trait self-def=16 self=22 source=0:26 trait=15 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:29 unsafe=false
+associated-owner 2 kind=inherent self-def=24 self=23 source=0:54 unsafe=false
 associated-member def=17 owner=0
 associated-member def=25 owner=2
 parameter owner=16 binding=16 argument=type:22 default=-
 parameter owner=22 binding=49 argument=const-parameter:22:0 default=-
 parameter owner=24 binding=50 argument=const-parameter:24:0 default=-
-predicate owner=15 source=0:41 subject=22 bound=trait:15 arguments=[]
-impl owner=18 source=0:48 subject=11 bound=trait:15 arguments=[]
-inherent-path source=0:94 method=25 implementation=24 prefix=0:92 annotation=false
-trait-path source=0:56 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:51
-implementation-use source=0:56 owner=18 arguments=[]
+predicate owner=15 source=0:26 subject=22 bound=trait:15 arguments=[]
+impl owner=18 source=0:29 subject=11 bound=trait:15 arguments=[]
+inherent-path source=0:59 method=25 implementation=24 prefix=0:57 annotation=false
+trait-path source=0:33 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:30
+implementation-use source=0:33 owner=18 arguments=[]
 associated-constant def=17 type=10
 associated-constant def=25 type=10
 impl-constant owner=18 declaration=17 selected=17 default=true
-constant-use source=0:56 definition=17 arguments=[type:11]
-constant-use source=0:94 definition=25 arguments=[const:10:0x00000000000000000000000000000005]
+constant-use source=0:33 definition=17 arguments=[type:11]
+constant-use source=0:59 definition=25 arguments=[const:10:0x00000000000000000000000000000005]
 constant-dispatch declaration=17 arguments=[type:11] selected=17 arguments=[type:11]
 eof owners=3 members=2 parameters=3 predicates=1 impls=1 calls=0 paths=2 impl-uses=1 type-members=0 constant-members=2 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=2 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

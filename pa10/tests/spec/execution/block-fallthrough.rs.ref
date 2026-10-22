@@ -20,27 +20,27 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=14 source=0:13
-  local l0 type=14 merge mutable=true storage-parent=- source=11
+body 0 function def=13 signature=19 result=14 source=0:11
+  local l0 type=14 merge mutable=true storage-parent=- source=9
   block b0:
-    live l0 source=11
-    v0 type=2 = bool false source=3
-    branch v0 b2 b3 source=8
+    live l0 source=9
+    v0 type=2 = bool false source=1
+    branch v0 b2 b3 source=6
   block b1:
-    v5 type=14 = read l0 source=11
-    dead l0 source=13
-    return v5 source=13
+    v5 type=14 = read l0 source=9
+    dead l0 source=11
+    return v5 source=11
   block b2:
-    v1 type=14 = integer bits=0x00000000000000000000000000000007 source=4
-    store l0 v1 source=5
-    jump b1 source=5
+    v1 type=14 = integer bits=0x00000000000000000000000000000007 source=2
+    store l0 v1 source=3
+    jump b1 source=3
   block b3:
-    jump b4 source=8
+    jump b4 source=6
   block b4:
-    v2 type=1 = unit source=8
-    v3 type=1 = unit source=9
-    v4 type=14 = integer bits=0x00000000000000000000000000000008 source=10
-    store l0 v4 source=11
-    jump b1 source=11
+    v2 type=1 = unit source=6
+    v3 type=1 = unit source=7
+    v4 type=14 = integer bits=0x00000000000000000000000000000008 source=8
+    store l0 v4 source=9
+    jump b1 source=9
 end-body
 eof bodies=1 locals=1 values=6 statements=10 blocks=5

@@ -8,6 +8,7 @@ pub use check::{
 pub mod destruction;
 pub mod liveness;
 pub mod loans;
+mod order;
 pub mod ownership;
 mod permissions;
 mod places;
@@ -16,3 +17,5 @@ pub mod storage;
 pub mod templates;
 
 pub(crate) use check::incremental;
+#[cfg(test)]
+pub(crate) use check::structure;

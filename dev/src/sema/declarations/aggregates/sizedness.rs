@@ -42,10 +42,11 @@ impl Checker<'_> {
             .seal_nominal_sizes(Arc::new(pending.rules))
             .map_err(|error| Error::at(crate::resolve::unit::FileId(0), 0, error))?;
         for requirement in pending.requirements {
-            let first = u32::try_from(self.facts.body_regions.len())
-                .ok()
-                .and_then(|count| count.checked_add(1))
-                .ok_or_else(|| self.error(requirement.source, "too many body regions"))?;
+            let first = self
+                .facts
+                .body_regions
+                .frontier(requirement.body)
+                .map_err(|_| self.error(requirement.source, "too many body regions"))?;
             let mut proof =
                 crate::sema::nominals::Proof::for_declaration(requirement.environment, 0, first);
             if !proof

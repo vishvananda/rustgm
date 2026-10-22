@@ -1,23 +1,17 @@
-active [0,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12]
 node 0 5 6 generic Type "T" - [] -
-node 1 8 9 name "x"
-node 2 8 9 path false [1]
-node 3 8 9 binding false false "x" -
-node 4 10 11 name "T"
-node 5 10 11 path false [4]
-node 6 10 11 type Path [5]
-node 7 8 11 parameter 3 6
-node 8 19 24 name "Sized"
-node 9 19 24 path false [8]
-node 10 19 24 bound false [] 9
-node 11 29 30 name "T"
-node 12 25 31 precise-capture [11]
-node 13 14 31 trait-type true [10,12]
-node 14 32 33 name "x"
-node 15 32 33 path false [14]
-node 16 31 34 block Plain [] 15
-node 17 0 34 item 0
-item 0 "f" private [0] [] function false false false false - [7] 13 16
-node 18 0 34 crate [17]
-root 18
+node 1 8 9 binding false false "x" -
+node 2 10 11 name "T"
+node 3 8 11 parameter 1 2
+node 4 19 24 name "Sized"
+node 5 19 24 bound false [] 4
+node 6 29 30 name "T"
+node 7 25 31 precise-capture [6]
+node 8 14 31 trait-type true [5,7]
+node 9 32 33 name "x"
+node 10 31 34 block Plain [] 9
+node 11 0 34 item 0
+item 0 "f" private [0] [] function false false false false - [3] 8 10
+node 12 0 34 crate [11]
+root 12
 eof 35

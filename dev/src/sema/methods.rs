@@ -5,11 +5,11 @@ pub(super) mod receiver;
 pub(super) mod selection;
 pub(crate) mod slices;
 mod visible;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefId, names::NameId, unit::NodeKey},
     types::{ItemId, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub struct Qualified {

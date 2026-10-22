@@ -33,7 +33,7 @@ pub fn check_ordinary_profile(
             )
         })
         .map(|predicate| predicate.source)
-        .min_by_key(|key| (key.file.0, key.node.0));
+        .min_by_key(|key| (key.file.0, key.node.get()));
     if let Some(source) = source {
         return Err(Declarations::error(
             report,
@@ -71,7 +71,7 @@ fn records_with(
     predicates(facts, out, advanced)?;
     implementations(facts, out)?;
     uses(facts, out)?;
-    type_view::body_regions(&facts.body_regions, out)?;
+    type_view::body_regions(facts.body_regions.log(), out)?;
     type_view::regions(&facts.region_equalities, out)?;
     type_view::coercions(&facts.coercions, out)?;
     type_view::outlives(&facts.outlives, out)?;
@@ -80,9 +80,9 @@ fn records_with(
             out,
             "type-outlives body={}:{} source={}:{} type={} shorter=",
             bound.body.file.0,
-            bound.body.node.0,
+            bound.body.node.get(),
             bound.source.file.0,
-            bound.source.node.0,
+            bound.source.node.get(),
             bound.ty.0
         )?;
         type_view::region(bound.shorter, out)?;
@@ -155,7 +155,10 @@ fn owners(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Re
         write!(
             out,
             "associated-owner {index} kind={kind} self-def={} self={} source={}:{}",
-            owner.self_definition.0, ty.0, owner.source.file.0, owner.source.node.0
+            owner.self_definition.0,
+            ty.0,
+            owner.source.file.0,
+            owner.source.node.get()
         )?;
         if let OwnerKind::Trait {
             definition,
@@ -219,7 +222,9 @@ fn predicates(facts: &Declarations, out: &mut impl Write, advanced: bool) -> io:
             write!(
                 out,
                 "predicate owner={} source={}:{} ",
-                owner.0, predicate.source.file.0, predicate.source.node.0
+                owner.0,
+                predicate.source.file.0,
+                predicate.source.node.get()
             )?;
             clause(&facts.types, predicate.value, out, advanced)?;
             writeln!(out)?;
@@ -268,7 +273,9 @@ fn implementations(facts: &Declarations, out: &mut impl Write) -> io::Result<()>
         write!(
             out,
             "impl owner={} source={}:{} ",
-            implementation.owner.0, implementation.source.file.0, implementation.source.node.0
+            implementation.owner.0,
+            implementation.source.file.0,
+            implementation.source.node.get()
         )?;
         requirement(&facts.types, implementation.predicate, out)?;
         writeln!(out)?;
@@ -307,7 +314,11 @@ fn uses(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         write!(
             out,
             "method-call source={}:{} method={} callable={} dereferences={} borrow=",
-            key.file.0, key.node.0, call.method.0, call.callable.0, call.dereferences
+            key.file.0,
+            key.node.get(),
+            call.method.0,
+            call.callable.0,
+            call.dereferences
         )?;
         if let Some(borrow) = call.borrow {
             write!(out, "{}", borrow.0)?;
@@ -324,7 +335,9 @@ fn uses(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             write!(
                 out,
                 "implementation-use source={}:{} owner={}",
-                key.file.0, key.node.0, selection.owner.0
+                key.file.0,
+                key.node.get(),
+                selection.owner.0
             )?;
             type_view::generic_arguments(&facts.types, selection.arguments, out)?;
             writeln!(out)?;
@@ -341,11 +354,11 @@ fn paths(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             out,
             "inherent-path source={}:{} method={} implementation={} prefix={}:{} annotation={}",
             key.file.0,
-            key.node.0,
+            key.node.get(),
             selected_method(facts, *key)?.0,
             path.implementation.0,
             path.prefix.file.0,
-            path.prefix.node.0,
+            path.prefix.node.get(),
             path.annotation
         )?;
     }
@@ -366,12 +379,12 @@ fn paths(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             out,
             "trait-path source={}:{} method={} trait={} qualifier={qualifier} origin={origin} subject-source=",
             key.file.0,
-            key.node.0,
+            key.node.get(),
             selected_method(facts, *key)?.0,
             path.owner.0
         )?;
         if let Some(subject) = path.subject {
-            write!(out, "{}:{}", subject.file.0, subject.node.0)?;
+            write!(out, "{}:{}", subject.file.0, subject.node.get())?;
         } else {
             write!(out, "-")?;
         }
@@ -387,5 +400,5 @@ fn selected_method(facts: &Declarations, key: NodeKey) -> io::Result<crate::reso
     }
 }
 fn source(key: NodeKey) -> (u32, u32) {
-    (key.file.0, key.node.0)
+    (key.file.0, key.node.get())
 }

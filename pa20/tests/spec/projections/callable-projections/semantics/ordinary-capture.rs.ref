@@ -33,15 +33,13 @@ type 30 function binders=0 parameters=[] result=1 unsafe=false
 type 31 function-item def=17 signature=30
 type 32 reference mutable=false region=region:1 referent=11
 type 33 function binders=0 parameters=[32] result=32 unsafe=false
-type 34 reference mutable=false region=region:2 referent=11
-type 35 function binders=0 parameters=[34] result=34 unsafe=false
-type 36 function binders=0 parameters=[35,34] result=34 unsafe=false
-type 37 reference mutable=false region=region:3 referent=11
-def 13 type=20 name="check" source=0:19
-def 14 type=22 name="fail" source=0:35
-def 15 type=27 name="apply" source=0:73
-def 16 type=29 name="keep" source=0:92
-def 17 type=31 name="main" source=0:114
+type 34 function binders=0 parameters=[33,32] result=32 unsafe=false
+type 35 reference mutable=false region=region:2 referent=11
+def 13 type=20 name="check" source=0:13
+def 14 type=22 name="fail" source=0:22
+def 15 type=27 name="apply" source=0:46
+def 16 type=29 name="keep" source=0:58
+def 17 type=31 name="main" source=0:74
 def 18 type=2 name="bool"
 def 19 type=3 name="char"
 def 20 type=4 name="str"
@@ -59,18 +57,18 @@ def 31 type=15 name="u128"
 def 32 type=16 name="usize"
 def 33 type=17 name="f32"
 def 34 type=18 name="f64"
-def 37 type=2 name="ok" source=0:2
-def 38 type=11 name="x" source=0:22
-def 39 type=24 name="f" source=0:39
-def 40 type=25 name="x" source=0:55
-def 41 type=25 name="x" source=0:77
-def 42 type=11 name="x" source=0:95
-region-var region:1 body=0:72 source=0:71 origin=universal-alias pending
-region-var region:2 body=0:113 source=0:107 origin=call-argument pending
-region-var region:3 body=0:113 source=0:106 origin=expression-borrow pending
-region-equal body=0:72 left=region:1 right=bound:0:0
-region-coercion body=0:72 source=0:70 actual=25 expected=32 kind=same-shape pending
-region-coercion body=0:72 source=0:72 actual=32 expected=25 kind=same-shape pending
-region-coercion body=0:113 source=0:103 actual=29 expected=35 kind=function-pointer pending
-region-coercion body=0:113 source=0:106 actual=37 expected=34 kind=same-shape pending
+def 37 type=2 name="ok" source=0:0
+def 38 type=11 name="x" source=0:14
+def 39 type=24 name="f" source=0:24
+def 40 type=25 name="x" source=0:34
+def 41 type=25 name="x" source=0:48
+def 42 type=11 name="x" source=0:59
+region-var region:1 body=0:45 source=0:44 origin=universal-alias pending
+region-var region:1 body=0:73 source=0:67 origin=call-argument pending
+region-var region:2 body=0:73 source=0:66 origin=expression-borrow pending
+region-equal body=0:45 left=region:1 right=bound:0:0
+region-coercion body=0:45 source=0:43 actual=25 expected=32 kind=same-shape pending
+region-coercion body=0:45 source=0:45 actual=32 expected=25 kind=same-shape pending
+region-coercion body=0:73 source=0:64 actual=29 expected=33 kind=function-pointer pending
+region-coercion body=0:73 source=0:66 actual=35 expected=32 kind=same-shape pending
 eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

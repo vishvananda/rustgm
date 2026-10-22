@@ -1,4 +1,5 @@
 //! Trait lookup consumes final lexical bindings and shares inherited candidate lists.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
         expansion::Report,
@@ -8,10 +9,7 @@ use crate::{
     sema::model::Declarations,
     types::ItemId,
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub(super) struct Index {
@@ -53,28 +51,22 @@ impl Index {
         if let Some(cloning) = facts.cloning.as_deref() {
             index.prelude_members(cloning.canonical.definition)?;
         }
-        for (ordinal, scope) in report.resolution.scopes.iter().enumerate() {
+        index.account(report.resolution.scopes.len())?;
+        for (scope_id, _, namespace, binding) in report.resolution.bindings.iter() {
             index.account(1)?;
-            let scope_id = u32::try_from(ordinal)
-                .map(ScopeId)
-                .map_err(|_| "trait visibility scope space exhausted")?;
-            for (&(_, namespace), binding) in &scope.bindings {
-                index.account(1)?;
-                // Method lookup uses the retained glob candidate even when naming
-                // the trait directly would be ambiguous. Direct bindings replace it.
-                if namespace == Namespace::Type
-                    && (report.resolution.definitions[binding.target.0 as usize].kind
-                        == DefKind::Trait
-                        || (facts.associated.operation(binding.target).is_some()
-                            || facts.associated.comparison(binding.target).is_some()
-                            || canonical_trait(facts, binding.target)))
-                {
-                    index
-                        .scopes
-                        .entry(scope_id)
-                        .or_default()
-                        .insert(binding.target);
-                }
+            // Method lookup uses the retained glob candidate even when naming
+            // the trait directly would be ambiguous. Direct bindings replace it.
+            if namespace == Namespace::Type
+                && (report.resolution.definitions[binding.target.0 as usize].kind == DefKind::Trait
+                    || (facts.associated.operation(binding.target).is_some()
+                        || facts.associated.comparison(binding.target).is_some()
+                        || canonical_trait(facts, binding.target)))
+            {
+                index
+                    .scopes
+                    .entry(scope_id)
+                    .or_default()
+                    .insert(binding.target);
             }
         }
         for (&import, binding) in &report.resolution.anonymous_types {
@@ -175,7 +167,7 @@ impl Index {
         let Some(traits) = self.scopes.remove(&scope) else {
             return Ok(());
         };
-        let mut names: HashMap<NameId, Vec<DefId>> = HashMap::new();
+        let mut names: HashMap<NameId, Vec<DefId>> = HashMap::default();
         for owner in traits {
             self.account(1 + self.members.get(&owner).map_or(0, HashMap::len))?;
             if let Some(members) = self.members.get(&owner) {

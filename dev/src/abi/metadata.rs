@@ -1,6 +1,6 @@
 //! Pointer metadata follows completed storage tails, independently of value layout.
+use crate::support::hash::HashMap;
 use crate::types::{Kind, ListId, Primitive, Store, TypeId, aggregate};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Metadata {

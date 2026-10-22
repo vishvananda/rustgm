@@ -1,10 +1,11 @@
 //! Exact published source equalities remain obligations while aliases are transported.
 use super::{Checker, PreparedScope};
+use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
     types::substitute::{Bound, RegionEquations},
 };
-use std::{collections::HashMap, num::NonZeroU32, ops::Range};
+use std::{num::NonZeroU32, ops::Range};
 #[derive(Clone, Copy)]
 pub(super) struct Ranges([NonZeroU32; 4]);
 impl Ranges {
@@ -135,7 +136,7 @@ impl PreparedScope {
                 *work += equations.extend(slice.iter().map(|fact| (fact.left, fact.right)))?;
             }
         }
-        let mut fold = Bound::close_projection_regions(1, 0, HashMap::new())?;
+        let mut fold = Bound::close_projection_regions(1, 0, HashMap::default())?;
         fold.exchange_projection_equations(&mut equations)?;
         Ok(fold)
     }

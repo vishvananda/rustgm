@@ -1,6 +1,6 @@
 macro-matching 1
 definition 0 0 34 "m" rules 1
 invocation 0 35 52 definition 0 rule 0
-capture 0 item 0:0 9:0 "use a::{b,c};" nodes 10
+capture 0 item 0:0 9:0 "use a::{b,c};" nodes 7
 end-invocation parser-calls 1
 end-macro-matching definitions 1 invocations 1

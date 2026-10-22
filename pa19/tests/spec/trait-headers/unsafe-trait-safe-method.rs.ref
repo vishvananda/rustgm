@@ -24,9 +24,9 @@ type 21 function binders=1 parameters=[20] result=11 unsafe=false
 type 22 function-item def=15 signature=21
 type 23 function binders=0 parameters=[] result=1 unsafe=false
 type 24 function-item def=16 signature=23
-def 14 type=19 name="Self" source=0:11
-def 15 type=22 name="shared" source=0:10
-def 16 type=24 name="main" source=0:13
+def 14 type=19 name="Self" source=0:7
+def 15 type=22 name="shared" source=0:6
+def 16 type=24 name="main" source=0:9
 def 17 type=2 name="bool"
 def 18 type=3 name="char"
 def 19 type=4 name="str"
@@ -44,9 +44,9 @@ def 30 type=15 name="u128"
 def 31 type=16 name="usize"
 def 32 type=17 name="f32"
 def 33 type=18 name="f64"
-def 34 type=20 name="self" source=0:2
-associated-owner 0 kind=trait self-def=14 self=19 source=0:11 trait=13 unsafe=true name="A"
+def 34 type=20 name="self" source=0:0
+associated-owner 0 kind=trait self-def=14 self=19 source=0:7 trait=13 unsafe=true name="A"
 associated-member def=15 owner=0 receiver=20 references=1
 parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:11 subject=19 bound=trait:13 arguments=[]
+predicate owner=13 source=0:7 subject=19 bound=trait:13 arguments=[]
 eof owners=1 members=1 parameters=1 predicates=1 impls=0 calls=0 paths=0 impl-uses=0

@@ -44,27 +44,26 @@ type 41 function-item def=21 signature=40
 type 42 function binders=0 parameters=[33,25,26] result=11 unsafe=false
 type 43 reference mutable=false region=region:1 referent=11
 type 44 function binders=0 parameters=[43,25,26] result=11 unsafe=false
-type 45 reference mutable=false region=region:6 referent=11
-type 46 reference mutable=false region=region:5 referent=11
-type 47 function binders=1 parameters=[28,46,45] result=11 unsafe=false
-type 48 function-item def=17 signature=47 regions=[region:5,region:6]
-type 49 reference mutable=false region=static referent=37
-type 50 reference mutable=false region=bound:0:0 referent=37
-type 51 function binders=1 parameters=[50,46,45] result=11 unsafe=false
-type 52 function-item def=17 signature=51 arguments=[region:region:5,region:region:6,type:37]
-type 53 reference mutable=false region=region:7 referent=37
-type 54 function binders=0 parameters=[53,46,45] result=11 unsafe=false
-type 55 reference mutable=false region=region:8 referent=37
-type 56 reference mutable=false region=region:9 referent=11
-type 57 reference mutable=false region=region:10 referent=11
-def 13 type=21 name="check" source=0:19
-def 14 type=23 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:65
-def 17 type=32 name="read" source=0:64
-def 18 type=11 name="Self" source=0:116
-def 19 type=36 name="read" source=0:115
-def 20 type=39 name="f" source=0:128
-def 21 type=41 name="main" source=0:156
+type 45 reference mutable=false region=region:2 referent=11
+type 46 function binders=1 parameters=[28,43,45] result=11 unsafe=false
+type 47 function-item def=17 signature=46 regions=[region:1,region:2]
+type 48 reference mutable=false region=static referent=37
+type 49 reference mutable=false region=bound:0:0 referent=37
+type 50 function binders=1 parameters=[49,43,45] result=11 unsafe=false
+type 51 function-item def=17 signature=50 arguments=[region:region:1,region:region:2,type:37]
+type 52 reference mutable=false region=region:3 referent=37
+type 53 function binders=0 parameters=[52,43,45] result=11 unsafe=false
+type 54 reference mutable=false region=region:4 referent=37
+type 55 reference mutable=false region=region:5 referent=11
+type 56 reference mutable=false region=region:6 referent=11
+def 13 type=21 name="check" source=0:13
+def 14 type=23 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:40
+def 17 type=32 name="read" source=0:39
+def 18 type=11 name="Self" source=0:73
+def 19 type=36 name="read" source=0:72
+def 20 type=39 name="f" source=0:85
+def 21 type=41 name="main" source=0:105
 def 22 type=2 name="bool"
 def 23 type=3 name="char"
 def 24 type=4 name="str"
@@ -82,52 +81,52 @@ def 35 type=15 name="u128"
 def 36 type=16 name="usize"
 def 37 type=17 name="f32"
 def 38 type=18 name="f64"
-def 45 type=2 name="ok" source=0:2
-def 46 type=11 name="x" source=0:22
-def 50 type=33 name="self" source=0:79
-def 51 type=25 name="x" source=0:84
-def 52 type=26 name="y" source=0:93
-def 53 type=11 name="a" source=0:131
-def 54 type=11 name="b" source=0:136
-associated-owner 0 kind=trait self-def=16 self=19 source=0:65 trait=15 unsafe=false name="Pair"
-associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:116 unsafe=false
+def 45 type=2 name="ok" source=0:0
+def 46 type=11 name="x" source=0:14
+def 50 type=33 name="self" source=0:49
+def 51 type=25 name="x" source=0:52
+def 52 type=26 name="y" source=0:57
+def 53 type=11 name="a" source=0:86
+def 54 type=11 name="b" source=0:89
+associated-owner 0 kind=trait self-def=16 self=19 source=0:40 trait=15 unsafe=false name="Pair"
+associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:73 unsafe=false
 associated-member def=17 owner=0 receiver=24 references=1
 associated-member def=19 owner=1 receiver=33 references=1
 parameter owner=15 binding=39 argument=region:bound:0:0 default=-
 parameter owner=15 binding=40 argument=region:bound:0:1 default=-
 parameter owner=16 binding=16 argument=type:19 default=-
-predicate owner=15 source=0:65 subject=19 bound=trait:15 arguments=[region:bound:0:0,region:bound:0:1]
-impl owner=18 source=0:116 subject=11 bound=trait:15 arguments=[region:bound:0:0,region:bound:0:1]
+predicate owner=15 source=0:40 subject=19 bound=trait:15 arguments=[region:bound:0:0,region:bound:0:1]
+impl owner=18 source=0:73 subject=11 bound=trait:15 arguments=[region:bound:0:0,region:bound:0:1]
 impl-method owner=18 declaration=17 selected=19 default=false
-method-call source=0:150 method=17 callable=52 dereferences=0 borrow=55 receiver=53 origin=lexical
-region-var region:1 body=0:127 source=0:125 origin=quantified-proof pending
-region-var region:2 body=0:127 source=0:125 origin=quantified-proof pending
-region-var region:3 body=0:127 source=0:125 origin=quantified-proof pending
-region-var region:4 body=0:127 source=0:125 origin=quantified-proof pending
-region-var region:5 body=0:155 source=0:150 origin=item-argument pending
-region-var region:6 body=0:155 source=0:150 origin=item-argument pending
-region-var region:7 body=0:155 source=0:150 origin=call-argument pending
-region-var region:8 body=0:155 source=0:150 origin=expression-borrow pending
-region-var region:9 body=0:155 source=0:146 origin=expression-borrow pending
-region-var region:10 body=0:155 source=0:149 origin=expression-borrow pending
-region-var region:11 body=0:155 source=0:150 origin=inference pending
-region-var region:12 body=0:155 source=0:150 origin=inference pending
-region-var region:13 body=0:155 source=0:150 origin=inference pending
-region-var region:14 body=0:155 source=0:150 origin=inference pending
-region-equal body=0:155 left=region:5 right=region:11
-region-equal body=0:155 left=region:6 right=region:12
-region-equal body=0:155 left=region:11 right=region:13
-region-equal body=0:155 left=region:12 right=region:14
-region-coercion body=0:155 source=0:150 actual=55 expected=53 kind=same-shape pending
-region-coercion body=0:155 source=0:146 actual=56 expected=46 kind=same-shape pending
-region-coercion body=0:155 source=0:149 actual=57 expected=45 kind=same-shape pending
+method-call source=0:99 method=17 callable=51 dereferences=0 borrow=54 receiver=52 origin=lexical
+region-var region:1 body=0:84 source=0:82 origin=quantified-proof pending
+region-var region:2 body=0:84 source=0:82 origin=quantified-proof pending
+region-var region:3 body=0:84 source=0:82 origin=quantified-proof pending
+region-var region:4 body=0:84 source=0:82 origin=quantified-proof pending
+region-var region:1 body=0:104 source=0:99 origin=item-argument pending
+region-var region:2 body=0:104 source=0:99 origin=item-argument pending
+region-var region:3 body=0:104 source=0:99 origin=call-argument pending
+region-var region:4 body=0:104 source=0:99 origin=expression-borrow pending
+region-var region:5 body=0:104 source=0:96 origin=expression-borrow pending
+region-var region:6 body=0:104 source=0:98 origin=expression-borrow pending
+region-var region:7 body=0:104 source=0:99 origin=inference pending
+region-var region:8 body=0:104 source=0:99 origin=inference pending
+region-var region:9 body=0:104 source=0:99 origin=inference pending
+region-var region:10 body=0:104 source=0:99 origin=inference pending
+region-equal body=0:104 left=region:1 right=region:7
+region-equal body=0:104 left=region:2 right=region:8
+region-equal body=0:104 left=region:7 right=region:9
+region-equal body=0:104 left=region:8 right=region:10
+region-coercion body=0:104 source=0:99 actual=54 expected=52 kind=same-shape pending
+region-coercion body=0:104 source=0:96 actual=55 expected=43 kind=same-shape pending
+region-coercion body=0:104 source=0:98 actual=56 expected=45 kind=same-shape pending
 quantifier 0 regions=2 subject=37 bound=trait:15 arguments=[region:bound:0:0,region:bound:0:1]
 quantifier 1 regions=2 subject=11 bound=trait:15 arguments=[region:bound:0:0,region:bound:0:1]
-opaque 0 owner=20 source=0:125 application=37 hidden=11 role=defining-result storage-proof=pending
+opaque 0 owner=20 source=0:82 application=37 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 forall=0
 opaque-body-result def=20 type=11
-proof 0 body=0:127 source=0:127 pending
-proof-source proof=0 index=0 source=0:125
+proof 0 body=0:84 source=0:84 pending
+proof-source proof=0 index=0 source=0:82
 proof-scope proof=0 scope=1 parent=0 regions=2 depth=1
 proof-owned proof=0 start=1 end=5
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=5
