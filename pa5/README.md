@@ -68,7 +68,7 @@ Support outer attributes on items, fields, variants, function and closure parame
 parameters, local declarations, match arms and the expression positions covered by the
 fixtures. Inner attributes attach to the crate, inline module, associated-item
 body or block that owns them. Attribute placement and builtin semantics beyond
-this draft's cases are completed at PA36.
+this draft's cases are completed at PA40.
 
 Syntax captures attributes without depending on expansion. Expansion visits
 owners from the root, evaluates their cfg/cfg_attr facts and records an active
@@ -192,7 +192,7 @@ PA6 loads external modules, normalizes/interns identifiers and resolves names.
 PA7/PA8 match and expand macros. PA9 onward checks types and semantic validity;
 PA11 begins Rust-to-LowIR lowering. No executable output or Rust library
 compatibility is claimed here. Planned later stages still fail explicitly.
-Full edition/attribute edge-case closure remains PA36; PA5 is an implemented
+Full edition/attribute edge-case closure remains PA40; PA5 is an implemented
 draft of the concrete grammar/test contract above.
 
 `make test-pa5` runs all manifest fixtures against committed text oracles.

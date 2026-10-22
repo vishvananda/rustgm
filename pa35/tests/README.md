@@ -2,7 +2,11 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
-Required families: derive output; attribute order; punctuation jointness; delimiter-none groups.
+Required families: complete locked dependency graph; visitor and generic API consumers; JSON parsing and serialization; escaping malformed input and round trips; compile time and memory scaling.
 
-Put required regressions here, in the earliest assignment owning all their
-features. Register every input in `manifest.json`; no undiscovered fixtures.
+Follow the [owning brief](../README.md) and
+[library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
+Declare independent outcomes before creating text references. Register every
+input in a nonempty `manifest.json` when the stage is ready for activation;
+no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
+configuration/build provenance and linked native output evidence.

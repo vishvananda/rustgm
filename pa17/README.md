@@ -106,7 +106,7 @@ Earlier type and body inspection modes may expose pending destructor facts.
 The PA14–PA16 ownership, region and loan inspection modes retain their explicit
 pending-destruction boundary; they do not inspect the completed PA17 execution
 plan. PA17's checked LowIR path provides that combined proof. Panic remains abort:
-there is no unwinding cleanup, landing pad or exception ABI until PA31. Standard
+there is no unwinding cleanup, landing pad or exception ABI until PA39. Standard
 library destruction helpers, custom smart pointers, closures, unsized owned
 values and async cleanup retain their later assignment owners.
 

@@ -479,12 +479,19 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA20 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA21–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA24 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA25–PA44 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout
 contracts and required fixtures tracked. Student export is not implemented yet.
+
+The [library bootstrap plan](docs/library-bootstrap-roadmap.md) makes original
+core/alloc/std and real crates required. Keep small compiler-contract text oracles
+alongside deterministic whole-crate build summaries and native output checks.
+Freeze source/dependency/configuration provenance and whole-library performance
+budgets before release. Target libraries must compile with RustGM; separately
+record any host-tool bootstrap. A reduced reproducer is not whole-crate acceptance.
 
 During PA13 buildout, floating-pattern tests record one explicit pinned-rustc
 execution discrepancy. The Reference's `expr.match.guard.next` rule retries both
@@ -770,7 +777,7 @@ semantic inspections and 809 LowIR checks, with 489 independent native execution
 One explicitly classified semantic-positive case defers an escaping-reference
 error to the complete proof. See `docs/pa20-validation.md` for the seven families,
 source provenance, count/row checks and reference review. `make test-native` and
-`make test-rustc` include PA20; PA22–PA38 remain planned and fail explicitly.
+`make test-rustc` include PA20; PA25–PA44 remain planned and fail explicitly.
 
 Parameter-default checks use their own lifetime eligibility rule, separate from
 closed definition-time bounds. The default-clause invariants retain unused

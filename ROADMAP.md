@@ -1,8 +1,15 @@
 # RustGM assignment roadmap
 
 Maintainer reference implementation and course tests grow together. PA1–PA24
-have working draft references and executable text-oracle suites; PA25–PA38 are planned.
-No planned assignment is counted as passing.
+have working draft references and executable text-oracle suites; PA25–PA44 are
+planned. No planned assignment is counted as passing.
+
+The destination includes compiling original upstream core, alloc and std with
+RustGM, then real crates. The compiler supplies genuine language/intrinsic hooks;
+ordinary library APIs come from their Rust sources. The
+[library bootstrap plan](docs/library-bootstrap-roadmap.md) defines source pins,
+acceptance gates, implementation priority and the old-to-new number mapping.
+PA1–PA30 retain their current contracts and ownership.
 
 | PA | Assignment | Status |
 | --- | --- | --- |
@@ -36,19 +43,32 @@ No planned assignment is counted as passing.
 | [28](pa28/README.md) | Intrinsics and atomics | planned |
 | [29](pa29/README.md) | Crates and metadata | planned |
 | [30](pa30/README.md) | Foreign interfaces | planned |
-| [31](pa31/README.md) | Panic and unwinding | planned |
-| [32](pa32/README.md) | Async lowering | planned |
-| [33](pa33/README.md) | Async ownership | planned |
-| [34](pa34/README.md) | Procedural macro host | planned |
-| [35](pa35/README.md) | Derive and attribute macros | planned |
-| [36](pa36/README.md) | Edition and attribute closure | planned |
-| [37](pa37/README.md) | Target-specific closure | planned |
-| [38](pa38/README.md) | Frontend acceptance | planned |
+| [31](pa31/README.md) | Compiler/library bindings | planned |
+| [32](pa32/README.md) | Pinned core bootstrap | planned |
+| [33](pa33/README.md) | Allocator and alloc bootstrap | planned |
+| [34](pa34/README.md) | Edition and crate build integration | planned |
+| [35](pa35/README.md) | Upstream crate acceptance | planned |
+| [36](pa36/README.md) | Std and platform bootstrap | planned |
+| [37](pa37/README.md) | Procedural macro host | planned |
+| [38](pa38/README.md) | Derive and attribute macros | planned |
+| [39](pa39/README.md) | Panic and unwinding | planned |
+| [40](pa40/README.md) | Edition and attribute closure | planned |
+| [41](pa41/README.md) | Target-specific closure | planned |
+| [42](pa42/README.md) | Async lowering | planned |
+| [43](pa43/README.md) | Async ownership | planned |
+| [44](pa44/README.md) | Frontend acceptance | planned |
 
-Optional later assignments: PA39 pinned core compatibility; PA40 alloc/runtime;
-PA41 required std and build ecosystem; PA42 reproducible self-hosting. These are
-not prerequisites for the initial source-to-LowIR course.
+Implementation priority is PA25–PA30 closure, generic cross-crate transport and
+source-declared compiler bindings; then core, alloc and the Rust 2021/build
+pipeline; then serde_core/serde_json, std and procedural derives. Develop
+independent prerequisites in parallel while keeping cumulative releases honest.
+Full unwinding and async follow the first usable abort-profile crate graph.
 
-PA37 requires an explicit capability audit: the current CPPGM backend does not
-implement arbitrary Rust inline assembly. Backend extensions are separate
-infrastructure work, not an implicit student prerequisite.
+PA31–PA36 are required, not optional library extensions. An internal or target
+feature needed by their actual source must work at that milestone. PA40/PA41
+close broader edition/target coverage; they cannot excuse an earlier failed build.
+CPPGM remains the explicit LowIR backend. Qualify required operations before use;
+backend extensions are separate reviewed infrastructure work.
+
+Optional PA45: reproducible self-hosting. This does not change the current goal
+of completing PA1–PA30 or permit incomplete stages to be activated.

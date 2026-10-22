@@ -16,7 +16,7 @@ test: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
-	@echo 'PA25-PA38: planned, not included in acceptance totals'
+	@echo 'PA25-PA44: planned, not included in acceptance totals'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all

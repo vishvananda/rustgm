@@ -480,48 +480,96 @@
     {
       "number": 31,
       "path": "pa31",
-      "title": "Panic and unwinding",
+      "title": "Compiler/library bindings",
       "mode": "--emit-lowir",
       "status": "planned",
-      "scope": "Panic abort/unwind modes and cleanup/runtime boundaries",
+      "scope": "Source-declared lang items, compiler intrinsics and builtins, internal features and sysroot ownership",
       "test_families": [
-        "cleanup after panic",
-        "double panic",
-        "C-unwind",
-        "abort boundaries"
+        "lang-item identity and signatures",
+        "intrinsic declarations and const eligibility",
+        "builtin expansion and capability answers",
+        "duplicate and forged bindings",
+        "panic-abort runtime boundary"
       ]
     },
     {
       "number": 32,
       "path": "pa32",
-      "title": "Async lowering",
+      "title": "Pinned core bootstrap",
       "mode": "--emit-lowir",
       "status": "planned",
-      "scope": "Async functions/blocks, suspension liveness and future state machines",
+      "scope": "Original pinned upstream core, its required internal language features and independently executed consumers",
       "test_families": [
-        "poll transitions",
-        "stored locals",
-        "readiness",
-        "suspension state"
+        "complete core source build",
+        "real generic bodies across crates",
+        "layout and const trait protocols",
+        "slices iterators and formatting",
+        "deterministic sysroot metadata"
       ]
     },
     {
       "number": 33,
       "path": "pa33",
-      "title": "Async ownership",
+      "title": "Allocator and alloc bootstrap",
       "mode": "--emit-lowir",
       "status": "planned",
-      "scope": "Borrowing across suspension, pinning, cancellation and advanced async forms",
+      "scope": "Allocator/runtime contracts and original upstream alloc with real container and destruction behavior",
       "test_families": [
-        "cancel at each state",
-        "drop order",
-        "self references",
-        "async closures/traits"
+        "allocation and reallocation",
+        "Box Vec String and collections",
+        "allocation failure",
+        "drop and ownership across crates",
+        "allocator ABI and symbols"
       ]
     },
     {
       "number": 34,
       "path": "pa34",
+      "title": "Edition and crate build integration",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Rust 2021 and 2024 crate graphs, features, target cfg, build scripts and generated inputs",
+      "test_families": [
+        "per-crate editions",
+        "feature and dependency resolution",
+        "host versus target artifacts",
+        "build script outputs",
+        "reproducible build provenance"
+      ]
+    },
+    {
+      "number": 35,
+      "path": "pa35",
+      "title": "Upstream crate acceptance",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Original pinned serde_core without defaults and serde_json with alloc, including every selected transitive dependency",
+      "test_families": [
+        "complete locked dependency graph",
+        "visitor and generic API consumers",
+        "JSON parsing and serialization",
+        "escaping malformed input and round trips",
+        "compile time and memory scaling"
+      ]
+    },
+    {
+      "number": 36,
+      "path": "pa36",
+      "title": "Std and platform bootstrap",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Original upstream std for the pinned platform and panic-abort profile, with default-std crate consumers",
+      "test_families": [
+        "complete std dependency graph",
+        "platform runtime and linkage",
+        "thread and TLS behavior",
+        "I/O and error consumers",
+        "default-feature serde_json"
+      ]
+    },
+    {
+      "number": 37,
+      "path": "pa37",
       "title": "Procedural macro host",
       "mode": "--emit-expanded",
       "status": "planned",
@@ -534,22 +582,37 @@
       ]
     },
     {
-      "number": 35,
-      "path": "pa35",
+      "number": 38,
+      "path": "pa38",
       "title": "Derive and attribute macros",
       "mode": "--emit-expanded",
       "status": "planned",
-      "scope": "Item replacement, helper attributes, nested expansion and token conversion",
+      "scope": "Item replacement, helper attributes, nested expansion and token conversion; original serde_derive and native derived applications",
       "test_families": [
         "derive output",
         "attribute order",
         "punctuation jointness",
-        "delimiter-none groups"
+        "delimiter-none groups",
+        "serde_derive integration"
       ]
     },
     {
-      "number": 36,
-      "path": "pa36",
+      "number": 39,
+      "path": "pa39",
+      "title": "Panic and unwinding",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Panic abort/unwind modes and cleanup/runtime boundaries",
+      "test_families": [
+        "cleanup after panic",
+        "double panic",
+        "C-unwind",
+        "abort boundaries"
+      ]
+    },
+    {
+      "number": 40,
+      "path": "pa40",
       "title": "Edition and attribute closure",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -562,8 +625,8 @@
       ]
     },
     {
-      "number": 37,
-      "path": "pa37",
+      "number": 41,
+      "path": "pa41",
       "title": "Target-specific closure",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -575,18 +638,47 @@
       ]
     },
     {
-      "number": 38,
-      "path": "pa38",
+      "number": 42,
+      "path": "pa42",
+      "title": "Async lowering",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Async functions/blocks, suspension liveness and future state machines",
+      "test_families": [
+        "poll transitions",
+        "stored locals",
+        "readiness",
+        "suspension state"
+      ]
+    },
+    {
+      "number": 43,
+      "path": "pa43",
+      "title": "Async ownership",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Borrowing across suspension, pinning, cancellation and advanced async forms",
+      "test_families": [
+        "cancel at each state",
+        "drop order",
+        "self references",
+        "async closures/traits"
+      ]
+    },
+    {
+      "number": 44,
+      "path": "pa44",
       "title": "Frontend acceptance",
       "mode": "--emit-lowir",
       "status": "planned",
-      "scope": "Complete feature census, cross-feature corpus, debug locations and scaling",
+      "scope": "Complete language/library census, upstream crate corpus, debug locations, reproducibility and scaling",
       "test_families": [
         "all previous stages",
         "round trips",
         "no stubs",
         "deterministic output",
-        "performance"
+        "performance",
+        "upstream library and crate acceptance"
       ]
     }
   ]

@@ -243,6 +243,6 @@ migrated fixtures because the maintainer supports its constant argument.
 
 Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
 `make lint audit-rust test-harness test-upstream`. The root report includes PA19;
-PA25–PA38 remain planned and fail explicitly. See
+PA25–PA44 remain planned and fail explicitly. See
 [the validation review](../docs/pa19-validation.md) for qualifications, reference
 review, native evidence and the distinction between inspection and execution.

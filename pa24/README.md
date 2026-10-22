@@ -3,7 +3,7 @@
 Status: **implemented-draft**. The maintainer reference, manifest and reviewed
 byte oracles implement the contract below.
 Prerequisite: PA23. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. Later edition support is explicit at PA36.
+2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
 ## Required implementation
 
@@ -53,7 +53,7 @@ Consult the pinned [closure type rules](../doc/rust-reference/src/types/closure.
 [call expressions](../doc/rust-reference/src/expressions/call-expr.md) and
 [coercions](../doc/rust-reference/src/type-coercions.md). Unsafe capture operations
 with raw pointers or packed storage belong to PA27; owning library pointers
-belong to PA26. Async closures belong to PA32/PA33. PA29 owns cross-crate transport
+belong to PA26. Async closures belong to PA42/PA43. PA29 owns cross-crate transport
 of exposed closure and opaque types. These boundaries do not excuse missing
 ordinary capture, call or lifetime checks in this assignment.
 
