@@ -36,7 +36,13 @@ fn repeated_wide_inputs_resolve_and_import_in_constant_work() -> Result<(), Erro
             assert_eq!(isolated.steps, 2);
         }
         assert_eq!(context.steps - before, 3 * width);
-        assert_eq!(context.settled.as_ref().map(|map| map.len()), Some(1));
+        assert_eq!(
+            context
+                .settled
+                .as_ref()
+                .map(|facts| facts.iter().flatten().count()),
+            Some(1)
+        );
     }
     Ok(())
 }

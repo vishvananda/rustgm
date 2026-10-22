@@ -33,20 +33,20 @@ impl Definitions {
         if let Some(result) = self
             .instances
             .as_ref()
-            .and_then(|i| i.prepared.get(&(root, references)))
+            .and_then(|i| i.prepared.get(root, references))
         {
-            return *result;
+            return result;
         }
         let mut seen = HashSet::default();
         let result = self.prepare_graph(types, root, references, &mut seen);
         let instances = self.instances.get_or_insert_with(Default::default);
         if result.is_ok() {
-            instances
-                .prepared
-                .extend(seen.into_iter().map(|ty| ((ty, references), Ok(()))));
+            for ty in seen {
+                instances.prepared.insert(ty, references, Ok(()));
+            }
         } else if seen.contains(&root) {
             // A failed query cannot publish unfinished descendants as prepared.
-            instances.prepared.insert((root, references), result);
+            instances.prepared.insert(root, references, result);
         }
         result
     }
@@ -61,8 +61,8 @@ impl Definitions {
         while let Some(ty) = work.pop() {
             let instances = self.instances.get_or_insert_with(Default::default);
             instances.charge(1)?;
-            if let Some(result) = instances.prepared.get(&(ty, references)) {
-                (*result)?;
+            if let Some(result) = instances.prepared.get(ty, references) {
+                result?;
                 continue;
             }
             if seen.contains(&ty) {

@@ -22,6 +22,9 @@ pub(in crate::sema) struct Requirements {
     types: HashSet<(TypeId, u16)>,
     scopes: HashMap<u16, Scope>,
     fold_work: usize,
+    /// Reusable traversal storage; empty between queries.
+    work: Vec<(TypeId, u16)>,
+    unique: HashSet<Clause>,
 }
 struct Scope {
     captures: Captures,
@@ -86,9 +89,30 @@ pub(super) fn requirements_inside(
     depth: u16,
     checked: &mut Requirements,
 ) -> Result<Vec<Clause>, &'static str> {
-    let mut work = vec![(root, depth)];
+    // Only nominal instances contribute requirements, and the structural
+    // property covers every edge followed below.
+    if facts.types.contains_nominals(root) == Some(false) {
+        return Ok(Vec::new());
+    }
+    let mut work = std::mem::take(&mut checked.work);
+    let mut unique = std::mem::take(&mut checked.unique);
+    work.clear();
+    unique.clear();
+    work.push((root, depth));
+    let result = collect(facts, &mut work, &mut unique, checked);
+    work.clear();
+    unique.clear();
+    checked.work = work;
+    checked.unique = unique;
+    result
+}
+fn collect(
+    facts: &mut Declarations,
+    work: &mut Vec<(TypeId, u16)>,
+    unique: &mut HashSet<Clause>,
+    checked: &mut Requirements,
+) -> Result<Vec<Clause>, &'static str> {
     let mut predicates = Vec::new();
-    let mut unique = HashSet::default();
     while let Some((ty, depth)) = work.pop() {
         if !checked.types.insert((ty, depth)) {
             continue;
@@ -125,7 +149,7 @@ pub(super) fn requirements_inside(
                         predicates.push(predicate);
                     }
                 }
-                arguments_work(facts, arguments, depth, &mut work)?;
+                arguments_work(facts, arguments, depth, work)?;
             }
             Kind::Tuple(list) => {
                 work.extend(
@@ -164,13 +188,13 @@ pub(super) fn requirements_inside(
                 ..
             } => {
                 work.push((environment, depth));
-                arguments_work(facts, arguments, depth, &mut work)?;
+                arguments_work(facts, arguments, depth, work)?;
             }
             Kind::FunctionItem { arguments, .. } => {
                 // The declaration already proved its signature, including local
                 // late binders. Item-use obligations validate its substitutions;
                 // replaying the template signature would capture caller lifetimes.
-                arguments_work(facts, arguments, depth, &mut work)?;
+                arguments_work(facts, arguments, depth, work)?;
             }
             _ => {}
         }

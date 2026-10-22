@@ -29,6 +29,10 @@ impl Registry {
         }
     }
 
+    /// The completed recipe published for this root, if any.
+    pub(super) fn root(&self, ty: TypeId) -> Option<RecipeId> {
+        self.roots.get(&ty).copied()
+    }
     pub(crate) fn contains_projection(&self, ty: TypeId) -> Option<bool> {
         self.roots.get(&ty).map(|&id| id != RecipeId::EMPTY)
     }

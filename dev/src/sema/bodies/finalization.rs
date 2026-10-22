@@ -55,21 +55,22 @@ impl Checker<'_> {
     ) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         self.publish_nested_progress()?;
-        let (solved, predicates, arguments) = std::mem::take(&mut self.state.infer)
-            .finish_with_arguments(
-                &mut self.facts.types,
-                self.state
-                    .call_types
-                    .obligations
-                    .iter()
-                    .map(|(_, predicate)| predicate),
-                self.state
-                    .call_types
-                    .constants
-                    .iter()
-                    .map(|pending| pending.arguments.as_slice()),
-            )
-            .map_err(|e| self.error(body, e))?;
+        let mut infer = std::mem::take(&mut self.state.infer);
+        let finished = infer.finish_with_arguments(
+            &mut self.facts.types,
+            self.state
+                .call_types
+                .obligations
+                .iter()
+                .map(|(_, predicate)| predicate),
+            self.state
+                .call_types
+                .constants
+                .iter()
+                .map(|pending| pending.arguments.as_slice()),
+        );
+        self.state.infer = infer.recycled();
+        let (solved, predicates, arguments) = finished.map_err(|e| self.error(body, e))?;
         self.publish_nested_body(&solved)?;
         let hidden = self.check_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;

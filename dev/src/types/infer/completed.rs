@@ -42,13 +42,7 @@ impl Context {
             Value::Known(ty) => ty,
             Value::Construct(Constructor::Primitive(p)) => TypeId::primitive(p),
             Value::Construct(Constructor::Never) => TypeId::NEVER,
-            _ => {
-                return Ok(self
-                    .settled
-                    .as_ref()
-                    .and_then(|map| map.get(&root))
-                    .copied());
-            }
+            _ => return Ok(self.settled_facts(root)),
         };
         Completed::canonical(store, ty)
     }
@@ -79,9 +73,7 @@ impl Context {
             };
             completed.include(facts);
         }
-        self.settled
-            .get_or_insert_with(Default::default)
-            .insert(root, completed);
+        self.set_settled(root, completed);
         Ok(Some(completed))
     }
 

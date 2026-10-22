@@ -24,6 +24,10 @@ impl Allocations {
     pub fn end(&self) -> u32 {
         self.end
     }
+    /// No trial or scope allocated a caller region identity.
+    pub fn untouched(&self) -> bool {
+        self.end == self.first && !self.monotonic && self.stream.is_none()
+    }
     pub fn record(&mut self, end: u32) {
         self.end = self.end.max(end);
         if self.monotonic {

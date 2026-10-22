@@ -920,7 +920,9 @@ impl Checker<'_> {
     }
     fn exit_expression(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         self.leave_safety(node)?;
-        self.state.type_annotations.remove(&node);
+        if !self.state.type_annotations.is_empty() {
+            self.state.type_annotations.remove(&node);
+        }
         self.save(node, term);
         let mut local_exit = false;
         if self

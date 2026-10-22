@@ -88,6 +88,10 @@ impl Assumptions {
                     .is_some_and(|index| index.candidates.contains_key(&(item, head)))
         })
     }
+    /// No caller trait clause is assumed.
+    pub fn is_empty(&self) -> bool {
+        self.index.is_none()
+    }
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
         self.index
             .as_ref()

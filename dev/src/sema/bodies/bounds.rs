@@ -51,6 +51,13 @@ impl Checker<'_> {
         ty: TypeId,
         checked: &mut Requirements,
     ) -> Result<(), Error> {
+        // Outlives preparation and requirement walks both find work only at
+        // nominal instances or projections, which the structural properties cover.
+        if self.facts.types.contains_nominals(ty) == Some(false)
+            && self.facts.types.contains_projections(ty) == Some(false)
+        {
+            return Ok(());
+        }
         self.facts
             .lifetimes
             .nominal_requirements

@@ -284,6 +284,17 @@ impl Default for Store {
     }
 }
 impl Store {
+    /// Total size of the append-only canonical tables. Equal values before and
+    /// after a query certify that the query interned no new identity.
+    pub(crate) fn interned_extent(&self) -> usize {
+        self.kinds
+            .len()
+            .saturating_add(self.children.edge_count())
+            .saturating_add(self.regions.edge_count())
+            .saturating_add(self.argument_extent())
+            .saturating_add(self.trait_application_count())
+            .saturating_add(self.quantified_clauses().len())
+    }
     pub(crate) fn find_kind(&self, kind: Kind) -> Option<TypeId> {
         self.index.get(&kind).copied()
     }

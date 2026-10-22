@@ -1,6 +1,6 @@
 //! Inferred argument layouts keep type edges in the ordinary occurs-check graph.
 use super::constants::{ConstTermId, Constants};
-use super::{Constructor, Context, Error, ItemId, RegionId, Store, TermId, TypeId};
+use super::{Constructor, Context, Error, ItemId, RegionId, Store, TermId, TypeId, Value};
 use crate::{
     support::intern_slice::Slices,
     types::{GenericArgs, Kind, arguments::Argument as Canonical},
@@ -233,6 +233,164 @@ impl Context {
         store
             .intern_arguments(&values)
             .map_err(|_| Error::InvalidIdentity)
+    }
+    /// The canonical identity of a determined subtree whose every node is
+    /// already interned. This never interns, never steps and inspects at most
+    /// a small bounded subtree; `None` covers every other case.
+    /// # Errors
+    /// Rejects invalid inference identities.
+    pub fn find_identity(&mut self, store: &Store, term: TermId) -> Result<Option<TypeId>, Error> {
+        const LIMIT: usize = 64;
+        let mut work = vec![(self.root(term)?, false)];
+        let mut results: Vec<(TermId, TypeId)> = Vec::new();
+        let mut children = Vec::new();
+        let mut visited = 0_usize;
+        while let Some((id, finish)) = work.pop() {
+            let id = self.root(id)?;
+            if results.iter().any(|(done, _)| *done == id) {
+                continue;
+            }
+            visited += 1;
+            if visited > LIMIT {
+                return Ok(None);
+            }
+            let term = self.terms[id.0 as usize];
+            let kind = match term.value {
+                Value::Variable(_) => return Ok(None),
+                Value::Known(ty) => {
+                    results.push((id, ty));
+                    continue;
+                }
+                Value::Construct(kind) => kind,
+            };
+            if let Some(ty) = self.settled_type(id) {
+                results.push((id, ty));
+                continue;
+            }
+            if !finish {
+                work.push((id, true));
+                for child in self.edges[term.start as usize..term.end as usize]
+                    .iter()
+                    .rev()
+                {
+                    work.push((*child, false));
+                }
+                continue;
+            }
+            children.clear();
+            for offset in term.start..term.end {
+                let child = self.root(self.edges[offset as usize])?;
+                let Some(&(_, ty)) = results.iter().find(|(done, _)| *done == child) else {
+                    return Ok(None);
+                };
+                children.push(ty);
+            }
+            let Some(ty) = self.find_canonical(store, kind, &children)? else {
+                return Ok(None);
+            };
+            results.push((id, ty));
+        }
+        let root = self.root(term)?;
+        Ok(results
+            .iter()
+            .find(|(done, _)| *done == root)
+            .map(|(_, ty)| *ty))
+    }
+    /// Lookup-only counterpart of [`Self::canonical`] for closed constructors.
+    fn find_canonical(
+        &self,
+        store: &Store,
+        kind: Constructor,
+        children: &[TypeId],
+    ) -> Result<Option<TypeId>, Error> {
+        let first = || children.first().copied().ok_or(Error::InvalidIdentity);
+        let kind = match kind {
+            Constructor::Primitive(p) => Kind::Primitive(p),
+            Constructor::Parameter(id) => Kind::Parameter(id),
+            Constructor::Adt(item, args) => Kind::Adt(item, args),
+            Constructor::Never => Kind::Never,
+            Constructor::Tuple => {
+                let Some(list) = store.find_list(children) else {
+                    return Ok(None);
+                };
+                Kind::Tuple(list)
+            }
+            Constructor::Array(length) => Kind::Array {
+                element: first()?,
+                length,
+            },
+            Constructor::ArrayTerm(length) => Kind::ArrayTerm {
+                element: first()?,
+                length,
+            },
+            Constructor::Slice => Kind::Slice(first()?),
+            Constructor::Reference { mutable, region } => Kind::Reference {
+                mutable,
+                region,
+                referent: first()?,
+            },
+            Constructor::Pointer { mutable } => Kind::Pointer {
+                mutable,
+                pointee: first()?,
+            },
+            Constructor::Function {
+                bound_regions,
+                parameters,
+                unsafe_,
+                convention,
+            } => {
+                let parameters = parameters as usize;
+                let Some(list) =
+                    store.find_list(children.get(..parameters).ok_or(Error::InvalidIdentity)?)
+                else {
+                    return Ok(None);
+                };
+                Kind::Function {
+                    bound_regions,
+                    parameters: list,
+                    result: *children.get(parameters).ok_or(Error::InvalidIdentity)?,
+                    unsafe_,
+                    convention,
+                }
+            }
+            Constructor::FunctionItem(item, arguments) => Kind::FunctionItem {
+                item,
+                arguments,
+                signature: first()?,
+            },
+            Constructor::AdtArgs(item, id) => {
+                let mut values = Vec::with_capacity(self.slots(id)?.len());
+                let mut types = children.iter();
+                for slot in self.slots(id)? {
+                    values.push(match *slot {
+                        Slot::Lifetime(r) => Canonical::Lifetime(r),
+                        Slot::Type => Canonical::Type(*types.next().ok_or(Error::InvalidIdentity)?),
+                        Slot::Const(_) => return Ok(None),
+                    });
+                }
+                if types.next().is_some() {
+                    return Err(Error::InvalidIdentity);
+                }
+                let arguments = if values.iter().all(|v| matches!(v, Canonical::Lifetime(_))) {
+                    let regions: Vec<_> = values
+                        .iter()
+                        .filter_map(|v| match v {
+                            Canonical::Lifetime(region) => Some(*region),
+                            _ => None,
+                        })
+                        .collect();
+                    store.find_regions(&regions)
+                } else {
+                    store.find_mixed_arguments(&values)
+                };
+                let Some(arguments) = arguments else {
+                    return Ok(None);
+                };
+                Kind::Adt(item, arguments)
+            }
+            _ => return Ok(None),
+        };
+        Ok(store.find_kind(kind))
     }
     pub(super) fn canonical(
         &mut self,

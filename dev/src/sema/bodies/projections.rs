@@ -127,6 +127,7 @@ impl Pending {
                 .as_ref()
                 .is_some_and(|data| !data.normalizations.is_empty())
     }
+    #[inline]
     pub fn active(&self) -> bool {
         self.data.as_ref().is_some_and(|data| {
             data.continuation.is_some() || !data.tasks.is_empty() || !data.equations.is_empty()
@@ -341,7 +342,14 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    #[inline]
     pub(super) fn advance_projections(&mut self, body: NodeId) -> Result<bool, Error> {
+        if !self.state.projections.active() && !self.state.notifications.waiting() {
+            return Ok(false);
+        }
+        self.advance_pending_projections(body)
+    }
+    fn advance_pending_projections(&mut self, body: NodeId) -> Result<bool, Error> {
         match self.poll_projections(body)? {
             Advance::Ready(progress) => Ok(progress),
             Advance::Definition(dependency) => {

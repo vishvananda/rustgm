@@ -178,7 +178,7 @@ impl Context {
                 Some(TypeId::primitive(primitive))
             }
             Value::Construct(super::Constructor::Never) => Some(TypeId::NEVER),
-            _ => self.settled.as_ref()?.get(&root)?.identity,
+            _ => self.settled_facts(root)?.identity,
         }
     }
 
@@ -195,9 +195,7 @@ impl Context {
             return Ok(());
         }
         if let Some(completed) = super::completed::Completed::canonical(store, ty)? {
-            self.settled
-                .get_or_insert_with(Default::default)
-                .insert(root, completed);
+            self.set_settled(root, completed);
         }
         Ok(())
     }

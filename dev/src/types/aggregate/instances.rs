@@ -14,9 +14,49 @@ pub(super) struct Instances {
     projected_templates: HashMap<crate::types::ItemId, bool>,
     projections: HashSet<TypeId>,
     fields: Vec<ListId>,
-    pub prepared: HashMap<(TypeId, bool), Result<(), &'static str>>,
+    pub prepared: Prepared,
     pub steps: usize,
     retained: usize,
+}
+/// Completed preparation roots, dense by canonical type identity. Successes
+/// are one bit per mode; the rare failures keep their diagnostic.
+#[derive(Default)]
+pub(super) struct Prepared {
+    ready: Vec<u8>,
+    failed: HashMap<(TypeId, bool), &'static str>,
+}
+impl Prepared {
+    const fn mask(references: bool) -> u8 {
+        if references { 2 } else { 1 }
+    }
+    pub fn get(&self, ty: TypeId, references: bool) -> Option<Result<(), &'static str>> {
+        if self
+            .ready
+            .get(ty.0 as usize)
+            .is_some_and(|bits| bits & Self::mask(references) != 0)
+        {
+            return Some(Ok(()));
+        }
+        self.failed.get(&(ty, references)).map(|error| Err(*error))
+    }
+    pub fn insert(&mut self, ty: TypeId, references: bool, result: Result<(), &'static str>) {
+        match result {
+            Ok(()) => {
+                let index = ty.0 as usize;
+                if index >= self.ready.len() {
+                    self.ready.resize(index + 1, 0);
+                }
+                self.ready[index] |= Self::mask(references);
+                self.failed.remove(&(ty, references));
+            }
+            Err(error) => {
+                if let Some(bits) = self.ready.get_mut(ty.0 as usize) {
+                    *bits &= !Self::mask(references);
+                }
+                self.failed.insert((ty, references), error);
+            }
+        }
+    }
 }
 impl Instances {
     pub(super) fn has_projections(&self, ty: TypeId) -> bool {

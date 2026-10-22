@@ -91,6 +91,15 @@ impl Checker<'_> {
                 .prepare(&mut self.facts.types, ty)
                 .map_err(|error| self.error(node, error));
         }
+        if self
+            .state
+            .storage
+            .get_or_insert_with(Default::default)
+            .completed(self.facts, ty)
+            .map_err(|error| self.error(node, error))?
+        {
+            return Ok(());
+        }
         self.prepare_storage_batch(node, &[ty])
     }
 
@@ -154,6 +163,10 @@ impl Batch {
             let query = if let Some(query) = &mut self.query {
                 query
             } else if let Some(root) = self.roots.next() {
+                // A published root needing no proof completes immediately.
+                if preparation.completed(facts, root)? {
+                    continue;
+                }
                 self.query.insert(Query::new(root))
             } else {
                 return Ok(None);

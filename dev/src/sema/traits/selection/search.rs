@@ -77,7 +77,7 @@ mod universal_inference_tests;
 mod wakeups;
 pub(in crate::sema) use suspension::{
     Pending, Progress, begin, begin_canonical, begin_normalized, begin_projection, begin_refining,
-    begin_scoped_refining,
+    begin_refining_untouched, begin_scoped_refining,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]

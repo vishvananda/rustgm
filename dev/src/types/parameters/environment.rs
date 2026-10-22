@@ -83,6 +83,11 @@ impl Environment {
         self.region_mapping
     }
 
+    /// No caller premise can contribute evidence for a goal without parameters,
+    /// projections or regions: only parameter abilities are present.
+    pub(crate) fn is_neutral(&self) -> bool {
+        self.has_only_parameters() && !self.shape_assumptions && self.projection_promises.is_none()
+    }
     /// Parameter identities and abilities contain no regions to substitute.
     /// Composite and trait predicates still need the ordinary binder mapping.
     pub(crate) fn has_only_parameters(&self) -> bool {

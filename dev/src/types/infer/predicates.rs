@@ -248,7 +248,7 @@ impl Context {
     /// # Errors
     /// Reports the failures of `finish` and unresolved or invalid predicate arguments.
     pub fn finish_with_predicates<'p>(
-        self,
+        mut self,
         store: &mut Store,
         predicates: impl Iterator<Item = &'p Predicate>,
     ) -> Result<(Solved, Vec<Canonical>), Error> {
@@ -260,8 +260,9 @@ impl Context {
     /// Finish independent item argument lists without inventing a value type.
     /// # Errors
     /// Rejects unresolved types, constants, obligations and invalid item arguments.
+    /// The finished context retains only storage; see [`Context::recycled`].
     pub fn finish_with_arguments<'p>(
-        mut self,
+        &mut self,
         store: &mut Store,
         predicates: impl Iterator<Item = &'p Predicate>,
         arguments: impl Iterator<Item = &'p [Argument]>,

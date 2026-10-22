@@ -11,6 +11,14 @@ pub(in crate::sema) struct Pending {
     caller: OwnedCaller,
     query: Query,
 }
+/// Optional caller observers of one search.
+#[derive(Default)]
+struct Hooks<'a> {
+    /// Completed concrete proofs shared within one fixed caller and mode.
+    reuse: Option<&'a mut super::Reuse>,
+    /// Receives whether no caller region identity was allocated.
+    untouched: Option<&'a mut bool>,
+}
 #[derive(Clone, Copy)]
 enum Mode<'a> {
     Plain,
@@ -43,7 +51,7 @@ pub(in crate::sema) fn begin(
         caller,
         availability,
         Mode::Plain,
-        None,
+        Hooks::default(),
     )
 }
 
@@ -64,7 +72,31 @@ pub(in crate::sema) fn begin_refining(
         caller,
         availability,
         Mode::Refining(binders.as_ref().map(<[u32; 1]>::as_slice)),
-        None,
+        Hooks::default(),
+    )
+}
+
+/// As [`begin_refining`] without binders, also reporting whether the search
+/// left the caller's region allocator untouched (no trial captured a region).
+pub(in crate::sema) fn begin_refining_untouched(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    availability: Availability,
+    untouched: &mut bool,
+) -> Result<Progress, String> {
+    begin_with_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        availability,
+        Mode::Refining(None),
+        Hooks {
+            reuse: None,
+            untouched: Some(untouched),
+        },
     )
 }
 
@@ -85,7 +117,7 @@ pub(in crate::sema) fn begin_scoped_refining(
         caller,
         availability,
         Mode::Refining((!ambient.is_empty()).then_some(ambient)),
-        None,
+        Hooks::default(),
     )
 }
 
@@ -104,7 +136,7 @@ pub(in crate::sema) fn begin_normalized(
         caller,
         availability,
         Mode::Normalized,
-        None,
+        Hooks::default(),
     )
 }
 
@@ -123,7 +155,7 @@ pub(in crate::sema) fn begin_projection(
         caller,
         availability,
         Mode::Projection(inputs.1),
-        None,
+        Hooks::default(),
     )
 }
 
@@ -143,7 +175,10 @@ pub(in crate::sema) fn begin_canonical(
         caller,
         mode.0,
         Mode::Canonical(mode.1),
-        reuse,
+        Hooks {
+            reuse,
+            untouched: None,
+        },
     )
 }
 
@@ -154,8 +189,12 @@ fn begin_with_inputs(
     caller: OwnedCaller,
     availability: Availability,
     mode: Mode<'_>,
-    mut reuse: Option<&mut super::Reuse>,
+    hooks: Hooks<'_>,
 ) -> Result<Progress, String> {
+    let Hooks {
+        mut reuse,
+        untouched,
+    } = hooks;
     if goal.trait_arguments().is_some()
         && !matches!(
             mode,
@@ -203,6 +242,9 @@ fn begin_with_inputs(
     let progress = search.begin(facts, first)?;
     match progress {
         continuation::Progress::Ready(decision) => {
+            if let Some(untouched) = untouched {
+                *untouched = search.query.allocations.untouched();
+            }
             search.return_reuse(facts, decision, reuse)?;
             search
                 .result(facts, context, goal, decision)

@@ -519,8 +519,8 @@ impl Checker<'_> {
     }
     fn local_annotations(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
         let mut scan = Vec::new();
-        let mut nodes = Vec::new();
-        let mut contexts = Vec::new();
+        let mut stack = Vec::new();
+        let mut children = Vec::new();
         for (index, unit) in self.report.package.units.iter().enumerate() {
             if unit.include_context.is_some() {
                 continue;
@@ -529,14 +529,20 @@ impl Checker<'_> {
                 u32::try_from(index)
                     .map_err(|_| Error::at(FileId(0), 0, "too many source files"))?,
             );
-            let mut seen = vec![false; unit.configured.ast.nodes.len()];
-            nodes.push(unit.configured.ast.root);
-            contexts.push(regions::Context::ALIAS);
-            while let Some(node) = nodes.pop() {
-                let inherited = contexts.pop().ok_or_else(|| {
-                    self.error(NodeKey { file, node }, "missing annotation context")
-                })?;
-                let context = self.local_context(NodeKey { file, node }, inherited);
+            let ast = &unit.configured.ast;
+            let mut seen = vec![false; ast.nodes.len()];
+            stack.push((ast.root, regions::Context::ALIAS));
+            while let Some((node, inherited)) = stack.pop() {
+                let kind = ast.node(node).kind;
+                // Only bodies, closures and inline constants open a context.
+                let context = if matches!(
+                    kind,
+                    Kind::Item(_) | Kind::Closure { .. } | Kind::Block { .. }
+                ) {
+                    self.local_context_of(NodeKey { file, node }, kind, inherited)
+                } else {
+                    inherited
+                };
                 if !unit.configured.active[node.0 as usize]
                     || std::mem::replace(&mut seen[node.0 as usize], true)
                 {
@@ -549,11 +555,17 @@ impl Checker<'_> {
                         "annotation traversal work budget exceeded",
                     ));
                 }
-                let mark = nodes.len();
-                unit.configured.ast.push_children(node, &mut nodes);
-                nodes[mark..].reverse();
-                contexts.resize(nodes.len(), context);
-                self.local_annotation(NodeKey { file, node }, context, steps, limit, &mut scan)?;
+                children.clear();
+                ast.push_children(node, &mut children);
+                stack.extend(children.iter().rev().map(|&child| (child, context)));
+                self.local_annotation(
+                    NodeKey { file, node },
+                    kind,
+                    context,
+                    steps,
+                    limit,
+                    &mut scan,
+                )?;
             }
         }
         Ok(())
@@ -561,12 +573,27 @@ impl Checker<'_> {
     fn local_annotation(
         &mut self,
         key: NodeKey,
+        kind: Kind,
         context: regions::Context,
         steps: &mut usize,
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        if let Kind::GenericMethodCall { method, .. } = self.kind(key) {
+        // Method and alias paths are keyed by `Path`/`Qualified` nodes or need
+        // a resolved reference; every other check below names its own kind.
+        if !matches!(
+            kind,
+            Kind::GenericMethodCall { .. }
+                | Kind::Path { .. }
+                | Kind::Qualified { .. }
+                | Kind::Closure { .. }
+                | Kind::Let { .. }
+                | Kind::Cast { .. }
+        ) && self.facts.node(key).is_none_or(|f| f.reference.is_none())
+        {
+            return Ok(());
+        }
+        if let Kind::GenericMethodCall { method, .. } = kind {
             self.prepare_method_arguments(key, method, context, steps, limit, scan)?;
         }
         if self.schedule_method_path(key, context, steps, limit, scan)? {
@@ -576,20 +603,20 @@ impl Checker<'_> {
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             self.drain(steps, limit)?;
         }
-        if matches!(self.kind(key), Kind::Path { .. })
+        if matches!(kind, Kind::Path { .. })
             && let Some(owner) = self.generic_use_owner(key)
         {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
             self.drain(steps, limit)?;
         }
-        if let Kind::Closure { parameters, .. } = self.kind(key) {
+        if let Kind::Closure { parameters, .. } = kind {
             self.closure_annotation_inputs(key, parameters, context, steps, limit, scan)?;
         }
         let (Kind::Let { ty: Some(ty), .. }
         | Kind::Cast { ty, .. }
         | Kind::Closure {
             result: Some(ty), ..
-        }) = self.kind(key)
+        }) = kind
         else {
             return Ok(());
         };

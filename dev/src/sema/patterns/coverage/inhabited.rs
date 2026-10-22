@@ -12,13 +12,45 @@ use std::sync::Arc;
 pub struct Cache {
     values: HashMap<(ModuleId, TypeId), bool>,
     tags: HashMap<(ModuleId, TypeId, bool), Arc<[VariantId]>>,
+    /// Inhabitation queries that were not answered by the tables above.
+    misses: u64,
+    /// Coverage storage between queries; never consulted as a result cache.
+    pub(super) scratch: super::Scratch,
+    /// Completed matches by structural key, recorded only when every
+    /// inhabitation query was already cached, so their work is reproducible.
+    matches: HashMap<Vec<u64>, super::Outcome>,
+    /// Reusable key construction storage.
+    key: Vec<u64>,
+    key_work: Vec<crate::sema::patterns::PatternId>,
+}
+impl Cache {
+    /// Take the reusable key buffers; return them with [`Self::restore_key`].
+    pub fn take_key(&mut self) -> (Vec<u64>, Vec<crate::sema::patterns::PatternId>) {
+        (
+            std::mem::take(&mut self.key),
+            std::mem::take(&mut self.key_work),
+        )
+    }
+    pub fn restore_key(&mut self, key: Vec<u64>, work: Vec<crate::sema::patterns::PatternId>) {
+        self.key = key;
+        self.key_work = work;
+    }
+    pub fn misses(&self) -> u64 {
+        self.misses
+    }
+    pub fn outcome(&self, key: &[u64]) -> Option<&super::Outcome> {
+        self.matches.get(key)
+    }
+    pub fn remember(&mut self, key: Vec<u64>, outcome: super::Outcome) {
+        self.matches.insert(key, outcome);
+    }
 }
 
 pub struct Inhabited<'a> {
     pub facts: &'a Declarations,
     report: &'a Report,
     module: ModuleId,
-    cache: &'a mut Cache,
+    pub(super) cache: &'a mut Cache,
 }
 impl<'a> Inhabited<'a> {
     pub fn new(
@@ -46,6 +78,7 @@ impl<'a> Inhabited<'a> {
             graph.charge()?;
             return Ok(value);
         }
+        self.cache.misses += 1;
         let mut work = vec![(ty, false)];
         while let Some((ty, finish)) = work.pop() {
             graph.charge()?;
@@ -169,6 +202,7 @@ impl<'a> Inhabited<'a> {
         if let Some(tags) = self.cache.tags.get(&key) {
             return Ok(Arc::clone(tags));
         }
+        self.cache.misses += 1;
         let mut tags = Vec::new();
         for &variant in self.facts.members.variants(item) {
             graph.charge()?;

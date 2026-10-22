@@ -71,6 +71,14 @@ pub(super) struct Storage {
     constant_index: HashMap<ConstKind, ConstId>,
 }
 impl Store {
+    pub(super) fn argument_extent(&self) -> usize {
+        self.arguments.as_ref().map_or(0, |storage| {
+            storage
+                .mixed
+                .edge_count()
+                .saturating_add(storage.constants.len())
+        })
+    }
     pub(crate) fn find_regions(&self, values: &[RegionId]) -> Option<GenericArgs> {
         self.regions.find(values).map(GenericArgs)
     }

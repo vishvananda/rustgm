@@ -8,8 +8,17 @@ impl Checker<'_> {
         key: NodeKey,
         inherited: regions::Context,
     ) -> regions::Context {
+        self.local_context_of(key, self.kind(key), inherited)
+    }
+    /// [`Self::local_context`] for a node whose kind the caller already read.
+    pub(super) fn local_context_of(
+        &self,
+        key: NodeKey,
+        kind: super::Kind,
+        inherited: regions::Context,
+    ) -> regions::Context {
         if matches!(
-            self.kind(key),
+            kind,
             super::Kind::Closure { .. }
                 | super::Kind::Block {
                     flavor: crate::syntax::ast::BlockFlavor::Const,
@@ -21,7 +30,7 @@ impl Checker<'_> {
                 ..inherited
             };
         }
-        let super::Kind::Item(index) = self.kind(key) else {
+        let super::Kind::Item(index) = kind else {
             return inherited;
         };
         let item = self.report.package.unit(key.file).configured.ast.items[index as usize];

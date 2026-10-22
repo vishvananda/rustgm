@@ -88,6 +88,7 @@ impl Notifications {
         }
         Ok(None)
     }
+    #[inline]
     pub fn waiting(&self) -> bool {
         self.data
             .as_ref()

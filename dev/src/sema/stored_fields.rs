@@ -74,6 +74,23 @@ impl Preparation {
             .ok_or("storage normalization work budget exceeded")?;
         Ok(())
     }
+    /// Whether a published root needs no further field proof in this body.
+    /// This is exactly the immediate completion of [`Self::prepare`], which
+    /// then neither normalizes nor adds caller evidence.
+    pub(crate) fn completed(
+        &mut self,
+        facts: &Declarations,
+        root: TypeId,
+    ) -> Result<bool, &'static str> {
+        let Some(recipe) = facts.stored_fields.as_ref().and_then(|r| r.root(root)) else {
+            return Ok(false);
+        };
+        if recipe == RecipeId::EMPTY || self.complete.contains(&recipe) {
+            self.charge(1)?;
+            return Ok(true);
+        }
+        Ok(false)
+    }
     pub(crate) fn prepare(
         &mut self,
         facts: &mut Declarations,

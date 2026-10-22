@@ -139,6 +139,8 @@ pub struct Generics {
     pub(super) nominal_requirements:
         HashMap<TypeId, Arc<[crate::types::parameters::clauses::Clause]>>,
     pub(super) has_nominal_requirements: bool,
+    /// Crate-wide answers for closed body goals in neutral callers.
+    pub(super) selection_memo: super::traits::selection::Memo,
     pub predicates: HashMap<DefId, Vec<Predicate>>,
     /// Prefix before supertrait elaboration. Implied assumptions are not additional
     /// impl selection conditions: re-proving them can manufacture a circular goal.
