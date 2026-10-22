@@ -62,6 +62,23 @@ impl Declarations {
     }
 }
 impl SourceComputation {
+    /// Observation shares immutable graph facts, never caller proof authority.
+    pub(in crate::sema) fn with_argument_regions<T, E: From<&'static str>>(
+        facts: &mut Declarations,
+        selected: Instance,
+        operation: impl FnOnce(&Declarations, &[RegionId]) -> Result<T, E>,
+    ) -> Result<T, E> {
+        if facts.source_computations.is_none() {
+            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+            let catalog = catalog::Catalog::new().map_err(E::from)?;
+            facts.constant_work.source_context_bytes = catalog.retained_bytes();
+            facts.source_computations = Some(Box::new(Computations(catalog)));
+        }
+        let context = CallerInstance::Initializer(selected);
+        observed_arguments::prepare(facts, context, 0).map_err(E::from)?;
+        let regions = observed_arguments::regions(facts, context).map_err(E::from)?;
+        operation(facts, regions)
+    }
     pub(crate) fn context_order(self, facts: &Declarations) -> Result<[u32; 8], &'static str> {
         let (entry, caller) = self.entry(facts)?;
         Ok([
@@ -170,6 +187,35 @@ impl SourceComputation {
                 }
             }
         }
+        let nested = facts
+            .types
+            .arguments(entry.selected.arguments)
+            .ok_or("missing source arguments")?
+            .any(|argument| {
+                matches!(argument, Argument::Type(ty)
+                if facts.types.needs_region_context(ty) == Some(true))
+            });
+        if nested {
+            let mut visits = 0;
+            let observed = Self::with_argument_regions(facts, entry.selected, |facts, regions| {
+                for region in regions {
+                    visits += 1;
+                    if !facts
+                        .body_regions
+                        .get(region.0 as usize - 1)
+                        .is_some_and(|owner| {
+                            owner.body == caller.source && owner.source == caller.source
+                        })
+                    {
+                        return Err("source computation has a foreign caller lifetime");
+                    }
+                }
+                Ok(!regions.is_empty())
+            });
+            facts.body_work.canonical_steps =
+                facts.body_work.canonical_steps.saturating_add(visits);
+            nonstatic |= observed?;
+        }
         if !nonstatic && !entry.seal.is_some_and(|seal| seal.projected(facts)) {
             return Err("source computation requires an owned open lifetime");
         }
@@ -215,7 +261,7 @@ impl SourceComputation {
                 Argument::Type(ty) => {
                     facts.types.contains_parameters(ty) == Some(false)
                         && facts.types.contains_projections(ty) == Some(false)
-                        && facts.types.needs_region_context(ty) == Some(false)
+                        && facts.types.escaping_binders(ty) == Some(0)
                 }
                 Argument::Const(id) => {
                     matches!(facts.types.const_kind(id), Some(ConstKind::Value(_)))
@@ -266,6 +312,29 @@ fn source_result(types: &crate::types::Store, result: TypeId) -> bool {
     ) && types.contains_parameters(result) == Some(false)
         && types.contains_projections(result) == Some(false)
 }
+/// A routing decision only; normalization and final witness admission remain mandatory.
+fn source_result_candidate(types: &crate::types::Store, result: TypeId) -> bool {
+    if source_result(types, result) {
+        return true;
+    }
+    if types.contains_parameters(result) != Some(false)
+        || types.contains_projections(result) != Some(true)
+    {
+        return false;
+    }
+    match types.kind(result) {
+        Some(
+            Kind::Projection(_)
+            | Kind::Tuple(_)
+            | Kind::Array { .. }
+            | Kind::Adt(_, _)
+            | Kind::Reference { mutable: false, .. },
+        ) => true,
+        Some(Kind::Opaque(id, _)) => types.opaque_declaration(id).is_some_and(|d| d.trait_result),
+        _ => false,
+    }
+}
+
 impl Queries<'_> {
     pub(super) fn source_computation(
         &mut self,

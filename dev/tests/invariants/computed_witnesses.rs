@@ -156,16 +156,11 @@ impl Executor for Capture {
                 .validate(facts, TypeId::primitive(crate::types::Primitive::U16))
                 .is_err()
         );
-        let region = facts
-            .types
-            .arguments(entry.selected.arguments)
-            .and_then(|mut a| {
-                a.find_map(|a| match a {
-                    Argument::Lifetime(r) if r != RegionId::STATIC => Some(r),
-                    _ => None,
-                })
+        let region =
+            SourceComputation::with_argument_regions(facts, entry.selected, |_, regions| {
+                regions.first().copied().ok_or("missing source lifetime")
             })
-            .ok_or_else(|| Error::at(super::super::FileId(0), 0, "missing source lifetime"))?;
+            .map_err(|e| Error::at(super::super::FileId(0), 0, e))?;
         let record = &mut facts.body_regions[region.0 as usize - 1];
         let previous = *record;
         record.body = other;
@@ -259,17 +254,31 @@ fn source_code_owner(
 }
 #[test]
 fn foreign_and_stale_source_witnesses_are_rejected() -> Result<(), Box<dyn std::error::Error>> {
+    for fixture in [
+        "lifetime-initializer-execution/fresh-dispatcher.rs",
+        "open-type-initializer-context/ordinary.rs",
+    ] {
+        capture_fixture(fixture)?;
+    }
+    Ok(())
+}
+fn capture_fixture(fixture: &str) -> Result<(), Box<dyn std::error::Error>> {
     let text = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa25/tests/spec/lifetime-initializer-execution/fresh-dispatcher.rs"),
+            .join("../pa25/tests/spec")
+            .join(fixture),
     )?;
-    let report = crate::test_source::resolve(&text, true)?;
+    let mut report = crate::test_source::resolve(&text, true)?;
     let count = Rc::new(Cell::new(0));
     let facts = crate::sema::declarations::analyze_with_executor(
         &report,
         Box::new(Capture(Rc::clone(&count))),
     )?;
-    let result = crate::pipeline::analyze(&report, facts);
+    let result = crate::pipeline::analyze(&report, facts).and_then(|prepared| {
+        let mut facts = prepared.facts;
+        let entry = crate::sema::entry::select(&mut report, &facts)?;
+        crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared.prepared)
+    });
     let error = result.err().ok_or("source capture did not stop analysis")?;
     assert!(
         error
@@ -465,6 +474,7 @@ fn legacy_ast_completed_operands_preserve_ordinary_body_selection()
         "projections/definition-readiness/lowir/generic-callable-late.rs",
         "selection/lookup-readiness/lowir/interleaved-trait-lookup.rs",
         "constants/value/lowir/qualified_lifetime.rs",
+        "projections/definition-readiness/lowir/partial-unique-reference-header.rs",
     ] {
         let text = std::fs::read_to_string(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))

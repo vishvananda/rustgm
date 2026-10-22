@@ -27,7 +27,8 @@ impl BodyCaller {
         instance: Instance,
         result: TypeId,
     ) -> Result<bool, &'static str> {
-        if !super::source_result(&facts.types, result) {
+        let canonical_result = super::source_result(&facts.types, result);
+        if !canonical_result && !super::source_result_candidate(&facts.types, result) {
             return Ok(false);
         }
         let mut open = false;
@@ -41,10 +42,10 @@ impl BodyCaller {
                 Argument::Type(ty) => {
                     if facts.types.contains_parameters(ty) != Some(false)
                         || facts.types.contains_projections(ty) != Some(false)
-                        || facts.types.needs_region_context(ty) != Some(false)
                     {
                         return Ok(false);
                     }
+                    open |= facts.types.needs_region_context(ty) == Some(true);
                 }
                 Argument::Const(id) => {
                     if !matches!(facts.types.const_kind(id), Some(ConstKind::Value(_))) {
@@ -52,6 +53,9 @@ impl BodyCaller {
                     }
                 }
             }
+        }
+        if !open && !canonical_result {
+            return Ok(false);
         }
         Ok(open
             || facts
@@ -97,6 +101,36 @@ impl BodyCaller {
             reservation: Reservation::default(),
         })
     }
+    fn original_input(
+        &mut self,
+        facts: &mut Declarations,
+        dispatcher: &mut Dispatcher,
+        input: Instance,
+    ) -> Result<Instance, String> {
+        dispatcher.retain_source_aliases(facts, input, &mut self.aliases)?;
+        let before = self.aliases.steps;
+        let result = (|| {
+            let available =
+                SourceComputation::with_argument_regions(facts, input, |_, regions| {
+                    for &region in regions {
+                        if !self.aliases.projection_input_available(region)? {
+                            return Ok::<_, &'static str>(false);
+                        }
+                    }
+                    Ok(true)
+                })?;
+            // A declaration-inferred input can have an exact ordinary AST value
+            // without belonging to this body's source namespace. Select it first;
+            // absence of anchors must never manufacture source authority.
+            if available {
+                input.substitute(&mut facts.types, &mut self.aliases)
+            } else {
+                Ok(input)
+            }
+        })();
+        facts.body_work.canonical_steps += self.aliases.steps - before;
+        result.map_err(String::from)
+    }
     pub(crate) fn prepare(
         &mut self,
         facts: &mut Declarations,
@@ -106,7 +140,22 @@ impl BodyCaller {
     ) -> Result<PreparedConstant, String> {
         // Retain the current selection's actual proof before choosing an
         // execution route. A prior target lookup alone is not caller evidence.
-        let selected = dispatcher.constant(facts, input)?;
+        // Input roots belong to this original Contract. Close those exact
+        // identities before selection opens the receiving dispatch universals.
+        let open_types = facts
+            .types
+            .arguments(input.arguments)
+            .ok_or("missing source arguments")?
+            .any(|argument| {
+                matches!(argument, Argument::Type(ty)
+                if facts.types.needs_region_context(ty) == Some(true))
+            });
+        let canonical_input = if open_types {
+            self.original_input(facts, dispatcher, input)?
+        } else {
+            input
+        };
+        let selected = dispatcher.constant(facts, canonical_input)?;
         if !Self::needed(facts, selected, actual_result)?
             || crate::sema::values::Reader::new(facts)
                 .associated(selected)

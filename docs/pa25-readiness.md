@@ -63,8 +63,13 @@ debts. They do not close the following required families:
   const-function controls pass source/native qualification; unpaid callers reach
   their actual lifetime proof. The two earlier owning fixture oracle additions
   below remain a publication prerequisite, rather than missing implementation.
-- Selected type arguments containing open caller lifetimes. Their exact owning
-  caller proof must supply authority without relaxing the ordinary concrete path.
+- Selected type arguments containing open caller lifetimes now route through
+  recursive, bounded Instance-keyed observation and actual caller ownership.
+  Ordinary, pattern, inline, nested, projected and nested-callable controls execute.
+  A paid trait-implementation premise still requires actual caller proof before
+  specialization may assume it; a source handle alone grants no such authority.
+  Unused rigid type parameters in generic constant patterns also remain a required
+  positive family, separately from parameter-free open-Type routing.
 - Source-associated uses inside conditional nested-output contracts. The original
   and instantiated conditional requirements must be discharged by the actual
   caller; no inherited summary is execution permission.
@@ -433,7 +438,92 @@ ordinary512 and constcall64 remain exact. The text command exits 1 for the
 existing central review set. New oracles, the newer public case count, combined
 full release and performance qualification remain integrator-owned.
 
-The next required caller-family implementation is open type arguments containing
-caller lifetimes. The current gate remains strict; recursive typed observation
-must establish actual caller ownership without granting proof. Conditional
-nested-output contexts also remain required. PA25 is still planned.
+The open-Type caller family below now implements parameter-free argument types
+with owned caller lifetimes. Paid declared premises, unused generic parameters
+and conditional nested-output contexts remain required. PA25 is still planned.
+
+
+## Open type arguments in source initializers
+
+The parameter-free type-argument family admits free caller lifetimes while
+retaining the exact selected Instance, original initializer, result seal and
+caller namespace. Nested callable-local binders stay local; escaping binders,
+parameters and projections remain excluded from final argument admission.
+Ordinary Associated requests retain their concrete gate. The actual raw operand
+and independently normalized requested result remain distinct.
+
+The existing immutable observed-argument catalog is reused for selected argument
+DAGs. Complete rows share observation work across uses and sibling contexts;
+every use still checks its actual Dispatcher reservation and every request checks
+its actual body owner, cold and warm. Observation-only catalog creation records
+storage and error work but creates no Caller, Publication or PreparedScope.
+The private pre-publication test cannot construct a BodyCaller from that cache.
+Closed and direct-lifetime paths retain their existing lazy behavior.
+
+Selection restoration adds identity entries only for observed free inputs owned
+by the actual caller, using the existing bounded restoration machinery. Existing
+equality replacements win via entry.or_insert; foreign gaps, unobserved and
+result-only identities stay unmapped. The original input is canonicalized through
+its exact retained Contract equality folder before dispatch opens its own
+universals. No equality, outlives fact, copied proof or execution permit is inferred
+from observation or a coincident numeric identity.
+
+The thirteen declared hypotheses live in
+`pa25/tests/open-type-initializer-outcomes.json`. Nine positive programs pass all
+three views, and unpaid/mismatched-result controls reach their real rejections.
+Two unchanged Rust-positive cases remain required: `paid` needs its actual caller
+premise proved before specialized initializer assumptions can be used;
+`generic-pattern` disproved the original negative hypothesis because its unused
+owner parameter does not affect the constant value. The failed hypothesis and
+all source hashes remain in the fourth probe receipt. Neither frontier is a
+language rejection or an assignment-completion exclusion.
+
+The private selected-DAG matrix varies width and repeated/sibling use counts
+independently at 8/32/128. Observation work is 37/109/397 at those widths; each
+subsequent lookup costs one step and the single-region row retains 484 logical
+bytes. A foreign sibling still rejects against the warm row. The current
+`private-second` receipt passes all four observer controls, the restoration-input
+control and four existing alias controls. The two pending PA13/PA16 oracle
+receipts from the preceding pattern handoff remain unchanged.
+
+
+The closing regression check caught two ordinary-route interactions. Applying
+source input closing before direct-lifetime selection broke the existing
+`qualified_lifetime.rs` static case. The fold is now limited to open Type
+arguments. The later whole-text check caught
+`partial-unique-reference-header.rs`: its declaration-inferred reference has an
+exact ordinary AST-completed value but no body-source anchor. The closing folder
+now exposes a charged read-only anchor-availability check. Original input closing
+runs only when every observed input already has its actual mapping; otherwise
+the ordinary current selection runs first. Only its exact completed value can
+reuse that route. An uncached source request still must pass the original mapping,
+ownership, result and proof gates. Unknown identities are not retained and no
+error from a failed graph fold is swallowed. Both unchanged regression sources
+are included in the focused private matrix; failed attempts and pins remain in
+`closing/` and `qualified/` for diagnosis.
+
+`routing-close/` passes strict all-target/all-feature release Clippy, the
+architecture/file audit (1,616 files, zero findings), 16 computation tests, one
+restoration-input test, four alias tests and four closing-folder tests. The
+source matrix qualifies nine positives and two negatives with Rust 1.98 full
+object emission and all three checked views; all nine positive native programs
+execute. `legacy-text-tail/` passes the exact grouped independent-selection,
+lookup-readiness and recursive-lookup work controls. The 89 Python harness tests
+and registration of 336 roots in 13 binaries pass; the subsequent layout check
+still stops at the already-declared PA13 manifest receipt. Upstream checks pass
+separately. Common layouts remain SourceComputation 8, Target 28, Request 56,
+Code 336 and Body 464 bytes. Catalog is 200 bytes: its preceding source-code index
+from `005bec4f` already added eight bytes; this checkpoint adds no retained field.
+
+`qualified-final/identity.json` pins candidate SHA-256
+`104a15606ee1a75bd10fe6574a6ccd7ad917f3744c78e86f0527d1f0954c0d86`
+and the 928-file production map SHA-256
+`3fb0f1da4686abbe2f77b50ee0aba86c84904309c4dd110a2ec390d412c8fe55`.
+The fixture provenance records the immutable `005bec4f` PA1–23 archive and the
+previously exported 467-case PA24 tree. All 8,255 existing worker-base comparisons
+preserve the preceding candidate: 8,248 exact plus the same seven inherited PA20
+review hashes, with no new status or byte differences. Ordinary512 and constcall64
+are exact. The raw PA20 stage still exits one for that retained review set; the
+closing comparison explicitly verifies its complete identity. Current-public
+case counts, the earlier oracle prerequisites, combined release and performance
+qualification remain integrator-owned.

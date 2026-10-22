@@ -352,7 +352,13 @@ impl Dispatcher {
                 arguments,
             }
         };
-        let result = implementation::restore_constant(facts, &mut self.context, result, &evidence)?;
+        let result = implementation::restore_constant(
+            facts,
+            &mut self.context,
+            result,
+            &evidence,
+            &self.obligations,
+        )?;
         self.extend_evidence(evidence)?;
         self.constants.insert(instance, result);
         Ok(result)

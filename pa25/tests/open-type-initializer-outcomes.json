@@ -1,0 +1,255 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "ordinary",
+      "path": "tests/spec/open-type-initializer-context/ordinary.rs",
+      "source_sha256": "ca2c8a57da29edcb94ff1a4ec5cf310430221cd84d8a4ca563c021e8936432c6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "pattern",
+      "path": "tests/spec/open-type-initializer-context/pattern.rs",
+      "source_sha256": "6df2a1e4fde263ad5bee0ac3c607c9f7e925456204a42ab60381f801d3cfb088",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "inline",
+      "path": "tests/spec/open-type-initializer-context/inline.rs",
+      "source_sha256": "996c5340835db0c0cff873105953e1bb88097fc3b6dea01e542dc4ec01db7f5e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "nested",
+      "path": "tests/spec/open-type-initializer-context/nested.rs",
+      "source_sha256": "d0ca4d5e6fc9cbd55d94982e790e1d278c6d53eba28067ec07f7980efe12fc30",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "function-binder",
+      "path": "tests/spec/open-type-initializer-context/function-binder.rs",
+      "source_sha256": "db29b51884f4d6ea570d2528db7b61de84a138b41dd4d0053aec36b77ea49c41",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "repeated",
+      "path": "tests/spec/open-type-initializer-context/repeated.rs",
+      "source_sha256": "01fd937cc662a5eb3b189b11ff0d4a6ae9a0728dab561b76dcadc45b44f3d304",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "projected",
+      "path": "tests/spec/open-type-initializer-context/projected.rs",
+      "source_sha256": "93521eea6c27254a4de707fe4791fd1a0c45a9556b4a35a57c21e16fcb8bce83",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "paid",
+      "path": "tests/spec/open-type-initializer-context/paid.rs",
+      "source_sha256": "9dafe603fef5d35ef9ef52e9930b3e6a879cca6bb24e42ea949291ba93f1138f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Required positive frontier: selected initializer specialization must prove its declared impl premise from actual caller inputs before using it as evidence. Current candidate reaches actual lifetime rejection; no Declared authority from source handle.",
+      "diagnostic": ""
+    },
+    {
+      "name": "unpaid",
+      "path": "tests/spec/open-type-initializer-context/unpaid.rs",
+      "source_sha256": "02f7e3263bf7dedfa8f74adfb8bdf48667b34d3cc04543d3fd91c2fbbf2db7f0",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": "lifetime"
+    },
+    {
+      "name": "wrong-result",
+      "path": "tests/spec/open-type-initializer-context/wrong-result.rs",
+      "source_sha256": "af35cbd23557f673fe14890036b7f0d24a865b4aa94fdf60db2bc58e112d2199",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": "incompatible types"
+    },
+    {
+      "name": "closed-control",
+      "path": "tests/spec/open-type-initializer-context/closed-control.rs",
+      "source_sha256": "621764090327b2bee45c34048b642a5b16e8f0e130ca0f670a098451447d46b0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "mutable-type",
+      "path": "tests/spec/open-type-initializer-context/mutable-type.rs",
+      "source_sha256": "d9d739c073c10b2b85b98faf8fc51d0fb11da00c7fccf9c283d047ce29e1e36a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "Qualified with pinned Rust object emission, checked views and native positives in routing-close; source hashes unchanged.",
+      "diagnostic": ""
+    },
+    {
+      "name": "generic-pattern",
+      "path": "tests/spec/open-type-initializer-context/generic-pattern.rs",
+      "source_sha256": "8222c109ef7fa8bfdbdaac3239bb49468358ef520e7fbdd506b8660ff0071657",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": false,
+      "status": "Required positive frontier: original negative hypothesis disproved by full Rust object emission; unused owner parameter does not affect the constant value. Preserved fourth receipt.",
+      "diagnostic": ""
+    }
+  ]
+}

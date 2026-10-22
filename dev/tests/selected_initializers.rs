@@ -13,6 +13,8 @@ mod computed;
 mod open;
 #[path = "helpers/objects.rs"]
 mod rustc;
+#[path = "selected_initializers/type_arguments.rs"]
+mod type_arguments;
 use crate::resolve as source;
 const CASES: &[(&str, bool)] = &[
     ("statements", true),

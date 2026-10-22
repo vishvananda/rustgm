@@ -7,10 +7,25 @@ use crate::{
 impl Dispatcher {
     pub(in crate::sema) fn retain_source_aliases(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         selected: crate::sema::values::Instance,
-        regions: &mut crate::types::substitute::Bound,
+        regions_fold: &mut crate::types::substitute::Bound,
     ) -> Result<(), String> {
+        if open_types(facts, selected)? {
+            return crate::sema::values::execution::SourceComputation::with_argument_regions(
+                facts,
+                selected,
+                |_, regions| {
+                    for &region in regions {
+                        self.context.account_work(1).map_err(|e| e.to_string())?;
+                        if self.obligations.owns_region(region) {
+                            regions_fold.retain_projection_anchor(region)?;
+                        }
+                    }
+                    Ok(())
+                },
+            );
+        }
         for argument in facts
             .types
             .arguments(selected.arguments)
@@ -21,7 +36,7 @@ impl Dispatcher {
                 && region != crate::types::RegionId::STATIC
                 && self.obligations.owns_region(region)
             {
-                regions.retain_projection_anchor(region)?;
+                regions_fold.retain_projection_anchor(region)?;
             }
         }
         Ok(())
@@ -47,6 +62,23 @@ impl Dispatcher {
             {
                 return Err("source argument is outside the retained caller proof".into());
             }
+        }
+        if open_types(facts, selected)? {
+            crate::sema::values::execution::SourceComputation::with_argument_regions(
+                facts,
+                selected,
+                |_, regions| {
+                    for &region in regions {
+                        self.context.account_work(1).map_err(|e| e.to_string())?;
+                        if !self.obligations.owns_region(region) {
+                            return Err(
+                                "source argument is outside the retained caller proof".to_owned()
+                            );
+                        }
+                    }
+                    Ok(())
+                },
+            )?;
         }
         Ok(selected)
     }
@@ -82,3 +114,17 @@ impl Dispatcher {
 #[cfg(test)]
 #[path = "../../../tests/invariants/kept_aliases.rs"]
 mod tests;
+
+fn open_types(
+    facts: &Declarations,
+    selected: crate::sema::values::Instance,
+) -> Result<bool, &'static str> {
+    Ok(facts
+        .types
+        .arguments(selected.arguments)
+        .ok_or("missing source arguments")?
+        .any(|argument| {
+            matches!(argument, crate::types::arguments::Argument::Type(ty)
+            if facts.types.needs_region_context(ty) == Some(true))
+        }))
+}

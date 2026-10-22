@@ -177,6 +177,25 @@ impl Bound {
                 .saturating_sub(crate::support::retained::map(&mapping.replacements))
         })
     }
+    /// Inspect only existing identity anchors before choosing a source input route.
+    /// Absence is not permission to retain or equate a foreign region.
+    pub(crate) fn projection_input_available(
+        &mut self,
+        region: RegionId,
+    ) -> Result<bool, &'static str> {
+        let Action::Regions(mapping) = &mut self.action else {
+            return Err("missing projection closure");
+        };
+        let Mode::Close(closing) = &mut mapping.mode else {
+            return Err("invalid projection closure mode");
+        };
+        let anchor = closing
+            .equations
+            .canonical_anchor(region, &mut self.steps)?;
+        Ok(mapping.replacements.contains_key(&anchor)
+            || anchor.bound_parts().is_some()
+            || anchor.0 < closing.caller_end)
+    }
     /// Keep an already-owned selected alias unchanged, without an equality or bound.
     /// The caller must establish its exact live proof ownership before this call.
     pub(crate) fn retain_projection_anchor(
@@ -285,7 +304,12 @@ mod tests {
             fold.region(RegionId::bound(0, 2)?, 0)?,
             RegionId::bound(1, 2)?
         );
+        assert!(fold.projection_input_available(RegionId(11))?);
+        assert!(fold.projection_input_available(RegionId(3))?);
+        assert!(!fold.projection_input_available(RegionId(13))?);
         assert!(fold.region(RegionId(13), 0).is_err());
+        assert!(fold.projection_input_available(RegionId::STATIC)?);
+        assert!(fold.projection_input_available(RegionId::bound(0, 2)?)?);
         let mut store = Store::default();
         let reference = store.intern(Kind::Reference {
             mutable: false,

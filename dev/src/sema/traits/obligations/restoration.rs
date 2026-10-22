@@ -7,26 +7,44 @@ impl Obligations {
     /// Restore only components anchored in the caller, preserving every equation
     /// in this proof. `require` must still discharge them before publication.
     pub(crate) fn restoration(&self) -> Result<Bound, &'static str> {
-        self.restore::<false>(false, &mut 0)
+        self.restore::<false>(false, None, &mut 0)
     }
 
     pub(crate) fn restoration_counted(&self, work: &mut usize) -> Result<Bound, &'static str> {
-        self.restore::<true>(false, work)
+        self.restore::<true>(false, None, work)
     }
 
     /// Partial inference can determine a previously unknown input with a fresh
     /// lifetime. Keep it only when the body retains this selection's whole proof.
     pub(crate) fn body_restoration(&self) -> Result<Bound, &'static str> {
-        self.restore::<false>(true, &mut 0)
+        self.restore::<false>(true, None, &mut 0)
     }
 
     pub(crate) fn body_restoration_counted(&self, work: &mut usize) -> Result<Bound, &'static str> {
-        self.restore::<true>(true, work)
+        self.restore::<true>(true, None, work)
+    }
+
+    /// Preserve only observed inputs actually owned by this retained caller.
+    pub(crate) fn body_restoration_with_inputs_counted(
+        &self,
+        caller: &Self,
+        selected_free: &[RegionId],
+        work: &mut usize,
+    ) -> Result<Bound, &'static str> {
+        *work = work.saturating_add(1);
+        if selected_free.len().saturating_add(self.equalities.len()) > 1_000_000
+            || Bound::projection_closure_preflight(self.equalities.len(), selected_free.len())
+                > 64 * 1024 * 1024
+        {
+            return Err("lifetime restoration input budget exceeded");
+        }
+        self.restore::<true>(true, Some((caller, selected_free)), work)
     }
 
     fn restore<const COUNTED: bool>(
         &self,
         retain_private: bool,
+        inputs: Option<(&Self, &[RegionId])>,
         work: &mut usize,
     ) -> Result<Bound, &'static str> {
         if self.equalities.len() > 1_000_000 {
@@ -82,6 +100,17 @@ impl Obligations {
                         *work += 1;
                     }
                     replacements.insert(region, anchor);
+                }
+            }
+        }
+        if let Some((caller, inputs)) = inputs {
+            for &region in inputs {
+                *work = work.saturating_add(1);
+                if region != RegionId::STATIC
+                    && region.bound_parts().is_none()
+                    && caller.owns_region(region)
+                {
+                    replacements.entry(region).or_insert(region);
                 }
             }
         }
@@ -167,6 +196,55 @@ mod tests {
         proof.equalities.push((RegionId(21), RegionId(15)));
         assert!(proof.body_restoration().is_err());
         assert!(proof.restoration().is_err());
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod caller_inputs {
+    use super::*;
+    #[test]
+    fn only_observed_owned_inputs_gain_identity_and_equations_win() -> Result<(), &'static str> {
+        let mut caller = Obligations::new(1);
+        caller.regions.end = 3;
+        caller.resume_at(5)?;
+        caller.regions.end = 7;
+        let mut proof = Obligations::new(10);
+        proof.regions.end = 11;
+        let public = RegionId::bound(0, 0)?;
+        proof
+            .equalities
+            .extend([(RegionId(1), RegionId::STATIC), (RegionId(10), public)]);
+        proof.outlives.push((RegionId(2), RegionId::STATIC));
+        let equations = proof.equalities.clone();
+        let selected = [
+            RegionId(1),
+            RegionId(2),
+            RegionId(3),
+            RegionId(4),
+            RegionId(5),
+            RegionId(9),
+        ];
+        let mut work = 0;
+        let mut fold = proof.body_restoration_with_inputs_counted(&caller, &selected, &mut work)?;
+        assert_eq!(fold.region(RegionId(1), 0)?, RegionId::STATIC);
+        assert_eq!(fold.region(RegionId(2), 0)?, RegionId(2));
+        assert_eq!(fold.region(RegionId(5), 0)?, RegionId(5));
+        assert_eq!(fold.region(RegionId(10), 2)?, RegionId::bound(2, 0)?);
+        for id in [3, 4, 6, 9, 11, 20] {
+            assert!(fold.region(RegionId(id), 0).is_err());
+        }
+        assert!(work > selected.len());
+        assert_eq!(proof.equalities, equations);
+        assert_eq!(proof.outlives, [(RegionId(2), RegionId::STATIC)]);
+        let huge = vec![RegionId(2); 1_000_001];
+        let before = work;
+        assert!(
+            proof
+                .body_restoration_with_inputs_counted(&caller, &huge, &mut work)
+                .is_err()
+        );
+        assert!(work > before);
         Ok(())
     }
 }

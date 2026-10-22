@@ -41,10 +41,10 @@ fn selected_aliases_do_not_admit_foreign_gaps_or_result_only_regions()
     let selected = selected(&mut facts, RegionId(11))?;
     let before = fold.retained_allocation().0;
     let upper = fold.projection_anchor_growth(1)?;
-    dispatcher.retain_source_aliases(&facts, selected, &mut fold)?;
+    dispatcher.retain_source_aliases(&mut facts, selected, &mut fold)?;
     assert!(fold.retained_allocation().0 <= before + upper);
     let bytes = fold.retained_allocation().0;
-    dispatcher.retain_source_aliases(&facts, selected, &mut fold)?;
+    dispatcher.retain_source_aliases(&mut facts, selected, &mut fold)?;
     assert_eq!(fold.retained_allocation().0, bytes);
     assert_eq!(fold.region(RegionId(11), 0)?, RegionId(11));
     assert_eq!(fold.region(RegionId(1), 0)?, RegionId::bound(0, 0)?);
@@ -52,9 +52,10 @@ fn selected_aliases_do_not_admit_foreign_gaps_or_result_only_regions()
         assert!(fold.region(region, 0).is_err());
     }
     let foreign = self::selected(&mut facts, RegionId(15))?;
-    dispatcher.retain_source_aliases(&facts, foreign, &mut fold)?;
+    dispatcher.retain_source_aliases(&mut facts, foreign, &mut fold)?;
     assert!(dispatcher.source_instance(&mut facts, foreign).is_err());
     assert!(fold.region(RegionId(15), 0).is_err());
+    assert!(facts.source_computations.is_none());
     let result_only = facts.types.intern(Kind::Reference {
         mutable: false,
         region: RegionId(20),
@@ -72,7 +73,7 @@ fn selected_aliases_never_replace_original_source_mappings()
     let mut fold = source()?;
     assert!(
         dispatcher
-            .retain_source_aliases(&facts, selected, &mut fold)
+            .retain_source_aliases(&mut facts, selected, &mut fold)
             .is_err()
     );
     for region in [RegionId::STATIC, RegionId::bound(0, 0)?] {
@@ -99,6 +100,7 @@ fn selected_proof_aliases_compose_with_source_closing_without_paying_debts()
         &mut dispatcher.context,
         selected,
         &proof,
+        &dispatcher.obligations,
     )?;
     assert_eq!(restored, self::selected(&mut facts, RegionId(1))?);
     let mut source = source()?;
@@ -121,6 +123,7 @@ fn selected_proof_aliases_compose_with_source_closing_without_paying_debts()
         &mut dispatcher.context,
         selected,
         &missing,
+        &dispatcher.obligations,
     )?;
     assert_eq!(unanchored, selected);
     assert!(
@@ -135,7 +138,8 @@ fn selected_proof_aliases_compose_with_source_closing_without_paying_debts()
             &mut facts,
             &mut dispatcher.context,
             foreign,
-            &proof
+            &proof,
+            &dispatcher.obligations,
         )
         .is_err()
     );
@@ -165,12 +169,14 @@ fn selections_without_equalities_preserve_input_types_and_their_unpaid_debts()
             &mut facts,
             &mut dispatcher.context,
             selected,
-            &proof
+            &proof,
+            &dispatcher.obligations,
         )?,
         selected
     );
     assert_eq!(proof.types, [(reference, RegionId::STATIC)]);
     assert!(proof.equalities.is_empty());
     assert_eq!(dispatcher.context.steps, before);
+    assert!(facts.source_computations.is_none());
     Ok(())
 }

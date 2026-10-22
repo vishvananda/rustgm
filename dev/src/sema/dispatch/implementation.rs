@@ -119,6 +119,7 @@ pub(super) fn restore_constant(
     context: &mut Context,
     selected: crate::sema::values::Instance,
     proof: &Obligations,
+    caller: &Obligations,
 ) -> Result<crate::sema::values::Instance, String> {
     if proof.equalities.is_empty() {
         // No aliases can change. Caller input lifetimes occurring only in
@@ -127,7 +128,25 @@ pub(super) fn restore_constant(
     }
     let mut steps = 0;
     let result = (|| {
-        let mut restore = proof.body_restoration_counted(&mut steps)?;
+        let nested = facts
+            .types
+            .arguments(selected.arguments)
+            .ok_or("missing selected argument graph")?
+            .any(|argument| {
+                matches!(argument, crate::types::arguments::Argument::Type(ty)
+                if facts.types.needs_region_context(ty) == Some(true))
+            });
+        let mut restore = if nested {
+            crate::sema::values::execution::SourceComputation::with_argument_regions(
+                facts,
+                selected,
+                |_, regions| {
+                    proof.body_restoration_with_inputs_counted(caller, regions, &mut steps)
+                },
+            )?
+        } else {
+            proof.body_restoration_counted(&mut steps)?
+        };
         let result = selected.substitute(&mut facts.types, &mut restore);
         steps += restore.steps;
         result
