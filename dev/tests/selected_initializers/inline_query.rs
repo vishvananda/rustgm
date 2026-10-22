@@ -67,7 +67,7 @@ fn projected_inline_results_retain_their_required_execution_frontiers() -> TestR
         (
             1,
             [0, 1, 1],
-            "source computation retains a non-lifetime parameter",
+            "required lifetime does not outlive its target",
         ),
     )?;
     Ok(())

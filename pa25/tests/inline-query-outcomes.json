@@ -210,8 +210,8 @@
         "--emit-lowir": 1
       },
       "native": false,
-      "status": "required lifetime/output continuation; original outcome retained",
-      "diagnostic": "source computation retains a non-lifetime parameter"
+      "status": "rejects the actual unpaid caller lifetime relation after open-type specialization; original source and status retained",
+      "diagnostic": "required lifetime does not outlive its target"
     },
     {
       "name": "siblings",
