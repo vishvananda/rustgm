@@ -323,3 +323,9 @@ selected payload validity and physical field addresses without changing the
 retained ABI or granting new raw access permission. See
 `tests/default-tag-enum-outcomes.json` and `docs/pa27-default-tag-enum-bytes.md`.
 Broader niches and unsupported payload backing remain required work.
+
+The retained closure capture slice also supports canonical memory transfers over
+qualified capture children, preserving pointer restrictions and actual ownership.
+Its Non-Copy source uses ManuallyDrop and observes one runtime destructor.
+See `tests/closure-byte-outcomes.json` and `docs/pa27-closure-byte-storage.md`;
+unsupported capture-child families remain required followups.

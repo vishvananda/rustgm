@@ -136,3 +136,6 @@ mod tagless_enum_bytes;
 
 #[path = "../../option_storage.rs"]
 mod option_storage;
+
+#[path = "../../captured_values.rs"]
+mod captured_values;

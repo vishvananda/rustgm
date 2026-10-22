@@ -256,3 +256,10 @@ path when their complete backing family is unsupported. This target layout is
 not a claim of universal rustc `repr(Rust)` byte equality. See
 `tests/default-tag-enum-outcomes.json` and `docs/pa27-default-tag-enum-bytes.md`;
 broader niches and opaque/closure backing remain required work.
+
+Closure capture backing now reuses its exact completed tuple environment and
+retained layout. Selected values preserve initialization, reference validity and
+incoming pointer restrictions; nested zero-byte capture products remain checked.
+Matching bytes never select a callable body: the demanded closure type retains
+that identity. See `tests/closure-byte-outcomes.json` and
+`docs/pa27-closure-byte-storage.md` for the bounded capture-family contract.

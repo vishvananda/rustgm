@@ -334,6 +334,7 @@ impl<'a> Reader<'a> {
                 })
             }
             Kind::Tuple(_) => self.stored_product(layout, None, false),
+            Kind::Closure { environment, .. } => self.stored_closure(environment, layout),
             Kind::Adt(item, _) => {
                 let definition = self
                     .facts

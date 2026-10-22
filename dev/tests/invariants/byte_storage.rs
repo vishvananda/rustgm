@@ -1,6 +1,8 @@
 //! One backing preserves aliases, masks and per-pointer authority after conversion.
 #[path = "array_fragments.rs"]
 mod array_fragments;
+#[path = "captured_memory.rs"]
+mod captures;
 #[path = "fragment_ranges.rs"]
 mod fragment_ranges;
 use super::{Cell, Constant, Failure, Machine, Reader, Snapshot};

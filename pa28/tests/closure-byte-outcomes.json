@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "profile": "Rust 1.98.0 / x86_64 / 2024",
+  "cases": [
+    {
+      "name": "copied-owned",
+      "path": "pa28/tests/spec/closure-byte-backing/copied-owned.rs",
+      "sha256": "ff2c04f95f67c346cdf9bba08cb9efb7e282a49caf30c6e6d1d7d5195470f95a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "canonical counted copy transports environment",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/copied-owned.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "copied-reference",
+      "path": "pa28/tests/spec/closure-byte-backing/copied-reference.rs",
+      "sha256": "dd76e33bf27b53431fe2337644ca78e4d18690d1003edee74c8b446d6b99312b",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "copied shared capture retains selected reference duties",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/copied-reference.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "invalid-bool",
+      "path": "pa28/tests/spec/closure-byte-backing/invalid-bool.rs",
+      "sha256": "bfb50527f0e3b4f440a72098cf09f1047b61cfc11b83cc2a412ee3e42459252c",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "contract": "all capture bytes contain invalid bool representation",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/invalid-bool.rs",
+      "reason": "invalid bool",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      }
+    },
+    {
+      "name": "null-reference",
+      "path": "pa28/tests/spec/closure-byte-backing/null-reference.rs",
+      "sha256": "67fd1b85b4e946154ca146ce32cf0a3891989ebc055090fe06862906c0f5eb05",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "contract": "reference capture cannot be materialized from numeric zero bytes",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/null-reference.rs",
+      "reason": "one complete provenance word",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      }
+    },
+    {
+      "name": "owned-destructor-raw-transfer",
+      "path": "pa28/tests/spec/closure-byte-backing/owned-destructor-raw-transfer.rs",
+      "sha256": "def3b4581bd784181c0c0e82cb8c5f4eb102cc2d8cafdba15029ff64f0aea17b",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "Non-Copy closure transfer uses ManuallyDrop source; one runtime capture destructor",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/owned-destructor-raw-transfer.rs",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "reason": ""
+    },
+    {
+      "name": "invalid-bool-named",
+      "path": "pa28/tests/spec/closure-byte-backing/invalid-bool-named.rs",
+      "sha256": "64a8d65ea4ed3c3aeb097284a3e22f73de7f4c2e942e591cf9197e07adb8e4c2",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/invalid-bool-named.rs",
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "reason": "invalid bool"
+    }
+  ],
+  "phase_contract": "Type inspection may defer inline closure result materialization; checked constant and LowIR views must reject invalid values."
+}

@@ -139,8 +139,15 @@ impl Machine<'_, '_> {
             .filter(|&n| n <= backing.bytes.len())
             .ok_or("byte encoding exceeds backing bounds")?;
         if start == end {
-            self.check_tagless_value(ty, value)?;
-            return Ok(());
+            self.check_product_value(ty, value)?;
+            // Zero bytes do not erase nested callable capture identities. Walk
+            // stored products and one Repeat recipe; empty arrays have no child.
+            if !matches!(
+                Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+                StoredShape::Product { union: false, .. } | StoredShape::Array { length: 1.., .. }
+            ) {
+                return Ok(());
+            }
         }
         if matches!(
             self.evaluator.facts().types.kind(ty),
@@ -230,7 +237,7 @@ impl Machine<'_, '_> {
         variant: Option<VariantId>,
         pending: &mut Vec<Encode>,
     ) -> Result<(), Failure> {
-        self.check_tagless_value(ty, value)?;
+        self.check_product_value(ty, value)?;
         let (fields, _) = self.byte_fields(ty, variant)?;
         self.reserve_cells(pending.len().saturating_add(fields.len()).saturating_mul(4))?;
         for (index, field) in fields.into_iter().enumerate().rev() {

@@ -6,6 +6,7 @@ pub(crate) use relocations::{MetadataShape, WordAddress, WordShape};
 mod callables;
 mod computed;
 mod enumerations;
+mod environments;
 mod footprints;
 mod niches;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};

@@ -28,7 +28,7 @@ Open implementation or profile contracts remain:
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every
   storage family. See `pa27-byte-access-review.md` for the qualified controls.
-- Broader niche enum, opaque/closure and string backing, whole raw-slice values and
+- Broader niche enum, opaque/string and unsupported capture-child backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
@@ -90,7 +90,7 @@ Open operation families remain:
   through exclusive byte backing. The `write_bytes` slice adds one checked
   destination span, one provenance interval edit and batched byte/mask fill.
   Typed reads still enforce validity and complete immutable publication rejects
-  partial words. Unsupported niche enum, opaque/closure/string backing and the broader
+  partial words. Unsupported niche enum, opaque/string/capture-child backing and the broader
   provenance families above remain required work. See
   `docs/pa28-byte-transport.md`, `docs/pa28-relocation-design.md` and
   `docs/pa28-byte-fill.md` for exact boundaries and oracle differences.
@@ -166,3 +166,11 @@ Default-std compatibility additionally needs AtomicBool and signed/unsigned/
 target-sized atomic families; memchr/zmij SIMD/target-feature/inline-assembly
 requirements belong to later PA28/PA37 compatibility work. The current U32 and
 Option checkpoints do not claim those capabilities.
+
+Retained closure environments now use their exact completed capture tuple layout
+and the existing iterative Product codec. Owned/shared/mutable captures preserve
+ownership and pointer restrictions, including fresh selected-reference validity;
+zero-byte nested closure products are still validated without expanding a Repeat
+extent. Full demanded Closure TypeId remains callable authority. This supersedes
+the exact explicit-closure counterexample, while opaque/function-item and other
+unsupported capture children remain open. See `pa27-closure-byte-storage.md`.

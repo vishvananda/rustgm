@@ -1,0 +1,2 @@
+const fn transport<T>(f:T)->T{let source=core::mem::ManuallyDrop::new(f);unsafe{core::ptr::read(&raw const source as *const T)}}#[repr(u8)]enum E<T>{A(T),Empty}static mut DROPS:u32=0;struct Token(u32);impl Drop for Token{fn drop(&mut self){unsafe{DROPS+=1}}}fn main(){{let f=const{let t=Token(37);transport(move||{let r=&t;r.0})};check(f()==37);check(unsafe{DROPS}==0);}check(unsafe{DROPS}==1)}
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}

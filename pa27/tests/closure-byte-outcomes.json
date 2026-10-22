@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "profile": "Rust 1.98.0 / x86_64 / 2024",
+  "cases": [
+    {
+      "name": "original-explicit-closure",
+      "path": "pa27/tests/spec/closure-byte-backing/original-explicit-closure.rs",
+      "sha256": "02c62180d32e7283b36cc5cddc4f9c25eca7410146540de24b05be935fb39709",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "original frozen Rust-positive",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/original-explicit-closure.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "owned-capture",
+      "path": "pa27/tests/spec/closure-byte-backing/owned-capture.rs",
+      "sha256": "4a5c2e9ac9335602fd64abe26ad92a859851d4bf69635333ccc309618ddcdcb6",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "owned scalar environment survives enum byte conversion",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/owned-capture.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "shared-capture",
+      "path": "pa27/tests/spec/closure-byte-backing/shared-capture.rs",
+      "sha256": "d711a8a749e9d16d468a268b0db02390bce16b4e39eb175c9e6e4563584f0a0a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "static reference environment retains provenance",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/shared-capture.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "mixed-captures",
+      "path": "pa27/tests/spec/closure-byte-backing/mixed-captures.rs",
+      "sha256": "7adbff40a0f6db022d952c47d05f37a1f04070ac6cb99a6facc69107fe443a30",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "mixed captured tuple fields and padding",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/mixed-captures.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "zero-sized-capture",
+      "path": "pa27/tests/spec/closure-byte-backing/zero-sized-capture.rs",
+      "sha256": "668161206e3ae034a338f55e268177f2b7c16c251a31bca89848568777802916",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "zero-sized environment product",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/zero-sized-capture.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "mutable-transient",
+      "path": "pa27/tests/spec/closure-byte-backing/mutable-transient.rs",
+      "sha256": "d32092c731b5e2537964714f8d9e88e8b990b530b0c6ca9851f0a4960f18e552",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "mutable reference capture remains local and is not invoked in const",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/mutable-transient.rs",
+      "reason": "",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      }
+    },
+    {
+      "name": "uninitialized-capture",
+      "path": "pa27/tests/spec/closure-byte-backing/uninitialized-capture.rs",
+      "sha256": "32d48e86f0783f809eb74d625ba32e99c0164823955605863a1e6756a85f025f",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "contract": "selected u64 capture exceeds initialized bytes",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/uninitialized-capture.rs",
+      "reason": "uninitialized",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      }
+    },
+    {
+      "name": "local-escape",
+      "path": "pa27/tests/spec/closure-byte-backing/local-escape.rs",
+      "sha256": "b13acb4d4e7fc12a6eeb3e69d6d64436ffded6422736768bf4401196627abb90",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "contract": "local reference capture may not escape initializer",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/local-escape.rs",
+      "reason": "required lifetime",
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      }
+    },
+    {
+      "name": "mutable-owned-state",
+      "path": "pa27/tests/spec/closure-byte-backing/mutable-owned-state.rs",
+      "sha256": "68d2c1d3ff474fb4cf1f19bdd25fa4cc768789442dce461f9cf6f579f5dc65bc",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "Owned capture state/destructor preserved through retained enum backing",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/mutable-owned-state.rs",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "reason": ""
+    },
+    {
+      "name": "distinct-closure-identity",
+      "path": "pa27/tests/spec/closure-byte-backing/distinct-closure-identity.rs",
+      "sha256": "8a2daf3824faf5a8460c0d8abbf0aa100bfeed7e54e96e58df8425c013f00eb4",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "Equal capture field bytes do not merge the two demanded nominal closure bodies",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/distinct-closure-identity.rs",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "reason": ""
+    },
+    {
+      "name": "distinct-capture-order",
+      "path": "pa27/tests/spec/closure-byte-backing/distinct-capture-order.rs",
+      "sha256": "1767a3852dd7a239bb46c4f60fa5dfdb734ffb6be8ed745421cfd2728daf4dd5",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "contract": "Two identical capture layouts retain field ordering and distinct weighted callable bodies",
+      "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/distinct-capture-order.rs",
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "reason": ""
+    }
+  ],
+  "phase_contract": "Type inspection may defer inline closure result materialization; checked constant and LowIR views must reject invalid values."
+}

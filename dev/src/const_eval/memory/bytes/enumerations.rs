@@ -134,20 +134,6 @@ impl Machine<'_, '_> {
         }
         Ok((bits, id))
     }
-    pub(super) fn check_tagless_value(&self, ty: TypeId, value: Constant) -> Result<(), Failure> {
-        let reader = Reader::new(self.evaluator.facts());
-        if matches!(self.evaluator.facts().types.kind(ty), Some(crate::types::Kind::Adt(owner,_)) if self.evaluator.facts().aggregates.get(owner).is_some_and(|definition| definition.kind == crate::types::aggregate::Kind::Enum))
-            && let crate::sema::values::StoredShape::Product {
-                variant: Some(expected),
-                fields,
-                ..
-            } = reader.storage_shape(ty)?
-            && !matches!(reader.view(value)?, View::Product { length, variant: Some(actual) } if actual == expected && length == fields.len() as u64)
-        {
-            return Err("tagless enum encoding requires its exact sole variant and fields".into());
-        }
-        Ok(())
-    }
     pub(super) fn encode_byte_enum(
         &mut self,
         backing: &mut Backing,
