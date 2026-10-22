@@ -1,5 +1,53 @@
 //! Retained ABI syntax selects a calling convention independently of safety.
-use super::{Declarations, Error, Kind, NodeKey, Report};
+use super::{Declarations, Error, Kind, List, NodeKey, Report};
+
+/// The parser permits an ellipsis only at the end of the parameter list.
+/// Keep that marker out of typed parameters without scanning ordinary inputs.
+pub(in crate::sema) fn fixed_parameters(
+    report: &Report,
+    key: NodeKey,
+    mut parameters: List,
+) -> (List, bool) {
+    let unit = report.package.unit(key.file);
+    let Some(&last) = unit.configured.ast.list(parameters).last() else {
+        return (parameters, false);
+    };
+    let mut node = last;
+    while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
+        node = value;
+    }
+    let variadic = match unit.configured.ast.node(node).kind {
+        Kind::Variadic => true,
+        Kind::Parameter { ty: Some(ty), .. } => {
+            matches!(unit.configured.ast.node(ty).kind, Kind::Variadic)
+        }
+        _ => false,
+    };
+    if variadic {
+        parameters.end -= 1;
+    }
+    (
+        parameters,
+        variadic && unit.configured.active[last.0 as usize],
+    )
+}
+
+pub(in crate::sema) fn with_variadic(
+    report: &Report,
+    key: NodeKey,
+    mut convention: crate::types::callable::Convention,
+    variadic: bool,
+) -> Result<crate::types::callable::Convention, Error> {
+    if variadic && convention.abi != crate::types::callable::Abi::C {
+        return Err(Declarations::error(
+            report,
+            key,
+            "variadic signatures require the C calling convention",
+        ));
+    }
+    convention.variadic = variadic;
+    Ok(convention)
+}
 
 /// Trait methods and destructors require the ordinary Rust convention.
 pub(super) fn rust_abi(

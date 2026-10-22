@@ -156,3 +156,54 @@ fn composite_dag_and_placement_reuse_scale_with_new_nodes() -> TestResult {
     assert_eq!(arrays[1], arrays[2]);
     Ok(())
 }
+
+#[test]
+fn actual_argument_classification_reuses_shared_graphs_without_growing_signatures() -> TestResult {
+    for depth in [8, 32, 128] {
+        let mut facts = facts(&graph_source(depth, 1, 0)?)?;
+        let signature = signature(&facts)?;
+        let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {
+            return Err("C function signature".into());
+        };
+        let argument = *facts
+            .types
+            .list(parameters)
+            .and_then(|values| values.first())
+            .ok_or("C argument type")?;
+        let mut plans = Plans::default();
+        let expected = plans.passing(
+            &facts.types,
+            &facts.aggregates,
+            &mut facts.layouts,
+            argument,
+        )?;
+        let retained = plans.retained_bytes;
+        let counts = plans.composites.as_ref().ok_or("composite cache")?.counts();
+        for repeats in [8, 32, 128] {
+            let before = plans.steps;
+            for _ in 0..repeats {
+                assert_eq!(
+                    plans.passing(
+                        &facts.types,
+                        &facts.aggregates,
+                        &mut facts.layouts,
+                        argument
+                    )?,
+                    expected
+                );
+            }
+            assert_eq!(plans.steps - before, repeats);
+            assert_eq!(plans.retained_bytes, retained);
+            assert_eq!(
+                plans.composites.as_ref().ok_or("composite cache")?.counts(),
+                counts
+            );
+            assert!(plans.signatures.is_empty());
+            assert_eq!(plans.types.len(), 1);
+            eprintln!(
+                "actual ABI depth={depth} repeats={repeats} steps={repeats} retained={retained}"
+            );
+        }
+    }
+    Ok(())
+}

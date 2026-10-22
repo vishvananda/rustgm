@@ -112,10 +112,12 @@ impl Scratch {
             }
             Kind::FunctionType(index) => {
                 let function = unit.configured.ast.function_types[index as usize];
+                let (parameters, _) =
+                    declarations::fixed_parameters(host.report(), key, function.parameters);
                 if let Some(result) = function.result {
                     push(result);
                 }
-                for &parameter in unit.configured.ast.list(function.parameters).iter().rev() {
+                for &parameter in unit.configured.ast.list(parameters).iter().rev() {
                     if unit.configured.active[parameter.0 as usize] {
                         push(declarations::parameter_type(
                             host.report(),
@@ -249,7 +251,9 @@ impl Scratch {
         self.children.clear();
         let unit = host.report().package.unit(key.file);
         let function = unit.configured.ast.function_types[index as usize];
-        for &parameter in unit.configured.ast.list(function.parameters) {
+        let (fixed, variadic) =
+            declarations::fixed_parameters(host.report(), key, function.parameters);
+        for &parameter in unit.configured.ast.list(fixed) {
             if unit.configured.active[parameter.0 as usize] {
                 let node = declarations::parameter_type(
                     host.report(),
@@ -275,7 +279,12 @@ impl Scratch {
             return Err(error(host, key, "missing elaborated callable binder"));
         };
         let bound_regions = *bound_regions;
-        let convention = declarations::callable_convention(host.report(), key, function.abi)?;
+        let convention = declarations::with_variadic(
+            host.report(),
+            key,
+            declarations::callable_convention(host.report(), key, function.abi)?,
+            variadic,
+        )?;
         host.callable(key);
         Ok(Constructor::Function {
             bound_regions,

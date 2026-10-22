@@ -47,8 +47,15 @@ validated `repr(C)` struct and fixed-array fields, including placement-aware mix
 eightbytes and MEMORY validation. Draft outcomes are in
 `tests/aggregate-outcomes.json` and `tests/composite-outcomes.json`; see
 `docs/pa30-aggregate-abi.md` and `docs/pa30-composite-abi.md` for the profile
-and explicit boundaries. Variadic calls and static/aggregate crate-metadata
-transport remain unfinished. The reviewed optional object backend
+and explicit boundaries. The variadic checkpoint adds direct and indirect C
+calls with independently inferred extra arguments, explicit source promotion
+checks, and actual scalar/record ABI classes. Fixed parameters retain ordinary
+coercions; all arguments retain move, borrow and evaluation-order checks.
+`tests/variadic-outcomes.json` and `tests/variadic-tail-outcomes.json` declare
+42 source outcomes and 23 native comparisons. See
+`docs/pa30-variadic-calls.md` for the typed transport, qualification and retained
+boundaries. Static/aggregate crate-metadata transport remains unfinished.
+The reviewed optional object backend
 profile is selected explicitly; its native tests are always registered and run
 with `--ignored` through the grouped maintainer suites. They fail if the profile
 is missing. PA30's

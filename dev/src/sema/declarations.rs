@@ -5,8 +5,8 @@ mod annotations;
 mod associated;
 mod call_traits;
 mod calling_conventions;
-pub(super) use calling_conventions::callable_convention;
 use calling_conventions::rust_abi;
+pub(super) use calling_conventions::{callable_convention, fixed_parameters, with_variadic};
 mod capture_bounds;
 mod comparison_methods;
 mod comparisons;
@@ -985,12 +985,18 @@ impl Checker<'_> {
                 .configured
                 .ast
                 .function_types[index as usize];
+            let (parameters, variadic) = fixed_parameters(self.report, key, function.parameters);
             return Ok(Signature {
-                parameters: function.parameters,
+                parameters,
                 result: function.result,
                 binders: function.binders,
                 unsafe_: function.unsafe_,
-                convention: callable_convention(self.report, key, function.abi)?,
+                convention: with_variadic(
+                    self.report,
+                    key,
+                    callable_convention(self.report, key, function.abi)?,
+                    variadic,
+                )?,
             });
         }
         let item = self.item(key)?;
@@ -1010,12 +1016,18 @@ impl Checker<'_> {
             ));
         }
         let (unsafe_, convention) = self.foreign_signature(key, owner, item)?;
+        let (parameters, variadic) = fixed_parameters(self.report, key, parameters);
+        if variadic
+            && owner.is_none_or(|id| !self.report.resolution.foreign_owners.contains_key(&id))
+        {
+            return Err(self.error(key, "variadic definitions require unstable Rust support"));
+        }
         Ok(Signature {
             parameters,
             result,
             binders: item.generics,
             unsafe_,
-            convention,
+            convention: with_variadic(self.report, key, convention, variadic)?,
         })
     }
     fn declared_regions(&self, key: NodeKey, list: List) -> Result<Vec<DefId>, Error> {

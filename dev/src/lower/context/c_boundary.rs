@@ -32,13 +32,29 @@ impl Context<'_> {
             }
         }
         let result = self.boundary_type(plan.result)?;
-        let signature = self.output.object_signature(
+        let Some(crate::types::Kind::Function { convention, .. }) = self.types.kind(ty) else {
+            return Err("C ABI plan requires a function signature");
+        };
+        let signature = self.output.object_signature_with_arity(
             &parameters,
             result,
             matches!(plan.result, classification::Passing::Scalar(TypeId::NEVER)),
+            convention.variadic,
         )?;
         self.signatures.insert(ty, signature);
         Ok(signature)
+    }
+    pub(in crate::lower) fn c_argument(
+        &mut self,
+        ty: TypeId,
+    ) -> Result<boundary::Type, &'static str> {
+        let passing = self.c_abi.get_or_insert_default().passing(
+            self.types,
+            self.aggregates,
+            self.layouts,
+            ty,
+        )?;
+        self.boundary_type(passing)
     }
     fn boundary_type(
         &mut self,

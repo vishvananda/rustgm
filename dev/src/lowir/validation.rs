@@ -78,7 +78,9 @@ pub(super) fn call(
                 Operation::Call { signature, .. } => signature,
                 _ => return Err("expected call"),
             })?;
-            if arguments.len() != expected.len() {
+            if arguments.len() < expected.len()
+                || (!target.variadic && arguments.len() != expected.len())
+            {
                 return Err("scalar call arity disagrees with signature");
             }
             for (value, &ty) in arguments.iter().zip(expected) {
@@ -87,10 +89,14 @@ pub(super) fn call(
                 }
                 scalar_operand(value.operand)?;
             }
+            for value in &arguments[expected.len()..] {
+                variadic_scalar(program, function, signature, *value)?;
+            }
             boundary::Type::Scalar(target.result)
         }
         CallArguments::Object(range) => {
-            let target = program.object_boundary(target)?;
+            let fixed = program.parameter_count(target)?;
+            let variadic = program.variadic(target)?;
             let arguments = function
                 .objects
                 .as_ref()
@@ -100,10 +106,15 @@ pub(super) fn call(
                         .get(range.start as usize..range.end as usize)
                 })
                 .ok_or("invalid object call arguments")?;
-            if arguments.len() != target.parameters.len() {
+            if arguments.len() < fixed || (!variadic && arguments.len() != fixed) {
                 return Err("object call arity disagrees with signature");
             }
-            for (&value, &expected) in arguments.iter().zip(target.parameters.iter()) {
+            for (index, &value) in arguments.iter().enumerate() {
+                let expected = if index < fixed {
+                    program.parameter_type(target, index)?
+                } else {
+                    variadic_argument_type(program, function, signature, value)?
+                };
                 match (value, expected) {
                     (BoundaryArgument::Scalar(value), boundary::Type::Scalar(ty))
                         if value.ty == ty =>
@@ -111,9 +122,15 @@ pub(super) fn call(
                         scalar_operand(value.operand)?;
                     }
                     (
-                        BoundaryArgument::Object { operand, span },
+                        BoundaryArgument::Object {
+                            operand,
+                            span,
+                            classes,
+                        },
                         boundary::Type::Object(object),
-                    ) if function.spans.get(span.0 as usize) == Some(&object.span) => {
+                    ) if function.spans.get(span.0 as usize) == Some(&object.span)
+                        && (index >= fixed || classes.is_none()) =>
+                    {
                         object_operand(
                             program,
                             function,
@@ -127,10 +144,19 @@ pub(super) fn call(
                     _ => return Err("object call argument span or kind mismatch"),
                 }
             }
-            target.result
+            program.result_type(target)?
         }
     };
-    match (result, instruction.result) {
+    call_result(program, function, signature, instruction.result, result)
+}
+fn call_result(
+    program: &Program,
+    function: &Function,
+    signature: SignatureId,
+    id: Option<ResultId>,
+    result: boundary::Type,
+) -> Result<(), &'static str> {
+    match (result, id) {
         (boundary::Type::Scalar(super::vocabulary::Type::Void), None) => Ok(()),
         (boundary::Type::Scalar(ty), Some(ResultId::Scalar(id)))
             if function.temporaries.get(id.0 as usize) == Some(&ty) =>
@@ -148,6 +174,58 @@ pub(super) fn call(
         ),
         _ => Err("LowIR call result identity or kind differs from boundary"),
     }
+}
+fn variadic_argument_type(
+    program: &Program,
+    function: &Function,
+    owner: SignatureId,
+    value: BoundaryArgument,
+) -> Result<boundary::Type, &'static str> {
+    match value {
+        BoundaryArgument::Scalar(value) => {
+            variadic_scalar(program, function, owner, value)?;
+            Ok(boundary::Type::Scalar(value.ty))
+        }
+        BoundaryArgument::Object {
+            span,
+            classes: Some(classes),
+            ..
+        } => {
+            let span = *function
+                .spans
+                .get(span.0 as usize)
+                .ok_or("missing variadic object span")?;
+            let object = boundary::Object { span, classes };
+            object.validate(false)?;
+            Ok(boundary::Type::Object(object))
+        }
+        BoundaryArgument::Object { .. } => {
+            Err("variadic argument lacks its explicit object classes")
+        }
+    }
+}
+fn variadic_scalar(
+    program: &Program,
+    function: &Function,
+    owner: SignatureId,
+    value: Value,
+) -> Result<(), &'static str> {
+    use super::vocabulary::Type;
+    let actual = match value.operand {
+        Operand::Temporary(id) => function.temporaries.get(id.0 as usize).copied(),
+        Operand::Parameter(index) => match program.parameter_type(owner, index as usize)? {
+            boundary::Type::Scalar(ty) => Some(ty),
+            boundary::Type::Object(_) => None,
+        },
+        Operand::Slot(id) => function.slots.get(id.0 as usize).map(|_| Type::Ptr),
+        Operand::Symbol(id) => program.symbols.get(id.0 as usize).map(|_| Type::Ptr),
+        Operand::Global(id) => program.globals.get(id.0 as usize).map(|_| Type::Ptr),
+        Operand::Literal(_) | Operand::ObjectTemporary(_) => None,
+    };
+    if value.ty == Type::Void || actual != Some(value.ty) {
+        return Err("variadic scalar operand differs from its explicit physical type");
+    }
+    Ok(())
 }
 pub(super) fn scalar_operation(
     function: &Function,

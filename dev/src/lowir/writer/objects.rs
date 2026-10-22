@@ -43,6 +43,9 @@ pub(super) fn result_metadata(
     id: SignatureId,
     out: &mut impl Write,
 ) -> io::Result<()> {
+    if program.variadic(id).map_err(io::Error::other)? {
+        write!(out, " [arity=variadic]")?;
+    }
     if matches!(
         program.signatures.get(id.0 as usize),
         Some(Signature::Object(_))
@@ -159,6 +162,35 @@ pub(super) fn call(
         }
     }
     write!(out, ")")?;
+    if let CallArguments::Object(range) = arguments {
+        let objects = function
+            .objects
+            .as_ref()
+            .ok_or_else(|| io::Error::other("missing object call arguments"))?;
+        let mut started = false;
+        for (index, argument) in objects.arguments[range.start as usize..range.end as usize]
+            .iter()
+            .enumerate()
+        {
+            if let BoundaryArgument::Object {
+                classes: Some(value),
+                ..
+            } = argument
+            {
+                if started {
+                    write!(out, ", classes=")?;
+                } else {
+                    write!(out, " [classes=")?;
+                    started = true;
+                }
+                write!(out, "{index}:")?;
+                classes(*value, out)?;
+            }
+        }
+        if started {
+            write!(out, "]")?;
+        }
+    }
     if !matches!(callee, Operand::Symbol(_)) {
         write!(out, " as (")?;
         parameters(program, signature, true, out)?;

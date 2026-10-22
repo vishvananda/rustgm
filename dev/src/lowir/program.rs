@@ -60,7 +60,11 @@ pub enum CallArguments {
 #[derive(Clone, Copy, Debug)]
 pub enum BoundaryArgument {
     Scalar(Value),
-    Object { operand: Operand, span: SpanId },
+    Object {
+        operand: Operand,
+        span: SpanId,
+        classes: Option<super::boundary::Classes>,
+    },
 }
 #[derive(Default)]
 pub struct ObjectFunction {
@@ -196,6 +200,7 @@ pub struct ScalarSignature {
     pub parameters: Range,
     pub result: Type,
     pub noreturn: bool,
+    pub variadic: bool,
 }
 pub struct Symbol {
     /// Backend spelling only. Semantic lookup uses `SymbolId` and source definition identities.
@@ -275,6 +280,7 @@ impl Program {
         ) {
             (Some(Signature::Scalar(x)), Some(Signature::Scalar(y))) => Ok(x.result == y.result
                 && x.noreturn == y.noreturn
+                && x.variadic == y.variadic
                 && self.parameters(a)? == self.parameters(b)?),
             (Some(Signature::Object(_)), Some(Signature::Object(_))) => {
                 Ok(self.object_boundary(a)? == self.object_boundary(b)?)
@@ -290,6 +296,17 @@ impl Program {
         parameters: &[Type],
         result: Type,
         noreturn: bool,
+    ) -> Result<SignatureId, &'static str> {
+        self.signature_with_arity(parameters, result, noreturn, false)
+    }
+    /// # Errors
+    /// Rejects exhausted compact identities and void parameters.
+    pub fn signature_with_arity(
+        &mut self,
+        parameters: &[Type],
+        result: Type,
+        noreturn: bool,
+        variadic: bool,
     ) -> Result<SignatureId, &'static str> {
         if parameters.contains(&Type::Void) {
             return Err("void LowIR parameter");
@@ -307,6 +324,7 @@ impl Program {
             parameters: Range { start, end },
             result,
             noreturn,
+            variadic,
         }));
         Ok(id)
     }

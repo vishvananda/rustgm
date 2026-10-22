@@ -73,8 +73,8 @@ impl Plans {
         else {
             return Err("C ABI plan requires a function signature");
         };
-        if convention.abi != types::callable::Abi::C || convention.variadic {
-            return Err("C ABI plan requires a fixed C convention");
+        if convention.abi != types::callable::Abi::C {
+            return Err("C ABI plan requires a C convention");
         }
         let parameters = types.list(parameters).ok_or("missing C ABI inputs")?;
         self.retain(
@@ -97,7 +97,10 @@ impl Plans {
         self.signatures.insert(signature, Arc::clone(&plan));
         Ok(plan)
     }
-    fn passing(
+    /// Classify one actual argument using the same immutable type/layout cache.
+    /// # Errors
+    /// Rejects unsupported or unresolved C boundary types and exhausted budgets.
+    pub fn passing(
         &mut self,
         types: &Store,
         definitions: &Definitions,

@@ -102,7 +102,7 @@ impl Lower<'_, '_> {
             span,
         })
     }
-    pub(super) fn object_call(
+    pub(super) fn boundary_call(
         &mut self,
         signature: SignatureId,
         callee: Operand,
@@ -111,8 +111,21 @@ impl Lower<'_, '_> {
     ) -> Result<Selected, &'static str> {
         let mut retained = std::mem::take(&mut self.object_arguments);
         retained.clear();
+        let fixed = self.context.output.parameter_count(signature)?;
+        let variadic = self.context.output.variadic(signature)?;
+        let mut tail = Vec::new();
         for id in &self.body.arguments[arguments.start as usize..arguments.end as usize] {
-            match self.value(*id)? {
+            let value = self.value(*id)?;
+            if variadic
+                && retained.len() >= fixed
+                && !matches!(value, Selected::Unit | Selected::Item(_))
+            {
+                tail.push(
+                    self.context
+                        .c_argument(self.body.values[id.0 as usize].ty)?,
+                );
+            }
+            match value {
                 Selected::Runtime(value) => retained.push(boundary::Value::Scalar(value)),
                 Selected::Object(address) => {
                     let Representation::Object(span) = self
@@ -126,9 +139,13 @@ impl Lower<'_, '_> {
                 Selected::Unit | Selected::Item(_) => {}
             }
         }
-        let value = self
-            .builder
-            .object_call(&self.context.output, signature, callee, &retained)?;
+        let value = self.builder.boundary_call(
+            &self.context.output,
+            signature,
+            callee,
+            &retained,
+            &tail,
+        )?;
         self.object_arguments = retained;
         Ok(match (value, self.context.representation(result)?) {
             (boundary::ResultValue::Void, Representation::Scalar(Type::Void)) => Selected::Unit,

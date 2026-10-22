@@ -782,8 +782,9 @@ impl Lower<'_, '_> {
         if matches!(
             self.context.output.signatures.get(signature.0 as usize),
             Some(crate::lowir::program::Signature::Object(_))
-        ) {
-            return self.object_call(signature, callee, arguments, result);
+        ) || self.context.output.variadic(signature)?
+        {
+            return self.boundary_call(signature, callee, arguments, result);
         }
         let representation = self.context.representation(result)?;
         self.arguments.clear();

@@ -29,6 +29,7 @@ mod nominals;
 mod notifications;
 mod owner_arguments;
 mod pattern_constants;
+mod variadics;
 pub(super) use pattern_constants::PreparedScope;
 mod patterns;
 mod projections;
@@ -962,6 +963,7 @@ impl Checker<'_> {
             let Some(Type::Function {
                 parameters,
                 bound_regions: 0,
+                convention,
                 ..
             }) = self.facts.types.kind(signature)
             else {
@@ -973,6 +975,9 @@ impl Checker<'_> {
                 .list(parameters)
                 .ok_or_else(|| self.error(node, "missing call inputs"))?
                 .len();
+            if convention.variadic {
+                self.validate_variadic_arguments(node, count, solved)?;
+            }
             for parameter in 0..count {
                 let ty = self
                     .facts
@@ -1879,17 +1884,14 @@ impl Checker<'_> {
         let Some(Constructor::Function {
             parameters,
             unsafe_,
-            convention,
             bound_regions,
+            ..
         }) = self.head(node, term)?
         else {
             return Err(self.error(node, "call requires a known function type"));
         };
         if unsafe_ {
             self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
-        }
-        if convention.variadic {
-            return Err(self.error(node, "variadic calls require foreign argument promotion"));
         }
         if bound_regions != 0 {
             return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));
@@ -2106,7 +2108,12 @@ impl Checker<'_> {
         arguments: List,
         offset: usize,
     ) -> Result<(), Error> {
-        let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
+        let Some(Constructor::Function {
+            parameters,
+            convention,
+            ..
+        }) = self.head(node, term)?
+        else {
             return Err(self.error(node, "call requires a known function type"));
         };
         let unit = self.report.package.unit(self.state.file);
@@ -2117,13 +2124,19 @@ impl Checker<'_> {
             .iter()
             .filter(|n| self.active(**n))
             .count();
-        if count + offset != parameters as usize {
+        if count + offset < parameters as usize
+            || (!convention.variadic && count + offset != parameters as usize)
+        {
             return Err(self.error(node, "call argument count mismatch"));
         }
         let mut index = count + offset;
         for argument in unit.configured.ast.list(arguments).iter().rev() {
             if self.active(*argument) {
                 index -= 1;
+                if index >= parameters as usize {
+                    self.state.work.push(Work::Enter(*argument, None));
+                    continue;
+                }
                 let expected = self.child(node, term, index)?;
                 let parameter = u32::try_from(index)
                     .map_err(|_| self.error(node, "call parameter index exhausted"))?;

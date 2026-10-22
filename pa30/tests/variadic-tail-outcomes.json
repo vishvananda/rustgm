@@ -1,0 +1,89 @@
+{
+  "status": "planned assignment; independently qualified source/native outcomes; no text references",
+  "profile": "Rust1.98.0 edition2024 x86-64; standard C11 provider; ignore-tail cases make no va_arg type claim",
+  "provider": {
+    "path": "tests/spec/variadic-tails/provider.c",
+    "sha256": "a5e57dea6c672c82737593d09c6d86d0f1ee590a31beb1560075a9038227edf6"
+  },
+  "cases": [
+    {
+      "path": "tests/spec/variadic-tails/multiple-records.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "1a2d2b763077a235bc2f0c33823d1a381e7cc9edf3910def0ae976ab90226a11"
+    },
+    {
+      "path": "tests/spec/variadic-tails/multiple-records-indirect.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "75a16747c8cc777216001a27c0b87fb306e4f943cc39f81fd4438ecfefe1b51c"
+    },
+    {
+      "path": "tests/spec/variadic-tails/inferred-pointer.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "c364945b9227dbc6e8d8e278ebce701b09072c6669ee2e963f54d9df98aa360a"
+    },
+    {
+      "path": "tests/spec/variadic-tails/shared-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "b0796ab03b5a02cdd1298f4c8a0d37dd8b4032ac0d0e999f6707f2ea7da8f979"
+    },
+    {
+      "path": "tests/spec/variadic-tails/generic-small-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "43f4e8af7133eb3f510c3f9e96200cf6a71c5e356fdd41b53ac610b742eaae38"
+    },
+    {
+      "path": "tests/spec/variadic-tails/zero-sized-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "42255aada03dca12ff72f106b5fdf99677e80386da50d5069efd2242f04ca934"
+    },
+    {
+      "path": "tests/spec/variadic-tails/moved-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "217aa55c7cd182f7b852d77dd9d38b13883e4f4d5ea9721bd6694c2c61871bcd",
+      "note": "Original rejection hypothesis disproved: wildcard let does not read the moved place. Original bytes and failed hypothesis retained in tails-prepared-v1."
+    },
+    {
+      "path": "tests/spec/variadic-tails/mutable-alias-tail.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "6943733d3f82d2662d1efd469baf7e847146918a9e8f0baa095fa8e8214095fb"
+    },
+    {
+      "path": "tests/spec/variadic-tails/expired-tail.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "d6014590f98617c472ddcd1f7fdeae18006e92d34891421145ba4ba51741ddbd"
+    },
+    {
+      "path": "tests/spec/variadic-tails/constant-call.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "1d2778ad9ef394b8495cd4c7435a3e245b5ff09b09d3cc03e8deb6896639ec29"
+    },
+    {
+      "path": "tests/spec/variadic-tails/moved-tail-read.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "5c991c70e75732e88a0b2d7780065cd08d26d2b102526657d752714782e216a6",
+      "note": "Actual post-move value read, independently declared before qualification."
+    }
+  ]
+}

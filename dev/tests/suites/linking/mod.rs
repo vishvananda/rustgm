@@ -29,3 +29,5 @@ pub(crate) mod resolve;
 pub(crate) mod semantic;
 #[path = "../../symbol_definitions.rs"]
 mod symbol_definitions;
+#[path = "../../variadic_calls.rs"]
+mod variadic_calls;

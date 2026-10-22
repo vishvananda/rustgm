@@ -1,0 +1,227 @@
+{
+  "status": "planned assignment; independently qualified source/native outcomes; no text references",
+  "profile": "Rust 1.98.0 edition2024 Linux x86-64; pinned CPPGM object backend; standard C11 provider",
+  "provider": {
+    "path": "tests/spec/variadics/provider.c",
+    "sha256": "aaade0f32a992bf4d426279034bc900d2d255cb31de5cc39d3d3dbb9a48ed08f"
+  },
+  "cases": [
+    {
+      "path": "tests/spec/variadics/integers.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "97ab6135eaa98e6c873ce3ee881f7df8982b757b295cd55d5ff072edf1d99c2f"
+    },
+    {
+      "path": "tests/spec/variadics/zero-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "ef096d71e93f92042e8e9eb1bcbcfe1c79ba0ce22138e65293f40934b28123e5"
+    },
+    {
+      "path": "tests/spec/variadics/float-register-spill.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "323afe398f607f3eaba1a74071b5ee877c3da574cecd15f3042121924ac1d570"
+    },
+    {
+      "path": "tests/spec/variadics/integer-register-spill.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "c3bb20096d4a2cb2b87027c012adeac8ce2a5aa623ac647700bbb7286b3ee52b"
+    },
+    {
+      "path": "tests/spec/variadics/indirect.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "794c43495d7e869f09708d2f24113062635efc22aa2442f66fb947b3e2544b7c"
+    },
+    {
+      "path": "tests/spec/variadics/constant-pointer.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "2328f40d507296759b26854dda6954687b65e1eb6099634675542717769023e9"
+    },
+    {
+      "path": "tests/spec/variadics/safe-ignores-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "55c9c0ed7117bc559f2e4def568461ae40c74390ffaf7cb9b1bd7da85fd69d9a"
+    },
+    {
+      "path": "tests/spec/variadics/named-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "1989f0abd1c725cb02703aedba82d7a3440e6ca461d0cbe273491841535f6738"
+    },
+    {
+      "path": "tests/spec/variadics/explicit-promotions.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "ceb79c2b9e67765463cc42e1963f3cc9703fe96612b4b3ed9f6c5611d6e8ed5a"
+    },
+    {
+      "path": "tests/spec/variadics/callback.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "b2219e04213bf7361002ef8ef6af3d9e0b8bc4b8ce23eabffc8c2be8167f0595"
+    },
+    {
+      "path": "tests/spec/variadics/evaluation-order.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "b8db5c7905e810e388425f2584a99865a7338508837a1b359aaebeff0314295e"
+    },
+    {
+      "path": "tests/spec/variadics/mixed-scalars.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "4ab23ef55d3bfafc5fc8d952120bb4239ae693a10262c967952ddc3c4e0b1940"
+    },
+    {
+      "path": "tests/spec/variadics/record-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "426ac0ceb08de1a133e1404aec700ea821a8dcba86d25274f03a45fbf06e275f"
+    },
+    {
+      "path": "tests/spec/variadics/record-prefix-result.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "230884f112e5655a4e49e73d0902466b7d1e229bf7cfc2c16eab48b579697fc6"
+    },
+    {
+      "path": "tests/spec/variadics/nested-record-tail.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "9705b6fee862ec4c339c4ad896ba6dc111d0cefa6036af333c95ff10573929c1"
+    },
+    {
+      "path": "tests/spec/variadics/bare-signature.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "source_sha256": "9c4e1f69ee6ce3baac1bb07f8d0c474362cb1944948f033eecbd77a46a19b096"
+    },
+    {
+      "path": "tests/spec/variadics/generic-caller.rs",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "66259129307ea0e9a69cbfc9536803d00de85f69e9f779b8eb966c51fdbbd054"
+    },
+    {
+      "path": "tests/spec/variadics/unpromoted-u8.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "b00780bf371492718530941238b640ae9eeec997db61e5d693e7e0a269c1f559"
+    },
+    {
+      "path": "tests/spec/variadics/unpromoted-i8.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "1bcd5495098b6a4c3ebe1ef11a99a9c7e32f013a7ab7632620b18bb67ee5d461"
+    },
+    {
+      "path": "tests/spec/variadics/unpromoted-u16.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "5cc51f37a141c1645adcdbc297646dc5b1086623fbac241d02a44f52ab3be75c"
+    },
+    {
+      "path": "tests/spec/variadics/unpromoted-i16.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "afe89d47d93fe49ff7ed66d15285e878c03346f1a4bb3271f88567b745a3a5ca"
+    },
+    {
+      "path": "tests/spec/variadics/unpromoted-bool.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "bb6b180821bebe780222722c78da26510cfc4877f4514a80493505c1872ca8f0"
+    },
+    {
+      "path": "tests/spec/variadics/unpromoted-f32.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "775a21cf591535fc61386ed8b01d8a636a214a85f928c983127366cb38f4766e"
+    },
+    {
+      "path": "tests/spec/variadics/function-item.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "2d231b92b281deb28f63ccb4697e5eb3ebf286bc2cfc94a4ec369bb29ce0ff16"
+    },
+    {
+      "path": "tests/spec/variadics/unsafe-call.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "59ce215414369aedb4326045e205b20555a732b55a50e28e9d028fc0fbb1de98"
+    },
+    {
+      "path": "tests/spec/variadics/missing-fixed.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "17051aff57d2855add88b77e78a3a61dfee4d1bb1f2e8199f07977bc30ac131b"
+    },
+    {
+      "path": "tests/spec/variadics/wrong-fixed.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "4a69977ee7a65f4b6d708300119f6c423ee7f69d5abb281bf734fc71a028e782"
+    },
+    {
+      "path": "tests/spec/variadics/pointer-safety.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "e790772177c616bfb6c0952db4e1d4ddc6a82f12ac3943f19bb5b4c29979c93b"
+    },
+    {
+      "path": "tests/spec/variadics/rust-abi.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "af4c5db40f28262140fa2e0d247cbf8192117036ceeb3b2207047761e0dcd7f4"
+    },
+    {
+      "path": "tests/spec/variadics/variadic-body.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "1aa22f445ecdbcc15f0706ac817edb5eedc6ea4e826f91ad508daea6e30c4f9d"
+    },
+    {
+      "path": "tests/spec/variadics/fixed-extra.rs",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "ea0b0d157748ef50068e996986c921a392a39c9d92db10d4b02913b8da7c695f"
+    }
+  ]
+}

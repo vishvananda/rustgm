@@ -322,9 +322,6 @@ impl<'a> Context<'a> {
             return Err("missing selected function signature");
         };
         let mut native = Vec::new();
-        if convention.variadic {
-            return Err("variadic call lowering is not implemented");
-        }
         let result_type = self.representation(result)?;
         if convention.abi == crate::types::callable::Abi::C
             && (matches!(result_type, Representation::Object(_))
@@ -352,9 +349,12 @@ impl<'a> Context<'a> {
                 native.push(representation);
             }
         }
-        let signature =
-            self.output
-                .signature(&native, result_type.result(), result == TypeId::NEVER)?;
+        let signature = self.output.signature_with_arity(
+            &native,
+            result_type.result(),
+            result == TypeId::NEVER,
+            convention.variadic,
+        )?;
         self.signatures.insert(ty, signature);
         Ok(signature)
     }

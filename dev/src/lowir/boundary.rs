@@ -62,6 +62,7 @@ pub struct Signature {
     pub parameters: Box<[Type]>,
     pub result: Type,
     pub noreturn: bool,
+    pub variadic: bool,
 }
 impl Signature {
     fn validate(&self) -> Result<(), &'static str> {
@@ -109,6 +110,17 @@ impl Program {
         result: Type,
         noreturn: bool,
     ) -> Result<SignatureId, &'static str> {
+        self.object_signature_with_arity(parameters, result, noreturn, false)
+    }
+    /// # Errors
+    /// Rejects malformed classes, scalar-only boundaries and exhausted identities.
+    pub fn object_signature_with_arity(
+        &mut self,
+        parameters: &[Type],
+        result: Type,
+        noreturn: bool,
+        variadic: bool,
+    ) -> Result<SignatureId, &'static str> {
         if parameters.len() > 1_000_000 {
             return Err("LowIR boundary parameter budget exceeded");
         }
@@ -116,6 +128,7 @@ impl Program {
             parameters: parameters.into(),
             result,
             noreturn,
+            variadic,
         };
         signature.validate()?;
         let signatures = self.objects.get_or_insert_with(Default::default);
@@ -145,6 +158,47 @@ impl Program {
             .filter(|entry| entry.global == id)
             .map(|entry| entry.signature.as_ref())
             .ok_or("invalid LowIR object signature")
+    }
+    /// # Errors
+    /// Rejects invalid signature identities.
+    pub fn variadic(&self, id: SignatureId) -> Result<bool, &'static str> {
+        match self.signatures.get(id.0 as usize) {
+            Some(program::Signature::Scalar(value)) => Ok(value.variadic),
+            Some(program::Signature::Object(_)) => Ok(self.object_boundary(id)?.variadic),
+            None => Err("invalid LowIR signature"),
+        }
+    }
+    /// # Errors
+    /// Rejects invalid signature identities and parameter ranges.
+    pub fn parameter_count(&self, id: SignatureId) -> Result<usize, &'static str> {
+        match self.signatures.get(id.0 as usize) {
+            Some(program::Signature::Scalar(_)) => Ok(self.parameters(id)?.len()),
+            Some(program::Signature::Object(_)) => Ok(self.object_boundary(id)?.parameters.len()),
+            None => Err("invalid LowIR signature"),
+        }
+    }
+    /// # Errors
+    /// Rejects invalid signature identities or parameter positions.
+    pub fn parameter_type(&self, id: SignatureId, index: usize) -> Result<Type, &'static str> {
+        match self.signatures.get(id.0 as usize) {
+            Some(program::Signature::Scalar(_)) => {
+                self.parameters(id)?.get(index).copied().map(Type::Scalar)
+            }
+            Some(program::Signature::Object(_)) => {
+                self.object_boundary(id)?.parameters.get(index).copied()
+            }
+            None => return Err("invalid LowIR signature"),
+        }
+        .ok_or("invalid LowIR parameter position")
+    }
+    /// # Errors
+    /// Rejects invalid signature identities.
+    pub fn result_type(&self, id: SignatureId) -> Result<Type, &'static str> {
+        match self.signatures.get(id.0 as usize) {
+            Some(program::Signature::Scalar(value)) => Ok(Type::Scalar(value.result)),
+            Some(program::Signature::Object(_)) => Ok(self.object_boundary(id)?.result),
+            None => Err("invalid LowIR signature"),
+        }
     }
 }
 #[derive(Clone, Copy, Debug)]

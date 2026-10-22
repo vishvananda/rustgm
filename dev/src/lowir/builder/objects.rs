@@ -17,26 +17,54 @@ impl Builder {
         callee: Operand,
         arguments: &[boundary::Value],
     ) -> Result<boundary::ResultValue, &'static str> {
-        let boundary = program.object_boundary(signature)?;
-        if arguments.len() != boundary.parameters.len() {
+        program.object_boundary(signature)?;
+        self.boundary_call(program, signature, callee, arguments, &[])
+    }
+    /// Construct a fixed boundary prefix followed by explicitly classified variadic inputs.
+    /// # Errors
+    /// Rejects inconsistent arity, types, spans and variadic classes.
+    pub fn boundary_call(
+        &mut self,
+        program: &Program,
+        signature: SignatureId,
+        callee: Operand,
+        arguments: &[boundary::Value],
+        tail: &[boundary::Type],
+    ) -> Result<boundary::ResultValue, &'static str> {
+        let fixed = program.parameter_count(signature)?;
+        if (!tail.is_empty() && !program.variadic(signature)?)
+            || fixed.checked_add(tail.len()) != Some(arguments.len())
+        {
             return Err("object call arity differs from its boundary");
         }
         let mut retained = Vec::with_capacity(arguments.len());
-        for (&value, &expected) in arguments.iter().zip(boundary.parameters.iter()) {
+        for (index, &value) in arguments.iter().enumerate() {
+            let expected = if index < fixed {
+                program.parameter_type(signature, index)?
+            } else {
+                tail[index - fixed]
+            };
             retained.push(match (value, expected) {
-                (boundary::Value::Scalar(value), boundary::Type::Scalar(ty)) if value.ty == ty => {
+                (boundary::Value::Scalar(mut value), boundary::Type::Scalar(ty))
+                    if value.ty == ty && ty != Type::Void =>
+                {
                     if matches!(value.operand, Operand::ObjectTemporary(_)) {
                         return Err("object temporary used as scalar call argument");
+                    }
+                    if index >= fixed && matches!(value.operand, Operand::Literal(_)) {
+                        value = self.copy(value.ty, value)?;
                     }
                     BoundaryArgument::Scalar(value)
                 }
                 (boundary::Value::Object(value), boundary::Type::Object(expected))
                     if value.span == expected.span =>
                 {
+                    expected.validate(false)?;
                     super::super::validation::object_operand(program, &self.function, None, value)?;
                     BoundaryArgument::Object {
                         operand: value.operand,
                         span: self.span(value.span)?,
+                        classes: (index >= fixed).then_some(expected.classes),
                     }
                 }
                 _ => return Err("object call argument disagrees with boundary type"),
@@ -57,7 +85,7 @@ impl Builder {
             callee,
             arguments: CallArguments::Object(Range { start, end }),
         };
-        match boundary.result {
+        match program.result_type(signature)? {
             boundary::Type::Scalar(Type::Void) => {
                 self.emit(operation, None)?;
                 Ok(boundary::ResultValue::Void)

@@ -161,6 +161,13 @@ fn sparse_object_calls_reject_invalid_ids_spans_and_cross_kind_results() -> Test
 #[test]
 #[cfg(target_pointer_width = "64")]
 fn scalar_records_and_arrays_keep_their_compact_layout() {
+    eprintln!(
+        "C boundary layouts: argument={}, object function={}, scalar signature={}, object signature={}",
+        size_of::<BoundaryArgument>(),
+        size_of::<ObjectFunction>(),
+        size_of::<ScalarSignature>(),
+        size_of::<super::Signature>()
+    );
     assert_eq!(size_of::<Scalar>(), 1);
     assert_eq!(size_of::<crate::lowir::program::Value>(), 12);
     assert_eq!(size_of::<Operand>(), 8);
@@ -228,6 +235,90 @@ fn object_result_addresses_reject_even_with_valid_scalar_and_object_ids() -> Tes
         operation: Operation::Address(value.operand),
     });
     body.blocks[0].instructions.end += 1;
+    assert!(crate::lowir::writer::write(&program, &mut Vec::new()).is_err());
+    Ok(())
+}
+
+#[test]
+fn variadic_boundaries_retain_arity_typed_literals_and_tail_object_classes() -> TestResult {
+    let mut program = Program::default();
+    let variadic = program.signature_with_arity(&[Scalar::I32], Scalar::Void, false, true)?;
+    let fixed = program.signature(&[Scalar::I32], Scalar::Void, false)?;
+    assert!(!program.compatible(variadic, fixed)?);
+    let target = program.declare("accept_tail".into(), variadic, false)?;
+    assert!(program.declare("accept_tail".into(), fixed, false).is_err());
+    let owner = program.signature(&[Scalar::Ptr], Scalar::Void, false)?;
+    let symbol = program.declare("forward_tail".into(), owner, false)?;
+    let mut builder = Builder::default();
+    let block = builder.block()?;
+    builder.enter(block)?;
+    let slot = builder.object_slot(pair().span)?;
+    let zero = builder.integer(Scalar::I32, 0)?;
+    let seven = builder.integer(Scalar::I32, 7)?;
+    let values = [
+        BoundaryValue::Scalar(zero),
+        BoundaryValue::Scalar(seven),
+        BoundaryValue::Object(ObjectValue {
+            operand: Operand::Slot(slot),
+            span: pair().span,
+        }),
+        BoundaryValue::Object(ObjectValue {
+            operand: Operand::Slot(slot),
+            span: pair().span,
+        }),
+    ];
+    let tail = [
+        Type::Scalar(Scalar::I32),
+        Type::Object(pair()),
+        Type::Object(pair()),
+    ];
+    assert!(
+        builder
+            .boundary_call(&program, fixed, Operand::Symbol(target), &values, &tail)
+            .is_err()
+    );
+    for callee in [Operand::Symbol(target), Operand::Parameter(0)] {
+        assert!(matches!(
+            builder.boundary_call(&program, variadic, callee, &values, &tail)?,
+            ResultValue::Void
+        ));
+    }
+    builder.terminate(Terminator::Return(None))?;
+    program.define(symbol, builder.finish()?)?;
+    let mut text = Vec::new();
+    crate::lowir::writer::write(&program, &mut text)?;
+    let text = String::from_utf8(text)?;
+    assert!(text.contains("declare function @accept_tail(%p0 : i32) -> void [arity=variadic]"));
+    assert!(text.contains("copy i32 7"));
+    assert!(text.contains("[classes=2:sse_integer, classes=3:sse_integer]"));
+    assert!(text.contains("as (%p0 : i32) -> void [arity=variadic]"));
+    for operand in [Operand::Temporary(TempId(0)), Operand::Parameter(0)] {
+        let body = program.symbols[symbol.0 as usize]
+            .body
+            .as_mut()
+            .ok_or("body")?;
+        let arguments = &mut body.objects.as_mut().ok_or("object inputs")?.arguments;
+        let original = arguments[1];
+        arguments[1] = BoundaryArgument::Scalar(crate::lowir::program::Value {
+            ty: Scalar::I64,
+            operand,
+        });
+        assert!(crate::lowir::writer::write(&program, &mut Vec::new()).is_err());
+        let body = program.symbols[symbol.0 as usize]
+            .body
+            .as_mut()
+            .ok_or("body")?;
+        body.objects.as_mut().ok_or("object inputs")?.arguments[1] = original;
+    }
+    let body = program.symbols[symbol.0 as usize]
+        .body
+        .as_mut()
+        .ok_or("body")?;
+    let arguments = &mut body.objects.as_mut().ok_or("object inputs")?.arguments;
+    let BoundaryArgument::Object { classes, .. } = &mut arguments[2] else {
+        return Err("object tail".into());
+    };
+    *classes = None;
     assert!(crate::lowir::writer::write(&program, &mut Vec::new()).is_err());
     Ok(())
 }
