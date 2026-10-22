@@ -38,10 +38,10 @@ mod memory_transfers;
 mod mutable_reconstruction;
 #[path = "../../harness/native_references.rs"]
 pub(crate) mod native_references;
-#[path = "../../owned_transfers.rs"]
-mod owned_transfers;
 #[path = "../../overlapping_transfers.rs"]
 mod overlapping_transfers;
+#[path = "../../owned_transfers.rs"]
+mod owned_transfers;
 #[path = "../../pointer_addresses.rs"]
 mod pointer_addresses;
 #[path = "../../pointer_casts.rs"]

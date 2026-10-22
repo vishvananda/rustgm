@@ -1,8 +1,9 @@
 # Parallel PA24–PA30 implementation
 
 Use three GPT-6.1-Sol workers at high reasoning and one integrator. Each worker
-owns a separate worktree and local branch. Main retains the unfinished PA24
-snapshot; do not copy its dirty files into unrelated workers or reset them.
+owns a separate worktree and local branch. PA24 is published; main integrates
+the remaining PA25–PA30 checkpoints. Do not copy dirty files between workers
+or reset their unfinished work.
 Workers own implementation, independently qualified tests and handout drafts.
 The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
@@ -16,13 +17,11 @@ assignment activation and final text-oracle publication.
 | Worker B | PA26 language/library hooks | PA30 foreign interfaces | [PA26/PA30](parallel/pa26-pa30.md) |
 | Worker C | PA27 unsafe language | PA28 intrinsics and atomics | [PA27/PA28](parallel/pa27-pa28.md) |
 
-After Worker B's canonical operator dot-call checkpoint, its next implementation
-slice is PA24 receiver adapters, ahead of PA30. This moves work on the earliest
-unfinished assignment off the integrator while combined qualification runs.
-The integrator continues to own adapter identity/proof decisions and PA24 release;
-Worker B returns to the PA26/PA30 lane after that adapter slice is integrated.
-Worker A retains anonymous instance identities and Worker C retains unsafe capture
-replay, so changes to shared body enums must be coordinated before editing them.
+Worker B's PA24 receiver-adapter slice is integrated and released. Its current
+lane is PA26/PA30. Worker A retains anonymous instance identities and Worker C
+retains unsafe capture replay, so changes to shared body enums must be coordinated
+before editing them. The integrator owns combined qualification, reviewed text
+oracles, assignment activation and public pushes to main.
 
 The course release order remains cumulative. Future work can be developed
 without marking an unfinished prerequisite or assignment active. A worker
@@ -91,7 +90,7 @@ The existing storage wrapper automatically joins the shared controller:
 
 ```sh
 python3 scripts/storage.py run --no-prune -- cargo check --manifest-path dev/Cargo.toml --locked
-python3 scripts/storage.py run --prune-under obj/parallel/pa25 -- cargo test --release --manifest-path dev/Cargo.toml --test constant_execution
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run const_functions --release
 ```
 
 Declare every disposable output root when selecting scoped cleanup. Existing

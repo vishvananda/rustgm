@@ -8,6 +8,9 @@ RustGM owns both the full maintainer frontend and its assignments. Read
 - Put fixtures in the earliest `paN/tests/` that owns every feature they use.
   Every input must appear in the assignment's manifest. Preserve upstream
   attribution, original bytes and `third_party/sources.json` checksums.
+- Register each maintainer integration root in its owning `dev/tests/suites/`
+  group. Use `scripts/maintainer_suites.py run SUITE` for exact focused selection;
+  `make test-harness` rejects missing or duplicate registrations.
 - Never hand-edit generated references or bless outputs just to hide a failure.
   Declare expected outcomes before generating text oracles. Reference updates
   are authorized when developing a new contract, but must be independently
