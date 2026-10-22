@@ -1986,6 +1986,16 @@ recording point seeds. A compact summary tree preserves ascending identity order
 without scanning every inactive entity at every cleanup event. Update summaries
 on zero/nonzero transitions and rebuild them after dense joins; retain the same
 work limits and charge enumeration and join work explicitly.
+Keep independent entity bits for the fixed-point solution and for each move or
+storage kill. During point recording, share immutable component sets and update
+live component multiplicities on entity transitions. Seed each distinct named
+lifetime or opaque parameter once per point, including a borrow's temporary
+result requirement at its creation point. Rebuild multiplicities from the solved
+entity state at block and cleanup-edge boundaries; never merge entity identities
+because their current components agree. Operand coercion, ordinary use and
+destructor queries retain their separate component policies. Bound construction,
+transition and distinct-output work and retained storage; duplicate elimination
+after enumerating all live entities at every point is insufficient.
 Forward loan states use the same index for pruning, conflict checks and optional
 inspection. Rebuild the occupied-word index after dense CFG copies, clear it when
 the last loan in a word expires, and preserve two-phase activation separately.

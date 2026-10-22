@@ -1,8 +1,12 @@
 //! Use liveness and destructor liveness share the CFG but retain distinct components.
-use super::{Analysis, Flow as Uses, mark, successors};
+use super::{
+    Analysis, Flow as Uses, components, mark,
+    population::{Population, State},
+    successors,
+};
 use crate::{
     body::{
-        ir::{Action, BlockId, Place, Rvalue, Terminator},
+        ir::{Action, BlockId, Place, Terminator},
         storage::Location,
     },
     borrow::{
@@ -19,8 +23,7 @@ struct Flow<'a> {
     uses: Uses<'a>,
     plan: Schedule<'a>,
     paths: &'a Paths,
-    ordinary: usize,
-    operands: super::operands::Requirements,
+    components: components::Components,
     drop_entities: HashMap<PathId, usize>,
     intervals: Vec<(u32, usize)>,
 }
@@ -45,13 +48,30 @@ impl<'a> Flow<'a> {
         let timeline = crate::borrow::destruction::timeline::Index::new(facts.body(), plan.events)?;
         uses.result.points = timeline.count;
         uses.result.ordered = Some(timeline);
-        let ordinary = uses.entities.len();
+        let mut components = components::Builder::default();
+        for (entity, &ty) in uses.entities.iter().enumerate() {
+            let key = operands
+                .id(entity)
+                .map_or(components::Key::Value(ty), components::Key::Operand);
+            let set = if let Some(set) = components.get(key) {
+                set
+            } else {
+                let parts = if let Some(parts) = operands.get(entity)? {
+                    parts
+                } else {
+                    regions.symbolic(types, ty)?
+                };
+                let set = components.intern(parts)?;
+                components.remember(key, set)?;
+                set
+            };
+            components.entity(set)?;
+        }
         let mut flow = Self {
             uses,
             plan,
             paths: &facts.ownership.paths,
-            ordinary,
-            operands,
+            components: components::Components::default(),
             drop_entities: HashMap::new(),
             intervals: Vec::new(),
         };
@@ -60,11 +80,21 @@ impl<'a> Flow<'a> {
             let (Some(ty), Some(path)) = (cleanup.live_type, cleanup.candidate.path) else {
                 continue;
             };
-            if flow.drop_entities.contains_key(&path)
-                || drops.symbolic(types, definitions, ty)?.is_empty()
-            {
+            if flow.drop_entities.contains_key(&path) {
                 continue;
             }
+            let key = components::Key::Destructor(ty);
+            let set = if let Some(set) = components.get(key) {
+                set
+            } else {
+                let set = components.intern(drops.symbolic(types, definitions, ty)?)?;
+                components.remember(key, set)?;
+                set
+            };
+            if set == 0 {
+                continue;
+            }
+            components.entity(set)?;
             let entry = flow
                 .paths
                 .entries
@@ -81,9 +111,11 @@ impl<'a> Flow<'a> {
                 .saturating_mul(flow.intervals.len().max(1).ilog2() as usize + 1),
         )?;
         flow.intervals.sort_unstable();
+        flow.uses.charge(components.steps)?;
+        flow.components = components.finish();
         Ok(flow)
     }
-    fn kill(&mut self, start: u32, end: u32, live: &mut Live) -> Result<(), &'static str> {
+    fn kill(&mut self, start: u32, end: u32, live: &mut impl State) -> Result<(), &'static str> {
         if self.intervals.is_empty() {
             return Ok(());
         }
@@ -93,15 +125,15 @@ impl<'a> Flow<'a> {
         let last = self.intervals.partition_point(|&(bit, _)| bit < end);
         self.uses.charge(last - first)?;
         for &(_, entity) in &self.intervals[first..last] {
-            mark(Some(entity), live, false);
+            mark(Some(entity), live, false)?;
         }
         Ok(())
     }
-    fn define(&mut self, path: PathId, live: &mut Live) -> Result<(), &'static str> {
+    fn define(&mut self, path: PathId, live: &mut impl State) -> Result<(), &'static str> {
         let path = &self.paths.entries[path.0 as usize];
         self.kill(path.start, path.end, live)
     }
-    fn statement(&mut self, action: Action, live: &mut Live) -> Result<(), &'static str> {
+    fn statement(&mut self, action: Action, live: &mut impl State) -> Result<(), &'static str> {
         match action {
             Action::Evaluate(value) => {
                 if let Some(path) = self.paths.temporary_path(value) {
@@ -129,7 +161,7 @@ impl<'a> Flow<'a> {
         }
         self.uses.action(action, live)
     }
-    fn transfer(&mut self, index: usize, live: &mut Live) -> Result<(), &'static str> {
+    fn transfer(&mut self, index: usize, live: &mut impl State) -> Result<(), &'static str> {
         self.uses.charge(1)?;
         let event = &self.plan.events[index];
         match event.effect {
@@ -153,7 +185,7 @@ impl<'a> Flow<'a> {
                     .ok_or("invalid cleanup liveness identity")?;
                 if cleanup.live_type.is_some() {
                     if let Some(path) = cleanup.candidate.path {
-                        mark(self.drop_entities.get(&path).copied(), live, true);
+                        mark(self.drop_entities.get(&path).copied(), live, true)?;
                     } else {
                         // Indirect destruction also needs the full reference used
                         // to access its destination, including its well-formedness.
@@ -253,85 +285,24 @@ impl<'a> Flow<'a> {
         }
         Ok(incoming)
     }
-    fn seed(
-        &mut self,
-        types: &Store,
-        definitions: &Definitions,
-        regions: &mut LiveRegions,
-        drops: &mut Regions,
-        live: &Live,
-        point: Point,
-    ) -> Result<(), &'static str> {
-        self.uses.charge(1)?;
-        for (word, bits) in live.active() {
-            self.uses.charge(live.depth())?;
-            let mut bits = bits;
-            while bits != 0 {
-                let entity = word * 64 + bits.trailing_zeros() as usize;
-                bits &= bits - 1;
-                let ty = self.uses.entities[entity];
-                let components = if entity < self.ordinary {
-                    self.operands.get(entity)?
-                } else {
-                    Some(drops.symbolic(types, definitions, ty)?)
-                };
-                if let Some(ids) = components {
-                    self.uses.charge(ids.len())?;
-                    if self
-                        .uses
-                        .result
-                        .seeds
-                        .len()
-                        .saturating_add(self.uses.result.parameter_seeds.len())
-                        .saturating_add(ids.len())
-                        > 2_000_000
-                    {
-                        return Err("drop liveness seed budget exceeded");
-                    }
-                    self.uses
-                        .result
-                        .seeds
-                        .extend(ids.regions.iter().map(|r| (*r, point)));
-                    self.uses
-                        .result
-                        .parameter_seeds
-                        .extend(ids.parameters.iter().map(|p| (*p, point)));
-                } else {
-                    self.uses.seed_type(types, regions, ty, point)?;
-                }
-            }
-        }
-        Ok(())
-    }
     fn record(
         &mut self,
-        types: &Store,
-        definitions: &Definitions,
-        regions: &mut LiveRegions,
-        drops: &mut Regions,
         index: usize,
-        live: &mut Live,
+        population: &mut Population<'_>,
     ) -> Result<(), &'static str> {
-        self.transfer(index, live)?;
+        self.transfer(index, population)?;
         let point = Point(u32::try_from(index).map_err(|_| "too many drop points")?);
-        self.seed(types, definitions, regions, drops, live, point)?;
         let event = &self.plan.events[index];
-        if let Effect::Statement = event.effect
+        let borrow = if let Effect::Statement = event.effect
             && let Location::At { before, .. } = event.location
-            && let Action::Evaluate(id) = self.uses.body.statements[before as usize].action
-            && matches!(
-                self.uses.body.values[id.0 as usize].kind,
-                Rvalue::Borrow { .. }
-            )
         {
-            self.uses.seed_type(
-                types,
-                regions,
-                self.uses.body.values[id.0 as usize].ty,
-                point,
-            )?;
-        }
-        Ok(())
+            self.uses
+                .borrow_entity(self.uses.body.statements[before as usize].action)
+        } else {
+            None
+        };
+        population.seed(&mut self.uses.result, point, borrow)?;
+        self.uses.charge(population.take_steps())
     }
 }
 /// Include destructor components and ordered storage endpoints without granting
@@ -365,6 +336,8 @@ pub(crate) fn analyze_schedule(
 ) -> Result<Analysis, &'static str> {
     let mut flow = Flow::new(types, definitions, regions, drops, facts, plan)?;
     let incoming = flow.solve()?;
+    let components = std::mem::take(&mut flow.components);
+    let mut population = Population::new(&components);
     let words = flow.uses.entities.len().div_ceil(64);
     let mut live = Live::new(words);
     let mut edge = live.clone();
@@ -373,6 +346,8 @@ pub(crate) fn analyze_schedule(
             continue;
         }
         flow.exit(block, &incoming, &mut live, &mut edge)?;
+        population.reset(&live)?;
+        flow.uses.charge(population.take_steps())?;
         for index in flow
             .uses
             .result
@@ -383,7 +358,7 @@ pub(crate) fn analyze_schedule(
             .clone()
             .rev()
         {
-            flow.record(types, definitions, regions, drops, index, &mut live)?;
+            flow.record(index, &mut population)?;
         }
         let id = BlockId(u32::try_from(block).map_err(|_| "invalid drop block")?);
         for target in successors(flow.uses.body.blocks[block].terminator)
@@ -404,8 +379,10 @@ pub(crate) fn analyze_schedule(
                 edge.copy_from(
                     &incoming[target.0 as usize * words..(target.0 as usize + 1) * words],
                 );
+                population.reset(&edge)?;
+                flow.uses.charge(population.take_steps())?;
                 for index in range.rev() {
-                    flow.record(types, definitions, regions, drops, index, &mut edge)?;
+                    flow.record(index, &mut population)?;
                 }
             }
         }

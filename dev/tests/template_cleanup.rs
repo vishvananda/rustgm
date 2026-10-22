@@ -257,6 +257,31 @@ fn generic_cleanup_uses_initialization_and_destructor_liveness() -> Result<(), S
 }
 
 #[test]
+fn repeated_generic_cleanup_requirements_do_not_expand_at_every_point()
+-> Result<(), Box<dyn std::error::Error>> {
+    use std::fmt::Write;
+    let mut work = Vec::new();
+    for width in [8, 32, 128] {
+        let arguments = (0..width)
+            .map(|i| format!("x{i}:T"))
+            .collect::<Vec<_>>()
+            .join(",");
+        let mut moves = String::new();
+        for i in 0..width {
+            write!(moves, "let _y{i}=x{i};")?;
+        }
+        let source = format!("fn f<T>({arguments}){{{moves}}}");
+        rustc::qualify(&format!("shared-cleanup-components-{width}"), &source, true)?;
+        let analyses = check(&source)?;
+        assert_eq!(analyses.len(), 1);
+        work.push(analyses[0].steps);
+    }
+    assert!(work[0] < work[1] && work[1] < work[2], "{work:?}");
+    assert!(work[2] - work[1] <= 6 * (work[1] - work[0]), "{work:?}");
+    Ok(())
+}
+
+#[test]
 fn cleanup_verification_requires_complete_matching_contracts()
 -> Result<(), Box<dyn std::error::Error>> {
     let (report, facts) = semantic::analyze("fn f<T>(x:T){}fn g<U>(x:U){}")?;

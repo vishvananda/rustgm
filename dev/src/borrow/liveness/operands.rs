@@ -100,11 +100,11 @@ impl Requirements {
             .ok_or("operand lifetime storage exceeds 64 MB budget")?;
         self.lists.intern(ids)
     }
+    pub fn id(&self, entity: usize) -> Option<u32> {
+        self.entities.get(entity).copied().flatten()
+    }
     pub fn get(&self, entity: usize) -> Result<Option<Parts<'_>>, &'static str> {
-        self.entities
-            .get(entity)
-            .copied()
-            .flatten()
+        self.id(entity)
             .map(|id| self.lists.get(id).ok_or("invalid operand lifetime list"))
             .transpose()
     }

@@ -1,12 +1,15 @@
 //! Backward use liveness for typed locals and values, before loan generation.
 pub mod cleanup;
 use super::active::Live;
+mod components;
 mod operands;
+mod population;
 use super::regions::points::Point;
 use crate::{
     body::ir::{Action, BlockId, Body, LocalId, Place, Rvalue, Terminator, ValueId},
     types::{RegionId, Store, TypeId, outlives::LiveRegions, parameters::ParameterId},
 };
+use population::{Population, State};
 use std::collections::VecDeque;
 
 const LIMIT: usize = 32_000_000;
@@ -177,33 +180,33 @@ impl<'a> Flow<'a> {
         }
         .ok_or("invalid value liveness place")
     }
-    fn use_value(&self, id: ValueId, live: &mut Live) -> Result<(), &'static str> {
+    fn use_value(&self, id: ValueId, live: &mut impl State) -> Result<(), &'static str> {
         mark(
             *self.values.get(id.0 as usize).ok_or("invalid live value")?,
             live,
             true,
-        );
+        )?;
         Ok(())
     }
-    fn use_place(&self, place: Place, live: &mut Live) -> Result<(), &'static str> {
-        mark(self.place(place)?, live, true);
+    fn use_place(&self, place: Place, live: &mut impl State) -> Result<(), &'static str> {
+        mark(self.place(place)?, live, true)?;
         Ok(())
     }
-    fn local(&self, id: LocalId, live: &mut Live, used: bool) -> Result<(), &'static str> {
+    fn local(&self, id: LocalId, live: &mut impl State, used: bool) -> Result<(), &'static str> {
         mark(
             *self.locals.get(id.0 as usize).ok_or("invalid live local")?,
             live,
             used,
-        );
+        )?;
         Ok(())
     }
-    fn value(&mut self, id: ValueId, live: &mut Live) -> Result<(), &'static str> {
+    fn value(&mut self, id: ValueId, live: &mut impl State) -> Result<(), &'static str> {
         let value = self
             .body
             .values
             .get(id.0 as usize)
             .ok_or("invalid liveness value operation")?;
-        mark(self.values[id.0 as usize], live, false);
+        mark(self.values[id.0 as usize], live, false)?;
         match value.kind {
             Rvalue::Read(place)
             | Rvalue::Address(place)
@@ -259,7 +262,7 @@ impl<'a> Flow<'a> {
         }
         Ok(())
     }
-    fn action(&mut self, action: Action, live: &mut Live) -> Result<(), &'static str> {
+    fn action(&mut self, action: Action, live: &mut impl State) -> Result<(), &'static str> {
         self.charge(1)?;
         match action {
             Action::CheckInitialized(place) | Action::Mention(place) => {
@@ -359,58 +362,41 @@ impl<'a> Flow<'a> {
         }
         Ok((incoming, live))
     }
-    fn seed_type(
+    fn components(
         &mut self,
         types: &Store,
         regions: &mut LiveRegions,
-        ty: TypeId,
-        point: Point,
-    ) -> Result<(), &'static str> {
-        let parts = regions.symbolic(types, ty)?;
-        let count = parts.regions.len().saturating_add(parts.parameters.len());
-        self.charge(count)?;
-        if self
-            .result
-            .seeds
-            .len()
-            .saturating_add(self.result.parameter_seeds.len())
-            .saturating_add(count)
-            > 2_000_000
-        {
-            return Err("value liveness seed budget exceeded");
+    ) -> Result<components::Components, &'static str> {
+        let mut builder = components::Builder::default();
+        for &ty in &self.entities {
+            let key = components::Key::Value(ty);
+            let set = if let Some(set) = builder.get(key) {
+                set
+            } else {
+                let set = builder.intern(regions.symbolic(types, ty)?)?;
+                builder.remember(key, set)?;
+                set
+            };
+            builder.entity(set)?;
         }
-        self.result
-            .seeds
-            .extend(parts.regions.iter().map(|id| (*id, point)));
-        self.result
-            .parameter_seeds
-            .extend(parts.parameters.iter().map(|id| (*id, point)));
-        Ok(())
+        self.charge(builder.steps)?;
+        Ok(builder.finish())
     }
-    fn seed(
-        &mut self,
-        types: &Store,
-        regions: &mut LiveRegions,
-        live: &Live,
-        point: Point,
-    ) -> Result<(), &'static str> {
-        self.charge(1)?;
-        for (word, bits) in live.active() {
-            self.charge(live.depth())?;
-            let mut bits = bits;
-            while bits != 0 {
-                let entity = word * 64 + bits.trailing_zeros() as usize;
-                bits &= bits - 1;
-                self.seed_type(types, regions, self.entities[entity], point)?;
-            }
+    fn borrow_entity(&self, action: Action) -> Option<usize> {
+        if let Action::Evaluate(id) = action
+            && matches!(self.body.values[id.0 as usize].kind, Rvalue::Borrow { .. })
+        {
+            self.values[id.0 as usize]
+        } else {
+            None
         }
-        Ok(())
     }
 }
-fn mark(entity: Option<usize>, live: &mut Live, used: bool) {
+fn mark(entity: Option<usize>, live: &mut impl State, used: bool) -> Result<(), &'static str> {
     if let Some(id) = entity {
-        live.mark(id, used);
+        live.mark(id, used)?;
     }
+    Ok(())
 }
 
 fn successors(terminator: Terminator) -> [Option<BlockId>; 2] {
@@ -436,23 +422,24 @@ pub fn analyze(
 ) -> Result<Analysis, &'static str> {
     let mut flow = Flow::new(body, types, regions)?;
     let (incoming, mut live) = flow.solve()?;
+    let components = flow.components(types, regions)?;
+    let mut population = Population::new(&components);
     for (block, data) in body.blocks.iter().enumerate() {
         if !flow.result.reachable[block] {
             continue;
         }
         let base = flow.result.locations[block].2;
         flow.exit(block, &incoming, &mut live)?;
-        flow.seed(types, regions, &live, Point(base + data.end - data.start))?;
+        population.reset(&live)?;
+        population.seed(&mut flow.result, Point(base + data.end - data.start), None)?;
+        flow.charge(population.take_steps())?;
         for at in (data.start..data.end).rev() {
             let action = body.statements[at as usize].action;
-            flow.action(action, &mut live)?;
+            flow.action(action, &mut population)?;
             let point = Point(base + at - data.start);
-            flow.seed(types, regions, &live, point)?;
-            if let Action::Evaluate(id) = action
-                && matches!(body.values[id.0 as usize].kind, Rvalue::Borrow { .. })
-            {
-                flow.seed_type(types, regions, body.values[id.0 as usize].ty, point)?;
-            }
+            let borrow = flow.borrow_entity(action);
+            population.seed(&mut flow.result, point, borrow)?;
+            flow.charge(population.take_steps())?;
         }
     }
     Ok(flow.result)
