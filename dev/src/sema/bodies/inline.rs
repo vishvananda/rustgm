@@ -28,6 +28,9 @@ impl Checker<'_> {
             None => self.variable(node, Domain::Any)?,
         };
         self.save(node, result);
+        // The inline body inherits every declared enclosing slot, even when no
+        // earlier expression has needed the parent's lazy universal aliases.
+        self.prepare_universals(node)?;
         let (mut inputs, roots) = Refinement::new(
             &self.facts.types,
             &mut self.state.infer,

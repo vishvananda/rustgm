@@ -14,42 +14,61 @@ impl Executor for Capture {
             return Ok(());
         };
         assert!(source.validate(facts, result).is_ok());
+        let (entry, caller) = source
+            .entry(facts)
+            .map_err(|e| Error::at(super::super::FileId(0), 0, e))?;
         assert_eq!(
-            source.selected.result_type(facts),
+            entry.selected.result_type(facts),
             Err("selected constant arguments are not concrete")
         );
         let other = facts
             .functions
             .iter()
-            .find_map(|f| f.body.filter(|body| *body != source.caller))
+            .find_map(|f| f.body.filter(|body| *body != caller.source))
             .ok_or_else(|| Error::at(super::super::FileId(0), 0, "missing foreign body"))?;
-        assert!(
-            SourceComputation {
-                caller: other,
-                ..source
-            }
-            .validate(facts, result)
-            .is_err()
-        );
-        assert!(
-            SourceComputation {
-                original: other,
-                ..source
-            }
-            .validate(facts, result)
-            .is_err()
-        );
-        assert!(
-            SourceComputation {
-                selected: Instance {
-                    arguments: crate::types::GenericArgs::EMPTY,
-                    ..source.selected
+        let forged = {
+            let catalog = &mut facts
+                .source_computations
+                .as_deref_mut()
+                .ok_or_else(|| Error::at(super::super::FileId(0), 0, "missing source catalog"))?
+                .0;
+            let foreign = catalog
+                .caller(
+                    catalog::CallerKey {
+                        source: other,
+                        ..caller
+                    },
+                    catalog::Publication::new([0..0, 0..0])
+                        .map_err(|e| Error::at(super::super::FileId(0), 0, e))?,
+                )
+                .map_err(|e| Error::at(super::super::FileId(0), 0, e))?;
+            [
+                catalog::Use {
+                    caller: foreign,
+                    ..entry
                 },
-                ..source
-            }
-            .validate(facts, result)
-            .is_err()
-        );
+                catalog::Use {
+                    original: other,
+                    ..entry
+                },
+                catalog::Use {
+                    selected: Instance {
+                        arguments: crate::types::GenericArgs::EMPTY,
+                        ..entry.selected
+                    },
+                    ..entry
+                },
+            ]
+            .map(|row| catalog.retain_use(row).map(SourceComputation))
+        };
+        for witness in forged {
+            assert!(
+                witness
+                    .map_err(|e| Error::at(super::super::FileId(0), 0, e))?
+                    .validate(facts, result)
+                    .is_err()
+            );
+        }
         assert!(
             source
                 .validate(facts, TypeId::primitive(crate::types::Primitive::U16))
@@ -57,7 +76,7 @@ impl Executor for Capture {
         );
         let region = facts
             .types
-            .arguments(source.selected.arguments)
+            .arguments(entry.selected.arguments)
             .and_then(|mut a| {
                 a.find_map(|a| match a {
                     Argument::Lifetime(r) if r != RegionId::STATIC => Some(r),
@@ -114,12 +133,23 @@ fn foreign_and_stale_source_witnesses_are_rejected() -> Result<(), Box<dyn std::
 }
 #[test]
 fn common_request_layout_and_closed_argument_rules_are_unchanged() {
-    assert_eq!(size_of::<SourceComputation>(), 24);
-    assert_eq!(size_of::<Target>(), 32);
+    assert_eq!(size_of::<SourceComputation>(), 8);
+    assert_eq!(size_of::<Target>(), 28);
     assert_eq!(size_of::<Request>(), 56);
     assert_eq!(size_of::<(Target, usize)>(), 40);
     assert_eq!(size_of::<crate::const_eval::code::Catalog>(), 192);
-    assert_eq!(size_of::<crate::const_eval::code::Code>(), 328);
+    eprintln!(
+        "caller-layout source={} target={} request={} code={} declarations={}",
+        size_of::<SourceComputation>(),
+        size_of::<Target>(),
+        size_of::<Request>(),
+        size_of::<crate::const_eval::code::Code>(),
+        size_of::<Declarations>()
+    );
+    assert_eq!(size_of::<crate::const_eval::code::Code>(), 336);
+    assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
+    assert_eq!(size_of::<crate::body::ir::Value>(), 24);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 464);
 }
 
 #[test]
@@ -228,6 +258,82 @@ fn wide_source_requests_revalidate_after_external_pattern_preparation()
                 analysis.facts.constant_work.resumes
             );
         }
+    }
+    Ok(())
+}
+
+#[test]
+fn ordinary_body_source_computation_retains_its_real_caller()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut report = crate::test_source::resolve(
+        "struct S<'a>(&'a u8);impl<'a>S<'a>{const C:u8={let n=7;n};}fn f<'a>(_:&'a u8)->u8{S::<'a>::C}fn main(){let n=7;let _=f(&n);}",
+        true,
+    )?;
+    let prepared = crate::pipeline::analyze_source(&report)?;
+    let mut facts = prepared.facts;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared.prepared)?;
+    assert!(facts.constant_work.source_context_bytes > 0);
+    Ok(())
+}
+
+#[test]
+fn specialized_body_callers_keep_distinct_namespaces() -> Result<(), Box<dyn std::error::Error>> {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa25/tests/spec/associated-callers");
+    let mut failures = Vec::new();
+    for name in [
+        "generic-body",
+        "nested-initializer",
+        "inline-caller",
+        "generic-reference",
+    ] {
+        let text = std::fs::read_to_string(root.join(format!("{name}.rs")))?;
+        let result = (|| -> Result<(), Box<dyn std::error::Error>> {
+            let mut report = crate::test_source::resolve(&text, true)?;
+            let prepared = crate::pipeline::analyze_source(&report)?;
+            let mut facts = prepared.facts;
+            let entry = crate::sema::entry::select(&mut report, &facts)?;
+            crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared.prepared)?;
+            Ok(())
+        })();
+        if let Err(error) = result {
+            failures.push(format!("{name}: {error}"));
+        } else {
+            eprintln!("caller-source {name}: accepted");
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn legacy_ast_completed_operands_preserve_ordinary_body_selection()
+-> Result<(), Box<dyn std::error::Error>> {
+    for path in [
+        "projections/definition-readiness/lowir/generic-callable-early.rs",
+        "projections/definition-readiness/lowir/generic-callable-late.rs",
+        "selection/lookup-readiness/lowir/interleaved-trait-lookup.rs",
+        "constants/value/lowir/qualified_lifetime.rs",
+    ] {
+        let text = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa20/tests/spec")
+                .join(path),
+        )?;
+        let mut report = crate::test_source::resolve(&text, true)?;
+        let prepared = crate::pipeline::analyze_source(&report)?;
+        let mut facts = prepared.facts;
+        for (&input, &selected) in &facts.constant_targets {
+            eprintln!(
+                "legacy {path} input={input:?} selected={selected:?} cached={}",
+                crate::sema::values::Reader::new(&facts)
+                    .associated(selected)
+                    .is_some()
+            );
+        }
+        let entry = crate::sema::entry::select(&mut report, &facts)?;
+        crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared.prepared)?;
     }
     Ok(())
 }

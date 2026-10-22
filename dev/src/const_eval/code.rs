@@ -26,6 +26,7 @@ pub(crate) enum PreparedOperand {
 }
 
 pub(crate) struct Code {
+    pub instance: Option<Instance>,
     pub source: NodeKey,
     pub result: crate::types::TypeId,
     pub owner: Owner,
@@ -76,6 +77,7 @@ impl Code {
             }
         }
         Ok(Self {
+            instance: body.instance,
             source: body.source,
             result: body.result,
             owner: body.owner,
@@ -196,14 +198,45 @@ impl Catalog {
     pub(crate) fn source_initializer(
         &mut self,
         body: &Body,
-        source: crate::sema::values::execution::SourceComputation,
+        source: (crate::sema::values::Instance, NodeKey, crate::types::TypeId),
     ) -> Result<usize, &'static str> {
-        if !matches!(body.owner, Owner::InitializerInstance { instance, .. } if instance == source.selected())
-            || body.source != source.original()
+        if !matches!(body.owner, Owner::InitializerInstance { instance, .. } if instance == source.0)
+            || body.source != source.1
         {
             return Err("source computation selects another checked initializer body");
         }
-        self.insert_body(body, true)
+        let key = (source.0, source.2);
+        if let Some(&index) = self.associated.as_deref().and_then(|map| map.get(&key)) {
+            let previous = self.bodies.get(index).ok_or("source code index is stale")?;
+            if !previous.source_only
+                || previous.source != body.source
+                || !matches!(previous.owner, Owner::InitializerInstance {instance,..} if instance==source.0)
+                || previous.result != body.result
+            {
+                return Err("source initializer code identity changed");
+            }
+            return Ok(index);
+        }
+        let bytes = self
+            .bytes
+            .saturating_add(crate::support::retained::new_map::<
+                (crate::sema::values::Instance, crate::types::TypeId),
+                usize,
+            >(1))
+            .saturating_add(if self.associated.is_none() {
+                size_of::<AssociatedIndex>()
+            } else {
+                0
+            });
+        if bytes > 64 * 1024 * 1024 {
+            return Err("source code index storage budget exceeded");
+        }
+        self.bytes = bytes;
+        let index = self.insert_body(body, true)?;
+        self.associated
+            .get_or_insert_with(Default::default)
+            .insert(key, index);
+        Ok(index)
     }
     fn insert_body(&mut self, body: &Body, source_only: bool) -> Result<usize, &'static str> {
         let bytes = self

@@ -8,6 +8,7 @@ use crate::{
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
 pub(super) struct Inputs {
+    pub(super) caller: crate::sema::values::execution::CallerInstance,
     pub(super) instance: Option<Instance>,
     pub(super) bindings: Vec<Binding>,
     pub(super) captures: Vec<crate::types::RegionId>,
@@ -35,6 +36,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
             return Err("missing callable template");
         }
         return Ok(Inputs {
+            caller: crate::sema::values::execution::CallerInstance::Callable(instance),
             instance: Some(instance),
             bindings: Vec::new(),
             captures: Vec::new(),
@@ -75,6 +77,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
         return Err("instance signature differs from substituted template");
     }
     Ok(Inputs {
+        caller: crate::sema::values::execution::CallerInstance::Callable(instance),
         instance: Some(instance),
         bindings,
         captures: Vec::new(),

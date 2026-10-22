@@ -605,6 +605,15 @@ impl Lower<'_, '_> {
                     representation,
                 );
             }
+            Rvalue::SourceAssociated(source) => {
+                let (instance, constant) = self.context.constants.source_associated(source)?;
+                return self.constant_value(
+                    super::data::Key::Associated(instance),
+                    constant,
+                    value.ty,
+                    representation,
+                );
+            }
             Rvalue::AssociatedConstant(instance) => {
                 let constant = self
                     .context

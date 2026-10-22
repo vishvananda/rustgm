@@ -1,5 +1,9 @@
 //! Phase-neutral execution requests retain semantic identity across body readiness.
 pub use super::super::computation::SourceComputation;
+pub(crate) use super::super::computation::{
+    BodyCaller, CallerInstance, PreparedConstant, caller_namespace_available, caller_published,
+    with_namespace, with_registered_namespace,
+};
 use super::{Constant, Instance};
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
@@ -41,6 +45,7 @@ pub struct Request {
 /// Only the selected dependency is prepared before the retained query resumes.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Requirement {
+    SourceAssociatedBody(SourceComputation),
     DiscriminantValue(crate::sema::members::VariantId),
     FunctionBody(instance::Instance),
     InitializerBody(DefId),
@@ -95,6 +100,8 @@ pub struct Work {
     pub associated_instances: usize,
     /// Conservative retained allocation for typed completed instance values.
     pub associated_value_bytes: usize,
+    /// Lazy caller/use catalog allocation, separate from completed-value storage.
+    pub source_context_bytes: usize,
 }
 
 /// The orchestrator supplies checked CFG execution without a semantic dependency

@@ -1,4 +1,13 @@
 //! A source value keeps its actual caller proof owner without a materialized permit.
+mod catalog;
+mod namespaces;
+mod prepared_callers;
+mod queries;
+pub(crate) use namespaces::{
+    available as caller_namespace_available, published as caller_published, with_namespace,
+    with_registered_namespace,
+};
+mod seals;
 use super::{Declarations, Error, InitializerKind, NodeKey, Queries, Query, TypeId};
 use crate::{
     sema::values::Instance,
@@ -7,31 +16,127 @@ use crate::{
         arguments::{Argument, ConstKind},
     },
 };
+pub(crate) use catalog::Enclosing as CallerInstance;
+pub(crate) use prepared_callers::{BodyCaller, PreparedConstant};
 
-/// An opaque source-computation request, minted from a retained caller dispatcher.
+/// An opaque source-computation request scoped to one declaration catalog.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct SourceComputation {
-    selected: Instance,
-    original: NodeKey,
-    caller: NodeKey,
+pub struct SourceComputation(catalog::Handle);
+
+pub(in crate::sema) struct Computations(catalog::Catalog);
+#[derive(Clone, Copy)]
+pub(crate) struct Resolved {
+    pub selected: Instance,
+    pub original: NodeKey,
+}
+impl Declarations {
+    pub(in crate::sema) fn retain_source_caller(
+        &mut self,
+        source: NodeKey,
+        declaration: Option<crate::resolve::model::DefId>,
+        universals: u32,
+        ranges: [std::ops::Range<usize>; 2],
+    ) -> Result<(), &'static str> {
+        let publication = catalog::Publication::new(ranges)?;
+        publication.validate(self, source)?;
+        if self.source_computations.is_none() {
+            self.source_computations = Some(Box::new(Computations(catalog::Catalog::new()?)));
+        }
+        let catalog = &mut self
+            .source_computations
+            .as_deref_mut()
+            .ok_or("missing source caller catalog")?
+            .0;
+        catalog.caller(
+            catalog::CallerKey {
+                source,
+                declaration,
+                universals,
+                enclosing: catalog::Enclosing::Original,
+            },
+            publication,
+        )?;
+        self.constant_work.source_context_bytes = catalog.retained_bytes();
+        Ok(())
+    }
 }
 impl SourceComputation {
-    pub(crate) const fn selected(self) -> Instance {
-        self.selected
+    pub(crate) fn input(self, facts: &Declarations) -> Result<Instance, &'static str> {
+        Ok(self.entry(facts)?.0.input)
     }
-    pub(crate) const fn original(self) -> NodeKey {
-        self.original
+    pub(crate) fn validate_use(
+        self,
+        facts: &Declarations,
+        source: NodeKey,
+        enclosing: CallerInstance,
+        result: TypeId,
+    ) -> Result<(), &'static str> {
+        let (entry, caller) = self.entry(facts)?;
+        if caller.source != source || caller.enclosing != enclosing || entry.actual_result != result
+        {
+            return Err("source associated operand belongs to another caller or result");
+        }
+        Ok(())
+    }
+
+    pub(crate) fn result(self, facts: &Declarations) -> Result<TypeId, &'static str> {
+        Ok(self.entry(facts)?.0.requested)
+    }
+    pub(crate) fn identity(
+        self,
+        facts: &Declarations,
+    ) -> Result<(Instance, NodeKey), &'static str> {
+        let entry = self.entry(facts)?.0;
+        Ok((entry.selected, entry.original))
+    }
+    #[cfg(test)]
+    pub(crate) fn selected(self, facts: &Declarations) -> Result<Instance, &'static str> {
+        Ok(self.entry(facts)?.0.selected)
+    }
+    fn entry(
+        self,
+        facts: &Declarations,
+    ) -> Result<(catalog::Use, catalog::CallerKey), &'static str> {
+        let catalog = &facts
+            .source_computations
+            .as_deref()
+            .ok_or("missing source computation catalog")?
+            .0;
+        let entry = catalog.lookup(self.0)?;
+        catalog.publication(entry.0.caller)?.within(facts)?;
+        Ok(entry)
     }
     pub(crate) fn validate(
         self,
         facts: &mut Declarations,
         result: TypeId,
     ) -> Result<(), &'static str> {
-        Self::schema(facts, self.selected, self.original, result)?;
+        self.resolve(facts, result).map(|_| ())
+    }
+    pub(crate) fn resolve(
+        self,
+        facts: &mut Declarations,
+        result: TypeId,
+    ) -> Result<Resolved, &'static str> {
+        let (entry, caller) = self.entry(facts)?;
+        if !matches!(caller.enclosing, CallerInstance::Original)
+            && !namespaces::contains(facts, caller)
+        {
+            return Err("source computation lost its exact caller namespace");
+        }
+        if entry.requested != result {
+            return Err("source computation request result changed");
+        }
+        if let Some(seal) = entry.seal {
+            Self::shape(facts, entry.selected, entry.original)?;
+            seal.validate(facts, entry.selected, result)?;
+        } else {
+            Self::schema(facts, entry.selected, entry.original, result)?;
+        }
         let mut nonstatic = false;
         for argument in facts
             .types
-            .arguments(self.selected.arguments)
+            .arguments(entry.selected.arguments)
             .ok_or("missing source arguments")?
         {
             if let Argument::Lifetime(region) = argument {
@@ -44,17 +149,20 @@ impl SourceComputation {
                         .body_regions
                         .get(region.0 as usize - 1)
                         .is_some_and(|owner| {
-                            owner.body == self.caller && owner.source == self.caller
+                            owner.body == caller.source && owner.source == caller.source
                         })
                 {
                     return Err("source computation has a foreign caller lifetime");
                 }
             }
         }
-        if !nonstatic {
+        if !nonstatic && !entry.seal.is_some_and(|seal| seal.projected(facts)) {
             return Err("source computation requires an owned open lifetime");
         }
-        Ok(())
+        Ok(Resolved {
+            selected: entry.selected,
+            original: entry.original,
+        })
     }
     fn schema(
         facts: &mut Declarations,
@@ -62,6 +170,14 @@ impl SourceComputation {
         original: NodeKey,
         result: TypeId,
     ) -> Result<(), &'static str> {
+        let declared = Self::shape(facts, selected, original)?;
+        selected_result(facts, selected, declared, result)
+    }
+    fn shape(
+        facts: &mut Declarations,
+        selected: Instance,
+        original: NodeKey,
+    ) -> Result<TypeId, &'static str> {
         let initializer = facts
             .initializer_index(selected.definition)
             .and_then(|index| facts.initializers.get(index))
@@ -95,7 +211,7 @@ impl SourceComputation {
                 return Err("source computation retains a non-lifetime parameter");
             }
         }
-        selected_result(facts, selected, initializer.ty, result)
+        Ok(initializer.ty)
     }
 }
 fn selected_result(
@@ -152,33 +268,77 @@ impl Queries<'_> {
             .arguments(selected.arguments)
             .ok_or_else(|| self.error(Query::Node(original), "missing source arguments"))?
             .len();
-        self.with_parked_caller(aliases, |dispatcher, facts, scope, reservation, regions| {
-            dispatcher.retain_source_aliases(facts, selected, regions)?;
-            let selected = selected.substitute(&mut facts.types, regions)?;
-            let result = regions.apply(&mut facts.types, result)?;
-            let selected = dispatcher.source_instance(facts, selected)?;
-            let result = dispatcher.source_result(facts, result)?;
-            dispatcher.reserve_pattern(facts, scope.body, reservation)?;
-            if facts.types.arguments_are_concrete(selected.arguments)? {
-                if selected.result_type(facts)? != result {
-                    return Err("canonical initializer request result changed".into());
+        let input = selected;
+        self.with_parked_caller(
+            aliases,
+            |dispatcher, facts, scope, reservation, regions, publication| {
+                dispatcher.retain_source_aliases(facts, selected, regions)?;
+                let selected = selected.substitute(&mut facts.types, regions)?;
+                let result = regions.apply(&mut facts.types, result)?;
+                let selected = dispatcher.source_instance(facts, selected)?;
+                let result = dispatcher.source_result(facts, result)?;
+                dispatcher.reserve_pattern(facts, scope.body, reservation)?;
+                if facts.types.arguments_are_concrete(selected.arguments)? {
+                    if selected.result_type(facts)? != result {
+                        return Err("canonical initializer request result changed".into());
+                    }
+                    return Ok(super::values::execution::Target::Associated {
+                        instance: selected,
+                        result,
+                    });
                 }
-                return Ok(super::values::execution::Target::Associated {
-                    instance: selected,
+                let seal = seals::Seal::prepare(facts, dispatcher, selected, result)?;
+                dispatcher.reserve_pattern(facts, scope.body, reservation)?;
+                let publication = catalog::Publication::new(publication)?;
+                let known = facts
+                    .source_computations
+                    .as_deref()
+                    .and_then(|catalog| catalog.0.original(scope.body).ok());
+                if let Some((key, previous)) = known {
+                    if key.declaration != scope.owner
+                        || key.universals != scope.binders
+                        || previous != publication
+                    {
+                        return Err("source caller publication changed before use".into());
+                    }
+                } else {
+                    publication.validate(facts, scope.body)?;
+                }
+                if facts.source_computations.is_none() {
+                    facts.source_computations =
+                        Some(Box::new(Computations(catalog::Catalog::new()?)));
+                }
+                let catalog = &mut facts
+                    .source_computations
+                    .as_deref_mut()
+                    .ok_or("missing source computation catalog")?
+                    .0;
+                let caller = catalog.caller(
+                    catalog::CallerKey {
+                        source: scope.body,
+                        declaration: scope.owner,
+                        universals: scope.binders,
+                        enclosing: catalog::Enclosing::Original,
+                    },
+                    publication,
+                )?;
+                let witness = SourceComputation(catalog.retain_use(catalog::Use {
+                    caller,
+                    input,
+                    selected,
+                    original,
+                    actual_result: result,
+                    requested: result,
+                    seal: Some(seal),
+                })?);
+                facts.constant_work.source_context_bytes = catalog.retained_bytes();
+                witness.validate(facts, result)?;
+                Ok(super::values::execution::Target::SourceAssociated {
+                    source: witness,
                     result,
-                });
-            }
-            let witness = SourceComputation {
-                selected,
-                original,
-                caller: scope.body,
-            };
-            witness.validate(facts, result)?;
-            Ok(super::values::execution::Target::SourceAssociated {
-                source: witness,
-                result,
-            })
-        })
+                })
+            },
+        )
         .map_err(|e| self.error(Query::Node(original), e))
     }
 }

@@ -13,7 +13,7 @@ struct CallerRetention {
     assumptions: crate::types::parameters::premise_index::Retained,
 }
 impl Dispatcher {
-    pub(super) fn normalize_override(
+    pub(in crate::sema) fn normalize_override(
         &mut self,
         facts: &mut Declarations,
         result: TypeId,

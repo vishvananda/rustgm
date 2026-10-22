@@ -11,6 +11,12 @@ impl Queries<'_> {
     ) -> Result<bool, Error> {
         use super::values::execution::Requirement;
         let source = match requirement {
+            Requirement::SourceAssociatedBody(source) => Some(
+                source
+                    .identity(self.typing.facts)
+                    .map_err(|e| Error::at(super::FileId(0), 0, e))?
+                    .1,
+            ),
             Requirement::DiscriminantValue(variant) => {
                 super::values::Reader::new(self.typing.facts)
                     .discriminant(variant)

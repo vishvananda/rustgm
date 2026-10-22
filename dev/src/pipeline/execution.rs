@@ -138,7 +138,7 @@ impl Engine {
         if let Target::SourceAssociated { source, result } = request.target {
             source
                 .validate(facts, result)
-                .map_err(|e| Declarations::error(report, source.original(), e))?;
+                .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         }
         if let Some(&value) = self.completed.get(request) {
             return Ok(Progress::Complete(value));
@@ -323,6 +323,13 @@ impl Engine {
                 self.catalog
                     .initializer(index, definition, initializer.kind)
                     .map_err(|e| Declarations::error(report, initializer.value, e))?;
+                Ok(true)
+            }
+            Requirement::SourceAssociatedBody(source) => {
+                let result = source
+                    .result(facts)
+                    .map_err(|e| Error::at(FileId(0), 0, e))?;
+                self.source_associated_root(report, facts, source, result)?;
                 Ok(true)
             }
             Requirement::AssociatedBody { instance, result } => {

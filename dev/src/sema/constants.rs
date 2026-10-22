@@ -2,6 +2,7 @@
 mod arithmetic;
 mod canonical_values;
 mod computation;
+pub(super) use computation::Computations;
 mod constructors;
 mod contents;
 mod discriminants;
@@ -109,6 +110,7 @@ impl Value {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Query {
+    Source(computation::SourceComputation),
     Variant(VariantId),
     Constant(usize),
     Instance(crate::sema::values::Instance),
@@ -164,6 +166,7 @@ enum Expression {
     },
 }
 enum Work {
+    Source(computation::SourceComputation),
     Execute(NodeKey),
     PatternOwner(NodeKey),
     PatternStart(pending_patterns::FrameId),
@@ -319,6 +322,10 @@ impl<'a> Queries<'a> {
 impl Queries<'_> {
     fn error(&self, query: Query, message: impl Into<String>) -> Error {
         let key = match query {
+            Query::Source(source) => match source.identity(self.typing.facts) {
+                Ok((_, source)) => source,
+                Err(error) => return Error::at(FileId(0), 0, error),
+            },
             Query::Variant(id) => {
                 let Some(source) = self.typing.facts.members.variants[id.0 as usize]
                     .origin
@@ -421,6 +428,15 @@ impl Queries<'_> {
                 Work::PatternNext(id) => self.next_pattern_request(id)?,
                 Work::PatternPublish(id, query) => self.publish_pattern_request(id, query)?,
                 Work::PatternFinish(id) => self.finish_pattern_frame(id)?,
+                Work::Source(source) => {
+                    if let Some(requirement) = self.execute_source(source)? {
+                        self.work.push(Work::Source(source));
+                        if self.prepare_pattern_requirement(requirement)? {
+                            continue;
+                        }
+                        return Ok(Some(suspension::Dependency::Execution(requirement)));
+                    }
+                }
                 Work::Execute(key) => {
                     if let Some(requirement) = self.execute(key)? {
                         self.work.push(Work::Execute(key));
@@ -456,17 +472,7 @@ impl Queries<'_> {
                     }
                 }
                 Work::Successor(query, dependency, tag) => {
-                    let bits = self
-                        .value(dependency)?
-                        .integer()
-                        .map_err(|e| self.error(query, e))?;
-                    let bits = arithmetic::successor(tag, bits).ok_or_else(|| {
-                        self.error(
-                            query,
-                            "implicit enum discriminant overflows its representation",
-                        )
-                    })?;
-                    self.complete_query(query, Value::Scalar(Scalar::Integer(bits)))?;
+                    self.finish_successor(query, dependency, tag)?;
                 }
                 Work::Reference(work) => self.finish_reference(work)?,
                 Work::Contents(work) => self.finish_contents(work)?,
@@ -489,11 +495,38 @@ impl Queries<'_> {
         }
         Ok(None)
     }
+    fn finish_successor(
+        &mut self,
+        query: Query,
+        dependency: Query,
+        tag: Primitive,
+    ) -> Result<(), Error> {
+        let bits = self
+            .value(dependency)?
+            .integer()
+            .map_err(|e| self.error(query, e))?;
+        let bits = arithmetic::successor(tag, bits).ok_or_else(|| {
+            self.error(
+                query,
+                "implicit enum discriminant overflows its representation",
+            )
+        })?;
+        self.complete_query(query, Value::Scalar(Scalar::Integer(bits)))?;
+        Ok(())
+    }
     fn forward(&mut self, query: Query, dependency: Query) {
         self.work.push(Work::Forward(query, dependency));
         self.work.push(Work::Enter(dependency));
     }
     fn enter(&mut self, query: Query) -> Result<(), Error> {
+        if let Query::Source(source) = query {
+            let result = source
+                .result(self.typing.facts)
+                .map_err(|e| self.error(query, e))?;
+            source
+                .validate(self.typing.facts, result)
+                .map_err(|e| self.error(query, e))?;
+        }
         match self.states.get(&self.state_key(query)) {
             Some(State::Ready(_)) => return Ok(()),
             Some(State::Active) => {
@@ -523,6 +556,7 @@ impl Queries<'_> {
         }
         self.states.insert(self.state_key(query), State::Active);
         match query {
+            Query::Source(source) => self.work.push(Work::Source(source)),
             Query::Instance(instance) => self.enter_instance(instance)?,
             Query::Variant(variant) => {
                 self.work.context = instances::Context::default();

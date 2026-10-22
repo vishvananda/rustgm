@@ -128,6 +128,19 @@ impl Checker<'_> {
                 })?;
                 (definition, Some(index))
             }
+            Requirement::SourceAssociatedBody(source) => {
+                let (_, original) = source
+                    .identity(&self.facts)
+                    .map_err(|e| Error::at(FileId(0), 0, e))?;
+                let result = source
+                    .result(&self.facts)
+                    .map_err(|e| Error::at(FileId(0), 0, e))?;
+                let selected = source
+                    .resolve(&mut self.facts, result)
+                    .map_err(|e| self.error(original, e))?;
+                self.require_initializer_readiness(original, selected.selected.definition)?;
+                return Ok(None);
+            }
             Requirement::AssociatedBody { instance, .. } => {
                 let source = self.report.resolution.definitions[instance.definition.0 as usize]
                     .node

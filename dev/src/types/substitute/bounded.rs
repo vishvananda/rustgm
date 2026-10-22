@@ -1,11 +1,21 @@
 //! A caller-budget entry shares the ordinary shape fold without changing its state.
 use super::{Action, Bound, Key, Kind, Store, TypeId};
 use crate::types::arguments::Argument;
+#[derive(Clone, Copy)]
 pub(super) struct Budget {
     bytes: usize,
     steps: usize,
 }
 impl Budget {
+    pub(super) const fn new(bytes: usize, steps: usize) -> Self {
+        Self { bytes, steps }
+    }
+    pub(super) fn tightened(self, bytes: usize) -> Self {
+        Self {
+            bytes: self.bytes.min(bytes),
+            ..self
+        }
+    }
     pub(super) const fn ordinary() -> Self {
         Self {
             bytes: usize::MAX,
@@ -19,7 +29,7 @@ impl Budget {
             Ok(())
         }
     }
-    fn check_bytes(&self, bytes: usize) -> Result<(), &'static str> {
+    pub(super) fn check_bytes(&self, bytes: usize) -> Result<(), &'static str> {
         if bytes > self.bytes {
             Err("bounded shape fold storage budget exceeded")
         } else {
@@ -48,7 +58,7 @@ impl Budget {
                     .saturating_add(1),
             )
         };
-        self.check_bytes(fold.shape_retained_bytes()?.saturating_add(extra))?;
+        self.check_bytes(fold.budget_retained_bytes()?.saturating_add(extra))?;
         if finish {
             fold.completed
                 .try_reserve(1)
@@ -70,7 +80,7 @@ impl Budget {
         Ok(())
     }
 }
-fn growth<T>(length: usize) -> usize {
+pub(super) fn growth<T>(length: usize) -> usize {
     length
         .saturating_add(4)
         .saturating_mul(4)
@@ -179,6 +189,13 @@ impl Bound {
             .and_then(|()| self.result(store, key)?.ok_or("missing bounded shape root"));
         self.work.clear();
         result
+    }
+    pub(super) fn budget_retained_bytes(&self) -> Result<usize, &'static str> {
+        if self.restore_budget()?.is_some() {
+            self.restore_retained_bytes()
+        } else {
+            self.shape_retained_bytes()
+        }
     }
     pub(crate) fn shape_retained_bytes(&self) -> Result<usize, &'static str> {
         if !matches!(

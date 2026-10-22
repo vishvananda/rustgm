@@ -1,5 +1,6 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
 mod anonymous;
+mod caller_transport;
 mod initializers;
 #[cfg(test)]
 #[path = "../../tests/invariants/seals.rs"]
@@ -213,6 +214,7 @@ fn materialize(
         statements: source.statements.clone(),
         blocks: source.blocks.clone(),
     };
+    caller_transport::prepare_body(facts, source, &mut body, selection.caller())?;
     let projected = substitute(facts, &mut body, substitution)?;
     if matches!(premises, Premises::Declared)
         && let Some(contract) = contract.as_deref_mut()

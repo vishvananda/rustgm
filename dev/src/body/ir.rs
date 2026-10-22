@@ -173,6 +173,7 @@ pub enum Rvalue {
     Function(DefId),
     Constant(DefId),
     AssociatedConstant(crate::sema::values::Instance),
+    SourceAssociated(crate::sema::values::execution::SourceComputation),
     /// A typed anonymous body, evaluated independently of runtime branch selection.
     InlineConstant(NodeKey),
     /// A generic inline body retains its complete enclosing specialization.

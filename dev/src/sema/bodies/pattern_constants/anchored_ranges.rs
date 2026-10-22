@@ -55,6 +55,13 @@ impl Checker<'_> {
     }
 }
 impl PreparedScope {
+    pub(in crate::sema) fn caller_publication(&self) -> Result<[Range<usize>; 2], &'static str> {
+        Ok(self
+            .scope
+            .proof
+            .ok_or("pattern caller proof is not published")?
+            .intervals())
+    }
     pub(in crate::sema) fn caller_region_preflight(&self) -> Result<usize, &'static str> {
         let ranges = self
             .scope

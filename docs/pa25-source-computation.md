@@ -378,3 +378,108 @@ Genuinely projected selected results and nested/non-pattern caller contexts rema
 required work. Their shared caller/result proposal must preserve exact normalized
 result seals and original/instance debts before proof, and must not append new
 normalization debts when already-checked Code executes.
+
+## Ordinary, nested and inline caller contexts
+
+The source path now retains one declaration-owned caller/use catalog instead of
+storing a parked-pattern witness directly in an executable operand. A handle
+contains a compiler-local epoch and row. Lookup checks the declaration catalog,
+exact semantic source, original publication, complete enclosing instance and
+independently sealed requested result. The epoch is neither formatted nor
+serialized. Ordinary Associated/materialized requests keep their previous
+concreteness gate.
+
+The semantic checker publishes exact main and late equality ranges only after
+completion. Runtime-body dispatch recovers copied SourceAssociated operands to
+their original input, then selects/normalizes them again in the receiving
+Contract. Identity does not skip caller requirements. Code also retains the
+body's existing optional full callable instance, so same-source copied code cannot
+borrow another specialization's caller handle. Source-only completion still has
+no typed completed-value root and grants no execution permit.
+
+For specialized callers, original local proof IDs are renamed before external
+actual arguments are substituted. One fixed region folder belongs to the exact
+original source plus complete caller context. It preserves each original proof's
+owned intervals, scoped binders and foreign gaps. A source-local numeric interval
+is never interpreted as global diagnostic ownership. The mapping then stays fixed;
+unknown free identities reject. Original, instance, caller, eligibility, escape,
+loan and destruction checks remain mandatory.
+
+The folder uses the existing Bound walker with a persistent restore budget. It
+bounds scratch and completed caches across nested types, signatures, arguments,
+trait applications, cache hits and errors. Parameter bindings or mode mutation
+invalidate the owner. Temporary owned-segment capacity is preflighted and deducted
+while the folder operates. Segments and sort/merge comparisons are charged. The
+ordinary folder representation does not grow: Bound is 208 bytes and Mapping is
+80 bytes, equal to the frozen pre-budget representation. Restore storage is lazy.
+
+Nine independently declared programs cover generic statement bodies with two
+unused-result type arguments, nested initializer execution, inline contexts,
+open reference results, nested reference results and paid lifetime relations.
+Six are positive value programs. Unpaid relations and dangling backing reach
+real lifetime rejection; an inline local capture reaches its lexical rejection.
+The original externally suspended wide-argument witness revalidation is unchanged.
+
+Qualification passes all 12 regular selected-initializer tests and all eight
+explicitly ignored native groups. The caller group independently executes its
+six new positives and three unchanged PA20 regression programs. Nine authored
+sources are declared with their original hashes in
+`pa25/tests/caller-initializer-outcomes.json`; unpaid and dangling cases retain
+real lifetime failures. Seven private source/witness tests pass, including full
+context identity, foreign/stale handles, copied operands, original ranges and
+unchanged wide externally suspended witness validation. The previously passing
+restore, namespace, publication, cache and debt invariants remain applicable.
+Strict all-target/all-feature release Clippy and the file audit pass (1,599 files,
+zero findings). Registration, layout and upstream checks pass in `final-third`.
+
+All 8,255 worker-base PA1–24 text comparisons pass unchanged in `route-final`.
+This count predates the current public compiler's 8,360 cases. PA24 fixtures were
+exported from immutable commit `66455db6`, archive SHA-256
+`2e0304e1a97aaeb3ef4bfc8172dac115f6dea0f62ee3c880527467c07e076612`.
+The exact debug pin is `route-final/pins/rustgm`, SHA-256
+`73a56dd17e17f1ec21168166e564a7195264dec8b8c2cf11596529c5b3e1e9dd`;
+the 921-file production source map is
+`4ec9077c4ff1785eba5002a8bfe861a34a3cf8f1504f176abad477671872deb0`.
+The final strict/source/native tail is in `closing-tail`. Common ordinary512
+and constcall64 output hashes are unchanged; no worker timing or RSS neutrality
+claim is made. Earlier failed namespace, source-owner, budget-layout, lint and
+routing hypotheses remain in `obj/parallel/pa25-caller-contexts`.
+
+Routing preserves the current selector's caller debts before considering an
+ordinary completed value. Reuse tests the exact selected full Instance through
+Reader, rather than a prior target lookup. The source-result family gate uses
+the actual operand type. After the existing original equalities canonicalize the
+selection, genuinely closed instances return to the ordinary concrete path.
+Six unchanged PA20 source controls and the full text comparison cover erased
+implementation lifetimes, projected callable results, interleaved selection and
+an explicitly static qualified use. No original mapping, ownership test or
+ordinary concrete-result gate was relaxed.
+
+The opaque witness is eight bytes (previously 24); Target is 28 bytes (previously
+32). Request remains 56 bytes and the execution Catalog remains 192 bytes. Code
+retains the existing optional full Body.instance by value, growing from 328 to
+336 bytes; cloning adds no heap allocation or reference count operation.
+Declarations gains one lazy eight-byte catalog pointer (8,424 bytes here).
+Rvalue/Value/Body remain 20/24/464 bytes. The Bound/Mapping representations remain
+208/80 bytes.
+
+One observation boundary remains for the separately approved followup.
+`computation/namespaces.rs::take` calls `actual_regions` once for each new exact
+source/caller namespace. That helper uses the ordinary Bound::observe_regions
+walker to check disjointness from actual enclosing arguments. The ordinary
+one-million-work limit applies, but its temporary maps, completed cache and
+returned vector have no additional caller-local storage preflight, and failed
+observer work is not yet retained. Different inline source contexts with the
+same enclosing Instance can repeat that argument-graph traversal. The fixed
+Restore budget and global retained namespace accounting do not cover that
+short-lived observer. The next isolated checkpoint will share one bounded,
+complete observed-region row per exact enclosing Instance while retaining every
+source-specific disjointness and proof check; the present checkpoint does not
+claim that work is already bounded by the new Restore owner.
+
+The checkpoint does not complete PA25. Genuinely projected pattern result roots,
+open type arguments containing caller lifetimes and source-associated uses inside
+conditional nested output contracts retain explicit followups. Existing strict
+original/result, structural equality, borrowed backing, caller-bound and ordinary
+materialized checks remain in place. PA29 transport and allocation/relocation
+families are separately owned; no metadata or assignment activation changes here.

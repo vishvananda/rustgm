@@ -30,6 +30,21 @@ impl Applications {
         total
     }
 
+    fn planned_insert(&self, depth: u16) -> usize {
+        if depth == 0 {
+            crate::support::retained::new_map::<ApplicationId, ApplicationId>(
+                self.root.len().saturating_add(1),
+            )
+        } else {
+            size_of::<HashMap<(ApplicationId, u16), ApplicationId>>().saturating_add(
+                crate::support::retained::new_map::<(ApplicationId, u16), ApplicationId>(
+                    self.scoped
+                        .as_ref()
+                        .map_or(1, |m| m.len().saturating_add(1)),
+                ),
+            )
+        }
+    }
     fn get(&self, id: ApplicationId, depth: u16) -> Option<ApplicationId> {
         if depth == 0 {
             self.root.get(&id).copied()
@@ -113,6 +128,7 @@ impl Bound {
         depth: u16,
     ) -> Result<ApplicationId, &'static str> {
         let depth = self.cache_depth(depth);
+        self.restore_work(1)?;
         if let Some(result) = self
             .applications
             .as_ref()
@@ -126,19 +142,35 @@ impl Bound {
         let arguments = store
             .arguments(application.arguments)
             .ok_or("invalid substituted trait arguments")?;
-        self.account_arguments(arguments.len().saturating_add(1))?;
+        let length = arguments.len();
+        self.account_arguments(length.saturating_add(1))?;
+        let cache = self.applications.as_ref().map_or_else(
+            || {
+                size_of::<Applications>()
+                    .saturating_add(Applications::default().planned_insert(depth))
+            },
+            |a| a.planned_insert(depth),
+        );
+        let scratch = self.reserve_restore_scratch(
+            super::bounded::growth::<crate::types::arguments::Argument>(length)
+                .saturating_add(cache),
+        )?;
         let mut arguments = arguments.collect::<Vec<_>>();
-        for argument in &mut arguments {
-            *argument = self.apply_argument_inside(store, *argument, depth)?;
-        }
-        let arguments = store.intern_arguments(&arguments)?;
-        let result = store.intern_trait_application(Application {
-            arguments,
-            ..application
-        })?;
-        self.applications
-            .get_or_insert_with(Default::default)
-            .insert(id, depth, result);
-        Ok(result)
+        let result = (|| {
+            for argument in &mut arguments {
+                *argument = self.apply_argument_inside(store, *argument, depth)?;
+            }
+            let arguments = store.intern_arguments(&arguments)?;
+            let result = store.intern_trait_application(Application {
+                arguments,
+                ..application
+            })?;
+            self.applications
+                .get_or_insert_with(Default::default)
+                .insert(id, depth, result);
+            Ok(result)
+        })();
+        self.release_restore_scratch(scratch)?;
+        result
     }
 }

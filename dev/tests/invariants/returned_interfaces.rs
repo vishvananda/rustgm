@@ -55,10 +55,11 @@ fn prepare() -> Result<Fixture, Box<dyn std::error::Error>> {
     )?;
     let mut facts = crate::pipeline::analyze(&report, facts)?.facts;
     let (witness, result) = seen.get().ok_or("missing actual source request")?;
+    let selected = witness.selected(&facts)?;
     let initializer = *facts
         .initializers
         .iter()
-        .find(|initializer| initializer.definition == witness.selected().definition)
+        .find(|initializer| initializer.definition == selected.definition)
         .ok_or("missing initializer")?;
     let mut template =
         crate::body::templates::Prepared::default().initializer(&report, &facts, &initializer)?;

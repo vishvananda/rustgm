@@ -20,12 +20,14 @@ pub(super) enum Mode {
     },
 }
 pub(super) enum Retained {
+    Budget(Box<super::restored::Owner>),
     Interval(std::ops::Range<u32>),
     Stream(Vec<std::ops::Range<u32>>),
 }
 impl Retained {
     fn contains(&self, region: u32) -> bool {
         match self {
+            Self::Budget(_) => false,
             Self::Interval(interval) => interval.contains(&region),
             Self::Stream(intervals) => {
                 let index = intervals.partition_point(|interval| interval.end <= region);
@@ -304,6 +306,9 @@ impl Mapping {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.replacements);
         match &self.mode {
+            Mode::Restore {
+                retained: Retained::Budget(owner),
+            } => total.boxed(owner.as_ref()),
             Mode::Scopes(values)
             | Mode::Restore {
                 retained: Retained::Stream(values),

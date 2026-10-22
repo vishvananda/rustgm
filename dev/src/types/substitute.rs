@@ -9,6 +9,7 @@ mod items;
 pub use export::ExportSource;
 pub(crate) mod lookup;
 mod normalize;
+mod restored;
 mod rewrite;
 pub use normalize::{Alias, Normalizer, Request, Resolution, Step};
 mod parameters;
@@ -131,6 +132,9 @@ impl Bound {
         ty: TypeId,
         depth: u16,
     ) -> Result<TypeId, &'static str> {
+        if let Some(budget) = self.restore_budget()? {
+            return self.apply_restored_inside(store, ty, depth, budget);
+        }
         let key = (ty, self.cache_depth(depth));
         if let Some(result) = self.result(store, key)? {
             return Ok(result);
@@ -167,22 +171,27 @@ impl Bound {
             .list(parameters)
             .ok_or("missing signature parameters")?
             .len();
-        let mut children = Vec::with_capacity(count);
-        for index in 0..count {
-            let ty = store
-                .list(parameters)
-                .ok_or("missing signature parameter list")?[index];
-            children.push(self.apply(store, ty)?);
-        }
-        let result = self.apply(store, result)?;
-        let parameters = store.intern_list(&children)?;
-        store.intern(Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-            convention,
-        })
+        let scratch = self.reserve_restore_scratch(bounded::growth::<TypeId>(count))?;
+        let result = (|| {
+            let mut children = Vec::with_capacity(count);
+            for index in 0..count {
+                let ty = store
+                    .list(parameters)
+                    .ok_or("missing signature parameter list")?[index];
+                children.push(self.apply(store, ty)?);
+            }
+            let result = self.apply(store, result)?;
+            let parameters = store.intern_list(&children)?;
+            store.intern(Kind::Function {
+                bound_regions,
+                parameters,
+                result,
+                unsafe_,
+                convention,
+            })
+        })();
+        self.release_restore_scratch(scratch)?;
+        result
     }
 
     fn result(&self, store: &Store, key: Key) -> Result<Option<TypeId>, &'static str> {
@@ -360,6 +369,7 @@ impl Bound {
         region: RegionId,
         depth: u16,
     ) -> Result<RegionId, &'static str> {
+        self.restore_work(1)?;
         if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
         }
@@ -462,6 +472,9 @@ impl Bound {
 
     fn account_arguments(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);
+        if let Some(budget) = self.restore_budget()? {
+            budget.check_steps(self.steps)?;
+        }
         if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {
             return Err("lifetime substitution work budget exceeded");
         }

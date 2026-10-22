@@ -268,6 +268,11 @@ impl Dependencies {
             work.push(Work::Value(ty, value));
         }
         for value in &body.values {
+            if let Rvalue::SourceAssociated(source) = value.kind {
+                self.charge(1)?;
+                let (_, constant) = reader.source_associated(source)?;
+                work.push(Work::Value(value.ty, constant));
+            }
             if let Rvalue::AssociatedConstant(instance) = value.kind {
                 self.charge(1)?;
                 work.push(Work::Value(

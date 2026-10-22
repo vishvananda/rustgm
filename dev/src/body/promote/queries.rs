@@ -132,6 +132,7 @@ impl Engine<'_, '_> {
                 | Rvalue::Text(_)
                 | Rvalue::Constant(_)
                 | Rvalue::AssociatedConstant(_)
+                | Rvalue::SourceAssociated(_)
                 | Rvalue::ConstArgument(_)
                 | Rvalue::Function(_) => Ok(true),
             },

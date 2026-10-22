@@ -118,6 +118,32 @@ impl Machine<'_, '_> {
                     return Ok(None);
                 }
             }
+            Rvalue::SourceAssociated(source) => {
+                let enclosing =
+                    body.owner
+                        .source_caller(self.evaluator.facts(), body.source, body.instance)?;
+                source.validate_use(self.evaluator.facts(), body.source, enclosing, ty)?;
+                let (selected, result) = self.evaluator.checked_source(source)?;
+                let index = self
+                    .bodies
+                    .associated
+                    .as_deref()
+                    .and_then(|map| map.get(&(selected, result)))
+                    .copied();
+                if index.is_none() {
+                    self.waiting = Some(super::Requirement::SourceAssociatedBody(source));
+                    return Ok(None);
+                }
+                if let Some(value) = Reader::new(self.evaluator.facts()).associated(selected) {
+                    value
+                } else {
+                    return Ok(Some((
+                        index.ok_or("missing proved source initializer body")?,
+                        Vec::new(),
+                        id,
+                    )));
+                }
+            }
             Rvalue::AssociatedConstant(instance) => {
                 if let Some(value) = Reader::new(self.evaluator.facts()).associated(instance) {
                     value

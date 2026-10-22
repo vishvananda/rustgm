@@ -5,42 +5,45 @@ use super::{
 };
 use crate::{
     resolve::model::DefId,
-    sema::{dispatch::Dispatcher, model::Declarations},
+    sema::model::Declarations,
     types::{Kind as Type, RegionId, substitute::Bound},
 };
 use std::collections::HashMap;
+mod callers;
 
 pub(crate) fn resolve(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
 ) -> Result<(), String> {
-    if !body.values.iter().any(|value| matches!(value.kind, Rvalue::AssociatedConstant(_)) || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())) {
+    let dispatch = body.values.iter().any(|value| {
+        matches!(value.kind, Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_))
+            || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
+    });
+    if !dispatch {
         return super::invocation_entries::select(facts, body, contract).map_err(String::from);
     }
-    let first = contract
-        .obligations
-        .iter()
-        .filter_map(|obligation| {
-            if let Kind::Variable { id, .. } = obligation.kind {
-                Some(id.0)
-            } else {
-                None
-            }
-        })
-        .chain(
-            contract
-                .proofs
-                .iter()
-                .map(|evidence| evidence.proof.regions.end.saturating_sub(1)),
-        )
-        .max()
-        .unwrap_or(0)
-        .checked_add(1)
-        .ok_or("dispatch region identity space exhausted")?;
-    let mut dispatcher = Dispatcher::new(contract.universals, first)?;
+    let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
     let mut replacements = HashMap::new();
     for value in &mut body.values {
+        if let Rvalue::AssociatedConstant(instance) = value.kind
+            && crate::sema::values::execution::BodyCaller::needed(facts, instance, value.ty)?
+        {
+            let witness = caller
+                .as_mut()
+                .ok_or("missing body source caller")?
+                .prepare(facts, &mut dispatcher, instance, value.ty)?;
+            value.kind = match witness {
+                crate::sema::values::execution::PreparedConstant::Selected(selected) => {
+                    facts.constant_targets.insert(instance, selected);
+                    Rvalue::AssociatedConstant(selected)
+                }
+                crate::sema::values::execution::PreparedConstant::Source(source) => {
+                    Rvalue::SourceAssociated(source)
+                }
+            };
+            continue;
+        }
         if let Rvalue::AssociatedConstant(instance) = &mut value.kind {
             let selected = dispatcher.constant(facts, *instance)?;
             facts.constant_targets.insert(*instance, selected);

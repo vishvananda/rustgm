@@ -72,6 +72,7 @@ pub(super) fn arguments(
         })
         .collect::<Result<Vec<_>, _>>()?;
     Ok(Inputs {
+        caller: crate::sema::values::execution::CallerInstance::Callable(instance),
         instance: Some(instance),
         bindings: parameters
             .iter()

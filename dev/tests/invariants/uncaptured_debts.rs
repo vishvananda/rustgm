@@ -55,6 +55,7 @@ fn uncaptured_specialization_retains_every_source_lifetime_debt()
             });
         }
         let mut inputs = Inputs {
+            caller: crate::sema::values::execution::CallerInstance::Original,
             instance: None,
             bindings: Vec::new(),
             captures: Vec::new(),

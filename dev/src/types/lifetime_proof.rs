@@ -2,6 +2,7 @@
 mod allocation;
 mod graft;
 mod origins;
+mod owned_transport;
 mod placement;
 mod quantified;
 mod roots;
@@ -14,6 +15,7 @@ use crate::types::{
     relations::{Constraints, ProofScope},
 };
 pub use origins::SourceCheckpoint;
+pub(crate) use owned_transport::OwnedTransport;
 pub use quantified::ScopeId;
 pub(crate) use roots::TypeRoot;
 pub(crate) use scopes::ScopePlan;

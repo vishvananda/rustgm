@@ -42,6 +42,8 @@ fn prepare<'a>(
     let mut inline = Vec::new();
     let mut instances = Vec::new();
     let mut instance_seen = HashSet::new();
+    let mut source_seen = HashSet::new();
+    let mut sources = Vec::new();
     let mut associated_seen = HashSet::new();
     let mut associated = Vec::new();
     let mut demand = |id, static_| {
@@ -72,6 +74,11 @@ fn prepare<'a>(
             }
         }
         for value in &body.values {
+            if let Rvalue::SourceAssociated(source) = value.kind
+                && source_seen.insert(source)
+            {
+                sources.push(source);
+            }
             if let Rvalue::InlineConstant(source) = value.kind
                 && inline_seen.insert(source)
             {
@@ -95,7 +102,12 @@ fn prepare<'a>(
             demand(id, static_);
         }
     }
-    if demands.is_empty() && associated.is_empty() && inline.is_empty() && instances.is_empty() {
+    if demands.is_empty()
+        && associated.is_empty()
+        && sources.is_empty()
+        && inline.is_empty()
+        && instances.is_empty()
+    {
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
@@ -111,6 +123,9 @@ fn prepare<'a>(
     }
     for (instance, result) in instances {
         evaluator.inline_instance(instance, result)?;
+    }
+    for source in sources {
+        evaluator.source_associated(source)?;
     }
     for instance in associated {
         evaluator.associated(instance)?;

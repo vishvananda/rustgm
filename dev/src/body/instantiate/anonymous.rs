@@ -69,6 +69,14 @@ impl Selection {
             }
         }
     }
+    pub(super) fn caller(self) -> crate::sema::values::execution::CallerInstance {
+        use crate::sema::values::execution::CallerInstance;
+        match self {
+            Self::Callable(instance) => CallerInstance::Callable(instance),
+            Self::Anonymous(instance) => CallerInstance::Inline(instance),
+            Self::Initializer(instance) => CallerInstance::Initializer(instance),
+        }
+    }
     fn context(self) -> Context {
         match self {
             Self::Callable(instance) => Context::Callable(instance),
@@ -128,6 +136,7 @@ pub(crate) fn with_contract(
         }
         Context::Initializer(initializer) => initializer_inputs(facts, initializer)?,
     };
+    inputs.caller = crate::sema::values::execution::CallerInstance::Inline(instance);
     // A zero-universal anonymous contract cannot mention enclosing lifetime slots;
     // the full selected callable still validates and remains in its cache identity.
     if original.universals == 0 {
@@ -167,6 +176,7 @@ pub(super) fn initializer_inputs(
 ) -> Result<Inputs, &'static str> {
     let selected = instance.selected_arguments(facts)?;
     Ok(Inputs {
+        caller: crate::sema::values::execution::CallerInstance::Initializer(instance),
         instance: None,
         bindings: selected.bindings,
         captures: selected.regions,

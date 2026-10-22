@@ -10,7 +10,10 @@ pub(crate) fn with_contract(
     instance: Instance,
     original: &Contract,
 ) -> Result<Materialized, &'static str> {
-    if original.key != template.body.key() || original.output.is_some() {
+    if original.key != template.body.key()
+        || original.source != template.body.source
+        || original.output.is_some()
+    {
         return Err("selected initializer output interface is not implemented");
     }
     let mut inputs = anonymous::initializer_inputs(facts, instance)?;
@@ -53,10 +56,10 @@ pub(crate) fn source(
     result: crate::types::TypeId,
     original: &Contract,
 ) -> Result<SourceMaterialized, &'static str> {
-    witness.validate(facts, result)?;
-    if original.key != BodyKey::Declaration(witness.selected().definition)
-        || original.source != witness.original()
-        || template.body.source != witness.original()
+    let selected = witness.resolve(facts, result)?;
+    if original.key != BodyKey::Declaration(selected.selected.definition)
+        || original.source != selected.original
+        || template.body.source != selected.original
         || original.key != template.body.key()
         || original.output.is_some()
     {
@@ -64,11 +67,11 @@ pub(crate) fn source(
     }
     if template.body.result == result && facts.types.needs_region_context(result) == Some(false) {
         return Ok(SourceMaterialized {
-            materialized: with_contract(facts, template, witness.selected(), original)?,
+            materialized: with_contract(facts, template, selected.selected, original)?,
             interface: None,
         });
     }
-    let mut inputs = anonymous::initializer_inputs(facts, witness.selected())?;
+    let mut inputs = anonymous::initializer_inputs(facts, selected.selected)?;
     let (mut substitution, mut contract, imported) =
         contracts::source_result(facts, original, &mut inputs, result)?;
     let before = substitution.steps;
@@ -85,7 +88,7 @@ pub(crate) fn source(
         },
     });
     Ok(SourceMaterialized {
-        materialized: materialize(facts, template, witness.selected(), substitution, contract)?,
+        materialized: materialize(facts, template, selected.selected, substitution, contract)?,
         interface: Some(ResultInterface {
             requested: result,
             imported,

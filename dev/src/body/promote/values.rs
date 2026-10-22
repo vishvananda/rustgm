@@ -121,6 +121,14 @@ impl Engine<'_, '_> {
                     .inline_instance(instance, ty)
                     .ok_or("anonymous instance promotion value is not complete")?
             }
+            Rvalue::SourceAssociated(source) => {
+                if self.evaluator.facts().constant_executor.is_none() {
+                    return Ok(Some(Evaluated::Deferred));
+                }
+                self.evaluator
+                    .source_associated(source)
+                    .map_err(Error::Constant)?
+            }
             Rvalue::AssociatedConstant(instance) => {
                 if self.body.instance.is_none()
                     && match self.body.owner {
@@ -272,6 +280,7 @@ impl Engine<'_, '_> {
             | Rvalue::Scalar(_)
             | Rvalue::Constant(_)
             | Rvalue::AssociatedConstant(_)
+            | Rvalue::SourceAssociated(_)
             | Rvalue::InlineConstant(_)
             | Rvalue::InlineInstance(_)
             | Rvalue::ConstArgument(_)

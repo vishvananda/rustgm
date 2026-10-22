@@ -244,6 +244,11 @@ impl Machine<'_> {
             Rvalue::Invoke { .. } => {
                 return Err("call operators are outside the PA10 scalar executor".into());
             }
+            Rvalue::SourceAssociated(_) => {
+                return Err(
+                    "source-associated values require the checked constant provider".into(),
+                );
+            }
             Rvalue::InlineConstant(_) | Rvalue::InlineInstance(_) => {
                 return Err("inline constants are outside the PA10 scalar executor".into());
             }

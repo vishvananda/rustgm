@@ -27,7 +27,10 @@ impl Machine<'_, '_> {
                 return Err("selected initializer return lost active identity".into());
             }
             self.validate_result(result, result_ty)?;
-            if !body.source_only {
+            if body.source_only {
+                self.evaluator
+                    .complete_source_associated(instance, result)?;
+            } else {
                 self.evaluator
                     .complete_associated(instance, body.result, result)?;
             }

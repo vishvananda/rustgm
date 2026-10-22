@@ -212,10 +212,18 @@ impl Checker<'_> {
                     right,
                 }),
         );
-        self.seal_pattern_equalities(
-            main_equalities,
-            late_start..self.facts.region_equalities.len(),
-        )?;
+        let late_equalities = late_start..self.facts.region_equalities.len();
+        if !self.state.call_types.constants.is_empty() {
+            self.facts
+                .retain_source_caller(
+                    body_key,
+                    self.state.environment_owner,
+                    self.state.body_binders,
+                    [main_equalities.clone(), late_equalities.clone()],
+                )
+                .map_err(|e| Declarations::error(self.report, body_key, e))?;
+        }
+        self.seal_pattern_equalities(main_equalities, late_equalities)?;
         self.retain_inline_root()?;
         Ok(hidden)
     }

@@ -18,6 +18,18 @@ pub(crate) struct TypeRoot {
 }
 
 impl Obligations {
+    pub(crate) fn root_equalities(
+        &self,
+    ) -> impl Iterator<Item = crate::types::outlives::Pair> + '_ {
+        self.equalities.iter().copied().chain(
+            self.quantified
+                .iter()
+                .flat_map(|q| q.blocks.iter())
+                .filter(|block| block.scope == ScopeId::ROOT)
+                .flat_map(|block| block.proof.equalities.iter().copied()),
+        )
+    }
+
     /// Snapshot positions before an operation appends further debts. Iteration
     /// ordinals would be unstable when new root debts precede old scoped blocks.
     pub(crate) fn type_root_positions(&self) -> impl Iterator<Item = TypeRoot> + '_ {

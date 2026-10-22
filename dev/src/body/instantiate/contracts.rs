@@ -65,13 +65,14 @@ fn prepare(
     mut requested: Option<crate::types::TypeId>,
     close_static: bool,
 ) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
+    let mut contract = original.clone();
+    super::caller_transport::contract(facts, &mut contract, inputs.caller)?;
     let regions = import_regions(facts, inputs, original.universals, &mut requested)?;
     let mut bound = if close_static {
         Bound::parameters_captured(&facts.types, &inputs.bindings, inputs.captures.clone())?
     } else {
         Bound::parameters(&facts.types, &inputs.bindings)?
     };
-    let mut contract = original.clone();
     if matches!(original.key, crate::body::ir::BodyKey::Closure(_)) {
         super::closures::formation(&mut contract);
     }

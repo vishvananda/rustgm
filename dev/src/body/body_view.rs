@@ -310,6 +310,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             "inline-constant source={}:{}",
             source.file.0, source.node.0
         ),
+        Rvalue::SourceAssociated(_) => write!(out, "source-associated"),
         Rvalue::AssociatedConstant(instance) => write!(
             out,
             "associated-constant def={} args={}",

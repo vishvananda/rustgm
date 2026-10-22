@@ -11,6 +11,7 @@ impl Queries<'_> {
             PatternScope,
             &mut Reservation,
             &mut crate::types::substitute::Bound,
+            [std::ops::Range<usize>; 2],
         ) -> Result<T, String>,
     ) -> Result<T, String> {
         self.check_pattern_storage(0).map_err(|e| e.to_string())?;
@@ -70,6 +71,11 @@ impl Queries<'_> {
             if !existing && parent.reservation.is_some() {
                 return Err("source caller reservation has no original dispatcher".into());
             }
+            let publication = parent
+                .prepared
+                .as_ref()
+                .ok_or("missing prepared source caller")?
+                .caller_publication()?;
             let reservation = parent.reservation.get_or_insert_with(Default::default);
             // A fresh dispatcher starts at this frontier. An existing one resumes
             // only through its original reservation, recording every foreign gap.
@@ -80,7 +86,14 @@ impl Queries<'_> {
                 .source_regions
                 .as_deref_mut()
                 .ok_or("missing source caller aliases")?;
-            use_caller(dispatcher, self.typing.facts, scope, reservation, regions)
+            use_caller(
+                dispatcher,
+                self.typing.facts,
+                scope,
+                reservation,
+                regions,
+                publication,
+            )
         })();
         self.restore_parked_caller(child, dispatcher)?;
         self.finish_source_regions(parent, canonical)?;

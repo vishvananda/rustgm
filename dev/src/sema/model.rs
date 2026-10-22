@@ -335,6 +335,7 @@ pub struct UnionWork {
     pub unique_types: usize,
 }
 pub struct Declarations {
+    pub(super) source_computations: Option<Box<super::constants::Computations>>,
     pub crates: Option<Box<super::crates::Linkage>>,
     pub foreign: Option<Box<super::foreign::Registry>>,
     pub intrinsics: crate::resolve::model::Intrinsics,
@@ -473,6 +474,9 @@ impl Declarations {
     pub fn is_const_function(&self, definition: DefId) -> bool {
         self.constant_functions.contains(&definition)
     }
+    pub(crate) fn constant_body_type(&self, source: NodeKey) -> Option<TypeId> {
+        self.anonymous_constants.get(&source).copied()
+    }
     /// Constant expressions with lifetime obligations retain their own proof body.
     /// Sorting is confined to consumers that publish a deterministic body order.
     #[must_use]
@@ -520,6 +524,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            source_computations: None,
             crates: None,
             foreign: None,
             intrinsics: report.resolution.intrinsics,

@@ -54,13 +54,13 @@ impl Engine {
         source: crate::sema::values::execution::SourceComputation,
         result: TypeId,
     ) -> Result<usize, Error> {
-        source
-            .validate(facts, result)
-            .map_err(|e| Declarations::error(report, source.original(), e))?;
+        let selected = source
+            .resolve(facts, result)
+            .map_err(|e| Error::at(super::FileId(0), 0, e))?;
         if let Some(&index) = self.roots.get(&Target::SourceAssociated { source, result }) {
             return Ok(index);
         }
-        self.selected_root(report, facts, source.selected(), result, Some(source))
+        self.selected_root(report, facts, selected.selected, result, Some(source))
     }
     fn selected_root(
         &mut self,
@@ -147,8 +147,9 @@ impl Engine {
             &environment,
             &concrete.contract,
         )?;
-        let index = if let Some(witness) = source_value {
-            self.catalog.source_initializer(&concrete.body, witness)
+        let index = if source_value.is_some() {
+            self.catalog
+                .source_initializer(&concrete.body, (instance, source, result))
         } else {
             self.catalog.insert(&concrete.body)
         }
