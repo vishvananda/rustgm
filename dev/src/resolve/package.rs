@@ -35,8 +35,11 @@ pub struct ExpansionTrace {
     pub call: crate::expand::stream::Location,
     pub definition: Option<crate::expand::stream::Location>,
 }
+/// A frontend diagnostic. It is one pointer, so the results that carry it
+/// return in registers; diagnostics are rare and their data lives on the heap.
+pub struct Error(Box<ErrorData>);
 #[derive(Debug)]
-pub struct Error {
+pub struct ErrorData {
     pub file: FileId,
     pub span: Span,
     pub message: String,
@@ -46,7 +49,7 @@ pub struct Error {
 impl Error {
     #[must_use]
     pub fn at(file: FileId, offset: u32, message: impl Into<String>) -> Self {
-        Self {
+        Self::from(ErrorData {
             file,
             span: Span {
                 start: offset,
@@ -55,7 +58,29 @@ impl Error {
             message: message.into(),
             expansions: Vec::new(),
             introduction: ContextId(0),
-        }
+        })
+    }
+}
+impl From<ErrorData> for Error {
+    #[cold]
+    fn from(data: ErrorData) -> Self {
+        Self(Box::new(data))
+    }
+}
+impl std::ops::Deref for Error {
+    type Target = ErrorData;
+    fn deref(&self) -> &ErrorData {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for Error {
+    fn deref_mut(&mut self) -> &mut ErrorData {
+        &mut self.0
+    }
+}
+impl std::fmt::Debug for Error {
+    fn fmt(&self, output: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(output)
     }
 }
 impl std::fmt::Display for Error {
