@@ -99,6 +99,18 @@ on partial bit writes, and never invent a pointer from numeric bytes. It must
 cover typed reads, constant graph inspection, immutable Image publication and
 native relocation emission before widening public schemas.
 
-The grouped maintainer harness, cheap PA1–24 text comparison and integrator-owned
-combined release/performance gates follow at the clean integration boundary.
-Neither assignment is activated and no text reference is regenerated here.
+After the isolated checkpoint, public `2f76b1c1` was merged cleanly and the new
+root registered in the grouped memory suite, importing its existing shared
+helpers. The grouped follow-up passed strict all-target/all-feature Clippy,
+the 1,586-file audit with zero findings, all 89 Python harness tests, exact
+registration (337 roots / 13 binaries), layout, four private invariants, all
+three regular byte tests and the ignored native test. Every one of the 8,283
+active PA1–24 text comparisons matches committed references. Evidence is in
+`obj/parallel/pa28/byte-transport/grouped/`.
+
+Focused commands use the ordinary resource/storage wrapper around
+`python3 scripts/maintainer_suites.py run byte_transfers` and the same command
+with `--ignored`; private checks use `cargo test --manifest-path dev/Cargo.toml
+--locked --lib byte_backing_`. No full maintainer or exclusive performance
+matrix was run by this lane. The integrator owns combined release/performance;
+neither assignment is activated and no text reference is regenerated here.
