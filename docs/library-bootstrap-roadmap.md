@@ -1,8 +1,10 @@
 # Upstream library bootstrap and real-crate implementation order
 
 This is the implementation plan adopted on 2026-10-22. It preserves PA1–PA30's
-owning contracts and the current goal of completing them. It replaces the old
-optional core/alloc/std follow-up with required assignments before async.
+owning contracts and extends the goal through all assignment requirements needed
+to build the original upstream core, alloc and std crates and execute their
+consumers. It replaces the old optional library follow-up with required
+assignments before async.
 Every new or reordered assignment remains planned until its actual release
 contract passes. A draft checkpoint is not an assignment release.
 The [pinned source inventory](library-bootstrap-inventory.md) records the concrete
@@ -67,8 +69,8 @@ bodies and their contracts must cross crate boundaries.
 | 43 | Async ownership | Pinning, suspension loans, cancellation and advanced async forms |
 | 44 | Frontend acceptance | Full language/library census, cross-feature corpus, debug locations, reproducibility and scaling |
 
-Reproducible self-hosting remains the optional PA45 extension. It is not used to
-redefine completion of the existing PA1–PA30 goal.
+Reproducible self-hosting remains the optional PA45 extension, outside the
+required upstream library bootstrap goal.
 
 Panic-abort support needed by core/alloc is required in PA31–PA33; full unwinding
 is preserved at PA39. Likewise PA34 owns the Rust 2021 behavior used by the pinned

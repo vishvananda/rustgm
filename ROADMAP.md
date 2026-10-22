@@ -72,5 +72,9 @@ close broader edition/target coverage; they cannot excuse an earlier failed buil
 CPPGM remains the explicit LowIR backend. Qualify required operations before use;
 backend extensions are separate reviewed infrastructure work.
 
-Optional PA45: reproducible self-hosting. This does not change the current goal
-of completing PA1–PA30 or permit incomplete stages to be activated.
+The current goal is to complete every assignment requirement needed to build
+the original upstream core, alloc and std crates and execute their consumers.
+Required language, edition and target features must work when those sources
+need them, regardless of their broader assignment number. Optional PA45,
+reproducible self-hosting, remains outside this bootstrap goal. No incomplete
+stage may be activated.

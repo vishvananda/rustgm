@@ -46,7 +46,8 @@ type 43 function binders=0 parameters=[42,11] result=2 unsafe=false
 type 44 function-item def=22 signature=43 regions=[region:3]
 type 45 reference mutable=false region=region:2 referent=11
 type 46 reference mutable=false region=region:4 referent=11
-type 47 aggregate def=18 regions=[region:4]
+type 47 aggregate def=18 regions=[region:3]
+type 48 aggregate def=18 regions=[region:4]
 def 13 type=23 name="check" source=0:13
 def 14 type=25 name="fail" source=0:22
 def 16 type=20 name="Self" source=0:26
@@ -97,7 +98,7 @@ region-var region:4 body=0:71 source=0:71 origin=inference pending
 region-equal body=0:71 left=region:1 right=region:2
 region-equal body=0:71 left=region:1 right=bound:0:0
 region-equal body=0:71 left=region:3 right=bound:0:0
-region-equal body=0:71 left=region:1 right=region:4
+region-equal body=0:71 left=region:3 right=region:4
 region-coercion body=0:89 source=0:76 actual=45 expected=39 kind=same-shape pending
 region-coercion body=0:89 source=0:84 actual=46 expected=42 kind=same-shape pending
 region-outlives body=0:71 source=0:64 longer=region:2 shorter=static pending
@@ -108,5 +109,5 @@ associated-constant def=17 type=11
 associated-constant def=21 type=11
 impl-constant owner=20 declaration=17 selected=21 default=false
 constant-use source=0:64 definition=17 arguments=[type:37]
-constant-dispatch declaration=17 arguments=[type:37] selected=21 arguments=[region:region:1]
+constant-dispatch declaration=17 arguments=[type:19] selected=21 arguments=[region:region:3]
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=2 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

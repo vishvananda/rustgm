@@ -1,9 +1,10 @@
-# Parallel PA24–PA30 implementation
+# Parallel library bootstrap implementation
 
 Use three GPT-6.1-Sol workers at high reasoning and one integrator. Each worker
 owns a separate worktree and local branch. PA24 is published; main integrates
-the remaining PA25–PA30 checkpoints. Do not copy dirty files between workers
-or reset their unfinished work.
+the remaining PA25–PA30 checkpoints and the prerequisites for original upstream
+core, alloc and std. Do not copy dirty files between workers or reset their
+unfinished work.
 Workers own implementation, independently qualified tests and handout drafts.
 The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
@@ -168,6 +169,13 @@ source/native controls and scaling invariants during implementation; keep all
 active text suites as a candidate regression check when the checkpoint is coherent.
 Coordinate full suites and broad performance matrices with the integrator.
 Do not mutate the source while a build or qualification is running.
+
+For hot-path changes, apply the frontend performance precedent in `spec.md`:
+identify repeated work removed, cache and ownership boundaries, and dimensions
+that can multiply work. Include cold, warm and invalidated controls where
+applicable, bounded work/storage counters and compact record sizes. Keep each
+caller's proof authority separate from shared structure. Faster wall times alone
+do not establish a better complexity bound.
 
 Commit coherent checkpoints locally and report commit/source hashes, exact
 passed/failed/pending checks, evidence locations, interface changes and remaining
