@@ -8,6 +8,13 @@ use std::collections::{HashSet, VecDeque};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct RecordRef(pub u16);
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum RecordRepr {
+    #[default]
+    Rust,
+    C,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RecordField {
     name: String,
@@ -41,6 +48,7 @@ pub struct Record {
     definition: ExternalDef,
     public: bool,
     fields: Box<[RecordField]>,
+    repr: RecordRepr,
 }
 impl Record {
     /// Preserve declaration order and private layout fields without syntax nodes.
@@ -62,7 +70,18 @@ impl Record {
             definition,
             public,
             fields: fields.into_boxed_slice(),
+            repr: RecordRepr::Rust,
         })
+    }
+    /// Retain representation independently of field visibility and callable ABI.
+    #[must_use]
+    pub const fn with_repr(mut self, repr: RecordRepr) -> Self {
+        self.repr = repr;
+        self
+    }
+    #[must_use]
+    pub const fn repr(&self) -> RecordRepr {
+        self.repr
     }
     #[must_use]
     pub const fn definition(&self) -> &ExternalDef {
@@ -111,6 +130,7 @@ impl Nominals {
         for node in types.nodes() {
             let valid = match *node {
                 TypeNode::Scalar(_) => true,
+                TypeNode::Array { element, .. } => field_types[usize::from(element.0)],
                 TypeNode::Record(record) => {
                     if usize::from(record.0) >= records.len() {
                         return Err("unknown metadata record ordinal");
@@ -270,6 +290,7 @@ impl Nominals {
                 TypeNode::Scalar(_) => None,
                 TypeNode::Record(record) => Some(usize::from(record.0)),
                 TypeNode::Reference { referent, .. } => leaves[usize::from(referent.0)],
+                TypeNode::Array { element, .. } => leaves[usize::from(element.0)],
             });
         }
         // This profile has no private-module or private-type API visibility
@@ -347,13 +368,23 @@ impl Nominals {
 }
 
 fn validate_storage(types: &TypeGraph, records: &[Record]) -> Result<(), &'static str> {
+    // Arrays carry their element's by-value dependency even at length zero.
+    // References break storage recursion; summarize each graph edge once.
+    let mut leaves = Vec::with_capacity(types.nodes().len());
+    for node in types.nodes() {
+        leaves.push(match *node {
+            TypeNode::Record(record) => Some(usize::from(record.0)),
+            TypeNode::Array { element, .. } => leaves[usize::from(element.0)],
+            TypeNode::Scalar(_) | TypeNode::Reference { .. } => None,
+        });
+    }
     let mut incoming = vec![0usize; records.len()];
     let mut users = vec![Vec::new(); records.len()];
     for (index, record) in records.iter().enumerate() {
         for field in record.fields() {
-            if let Some(TypeNode::Record(target)) = types.node(field.ty) {
+            if let Some(target) = leaves[usize::from(field.ty.0)] {
                 incoming[index] += 1;
-                users[usize::from(target.0)].push(index);
+                users[target].push(index);
             }
         }
     }

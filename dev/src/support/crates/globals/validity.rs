@@ -179,6 +179,7 @@ fn closed_types(types: &Nominals) -> Vec<bool> {
     for node in types.types().nodes() {
         closed.push(match *node {
             TypeNode::Scalar(_) | TypeNode::Record(_) => true,
+            TypeNode::Array { element, .. } => closed[usize::from(element.0)],
             TypeNode::Reference {
                 region, referent, ..
             } => region == Lifetime::Static && closed[usize::from(referent.0)],

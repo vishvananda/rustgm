@@ -1,5 +1,6 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
 mod nominals;
+mod profiles;
 mod public_names;
 mod reader;
 mod scalars;
@@ -10,6 +11,7 @@ use super::{
     Abi, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES,
     MAX_DEPENDENCIES, MAX_FUNCTIONS, Scalar, Signature, Symbol, TypeGraph,
 };
+use profiles::{Payload, Profile};
 use reader::Reader;
 use writer::Writer;
 pub const SCHEMA: u16 = 1;
@@ -18,18 +20,7 @@ const MAGIC: &[u8; 8] = b"RGMETA\r\n";
 // receive a new ID (or schema), even when its first implementation is similar.
 const TARGET_LINUX_X86_64: u8 = 0;
 const LANGUAGE_RUST_1_98_EDITION_2024: u8 = 0;
-const PROFILE_SCALAR_RUST_FUNCTIONS: u8 = 0;
-const PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES: u8 = 1;
-const PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES: u8 = 2;
-const PROFILE_NAMED_RECORDS: u8 = 3;
-const PROFILE_FOREIGN_FUNCTIONS: u8 = 4;
-const PROFILE_STATIC_STORAGE: u8 = 5;
-const PROFILE_PUBLIC_NAMES: u8 = 6;
-const PROFILE: [u8; 3] = [
-    TARGET_LINUX_X86_64,
-    LANGUAGE_RUST_1_98_EDITION_2024,
-    PROFILE_SCALAR_RUST_FUNCTIONS,
-];
+const PROFILE: [u8; 3] = [TARGET_LINUX_X86_64, LANGUAGE_RUST_1_98_EDITION_2024, 0];
 
 /// Encode the scalar Rust 1.98/2024 Linux x86-64 interface in canonical order.
 /// # Errors
@@ -40,49 +31,22 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.u16(SCHEMA)?;
     out.bytes(&PROFILE[..2])?;
     let shared = interface.nominals();
-    let foreign = interface
-        .functions()
-        .iter()
-        .any(|function| function.signature().abi() != Abi::Rust);
-    let typed = shared.is_none()
-        && (foreign
-            || interface
-                .functions()
-                .iter()
-                .any(|function| !function.signature().is_scalar()));
     let stored = interface.storage();
-    if interface.public_names().is_some() {
-        out.u8(PROFILE_PUBLIC_NAMES)?;
-    }
-    out.u8(if stored.is_some() {
-        PROFILE_STATIC_STORAGE
-    } else if foreign {
-        PROFILE_FOREIGN_FUNCTIONS
-    } else if shared.is_some() {
-        PROFILE_NAMED_RECORDS
-    } else if typed {
-        PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES
-    } else if interface.constants().is_empty() {
-        PROFILE_SCALAR_RUST_FUNCTIONS
-    } else {
-        PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES
-    })?;
-    if foreign && stored.is_none() {
-        out.u8(u8::from(shared.is_some()))?;
-    }
+    let profile = Profile::for_interface(interface);
+    profile.write(&mut out)?;
     out.identity(interface.identity())?;
     out.u32(interface.dependencies().len())?;
     for dependency in interface.dependencies() {
         out.identity(dependency)?;
     }
     if let Some(records) = shared {
-        nominals::encode(&mut out, records)?;
+        nominals::encode(&mut out, records, profile)?;
     }
     out.u32(interface.functions().len())?;
     for function in interface.functions() {
-        encode_function(&mut out, function, typed, shared.is_some())?;
+        encode_function(&mut out, function, profile)?;
     }
-    if shared.is_some() || typed || !interface.constants().is_empty() {
+    if shared.is_some() || profile.typed() || !interface.constants().is_empty() {
         scalars::encode(&mut out, interface.constants())?;
     }
     if let Some(storage) = stored {
@@ -101,8 +65,7 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
 fn encode_function(
     out: &mut Writer,
     function: &Function,
-    typed: bool,
-    shared: bool,
+    profile: Profile,
 ) -> Result<(), &'static str> {
     out.u32(0)?; // Owner ordinal zero is this crate, never a local DefId.
     out.bytes(&[1, 1, 1])?; // Value namespace, Function kind, Export linkage.
@@ -116,11 +79,11 @@ fn encode_function(
             out.string(name)?;
         }
     }
-    if shared {
+    if profile.shared {
         out.u16(function.signature().bound_regions())?;
         signatures::encode_roots(out, function.signature())
     } else {
-        signatures::encode(out, function.signature(), typed)
+        signatures::encode(out, function.signature(), profile)
     }
 }
 /// Decode and validate all identities, counts and profile rules before inference.
@@ -131,32 +94,29 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         return Err("metadata artifact exceeds 16 MB budget");
     }
     let mut input = Reader::new(bytes);
-    let (profile, has_public_names, shared) = decode_profile(&mut input)?;
-    let foreign = profile == PROFILE_FOREIGN_FUNCTIONS;
-    let stored = profile == PROFILE_STATIC_STORAGE;
+    let profile = decode_profile(&mut input)?;
+    let stored = profile.payload == Payload::Storage;
     let identity = input.identity()?;
     let dependencies = decode_dependencies(&mut input)?;
-    let nominal = if shared {
+    let nominal = if profile.shared {
         Some(nominals::decode(
             &mut input,
             &identity,
             dependencies.len(),
-            stored,
+            profile,
         )?)
     } else {
         None
     };
     let count = input.count(MAX_FUNCTIONS, 21)?;
     let mut functions = Vec::with_capacity(count);
-    let typed = profile == PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES || (foreign && !shared);
     for _ in 0..count {
         functions.push(decode_function(
             &mut input,
             &identity,
             dependencies.len(),
-            typed,
+            profile,
             nominal.as_ref().map(super::Nominals::types),
-            foreign || stored,
         )?);
     }
     if functions
@@ -165,28 +125,28 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     {
         return Err("metadata definitions are duplicate or noncanonical");
     }
-    if profile == PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES
+    if profile.payload == Payload::Borrowed
         && functions
             .iter()
             .all(|function| function.signature().is_scalar())
     {
         return Err("borrowed metadata profile requires a typed signature");
     }
-    if foreign
+    if profile.payload == Payload::Foreign
         && functions
             .iter()
             .all(|function| function.signature().abi() == Abi::Rust)
     {
         return Err("foreign metadata profile requires a foreign calling convention");
     }
-    let constants = if profile == PROFILE_SCALAR_RUST_FUNCTIONS {
+    let constants = if profile.payload == Payload::Scalar {
         Vec::new()
     } else {
         scalars::decode(
             &mut input,
             &identity,
             functions.len() + nominal.as_ref().map_or(0, |n| n.records().len()),
-            typed || nominal.is_some(),
+            profile.typed() || nominal.is_some(),
         )?
     };
     let storage = if stored {
@@ -194,7 +154,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     } else {
         None
     };
-    let public = if has_public_names {
+    let public = if profile.public_names {
         Some(public_names::decode(&mut input, &identity, &dependencies)?)
     } else {
         None
@@ -217,36 +177,20 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         (None, None) => Interface::with_constants(identity, dependencies, functions, constants),
         (None, Some(_)) => Err("static metadata requires a shared type graph"),
     }?;
+    profile.validate(&interface)?;
     match public {
         Some(names) => interface.with_public_names(names),
         None => Ok(interface),
     }
 }
-fn decode_profile(input: &mut Reader<'_>) -> Result<(u8, bool, bool), &'static str> {
+fn decode_profile(input: &mut Reader<'_>) -> Result<Profile, &'static str> {
     if input.bytes(MAGIC.len())? != MAGIC || input.u16()? != SCHEMA {
         return Err("metadata magic or schema mismatch");
     }
-    let profile = input.bytes(3)?;
-    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_PUBLIC_NAMES {
+    if input.bytes(2)? != &PROFILE[..2] {
         return Err("metadata target, language or profile mismatch");
     }
-    let named = profile[2] == PROFILE_PUBLIC_NAMES;
-    let profile = if named { input.u8()? } else { profile[2] };
-    if profile > PROFILE_STATIC_STORAGE {
-        return Err("invalid public metadata base profile");
-    }
-    let foreign = profile == PROFILE_FOREIGN_FUNCTIONS;
-    let stored = profile == PROFILE_STATIC_STORAGE;
-    let shared = if foreign {
-        match input.u8()? {
-            0 => false,
-            1 => true,
-            _ => return Err("unknown metadata graph ownership"),
-        }
-    } else {
-        profile == PROFILE_NAMED_RECORDS || stored
-    };
-    Ok((profile, named, shared))
+    Profile::read(input)
 }
 fn decode_dependencies(input: &mut Reader<'_>) -> Result<Vec<CrateIdentity>, &'static str> {
     let count = input.count(MAX_DEPENDENCIES, 10)?;
@@ -263,9 +207,8 @@ fn decode_function(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
     dependencies: usize,
-    typed: bool,
+    profile: Profile,
     shared: Option<&TypeGraph>,
-    foreign: bool,
 ) -> Result<Function, &'static str> {
     input.owner(dependencies)?;
     if input.bytes(3)? != [1, 1, 1] {
@@ -280,7 +223,7 @@ fn decode_function(
     }
     let abi = match input.bytes(2)? {
         [0, 0] => Abi::Rust,
-        [1, 0] if foreign => Abi::C,
+        [1, 0] if profile.foreign() => Abi::C,
         _ => return Err("unsupported metadata calling convention"),
     };
     let path = input.path()?;
@@ -295,7 +238,7 @@ fn decode_function(
         let (parameters, result) = signatures::decode_roots(input)?;
         Signature::with_shared_types(graph.clone(), bound_regions, parameters, result, flags == 1)?
     } else {
-        signatures::decode(input, typed, flags == 1)?
+        signatures::decode(input, profile, flags == 1)?
     };
     Function::new(
         ExternalDef::new(owner.clone(), path, ExternalKind::Function)?,

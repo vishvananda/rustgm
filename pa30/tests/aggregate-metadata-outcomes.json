@@ -1,0 +1,84 @@
+{
+  "status": "Maintainer source/native qualification passed; original independently declared sources and outcomes retained. Combined release qualification remains pending; the assignment is still planned.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "crate": "aggregates",
+  "cases": [
+    {
+      "path": "tests/spec/aggregate-metadata/library.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": false,
+      "source_sha256": "8e123a71e6d126eedc0749596c5a38cc0e6804d2314df4e84176f02cc129f02f"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/pass-mixed.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "55856bf1e93556f16089f36789540077780ceba17f232547cd4299e36de60d79"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/pass-nested.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "7639c88e81116fd6fb8d2d0c366890134e09dd2bf67f68c04ecdd6652b3ed6d5"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/pass-large.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "ea3440643d29bd8f37df8a5c850c356d6c72c2dfee00f2a1f985cf7ed17fad30"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/pass-pointer.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "a215fb64257eaf74aa452479c9e8838540523b60a82e7498fabf904b00fbee8d"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/reject-rust-pointer.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0308",
+      "native": false,
+      "source_sha256": "00722f6942c4f3205cacd4733340eb1e69449873e0f0a62e3d3060a8a045fbb3"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/reject-private.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0451",
+      "native": false,
+      "source_sha256": "ca6644ec2b91a1bffbbbdbc96b5ff5d0ae014112179d5a5d7f52ece281b0c0b0"
+    },
+    {
+      "path": "tests/spec/aggregate-metadata/reject-move.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0382",
+      "native": false,
+      "source_sha256": "84da12d7f4c8b91d0a0ad00aa532f0329622c5227827ac8c15066bb0ef9177d7"
+    }
+  ],
+  "c_native": {
+    "path": "tests/spec/aggregate-metadata/driver.c",
+    "source_sha256": "bebbcf6aa6b87cef4e19aa50256a54e08ec7727ece93591ab053975bce55b190",
+    "exit_status": 0
+  }
+}

@@ -23,11 +23,24 @@ pub enum Lifetime {
 pub enum TypeNode {
     Scalar(Scalar),
     Record(RecordRef),
+    Array {
+        element: TypeRef,
+        length: u64,
+    },
     Reference {
         region: Lifetime,
         mutable: bool,
         referent: TypeRef,
     },
+}
+impl TypeNode {
+    pub(super) const fn child(self) -> Option<TypeRef> {
+        match self {
+            Self::Reference { referent, .. } => Some(referent),
+            Self::Array { element, .. } => Some(element),
+            Self::Scalar(_) | Self::Record(_) => None,
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TypeGraph {
@@ -60,25 +73,25 @@ impl TypeGraph {
             if !unique.insert(node) {
                 return Err("duplicate metadata type graph node");
             }
-            let (depth, slots) = match node {
-                TypeNode::Scalar(_) | TypeNode::Record(_) => (0usize, [0; 4]),
-                TypeNode::Reference {
-                    region, referent, ..
-                } => {
-                    let child = usize::from(referent.0);
-                    if child >= index {
-                        return Err("metadata type graph has a forward or cyclic edge");
-                    }
-                    let mut slots = regions[child];
-                    if let Lifetime::Bound(slot) = region {
-                        if slot >= 256 {
-                            return Err("metadata reference uses an unbound lifetime slot");
-                        }
-                        slots[usize::from(slot / 64)] |= 1u64 << (slot % 64);
-                    }
-                    (depths[child] + 1, slots)
+            let (depth, mut slots) = if let Some(child) = node.child() {
+                let child = usize::from(child.0);
+                if child >= index {
+                    return Err("metadata type graph has a forward or cyclic edge");
                 }
+                (depths[child] + 1, regions[child])
+            } else {
+                (0usize, [0; 4])
             };
+            if let TypeNode::Reference {
+                region: Lifetime::Bound(slot),
+                ..
+            } = node
+            {
+                if slot >= 256 {
+                    return Err("metadata reference uses an unbound lifetime slot");
+                }
+                slots[usize::from(slot / 64)] |= 1u64 << (slot % 64);
+            }
             if depth > Self::MAX_DEPTH {
                 return Err("metadata reference nesting exceeds profile budget");
             }
@@ -115,9 +128,9 @@ impl TypeGraph {
                 if seen[index] {
                     continue;
                 }
-                if !finish && let TypeNode::Reference { referent, .. } = node {
+                if !finish && let Some(child) = node.child() {
                     work.push((id, true));
-                    work.push((referent, false));
+                    work.push((child, false));
                     continue;
                 }
                 if index != next {

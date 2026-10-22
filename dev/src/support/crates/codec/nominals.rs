@@ -1,17 +1,24 @@
 //! Profile three encodes one graph, then canonical declaration and field roots.
-use super::{Reader, Writer, signatures};
+use super::{Payload, Profile, Reader, Writer, signatures};
 use crate::support::crates::{
     CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, Nominals, Record, RecordField,
-    TypeGraph, TypeRef,
+    RecordRepr, TypeGraph, TypeRef,
 };
 
-pub(super) fn encode(out: &mut Writer, nominals: &Nominals) -> Result<(), &'static str> {
-    signatures::encode_graph(out, nominals.types(), true)?;
+pub(super) fn encode(
+    out: &mut Writer,
+    nominals: &Nominals,
+    profile: Profile,
+) -> Result<(), &'static str> {
+    signatures::encode_graph(out, nominals.types(), profile)?;
     out.u32(nominals.records().len())?;
     for record in nominals.records() {
         out.u32(0)?; // Current artifact owner; never a local definition ordinal.
         out.bytes(&[0, 3, u8::from(record.public())])?; // Type namespace, named record.
         out.path(record.definition().path())?;
+        if profile.aggregates {
+            out.u8(u8::from(record.repr() == RecordRepr::C))?;
+        }
         out.u32(record.fields().len())?;
         for field in record.fields() {
             out.string(field.name())?;
@@ -25,9 +32,9 @@ pub(super) fn decode(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
     dependencies: usize,
-    storage: bool,
+    profile: Profile,
 ) -> Result<Nominals, &'static str> {
-    let types = TypeGraph::new(signatures::decode_graph(input, true)?)?;
+    let types = TypeGraph::new(signatures::decode_graph(input, profile)?)?;
     let count = input.count(TypeGraph::MAX_NODES, 18)?;
     input.atoms(count)?;
     let mut records = Vec::with_capacity(count);
@@ -38,6 +45,15 @@ pub(super) fn decode(
         }
         let public = visibility(input)?;
         let definition = ExternalDef::new(owner.clone(), input.path()?, ExternalKind::Record)?;
+        let repr = if profile.aggregates {
+            match input.u8()? {
+                0 => RecordRepr::Rust,
+                1 => RecordRepr::C,
+                _ => return Err("unknown metadata record representation"),
+            }
+        } else {
+            RecordRepr::Rust
+        };
         let count = input.count(MAX_COMPONENTS, 8)?;
         input.atoms(count.saturating_mul(2))?;
         let mut fields = Vec::with_capacity(count);
@@ -48,9 +64,9 @@ pub(super) fn decode(
                 visibility(input)?,
             )?);
         }
-        records.push(Record::new(definition, public, fields)?);
+        records.push(Record::new(definition, public, fields)?.with_repr(repr));
     }
-    if storage {
+    if profile.payload == Payload::Storage {
         Nominals::for_storage(types, records)
     } else {
         Nominals::new(types, records)

@@ -56,6 +56,13 @@ impl<'a> Reader<'a> {
                 .map_err(|_| "truncated metadata u128")?,
         ))
     }
+    pub(super) fn u64(&mut self) -> Result<u64, &'static str> {
+        Ok(u64::from_le_bytes(
+            self.bytes(8)?
+                .try_into()
+                .map_err(|_| "truncated metadata u64")?,
+        ))
+    }
     pub(super) fn owner(&mut self, dependencies: usize) -> Result<(), &'static str> {
         let ordinal = self.u32()?;
         if ordinal > dependencies {

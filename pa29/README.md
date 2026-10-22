@@ -89,6 +89,16 @@ Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error
 contract and example outputs before declaring this assignment active.
 
+Profile seven retains fixed-array element types and lengths, plus the actual
+default Rust or plain C representation of closed records. It wraps the earlier
+payload and optional public namespace only when these facts are present.
+Imports reuse ordinary type interning, moves, borrow checks, layout and ABI
+classification. Array lengths never become decoder allocation counts.
+`tests/array-metadata-outcomes.json` and PA30's
+`tests/aggregate-metadata-outcomes.json` cover separate compilation and native
+execution. Stored array values, generic bodies and additional representation
+contracts remain required work; see `docs/pa29-aggregate-metadata.md`.
+
 ## Tests to develop with the reference
 
 multi-crate dependencies; symbol identity; visibility; deterministic exports.

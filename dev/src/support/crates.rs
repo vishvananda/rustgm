@@ -13,7 +13,7 @@ pub use dependencies::{Dependencies, Dependency};
 pub use globals::{Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredValue, ValueRef};
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, Scalar, Symbol};
-pub use nominals::{Nominals, Record, RecordField, RecordRef};
+pub use nominals::{Nominals, Record, RecordField, RecordRef, RecordRepr};
 pub use public_names::{PublicBinding, PublicModule, PublicNames};
 pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};

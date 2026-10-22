@@ -23,6 +23,15 @@ pub(super) fn import_graph(
             TypeNode::Record(record) => *records
                 .get(usize::from(record.0))
                 .ok_or_else(|| error("missing imported nominal identity"))?,
+            TypeNode::Array { element, length } => {
+                let element = *types
+                    .get(usize::from(element.0))
+                    .ok_or_else(|| error("missing imported array element"))?;
+                facts
+                    .types
+                    .intern(Kind::Array { element, length })
+                    .map_err(error)?
+            }
             TypeNode::Reference {
                 region,
                 mutable,
@@ -106,41 +115,51 @@ impl Export {
             if self.nodes.len() >= TypeGraph::MAX_NODES || work.len() > TypeGraph::MAX_DEPTH {
                 return Err(error("exported type graph exceeds profile budget"));
             }
-            let node = if let Some(Kind::Reference {
-                region,
-                mutable,
-                referent,
-            }) = facts.types.kind(ty)
-            {
-                if !finish {
-                    work.push((ty, true));
-                    work.push((referent, false));
-                    continue;
-                }
-                let region = if region == RegionId::STATIC {
-                    Lifetime::Static
-                } else {
-                    match region.bound_parts() {
-                        Some((0, slot)) => Lifetime::Bound(slot),
-                        _ => return Err(error("exported reference retains a nonlocal lifetime")),
-                    }
-                };
-                TypeNode::Reference {
+            let kind = facts.types.kind(ty);
+            let child = match kind {
+                Some(Kind::Reference { referent, .. }) => Some(referent),
+                Some(Kind::Array { element, .. }) => Some(element),
+                _ => None,
+            };
+            if !finish && let Some(child) = child {
+                work.push((ty, true));
+                work.push((child, false));
+                continue;
+            }
+            let node = match kind {
+                Some(Kind::Reference {
                     region,
                     mutable,
-                    referent: *self
-                        .remap
-                        .get(&referent)
-                        .ok_or_else(|| error("missing exported referent"))?,
+                    referent,
+                }) => {
+                    let region = if region == RegionId::STATIC {
+                        Lifetime::Static
+                    } else {
+                        match region.bound_parts() {
+                            Some((0, slot)) => Lifetime::Bound(slot),
+                            _ => {
+                                return Err(error(
+                                    "exported reference retains a nonlocal lifetime",
+                                ));
+                            }
+                        }
+                    };
+                    TypeNode::Reference {
+                        region,
+                        mutable,
+                        referent: self.mapped(referent)?,
+                    }
                 }
-            } else if let Some(Kind::Adt(item, GenericArgs::EMPTY)) = facts.types.kind(ty) {
-                TypeNode::Record(
+                Some(Kind::Array { element, length }) => TypeNode::Array {
+                    element: self.mapped(element)?,
+                    length,
+                },
+                Some(Kind::Adt(item, GenericArgs::EMPTY)) => TypeNode::Record(
                     *records
                         .get(&item)
                         .ok_or_else(|| error("exposed nominal is outside the metadata profile"))?,
-                )
-            } else {
-                TypeNode::Scalar(super::export::scalar(facts, ty)?)
+                ),
+                _ => TypeNode::Scalar(super::export::scalar(facts, ty)?),
             };
             let id = TypeRef(
                 u16::try_from(self.nodes.len()).map_err(|_| error("too many exported types"))?,
@@ -148,8 +167,11 @@ impl Export {
             self.nodes.push(node);
             self.remap.insert(ty, id);
         }
+        self.mapped(root)
+    }
+    fn mapped(&self, ty: TypeId) -> Result<TypeRef, Error> {
         self.remap
-            .get(&root)
+            .get(&ty)
             .copied()
             .ok_or_else(|| error("missing exported type root"))
     }

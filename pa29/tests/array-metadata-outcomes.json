@@ -1,0 +1,70 @@
+{
+  "status": "Maintainer source/native qualification passed; original independently declared sources and outcomes retained. Combined release qualification remains pending; the assignment is still planned.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "crate": "arrays",
+  "cases": [
+    {
+      "path": "tests/spec/array-metadata/library.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": false,
+      "source_sha256": "7a15ca70c80f81c51430eb892da8a515914fe295be9ed88aae9f12f9b915ee5f"
+    },
+    {
+      "path": "tests/spec/array-metadata/pass-values.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "99c3878c7d8377aaefec5205d02db9c49d4959fe8f785598e356587016232ed1"
+    },
+    {
+      "path": "tests/spec/array-metadata/pass-borrowed.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend_expected_after_implementation": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "3095485fd870835fbc6f60dc5988c074cec204eaaf8917b1322cf97cfbec52c8"
+    },
+    {
+      "path": "tests/spec/array-metadata/reject-length.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0308",
+      "native": false,
+      "source_sha256": "5e2bd026aed8bfdecc2edb8ef0aa3fffec00ece86a50bd5706d8981caea231c8"
+    },
+    {
+      "path": "tests/spec/array-metadata/reject-element.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0308",
+      "native": false,
+      "source_sha256": "56dfca81d983b57819437cc7ab036486240115c912bd846fcbd18dd56930f0fb"
+    },
+    {
+      "path": "tests/spec/array-metadata/reject-escape.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0515",
+      "native": false,
+      "source_sha256": "b5eba5d8abaf9d7b4d80a1602449d46bbf4c3db03b87abcd352551dba8b25f17"
+    },
+    {
+      "path": "tests/spec/array-metadata/reject-move.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend_expected_after_implementation": 1,
+      "code": "E0382",
+      "native": false,
+      "source_sha256": "c85505454ee41d79defeebfee01729e83e7510e8ca5d6197a41b76cb147287db"
+    }
+  ]
+}

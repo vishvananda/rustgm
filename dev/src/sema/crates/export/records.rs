@@ -6,7 +6,7 @@ use crate::{
     sema::members::{Field, Name, VariantId},
     support::crates::{
         CrateIdentity, ExternalDef, ExternalKind, Function, Interface, Nominals, Record,
-        RecordField, RecordRef, TypeGraph,
+        RecordField, RecordRef, RecordRepr, TypeGraph,
     },
     syntax::item::Shape,
     types::{GenericArgs, ItemId, Kind, aggregate},
@@ -18,6 +18,7 @@ struct Declaration {
     identity: ExternalDef,
     public: bool,
     variant: VariantId,
+    repr: RecordRepr,
 }
 
 pub(super) fn finish(
@@ -82,7 +83,11 @@ pub(super) fn finish(
                 .map_err(error)?,
             );
         }
-        wire_records.push(Record::new(record.identity, record.public, wire_fields).map_err(error)?);
+        wire_records.push(
+            Record::new(record.identity, record.public, wire_fields)
+                .map_err(error)?
+                .with_repr(record.repr),
+        );
     }
     let storage = storage.encode(facts, &mut graph, &ordinals)?;
     let graph = TypeGraph::new(graph.nodes).map_err(error)?;
@@ -172,6 +177,7 @@ fn discover(
                 work.push(result);
             }
             Some(Kind::Reference { referent, .. }) => work.push(referent),
+            Some(Kind::Array { element, .. }) => work.push(element),
             Some(Kind::Adt(item, GenericArgs::EMPTY)) => {
                 if contracts.is_none() {
                     contracts = Some(Contracts::new(report, facts)?);
@@ -179,13 +185,14 @@ fn discover(
                 let contracts = contracts
                     .as_ref()
                     .ok_or_else(|| error("missing export contract index"))?;
-                let variant = validate(facts, item, contracts)?;
+                let (variant, repr) = validate(facts, item, contracts)?;
                 work.extend(fields(facts, variant)?.iter().map(|field| field.ty));
                 records.push(Declaration {
                     item,
                     identity: path(report, identity, DefId(item.0), ExternalKind::Record)?,
                     public: public_set.contains(&DefId(item.0)),
                     variant,
+                    repr,
                 });
             }
             Some(Kind::Adt(_, _)) => {
@@ -233,7 +240,11 @@ pub(super) fn path(
     ExternalDef::new(identity.clone(), names, kind).map_err(error)
 }
 
-fn validate(facts: &Declarations, item: ItemId, contracts: &Contracts) -> Result<VariantId, Error> {
+fn validate(
+    facts: &Declarations,
+    item: ItemId,
+    contracts: &Contracts,
+) -> Result<(VariantId, RecordRepr), Error> {
     let owner = DefId(item.0);
     let definition = facts
         .aggregates
@@ -245,7 +256,9 @@ fn validate(facts: &Declarations, item: ItemId, contracts: &Contracts) -> Result
     };
     if definition.kind != aggregate::Kind::Struct
         || facts.members.variants[variant.0 as usize].shape != Shape::Record
-        || definition.repr != aggregate::Repr::default()
+        || definition.repr.packed.is_some()
+        || definition.repr.align.is_some()
+        || definition.repr.tag.is_some()
         || facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
         || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
     {
@@ -280,7 +293,14 @@ fn validate(facts: &Declarations, item: ItemId, contracts: &Contracts) -> Result
             "nominal trait, member or non-exhaustive contract is outside the metadata profile",
         ));
     }
-    Ok(*variant)
+    let repr = match definition.repr.representation {
+        aggregate::Representation::Rust => RecordRepr::Rust,
+        aggregate::Representation::C => RecordRepr::C,
+        aggregate::Representation::Transparent => {
+            return Err(error("transparent record metadata is not implemented"));
+        }
+    };
+    Ok((*variant, repr))
 }
 
 /// Index unsupported semantic owners once, only when a nominal is actually exported.

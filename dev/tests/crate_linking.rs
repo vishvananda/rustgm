@@ -18,6 +18,8 @@ mod named_values;
 mod records;
 #[path = "crate_linking/reexports.rs"]
 mod reexports;
+#[path = "crate_linking/representations.rs"]
+mod representations;
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;
 use rustgm::support::crates;

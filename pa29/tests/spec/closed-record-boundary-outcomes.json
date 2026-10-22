@@ -21,8 +21,8 @@
       "path": "tests/spec/closed-record-boundaries/repr-c.rs",
       "kind": "library",
       "rustc": 0,
-      "frontend": 1,
-      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "frontend": 0,
+      "reason": "Valid Rust; the aggregate metadata extension now preserves plain C record representation. The original source bytes and independent Rust acceptance are retained.",
       "source_sha256": "efa6dba154b692a66fe63c8938f8130133b32c27c68fa478a608c6fc9aaee39a"
     },
     {

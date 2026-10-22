@@ -4,8 +4,8 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-import subprocess
-import time
+
+from crate_qualification import Check as CommandCheck
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'pa29/tests/public-name-outcomes.json'
@@ -15,30 +15,7 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-class Check:
-    def __init__(self, app, folder):
-        self.app = app.resolve()
-        self.folder = folder.resolve()
-        self.folder.mkdir(parents=True, exist_ok=False)
-        self.rows = []
-
-    def run(self, name, command, expected=0, codes=()):
-        started = time.monotonic()
-        command = [str(arg) for arg in command]
-        result = subprocess.run(command, capture_output=True, timeout=180)
-        stdout = self.folder / (name + '.stdout')
-        stderr = self.folder / (name + '.stderr')
-        stdout.write_bytes(result.stdout)
-        stderr.write_bytes(result.stderr)
-        self.rows.append({'name': name, 'command': command, 'status': result.returncode,
-                          'expected': expected, 'seconds': time.monotonic() - started,
-                          'stdout_sha256': sha(stdout), 'stderr_sha256': sha(stderr)})
-        (self.folder / 'runs.json').write_text(json.dumps(self.rows, indent=2) + '\n')
-        if result.returncode != expected or any(code.encode() not in result.stderr for code in codes):
-            raise ValueError(f'{name}: expected {expected}, got {result.returncode}\n'
-                             + result.stderr.decode(errors='replace'))
-        return result
-
+class Check(CommandCheck):
     def frontend(self, case, libraries, reverse=False):
         name = case['name'] + ('-repeat' if reverse else '')
         command = [self.app, '--emit-lowir', ROOT / 'pa29' / case['path']]

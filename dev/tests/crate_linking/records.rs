@@ -103,10 +103,17 @@ fn standalone_records_export_and_unsupported_semantic_contracts_stay_explicit()
     )?;
     assert!(exported.interface.functions().is_empty());
     assert_eq!(exported.interface.records().len(), 1);
+    let text = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa29/tests/spec/closed-record-boundaries/repr-c.rs"),
+    )?;
+    let (_, interface) = super::exports::compile(&text, "repr_c")?;
+    let decoded = crates::decode(&crates::encode(&interface)?)?;
+    assert_eq!(decoded.records().len(), 1);
+    assert_eq!(decoded.records()[0].repr(), crates::RecordRepr::C);
     for name in [
         "copy-clone",
         "drop",
-        "repr-c",
         "repr-align",
         "non-exhaustive",
         "lifetime-generic",

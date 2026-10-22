@@ -62,8 +62,12 @@ controls. See `docs/pa30-foreign-metadata.md`. The named-storage checkpoint adds
 owned/foreign static identity, safety, mutability and completed scalar/record/
 reference values through profile five. Its source and native contracts are in
 `tests/storage-metadata-outcomes.json`; see `docs/pa30-storage-metadata.md` for
-validation and the remaining storage boundaries. Variadic-declaration and
-aggregate ABI crate-metadata transport remain unfinished.
+validation and the remaining storage boundaries. The profile-seven checkpoint
+now transports fixed arrays and plain C record representation across crate
+boundaries, including mixed and MEMORY-class aggregate calls and function pointers.
+`tests/aggregate-metadata-outcomes.json` includes a separate C caller; see
+`docs/pa29-aggregate-metadata.md`. Variadic-declaration transport, additional
+record representations and the other unfinished contracts remain required.
 The reviewed optional object backend
 profile is selected explicitly; its native tests are always registered and run
 with `--ignored` through the grouped maintainer suites. They fail if the profile

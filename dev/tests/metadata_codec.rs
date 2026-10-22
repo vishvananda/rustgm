@@ -3,6 +3,8 @@
 mod borrowed;
 #[path = "metadata_codec/calling_conventions.rs"]
 mod calling_conventions;
+#[path = "metadata_codec/extents.rs"]
+mod extents;
 #[path = "metadata_codec/nominals.rs"]
 mod nominals;
 #[path = "metadata_codec/public_names.rs"]

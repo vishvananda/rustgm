@@ -1,13 +1,13 @@
 //! Typed signatures decode into bounded wire graphs before frontend interning.
-use super::{Reader, Writer};
+use super::{Profile, Reader, Writer};
 use crate::support::crates::{Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 
 pub(super) fn encode(
     out: &mut Writer,
     signature: &Signature,
-    typed: bool,
+    profile: Profile,
 ) -> Result<(), &'static str> {
-    if !typed {
+    if !profile.typed() {
         out.u16(u16::try_from(signature.parameters().len()).map_err(|_| "too many parameters")?)?;
         for &id in signature
             .parameters()
@@ -22,24 +22,32 @@ pub(super) fn encode(
         return Ok(());
     }
     out.u16(signature.bound_regions())?;
-    encode_graph(out, signature.types(), false)?;
+    encode_graph(out, signature.types(), profile)?;
     encode_roots(out, signature)
 }
 pub(super) fn encode_graph(
     out: &mut Writer,
     types: &TypeGraph,
-    nominal: bool,
+    profile: Profile,
 ) -> Result<(), &'static str> {
     out.u16(u16::try_from(types.nodes().len()).map_err(|_| "too many metadata types")?)?;
     for node in types.nodes() {
         match *node {
             TypeNode::Scalar(scalar) => out.bytes(&[0, scalar as u8])?,
             TypeNode::Record(record) => {
-                if !nominal {
+                if !profile.shared {
                     return Err("record in signature-local metadata graph");
                 }
                 out.u8(2)?;
                 out.u16(record.0)?;
+            }
+            TypeNode::Array { element, length } => {
+                if !profile.aggregates {
+                    return Err("array outside the aggregate metadata profile");
+                }
+                out.u8(3)?;
+                out.u16(element.0)?;
+                out.bytes(&length.to_le_bytes())?;
             }
             TypeNode::Reference {
                 region,
@@ -70,10 +78,10 @@ pub(super) fn encode_roots(out: &mut Writer, signature: &Signature) -> Result<()
 }
 pub(super) fn decode(
     input: &mut Reader<'_>,
-    typed: bool,
+    profile: Profile,
     unsafe_: bool,
 ) -> Result<Signature, &'static str> {
-    if !typed {
+    if !profile.typed() {
         let count = usize::from(input.u16()?);
         if count > 256 || count.saturating_add(1) > input.remaining() {
             return Err("invalid metadata parameter count");
@@ -90,16 +98,19 @@ pub(super) fn decode(
         return Err("invalid metadata type graph count");
     }
     input.atoms(usize::from(bound_regions))?;
-    let nodes = decode_graph(input, false)?;
+    let nodes = decode_graph(input, profile)?;
     let (parameters, result) = decode_roots(input)?;
     Signature::with_types(nodes, bound_regions, parameters, result, unsafe_)
 }
 pub(super) fn decode_graph(
     input: &mut Reader<'_>,
-    nominal: bool,
+    profile: Profile,
 ) -> Result<Vec<TypeNode>, &'static str> {
     let count = usize::from(input.u16()?);
-    if (!nominal && count == 0) || count > TypeGraph::MAX_NODES || count > input.remaining() / 2 {
+    if (!profile.shared && count == 0)
+        || count > TypeGraph::MAX_NODES
+        || count > input.remaining() / 2
+    {
         return Err("invalid metadata type graph count");
     }
     input.atoms(count)?;
@@ -124,7 +135,13 @@ pub(super) fn decode_graph(
                     referent: TypeRef(input.u16()?),
                 }
             }
-            2 if nominal => TypeNode::Record(crate::support::crates::RecordRef(input.u16()?)),
+            2 if profile.shared => {
+                TypeNode::Record(crate::support::crates::RecordRef(input.u16()?))
+            }
+            3 if profile.aggregates => TypeNode::Array {
+                element: TypeRef(input.u16()?),
+                length: input.u64()?,
+            },
             _ => return Err("unknown metadata type graph node"),
         });
     }

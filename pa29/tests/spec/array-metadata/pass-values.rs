@@ -1,0 +1,1 @@
+fn fail(x:u8)->u8{1/x}fn main(){let a=arrays::round([1,2,3,4]);if a[0]!=1||a[2]!=4{let _=fail(0);}let n=arrays::nested(arrays::Grid{cells:[[1,2],[3,4]]});if n!=4{let _=fail(0);}let []=arrays::empty();let b=arrays::Bundle{items:[arrays::Token{n:5},arrays::Token{n:9}]};let [first,last]=b.items;if first.n!=5||last.n!=9{let _=fail(0);}}

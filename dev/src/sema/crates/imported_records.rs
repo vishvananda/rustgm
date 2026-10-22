@@ -6,7 +6,7 @@ use crate::{
         model::{Access, DefId},
     },
     sema::members::{Field, Name, Origin},
-    support::crates::{CrateIdentity, Function, Nominals, Record},
+    support::crates::{CrateIdentity, Function, Nominals, Record, RecordRepr},
     types::{GenericArgs, ItemId, Kind, TypeId, aggregate},
 };
 use std::collections::HashMap;
@@ -121,7 +121,13 @@ fn publish(
         .insert(
             item,
             aggregate::Kind::Struct,
-            aggregate::Repr::default(),
+            aggregate::Repr {
+                representation: match record.repr() {
+                    RecordRepr::Rust => aggregate::Representation::Rust,
+                    RecordRepr::C => aggregate::Representation::C,
+                },
+                ..aggregate::Repr::default()
+            },
             &[aggregate::Variant {
                 fields,
                 discriminant: 0,
