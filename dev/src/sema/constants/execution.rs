@@ -31,9 +31,7 @@ impl Queries<'_> {
                     .and_then(|index| self.typing.facts.initializers.get(index))
                     .map(crate::sema::model::Initializer::semantic_source)
                     .ok_or_else(|| self.error(Query::Node(source), "missing source initializer"))?;
-                return self
-                    .source_computation(instance, original, result)
-                    .map(|(source, result)| Target::SourceAssociated { source, result });
+                return self.source_computation(instance, original, result);
             }
             return Ok(Target::Associated { instance, result });
         }

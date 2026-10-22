@@ -314,3 +314,67 @@ the 909-file production map is
 Receipt `0ff7430b43f94b7db2336d92b0c3f1f5` ended zero with
 21,760,176,128 retained bytes under unchanged limits. No generated oracle or
 assignment activation changed.
+
+## Canonical static captured results
+
+A raw source argument can be an alias that the actual prepared caller later
+normalizes to static. After the existing equality folder and parked Dispatcher
+have normalized both selected arguments and the requested result, a completely
+concrete Instance now returns through ordinary Associated execution. Its canonical
+result must exactly match the request. An open source witness is not minted for
+an argument that is already canonical static; no open lifetime is made static.
+The original caller debts, reservation and success/error restoration stay intact.
+
+Selected initializer specialization now uses the existing captured-parameter
+substitution for actual all-static captured lifetimes. It applies that same fold
+to body and Contract type roots. This makes the body's result the exact canonical
+static result instead of retaining the declaration's early slot in its place.
+The original binder, source obligations and two-way captured identity assumptions
+remain in the Contract. Mixed/open captures retain their previous path; ordinary
+callable specialization is unchanged. Both original and actual instance proofs
+remain mandatory before execution or typed publication. No cache type, owner,
+execution permission or retained request/catalog field changes.
+
+Six independently declared full-object sources cover static reference, tuple,
+record and array results, a transient local borrow, and a dangling reference.
+All five positives pass types/constants/LowIR and paired native execution. The
+dangling reference rejects at the real lifetime-outlives check in all views.
+The private invariant checks exact canonical body result, preserved capture
+identity assumptions, separate original and specialized lifetime proofs, and
+wrong-result publication rejection. Existing open-result/unpaid-bound, witness,
+reservation, cache and source-debt controls remain unchanged.
+
+Qualification passes all 17 selected-initializer functions: ten regular checks
+and seven explicitly ignored native groups, executing 36 paired native programs.
+Fifteen private functions pass across exact result/capture proofs, caller
+witnesses and externally suspended widths, reservation aliases, original ranges,
+cache publication and contract debts. Strict release all-target/all-feature
+Clippy, audit (1,581 files, zero findings), registration, layout/upstream and all
+8,255 active PA1–24 text comparisons pass. Two earlier test attempts are retained:
+one accessed a sema-private field instead of the existing Reader facade, and the
+next selected a source-only alias completion instead of the explicitly typed
+canonical completion. Production was unchanged for those test-only corrections.
+
+Witness/Target/Request/Catalog/Code layouts and the 16-byte result interface remain
+unchanged. The all-static initializer fold temporarily clones its actual capture
+list; empty-capture ordinary requests add no allocation. Existing full witness
+validation remains in place across every external resume. Common ordinary512 and
+constcall64 output hashes remain equal; this is not timing or RSS neutrality.
+The prior scalar RSS limitation remains open for root's combined measurements.
+
+Evidence is `obj/parallel/pa25-canonical-results/`, including original probe
+failures, independent objects and `final-third`. The immutable debug pin SHA-256
+is `c101c3ff477bb187ebccceb37f2bf082fa18ca1eec906aabcff3ceb17cde3b15`;
+the 909-file production source map is
+`3937548231adfe2aaa8c4e78c575cc7141ad43e9244e884b039b26498a2bcd75`.
+Receipt `f8ac44910f8f49cb8369d14baf255a4f` ended zero with
+22,180,458,496 retained bytes. Frozen 8/32/128-use inputs independently vary
+projected patterns, actual-static requests and open-result controls under
+`performance/{generate.py,cases.json,inputs}`; these width variants still require
+the integrator's output preflight before measurement. No generated references,
+assignment activation or performance observations were changed.
+
+Genuinely projected selected results and nested/non-pattern caller contexts remain
+required work. Their shared caller/result proposal must preserve exact normalized
+result seals and original/instance debts before proof, and must not append new
+normalization debts when already-checked Code executes.

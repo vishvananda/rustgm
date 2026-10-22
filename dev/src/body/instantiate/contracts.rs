@@ -14,7 +14,27 @@ pub(super) fn specialize(
     inputs: &mut Inputs,
     premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
-    let (bound, contract, _) = prepare(facts, original, inputs, premises, None)?;
+    let (bound, contract, _) = prepare(facts, original, inputs, premises, None, false)?;
+    Ok((bound, contract))
+}
+pub(super) fn initializer(
+    facts: &mut Declarations,
+    original: &Contract,
+    inputs: &mut Inputs,
+) -> Result<(Bound, Contract), &'static str> {
+    let close_static = !inputs.captures.is_empty()
+        && inputs
+            .captures
+            .iter()
+            .all(|&region| region == RegionId::STATIC);
+    let (bound, contract, _) = prepare(
+        facts,
+        original,
+        inputs,
+        super::Premises::Required,
+        None,
+        close_static,
+    )?;
     Ok((bound, contract))
 }
 pub(super) fn source_result(
@@ -29,6 +49,7 @@ pub(super) fn source_result(
         inputs,
         super::Premises::Required,
         Some(requested),
+        false,
     )?;
     Ok((
         bound,
@@ -42,9 +63,14 @@ fn prepare(
     inputs: &mut Inputs,
     premises: super::Premises,
     mut requested: Option<crate::types::TypeId>,
+    close_static: bool,
 ) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
     let regions = import_regions(facts, inputs, original.universals, &mut requested)?;
-    let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
+    let mut bound = if close_static {
+        Bound::parameters_captured(&facts.types, &inputs.bindings, inputs.captures.clone())?
+    } else {
+        Bound::parameters(&facts.types, &inputs.bindings)?
+    };
     let mut contract = original.clone();
     if matches!(original.key, crate::body::ir::BodyKey::Closure(_)) {
         super::closures::formation(&mut contract);

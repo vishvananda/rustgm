@@ -156,3 +156,87 @@ fn result_transport_is_not_permission_without_the_capture_identity_proof()
     }
     Ok(())
 }
+
+#[test]
+fn static_initializer_results_keep_exact_capture_and_original_proofs()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::{Primitive, RegionId};
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa25/tests/spec/canonical-initializer-results/reference.rs");
+    let report = crate::test_source::resolve(&std::fs::read_to_string(path)?, true)?;
+    let mut facts = crate::pipeline::analyze_source(&report)?.facts;
+    let (instance, completed_type, completed_value) = crate::sema::values::Reader::new(&facts)
+        .associated_values()
+        .find(|(_, ty, _)| ty.is_some())
+        .ok_or("missing canonical selected value")?;
+    let requested = instance.result_type(&mut facts)?;
+    assert_eq!(completed_type, Some(requested));
+    let initializer = *facts
+        .initializer_index(instance.definition)
+        .and_then(|index| facts.initializers.get(index))
+        .ok_or("missing selected initializer")?;
+    let mut template =
+        crate::body::templates::Prepared::default().initializer(&report, &facts, &initializer)?;
+    crate::body::promote::instance_reusing(
+        &report,
+        &mut facts,
+        &mut template.body,
+        &template.destruction,
+        &mut crate::body::promote::Scratch::default(),
+    )?;
+    let original = crate::body::regions::Collector::default().initializer(&facts, &initializer)?;
+    let mut built = with_contract(&mut facts, &template, instance, &original)?;
+    assert_ne!(template.body.result, requested);
+    assert_eq!(built.body.result, requested);
+    assert_eq!(built.contract.universals, original.universals);
+    let formal = RegionId::bound(0, 0)?;
+    assert!(
+        built
+            .contract
+            .assumptions
+            .contains(&(formal, RegionId::STATIC))
+    );
+    assert!(
+        built
+            .contract
+            .assumptions
+            .contains(&(RegionId::STATIC, formal))
+    );
+    crate::body::promote::instance_reusing(
+        &report,
+        &mut facts,
+        &mut built.body,
+        &built.destruction,
+        &mut crate::body::promote::Scratch::default(),
+    )?;
+    let mut query = Queries::new(
+        &facts.types,
+        &facts.lifetimes.nominal_requirements,
+        &facts.lifetimes.callables,
+    );
+    for (contract, body) in [(&original, &template.body), (&built.contract, &built.body)] {
+        crate::borrow::regions::check_one(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &mut query,
+            contract,
+            body,
+        )?;
+    }
+    assert!(
+        instance
+            .publish(
+                &mut facts,
+                Some(TypeId::primitive(Primitive::U16)),
+                completed_value
+            )
+            .is_err()
+    );
+    let (_, retained_type, retained_value) = crate::sema::values::Reader::new(&facts)
+        .associated_values()
+        .find(|(key, _, _)| *key == instance)
+        .ok_or("lost selected value")?;
+    assert_eq!(retained_type, Some(requested));
+    assert!(retained_value == completed_value);
+    Ok(())
+}

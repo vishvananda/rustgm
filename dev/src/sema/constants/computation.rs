@@ -142,7 +142,7 @@ impl Queries<'_> {
         selected: Instance,
         original: NodeKey,
         result: TypeId,
-    ) -> Result<(SourceComputation, TypeId), Error> {
+    ) -> Result<super::values::execution::Target, Error> {
         SourceComputation::schema(self.typing.facts, selected, original, result)
             .map_err(|e| self.error(Query::Node(original), e))?;
         let aliases = self
@@ -159,13 +159,25 @@ impl Queries<'_> {
             let selected = dispatcher.source_instance(facts, selected)?;
             let result = dispatcher.source_result(facts, result)?;
             dispatcher.reserve_pattern(facts, scope.body, reservation)?;
+            if facts.types.arguments_are_concrete(selected.arguments)? {
+                if selected.result_type(facts)? != result {
+                    return Err("canonical initializer request result changed".into());
+                }
+                return Ok(super::values::execution::Target::Associated {
+                    instance: selected,
+                    result,
+                });
+            }
             let witness = SourceComputation {
                 selected,
                 original,
                 caller: scope.body,
             };
             witness.validate(facts, result)?;
-            Ok((witness, result))
+            Ok(super::values::execution::Target::SourceAssociated {
+                source: witness,
+                result,
+            })
         })
         .map_err(|e| self.error(Query::Node(original), e))
     }

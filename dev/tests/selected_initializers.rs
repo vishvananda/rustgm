@@ -1,6 +1,8 @@
 //! Selected initializer bodies retain exact arguments and independent checked execution.
 use crate::checked_sources;
 use crate::native_references as native;
+#[path = "selected_initializers/canonical.rs"]
+mod canonical;
 #[path = "selected_initializers/closed.rs"]
 mod closed;
 #[path = "selected_initializers/computed.rs"]

@@ -14,8 +14,7 @@ pub(crate) fn with_contract(
         return Err("selected initializer output interface is not implemented");
     }
     let mut inputs = anonymous::initializer_inputs(facts, instance)?;
-    let (substitution, contract) =
-        contracts::specialize(facts, original, &mut inputs, super::Premises::Required)?;
+    let (substitution, contract) = contracts::initializer(facts, original, &mut inputs)?;
     materialize(facts, template, instance, substitution, contract)
 }
 fn materialize(
