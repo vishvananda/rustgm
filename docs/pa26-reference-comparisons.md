@@ -91,3 +91,12 @@ production source manifest SHA-256 is
 `a0a998147d72930c66bf3da2329ce12582c1e6d7e97cbd0a01ffdc51c708b2b3`.
 The retained qualified-checkpoint receipt records exact commands and observations;
 full Cargo publication and exclusive measurement remain integrator work.
+
+The combined checkout includes the earlier closure-signature placeholder cache
+from `7c9f1b17`, which the worker's isolated base did not contain. Its one lazy
+pointer adds eight bytes to each inference Context. Frame owns two such contexts
+(its inputs and its optional trial), so the integrated Frame is 1,408 bytes;
+Pending and Node remain 80 and 160 bytes. The integrated layout assertion uses
+this independently identified base change. Reference forwarding itself adds no
+Frame storage. The first combined check retained the failed 1,392-byte assertion
+as evidence rather than claiming the worker's old-base size for this checkout.
