@@ -136,5 +136,5 @@ associated-constant def=28 type=16
 impl-constant owner=27 declaration=26 selected=28 default=false
 constant-use source=0:57 definition=26 arguments=[region:region:1,type:23]
 constant-use source=0:118 definition=26 arguments=[region:region:5,type:47]
-constant-dispatch declaration=26 arguments=[region:region:1,type:23] selected=28 arguments=[region:region:4]
+constant-dispatch declaration=26 arguments=[region:region:1,type:23] selected=28 arguments=[region:static]
 eof owners=4 members=4 parameters=4 predicates=2 impls=2 calls=0 paths=3 impl-uses=3 type-members=0 constant-members=2 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=2 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

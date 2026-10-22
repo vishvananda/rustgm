@@ -126,7 +126,7 @@ associated-type def=27 type=24
 associated-constant def=28 type=24
 impl-constant owner=26 declaration=25 selected=28 default=false
 constant-use source=0:69 definition=25 arguments=[type:34]
-constant-dispatch declaration=25 arguments=[type:34] selected=28 arguments=[region:region:4]
+constant-dispatch declaration=25 arguments=[type:34] selected=28 arguments=[region:region:1]
 normalized-node source=0:90 original=28 result=28
 normalized-node source=0:91 original=28 result=28
 eof owners=2 members=4 parameters=3 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=2 normalized-definitions=0

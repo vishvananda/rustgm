@@ -99,5 +99,5 @@ associated-constant def=17 type=24
 associated-constant def=19 type=24
 impl-constant owner=18 declaration=17 selected=19 default=false
 constant-use source=0:88 definition=17 arguments=[region:region:1,type:11]
-constant-dispatch declaration=17 arguments=[region:region:1,type:11] selected=19 arguments=[region:region:11]
+constant-dispatch declaration=17 arguments=[region:region:1,type:11] selected=19 arguments=[region:region:1]
 eof owners=2 members=2 parameters=2 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=2 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

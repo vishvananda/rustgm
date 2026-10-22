@@ -143,6 +143,6 @@ impl-constant owner=30 declaration=29 selected=31 default=false
 impl-constant owner=33 declaration=26 selected=34 default=false
 constant-use source=0:54 definition=29 arguments=[region:region:4,type:24]
 constant-use source=0:117 definition=26 arguments=[region:static,type:12]
-constant-dispatch declaration=26 arguments=[region:static,type:12] selected=34 arguments=[region:region:3]
-constant-dispatch declaration=29 arguments=[region:region:4,type:24] selected=31 arguments=[region:region:9,type:24]
+constant-dispatch declaration=26 arguments=[region:static,type:12] selected=34 arguments=[region:static]
+constant-dispatch declaration=29 arguments=[region:region:4,type:24] selected=31 arguments=[region:region:4,type:24]
 eof owners=8 members=6 parameters=10 predicates=5 impls=4 calls=0 paths=3 impl-uses=3 type-members=0 constant-members=4 result-contracts=0 result-bounds=0 impl-constants=2 constant-uses=2 constant-dispatches=2 normalized-nodes=0 normalized-definitions=0
