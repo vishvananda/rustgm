@@ -1,0 +1,27 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "c84569ee",
+  "cases": [
+    {
+      "name": "read-array",
+      "path": "pa28/tests/spec/array-fragments/read-array.rs",
+      "sha256": "8d4cd8d26fb3b9f2490069546600535cfaefff74f1d96bd5bdc23f8bb8a36331",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "function-word",
+      "path": "pa28/tests/spec/array-fragments/function-word.rs",
+      "sha256": "548b5d45a12de7808ff3f4487ef5224777812d02c1a6f9ef4d75e82909d9fa91",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    }
+  ]
+}

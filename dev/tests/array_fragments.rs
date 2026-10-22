@@ -1,0 +1,253 @@
+//! Whole byte-array snapshots retain fragments without producing integer pointer bytes.
+use crate::{checked_sources as checked, native_references as native};
+use std::path::Path;
+const CASES: &[(&str, &str, i32, i32, bool)] = &[
+    (
+        "original",
+        "pa27/tests/spec/byte-access/offset-word-roundtrip.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "thin-direct",
+        "pa27/tests/spec/array-fragments/thin-direct.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "read-array",
+        "pa28/tests/spec/array-fragments/read-array.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "const-fn-array",
+        "pa27/tests/spec/array-fragments/const-fn-array.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "published-array",
+        "pa27/tests/spec/array-fragments/published-array.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "scalar-byte-demand",
+        "pa27/tests/spec/array-fragments/scalar-byte-demand.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "partial-array",
+        "pa27/tests/spec/array-fragments/partial-array.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "padding-read",
+        "pa27/tests/spec/array-fragments/padding-read.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "uninitialized-read",
+        "pa27/tests/spec/array-fragments/uninitialized-read.rs",
+        0,
+        1,
+        false,
+    ),
+    (
+        "function-word",
+        "pa28/tests/spec/array-fragments/function-word.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "slice-word",
+        "pa27/tests/spec/array-fragments/slice-word.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "equivalent-halves",
+        "pa27/tests/spec/array-fragments/equivalent-halves.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "mixed-halves",
+        "pa27/tests/spec/array-fragments/mixed-halves.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "numeric-overwrite",
+        "pa27/tests/spec/array-fragments/numeric-overwrite.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "ordinary-array",
+        "pa27/tests/spec/array-fragments/ordinary-array.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "zero-array",
+        "pa27/tests/spec/array-fragments/zero-array.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "uninitialized-return-selected",
+        "pa27/tests/spec/array-fragments/uninitialized-return-selected.rs",
+        0,
+        1,
+        false,
+    ),
+    (
+        "uninitialized-published",
+        "pa27/tests/spec/array-fragments/uninitialized-published.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "uninitialized-selected-tail",
+        "pa27/tests/spec/array-fragments/uninitialized-selected-tail.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "partial-return-roundtrip",
+        "pa27/tests/spec/array-fragments/partial-return-roundtrip.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "dangling-array-unused",
+        "pa27/tests/spec/array-fragments/dangling-array-unused.rs",
+        0,
+        0,
+        false,
+    ),
+    (
+        "dangling-array-demand",
+        "pa27/tests/spec/array-fragments/dangling-array-demand.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "published-partial-union",
+        "pa27/tests/spec/array-fragments/published-partial-union.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "wildcard-array",
+        "pa27/tests/spec/array-fragments/wildcard-array.rs",
+        0,
+        0,
+        false,
+    ),
+    (
+        "direct-union-initializer",
+        "pa27/tests/spec/array-fragments/direct-union-initializer.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "reference-array-publication",
+        "pa27/tests/spec/array-fragments/reference-array-publication.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "ordinary-byte-selected",
+        "pa27/tests/spec/array-fragments/ordinary-byte-selected.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "ordinary-byte-reference",
+        "pa27/tests/spec/array-fragments/ordinary-byte-reference.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "reference-array-unused",
+        "pa27/tests/spec/array-fragments/reference-array-unused.rs",
+        0,
+        0,
+        false,
+    ),
+];
+#[test]
+fn array_fragment_source_contracts() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let out = root.join(format!(
+        "obj/parallel/pa27/array-fragments/source-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&out)?;
+    for &(name, path, rust, front, _) in CASES {
+        checked::check_views_with_rustc_args(
+            &root.join(path),
+            &out,
+            name,
+            rust,
+            &[
+                ("--emit-types", front),
+                ("--emit-lowir", front),
+                ("--emit-constants", front),
+            ],
+            "",
+            &["--cap-lints=allow"],
+        )?;
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires pinned rustc and CPPGM backend"]
+fn array_fragment_native_roundtrips() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let mut owned = Vec::new();
+    for &(name, path, _, _, valid) in CASES {
+        if valid {
+            owned.push((name, std::fs::read_to_string(root.join(path))?));
+        }
+    }
+    let cases: Vec<_> = owned
+        .iter()
+        .map(|(name, text)| (*name, text.as_str(), false))
+        .collect();
+    native::check_literal_cases("parallel/pa27/array-fragments/native", &cases)
+}

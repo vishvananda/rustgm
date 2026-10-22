@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(C)]struct Pair{lo:[u8;4],hi:[u8;4]}union U{p:*const u32,b:Pair}static X:u32=37;static Y:u32=7;const N:u32=unsafe{let a=U{p:&raw const X};let b=U{p:&raw const X};let q=U{b:Pair{lo:a.b.lo,hi:b.b.hi}}.p;*q};fn main(){check(N==37);}

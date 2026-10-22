@@ -171,6 +171,41 @@ impl Queries<'_> {
         }
         self.budget()?;
         let query = Query::Contents(key, id);
+        let reader = super::values::Reader::new(self.typing.facts);
+        if let Some(image) = reader
+            .array_image(super::values::Constant(value))
+            .map_err(|e| self.error(query, e))?
+        {
+            let owner = image.ty;
+            let base_place =
+                self.place(key, Value::Reference(super::references::Pointer::new(base)))?;
+            let child = self.place(key, Value::Reference(super::references::Pointer::new(id)))?;
+            let projection = reader
+                .projection_layout(base_place.ty, index)
+                .map_err(|e| self.error(query, e))?;
+            if owner != base_place.ty
+                || projection.ty != child.ty
+                || !matches!(
+                    projection.storage,
+                    super::values::ProjectionStorage::Product
+                )
+            {
+                return Err(self.error(
+                    query,
+                    "constant byte array selection differs from its checked owner",
+                ));
+            }
+            let work = reader
+                .image_field_work(super::values::Constant(value))
+                .map_err(|e| self.error(query, e))?;
+            for _ in 0..work {
+                self.budget()?;
+            }
+            return super::values::Reader::new(self.typing.facts)
+                .array_image_field(super::values::Constant(value), index)
+                .map(|value| value.0)
+                .map_err(|e| self.error(query, e));
+        }
         let (owner, primitive, size) = self.image_projection(key, id, base, index)?;
         let width = super::images::scalars::width(primitive).map_err(|e| self.error(query, e))?;
         for _ in 0..width * 2 {

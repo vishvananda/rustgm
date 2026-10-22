@@ -300,6 +300,15 @@ impl Inspection<'_> {
                     self.push(element, self.reader.field(value, index)?)?;
                 }
             }
+            View::Image { size } if element == TypeId::primitive(crate::types::Primitive::U8) => {
+                let image = self
+                    .reader
+                    .array_image(value)?
+                    .ok_or("stored byte array lacks its exact image type")?;
+                if size != length || image.bytes.len() as u64 != length {
+                    return Err("stored byte array image differs from its type length");
+                }
+            }
             View::Bytes(_) | View::ByteRange { .. }
                 if element == TypeId::primitive(crate::types::Primitive::U8) =>
             {

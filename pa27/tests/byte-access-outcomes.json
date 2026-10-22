@@ -631,12 +631,13 @@
       "native_valid": true,
       "rustc_actual": 0,
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "native_qualified": false,
-      "required_gap": "Whole byte-array symbolic fragment snapshot transport."
+      "native_qualified": true,
+      "reason": "Initialized whole byte-array fragment snapshot supersedes the historical symbolic-pointer-byte boundary; source unchanged.",
+      "historical_required_gap": "Whole byte-array symbolic fragment snapshot transport."
     },
     {
       "name": "zst-read-isolated",

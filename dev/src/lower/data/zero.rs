@@ -13,6 +13,7 @@ impl Context<'_> {
         size: u64,
         layout_size: u64,
     ) -> Result<bool, &'static str> {
+        self.constants.require_publishable_array(value)?;
         let image = self.constants.image(value)?;
         if image.ty != ty || size != layout_size || image.bytes.len() as u64 != size {
             return Err("constant union image differs from zero storage type");

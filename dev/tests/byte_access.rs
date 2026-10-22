@@ -351,8 +351,8 @@ const CASES: &[(&str, &str, i32, i32, &str)] = &[
         "offset-word-roundtrip",
         "pa27/tests/spec/byte-access/offset-word-roundtrip.rs",
         0,
-        1,
-        "symbolic pointer bytes",
+        0,
+        "",
     ),
     (
         "zst-read-isolated",

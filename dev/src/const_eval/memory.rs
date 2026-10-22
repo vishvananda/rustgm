@@ -203,7 +203,7 @@ impl Machine<'_, '_> {
         self.reserve_cells(length)?;
         let mut fields = Vec::with_capacity(length);
         for index in 0..length {
-            let field = self.evaluator.field(value, index as u64)?;
+            let field = self.stored_field(value, index as u64)?;
             fields.push(self.memory.cells.len());
             self.memory.cells.push(Cell::Frozen(field));
         }
@@ -578,6 +578,17 @@ impl Machine<'_, '_> {
             union: None,
         }))
     }
+    pub(super) fn stored_field(
+        &mut self,
+        value: Constant,
+        index: u64,
+    ) -> Result<Constant, Failure> {
+        let extra = Reader::new(self.evaluator.facts()).image_field_work(value)?;
+        if extra != 0 {
+            self.charge(extra)?;
+        }
+        self.evaluator.field(value, index)
+    }
     pub(super) fn validate_result(&mut self, root: Constant, ty: TypeId) -> Result<(), Failure> {
         let mut pending = vec![root];
         let mut seen = HashSet::new();
@@ -591,6 +602,11 @@ impl Machine<'_, '_> {
                     self.path(value)?;
                 }
                 View::Image { .. } => {
+                    if let Some(image) = Reader::new(self.evaluator.facts()).array_image(value)? {
+                        self.charge(image.bytes.len())?;
+                        Reader::new(self.evaluator.facts()).require_publishable_array(value)?;
+                    }
+
                     let image = Reader::new(self.evaluator.facts()).image(value)?;
                     let length = image.fragments.len();
                     self.charge(length)?;
@@ -607,7 +623,7 @@ impl Machine<'_, '_> {
                         usize::try_from(length).map_err(|_| "constant result exceeds host size")?,
                     )?;
                     for index in 0..length {
-                        pending.push(self.evaluator.field(value, index)?);
+                        pending.push(self.stored_field(value, index)?);
                     }
                 }
                 View::Repeat { value, length } if length != 0 => pending.push(value),

@@ -14,6 +14,7 @@ mod session;
 mod structure;
 mod tags;
 pub use structure::FieldTypes;
+mod array_storage;
 mod inline;
 mod union_storage;
 mod validation;
@@ -224,6 +225,7 @@ impl<'a> Reader<'a> {
                 .copied()
                 .map(|b| Constant::scalar(Scalar::Integer(u128::from(b))))
                 .ok_or("constant index is out of bounds"),
+            Value::Image(_) => self.array_image_field(constant, index),
             _ => Err("constant projection requires a product"),
         }
     }
@@ -564,6 +566,9 @@ impl<'a> Evaluator<'a> {
                     .ok_or(Failure::Fault("constant index is out of bounds"))?;
                 Ok(Constant::scalar(Scalar::Integer(u128::from(byte))))
             }
+            Value::Image(_) => Reader::new(facts)
+                .array_image_field(value, index)
+                .map_err(Failure::Invalid),
             _ => Err(Failure::Invalid("constant projection requires a product")),
         }
     }

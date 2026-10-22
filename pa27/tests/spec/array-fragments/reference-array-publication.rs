@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}static X:u32=37;static P:&u32=&X;const R:&[u8;8]=unsafe{&*(&raw const P as *const[u8;8])};fn main(){let _=R;}

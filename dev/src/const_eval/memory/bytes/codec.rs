@@ -140,7 +140,13 @@ impl Machine<'_, '_> {
             StoredShape::Word
         ) {
             self.encode_byte_word(backing, offset, ty, value)?;
-        } else if self.byte_union(ty) {
+        } else if self.byte_union(ty)
+            || (matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Array { element, .. }) if element == TypeId::primitive(crate::types::Primitive::U8))
+                && matches!(
+                    Reader::new(self.evaluator.facts()).view(value)?,
+                    crate::sema::values::View::Image { .. }
+                ))
+        {
             let image = Reader::new(self.evaluator.facts()).image(value)?;
             if image.ty != ty || image.bytes.len() != end - start {
                 return Err("union image differs from byte backing".into());
@@ -181,7 +187,7 @@ impl Machine<'_, '_> {
             let (fields, _) = self.byte_fields(ty)?;
             self.reserve_cells(pending.len().saturating_add(fields.len()).saturating_mul(4))?;
             for (index, field) in fields.into_iter().enumerate().rev() {
-                let value = self.evaluator.field(value, index as u64)?;
+                let value = self.stored_field(value, index as u64)?;
                 pending.push(Encode::Value {
                     ty: field.ty,
                     offset: offset
@@ -540,7 +546,11 @@ impl Machine<'_, '_> {
                 state.duties.push(duty);
             }
             state.values.push(value);
-        } else if self.byte_union(ty) {
+        } else if self.byte_union(ty)
+            || (state.purpose == ReadPurpose::Value
+                && matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Array { element, .. }) if element == TypeId::primitive(crate::types::Primitive::U8))
+                && self.source_has_fragments(source, offset, layout.size)?)
+        {
             state
                 .values
                 .push(self.decode_byte_image(source, start, end, ty)?);
@@ -619,13 +629,14 @@ impl Machine<'_, '_> {
                         .div_ceil(size_of::<Constant>()),
                 )
                 .ok_or("image word snapshot retention overflow")?;
-            let (value, work) = self.evaluator.union_snapshot(
-                ty,
-                &bytes,
-                &mask,
-                &fragments,
-                self.limits.steps.saturating_sub(self.work.steps),
-            )?;
+            let limit = self.limits.steps.saturating_sub(self.work.steps);
+            let (value, work) = if self.byte_union(ty) {
+                self.evaluator
+                    .union_snapshot(ty, &bytes, &mask, &fragments, limit)?
+            } else {
+                self.evaluator
+                    .byte_array_snapshot(ty, &bytes, &mask, &fragments, limit)?
+            };
             self.charge(work)?;
             Ok(value)
         })();

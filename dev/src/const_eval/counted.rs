@@ -108,7 +108,7 @@ impl Machine<'_, '_> {
         if let Some(range) = destination.range {
             self.write_range(destination.root, &destination.fields, range, snapshot)?;
         } else {
-            let value = self.evaluator.field(snapshot, 0)?;
+            let value = self.stored_field(snapshot, 0)?;
             self.write_place(destination.place(), value)?;
         }
         Ok(Some(self.evaluator.fields(&[], None)?))

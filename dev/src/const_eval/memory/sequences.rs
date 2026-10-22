@@ -68,7 +68,7 @@ impl Machine<'_, '_> {
                 .field_types(ty, value)?
                 .get(index)
                 .ok_or("constant field exceeds its stored owner")?;
-            value = self.evaluator.field(value, index)?;
+            value = self.stored_field(value, index)?;
         }
         if let Some(range) = range {
             if matches!(
@@ -81,6 +81,17 @@ impl Machine<'_, '_> {
             value = self
                 .evaluator
                 .sequence_range(value, range.from, range.length)?;
+        }
+        if purpose == crate::const_eval::static_reads::ReadPurpose::ReferenceValidation
+            && matches!(
+                super::Reader::new(self.evaluator.facts()).view(value)?,
+                super::View::Image { .. }
+            )
+            && super::Reader::new(self.evaluator.facts())
+                .array_image(value)?
+                .is_some()
+        {
+            return self.read_image_path(value, ty, &[], None, purpose);
         }
         Ok(Read::Value(value))
     }

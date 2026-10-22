@@ -1,0 +1,256 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "c84569ee",
+  "cases": [
+    {
+      "name": "original",
+      "path": "pa27/tests/spec/byte-access/offset-word-roundtrip.rs",
+      "sha256": "2c357073a7950d3175efa4be92e5c96c04d4f45912e4f81c2fa2b30455135356",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "thin-direct",
+      "path": "pa27/tests/spec/array-fragments/thin-direct.rs",
+      "sha256": "dd74c0405c787d590b56d0c54c9bb95aafc2dd8eb1f2eff4e5ece8dcb1678475",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "const-fn-array",
+      "path": "pa27/tests/spec/array-fragments/const-fn-array.rs",
+      "sha256": "19aa31275e8b8a9c07104615cfe795dbe5f8766f21b9152c1d76e7fd836e464a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "published-array",
+      "path": "pa27/tests/spec/array-fragments/published-array.rs",
+      "sha256": "2b6e64acf921da34b1295d89b9f2ac896bddddba37b1ebd4fdd65338204c94f8",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "scalar-byte-demand",
+      "path": "pa27/tests/spec/array-fragments/scalar-byte-demand.rs",
+      "sha256": "f9e77566fccd7a887ed034428cd6b7975fa33abf77ef66dccdf2351be5e4a78c",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "partial-array",
+      "path": "pa27/tests/spec/array-fragments/partial-array.rs",
+      "sha256": "df98aa62d1155eeefd1a2069ba5b9642b7a65e0ccaddf7f61bdbe573c1b224c3",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "padding-read",
+      "path": "pa27/tests/spec/array-fragments/padding-read.rs",
+      "sha256": "e94936e53e277e43447d4eedc211ee7301331a2f17d83cdddaf8eae6a163fe3b",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "uninitialized-read",
+      "path": "pa27/tests/spec/array-fragments/uninitialized-read.rs",
+      "sha256": "9ba9ac969c9da04ba26877a44171d5084c6d0979c6e1995694e5c0fa5024dd1e",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": 1,
+      "classification": "oracle-only transient uninitialized array acceptance; normative validity remains enforced"
+    },
+    {
+      "name": "slice-word",
+      "path": "pa27/tests/spec/array-fragments/slice-word.rs",
+      "sha256": "195124182e6814434aa5b7d4d823875fedff04c19eae8eb2dd9ae0664b2e29ab",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "equivalent-halves",
+      "path": "pa27/tests/spec/array-fragments/equivalent-halves.rs",
+      "sha256": "3d39ea89b211a87d3ec6495fea00544d84e3c10fd2852550040dc021602b616f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "mixed-halves",
+      "path": "pa27/tests/spec/array-fragments/mixed-halves.rs",
+      "sha256": "257c0e341622760e7e04d0175bdec28f9082ff9926665c3fe84e8f6c436c59b5",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "numeric-overwrite",
+      "path": "pa27/tests/spec/array-fragments/numeric-overwrite.rs",
+      "sha256": "ec6df1d1043dbaf60cd846f43f8e92975c5a76a3a41a0dd8280a7edbbc5d3ce6",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "ordinary-array",
+      "path": "pa27/tests/spec/array-fragments/ordinary-array.rs",
+      "sha256": "0ed41c1f18433f55cb1a7074be29124f70f7645e3f680fcad8ebb0736c301bc1",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "zero-array",
+      "path": "pa27/tests/spec/array-fragments/zero-array.rs",
+      "sha256": "c503976102a91ba1f087a6aeff4b1f58f0af5fcba2ff615cbdab2314b56ee6cc",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "uninitialized-return-selected",
+      "path": "pa27/tests/spec/array-fragments/uninitialized-return-selected.rs",
+      "sha256": "88264d53ac4194a11ee78ed3a901ed1d3de3ffa1fe161f51e89bb14ff37ab63e",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": 1,
+      "classification": "oracle-only transient uninitialized array acceptance; normative validity remains enforced"
+    },
+    {
+      "name": "uninitialized-published",
+      "path": "pa27/tests/spec/array-fragments/uninitialized-published.rs",
+      "sha256": "d9d4e4a12c46c28a5fe37a475741a489a4abef6f67e5eafcc911188daa1f98c3",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "uninitialized-selected-tail",
+      "path": "pa27/tests/spec/array-fragments/uninitialized-selected-tail.rs",
+      "sha256": "f7c1e3072f658c8a73a99cc03a9734f0b91a779fc0f3796ed65441b9e267b71f",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "partial-return-roundtrip",
+      "path": "pa27/tests/spec/array-fragments/partial-return-roundtrip.rs",
+      "sha256": "9585a99c351ff1e5f7000275010974e1f710bc314b89999d2dd2937ddb02106e",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "dangling-array-unused",
+      "path": "pa27/tests/spec/array-fragments/dangling-array-unused.rs",
+      "sha256": "ae830fb59b00ab687989323a325cba1c681ff513c48846026faa75277eb27194",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": 0,
+      "classification": "transient fragments may be discarded; demanded pointer and final publication remain checked"
+    },
+    {
+      "name": "dangling-array-demand",
+      "path": "pa27/tests/spec/array-fragments/dangling-array-demand.rs",
+      "sha256": "cb61cde98813b178065bacbe2fcaaf834637b59f99573dd2043b06e30503140f",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "published-partial-union",
+      "path": "pa27/tests/spec/array-fragments/published-partial-union.rs",
+      "sha256": "cb8b803030ff1ea0f20af2afb539789f8d05a45afe388e3997d6806e0a39acf9",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "wildcard-array",
+      "path": "pa27/tests/spec/array-fragments/wildcard-array.rs",
+      "sha256": "e95260ea150d042b94ce62255204a07d97ae09eb8f8b30d09b61941cce66de6f",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "direct-union-initializer",
+      "path": "pa27/tests/spec/array-fragments/direct-union-initializer.rs",
+      "sha256": "b8bd51a1ad283055ec28b7ccc7136fab9afdb0a2e6575d056b4f551c326661c4",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "reference-array-publication",
+      "path": "pa27/tests/spec/array-fragments/reference-array-publication.rs",
+      "sha256": "48f79b7ef5614683de54d2f8392359ed66861ea5c5f153e510512cbc97277f13",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "ordinary-byte-selected",
+      "path": "pa27/tests/spec/array-fragments/ordinary-byte-selected.rs",
+      "sha256": "fb58d4f6e3295e7e7447de78a6baca84015e3f050ace0558e9cc17b764defee8",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "ordinary-byte-reference",
+      "path": "pa27/tests/spec/array-fragments/ordinary-byte-reference.rs",
+      "sha256": "888c3a279e14c1904ffdfa31e2a552df34895b1dc78667902fdd269000d85005",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "reference-array-unused",
+      "path": "pa27/tests/spec/array-fragments/reference-array-unused.rs",
+      "sha256": "4c04d6164dac719210481724bd2faf3daed14223c09c827b6758f187a88ea3ff",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": 0,
+      "classification": "unused invalid reference formation remains required eager-validity work; not native-qualified"
+    }
+  ]
+}

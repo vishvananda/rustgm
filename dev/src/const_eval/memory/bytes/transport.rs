@@ -122,7 +122,7 @@ impl Machine<'_, '_> {
             } else {
                 for index in 0..count {
                     self.charge(1)?;
-                    let field = self.evaluator.field(value, index)?;
+                    let field = self.stored_field(value, index)?;
                     self.encode_bytes(
                         &mut buffer,
                         index

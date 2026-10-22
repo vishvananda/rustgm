@@ -24,6 +24,7 @@ impl Graph<'_> {
                 .saturating_add(image.initialized.len())
                 .saturating_add(image.fragments.len()),
         )?;
+        self.reader.require_publishable_array(value)?;
         self.storage(
             image
                 .bytes

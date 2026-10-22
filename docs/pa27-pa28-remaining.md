@@ -18,8 +18,11 @@ individual `pa27-*-review.md` records for their qualified profiles.
 
 Open implementation or profile contracts remain:
 
-- Whole byte-array fragment snapshots remain required after the typed
-  byte-address/access and pointer-add checkpoints. Canonical const/mut pointer
+- Initialized whole `[u8; N]` snapshots now retain ordered symbolic fragments
+  through copies and const calls; selected numeric bytes and final publication
+  remain separate validity gates. Fragment-bearing rest/range value snapshots
+  and unused-reference eager validation remain required followups. See
+  `pa27-array-fragments.md`. Canonical const/mut pointer
   `.add` now uses checked byte offsets without granting access permission. Logical field
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every

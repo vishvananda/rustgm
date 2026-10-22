@@ -1,4 +1,6 @@
 //! One backing preserves aliases, masks and per-pointer authority after conversion.
+#[path = "array_fragments.rs"]
+mod array_fragments;
 use super::{Cell, Constant, Failure, Machine, Reader, Snapshot};
 use crate::{
     const_eval::{

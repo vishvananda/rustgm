@@ -64,7 +64,21 @@ impl Images {
         size: usize,
         fragments: usize,
     ) -> Result<(), &'static str> {
-        if size > MAX_IMAGE {
+        self.snapshot_capacity::<true>(size, fragments)
+    }
+    pub(super) fn reserve_array_fragments(
+        &mut self,
+        size: usize,
+        fragments: usize,
+    ) -> Result<(), &'static str> {
+        self.snapshot_capacity::<false>(size, fragments)
+    }
+    fn snapshot_capacity<const UNION: bool>(
+        &mut self,
+        size: usize,
+        fragments: usize,
+    ) -> Result<(), &'static str> {
+        if UNION && size > MAX_IMAGE {
             return Err("constant union image exceeds 64 KiB limit");
         }
         u32::try_from(self.nodes.len()).map_err(|_| "constant union image identity exhausted")?;
@@ -90,7 +104,13 @@ impl Images {
             .map_err(|_| "constant union image allocation failed")
     }
     pub(super) fn insert(&mut self, image: Image) -> Result<Value, &'static str> {
-        if image.bytes.len() > MAX_IMAGE
+        self.insert_snapshot::<true>(image)
+    }
+    pub(super) fn insert_array(&mut self, image: Image) -> Result<Value, &'static str> {
+        self.insert_snapshot::<false>(image)
+    }
+    fn insert_snapshot<const UNION: bool>(&mut self, image: Image) -> Result<Value, &'static str> {
+        if (UNION && image.bytes.len() > MAX_IMAGE)
             || image.initialized.len() != image.bytes.len().div_ceil(64)
         {
             return Err("malformed constant union image");

@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}union U{p:u64,b:[u8;8]}const N:u64=unsafe{U{b:U{p:37}.b}.p};fn main(){check(N==37);}

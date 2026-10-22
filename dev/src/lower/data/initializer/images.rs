@@ -13,6 +13,7 @@ impl Context<'_> {
         value: Constant,
         size: u64,
     ) -> Result<(), &'static str> {
+        self.constants.require_publishable_array(value)?;
         let image = self.constants.image(value)?;
         if image.ty != ty || size != self.layout(ty)?.size || image.bytes.len() as u64 != size {
             return Err("constant union image differs from emitted storage");

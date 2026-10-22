@@ -343,6 +343,7 @@ impl Dependencies {
         work: &mut Vec<Work>,
         result: &mut Discovered,
     ) -> Result<(), &'static str> {
+        reader.require_publishable_array(value)?;
         let image = reader.image(value)?;
         if image.ty != ty {
             return Err("constant union image differs from dependency storage");

@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}union U{a:u8,b:[u8;8]}const fn bytes()->[u8;8]{unsafe{U{a:7}.b}}const N:u8=bytes()[0];fn main(){check(N==7);}

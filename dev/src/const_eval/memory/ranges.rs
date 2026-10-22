@@ -131,7 +131,7 @@ impl Machine<'_, '_> {
                     let mut value = *value;
                     self.charge(path.len() - position)?;
                     for &index in &path[position..] {
-                        value = self.evaluator.field(value, index)?;
+                        value = self.stored_field(value, index)?;
                     }
                     return Ok(());
                 }
@@ -241,7 +241,7 @@ impl Machine<'_, '_> {
             return Err("constant range assignment length differs from its storage".into());
         }
         for (index, cell) in selected.into_iter().enumerate() {
-            self.memory.cells[cell] = Cell::Frozen(self.evaluator.field(value, index as u64)?);
+            self.memory.cells[cell] = Cell::Frozen(self.stored_field(value, index as u64)?);
         }
         Ok(())
     }

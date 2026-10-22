@@ -137,7 +137,11 @@ initialization, raw alignment anchors, lifetime and incoming write permission
 remain independent checks. A reconstructed reference also validates its complete
 selected type and leaf alignment; an already normalized view retains its exact
 pointer identity. These controls are reviewed in `docs/pa27-byte-access-review.md`.
-The canonical `.add` route, whole byte-array fragment snapshots, numeric pointer
+Canonical const/mut `.add` now preserves checked offset identity and access restrictions.
+Initialized whole `[u8; N]` snapshots retain symbolic fragments through copies and
+const calls, without manufacturing numeric pointer bytes. Final byte-array
+publication rejects all provenance; typed scalar and reference demands still
+validate selected bytes. Fragment-bearing rest/range values, numeric pointer
 reconstruction and unsupported backing families remain required work. Shared-
 derived interior-mutable writes remain unsupported. Unsafe permission grants none
 of these missing constant capabilities. Foreign and mutable static contents remain

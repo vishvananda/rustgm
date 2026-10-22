@@ -1,4 +1,6 @@
 //! Maintainer integration suites for memory.
+#[path = "../../array_fragments.rs"]
+mod array_fragments;
 #[path = "../../atomic_storage.rs"]
 mod atomic_storage;
 #[path = "../../bitwise_atomics.rs"]

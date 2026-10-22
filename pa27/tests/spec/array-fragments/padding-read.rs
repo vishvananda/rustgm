@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(C)]struct P{a:u8,b:u64}union U{p:P,b:[u8;16]}const N:[u8;16]=unsafe{U{p:P{a:1,b:7}}.b};fn main(){let _=N;}

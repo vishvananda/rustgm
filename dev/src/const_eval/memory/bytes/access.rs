@@ -171,7 +171,7 @@ impl Machine<'_, '_> {
             ) {
                 return Ok(true);
             }
-            frozen = Some(self.evaluator.field(value, index)?);
+            frozen = Some(self.stored_field(value, index)?);
         }
         Ok(false)
     }
@@ -276,7 +276,7 @@ impl Machine<'_, '_> {
             } else if stride != 0 {
                 for index in 0..range.length {
                     self.charge(1)?;
-                    let field = self.evaluator.field(value, index)?;
+                    let field = self.stored_field(value, index)?;
                     self.encode_bytes(
                         &mut buffer,
                         index
