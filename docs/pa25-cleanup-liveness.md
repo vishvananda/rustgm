@@ -42,7 +42,24 @@ Rust-qualified 8/32/128 generic cleanup scaling control. Earlier lint findings
 and their receipts are retained in the v1/v2 folders.
 
 The frozen original performance inputs and declarations are retained in
-`obj/parallel/cleanup-components-v1/`. Comparative instruction, wall-time and
-memory measurements, combined release/native qualification and active text
-comparison remain pending. These development invariants alone establish no
-whole-compiler speedup or memory-neutrality claim. PA25 remains planned.
+`obj/parallel/cleanup-components-v1/`. The nine-input development comparison is
+complete in the main checkout's `obj/parallel/cleanup-components-performance-v1/`.
+Its relocation receipt binds those same inputs and immutable A/B binaries. All
+outputs matched exactly. The exclusive measurement window retained six A/A
+observations, five ABBA blocks with three executions per observation, eight RSS
+observations and both Callgrind profiles for every input.
+
+At width 128, the two shared-requirement families fell from 44,085,103 to
+12,028,540 instructions (72.7%) and from 49,991,646 to 18,001,856 (64.0%). Their
+paired median wall times fell 44.2% and 40.0%; A/A spreads were 22.4% and 28.7%,
+so the instruction counts provide the clearer evidence. Median RSS fell 270 and
+90 KiB. The three ordinary controls stayed within 0.15% in instructions and
+within 96 KiB in median RSS. No declared attribution threshold was triggered.
+These are measurements of the selected inputs, not a whole-compiler speedup.
+
+The combined checkpoint subsequently passed 2,588 regular tests, 267 native
+tests and all 8,360 active text cases. Its evidence is in
+`obj/parallel/checked-memory-callers-checkpoint-v2/`, retaining the unchanged
+integration groups from v1 after correcting one exact layout assertion.
+Affected independent qualification and the broader combined performance matrix
+remain pending before publication. PA25 remains planned.
