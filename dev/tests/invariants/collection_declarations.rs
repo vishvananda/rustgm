@@ -305,7 +305,9 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<Properties>(),
         size_of::<(ItemId, Declaration)>()
     );
-    assert_eq!(size_of::<crate::sema::model::Declarations>(), 8472);
+    // The integrated pointer-add identities add two 32-byte slots and one
+    // eight-byte lazy method catalog to this worker's 8472-byte base.
+    assert_eq!(size_of::<crate::sema::model::Declarations>(), 8544);
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(
         size_of::<(ItemId, Declaration)>(),
