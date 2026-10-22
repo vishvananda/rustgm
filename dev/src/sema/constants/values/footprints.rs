@@ -133,7 +133,12 @@ impl Evaluator<'_> {
         let before = facts.layouts.steps;
         let id = facts
             .layouts
-            .demand(&facts.types, &facts.aggregates, ty)
+            .demand_bounded(
+                &facts.types,
+                &facts.aggregates,
+                ty,
+                limit.saturating_sub(work),
+            )
             .map_err(|error| Failure::Invalid(error.message))?;
         work = work
             .checked_add(facts.layouts.steps - before)
@@ -185,6 +190,7 @@ impl Reader<'_> {
                 })
             }
             Shape::Aggregate { .. } => self.aggregate_projection(ty, index, layout),
+            Shape::Niche { .. } => self.niche_projection(ty, index),
             _ => Err("constant projection requires aggregate storage"),
         }
     }
@@ -273,6 +279,7 @@ pub(crate) enum StoredShape<'a> {
     Enumeration {
         tag: crate::abi::layout::Tag,
     },
+    Niche,
     Array {
         element: TypeId,
         stride: u64,
@@ -337,6 +344,10 @@ impl<'a> Reader<'a> {
                     crate::types::aggregate::Kind::Struct => false,
                     crate::types::aggregate::Kind::Union => true,
                     crate::types::aggregate::Kind::Enum => {
+                        if matches!(layout.shape, Shape::Niche { .. }) {
+                            self.enum_niche(ty)?;
+                            return Ok(StoredShape::Niche);
+                        }
                         if definition.repr.tag.is_none()
                             && definition.repr.representation
                                 == crate::types::aggregate::Representation::Rust

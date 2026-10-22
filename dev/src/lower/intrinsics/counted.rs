@@ -30,7 +30,7 @@ impl Context<'_> {
         builder.enter(entry)?;
         let bytes = match representation {
             Representation::Scalar(ty) => u64::from(ty.bits() / 8),
-            Representation::Object(span) => span.bytes,
+            Representation::Object(span) | Representation::PointerObject(span) => span.bytes,
         };
         if bytes == 0 {
             builder.terminate(Terminator::Return(None))?;
@@ -79,7 +79,9 @@ impl Context<'_> {
                 let value = builder.load(ty, source.operand)?;
                 builder.store(value, destination.operand)?;
             }
-            Representation::Object(span) => builder.copy_object(span, source, destination)?,
+            Representation::Object(span) | Representation::PointerObject(span) => {
+                builder.copy_object(span, source, destination)?;
+            }
         }
         let one = builder.integer(Type::I64, 1)?;
         let next = builder.binary(Binary::Add, index, one)?;

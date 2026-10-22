@@ -90,3 +90,38 @@ fn unaligned_transfer_spans_do_not_claim_external_pointer_alignment() -> Result<
     assert_eq!(Intrinsic::WriteUnaligned.index(), 18);
     Ok(())
 }
+
+#[test]
+fn nullable_memory_shims_pass_carrier_words_without_hidden_results() -> Result<(), &'static str> {
+    let representation = Representation::PointerObject(MemorySpan { bytes: 8, align: 8 });
+    assert_eq!(representation.parameter(), Type::Ptr);
+    assert_eq!(representation.result(), Type::Ptr);
+    assert_eq!(size_of::<Representation>(), 24);
+    let read = Context::memory_body(Intrinsic::Read, representation)?;
+    assert_eq!(read.instructions.len(), 1);
+    assert!(matches!(
+        read.instructions[0].operation,
+        Operation::Load {
+            address: Operand::Parameter(0),
+            ..
+        }
+    ));
+    assert!(matches!(
+        read.blocks[0].terminator,
+        Terminator::Return(Some(_))
+    ));
+    let write = Context::memory_body(Intrinsic::Write, representation)?;
+    assert_eq!(write.instructions.len(), 1);
+    assert!(matches!(
+        write.instructions[0].operation,
+        Operation::Store {
+            address: Operand::Parameter(0),
+            ..
+        }
+    ));
+    assert!(matches!(
+        write.blocks[0].terminator,
+        Terminator::Return(None)
+    ));
+    Ok(())
+}

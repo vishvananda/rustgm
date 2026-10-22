@@ -33,6 +33,38 @@ impl Context<'_> {
         self.data.charge(bytes.len())?;
         Ok(bytes.iter().all(|&byte| byte == 0))
     }
+    fn nonzero_enum_tag(
+        &self,
+        layout: &crate::abi::layout::Layout,
+        value: Constant,
+    ) -> Result<bool, &'static str> {
+        if !matches!(layout.shape, Shape::Aggregate { tag: Some(_), .. }) {
+            return Ok(false);
+        }
+        self.layouts
+            .variants(layout)
+            .get(self.constant_variant(value)?)
+            .map(|variant| variant.discriminant != 0)
+            .ok_or("missing constant variant layout")
+    }
+    fn nullable_zero(
+        &self,
+        layout: &crate::abi::layout::Layout,
+        value: Constant,
+        length: u64,
+    ) -> Result<bool, &'static str> {
+        let Some(niche) = self.layouts.niche(layout)? else {
+            return Ok(false);
+        };
+        let ordinal = self.constant_variant(value)?;
+        if ordinal == niche.empty as usize && length == 0 {
+            return Ok(true);
+        }
+        if ordinal != niche.payload as usize || length != 1 {
+            return Err("nullable zero test differs from its canonical variant");
+        }
+        Ok(false)
+    }
     pub(super) fn zero_data(&mut self, ty: TypeId, value: Constant) -> Result<bool, &'static str> {
         let root = (ty, value);
         let mut work = vec![(root, false)];
@@ -89,16 +121,13 @@ impl Context<'_> {
                         .ok_or("missing zero-repeat dependency")?
                 }
                 View::Product { length, .. } => {
-                    if let Shape::Aggregate { tag: Some(_), .. } = layout.shape {
-                        let variant = self
-                            .layouts
-                            .variants(&layout)
-                            .get(self.constant_variant(value)?)
-                            .ok_or("missing constant variant layout")?;
-                        if variant.discriminant != 0 {
-                            self.data.zeroes.insert(key, false);
-                            continue;
-                        }
+                    if self.nonzero_enum_tag(&layout, value)? {
+                        self.data.zeroes.insert(key, false);
+                        continue;
+                    }
+                    if self.nullable_zero(&layout, value, length)? {
+                        self.data.zeroes.insert(key, true);
+                        continue;
                     }
                     self.data.charge(
                         usize::try_from(length).map_err(|_| "zero product exceeds host size")?,

@@ -158,7 +158,7 @@ impl Machine<'_, '_> {
             }
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
-            StoredShape::Enumeration { .. }
+            StoredShape::Enumeration { .. } | StoredShape::Niche
         ) {
             self.encode_byte_enum(backing, offset, ty, value)?;
             let crate::sema::values::View::Product {
@@ -306,7 +306,7 @@ impl Machine<'_, '_> {
                     self.reserve_cells(pending.len().saturating_add(length).saturating_mul(6))?;
                     let enumeration = matches!(
                         Reader::new(self.evaluator.facts()).storage_shape(ty)?,
-                        StoredShape::Enumeration { .. }
+                        StoredShape::Enumeration { .. } | StoredShape::Niche
                     );
                     let selected = if enumeration {
                         let id = variant.ok_or("stored enum cells lack their exact variant")?;
@@ -617,7 +617,7 @@ impl Machine<'_, '_> {
                 .push(self.decode_byte_scalar(source, start, end, ty)?);
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
-            StoredShape::Enumeration { .. }
+            StoredShape::Enumeration { .. } | StoredShape::Niche
         ) {
             let variant = self.decode_byte_variant(source, offset, ty)?;
             self.decode_byte_fields(ty, offset, Some(variant), state)?;

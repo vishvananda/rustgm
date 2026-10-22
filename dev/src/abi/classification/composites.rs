@@ -35,7 +35,7 @@ struct Query<'a> {
     cache: &'a mut Cache,
     types: &'a Store,
     definitions: &'a Definitions,
-    layouts: &'a Layouts,
+    layouts: &'a mut Layouts,
     steps: &'a mut usize,
     retained: &'a mut usize,
 }
@@ -49,7 +49,7 @@ impl Cache {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        layouts: &Layouts,
+        layouts: &mut Layouts,
         ty: TypeId,
         steps: &mut usize,
         retained: &mut usize,

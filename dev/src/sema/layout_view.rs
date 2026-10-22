@@ -79,12 +79,20 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
                 " array element={} stride={stride} length={length}",
                 element.0
             )?,
-            Shape::Aggregate { tag, .. } => {
-                write!(out, " aggregate tag=")?;
-                if let Some(tag) = tag {
-                    writeln!(out, "{}@{}", tag.ty.name(), tag.offset)?;
-                } else {
-                    writeln!(out, "-")?;
+            Shape::Aggregate { .. } | Shape::Niche { .. } => {
+                if let Some(niche) = facts.layouts.niche(layout).map_err(io::Error::other)? {
+                    writeln!(
+                        out,
+                        " niche empty={} payload={} field={} word={} offset={}",
+                        niche.empty, niche.payload, niche.field, niche.word.0, niche.offset
+                    )?;
+                } else if let Shape::Aggregate { tag, .. } = layout.shape {
+                    write!(out, " aggregate tag=")?;
+                    if let Some(tag) = tag {
+                        writeln!(out, "{}@{}", tag.ty.name(), tag.offset)?;
+                    } else {
+                        writeln!(out, "-")?;
+                    }
                 }
                 for (ordinal, variant) in facts.layouts.variants(layout).iter().enumerate() {
                     writeln!(

@@ -6,6 +6,7 @@ mod enumerations;
 mod fill;
 mod images;
 mod intervals;
+mod niches;
 mod relocations;
 mod slice_words;
 mod sources;

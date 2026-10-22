@@ -1,0 +1,316 @@
+//! Guaranteed Option pointer encoding uses the retained ABI and fresh validity checks.
+use crate::{checked_sources as checked, native_references as native};
+use std::path::Path;
+const CASES: &[(&str, &str, i32, bool, &str)] = &[
+    (
+        "option-reference-from-word",
+        "pa27/tests/spec/option-niche/option-reference-from-word.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-none-from-zero",
+        "pa27/tests/spec/option-niche/option-none-from-zero.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-reference-to-word",
+        "pa27/tests/spec/option-niche/option-reference-to-word.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-function-from-word",
+        "pa27/tests/spec/option-niche/option-function-from-word.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-function-none",
+        "pa27/tests/spec/option-niche/option-function-none.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-partial-word",
+        "pa27/tests/spec/option-niche/option-partial-word.rs",
+        1,
+        false,
+        "nullable carrier word is not fully initialized",
+    ),
+    (
+        "option-invalid-numeric-reference",
+        "pa27/tests/spec/option-niche/option-invalid-numeric-reference.rs",
+        1,
+        false,
+        "symbolic pointer read requires one complete provenance word",
+    ),
+    (
+        "option-expired-reference",
+        "pa27/tests/spec/option-niche/option-expired-reference.rs",
+        1,
+        false,
+        "constant pointer refers to expired storage",
+    ),
+    (
+        "option-shared-write",
+        "pa28/tests/spec/option-niche/option-shared-write.rs",
+        1,
+        false,
+        "constant execution cannot write static storage",
+    ),
+    (
+        "option-transparent-reference",
+        "pa27/tests/spec/option-niche/option-transparent-reference.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-reference-array-stride",
+        "pa27/tests/spec/option-niche/option-reference-array-stride.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-function-array-stride",
+        "pa27/tests/spec/option-niche/option-function-array-stride.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-mutable-reference-array-stride",
+        "pa27/tests/spec/option-niche/option-mutable-reference-array-stride.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "option-transparent-array-stride",
+        "pa27/tests/spec/option-niche/option-transparent-array-stride.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "reference-call",
+        "pa26/tests/spec/option-niche/reference-call.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "reference-reified-call",
+        "pa26/tests/spec/option-niche/reference-reified-call.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "mutable-reference-call",
+        "pa26/tests/spec/option-niche/mutable-reference-call.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "function-call",
+        "pa26/tests/spec/option-niche/function-call.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "wrapper-option-call",
+        "pa26/tests/spec/option-niche/wrapper-option-call.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "wrapper-zero-fields",
+        "pa26/tests/spec/option-niche/wrapper-zero-fields.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "wrapper-drop",
+        "pa27/tests/spec/option-niche/wrapper-drop.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "field-before-none",
+        "pa27/tests/spec/option-niche/field-before-none.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "zero-fill-none",
+        "pa28/tests/spec/option-niche/zero-fill-none.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "raw-payload-ordinary",
+        "pa27/tests/spec/option-niche/raw-payload-ordinary.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "unit-reference",
+        "pa27/tests/spec/option-niche/unit-reference.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "unit-function",
+        "pa27/tests/spec/option-niche/unit-function.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "invalid-function-word",
+        "pa27/tests/spec/option-niche/invalid-function-word.rs",
+        1,
+        false,
+        "symbolic pointer read requires one complete provenance word",
+    ),
+    (
+        "one-past-reference",
+        "pa28/tests/spec/option-niche/one-past-reference.rs",
+        1,
+        false,
+        "constant byte access is outside allocation bounds",
+    ),
+    (
+        "unaligned-reference",
+        "pa27/tests/spec/option-niche/unaligned-reference.rs",
+        1,
+        false,
+        "constant raw byte access is unaligned",
+    ),
+    (
+        "generic-call",
+        "pa26/tests/spec/option-niche/generic-call.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "uninhabited-wrapper",
+        "pa27/tests/spec/option-niche/uninhabited-wrapper.rs",
+        0,
+        true,
+        "",
+    ),
+    (
+        "c-reference-call",
+        "pa30/tests/spec/option-niche/c-reference-call.rs",
+        0,
+        false,
+        "",
+    ),
+    (
+        "c-function-call",
+        "pa30/tests/spec/option-niche/c-function-call.rs",
+        0,
+        false,
+        "",
+    ),
+    (
+        "c-record-carrier",
+        "pa30/tests/spec/option-niche/c-record-carrier.rs",
+        0,
+        false,
+        "",
+    ),
+    (
+        "c-reified-carrier",
+        "pa30/tests/spec/option-niche/c-reified-carrier.rs",
+        0,
+        false,
+        "",
+    ),
+    (
+        "host-reference",
+        "pa30/tests/spec/option-niche/host-reference.rs",
+        0,
+        false,
+        "",
+    ),
+    (
+        "host-function",
+        "pa30/tests/spec/option-niche/host-function.rs",
+        0,
+        false,
+        "",
+    ),
+    (
+        "host-record",
+        "pa30/tests/spec/option-niche/host-record.rs",
+        0,
+        false,
+        "",
+    ),
+];
+#[test]
+fn nullable_enum_source_contracts() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let out = root.join(format!(
+        "obj/parallel/pa27/default-enum-bytes/source-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&out)?;
+    for &(name, path, expected, _, reason) in CASES {
+        checked::check_views_with_rustc_args(
+            &root.join(path),
+            &out,
+            name,
+            expected,
+            &[
+                ("--emit-types", expected),
+                ("--emit-lowir", expected),
+                ("--emit-constants", expected),
+            ],
+            reason,
+            &["--cap-lints=allow"],
+        )?;
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires pinned rustc and CPPGM backend"]
+fn nullable_enum_native_values() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let mut owned = Vec::new();
+    for &(name, path, _, valid, _) in CASES {
+        if valid {
+            owned.push((name, std::fs::read_to_string(root.join(path))?));
+        }
+    }
+    let cases: Vec<_> = owned
+        .iter()
+        .map(|(name, text)| (*name, text.as_str(), false))
+        .collect();
+    native::check_literal_cases("parallel/pa27/default-enum-bytes/native", &cases)
+}

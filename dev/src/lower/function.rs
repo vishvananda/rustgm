@@ -277,6 +277,10 @@ impl Lower<'_, '_> {
             {
                 let value = match self.context.representation(local.ty)? {
                     Representation::Scalar(Type::Void) => continue,
+                    Representation::PointerObject(_) => Selected::Runtime(Value {
+                        ty: Type::Ptr,
+                        operand: Operand::Parameter(parameter),
+                    }),
                     Representation::Scalar(ty) => Selected::Runtime(Value {
                         ty,
                         operand: Operand::Parameter(parameter),
@@ -555,7 +559,10 @@ impl Lower<'_, '_> {
                     return Ok(Selected::Runtime(snapshot));
                 }
                 if let Some(address) = self.place(place)? {
-                    if matches!(representation, Representation::Object(_)) {
+                    if matches!(
+                        representation,
+                        Representation::Object(_) | Representation::PointerObject(_)
+                    ) {
                         let destination = self
                             .allocate(value.ty)?
                             .ok_or("missing aggregate snapshot")?;
@@ -800,8 +807,16 @@ impl Lower<'_, '_> {
             match self.value(*id)? {
                 Selected::Runtime(value) => self.arguments.push(value),
                 Selected::Object(address) => {
-                    let pointer = self.pointer(address)?;
-                    self.arguments.push(pointer);
+                    let ty = self.body.values[id.0 as usize].ty;
+                    let value = if matches!(
+                        self.context.representation(ty)?,
+                        Representation::PointerObject(_)
+                    ) {
+                        self.builder.load(Type::Ptr, address.operand)?
+                    } else {
+                        self.pointer(address)?
+                    };
+                    self.arguments.push(value);
                 }
                 Selected::Unit | Selected::Item(_) => {}
             }
@@ -809,6 +824,16 @@ impl Lower<'_, '_> {
         let value =
             self.builder
                 .call(signature, representation.result(), callee, &self.arguments)?;
+        if matches!(representation, Representation::PointerObject(_)) {
+            let destination = self
+                .allocate(result)?
+                .ok_or("missing nullable result storage")?;
+            self.builder.store(
+                value.ok_or("missing nullable result word")?,
+                destination.operand,
+            )?;
+            return Ok(Selected::Object(destination));
+        }
         Ok(destination.map_or_else(
             || value.map_or(Selected::Unit, Selected::Runtime),
             Selected::Object,

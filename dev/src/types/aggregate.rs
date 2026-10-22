@@ -3,6 +3,8 @@ mod field_forms;
 pub mod finiteness;
 mod instances;
 mod metadata;
+mod nullable;
+pub(crate) use nullable::NullableEnum;
 mod packing;
 mod preparation;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
@@ -80,6 +82,7 @@ pub struct Definitions {
     metadata_ready: HashMap<TypeId, metadata::Readiness>,
     suppressed_fields: std::collections::HashSet<ItemId>,
     interior_storage: std::collections::HashSet<ItemId>,
+    nullable_enums: Option<Box<nullable::Policies>>,
 }
 impl Definitions {
     pub(crate) fn mark_discriminants_pending(&mut self, item: ItemId) -> Result<(), &'static str> {

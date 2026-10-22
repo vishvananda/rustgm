@@ -4,6 +4,10 @@ use crate::types::{
     aggregate::{self, Definitions, Repr, Representation},
 };
 
+mod niches;
+use niches::Budget;
+pub use niches::{Niche, NicheId};
+
 pub(super) const MAX_SIZE: u64 = i64::MAX as u64;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LayoutId(pub u32);
@@ -30,6 +34,10 @@ pub enum Shape {
     Aggregate {
         variants: Range,
         tag: Option<Tag>,
+    },
+    Niche {
+        variants: Range,
+        encoding: NicheId,
     },
 }
 #[derive(Clone, Copy, Debug)]
@@ -84,6 +92,7 @@ pub struct Layouts {
     work: Vec<(TypeId, bool)>,
     metadata: Option<Box<super::metadata::Queries>>,
     tails: Option<Box<super::tails::Queries>>,
+    niches: Option<Box<niches::Niches>>,
     pub steps: usize,
 }
 impl Layouts {
@@ -216,7 +225,7 @@ impl Layouts {
     }
     #[must_use]
     pub fn variants(&self, layout: &Layout) -> &[Variant] {
-        if let Shape::Aggregate { variants, .. } = layout.shape {
+        if let Shape::Aggregate { variants, .. } | Shape::Niche { variants, .. } = layout.shape {
             &self.variants[variants.start as usize..variants.end as usize]
         } else {
             &[]
@@ -245,6 +254,25 @@ impl Layouts {
         definitions: &Definitions,
         ty: TypeId,
     ) -> Result<LayoutId, Error> {
+        self.demand_inside::<false>(types, definitions, ty, 1_000_000)
+    }
+    pub(crate) fn demand_bounded(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<LayoutId, Error> {
+        self.demand_inside::<true>(types, definitions, ty, limit)
+    }
+    fn demand_inside<const LIMITED: bool>(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<LayoutId, Error> {
+        let mut budget = Budget::new(limit);
         if self.states.len() < types.len() {
             self.states.resize(types.len(), State::Unseen);
         }
@@ -256,18 +284,33 @@ impl Layouts {
         }
         self.work.push((ty, false));
         while let Some((next, finish)) = self.work.pop() {
-            self.steps += 1;
-            if let Err(message) = self.visit(types, definitions, next, finish) {
+            let result = (|| {
+                if LIMITED {
+                    budget.charge(&mut self.steps, 1)?;
+                } else {
+                    self.steps += 1;
+                }
+                self.visit(types, definitions, next, finish, &mut budget)
+            })();
+            if let Err(message) = result {
                 let error = Error { ty: next, message };
                 // Completed dependencies remain reusable. Only the failed query's
                 // unfinished records are rolled back by its construction boundary.
                 for state in &mut self.states {
                     if matches!(state, State::Active) {
-                        *state = State::Failed(error);
+                        *state = if budget.exhausted {
+                            State::Unseen
+                        } else {
+                            State::Failed(error)
+                        };
                     }
                 }
                 if let Some(state) = self.states.get_mut(ty.0 as usize) {
-                    *state = State::Failed(error);
+                    *state = if budget.exhausted {
+                        State::Unseen
+                    } else {
+                        State::Failed(error)
+                    };
                 }
                 self.work.clear();
                 return Err(error);
@@ -287,6 +330,7 @@ impl Layouts {
         definitions: &Definitions,
         ty: TypeId,
         finish: bool,
+        budget: &mut Budget,
     ) -> Result<(), &'static str> {
         let state = *self
             .states
@@ -307,16 +351,19 @@ impl Layouts {
         if finish {
             let variant_mark = self.variants.len();
             let offset_mark = self.offsets.len();
-            let result = self.construct(types, definitions, ty, kind);
-            let layout = match result {
-                Ok(layout) => layout,
+            let niche_mark = self.niche_mark();
+            let result = self
+                .construct(types, definitions, ty, kind, budget)
+                .and_then(|layout| Ok((LayoutId(index(self.records.len())?), layout)));
+            let (id, layout) = match result {
+                Ok(result) => result,
                 Err(error) => {
                     self.variants.truncate(variant_mark);
                     self.offsets.truncate(offset_mark);
+                    self.rollback_niches(niche_mark);
                     return Err(error);
                 }
             };
-            let id = LayoutId(index(self.records.len())?);
             self.records.push(layout);
             self.states[ty.0 as usize] = State::Ready(id);
             return Ok(());
@@ -354,6 +401,7 @@ impl Layouts {
         definitions: &Definitions,
         ty: TypeId,
         kind: Kind,
+        budget: &mut Budget,
     ) -> Result<Layout, &'static str> {
         match kind {
             Kind::Parameter(_) => Err("generic type parameter has no concrete layout"),
@@ -446,11 +494,7 @@ impl Layouts {
                     ..layout
                 })
             }
-            Kind::Adt(_, _) => self.aggregate(
-                types,
-                definitions.shape(types, ty)?,
-                definitions.packing_checked(),
-            ),
+            Kind::Adt(..) => self.nominal_layout(types, definitions, ty, budget),
         }
     }
     fn fields(

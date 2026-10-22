@@ -28,7 +28,7 @@ Open implementation or profile contracts remain:
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every
   storage family. See `pa27-byte-access-review.md` for the qualified controls.
-- Default-layout/niche enum, opaque/closure and string backing, whole raw-slice values and
+- General default-layout/niche enum, opaque/closure and string backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
@@ -143,7 +143,21 @@ unsupported backing families above remain required. See
 
 
 The inferred C-tag slice also supports repr(C) without a written integer tag,
-using the exact retained target ABI tag. Default Rust, tagless and niche layouts
-remain required; the two frozen Rust-positive counterexamples retain their
-unsupported frontend outcomes explicitly in the C draft contract. See
+using the exact retained target ABI tag. At that checkpoint default Rust, tagless and niche layouts remained required;
+the original Rust-positive counterexamples retain their historical unsupported
+outcomes. Subsequent tagless and thin-pointer Option checkpoints supersede
+those exact profiles without closing general default/niche storage. See
 `pa27-c-enum-bytes.md`.
+
+
+The guaranteed thin-reference/function Option family now uses one retained null
+encoding for runtime size/alignment/call ABI and constant byte backing, including
+eligible transparent carriers. Four original stride wrong-code controls are
+corrected; Some/None, C/Rust/reified calls and destructor behavior are qualified.
+See `pa27-option-niche-design.md` and the PA26/27/28/30 Option outcome drafts.
+General default-layout direct-tag backing, wider/other scalar niches and
+NonZero/NonNull remain required rather than being excluded from completion.
+Default-std compatibility additionally needs AtomicBool and signed/unsigned/
+target-sized atomic families; memchr/zmij SIMD/target-feature/inline-assembly
+requirements belong to later PA28/PA37 compatibility work. The current U32 and
+Option checkpoints do not claim those capabilities.

@@ -34,6 +34,12 @@ impl Lower<'_, '_> {
                         operand: Operand::Parameter(parameter),
                     })
                 }
+                (Representation::PointerObject(_), boundary::Type::Scalar(Type::Ptr)) => {
+                    Selected::Runtime(Value {
+                        ty: Type::Ptr,
+                        operand: Operand::Parameter(parameter),
+                    })
+                }
                 (Representation::Object(span), boundary::Type::Object(expected))
                     if span == expected.span =>
                 {
@@ -128,13 +134,19 @@ impl Lower<'_, '_> {
             match value {
                 Selected::Runtime(value) => retained.push(boundary::Value::Scalar(value)),
                 Selected::Object(address) => {
-                    let Representation::Object(span) = self
+                    match self
                         .context
                         .representation(self.body.values[id.0 as usize].ty)?
-                    else {
-                        return Err("C object argument lacks object storage");
-                    };
-                    retained.push(boundary::Value::Object(self.object_value(address, span)?));
+                    {
+                        Representation::Object(span) => retained
+                            .push(boundary::Value::Object(self.object_value(address, span)?)),
+                        Representation::PointerObject(_) => retained.push(boundary::Value::Scalar(
+                            self.builder.load(Type::Ptr, address.operand)?,
+                        )),
+                        Representation::Scalar(_) => {
+                            return Err("C object argument lacks object storage");
+                        }
+                    }
                 }
                 Selected::Unit | Selected::Item(_) => {}
             }
@@ -153,6 +165,15 @@ impl Lower<'_, '_> {
                 if value.ty == ty =>
             {
                 Selected::Runtime(value)
+            }
+            (boundary::ResultValue::Scalar(value), Representation::PointerObject(_))
+                if value.ty == Type::Ptr =>
+            {
+                let destination = self
+                    .allocate(result)?
+                    .ok_or("missing nullable C result storage")?;
+                self.builder.store(value, destination.operand)?;
+                Selected::Object(destination)
             }
             (boundary::ResultValue::Object(value), Representation::Object(span))
                 if value.span == span =>
@@ -180,6 +201,16 @@ impl Lower<'_, '_> {
                 (Selected::Unit | Selected::Item(_), boundary::Type::Scalar(Type::Void)) => {
                     Ok(Terminator::Return(None))
                 }
+                (Selected::Object(address), boundary::Type::Scalar(Type::Ptr))
+                    if matches!(
+                        self.context.representation(self.body.result)?,
+                        Representation::PointerObject(_)
+                    ) =>
+                {
+                    Ok(Terminator::Return(Some(
+                        self.builder.load(Type::Ptr, address.operand)?,
+                    )))
+                }
                 (Selected::Object(address), boundary::Type::Object(object)) => {
                     let value = self.object_value(address, object.span)?;
                     self.builder
@@ -191,6 +222,14 @@ impl Lower<'_, '_> {
         Ok(Terminator::Return(match selected {
             Selected::Runtime(value) => Some(value),
             Selected::Object(address) => {
+                if matches!(
+                    self.context.representation(self.body.result)?,
+                    Representation::PointerObject(_)
+                ) {
+                    return Ok(Terminator::Return(Some(
+                        self.builder.load(Type::Ptr, address.operand)?,
+                    )));
+                }
                 let align = self.context.layout(self.body.result)?.align;
                 self.write(
                     Some(Address {

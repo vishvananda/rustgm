@@ -12,7 +12,7 @@ impl Machine<'_, '_> {
             self.footprint(ty)?;
             let shape = Reader::new(self.evaluator.facts()).storage_shape(ty)?;
             let unsupported = matches!(shape, StoredShape::Unsupported);
-            let enumeration = matches!(shape, StoredShape::Enumeration { .. });
+            let enumeration = matches!(shape, StoredShape::Enumeration { .. } | StoredShape::Niche);
             let unsupported = unsupported || (enumeration && !self.prepare_byte_enum(ty)?);
             let children = self.byte_children(ty)?;
             self.reserve_cells(
@@ -42,12 +42,20 @@ impl Machine<'_, '_> {
             .ok_or("missing completed byte family".into())
     }
     fn byte_children(&mut self, ty: TypeId) -> Result<Vec<TypeId>, Failure> {
-        let shape = Reader::new(self.evaluator.facts()).storage_shape(ty)?;
-        if matches!(shape, StoredShape::Enumeration { .. }) {
-            let count = Reader::new(self.evaluator.facts())
-                .enum_variants(ty)?
-                .identities
-                .len();
+        let niche = matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            StoredShape::Niche
+        );
+        if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            StoredShape::Enumeration { .. } | StoredShape::Niche
+        ) {
+            let reader = Reader::new(self.evaluator.facts());
+            let count = if niche {
+                2
+            } else {
+                reader.enum_variants(ty)?.identities.len()
+            };
             self.charge(count.saturating_mul(2))?;
         }
         let length = match Reader::new(self.evaluator.facts()).storage_shape(ty)? {
@@ -57,10 +65,17 @@ impl Machine<'_, '_> {
             | StoredShape::Unsupported => 0,
             StoredShape::Array { .. } => 1,
             StoredShape::Product { fields, .. } => fields.len(),
-            StoredShape::Enumeration { .. } => {
+            StoredShape::Enumeration { .. } | StoredShape::Niche => {
                 let reader = Reader::new(self.evaluator.facts());
-                let stored = reader.enum_variants(ty)?;
-                stored.identities.iter().try_fold(0usize, |count, &id| {
+                let ids;
+                let identities = if niche {
+                    let niche = reader.enum_niche(ty)?;
+                    ids = [niche.empty, niche.payload];
+                    &ids[..]
+                } else {
+                    reader.enum_variants(ty)?.identities
+                };
+                identities.iter().try_fold(0usize, |count, &id| {
                     count
                         .checked_add(reader.enum_variant_fields(ty, id)?.0.len())
                         .ok_or("enum family field count overflow")
@@ -81,9 +96,13 @@ impl Machine<'_, '_> {
             | StoredShape::Unsupported => {}
             StoredShape::Array { element, .. } => children.push(element),
             StoredShape::Product { fields, .. } => children.extend_from_slice(fields),
-            StoredShape::Enumeration { .. } => {
-                for &id in reader.enum_variants(ty)?.identities {
-                    children.extend_from_slice(reader.enum_variant_fields(ty, id)?.0);
+            StoredShape::Enumeration { .. } | StoredShape::Niche => {
+                if niche {
+                    children.push(reader.enum_niche(ty)?.encoding.ty);
+                } else {
+                    for &id in reader.enum_variants(ty)?.identities {
+                        children.extend_from_slice(reader.enum_variant_fields(ty, id)?.0);
+                    }
                 }
             }
         }

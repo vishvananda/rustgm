@@ -1,0 +1,53 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "2dede8e40e22ad9e63c016de830bbe16f54a0933",
+  "candidate_sha256": "bc90b163d1e8dbd8c90cca281aea0768f9bec09a0e2e25426165e4997754d980",
+  "cases": [
+    {
+      "name": "option-shared-write",
+      "path": "pa28/tests/spec/option-niche/option-shared-write.rs",
+      "sha256": "d634004807cb670608d22e4a656e8c9566bda96400a38f441d6507b89d0b88db",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "constant execution cannot write static storage",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-shared-write.rs"
+    },
+    {
+      "name": "zero-fill-none",
+      "path": "pa28/tests/spec/option-niche/zero-fill-none.rs",
+      "sha256": "4f814412f82bdf096806623da9a34cae8db6540524f793ac8f5b807678b9866c",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/zero-fill-none.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "one-past-reference",
+      "path": "pa28/tests/spec/option-niche/one-past-reference.rs",
+      "sha256": "f2931020077cd89f392f6e6de235c4f45377f3b0b31b89906dc5c48b615a992b",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "constant byte access is outside allocation bounds",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/one-past-reference.rs"
+    }
+  ]
+}

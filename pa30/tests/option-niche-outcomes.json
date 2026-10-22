@@ -1,0 +1,119 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "2dede8e40e22ad9e63c016de830bbe16f54a0933",
+  "candidate_sha256": "bc90b163d1e8dbd8c90cca281aea0768f9bec09a0e2e25426165e4997754d980",
+  "cases": [
+    {
+      "name": "c-reference-call",
+      "path": "pa30/tests/spec/option-niche/c-reference-call.rs",
+      "sha256": "fcb53b1862d24d7d9d44e788a8d927149ff45f53a0d21b3462e7f81606b678e8",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/c-reference-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "c-function-call",
+      "path": "pa30/tests/spec/option-niche/c-function-call.rs",
+      "sha256": "9bbe0e2312f1989041c4b7ad2ae6c3b6ab13622eeceb0f72b5fa2c1316883874",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/c-function-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "c-record-carrier",
+      "path": "pa30/tests/spec/option-niche/c-record-carrier.rs",
+      "sha256": "a21cc311ed323c9bbe45afa59c849d4dcecc8742bd271907944d91e0a9e663c6",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/c-record-carrier.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "c-reified-carrier",
+      "path": "pa30/tests/spec/option-niche/c-reified-carrier.rs",
+      "sha256": "d6e1c30b19a2a5d851eed4f2acaf2d662e9968a6142521d5c3fe42d9ad99dd25",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/c-reified-carrier.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "host-reference",
+      "path": "pa30/tests/spec/option-niche/host-reference.rs",
+      "sha256": "bdc9a27b72c0bb4873e1a163e710406ccab02fbb71569c4fb817c41cc624bc98",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/host-inputs/host-reference.rs",
+      "native_expected": 0,
+      "host_provider": "pa30/tests/spec/option-niche/provider.c"
+    },
+    {
+      "name": "host-function",
+      "path": "pa30/tests/spec/option-niche/host-function.rs",
+      "sha256": "a0480942f07991d254ec2a1ac38c94c9d220e0f0ff3efade983850674047469a",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/host-inputs/host-function.rs",
+      "native_expected": 0,
+      "host_provider": "pa30/tests/spec/option-niche/provider.c"
+    },
+    {
+      "name": "host-record",
+      "path": "pa30/tests/spec/option-niche/host-record.rs",
+      "sha256": "d90cc072a44e6efef300aab354af181d968ff630cf3c1ca6ac2c629031a0dfdc",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/host-inputs/host-record.rs",
+      "native_expected": 0,
+      "host_provider": "pa30/tests/spec/option-niche/provider.c"
+    }
+  ],
+  "provider_sha256": "5c79b4157c70d33ec6d73b0c4f14ddfdb98de0690b26cf029bc699d24a708540"
+}

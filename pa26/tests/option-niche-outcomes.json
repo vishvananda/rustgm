@@ -1,0 +1,115 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "2dede8e40e22ad9e63c016de830bbe16f54a0933",
+  "candidate_sha256": "bc90b163d1e8dbd8c90cca281aea0768f9bec09a0e2e25426165e4997754d980",
+  "cases": [
+    {
+      "name": "reference-call",
+      "path": "pa26/tests/spec/option-niche/reference-call.rs",
+      "sha256": "f9bcd3637c58841e23ebbea3bd48d4ca2e536be511fde12ae3e498fa16eedf83",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/reference-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "reference-reified-call",
+      "path": "pa26/tests/spec/option-niche/reference-reified-call.rs",
+      "sha256": "4a0b96c9840345bf369fb9f3051e27b317d58dbd5d02d21ff31678f6cd44035a",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/reference-reified-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "mutable-reference-call",
+      "path": "pa26/tests/spec/option-niche/mutable-reference-call.rs",
+      "sha256": "a29d0dc95dd5dd3583f829eb8e45ab378d7d03ad9074b8a524afa10a8a94f295",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/mutable-reference-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "function-call",
+      "path": "pa26/tests/spec/option-niche/function-call.rs",
+      "sha256": "2fd66cbe52c7692a3ba24e4b4695aeb68bec10dee651d5b847f2f3b4a76e3c75",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/function-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "wrapper-option-call",
+      "path": "pa26/tests/spec/option-niche/wrapper-option-call.rs",
+      "sha256": "9f7a9dc39cd788d6d42f28e8bbf7119577cbdd45de1e4f10a0f5bd15376a90e0",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/call-inputs/wrapper-option-call.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "wrapper-zero-fields",
+      "path": "pa26/tests/spec/option-niche/wrapper-zero-fields.rs",
+      "sha256": "50005ffad6ea1e968fb69ae96bc070c486b3d741350f1ade547b22cdc56ace72",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/wrapper-zero-fields.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "generic-call",
+      "path": "pa26/tests/spec/option-niche/generic-call.rs",
+      "sha256": "f3dc3d34a9633acbbb188e84d7f49f4fdacdcd2aede91dd41537a489b53e05da",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/generic-call.rs",
+      "native_expected": 0
+    }
+  ]
+}

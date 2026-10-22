@@ -31,6 +31,26 @@ impl Lower<'_, '_> {
             .get(selected.ordinal as usize)
             .ok_or("missing tested variant layout")?
             .discriminant;
+        if let Some(niche) = self.context.layouts.niche(&layout)?.copied() {
+            if selected.ordinal != niche.empty && selected.ordinal != niche.payload {
+                return Err("tested nullable variant differs from its canonical roles");
+            }
+            let predicate = if selected.ordinal == niche.empty {
+                Predicate::Eq
+            } else {
+                Predicate::Ne
+            };
+            let base = self.place(place)?.ok_or("nullable test has no storage")?;
+            let address = self.offset(base, niche.offset)?;
+            let input = self.builder.load(Type::Ptr, address.operand)?;
+            let null = self
+                .builder
+                .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+            return self
+                .builder
+                .compare(predicate, input, null)
+                .map(Selected::Runtime);
+        }
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
             return Err("constructor decision has no physical tag");
         };
@@ -54,6 +74,9 @@ impl Lower<'_, '_> {
         let layout = self
             .context
             .layout(self.body.values[operand.0 as usize].ty)?;
+        if matches!(layout.shape, Shape::Niche { .. }) {
+            return Err("nullable payload enum cannot be cast to an integer");
+        }
         let (value, signed) = if let Shape::Aggregate { tag: Some(tag), .. } = layout.shape {
             let Selected::Object(address) = self.value(operand)? else {
                 return Err("enum tag has no storage");
@@ -121,7 +144,9 @@ impl Lower<'_, '_> {
         let (slot, align) = match self.context.representation(ty)? {
             Representation::Scalar(Type::Void) => return Ok(None),
             Representation::Scalar(ty) => (self.builder.slot(ty)?, ty.bits() / 8),
-            Representation::Object(span) => (self.builder.object_slot(span)?, span.align),
+            Representation::Object(span) | Representation::PointerObject(span) => {
+                (self.builder.object_slot(span)?, span.align)
+            }
         };
         Ok(Some(Address {
             operand: Operand::Slot(slot),
@@ -144,7 +169,9 @@ impl Lower<'_, '_> {
                 .store(value, destination.ok_or("missing scalar storage")?.operand),
             Selected::Object(source) => {
                 let destination = destination.ok_or("missing object storage")?;
-                let Representation::Object(span) = self.context.representation(ty)? else {
+                let (Representation::Object(span) | Representation::PointerObject(span)) =
+                    self.context.representation(ty)?
+                else {
                     return Err("object value has no object representation");
                 };
                 let span = MemorySpan {
@@ -416,6 +443,18 @@ impl Lower<'_, '_> {
             let destination = self.offset(address, tag.offset)?;
             self.builder.store(value, destination.operand)?;
         }
+        if let Some(niche) = self.context.layouts.niche(&layout)?.copied() {
+            let count = self.body.arguments(fields).len();
+            if ordinal == niche.empty && count == 0 {
+                let null = self
+                    .builder
+                    .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+                let destination = self.offset(address, niche.offset)?;
+                self.builder.store(null, destination.operand)?;
+            } else if ordinal != niche.payload || count != 1 {
+                return Err("nullable construction differs from its exact variant fields");
+            }
+        }
         for (index, id) in self.body.arguments(fields).iter().copied().enumerate() {
             let offset = self.field_offset(&layout, ordinal, index)?;
             let destination = self.offset(address, offset)?;
@@ -443,7 +482,7 @@ impl Lower<'_, '_> {
                     .checked_mul(stride)
                     .ok_or("array field offset overflow")
             }
-            Shape::Aggregate { .. } => {
+            Shape::Aggregate { .. } | Shape::Niche { .. } => {
                 let variant = self
                     .context
                     .layouts

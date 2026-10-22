@@ -140,6 +140,18 @@ impl Context<'_> {
                         value: self.constants.field(value, index)?,
                     });
                 }
+                if let Some(niche) = self.layouts.niche(&layout)? {
+                    let ordinal = self.constant_variant(value)?;
+                    if ordinal == niche.empty as usize && length == 0 {
+                        init.work.push(Work::Bits {
+                            offset: offset + niche.offset,
+                            bytes: 8,
+                            bits: 0,
+                        });
+                    } else if ordinal != niche.payload as usize || length != 1 {
+                        return Err("nullable constant differs from its canonical variant");
+                    }
+                }
                 if let Shape::Aggregate { tag: Some(tag), .. } = layout.shape {
                     let variant = self
                         .layouts

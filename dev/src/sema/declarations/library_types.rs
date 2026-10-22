@@ -21,6 +21,7 @@ use crate::{
 #[cfg(test)]
 #[path = "../../../tests/invariants/collection_declarations.rs"]
 mod collection_tests;
+mod nullable;
 impl Checker<'_> {
     pub(super) fn prepare_library_types(&mut self) -> Result<(), Error> {
         for kind in LibraryType::ALL {
@@ -246,6 +247,7 @@ impl super::comparisons::LibraryContracts<'_> {
             self.intern(declaration.origin, Type::Adt(item, arguments))?
         };
         self.facts.definitions[declaration.definition.0 as usize] = Some(owner);
+        self.register_nullable_library_type(declaration, item)?;
         self.library_properties(declaration, item)?;
         self.facts.generics.nominal_contracts.insert(DefId(item.0));
         self.facts.generics.has_nominal_requirements = true;

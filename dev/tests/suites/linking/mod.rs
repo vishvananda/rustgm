@@ -31,3 +31,6 @@ pub(crate) mod semantic;
 mod symbol_definitions;
 #[path = "../../variadic_calls.rs"]
 mod variadic_calls;
+
+#[path = "../../option_abi.rs"]
+mod option_abi;

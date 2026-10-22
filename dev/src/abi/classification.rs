@@ -144,6 +144,17 @@ impl Plans {
         let definition = definitions
             .get(item)
             .ok_or("missing C aggregate declaration")?;
+        if let Some(niche) = layouts.niche(&layout)? {
+            if niche.owner != head {
+                return Err("nullable C ABI encoding belongs to another type");
+            }
+            return Ok(Passing::Scalar(niche.word));
+        }
+        if definition.repr.representation == Representation::Transparent
+            && let Some(carrier) = layouts.pointer_carrier(types, definitions, head)?
+        {
+            return Ok(Passing::Scalar(carrier));
+        }
         if definition.kind != types::aggregate::Kind::Struct
             || definition.repr.representation != Representation::C
             || definition.repr.packed.is_some()
@@ -214,7 +225,7 @@ impl Plans {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        layouts: &Layouts,
+        layouts: &mut Layouts,
         head: TypeId,
         layout: super::layout::Layout,
     ) -> Result<Passing, &'static str> {

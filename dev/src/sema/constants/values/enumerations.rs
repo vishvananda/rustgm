@@ -92,7 +92,7 @@ impl<'a> Reader<'a> {
             .layouts
             .get(ty)
             .ok_or("missing stored enum layout")?;
-        if !matches!(layout.shape, Shape::Aggregate { .. }) {
+        if !matches!(layout.shape, Shape::Aggregate { .. } | Shape::Niche { .. }) {
             return Err("stored enum lacks physical variants");
         }
         let variants = self.facts.layouts.variants(layout);

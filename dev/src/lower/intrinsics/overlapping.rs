@@ -19,7 +19,7 @@ impl Context<'_> {
         builder.enter(entry)?;
         let stride = match representation {
             Representation::Scalar(ty) => u64::from(ty.bits() / 8),
-            Representation::Object(span) => span.bytes,
+            Representation::Object(span) | Representation::PointerObject(span) => span.bytes,
         };
         if stride == 0 {
             builder.terminate(Terminator::Return(None))?;

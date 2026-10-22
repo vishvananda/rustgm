@@ -131,3 +131,6 @@ mod c_enum_bytes;
 
 #[path = "../../tagless_enum_bytes.rs"]
 mod tagless_enum_bytes;
+
+#[path = "../../option_storage.rs"]
+mod option_storage;

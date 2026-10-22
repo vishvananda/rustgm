@@ -63,6 +63,7 @@ impl Context<'_> {
         Ok(match value {
             classification::Passing::Scalar(ty) => match self.representation(ty)? {
                 Representation::Scalar(ty) => boundary::Type::Scalar(ty),
+                Representation::PointerObject(_) => boundary::Type::Scalar(Type::Ptr),
                 Representation::Object(_) => {
                     return Err("C scalar ABI plan requires an object representation");
                 }

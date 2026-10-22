@@ -26,6 +26,13 @@ impl Enumerations {
 impl Machine<'_, '_> {
     pub(super) fn prepare_byte_enum(&mut self, ty: TypeId) -> Result<bool, Failure> {
         self.charge(1)?;
+        if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            crate::sema::values::StoredShape::Niche
+        ) {
+            Reader::new(self.evaluator.facts()).enum_niche(ty)?;
+            return Ok(true);
+        }
         if self
             .memory
             .bytes
@@ -67,35 +74,7 @@ impl Machine<'_, '_> {
         tags.try_reserve_exact(count)
             .map_err(|_| "constant enum tag index allocation failed")?;
         for ordinal in 0..count {
-            let reader = Reader::new(self.evaluator.facts());
-            let stored = reader.enum_variants(ty)?;
-            let id = stored.identities[ordinal];
-            let bits = reader.enum_variant_bits(ty, id)?;
-            let member = self
-                .evaluator
-                .facts()
-                .members
-                .variants
-                .get(id.0 as usize)
-                .ok_or("missing stored enum declaration")?;
-            if member.owner != stored.owner || member.ordinal as usize != ordinal {
-                return Err("stored enum declaration ordering differs from layout".into());
-            }
-            let count = reader.enum_variant_fields(ty, id)?.0.len();
-            let start = member.start;
-            self.charge(count)?;
-            for index in 0..count {
-                let field = crate::sema::members::FieldId(
-                    start
-                        .checked_add(
-                            u32::try_from(index)
-                                .map_err(|_| "enum field index exceeds declaration")?,
-                        )
-                        .ok_or("enum field identity overflow")?,
-                );
-                Reader::new(self.evaluator.facts()).enum_field_layout(ty, field)?;
-            }
-            tags.push((bits, id));
+            tags.push(self.checked_byte_variant(ty, ordinal)?);
         }
         tags.sort_unstable_by_key(|&(bits, _)| bits);
         if tags.windows(2).any(|pair| pair[0].0 == pair[1].0) {
@@ -120,6 +99,40 @@ impl Machine<'_, '_> {
             .ok_or("constant enum tag retention overflow")?;
         cache.index.insert(ty, Index { tags });
         Ok(true)
+    }
+    fn checked_byte_variant(
+        &mut self,
+        ty: TypeId,
+        ordinal: usize,
+    ) -> Result<(u128, VariantId), Failure> {
+        let reader = Reader::new(self.evaluator.facts());
+        let stored = reader.enum_variants(ty)?;
+        let id = stored.identities[ordinal];
+        let bits = reader.enum_variant_bits(ty, id)?;
+        let member = self
+            .evaluator
+            .facts()
+            .members
+            .variants
+            .get(id.0 as usize)
+            .ok_or("missing stored enum declaration")?;
+        if member.owner != stored.owner || member.ordinal as usize != ordinal {
+            return Err("stored enum declaration ordering differs from layout".into());
+        }
+        let count = reader.enum_variant_fields(ty, id)?.0.len();
+        let start = member.start;
+        self.charge(count)?;
+        for index in 0..count {
+            let field = crate::sema::members::FieldId(
+                start
+                    .checked_add(
+                        u32::try_from(index).map_err(|_| "enum field index exceeds declaration")?,
+                    )
+                    .ok_or("enum field identity overflow")?,
+            );
+            Reader::new(self.evaluator.facts()).enum_field_layout(ty, field)?;
+        }
+        Ok((bits, id))
     }
     pub(super) fn check_tagless_value(&self, ty: TypeId, value: Constant) -> Result<(), Failure> {
         let reader = Reader::new(self.evaluator.facts());
@@ -169,6 +182,34 @@ impl Machine<'_, '_> {
     ) -> Result<(), Failure> {
         self.prepare_byte_enum(ty)?;
         let reader = Reader::new(self.evaluator.facts());
+        if matches!(
+            reader.storage_shape(ty)?,
+            crate::sema::values::StoredShape::Niche
+        ) {
+            let niche = reader.enum_niche(ty)?;
+            if id == niche.payload {
+                return Ok(());
+            }
+            if id != niche.empty {
+                return Err("nullable value has a different variant identity".into());
+            }
+            let offset = offset
+                .checked_add(niche.encoding.offset)
+                .ok_or("nullable word offset overflow")?;
+            let start =
+                usize::try_from(offset).map_err(|_| "nullable word offset exceeds host size")?;
+            let end = start
+                .checked_add(8)
+                .filter(|&end| end <= backing.bytes.len())
+                .ok_or("nullable word exceeds backing bounds")?;
+            self.charge(8)?;
+            self.buffer_fragments(backing, offset, 8, &[])?;
+            backing.bytes[start..end].fill(0);
+            for index in start..end {
+                backing.set_initialized(index, true);
+            }
+            return Ok(());
+        }
         let tag = reader.enum_variants(ty)?.tag;
         let bits = reader.enum_variant_bits(ty, id)?;
         let width = usize::from(
@@ -201,6 +242,12 @@ impl Machine<'_, '_> {
         ty: TypeId,
     ) -> Result<VariantId, Failure> {
         self.prepare_byte_enum(ty)?;
+        if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            crate::sema::values::StoredShape::Niche
+        ) {
+            return self.decode_nullable_variant(source, offset, ty);
+        }
         let tag = Reader::new(self.evaluator.facts()).enum_variants(ty)?.tag;
         let width = usize::from(
             tag.ty

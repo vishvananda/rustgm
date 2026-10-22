@@ -1,6 +1,7 @@
 //! Demand and ABI identities are indexed by already selected semantic definitions/types.
 mod adapters;
 mod c_boundary;
+mod niches;
 use super::{Error, data, function, remainder};
 use crate::{
     abi::layout::{Layout, Layouts},
@@ -74,18 +75,20 @@ pub(super) fn build(
 pub(super) enum Representation {
     Scalar(Type),
     Object(MemorySpan),
+    PointerObject(MemorySpan),
 }
 impl Representation {
     pub const fn parameter(self) -> Type {
         match self {
             Self::Scalar(ty) => ty,
-            Self::Object(_) => Type::Ptr,
+            Self::Object(_) | Self::PointerObject(_) => Type::Ptr,
         }
     }
     pub const fn result(self) -> Type {
         match self {
             Self::Scalar(ty) => ty,
             Self::Object(_) => Type::Void,
+            Self::PointerObject(_) => Type::Ptr,
         }
     }
 }
@@ -325,7 +328,8 @@ impl<'a> Context<'a> {
         let result_type = self.representation(result)?;
         if convention.abi == crate::types::callable::Abi::C
             && (matches!(result_type, Representation::Object(_))
-                || self.non_scalar_boundary(result)?)
+                || (!matches!(result_type, Representation::PointerObject(_))
+                    && self.non_scalar_boundary(result)?))
         {
             return self.object_signature(ty);
         }
@@ -340,7 +344,8 @@ impl<'a> Context<'a> {
             let representation = self.representation(*parameter)?;
             if convention.abi == crate::types::callable::Abi::C
                 && (matches!(representation, Representation::Object(_))
-                    || self.non_scalar_boundary(*parameter)?)
+                    || (!matches!(representation, Representation::PointerObject(_))
+                        && self.non_scalar_boundary(*parameter)?))
             {
                 return self.object_signature(ty);
             }
@@ -392,6 +397,12 @@ impl<'a> Context<'a> {
         ) && ty != TypeId::UNIT
         {
             let layout = self.layout(ty)?;
+            if self.pointer_object(ty, &layout)? {
+                return Ok(Representation::PointerObject(MemorySpan {
+                    bytes: layout.size,
+                    align: layout.align,
+                }));
+            }
             return Ok(if layout.size == 0 {
                 Representation::Scalar(Type::Void)
             } else {

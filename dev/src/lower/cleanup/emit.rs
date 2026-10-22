@@ -268,6 +268,9 @@ impl Emitter<'_, '_> {
             )?;
             let address = sequence.base.offset(self.builder, tag.offset)?;
             Some(self.builder.load(ty, address.operand)?)
+        } else if let Some(niche) = self.context.layouts.niche(&layout)? {
+            let address = sequence.base.offset(self.builder, niche.offset)?;
+            Some(self.builder.load(Type::Ptr, address.operand)?)
         } else {
             None
         };
@@ -329,8 +332,23 @@ impl Emitter<'_, '_> {
                 .get(ordinal as usize)
                 .ok_or("missing drop variant layout")?
                 .discriminant;
-            let expected = self.builder.integer(tag.ty, discriminant)?;
-            let condition = self.builder.compare(Predicate::Eq, tag, expected)?;
+            let (expected, predicate) = if let Some(niche) = self.context.layouts.niche(&layout)? {
+                let predicate = if ordinal == niche.empty {
+                    Predicate::Eq
+                } else if ordinal == niche.payload {
+                    Predicate::Ne
+                } else {
+                    return Err("invalid nullable cleanup variant");
+                };
+                (
+                    self.builder
+                        .literal(Type::Ptr, crate::lowir::program::Literal::Null)?,
+                    predicate,
+                )
+            } else {
+                (self.builder.integer(tag.ty, discriminant)?, Predicate::Eq)
+            };
+            let condition = self.builder.compare(predicate, tag, expected)?;
             let yes = self.builder.block()?;
             let no = self.builder.block()?;
             self.builder.terminate(Terminator::Branch {

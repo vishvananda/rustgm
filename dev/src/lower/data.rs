@@ -302,7 +302,7 @@ impl Context<'_> {
                     .ok_or("constant element offset overflow")?,
                 element,
             )),
-            Shape::Aggregate { .. } => {
+            Shape::Aggregate { .. } | Shape::Niche { .. } => {
                 let ordinal = if self.layouts.variants(layout).len() == 1 {
                     0
                 } else {

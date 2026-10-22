@@ -7,6 +7,7 @@ mod callables;
 mod computed;
 mod enumerations;
 mod footprints;
+mod niches;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;

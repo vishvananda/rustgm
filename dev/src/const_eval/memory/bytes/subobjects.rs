@@ -276,6 +276,14 @@ impl Machine<'_, '_> {
                 }
                 Ok(children)
             }
+            StoredShape::Niche => {
+                let niche = Reader::new(self.evaluator.facts()).enum_niche(ty)?;
+                Ok(if offset < 8 || (zero && offset == 8) {
+                    vec![u64::from(niche.encoding.field)]
+                } else {
+                    Vec::new()
+                })
+            }
             StoredShape::Product { fields, .. } => {
                 let count = fields.len();
                 self.product_subobjects(ty, count, offset, zero)

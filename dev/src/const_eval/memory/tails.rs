@@ -118,10 +118,25 @@ impl Machine<'_, '_> {
         let tagless = definition.repr.tag.is_none()
             && definition.repr.representation == Representation::Rust
             && self.evaluator.facts().members.variants(owner).len() == 1;
-        if !tagged && !tagless {
+        let nullable = self
+            .evaluator
+            .facts()
+            .aggregates
+            .nullable_enum(owner)
+            .is_some();
+        if !tagged && !tagless && !nullable {
             return Ok(None);
         }
         self.footprint(place.ty)?;
+        let niche = self
+            .evaluator
+            .facts()
+            .layouts
+            .get(place.ty)
+            .is_some_and(|layout| matches!(layout.shape, crate::abi::layout::Shape::Niche { .. }));
+        if !tagged && !tagless && !niche {
+            return Ok(None);
+        }
         let selected = Reader::new(self.evaluator.facts()).enum_field_layout(place.ty, field)?;
         if selected.ty != target {
             return Err(if tagged {
@@ -131,7 +146,7 @@ impl Machine<'_, '_> {
             }
             .into());
         }
-        if tagged {
+        if tagged || niche {
             self.byte_address(place, selected.offset, target).map(Some)
         } else {
             Ok(None)

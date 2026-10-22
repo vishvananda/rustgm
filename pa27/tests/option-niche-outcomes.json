@@ -1,0 +1,320 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "2dede8e40e22ad9e63c016de830bbe16f54a0933",
+  "candidate_sha256": "bc90b163d1e8dbd8c90cca281aea0768f9bec09a0e2e25426165e4997754d980",
+  "cases": [
+    {
+      "name": "option-reference-from-word",
+      "path": "pa27/tests/spec/option-niche/option-reference-from-word.rs",
+      "sha256": "9999178a11ffc805727ebae763f31b0c63c7bf704d6f119495c549c47364e2c8",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-reference-from-word.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-none-from-zero",
+      "path": "pa27/tests/spec/option-niche/option-none-from-zero.rs",
+      "sha256": "9c04cdb4499ea08fdf90bf627477be3c0b51a295fc70c0c5242c9e1f46e9fd20",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-none-from-zero.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-reference-to-word",
+      "path": "pa27/tests/spec/option-niche/option-reference-to-word.rs",
+      "sha256": "0e162782a492be76d933c44709e6c21903dec0cacb662f578ed31af13e297a61",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-reference-to-word.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-function-from-word",
+      "path": "pa27/tests/spec/option-niche/option-function-from-word.rs",
+      "sha256": "be4b262f745358624a8d2f1360f82367dfb928ec8a1b8b0c66b5f3942f2c51a8",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-function-from-word.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-function-none",
+      "path": "pa27/tests/spec/option-niche/option-function-none.rs",
+      "sha256": "e622d7d99140756d4c04a928ecb5c5c50816d738e127962322246f7e7e998293",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-function-none.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-partial-word",
+      "path": "pa27/tests/spec/option-niche/option-partial-word.rs",
+      "sha256": "27f626d6ed78315fa7aa02e0d551075b5d5738dbb1cf2ab7f876ed609a15567a",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "nullable carrier word is not fully initialized",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-partial-word.rs"
+    },
+    {
+      "name": "option-invalid-numeric-reference",
+      "path": "pa27/tests/spec/option-niche/option-invalid-numeric-reference.rs",
+      "sha256": "8b43e56ebebdef46733d8afb8f599dcd7657a9d030ddbcfdf316dca0c741accd",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "symbolic pointer read requires one complete provenance word",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-invalid-numeric-reference.rs"
+    },
+    {
+      "name": "option-expired-reference",
+      "path": "pa27/tests/spec/option-niche/option-expired-reference.rs",
+      "sha256": "5f4f034a5f32954ef08052c56f37ddabb8b1e383a8218c7d97ca16b639431f15",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "constant pointer refers to expired storage",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-expired-reference.rs"
+    },
+    {
+      "name": "option-transparent-reference",
+      "path": "pa27/tests/spec/option-niche/option-transparent-reference.rs",
+      "sha256": "3d2e579eb2ebdffaf3cde6ab5edc65d1ce0dc0d9cb7eee8124d5461219d6fcea",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-transparent-reference.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-reference-array-stride",
+      "path": "pa27/tests/spec/option-niche/option-reference-array-stride.rs",
+      "sha256": "27053a0b3dbcafb7db83f4cdccce640c428d71f7f8b718a0c54bedd265035168",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/followup-inputs/option-reference-array-stride.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-function-array-stride",
+      "path": "pa27/tests/spec/option-niche/option-function-array-stride.rs",
+      "sha256": "035827e85b4238f842a9fd4aa43b07fc8f8833b3a2606aacdfc65a51dd4b9067",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/followup-inputs/option-function-array-stride.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-mutable-reference-array-stride",
+      "path": "pa27/tests/spec/option-niche/option-mutable-reference-array-stride.rs",
+      "sha256": "4d28877d6ed6264b12856e2a5e848ff8d1c2cf106ee75cbb69a831e1a61914b1",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/followup-inputs/option-mutable-reference-array-stride.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "option-transparent-array-stride",
+      "path": "pa27/tests/spec/option-niche/option-transparent-array-stride.rs",
+      "sha256": "1a2c89b44c8e895f2411d69f13938297cc7995da8f46679d7d4442543a8402c6",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/followup-inputs/option-transparent-array-stride.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "wrapper-drop",
+      "path": "pa27/tests/spec/option-niche/wrapper-drop.rs",
+      "sha256": "cb9cb18e6965918193e440e42b91110e7abb611c895bc044ad060455eb2cf907",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/wrapper-drop.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "field-before-none",
+      "path": "pa27/tests/spec/option-niche/field-before-none.rs",
+      "sha256": "c8ee5ceeda05fb7c3641c40d148cf4146c0b36d8a098c46eb3385a5271a64b9a",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/field-before-none.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "raw-payload-ordinary",
+      "path": "pa27/tests/spec/option-niche/raw-payload-ordinary.rs",
+      "sha256": "4bf5d4ec8a28eeaa1a3ad4bd9135e15da3ec6c337ba1f8fa98fc3452430039eb",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/tail-inputs/raw-payload-ordinary.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "unit-reference",
+      "path": "pa27/tests/spec/option-niche/unit-reference.rs",
+      "sha256": "b2a44e289014c4c395d57cdee3388de7bc3c8bafe3080f1091368a44d62f1d84",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/unit-reference.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "unit-function",
+      "path": "pa27/tests/spec/option-niche/unit-function.rs",
+      "sha256": "77d0bfe70143df5e00f0e7bf1cbd65575128239d8607e29238d00642b03c9437",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/unit-function.rs",
+      "native_expected": 0
+    },
+    {
+      "name": "invalid-function-word",
+      "path": "pa27/tests/spec/option-niche/invalid-function-word.rs",
+      "sha256": "2488646dc954d9b3cceabec96b464daebf650e786ebffb9726e8e328911b8f3e",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "symbolic pointer read requires one complete provenance word",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/invalid-function-word.rs"
+    },
+    {
+      "name": "unaligned-reference",
+      "path": "pa27/tests/spec/option-niche/unaligned-reference.rs",
+      "sha256": "c59e3482428988c068b8f0258b98881dc996ec62fa42bd785016cd317c7fa42b",
+      "rustc_expected": 1,
+      "frontend_views": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native_valid": false,
+      "reason": "constant raw byte access is unaligned",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/unaligned-reference.rs"
+    },
+    {
+      "name": "uninhabited-wrapper",
+      "path": "pa27/tests/spec/option-niche/uninhabited-wrapper.rs",
+      "sha256": "f1fedc20f3e283e0435ed7d5ecdae1220c81387131e9332f9f5c7162321d4625",
+      "rustc_expected": 0,
+      "frontend_views": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native_valid": true,
+      "reason": "",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/uninhabited-wrapper.rs",
+      "native_expected": 0
+    }
+  ]
+}
