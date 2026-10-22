@@ -113,19 +113,27 @@ combined compiler.
 
 The PA24 release candidate is separately frozen at `c7fe46c0`, whose compiler and
 tests are unchanged from the qualified `0b89bf31` integration above. The changes
-since then are documentation and verified diagnostic archival. Its full release,
-native maintainer, all earlier independent and complete staged PA24 source/native
-checks run in the validation worktree under `obj/parallel/pa24-release-final-v1/`.
-Later PA25 development proceeds independently of that frozen candidate.
+since then are documentation and verified diagnostic archival. Its final functional
+qualification completed under `obj/parallel/pa24-release-final-v1/` in the validation
+worktree. All 43 commands passed: 2,329 full release Cargo tests, 222 native
+maintainer tests, imported rustc/literal/layout checks, every earlier independent
+source and native suite, and the complete staged PA24 source/native/text suites.
+PA24 retains all 467 source outcomes, 311 executable comparisons, two code-generation
+controls and ten library object controls. Its default-feature binary SHA-256 is
+`c408b1205c7815a004309b471ee115db532c7dd3c3a070c0ca2e2904d858cd10`.
+
+`retained.json` binds the exact unchanged compiler/tests to the prior formatting,
+strict all-target/all-feature release Clippy, architecture/file/layout audits,
+90 focused tests and all 7,787 earlier and 467 PA24 text comparisons. It also
+binds the diagnostic-cleanup change to its independently passing 81-test harness
+batch. Resource receipt `dc40d84695104c9784a9649a442f5eaf` closed with status zero.
+Post-run cleanup removed 12,098 generated files (12.54 GiB of unshared blocks)
+and losslessly archived one large type diagnostic, preserving source inputs,
+observations and immutable pins. Later PA25 development remains outside this
+frozen candidate and does not inherit its qualification.
 
 ## Remaining release gates
 
-- Complete the frozen combined release Cargo and native maintainer suites and
-  all earlier independent suites. Retain the exact-source formatting, strict
-  Clippy, architecture/layout and text evidence described above; validate the
-  cleanup changes with their independently passing 81-test harness batch.
-- Carry the corrected library proof and reviewed v2 oracle source identity into
-  the next full combined publication checkpoint before installing the oracles.
 - Retain the completed broad frozen-binary performance comparison and measure
   the later combined compiler's changed paths, including library proof ordering.
   The receiver-depth superlinear observation remains an open performance issue,
