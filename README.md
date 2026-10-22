@@ -1,8 +1,9 @@
 # RustGM
 
 A cumulative Rust compiler course and its maintainer reference implementation.
-The destination is Rust source to typed LowIR. CPPGM supplies the LowIR reader,
-validator and native backend during frontend development.
+The destination is Rust source to typed LowIR, including original upstream core,
+alloc and std and real crate builds. CPPGM supplies the LowIR reader, validator
+and native backend during frontend development.
 
 This is the **solution repository**, following cppgm-extended's arrangement:
 `dev/` owns the implementation; `paN/` owns handouts, fixtures and committed
@@ -63,12 +64,15 @@ repository with pinned reference tools. It has not been built yet.
 - PA24 adds precise closure captures, call-trait adapters and callable objects,
   with 467 text-oracle cases, 311 native executions, two code-generation controls
   and ten entry-free library object controls.
-- PA25–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA25–PA44 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
 [TESTING_AND_REFERENCES.md](TESTING_AND_REFERENCES.md) and
 [the upstream test research](docs/upstream-tests.md).
+The [library bootstrap plan](docs/library-bootstrap-roadmap.md) prioritizes
+generic crate transport, source-declared compiler bindings and upstream libraries
+before async. Ordinary library APIs come from upstream Rust sources.
 The [Rust 1.98.0 Reference](doc/README.md) is vendored for offline reading.
 
 ## Build and validate

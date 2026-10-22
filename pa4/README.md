@@ -78,7 +78,7 @@ including items within blocks, struct/range patterns, function/trait-object
 and impl-trait types. Attributes and docs attach to those syntax-owned
 constructs in PA5, reusing PA3's configuration facts. PA4 does not accept an
 attribute-bearing body or silently skip an unsupported construct. PA7/PA8 own
-macro grammar/expansion; PA36 closes remaining edition and attribute semantics.
+macro grammar/expansion; PA40 closes remaining edition and attribute semantics.
 
 This is syntax, not type checking. Name lookup, binding validity, expression
 places, exhaustiveness, lifetimes and valid return/break/await contexts are

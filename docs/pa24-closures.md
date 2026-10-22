@@ -8,7 +8,8 @@ The parser and resolver already retain closure parameter/result/body nodes,
 `move`/async flags, closure scopes and label barriers. Implement semantics from
 those nodes and resolved identities. Do not reparse or generate replacement
 Rust source. The supported edition is 2024; async closure execution belongs to
-PA32/PA33 and library owning pointers remain PA26.
+PA42/PA43. Owning-pointer compiler hooks remain PA26; original alloc
+implementations are required by PA33.
 
 ## Required phase boundaries
 

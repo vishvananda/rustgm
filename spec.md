@@ -10,8 +10,10 @@ efficient representations and algorithms, not an implementation of Rust rules.
 
 Target Rust 1.98.0, first edition 2024, on Linux x86-64. Freeze language release,
 Unicode tables, edition, target, panic mode and overflow-check mode in each
-relevant test manifest. Older editions arrive explicitly at PA36. Library,
-Cargo and rustc-private binary/metadata compatibility are separate objectives.
+relevant test manifest. PA34 adds the Rust 2021 crate profile; PA40 closes the
+remaining editions. Compiling original upstream core, alloc and std, followed by
+real crates, is required by PA31–PA36. Rustc-private binary/metadata compatibility
+and a drop-in Cargo/rustc interface remain separate objectives.
 
 ```text
 source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
@@ -25,6 +27,31 @@ The external LowIR serialization is an authorized temporary backend boundary.
 No Rust frontend phase may communicate by printing and reparsing token, syntax,
 type or diagnostic text. After an in-process backend becomes available, pass
 typed LowIR directly. All backend-visible facts must have a LowIR spelling.
+
+### Upstream library boundary
+
+Follow the [library bootstrap plan](docs/library-bootstrap-roadmap.md). Compile
+ordinary library definitions, generic bodies and algorithms from pinned upstream
+sources. Bootstrap declaration/body factories are temporary: a source sysroot
+must replace them without duplicate identities or a synthetic fallback. Do not
+implement ordinary missing methods or containers inside the compiler.
+
+The compiler supplies validated source-declared language/diagnostic items,
+built-in expansion, intrinsic semantics, primitive/layout rules and the internal
+features actually used by the pinned sources. A typed registry drives signature
+checking, const eligibility, capability answers and lowering. Semantic identity
+includes declaration and owning crate; familiar names are not implementation
+evidence. Transport checked generic/const bodies and their retained contracts
+through deterministic crate metadata with indexed external-to-local remapping.
+
+Every target Rust dependency must pass through RustGM. Explicitly declared host
+tools may bootstrap build-time execution, but rustc-built target libraries or
+frontend fallbacks cannot satisfy upstream acceptance. Keep build/configuration
+orchestration outside the frontend. A whole selected crate build and independent
+native consumers are required; source reducers guide work but do not replace it.
+Internal features active in an earlier library must work then, regardless of
+later broad edition/target closure. Measure complete library time and peak memory
+as well as changed-path scaling, with existing resource and cleanup limits.
 
 ## Source, lexing and parsing
 
@@ -3174,7 +3201,9 @@ Use the shared LowIR model contract; serialized text is an output view. The
 temporary backend adapter accepts LowIR only, validates it with CPPGM and then
 builds native code. No oracle object or reference function may replace a failed
 Rust compilation. General assembly and target intrinsics require an explicit
-capability review before PA37; the initial backend is not assumed complete.
+capability review before their first required workload and broad closure at PA41;
+the initial backend is not assumed complete. A required backend extension is
+separately reviewed work, not implicit authorization to change CPPGM.
 
 Persistent data consumes completed constant values through a read-only typed
 interface. Reserve global identity before following address dependencies;

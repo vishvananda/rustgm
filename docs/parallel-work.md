@@ -36,6 +36,28 @@ without marking an unfinished prerequisite or assignment active. A worker
 moves to its queued assignment after the integrator accepts its checkpoint;
 it does not wait for every unrelated handout to be published.
 
+### Priority toward upstream libraries
+
+The [library bootstrap plan](library-bootstrap-roadmap.md) makes PA31–PA36
+required and moves async/full unwinding behind the first usable crate graph.
+PA1–PA30 ownership and all retained valid-but-unsupported cases stay intact.
+Finish current coherent proof, iterator and layout checkpoints, then prioritize:
+
+- Worker A: PA25 proof closure, then PA29 generic/const body and contract transport.
+- Worker B: PA26 semantics against source-declared identities, then PA31 bindings
+  and the pinned core source path; retain PA30 ABI obligations and coordinate them.
+- Worker C: PA27/PA28 validity, layout and intrinsic gaps selected by an exact
+  pinned core/alloc inventory, with independent backend capability probes.
+- Integrator: combined qualification, crate metadata integration, PA34 build and
+  edition orchestration, publication and source/configuration provenance.
+
+Current library factories are temporary scaffolding. Do not grow them into an
+implementation of ordinary Option/Result methods, iterators, containers or other
+upstream algorithms. Source-driven hooks and typed cross-crate transport are the
+critical path. Record and retain remaining assignment requirements when switching
+work; a checkpoint handoff does not activate an unfinished assignment. Keep the
+three-job resource policy below unchanged and share immutable upstream sources.
+
 Before central enum or pipeline changes, send the integrator the exact typed
 interface and consumers. In particular coordinate closure/body readiness,
 const/runtime operation permissions, language identities, callable ABI and

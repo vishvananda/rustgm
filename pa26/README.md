@@ -2,7 +2,7 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 Prerequisite: PA25. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. Later edition support is explicit at PA36.
+2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
 ## Required implementation
 

@@ -3,7 +3,7 @@
 Status: **implemented-draft**. The maintainer reference and 356-case text suite
 implement the contract below; this is the current grading boundary.
 Prerequisite: PA21. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. Later edition support is explicit at PA36.
+2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
 ## Required implementation
 
@@ -157,4 +157,4 @@ rejects, while its raw address can be formed.
 
 Run `make test-pa22`, `make test-native-pa22`, `make test-rustc`, and the release,
 lint/audit/harness checks in `TESTING_AND_REFERENCES.md` before changing this
-contract. PA23 owns object metadata and dispatch; PA24–PA38 remain planned.
+contract. PA23 owns object metadata and dispatch; PA25–PA44 remain planned.
