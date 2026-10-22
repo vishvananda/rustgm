@@ -34,8 +34,9 @@ separation, exact symbol/address identity, private target rejection and ambiguou
 imports. Freeze outcomes and qualify unchanged Rust sources independently before
 candidate execution. Retain reordered-dependency and deterministic-byte controls,
 malformed/truncated wire cases and shared 8/32/128 alias graph scaling. Codec-only
-tests cannot establish source support. Source export/import, full checkpoint
-qualification and assignment activation remain separate required steps.
+tests cannot establish source support. The source implementation and focused
+qualification below are complete; combined release qualification and assignment
+activation remain separate required steps.
 
 ## Private checkpoint qualification
 
@@ -50,6 +51,46 @@ receipt binds the tested source hashes and each command result.
 The independently frozen contract in `pa29/tests/public-name-outcomes.json`
 contains 12 unchanged sources. Pinned Rust qualified every declared result and
 both executable clients. Its sources, diagnostics, declarations and hashes are
-retained in `obj/parallel/pa29-public-name-sources-v1`. These establish the target
-behavior; the RustGM source export/import implementation is still pending.
-This private checkpoint is not ready for publication or assignment activation.
+retained in `obj/parallel/pa29-public-name-sources-v1`. These established the target
+behavior before the RustGM source export/import implementation. The codec-only
+checkpoint did not claim source support or assignment completion.
+
+## Source export and import
+
+The source implementation now builds a public module graph from resolved
+bindings. It caches each target identity, visits each reachable module once,
+and exports each owned declaration once under its canonical definition path.
+Dependency targets retain their original defining identity and are not copied
+into the facade's declaration, nominal or storage tables. The importer reserves
+owned definitions and canonical modules first, then installs public bindings
+in a second pass after every artifact is available. Hidden implementation paths
+are not installed merely because an exported identity contains them.
+
+`obj/parallel/pa29-public-name-source-v1` retains the first source/native probe:
+all five accepted sources compile and both native clients match the independent
+Rust observations. Five rejection cases reach their intended semantic checks.
+The two remaining negative-library commands initially used invalid hyphenated
+crate disambiguators and exited with usage status 2; those observations are
+retained. `negative-tail` changes only those command-line disambiguators and
+records the original private-reexport and unresolved-cycle sources rejecting
+with their actual semantic diagnostics. No fixture source or expected outcome
+changed. Strict all-target/all-feature Clippy and the architecture audit passed
+before this first probe.
+
+The permanent `crate_linking::reexports` checks now pass. The complete focused
+crate-linking suite has 31 passing regular tests; the selected native test checks
+both executable clients against pinned Rust. It verifies exact function and
+static addresses across aliases, distinct identities for two versions of the
+same crate, private paths and fields, move errors, ambiguous imports, and
+deterministic metadata with reversed dependency arguments. Shared alias graphs
+at 8/32/128 bindings retain two module tables and one function declaration;
+encoded size is bounded proportionally to the binding count. Empty modules and
+type/value homonyms also survive publication.
+
+`obj/parallel/pa29-public-name-source-v4` binds these results to the source
+snapshot. Release all-target/all-feature Clippy, formatting, the file/architecture
+audit (1,742 files, zero findings), harness, layout, upstream attribution and
+suite registration pass. Earlier v2/v3 records retain the test-module filename
+audit finding and its subsequent module-order formatting correction. No compiler
+behavior changed for those corrections. Combined release/performance checks and
+the remaining PA29 contracts are still required before publication or activation.

@@ -5,7 +5,7 @@ use rustgm::{
     support::crates::{self, CrateIdentity, Symbol},
 };
 use std::fmt::Write;
-fn compile(
+pub(super) fn compile(
     text: &str,
     disambiguator: &str,
 ) -> Result<(rustgm::lowir::program::Program, crates::Interface), Box<dyn std::error::Error>> {
@@ -134,8 +134,6 @@ fn unsupported_public_contracts_are_diagnosed_and_unused_bodies_still_checked()
         "#[target_feature(enable=\"sse2\")]pub unsafe fn f(n:u32)->u32{n}",
         "pub fn f<'a:'b,'b>(n:&'a u32)->&'b u32{n}",
         "pub struct S;",
-        "pub mod empty{}",
-        "mod hidden{pub fn f(n:u32)->u32{n}}pub use hidden::f;",
     ] {
         let report = source::resolve(text, true)?;
         let mut analysis = rustgm::pipeline::analyze_source(&report)?;

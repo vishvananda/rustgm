@@ -1,4 +1,5 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
+mod public_names;
 use super::{
     index::Resolver,
     model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
@@ -27,6 +28,11 @@ impl Imported {
     #[must_use]
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()
+    }
+    pub fn definitions(&self) -> impl Iterator<Item = (&ExternalDef, DefId)> {
+        self.definitions
+            .iter()
+            .map(|(external, &id)| (external, id))
     }
     pub fn functions(&self) -> impl Iterator<Item = (DefId, &Function)> {
         self.functions
@@ -110,7 +116,10 @@ impl Resolver<'_> {
                 .map_err(error)?,
                 root,
             );
-            if artifact.nominals().is_some() {
+            if artifact.public_names().is_some() {
+                self.reserve_public_modules(scope, artifact, &mut imported)?;
+            }
+            if artifact.nominals().is_some() || artifact.public_names().is_some() {
                 self.import_nominal_items(scope, artifact, artifact_index, &mut imported)?;
                 continue;
             }
@@ -136,6 +145,9 @@ impl Resolver<'_> {
                     .constants
                     .push((definition, artifact_index, constant_index));
             }
+        }
+        for artifact in artifacts.artifacts() {
+            self.bind_public_modules(artifact, &imported)?;
         }
         for alias in imported.dependencies.aliases() {
             let identity =
@@ -199,10 +211,20 @@ impl Resolver<'_> {
                 .collect();
         entries.sort_unstable_by_key(|&(identity, ..)| identity);
         for (identity, kind, index, public) in entries {
-            let definition = if public {
+            let definition = if public && artifact.public_names().is_none() {
                 self.import_item(scope, identity, kind, &mut imported.definitions)?
             } else {
-                self.import_hidden_item(scope, identity, kind, &mut imported.definitions)?
+                self.import_unbound_item(
+                    scope,
+                    identity,
+                    kind,
+                    if public {
+                        Access::Public
+                    } else {
+                        Access::ExternalPrivate
+                    },
+                    &mut imported.definitions,
+                )?
             };
             match kind {
                 DefKind::Function => {
@@ -222,11 +244,12 @@ impl Resolver<'_> {
         }
         Ok(())
     }
-    fn import_hidden_item(
+    fn import_unbound_item(
         &mut self,
         scope: ScopeId,
         external: &ExternalDef,
         kind: DefKind,
+        access: Access,
         definitions: &mut HashMap<ExternalDef, DefId>,
     ) -> Result<DefId, Error> {
         let spelling = external
@@ -247,7 +270,7 @@ impl Resolver<'_> {
             kind,
             scope,
             node: None,
-            access: Access::ExternalPrivate,
+            access,
             members: None,
         });
         if definitions.insert(external.clone(), id).is_some() {

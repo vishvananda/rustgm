@@ -87,7 +87,8 @@
         "E0603"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "unresolved"
     },
     {
       "name": "private-field",
@@ -105,7 +106,8 @@
         "E0451"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "private"
     },
     {
       "name": "nominal-mismatch",
@@ -123,7 +125,8 @@
         "E0308"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "incompatible types"
     },
     {
       "name": "moved-alias",
@@ -141,7 +144,8 @@
         "E0382"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "uninitialized"
     },
     {
       "name": "ambiguous-glob",
@@ -158,7 +162,8 @@
         "E0659"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "ambiguous"
     },
     {
       "name": "private-reexport",
@@ -172,7 +177,8 @@
         "E0603"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "private"
     },
     {
       "name": "unresolved-cycle",
@@ -186,11 +192,12 @@
         "E0432"
       ],
       "native": false,
-      "frontend_expected_after_implementation": 1
+      "frontend_expected_after_implementation": 1,
+      "frontend_diagnostic": "unresolved"
     }
   ],
-  "frontend": "pending public-name source export/import; no frontend result claimed",
-  "status": "Independently qualified source contract; public-name codec implemented privately; source import/export remains pending.",
+  "frontend": "All 12 declared source outcomes and both native clients pass in the permanent maintainer checks.",
+  "status": "Source export/import implemented and focused qualification complete; combined release qualification and PA29 completion remain pending.",
   "qualification": {
     "root": "obj/parallel/pa29-public-name-sources-v1",
     "declaration_sha256": "fab37decbae3fa3b0d62fff53f956f9b2deb7682c7d3af732d6639fc86df33bd",

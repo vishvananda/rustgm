@@ -1,17 +1,18 @@
 //! Library exports consume resolved bindings and completed signature/member facts.
 mod named_values;
+mod public_names;
 mod records;
 mod static_exports;
 use super::error;
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, Binding, DefId, DefKind, Origin, ScopeId},
+        model::{DefId, DefKind},
         package::Error,
     },
     sema::{foreign, model::Declarations},
     support::{
-        crates::{CrateIdentity, ExternalDef, ExternalKind, Interface, Scalar, Symbol},
+        crates::{CrateIdentity, ExternalDef, Interface, Scalar, Symbol},
         linkage::{Linkage as Kind, Naming},
     },
     syntax::{
@@ -47,51 +48,17 @@ pub fn export(
     let mut roots = Vec::new();
     let mut records = Vec::new();
     let mut statics = Vec::new();
-    let mut work = vec![(report.resolution.module_scopes[0], Vec::<String>::new())];
-    let mut visits = 0usize;
-    while let Some((scope, path)) = work.pop() {
-        let members = public_members(report, scope);
-        if !path.is_empty() && members.is_empty() {
-            return Err(error(
-                "empty public modules are outside the scalar metadata profile",
-            ));
-        }
-        for binding in members {
-            if binding.origin != Origin::Direct {
-                return Err(error(
-                    "public reexports are outside the scalar metadata profile",
-                ));
+    let plan = public_names::collect(report, &identity)?;
+    for (definition, external) in plan.owned {
+        match report.resolution.definitions[definition.0 as usize].kind {
+            DefKind::Function => {
+                functions.push(function(report, facts, definition, external)?);
+                roots.push(definition);
             }
-            let definition = binding.target;
-            visits += 1;
-            if visits > 100_000 || path.len() >= 64 {
-                return Err(error("metadata export traversal exceeds profile budget"));
-            }
-            let entry = &report.resolution.definitions[definition.0 as usize];
-            let mut child = path.clone();
-            child.push(report.package.names.get(entry.name).to_owned());
-            match entry.kind {
-                DefKind::Module => work.push((
-                    entry
-                        .members
-                        .ok_or_else(|| error("missing public module scope"))?,
-                    child,
-                )),
-                DefKind::Function => {
-                    functions.push(function(report, facts, definition, &identity, child)?);
-                    roots.push(definition);
-                }
-                DefKind::Const => {
-                    constants.push(named_values::export(facts, definition, &identity, child)?);
-                }
-                DefKind::Struct => records.push(definition),
-                DefKind::Static => statics.push(definition),
-                _ => {
-                    return Err(error(
-                        "exposed declaration is outside the scalar metadata profile",
-                    ));
-                }
-            }
+            DefKind::Const => constants.push(named_values::export(facts, definition, external)?),
+            DefKind::Struct => records.push(definition),
+            DefKind::Static => statics.push(definition),
+            _ => return Err(error("unsupported owned metadata declaration")),
         }
     }
     let dependencies = report
@@ -123,21 +90,15 @@ pub fn export(
             storage,
         },
     )?;
+    let interface = if let Some(names) = plan.names {
+        interface.with_public_names(names).map_err(error)?
+    } else {
+        interface
+    };
     let linkage = facts.crates.get_or_insert_default();
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);
     Ok(Exports { interface, roots })
-}
-fn public_members(report: &Report, scope: ScopeId) -> Vec<Binding> {
-    let frame = &report.resolution.scopes[scope.0 as usize];
-    frame
-        .order
-        .iter()
-        .filter_map(|key| {
-            let binding = frame.bindings.get(key)?;
-            (binding.access == Access::Public).then_some(*binding)
-        })
-        .collect()
 }
 struct PreparedFunction {
     definition: ExternalDef,
@@ -154,8 +115,7 @@ fn function(
     report: &Report,
     facts: &mut Declarations,
     definition: DefId,
-    identity: &CrateIdentity,
-    path: Vec<String>,
+    external: ExternalDef,
 ) -> Result<PreparedFunction, Error> {
     let callable = callable(report, facts, definition)?;
     let signature = callable.signature;
@@ -184,8 +144,6 @@ fn function(
             },
         )
         .map_err(error)?;
-    let external =
-        ExternalDef::new(identity.clone(), path, ExternalKind::Function).map_err(error)?;
     facts
         .crates
         .get_or_insert_default()

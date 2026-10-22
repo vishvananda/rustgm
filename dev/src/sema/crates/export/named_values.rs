@@ -6,14 +6,13 @@ use crate::{
         model::Scalar as Value,
         values::{Reader, View},
     },
-    support::crates::{Constant, CrateIdentity, ExternalDef, ExternalKind, Scalar, ScalarValue},
+    support::crates::{Constant, ExternalDef, Scalar, ScalarValue},
 };
 
 pub(super) fn export(
     facts: &Declarations,
     definition: DefId,
-    identity: &CrateIdentity,
-    path: Vec<String>,
+    external: ExternalDef,
 ) -> Result<Constant, Error> {
     if facts.generics.has_parameters(definition) || facts.associated.owner(definition).is_some() {
         return Err(error(
@@ -28,7 +27,7 @@ pub(super) fn export(
         .definition(definition)
         .ok_or_else(|| error("scalar constant export requires a completed value"))?;
     Constant::new(
-        ExternalDef::new(identity.clone(), path, ExternalKind::Constant).map_err(error)?,
+        external,
         value_bits(ty, reader.view(value).map_err(error)?)?,
     )
     .map_err(error)

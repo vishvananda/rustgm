@@ -73,6 +73,18 @@ global identity across object boundaries. The source and native controls in
 Foreign-storage extensions belong to PA30. See
 `docs/pa30-storage-metadata.md` for validation and the remaining graph boundaries.
 
+Profile six adds a public namespace independently of defining identities.
+Renamed local and external reexports, module aliases, empty public modules and
+resolved module-alias cycles retain one owned declaration per defining crate.
+Imports reserve every target before installing bindings; hidden canonical paths
+and private fields remain inaccessible. Function and static aliases keep their
+original symbols and addresses. Earlier payload profiles keep their exact bytes
+when an explicit namespace is unnecessary. Source and native qualification is in
+`tests/public-name-outcomes.json`; `scripts/check_public_names.py` runs its original
+sources and checks repeated publication and dependency order. This checkpoint
+still requires combined release qualification. Generic bodies and the other
+unfinished metadata contracts remain required. See `docs/pa29-public-names.md`.
+
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error
 contract and example outputs before declaring this assignment active.
