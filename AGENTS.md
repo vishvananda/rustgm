@@ -59,6 +59,9 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   raw timing observations remain. Failed runs retain artifacts for diagnosis;
   prune them after investigating. Never accumulate a fresh binary per historical
   test case or benchmark observation indefinitely.
+- Cleanup losslessly compresses large rustc `*.long-type-N.txt` diagnostics to
+  `.txt.gz`, verifies the restored bytes before removing the original, and records
+  their SHA-256s. Other diagnostic text stays in place; use gzip to read an archive.
 - When a script puts all disposable output in known directories, pass repeated
   `--prune-under obj/path` options before `--` to clean those directories without
   rescanning historical runs. Declare every output root; retain the default full

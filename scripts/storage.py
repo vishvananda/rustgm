@@ -12,6 +12,7 @@ import sys
 import time
 
 from resource_runner import run as run_guarded
+from storage_archives import archive_diagnostic, fingerprint, large_diagnostic
 
 ROOT = Path(__file__).resolve().parents[1]
 GIB = 1024 ** 3
@@ -141,12 +142,32 @@ def prune(root, *, apply=False, hours=0, build_cache=False, since=0, paths=()):
     records = obj / "cleanup"
     records.mkdir(parents=True, exist_ok=True)
     record = records / f"{time.time_ns()}.jsonl"
-    count = freed = 0
+    count = archived = freed = 0
     with record.open("w") as log:
         for path in generated_files(obj, roots):
             try:
                 info = path.lstat()
-                if not since <= info.st_mtime <= cutoff or not disposable(path, info):
+                if not since <= info.st_mtime <= cutoff:
+                    continue
+                if large_diagnostic(path, info):
+                    entry = {"path": str(path.relative_to(root)), "bytes": info.st_size,
+                             "mtime_ns": info.st_mtime_ns,
+                             "action": "archive-diagnostic", "archived": apply}
+                    if apply:
+                        archive, checksum = archive_diagnostic(path, info)
+                        entry.update(archive=str(archive.relative_to(root)), sha256=checksum,
+                                     archive_bytes=archive.stat().st_size)
+                    log.write(json.dumps(entry) + "\n")
+                    log.flush()
+                    if apply:
+                        if fingerprint(path.lstat()) != fingerprint(info):
+                            raise ValueError(f"Diagnostic changed before removal: {path}")
+                        path.unlink()
+                        if info.st_nlink == 1:
+                            freed += max(0, info.st_blocks - archive.stat().st_blocks) * 512
+                    archived += 1
+                    continue
+                if not disposable(path, info):
                     continue
                 log.write(json.dumps({"path": str(path.relative_to(root)),
                                       "bytes": info.st_size, "links": info.st_nlink,
@@ -168,7 +189,10 @@ def prune(root, *, apply=False, hours=0, build_cache=False, since=0, paths=()):
                 shutil.rmtree(cache)
     print(f"{'Removed' if apply else 'Would remove'} {count} generated files "
           f"({freed / GIB:.2f} GiB unshared blocks); record: {record}")
-    return count
+    if archived:
+        print(f"{'Archived' if apply else 'Would archive'} {archived} large diagnostics "
+              "with lossless gzip; original-byte SHA-256s are recorded when applied")
+    return count + archived
 
 
 def main():
