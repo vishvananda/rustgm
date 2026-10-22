@@ -230,12 +230,18 @@ impl Machine<'_, '_> {
                 Self::value(frame, right)?,
                 Overflow::Checked,
             )?,
-            Rvalue::Cast { kind, operand } => self.evaluator.cast(
-                kind,
-                body.values[operand.0 as usize].ty,
-                ty,
-                Self::value(frame, operand)?,
-            )?,
+            Rvalue::Cast { kind, operand, .. } => {
+                let Some(value) = self.cast(
+                    kind,
+                    body.values[operand.0 as usize].ty,
+                    ty,
+                    Self::value(frame, operand)?,
+                )?
+                else {
+                    return Ok(None);
+                };
+                value
+            }
             Rvalue::Call {
                 callee, arguments, ..
             } => {

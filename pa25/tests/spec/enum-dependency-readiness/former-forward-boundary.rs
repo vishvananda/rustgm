@@ -1,0 +1,1 @@
+enum E{A=f()}enum First{A=3}const fn f()->isize{First::A as isize}fn main(){}

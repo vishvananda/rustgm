@@ -334,7 +334,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             left,
             right,
         } => write!(out, "binary {operator:?} v{} v{}", left.0, right.0),
-        Rvalue::Cast { kind, operand } => write!(out, "cast {kind:?} v{}", operand.0),
+        Rvalue::Cast { kind, operand, .. } => write!(out, "cast {kind:?} v{}", operand.0),
         Rvalue::Invoke { .. } | Rvalue::Intrinsic { .. } | Rvalue::Call { .. } => {
             call_value(body, value, out)
         }

@@ -199,6 +199,8 @@ pub enum Rvalue {
     Cast {
         kind: Cast,
         operand: ValueId,
+        /// Formation of a transparent direct variant constructor, not a block value.
+        direct_variant: bool,
     },
     /// A checked call operator; operand zero owns or borrows the selected receiver.
     Invoke {

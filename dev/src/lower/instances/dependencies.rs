@@ -232,6 +232,7 @@ impl Dependencies {
                 | Rvalue::Cast {
                     kind: Cast::FunctionPointer,
                     operand: id,
+                    ..
                 }
                 | Rvalue::Call { callee: id, .. } => Some(id),
                 _ => None,

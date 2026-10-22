@@ -5,6 +5,31 @@ use super::{
     pending_patterns::{Frame, FrameId, Saved},
 };
 impl Queries<'_> {
+    pub(super) fn begin_variant_value(
+        &mut self,
+        body: crate::resolve::unit::NodeKey,
+        ty: crate::types::TypeId,
+    ) -> Result<(), Error> {
+        if matches!(self.value_scope, Some(ValueScope::Anonymous { body: old, ty: actual }) if old == body && actual == ty)
+        {
+            return Ok(());
+        }
+        let id = self.append_pattern_frame(Frame {
+            prepared: None,
+            cursor: 0,
+            saved: None,
+            reservation: None,
+            bytes: 0,
+        })?;
+        self.install_pattern_frame(
+            id,
+            None,
+            Some(ValueScope::Anonymous { body, ty }),
+            self.work.context,
+        )?;
+        self.work.push(Work::PatternFinish(id));
+        Ok(())
+    }
     pub(super) fn start_pattern_frame(&mut self, id: FrameId) -> Result<(), Error> {
         let scope = self
             .pattern_frames

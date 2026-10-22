@@ -79,6 +79,13 @@ impl Checker<'_> {
         resume: bool,
     ) -> Result<Option<(DefId, Option<usize>)>, Error> {
         let owner = match requirement {
+            Requirement::DiscriminantValue(_) => {
+                return Err(Error::at(
+                    FileId(0),
+                    0,
+                    "enum value readiness must remain in its constant dependency graph",
+                ));
+            }
             Requirement::AnonymousBody { instance, .. } => {
                 return Err(self.error(
                     instance.source(),

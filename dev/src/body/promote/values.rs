@@ -243,7 +243,7 @@ impl Engine<'_, '_> {
                 left,
                 right,
             } => self.binary(id, operator, left, right)?,
-            Rvalue::Cast { kind, operand } => {
+            Rvalue::Cast { kind, operand, .. } => {
                 let Some(value) = self.ready(Key::Value(operand))? else {
                     return Ok(None);
                 };

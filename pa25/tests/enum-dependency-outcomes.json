@@ -1,0 +1,603 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "nested-callee",
+      "path": "tests/spec/enum-dependency-readiness/nested-callee.rs",
+      "source_sha256": "1e3168894d03f49ec483b86a6b9f771d2a9538cb928a6336b1b366f698fb731b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "callee-pattern-forward",
+      "path": "tests/spec/enum-dependency-readiness/callee-pattern-forward.rs",
+      "source_sha256": "7d1ddba9049e5b704105b111b19b36b3e594fcc997f420522b4dab227e7653d8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "shared-forward-tag",
+      "path": "tests/spec/enum-dependency-readiness/shared-forward-tag.rs",
+      "source_sha256": "342220f391af291f01d7c08885cccd08712bbc8ed623c231587f90c305840dbb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "associated-forward-tag",
+      "path": "tests/spec/enum-dependency-readiness/associated-forward-tag.rs",
+      "source_sha256": "91ca1d4c08ae69df7ce38ce7803996bb5dd949e54db80a27f65b0b5085e4a944",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-cycle",
+      "path": "tests/spec/enum-dependency-readiness/skipped-cycle.rs",
+      "source_sha256": "a60b06fb770c7f7674076a593d383c2f03dcfc38fec069474536f45614ff3daf",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "exit_status": 1,
+      "native": false,
+      "diagnostic": "cycle",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "callee-cycle",
+      "path": "tests/spec/enum-dependency-readiness/callee-cycle.rs",
+      "source_sha256": "6c7ce22b995a08175674072ca5dbed5bea5ee1d257d55550c2d78772760303a4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "exit_status": 1,
+      "native": false,
+      "diagnostic": "cycle",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "cross-callee-cycle",
+      "path": "tests/spec/enum-dependency-readiness/cross-callee-cycle.rs",
+      "source_sha256": "a9577f299fd12af42d8a6b6edba4e7ce61ecaa2da831545f188c697f12a9df14",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "exit_status": 1,
+      "native": false,
+      "diagnostic": "cycle",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "former-forward-boundary",
+      "path": "tests/spec/enum-dependency-readiness/former-forward-boundary.rs",
+      "source_sha256": "d68ad5c31007b1dbddb39fd915a299926649408392bebcb58cd0c698a9619b80",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": false,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "post-declaration-cast",
+      "path": "tests/spec/enum-dependency-readiness/post-declaration-cast.rs",
+      "source_sha256": "cf30db9848b13e00d40e62fa5364a3962d032665762d0dafdf7e2c5b13519ed9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "nested-tag-cfg",
+      "path": "tests/spec/enum-dependency-readiness/nested-tag-cfg.rs",
+      "source_sha256": "19a0ecf92e3ce8ec32a61702ab0e10cf3e33c91180550e0c20419fb20a143b9f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "nested-tag-pattern",
+      "path": "tests/spec/enum-dependency-readiness/nested-tag-pattern.rs",
+      "source_sha256": "2f522ba6174c992b1c11f3e1364237d47671be29db305cb627a8738f869bb88b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "signed-tag",
+      "path": "tests/spec/enum-dependency-readiness/signed-tag.rs",
+      "source_sha256": "ae59e5e902ee40d55d9c1fba7132704d24d35f9f241451db0dd373a275f1d8f8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "implicit-tag",
+      "path": "tests/spec/enum-dependency-readiness/implicit-tag.rs",
+      "source_sha256": "0445d072cb82794c366ebe570a3e8d1239ad4c28d2bd7e272f7d8ca8335853d3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-cast",
+      "path": "tests/spec/enum-dependency-readiness/skipped-cast.rs",
+      "source_sha256": "228cf09fe51bc02047bb33282636f5d506cfed09e910f8afd2bfc12f6a0062ca",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-fault",
+      "path": "tests/spec/enum-dependency-readiness/skipped-fault.rs",
+      "source_sha256": "74dd763bf111988df25d2cf60b98bdf739fefdf898933b30b7fa49c609f52142",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-local-cast",
+      "path": "tests/spec/enum-dependency-readiness/skipped-local-cast.rs",
+      "source_sha256": "52976c4cd8990305b7378b624f07b7dd8a34ac78abe233178981ceb0b0093823",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-named-cast",
+      "path": "tests/spec/enum-dependency-readiness/skipped-named-cast.rs",
+      "source_sha256": "4ec121832f2a43667d1e4710ac37cc1584613ee145b859f00fd9b144a1cdcfd1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-parameter-cast",
+      "path": "tests/spec/enum-dependency-readiness/skipped-parameter-cast.rs",
+      "source_sha256": "f55ec20eea294e17824ea7956fba9379994d3e537ded3e1c0e02d2103ab71d5b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-factory-cast",
+      "path": "tests/spec/enum-dependency-readiness/skipped-factory-cast.rs",
+      "source_sha256": "6c836914bfbf8817c09e060e7c6248bbc2e8a7f39be68b2b059a6d97caf28f75",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "after-return-cast",
+      "path": "tests/spec/enum-dependency-readiness/after-return-cast.rs",
+      "source_sha256": "e2ca39dd7b250108a126b4f0659884e16aa152180de44bb53d75fa8acd06a858",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "other-variant-cast",
+      "path": "tests/spec/enum-dependency-readiness/other-variant-cast.rs",
+      "source_sha256": "c4ef45ee25234af743ac68e2e63446b334ffc99b2db8d46cfa01cb795c805250",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-other-variant-cast",
+      "path": "tests/spec/enum-dependency-readiness/skipped-other-variant-cast.rs",
+      "source_sha256": "c26a6ca6f764dc7227a19d914d92c08e587ba35d3494e48d6bd62732c7948517",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "reached-binding",
+      "path": "tests/spec/enum-dependency-readiness/reached-binding.rs",
+      "source_sha256": "8cefd4f4a289741c56db9b973bca6a9b4ef5c1defce629f567f44b90c0881eab",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "grouped-cast-cycle",
+      "path": "tests/spec/enum-dependency-readiness/grouped-cast-cycle.rs",
+      "source_sha256": "104a89a6a722b194916a2aa6527d414b26c8653b4b6feea616bbab8ba5478643",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "exit_status": 1,
+      "native": false,
+      "diagnostic": "cycle",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "block-cast-cycle",
+      "path": "tests/spec/enum-dependency-readiness/block-cast-cycle.rs",
+      "source_sha256": "8ace00bbd42d797ab5e44209755affa947f8abfe2ccc85fb4aa38e473a1d54ad",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "exit_status": 0,
+      "native": false,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "skipped-repr-cycle",
+      "path": "tests/spec/enum-dependency-readiness/skipped-repr-cycle.rs",
+      "source_sha256": "817d1f9aa7c0c1c1376e2f59c2cb71ed144877f0449f35e454f08715911f4d97",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "exit_status": 1,
+      "native": false,
+      "diagnostic": "cycle",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "direct-root-skipped-cycle",
+      "path": "tests/spec/enum-dependency-readiness/direct-root-skipped-cycle.rs",
+      "source_sha256": "ee019d1b085e0ad8d839ea5eda66d2d0f3b55d326a8216f78e65094b1b194435",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "exit_status": 1,
+      "native": false,
+      "diagnostic": "cycle",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    }
+  ]
+}

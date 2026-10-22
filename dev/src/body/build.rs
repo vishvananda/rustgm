@@ -1513,14 +1513,7 @@ impl<'a> Builder<'a> {
                 let Some(Operation::Cast { kind, .. }) = self.fact(node)?.operation else {
                     return Err(self.error(node, "missing cast selection"));
                 };
-                self.evaluate(
-                    node,
-                    ty,
-                    Rvalue::Cast {
-                        kind,
-                        operand: self.value(value)?,
-                    },
-                )?
+                self.cast_value(node, value, ty, kind)?
             }
             Kind::Call { callee, arguments } => self.call(node, callee, arguments)?,
             Kind::MethodCall { arguments, .. } | Kind::GenericMethodCall { arguments, .. } => {

@@ -7,6 +7,7 @@ mod memory;
 mod mutation;
 mod session;
 mod structure;
+mod tags;
 pub use structure::FieldTypes;
 mod inline;
 mod union_storage;
@@ -646,34 +647,10 @@ impl<'a> Evaluator<'a> {
             let Value::Variant(id) = value.0 else {
                 return Err(Failure::Invalid("missing constant enum variant"));
             };
-            let facts = self.facts();
-            let member = facts
-                .members
-                .variants
-                .get(id.0 as usize)
-                .ok_or("missing constant variant")?;
-            if !facts
-                .aggregates
-                .discriminant_ready(member.owner, member.ordinal)
-            {
-                return Err(Failure::Invalid(
-                    "enum cast requires a completed discriminant",
-                ));
-            }
-            let shape = facts
-                .aggregates
-                .get(member.owner)
-                .ok_or("missing enum representation")?;
-            let variant = facts
-                .aggregates
-                .variants(shape)
-                .get(member.ordinal as usize)
-                .ok_or("missing enum discriminant")?;
-            (
-                shape.repr.tag.unwrap_or(Primitive::Isize),
-                Scalar::Integer(variant.discriminant),
-                Cast::IntegerToInteger,
-            )
+            let (tag, discriminant) = Reader::new(self.facts())
+                .discriminant(id)?
+                .ok_or("enum cast requires a completed discriminant")?;
+            (tag, Scalar::Integer(discriminant), Cast::IntegerToInteger)
         } else {
             (self.primitive(source)?, value.as_scalar()?, kind)
         };

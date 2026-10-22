@@ -1,12 +1,52 @@
-//! Retained inline operands are required independently of runtime branch selection.
-use super::{Failure, Frame, Machine, Requirement, code::Inline};
+//! Constant operand formation is distinct from reached value execution.
+use super::{
+    Failure, Frame, Machine, Requirement,
+    code::{Inline, PreparedOperand},
+};
 use crate::sema::values::Reader;
 impl Machine<'_, '_> {
-    pub(super) fn prepare_inline(&mut self, mut frame: Frame) -> Result<Option<Frame>, Failure> {
+    pub(super) fn cast(
+        &mut self,
+        kind: crate::sema::model::Cast,
+        source: crate::types::TypeId,
+        target: crate::types::TypeId,
+        value: crate::sema::values::Constant,
+    ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        if kind == crate::sema::model::Cast::EnumToInteger {
+            let reader = Reader::new(self.evaluator.facts());
+            if let crate::sema::values::View::Product {
+                variant: Some(id), ..
+            } = reader.view(value)?
+                && reader.discriminant(id)?.is_none()
+            {
+                self.waiting = Some(Requirement::DiscriminantValue(id));
+                return Ok(None);
+            }
+        }
+        self.evaluator.cast(kind, source, target, value).map(Some)
+    }
+    pub(super) fn prepare_operands(&mut self, mut frame: Frame) -> Result<Option<Frame>, Failure> {
         let body = self.bodies[frame.body].clone();
-        while let Some(&(destination, selected, result)) = body.inline.get(frame.inline_cursor) {
+        while let Some(&operand) = body.operands.get(frame.operand_cursor) {
             self.charge(1)?;
             let reader = Reader::new(self.evaluator.facts());
+            if let PreparedOperand::Discriminant(variant) = operand {
+                if reader.discriminant(variant)?.is_none() {
+                    self.waiting = Some(Requirement::DiscriminantValue(variant));
+                    self.frames.push(frame);
+                    return Ok(None);
+                }
+                frame.operand_cursor += 1;
+                continue;
+            }
+            let PreparedOperand::Inline {
+                destination,
+                selected,
+                result,
+            } = operand
+            else {
+                return Err("invalid constant operand preparation".into());
+            };
             let (value, target, requirement) = match selected {
                 Inline::Closed(source) => (
                     reader.inline(source),
@@ -24,14 +64,14 @@ impl Machine<'_, '_> {
             };
             if let Some(value) = value {
                 frame.values[destination.0 as usize] = Some(value);
-                frame.inline_cursor += 1;
+                frame.operand_cursor += 1;
                 continue;
             }
             if let Some(target) = target {
                 if let Inline::Closed(source) = selected {
                     self.evaluator.require_inline(source, result)?;
                 }
-                frame.inline_cursor += 1;
+                frame.operand_cursor += 1;
                 self.frames.push(frame);
                 self.push(target, &[], Some(destination))?;
             } else {
@@ -40,7 +80,7 @@ impl Machine<'_, '_> {
             }
             return Ok(None);
         }
-        frame.inline_cursor = usize::MAX;
+        frame.operand_cursor = usize::MAX;
         Ok(Some(frame))
     }
 }

@@ -766,6 +766,18 @@ impl Queries<'_> {
                 check.expression(self.report, self.typing.facts, key, expression)?;
             }
             match expression {
+                Expression::Cast {
+                    kind: Cast::EnumToInteger,
+                    operand,
+                    ..
+                } => {
+                    // Formation of an actual direct constructor precedes branch
+                    // selection; the cast and skipped arithmetic stay unevaluated.
+                    if let Some(variant) = self.typing.facts.direct_variant(self.report, operand) {
+                        self.work.push(Work::Enter(Query::Variant(variant)));
+                    }
+                    self.scan.push(operand);
+                }
                 Expression::Forward(value)
                 | Expression::Unary { operand: value, .. }
                 | Expression::Cast { operand: value, .. }

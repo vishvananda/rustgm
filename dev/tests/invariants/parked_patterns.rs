@@ -30,6 +30,38 @@ fn frontier(queries: &Queries<'_>) -> Result<u32, std::num::TryFromIntError> {
     u32::try_from(queries.typing.facts.body_regions.len() + 1)
 }
 #[test]
+fn malformed_discriminant_requirement_does_not_schedule_or_publish() -> TestResult {
+    let report = crate::test_source::resolve("struct S;fn main(){}", true)?;
+    let mut facts = declarations::analyze(&report)?;
+    let member = facts
+        .members
+        .variants
+        .first()
+        .ok_or("missing struct member")?;
+    assert!(
+        facts
+            .aggregates
+            .get(member.owner)
+            .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Struct)
+    );
+    let mut queries = Queries::new(&report, &mut facts);
+    for variant in [0, u32::MAX] {
+        assert!(
+            queries
+                .prepare_pattern_requirement(
+                    crate::sema::values::execution::Requirement::DiscriminantValue(
+                        crate::sema::members::VariantId(variant)
+                    )
+                )
+                .is_err()
+        );
+    }
+    assert!(queries.work.pop().is_none());
+    assert!(queries.states.is_empty());
+    assert!(queries.pattern_frames.is_none());
+    Ok(())
+}
+#[test]
 fn interleaved_dispatchers_keep_foreign_gaps_and_exact_owners() -> TestResult {
     let report = crate::test_source::resolve("const A:u8=7;const B:u8=9;fn main(){}", true)?;
     let mut facts = declarations::analyze(&report)?;

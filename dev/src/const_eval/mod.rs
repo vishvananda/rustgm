@@ -49,7 +49,7 @@ struct Frame {
     body: usize,
     block: BlockId,
     next: u32,
-    inline_cursor: usize,
+    operand_cursor: usize,
     return_to: Option<ValueId>,
     locals: Vec<Option<Constant>>,
     values: Vec<Option<Constant>>,
@@ -299,7 +299,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             body: index,
             block: BlockId(0),
             next: first.start,
-            inline_cursor: if body.inline.is_empty() {
+            operand_cursor: if body.operands.is_empty() {
                 usize::MAX
             } else {
                 0
@@ -341,10 +341,10 @@ impl<'a, 'b> Machine<'a, 'b> {
             };
             let index = frame.body;
             self.context = frame.context;
-            let mut frame = if frame.inline_cursor == usize::MAX {
+            let mut frame = if frame.operand_cursor == usize::MAX {
                 frame
             } else {
-                let Some(frame) = self.prepare_inline(frame).map_err(|e| (index, e))? else {
+                let Some(frame) = self.prepare_operands(frame).map_err(|e| (index, e))? else {
                     if let Some(requirement) = self.waiting.take() {
                         return Ok(Progress::Prepare(requirement));
                     }

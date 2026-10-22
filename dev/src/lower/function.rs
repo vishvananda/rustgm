@@ -612,10 +612,12 @@ impl Lower<'_, '_> {
             | Rvalue::Cast {
                 kind: Cast::FunctionPointer,
                 operand,
+                ..
             } => return self.reify(operand),
             Rvalue::Cast {
                 kind: Cast::Pointer,
                 operand,
+                ..
             }
             | Rvalue::Constrain(operand) => {
                 return self.constrain(operand, value.ty, representation);
@@ -623,6 +625,7 @@ impl Lower<'_, '_> {
             Rvalue::Cast {
                 kind: kind @ (Cast::PointerThin | Cast::PointerToInteger | Cast::IntegerToPointer),
                 operand,
+                ..
             } => self.pointer_cast(kind, operand, ty)?,
             Rvalue::Unsize {
                 value: operand,
@@ -688,10 +691,11 @@ impl Lower<'_, '_> {
             Rvalue::Cast {
                 kind: Cast::EnumToInteger,
                 operand,
+                ..
             } => {
                 return self.enum_cast(operand, ty);
             }
-            Rvalue::Cast { kind, operand } => {
+            Rvalue::Cast { kind, operand, .. } => {
                 let source = self.primitive(self.body.values[operand.0 as usize].ty)?;
                 let target = self.primitive(value.ty)?;
                 let value = self.value(operand)?.runtime()?;

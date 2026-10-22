@@ -3,6 +3,35 @@ use super::{Builder, Error, NodeId, Operation, Rvalue, ValueId};
 use crate::sema::model::Cast;
 
 impl Builder<'_> {
+    pub(super) fn cast_value(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        ty: crate::types::TypeId,
+        kind: Cast,
+    ) -> Result<ValueId, Error> {
+        let value = self.value(operand)?;
+        let direct_variant = kind == Cast::EnumToInteger
+            && self
+                .facts
+                .direct_variant(
+                    self.report,
+                    crate::resolve::unit::NodeKey {
+                        node: operand,
+                        ..self.body.source
+                    },
+                )
+                .is_some();
+        self.evaluate(
+            node,
+            ty,
+            Rvalue::Cast {
+                kind,
+                operand: value,
+                direct_variant,
+            },
+        )
+    }
     pub(super) fn unary_value(&mut self, node: NodeId, operand: NodeId) -> Result<ValueId, Error> {
         if let Some(value) = self.language_call(node, &[operand])? {
             return Ok(value);
@@ -11,6 +40,7 @@ impl Builder<'_> {
             Some(Operation::Borrow) => return self.finish_borrow(node),
             Some(Operation::Address) => return self.finish_address(node),
             Some(Operation::PointerAddress { operand }) => Rvalue::Cast {
+                direct_variant: false,
                 kind: Cast::Pointer,
                 operand: self.value(operand)?,
             },

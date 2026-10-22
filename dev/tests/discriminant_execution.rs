@@ -1,6 +1,10 @@
 //! Enum values resume checked const bodies without publishing provisional tags.
+#[path = "harness/checked_sources.rs"]
+mod checked_sources;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "discriminant_execution/reached.rs"]
+mod reached;
 #[path = "helpers/resolve.rs"]
 mod source;
 use std::{path::Path, process::Command};
@@ -135,15 +139,8 @@ fn qualify(name: &str, text: &str, accepted: bool) -> Result<String, Box<dyn std
     Ok(String::from_utf8(candidate.stderr)?)
 }
 #[test]
-fn incomplete_tags_are_boundaries_and_true_cycles_are_rejected()
--> Result<(), Box<dyn std::error::Error>> {
+fn true_cycles_and_duplicate_tags_are_rejected() -> Result<(), Box<dyn std::error::Error>> {
     for (name, text, accepted, message) in [
-        (
-            "forward-cross-enum",
-            "enum E{A=f()}enum First{A=3}const fn f()->isize{First::A as isize}fn main(){}",
-            true,
-            "enum cast requires a completed discriminant",
-        ),
         (
             "constant-cycle",
             "const N:isize=E::A as isize;enum E{A=N}fn main(){}",
@@ -154,7 +151,7 @@ fn incomplete_tags_are_boundaries_and_true_cycles_are_rejected()
             "callee-cycle",
             "enum E{A=f()}const fn f()->isize{E::A as isize}fn main(){}",
             false,
-            "enum cast requires a completed discriminant",
+            "cycle in enum discriminant or constant dependencies",
         ),
         (
             "duplicate",

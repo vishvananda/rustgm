@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+const M:isize=7;enum E{A=f()}const fn f()->isize{F::B as isize}enum F{B=match 7isize{M=>g(),_=>0}}const fn g()->isize{G::C as isize}enum G{C=7}fn main(){check(E::A as isize==7&&F::B as isize==7);}

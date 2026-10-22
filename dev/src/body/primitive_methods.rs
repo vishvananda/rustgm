@@ -126,6 +126,7 @@ fn operation(
             body,
             ty,
             Rvalue::Cast {
+                direct_variant: false,
                 kind: crate::sema::model::Cast::EnumToInteger,
                 operand: a,
             },
@@ -134,6 +135,7 @@ fn operation(
             body,
             ty,
             Rvalue::Cast {
+                direct_variant: false,
                 kind: crate::sema::model::Cast::EnumToInteger,
                 operand: b,
             },

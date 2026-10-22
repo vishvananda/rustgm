@@ -257,6 +257,10 @@ impl Engine {
         requirement: Requirement,
     ) -> Result<bool, Error> {
         match requirement {
+            Requirement::DiscriminantValue(variant) => values::Reader::new(facts)
+                .discriminant(variant)
+                .map(|value| value.is_some())
+                .map_err(|e| Error::at(FileId(0), 0, e)),
             Requirement::FunctionBody(instance) => self.function(report, facts, instance),
             Requirement::AnonymousBody { instance, result } => {
                 if facts.patterns.pending_bodies.contains(&instance.source()) {

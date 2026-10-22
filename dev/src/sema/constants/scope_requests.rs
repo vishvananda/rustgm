@@ -11,6 +11,13 @@ impl Queries<'_> {
     ) -> Result<bool, Error> {
         use super::values::execution::Requirement;
         let source = match requirement {
+            Requirement::DiscriminantValue(variant) => {
+                super::values::Reader::new(self.typing.facts)
+                    .discriminant(variant)
+                    .map_err(|e| Error::at(super::FileId(0), 0, e))?;
+                self.work.push(Work::Enter(Query::Variant(variant)));
+                return Ok(true);
+            }
             Requirement::FunctionBody(instance) => {
                 let Some(crate::types::Kind::FunctionItem { item, .. }) =
                     self.typing.facts.types.kind(instance.ty())

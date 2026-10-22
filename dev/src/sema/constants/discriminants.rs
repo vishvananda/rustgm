@@ -258,6 +258,7 @@ impl Queries<'_> {
         let spec = entry.spec;
         if let Some(key) = spec.value {
             let ty = TypeId::primitive(spec.tag);
+            self.begin_variant_value(key, ty)?;
             let owner = DefId(
                 self.typing.facts.members.variants[variant.0 as usize]
                     .owner

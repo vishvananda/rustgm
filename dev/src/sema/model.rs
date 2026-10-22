@@ -669,6 +669,22 @@ impl Declarations {
             .get(key.file.0 as usize)?
             .get(key.node.0 as usize)
     }
+    /// Selected constructor formation keeps block values distinct from transparent wrappers.
+    pub(crate) fn direct_variant(
+        &self,
+        report: &Report,
+        mut key: NodeKey,
+    ) -> Option<super::members::VariantId> {
+        while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } =
+            Self::kind(report, key)
+        {
+            key.node = inner;
+        }
+        match self.node(key)?.operation {
+            Some(Operation::Construct { variant }) => Some(variant),
+            _ => None,
+        }
+    }
     pub(super) fn node_mut(&mut self, key: NodeKey) -> Option<&mut NodeFacts> {
         self.nodes
             .get_mut(key.file.0 as usize)?

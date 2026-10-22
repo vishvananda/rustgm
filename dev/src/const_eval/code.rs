@@ -15,6 +15,15 @@ pub(crate) enum Inline {
     Closed(NodeKey),
     Instance(crate::sema::inline_constants::InlineInstance),
 }
+#[derive(Clone, Copy)]
+pub(crate) enum PreparedOperand {
+    Inline {
+        destination: ValueId,
+        selected: Inline,
+        result: crate::types::TypeId,
+    },
+    Discriminant(crate::sema::members::VariantId),
+}
 
 pub(crate) struct Code {
     pub source: NodeKey,
@@ -29,13 +38,13 @@ pub(crate) struct Code {
     pub projections: Vec<Projection>,
     pub blocks: Vec<Block>,
     pub promotions: HashMap<ValueId, Constant>,
-    pub inline: Vec<(ValueId, Inline, crate::types::TypeId)>,
+    pub operands: Vec<PreparedOperand>,
     callables: HashMap<Instance, Instance>,
 }
 
 impl Code {
-    pub(crate) fn storage_bytes(body: &Body) -> usize {
-        [
+    pub(crate) fn storage_bytes(body: &Body) -> Result<usize, &'static str> {
+        Ok([
             std::mem::size_of::<Self>(),
             std::mem::size_of_val(body.locals.as_slice()),
             std::mem::size_of_val(body.values.as_slice()),
@@ -48,49 +57,24 @@ impl Code {
                 crate::support::retained::new_map::<ValueId, Constant>(facts.entries().count())
             }),
             body.callable_allocation_bytes(),
-            body.values
-                .iter()
-                .filter(|value| {
-                    matches!(
-                        value.kind,
-                        Rvalue::InlineConstant(_) | Rvalue::InlineInstance(_)
-                    )
-                })
-                .count()
-                .saturating_mul(size_of::<(ValueId, Inline, crate::types::TypeId)>()),
+            Self::operand_count(body)?.saturating_mul(size_of::<PreparedOperand>()),
         ]
         .into_iter()
-        .fold(0, usize::saturating_add)
+        .fold(0, usize::saturating_add))
     }
-    pub(crate) fn snapshot(body: &Body) -> Self {
-        let count = body
-            .values
-            .iter()
-            .filter(|value| {
-                matches!(
-                    value.kind,
-                    Rvalue::InlineConstant(_) | Rvalue::InlineInstance(_)
-                )
-            })
-            .count();
-        let mut inline = Vec::with_capacity(count);
+    fn operand_count(body: &Body) -> Result<usize, &'static str> {
+        body.statements.iter().try_fold(0, |count, statement| {
+            Ok(count + usize::from(Self::operand(body, statement)?.is_some()))
+        })
+    }
+    pub(crate) fn snapshot(body: &Body) -> Result<Self, &'static str> {
+        let mut operands = Vec::with_capacity(Self::operand_count(body)?);
         for statement in &body.statements {
-            let crate::body::ir::Action::Evaluate(id) = statement.action else {
-                continue;
-            };
-            let Some(value) = body.values.get(id.0 as usize) else {
-                continue;
-            };
-            let selected = match value.kind {
-                Rvalue::InlineConstant(source) => Some(Inline::Closed(source)),
-                Rvalue::InlineInstance(instance) => Some(Inline::Instance(instance)),
-                _ => None,
-            };
-            if let Some(selected) = selected {
-                inline.push((id, selected, value.ty));
+            if let Some(operand) = Self::operand(body, statement)? {
+                operands.push(operand);
             }
         }
-        Self {
+        Ok(Self {
             source: body.source,
             result: body.result,
             owner: body.owner,
@@ -107,8 +91,56 @@ impl Code {
                 .as_ref()
                 .map_or_else(HashMap::new, |facts| facts.entries().collect()),
             callables: body.callable_targets(),
-            inline,
-        }
+            operands,
+        })
+    }
+    fn operand(
+        body: &Body,
+        statement: &Statement,
+    ) -> Result<Option<PreparedOperand>, &'static str> {
+        let crate::body::ir::Action::Evaluate(id) = statement.action else {
+            return Ok(None);
+        };
+        let value = body
+            .values
+            .get(id.0 as usize)
+            .ok_or("missing prepared constant operand")?;
+        let selected = match value.kind {
+            Rvalue::InlineConstant(source) => Inline::Closed(source),
+            Rvalue::InlineInstance(instance) => Inline::Instance(instance),
+            Rvalue::Cast {
+                kind,
+                operand,
+                direct_variant: true,
+            } => {
+                if kind != crate::sema::model::Cast::EnumToInteger {
+                    return Err("direct variant formation requires an enum integer cast");
+                }
+                // Constant operand formation uses the retained immediate constructor.
+                // Reads and calls keep reached semantics; no source propagation occurs.
+                let Rvalue::Aggregate {
+                    fields,
+                    variant: Some(variant),
+                } = body
+                    .values
+                    .get(operand.0 as usize)
+                    .ok_or("missing direct variant operand")?
+                    .kind
+                else {
+                    return Err("direct variant formation requires a constructor operand");
+                };
+                if fields.start != fields.end {
+                    return Err("direct variant formation requires an empty constructor");
+                }
+                return Ok(Some(PreparedOperand::Discriminant(variant)));
+            }
+            _ => return Ok(None),
+        };
+        Ok(Some(PreparedOperand::Inline {
+            destination: id,
+            selected,
+            result: value.ty,
+        }))
     }
     pub(crate) fn callable_target(&self, original: Instance) -> Instance {
         self.callables.get(&original).copied().unwrap_or(original)
@@ -159,7 +191,7 @@ impl Catalog {
     pub(crate) fn insert(&mut self, body: &Body) -> Result<usize, &'static str> {
         let bytes = self
             .bytes
-            .checked_add(Code::storage_bytes(body))
+            .checked_add(Code::storage_bytes(body)?)
             .and_then(|bytes| {
                 bytes.checked_add(if matches!(body.owner, Owner::AnonymousConstant) {
                     crate::support::retained::new_map::<NodeKey, usize>(1)
@@ -232,7 +264,7 @@ impl Catalog {
         {
             return Err("duplicate selected initializer execution body");
         }
-        self.bodies.push(std::rc::Rc::new(Code::snapshot(body)));
+        self.bodies.push(std::rc::Rc::new(Code::snapshot(body)?));
         self.bytes = bytes;
         Ok(index)
     }

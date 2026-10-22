@@ -1,5 +1,5 @@
 //! Snapshot and full-template budgets cover their distinct owned storage.
-use super::{Catalog, Code};
+use super::{Catalog, Code, Inline, PreparedOperand};
 use crate::test_source as source;
 use crate::{body, sema, types::instance::Instance};
 
@@ -10,7 +10,23 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     let facts = sema::bodies::analyze(&report, facts).map_err(|e| e.to_string())?;
     let mut program = body::build(&report, &facts).map_err(|e| e.to_string())?;
     let body = program.bodies.first_mut().ok_or("missing checked body")?;
-    let code = Code::storage_bytes(body);
+    assert_eq!(size_of::<body::ir::Rvalue>(), 20);
+    assert_eq!(size_of::<body::ir::Value>(), 24);
+    assert_eq!(size_of::<body::ir::Body>(), 464);
+    let code = Code::storage_bytes(body)?;
+    let scalar = Code::snapshot(body)?;
+    assert!(scalar.operands.is_empty());
+    assert_eq!(scalar.operands.capacity(), 0);
+    assert_eq!(
+        size_of::<Vec<PreparedOperand>>(),
+        size_of::<Vec<(crate::body::ir::ValueId, Inline, crate::types::TypeId)>>()
+    );
+    println!(
+        "prepared operand bytes={}, former inline entry bytes={}, Code bytes={}",
+        size_of::<PreparedOperand>(),
+        size_of::<(crate::body::ir::ValueId, Inline, crate::types::TypeId)>(),
+        size_of::<Code>()
+    );
     let full = body.retained_bytes();
     body.guard_places.reserve(16);
     body.temporaries.reserve(16);
@@ -24,7 +40,7 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     owned.returned.reserve(16);
     body.owned = Some(owned);
     assert!(body.retained_bytes() > full);
-    assert_eq!(Code::storage_bytes(body), code);
+    assert_eq!(Code::storage_bytes(body)?, code);
     let definition = facts
         .functions
         .first()
@@ -34,7 +50,7 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     let instance = Instance::new(&facts.types, ty)?;
     let targets = body.resolved_callables.get_or_insert_with(Box::default);
     targets.insert(instance, instance);
-    assert!(Code::storage_bytes(body) > code);
+    assert!(Code::storage_bytes(body)? > code);
     let mut catalog = Catalog {
         bytes: 64 * 1024 * 1024,
         ..Catalog::default()
@@ -47,5 +63,65 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     assert!(catalog.definitions.is_empty());
     assert!(catalog.functions.is_empty());
     assert_eq!(catalog.bytes, 64 * 1024 * 1024);
+    Ok(())
+}
+
+#[test]
+fn malformed_direct_variant_facts_do_not_publish_snapshots() -> Result<(), String> {
+    use crate::{body::ir::Rvalue, sema::model::Cast};
+    let report = source::resolve("enum E{A}const fn f()->isize{E::A as isize}", true)?;
+    let facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let facts = sema::bodies::analyze(&report, facts).map_err(|e| e.to_string())?;
+    let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
+    let original = program.bodies.first().ok_or("missing enum cast body")?;
+    let cast = original
+        .values
+        .iter()
+        .position(|v| {
+            matches!(
+                v.kind,
+                Rvalue::Cast {
+                    direct_variant: true,
+                    ..
+                }
+            )
+        })
+        .ok_or("missing direct variant fact")?;
+    let Rvalue::Cast { operand, .. } = original.values[cast].kind else {
+        return Err("missing cast".into());
+    };
+    for malformed in 0..3 {
+        let mut body = original.clone();
+        match malformed {
+            0 => {
+                body.values[cast].kind = Rvalue::Cast {
+                    kind: Cast::IntegerToInteger,
+                    operand,
+                    direct_variant: true,
+                }
+            }
+            1 => body.values[operand.0 as usize].kind = Rvalue::Unit,
+            _ => {
+                let Rvalue::Aggregate { variant, fields } =
+                    original.values[operand.0 as usize].kind
+                else {
+                    return Err("missing constructor".into());
+                };
+                body.values[operand.0 as usize].kind = Rvalue::Aggregate {
+                    variant,
+                    fields: crate::body::ir::ValueList {
+                        end: fields.start + 1,
+                        ..fields
+                    },
+                };
+            }
+        }
+        let mut catalog = Catalog::default();
+        assert!(catalog.insert(&body).is_err());
+        assert!(catalog.bodies.is_empty());
+        assert!(catalog.definitions.is_empty());
+        assert!(catalog.functions.is_empty());
+        assert_eq!(catalog.bytes, 0);
+    }
     Ok(())
 }

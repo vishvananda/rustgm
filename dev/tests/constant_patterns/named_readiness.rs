@@ -7,6 +7,7 @@ use std::{
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 const ROOT: &str = "../pa25/tests/spec/constant-pattern-readiness";
 const ACCEPTED: &[&str] = &[
+    "callee-enum-cast",
     "suspended-body-pattern",
     "exterior-dispatch-owner",
     "skipped-associated-pattern",
@@ -33,16 +34,10 @@ const REJECTED: &[&str] = &[
     "interleaved-lifetime-bound",
     "source-opaque-pattern",
 ];
-const BOUNDARIES: &[(&str, &str)] = &[
-    (
-        "callee-enum-cast",
-        "enum cast requires a completed discriminant",
-    ),
-    (
-        "interleaved-lifetime",
-        "selected constant arguments are not concrete",
-    ),
-];
+const BOUNDARIES: &[(&str, &str)] = &[(
+    "interleaved-lifetime",
+    "selected constant arguments are not concrete",
+)];
 fn source(name: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))

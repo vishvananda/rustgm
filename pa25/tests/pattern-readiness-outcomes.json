@@ -141,7 +141,7 @@
       "name": "callee-enum-cast",
       "path": "tests/spec/constant-pattern-readiness/callee-enum-cast.rs",
       "source_sha256": "0d262e524c3087a02e9a0b93552e722855ffba6067b7a1b7661dbd1d31459f02",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -149,15 +149,15 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
+      "boundary": false,
       "features": [
         "pa25.constant-evaluation"
       ],
-      "diagnostic": "enum cast requires a completed discriminant",
+      "diagnostic": "",
       "limitation": "Valid Rust; required PA25 continuation work remains."
     },
     {

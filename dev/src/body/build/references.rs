@@ -67,6 +67,7 @@ impl Builder<'_> {
             node,
             intermediate,
             Rvalue::Cast {
+                direct_variant: false,
                 kind: crate::sema::model::Cast::Pointer,
                 operand: value,
             },

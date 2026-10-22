@@ -36,6 +36,7 @@ pub struct Request {
 /// Only the selected dependency is prepared before the retained query resumes.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Requirement {
+    DiscriminantValue(crate::sema::members::VariantId),
     FunctionBody(instance::Instance),
     InitializerBody(DefId),
     InlineBody {
