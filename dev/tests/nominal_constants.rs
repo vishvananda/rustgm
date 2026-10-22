@@ -445,7 +445,7 @@ fn recursive_derive_obligations_and_operator_boundary_are_explicit()
         (
             "operator-boundary",
             "#[derive(PartialEq)]struct S(u8);fn f()->bool{S(7)==S(7)}",
-            Some("operation requires a scalar type"),
+            Some("trait obligation requires an unambiguous matching assumption or implementation"),
         ),
     ] {
         let path = directory.join(format!("{name}.rs"));
@@ -454,7 +454,11 @@ fn recursive_derive_obligations_and_operator_boundary_are_explicit()
         if let Some(message) = boundary {
             assert_eq!(output.status.code(), Some(1));
             assert!(output.stdout.is_empty());
-            assert!(String::from_utf8_lossy(&output.stderr).contains(message));
+            assert!(
+                String::from_utf8_lossy(&output.stderr).contains(message),
+                "{name}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
         } else {
             assert!(
                 output.status.success() && output.stderr.is_empty(),
