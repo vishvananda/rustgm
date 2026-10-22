@@ -1,12 +1,8 @@
 //! Scalar union addresses alias the current Image while copied values retain snapshots.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::checked_sources as checked;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::resolve as source;
 use std::path::PathBuf;
 const CASES: &[(&str, i32, i32, &str)] = &[
     ("read-wide", 0, 0, ""),

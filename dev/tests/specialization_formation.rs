@@ -1,6 +1,5 @@
 //! Scoped formation survives real template specialization, including contract-only projections.
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{
     body::{
         self,

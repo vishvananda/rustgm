@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{
     borrow::regions::{constraints::Constraints, graph::Error},
     sema::model::{AdjustmentKind, Cast, Operation},

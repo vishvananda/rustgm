@@ -1,8 +1,6 @@
 //! Concrete instances reuse proved template structure and select their actual cleanup needs.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body, borrow,
     sema::{model::Declarations, values::Evaluator},

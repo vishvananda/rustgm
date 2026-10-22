@@ -1,6 +1,5 @@
 //! Result reachability differs from evaluating a repeat operand and from type inspection.
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 use std::{path::PathBuf, process::Command};
 
 const CASES: &[(&str, bool, bool)] = &[

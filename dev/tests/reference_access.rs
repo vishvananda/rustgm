@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{body, borrow::ownership};
 
 const PENDING: &str = "reference expression execution requires region and loan proofs";

@@ -1,6 +1,5 @@
 //! Canonical projections preserve inputs without granting properties of their unknown result.
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 use rustgm::{
     abi::layout::Layouts,
     types::{

@@ -1,6 +1,5 @@
 //! Test-only observers check actual native cleanup order after successful lowering.
-#[path = "helpers/cleanup_lowering.rs"]
-mod lowering;
+use crate::cleanup_lowering as lowering;
 use rustgm::lowir::{
     builder::Builder,
     data::{GlobalId, Item},

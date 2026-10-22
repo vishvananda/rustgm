@@ -1,10 +1,7 @@
 //! Hidden references require capture, borrow and execution proofs in their defining body.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 
 const VALUE: &str =
     "trait Value{fn value(&self)->u8;}impl<'a>Value for &'a u8{fn value(&self)->u8{**self}}";

@@ -1,3 +1,5 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     aggregate::Definitions,
@@ -10,10 +12,6 @@ use rustgm::types::{
     },
 };
 use std::sync::Arc;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 fn parameter(types: &mut Store, owner: u32) -> Result<(ParameterId, TypeId), &'static str> {
     let id = types.intern_parameter(Parameter {

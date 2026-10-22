@@ -1,8 +1,6 @@
 //! Const-function factories construct values without gaining variant promotion permissions.
-#[path = "helpers/qualify.rs"]
-mod independent;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
+use crate::qualify as independent;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, bool)] = &[
     ("runtime-u32", false),

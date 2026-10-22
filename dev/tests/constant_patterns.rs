@@ -267,10 +267,8 @@ const EXECUTED_CONSTANTS: &[(&str, &str, bool)] = &[
     ),
 ];
 
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::native_references as native;
+use crate::qualify as rustc;
 
 #[test]
 fn executed_constants_supply_patterns() -> Result<(), Box<dyn std::error::Error>> {

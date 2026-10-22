@@ -1,14 +1,9 @@
 //! Counted copies preserve span proofs, snapshots and explicit byte-profile boundaries.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/counted_cases.rs"]
-mod declared;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::checked_sources as checked;
+use crate::counted_cases as declared;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::resolve as source;
 #[path = "counted_transfers/work.rs"]
 mod work;
 use std::path::Path;

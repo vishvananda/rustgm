@@ -1,8 +1,6 @@
 //! Deferred pattern values publish before any dependent checked CFG is captured.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::resolve as source;
 use rustgm::{pipeline, sema::model::Scalar};
 use std::{path::Path, process::Command};
 

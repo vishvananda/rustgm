@@ -1,10 +1,7 @@
 //! Array bounds and runtime const operands survive symbolic body proofs unchanged.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/template_check.rs"]
-mod template;
+use crate::qualify as rustc;
+use crate::semantic;
+use crate::template_check as template;
 use rustgm::{
     body::ir::{ProjectionKind, Rvalue},
     types::{Kind, TypeId, length::Length},

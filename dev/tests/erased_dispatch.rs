@@ -1,8 +1,6 @@
 //! Erased callables preserve dynamic targets, reference prefixes and the Rust ABI.
-#[path = "harness/checked_sources.rs"]
-mod checked_sources;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::checked_sources;
+use crate::native_references as native;
 use std::path::PathBuf;
 
 const CASES: &[&str] = &[

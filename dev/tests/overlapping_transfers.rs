@@ -1,16 +1,11 @@
 //! Overlapping transfers snapshot typed storage and retain explicit byte-profile boundaries.
 #[path = "overlapping_transfers/backend.rs"]
 mod backend;
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/counted_cases.rs"]
-mod declared;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::checked_sources as checked;
+use crate::counted_cases as declared;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::resolve as source;
 #[path = "overlapping_transfers/work.rs"]
 mod work;
 use std::path::Path;

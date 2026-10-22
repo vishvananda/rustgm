@@ -1,16 +1,11 @@
 //! U32 extrema retain safe runtime-only calls and unsigned CAS-loop semantics.
-#[path = "harness/checked_sources.rs"]
-mod checked;
+use crate::checked_sources as checked;
 #[path = "extremum_atomics/interference.rs"]
 mod interference;
-#[path = "harness/bitwise_loops.rs"]
-mod loops;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::bitwise_loops as loops;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 use std::path::Path;
 const CASES: &[(&str, i32, [i32; 3], &str)] = &[
     ("fetch_min-relaxed", 0, [0, 0, 0], ""),

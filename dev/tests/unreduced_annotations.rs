@@ -1,10 +1,7 @@
 //! Declaration constraints retain original projections while executable facts use normal forms.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     resolve::{
         expansion::Report,

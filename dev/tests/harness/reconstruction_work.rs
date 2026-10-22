@@ -1,8 +1,6 @@
 //! Paired ordinary/raw reference workloads enforce bounded work and storage overhead.
-#[path = "../helpers/qualify.rs"]
-pub(super) mod rustc;
-#[path = "../helpers/resolve.rs"]
-pub(super) mod source;
+pub(super) use crate::qualify as rustc;
+pub(super) use crate::resolve as source;
 pub fn compare(
     suite: &str,
     input: impl Fn(bool, usize) -> String,

@@ -1,10 +1,7 @@
 //! Projection inputs come from validated headers, never associated result matching.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 const CASES: &[(&str, &str, bool)] = &[
     (
         "captured-input-established-by-callable",

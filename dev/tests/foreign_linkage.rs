@@ -1,9 +1,7 @@
 //! Exact linkage retains language identities, root bodies and spelling boundaries.
-#[path = "harness/foreign_frontend.rs"]
-mod frontend;
+use crate::foreign_frontend as frontend;
 #[cfg(feature = "object-interop-tests")]
-#[path = "harness/host_objects.rs"]
-mod objects;
+use crate::host_objects as objects;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, bool, bool)] = &[
     ("tests/spec/linkage/no-mangle.rs", true, true),

@@ -1,6 +1,5 @@
 //! Declaration eligibility is shared across uses and never substitutes whole fields.
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::types::{
     ItemId, Kind, Primitive, Store, TypeId,
     aggregate::{self, Definitions, Repr, Variant},

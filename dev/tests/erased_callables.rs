@@ -1,6 +1,5 @@
 //! Object callable context supplies signatures while ordinary proofs retain authority.
-#[path = "harness/checked_sources.rs"]
-mod checked_sources;
+use crate::checked_sources;
 use std::path::PathBuf;
 
 const CASES: &[(&str, i32, i32, &str)] = &[

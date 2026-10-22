@@ -1,10 +1,7 @@
 //! Canonical volatile calls keep unsafe permission, const eligibility and effects separate.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::semantic;
+use crate::source_cases as source;
 
 const CASES: &[(&str, bool, &str)] = &[
     (

@@ -1,3 +1,5 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{
         self,
@@ -6,10 +8,6 @@ use rustgm::{
     },
     borrow::ownership::initialization::{self, Cause, Event, Status},
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 const PREFIX: &str =
     "fn trace(_:u8){}struct D(u8);impl Drop for D{fn drop(&mut self){trace(self.0);}}";

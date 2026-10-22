@@ -1,6 +1,5 @@
 //! Storage recursion is about owned parameter flow, not repeated item names or all arguments.
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, Store, TypeId,
     aggregate::{

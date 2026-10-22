@@ -1,8 +1,6 @@
 //! Atomic RMW returns the old value and keeps runtime effects through reification.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::semantic;
 use std::{path::PathBuf, process::Command};
 const CASES: &[(&str, i32, i32)] = &[
     ("swap-orders", 0, 0),

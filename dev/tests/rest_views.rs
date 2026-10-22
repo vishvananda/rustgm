@@ -1,14 +1,9 @@
 //! Rest projections preserve storage identity while owned snapshots stay independent.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod qualify;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::checked_sources as checked;
+use crate::native_references as native;
+use crate::qualify;
+use crate::resolve as source;
+use crate::semantic;
 use std::path::Path;
 
 #[test]

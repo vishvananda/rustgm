@@ -1,12 +1,6 @@
 //! Lexical type inputs remain separate from the typed uses that authorize captures.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-#[expect(
-    dead_code,
-    reason = "this lane checks resolution before semantic inference"
-)]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     resolve::model::{DefId, Resolution, Scope, ScopeId},
     sema::closures::imports::Imports,

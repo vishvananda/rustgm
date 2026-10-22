@@ -1,10 +1,7 @@
 //! Symbolic promotion eligibility is independent of concrete constant materialization.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/template_check.rs"]
-mod template;
+use crate::qualify as rustc;
+use crate::semantic;
+use crate::template_check as template;
 use rustgm::{body, borrow, types::copy::Copies};
 
 const CASES: &[(&str, bool, &str)] = &[

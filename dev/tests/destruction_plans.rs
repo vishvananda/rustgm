@@ -1,3 +1,5 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{
         self,
@@ -12,10 +14,6 @@ use rustgm::{
     },
     resolve::expansion::Report,
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 const D: &str = "struct D;impl Drop for D{fn drop(&mut self){}}";
 fn local(body: &Body, report: &Report, name: &str) -> Result<LocalId, &'static str> {

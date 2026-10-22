@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::Definitions,

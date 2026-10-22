@@ -1,8 +1,6 @@
 //! Environment expansion retains nominal identity and explicit provider snapshots.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::native_references as native;
+use crate::qualify as rustc;
 use rustgm::{
     expand::config::Config,
     resolve::{

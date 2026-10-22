@@ -1,10 +1,9 @@
+use crate::semantic;
 use rustgm::types::infer::FreshRegions;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     infer::{Constructor, Context, Domain, Error},
 };
-#[path = "support/semantic.rs"]
-mod semantic;
 
 #[test]
 fn unused_lifetime_obligations_cannot_bypass_the_executable_proof_gate()

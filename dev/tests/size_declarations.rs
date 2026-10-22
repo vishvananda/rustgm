@@ -1,8 +1,6 @@
 //! Independently qualified declarations exercise early size queries through real source.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use std::fmt::Write as _;
 
 #[test]

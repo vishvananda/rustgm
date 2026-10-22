@@ -1,8 +1,6 @@
 //! A wildcard retains type liveness without observing initialization or consuming a value.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 
 #[test]
 fn wildcard_lifetimes_match_pinned_rust() -> Result<(), Box<dyn std::error::Error>> {

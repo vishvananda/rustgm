@@ -1,14 +1,7 @@
 //! Hidden lifetime closure consumes each demanded definition's actual CFG and borrow proof.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[expect(
-    dead_code,
-    reason = "this suite uses resolution but routes body inference through the defining-proof pipeline"
-)]
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 type ResultTest<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const CASES: &[(&str, &str, bool)] = &[
     (

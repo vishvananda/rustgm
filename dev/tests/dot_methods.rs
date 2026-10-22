@@ -1,10 +1,7 @@
 //! Receiver calls retain selected callable identity, source evaluation and ownership proofs.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::resolve::model::{DefId, DefKind};
 const ACCEPT: &[(&str, &str, bool)] = &[
     (

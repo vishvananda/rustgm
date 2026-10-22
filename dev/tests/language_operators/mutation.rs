@@ -1,7 +1,6 @@
 //! Mutable indexing uses canonical inherited output and ordinary selected calls.
-#[path = "../harness/foreign_frontend.rs"]
-pub(super) mod frontend;
 use super::native;
+pub(super) use crate::foreign_frontend as frontend;
 use std::{
     path::{Path, PathBuf},
     process::Command,

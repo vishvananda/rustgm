@@ -1,12 +1,10 @@
 //! Captured object conversions retain per-use proofs and select sealed native bodies.
-#[path = "harness/checked_sources.rs"]
-mod checked;
+use crate::checked_sources as checked;
 #[path = "captured_dispatch/truncation.rs"]
 mod formation_truncation;
 #[path = "captured_dispatch/incoming.rs"]
 mod incoming;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "captured_dispatch/quantifiers.rs"]
 mod quantifiers;
 #[path = "captured_dispatch/referenced_self.rs"]

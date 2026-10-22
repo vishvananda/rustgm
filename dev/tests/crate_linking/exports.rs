@@ -1,6 +1,5 @@
 //! Scalar metadata and generated private names share one checked library pipeline.
-#[path = "../helpers/resolve.rs"]
-mod source;
+use crate::resolve as source;
 use rustgm::{
     lower,
     support::crates::{self, CrateIdentity, Symbol},

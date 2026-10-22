@@ -1,9 +1,7 @@
 //! C objects retain canonical classes across imports, exports and callbacks.
-#[path = "harness/foreign_frontend.rs"]
-mod frontend;
+use crate::foreign_frontend as frontend;
 #[cfg(feature = "object-interop-tests")]
-#[path = "harness/host_objects.rs"]
-mod objects;
+use crate::host_objects as objects;
 use std::path::Path;
 #[test]
 fn aggregate_profile_has_explicit_language_and_implementation_boundaries()

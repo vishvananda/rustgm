@@ -1,14 +1,11 @@
 //! The PA19 inspection view reports selection while preserving later proof boundaries.
 #[path = "semantic_view/generics.rs"]
 mod generics;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "semantic_view/relationships.rs"]
 mod relationships;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::sema::semantic_view;
 use std::io::{self, Write};
 use std::process::{Command, Output, Stdio};

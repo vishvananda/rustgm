@@ -1,5 +1,4 @@
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 use rustgm::{
     abi::layout::Layouts,
     types::{

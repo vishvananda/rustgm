@@ -1,9 +1,6 @@
-#[path = "helpers/destructor_cases.rs"]
-mod cases;
-#[path = "helpers/cleanup_lowering.rs"]
-mod lowering;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::cleanup_lowering as lowering;
+use crate::destructor_cases as cases;
+use crate::qualify as rustc;
 use std::{
     path::Path,
     process::{Command, Output},

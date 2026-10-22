@@ -1,8 +1,6 @@
 //! Raw addresses check the selected place without acquiring a lasting loan.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::source_cases as source;
 
 const CASES: &[(&str, bool, &str)] = &[
     (

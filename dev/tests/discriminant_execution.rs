@@ -1,12 +1,9 @@
 //! Enum values resume checked const bodies without publishing provisional tags.
-#[path = "harness/checked_sources.rs"]
-mod checked_sources;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::checked_sources;
+use crate::native_references as native;
+use crate::resolve as source;
 #[path = "discriminant_execution/reached.rs"]
 mod reached;
-#[path = "helpers/resolve.rs"]
-mod source;
 use std::{path::Path, process::Command};
 
 const CASES: &[(&str, &str, bool)] = &[

@@ -1,8 +1,6 @@
 //! Explicit pointer casts retain metadata while allowing raw pointee reinterpretation.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::source_cases as source;
 const CASES: &[(&str, bool, &str)] = &[
     (
         "raw-pointer-cast",

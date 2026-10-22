@@ -1,8 +1,6 @@
 //! Early declaration constants require complete nominal facts and exact destructor owners.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use std::fmt::Write as _;
 
 #[test]

@@ -1,10 +1,7 @@
 //! Unaligned pointer transfers retain ownership and every non-alignment raw check.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "harness/reconstruction_work.rs"]
-mod work;
+use crate::checked_sources as checked;
+use crate::native_references as native;
+use crate::reconstruction_work as work;
 use std::path::Path;
 const CASES: &[(&str, i32, [i32; 3], &str)] = &[
     ("packed-read", 0, [0; 3], ""),

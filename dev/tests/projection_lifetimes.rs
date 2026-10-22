@@ -1,10 +1,7 @@
 //! Scoped projection lifetimes retain independently qualified constraints through normalization.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 const ENVIRONMENT_ORDER: &str = "trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=u8;}fn f<'a,'b,'c,T>(x:&'a T,y:&'b [T])where &'a T:Copy,&'b [T]:Copy{let _: <u8 as A<'c>>::Out=7u8;}fn main(){}";
 const CASES: &[(&str, &str, bool)] = &[
     ("environment-order", ENVIRONMENT_ORDER, true),

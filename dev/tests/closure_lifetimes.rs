@@ -1,8 +1,6 @@
 //! Closure input universality and inferred captured lifetimes have distinct contracts.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 const CASES: &[(&str, &str, bool)] = &[
     (
         "annotated-read",
@@ -59,8 +57,7 @@ fn closure_interfaces_require_their_own_lifetime_proof() {
     }
 }
 
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 const CONTEXTUAL_CASES: &[(&str, &str, bool)] = &[
     (
         "partial-input-hole",

@@ -1,6 +1,5 @@
 //! PA22 native controls distinguish semantic size proofs from physical metadata.
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 
 #[test]
 #[ignore = "requires the qualified CPPGM native backend"]

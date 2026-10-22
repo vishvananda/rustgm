@@ -1,8 +1,6 @@
 //! A bound reference lifetime cannot erase its referent from a projected input.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 const CASES: &[(&str, &str, bool)] = &[
     (
         "opaque-fn-input",

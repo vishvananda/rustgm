@@ -1,10 +1,7 @@
 //! Canonical `AtomicU32` storage composes with ordinary ownership and constant validity.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::semantic;
+use crate::source_cases as source;
 const CASES: &[(&str, bool, &str)] = &[
     ("new", true, "spec/atomic-storage/new.rs"),
     ("alias-new", true, "spec/atomic-storage/alias-new.rs"),

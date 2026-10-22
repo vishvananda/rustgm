@@ -1,10 +1,7 @@
 //! Trait overrides establish their existential result contract without identity equality.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 
 const CONFORMANCE: &[(&str, &str, bool)] = &[
     (

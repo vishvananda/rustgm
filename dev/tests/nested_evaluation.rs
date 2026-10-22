@@ -1,12 +1,9 @@
 //! Inline constants retain independent bodies while their results refine caller types.
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "nested_evaluation/output.rs"]
 mod output;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::qualify as rustc;
+use crate::resolve as source;
 #[path = "nested_evaluation/specialized.rs"]
 mod specialized;
 #[path = "nested_evaluation/written.rs"]

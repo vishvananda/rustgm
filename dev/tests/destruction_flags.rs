@@ -1,3 +1,5 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{
         self,
@@ -10,10 +12,6 @@ use rustgm::{
     },
 };
 use std::collections::{HashMap, VecDeque};
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 // Interpret only emitted flag stores. No body statement, move rule, ownership
 // path or cleanup clearing rule is used to reconstruct a missing write.

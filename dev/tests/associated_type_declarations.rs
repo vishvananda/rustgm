@@ -1,10 +1,7 @@
 //! PA20 declaration controls have independently declared language outcomes.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     resolve::model::{DefId, DefKind},
     types::{ItemId, Kind, Primitive, TypeId, parameters::predicates::Bound},

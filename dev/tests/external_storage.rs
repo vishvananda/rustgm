@@ -1,9 +1,7 @@
 //! Foreign storage retains canonical identity, safety and real declaration state.
-#[path = "harness/foreign_frontend.rs"]
-mod frontend;
+use crate::foreign_frontend as frontend;
 #[cfg(feature = "object-interop-tests")]
-#[path = "harness/host_objects.rs"]
-mod objects;
+use crate::host_objects as objects;
 use std::{
     path::{Path, PathBuf},
     process::Command,

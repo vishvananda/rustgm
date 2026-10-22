@@ -1,10 +1,7 @@
 //! Generic Drop conformance and inherited method proofs use independently declared outcomes.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/template_check.rs"]
-mod template;
+use crate::qualify as rustc;
+use crate::semantic;
+use crate::template_check as template;
 
 #[test]
 fn implicit_field_receivers_are_ready_before_generic_body_proofs()

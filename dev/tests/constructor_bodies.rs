@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{body, borrow, lower, sema};
 
 fn lower(source: &str) -> Result<rustgm::lowir::program::Program, String> {
@@ -54,8 +53,7 @@ fn callable_constructor_execution_keeps_its_explicit_instance_boundary() {
     }
 }
 
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[test]
 #[ignore = "requires the qualified CPPGM LowIR-to-native backend"]
 fn closed_record_instances_match_independent_native_execution()

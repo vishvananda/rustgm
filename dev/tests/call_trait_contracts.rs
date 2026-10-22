@@ -1,10 +1,7 @@
 //! Call bounds retain ordinary trait proof, distinct identities and scoped Output equalities.
-#[path = "helpers/resolve.rs"]
-mod names;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::resolve as names;
+use crate::semantic;
 use rustgm::{
     resolve::model::{BuiltinTrait, DefKind, Target},
     support::call_traits::CallTrait,

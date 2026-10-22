@@ -1,8 +1,6 @@
 //! Constant layout demands must publish final enum tags before caching byte layouts.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{abi::layout::Shape, types::Primitive};
 use std::fmt::Write as _;
 

@@ -1,7 +1,6 @@
 //! Source binders preserve the identities consumed by scoped proof queries.
-#[path = "../support/semantic.rs"]
-mod semantic;
 use super::{TestResult, rustc};
+use crate::semantic;
 use rustgm::{
     sema::model::Declarations,
     types::{

@@ -1,6 +1,5 @@
 //! Const permission follows selected declarations, even in unused and dead code.
-#[path = "helpers/source_cases.rs"]
-mod source_cases;
+use crate::source_cases;
 
 const CASES: &[(&str, bool, &str)] = &[
     ("scalar", true, "const fn f(x:u32)->u32{x+1}"),
@@ -232,8 +231,7 @@ fn const_destruction_uses_selected_cleanup() -> Result<(), Box<dyn std::error::E
     source_cases::check("const-functions-destruction", DESTRUCTION)
 }
 
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 
 #[test]
 #[ignore = "requires the qualified CPPGM backend"]

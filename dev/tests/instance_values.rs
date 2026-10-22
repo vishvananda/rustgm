@@ -1,8 +1,6 @@
 //! Callable values retain complete instance identities through constants and promotion.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     sema::values::{Evaluator, View},
     types::{Kind, instance::Instance},
@@ -81,8 +79,7 @@ fn promoted_function_values_retain_their_selected_arguments()
     Ok(())
 }
 
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[test]
 #[ignore = "requires the qualified CPPGM LowIR-to-native backend"]
 fn constructor_function_constants_reify_and_execute() -> Result<(), Box<dyn std::error::Error>> {

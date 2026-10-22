@@ -1,10 +1,7 @@
 //! Inspection consumes the checked entry-free pipeline and preserves symbolic backing.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::resolve as source;
 use rustgm::{
     lower::{
         constant_view::{self, Limits},

@@ -1,14 +1,11 @@
 //! Selected initializer bodies retain exact arguments and independent checked execution.
-#[path = "harness/checked_sources.rs"]
-mod checked_sources;
+use crate::checked_sources;
+use crate::native_references as native;
 #[path = "selected_initializers/computed.rs"]
 mod computed;
-#[path = "harness/native_references.rs"]
-mod native;
 #[path = "helpers/objects.rs"]
 mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::resolve as source;
 const CASES: &[(&str, bool)] = &[
     ("statements", true),
     ("shared-reference", true),

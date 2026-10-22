@@ -1,10 +1,7 @@
 //! Canonical atomics retain independent source lint, constant and runtime contracts.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::semantic;
+use crate::source_cases as source;
 const CASES: &[(&str, bool)] = &[
     ("load-store", true),
     ("variable-order", true),

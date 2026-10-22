@@ -1,5 +1,6 @@
-#[path = "helpers/destructor_cases.rs"]
-mod destructor_cases;
+use crate::destructor_cases;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body,
     borrow::{
@@ -10,10 +11,6 @@ use rustgm::{
     },
     types::{destruction::regions::Regions, outlives::LiveRegions},
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 fn check(source: &str) -> Result<(), Box<dyn std::error::Error>> {
     let (report, mut facts) = semantic::analyze(source)?;

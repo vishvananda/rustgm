@@ -1,10 +1,7 @@
 //! A closure inherits lexical unsafe permission; nested item bodies reset it.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 
 const CASES: &[(&str, &str, bool)] = &[
     (

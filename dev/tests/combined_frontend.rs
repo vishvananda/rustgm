@@ -1,10 +1,7 @@
 //! Parallel frontend features share body identities, demand readiness and cleanup facts.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::resolve as source;
 
 const CASES: &[(&str, &str, bool)] = &[
     (

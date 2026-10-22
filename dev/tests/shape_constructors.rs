@@ -1,13 +1,10 @@
 //! Early constants reuse ordinary mixed argument inference and declaration facts.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::types::{Kind, Primitive, TypeId};
 use std::fmt::Write as _;
 
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 
 #[test]
 #[ignore = "requires the qualified CPPGM LowIR-to-native backend"]
