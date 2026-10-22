@@ -6,8 +6,9 @@ caller/result work. The existing prerequisite is
 [member origins](pa29-member-origins.md); implementation must preserve real source
 and library nodes, and use `Origin::External(remapped_owner)` for imported fields.
 
-The first family transports closed nongeneric named records used by ordinary
-Rust function signatures. Fields may use supported scalars, other supported
+The first family transports closed nongeneric named records, including standalone
+public declarations and records used by ordinary Rust function signatures.
+Fields may use supported scalars, other supported
 records and static shared references. Default Rust representation only is a
 reasonable first family: unsupported representation attributes, generics,
 Drop/Copy/trait contracts, interior-mutability policies and unsupported field
@@ -18,7 +19,7 @@ records. References with early/late nominal parameters are a subsequent family.
 ## Typed wire boundary
 
 Preserve exact schema-one profile zero/one/two bytes. Introduce profile three
-only when a reachable named-record declaration is present; reject an empty
+only when an exported or reachable named-record declaration is present; reject an empty
 nominal profile and unknown tags. Header target/language/profile IDs keep their
 fixed meanings. Existing scalar values and signature lifetime slot rules remain
 unchanged, including unused signature binder slots and valid static outputs.
@@ -31,11 +32,11 @@ Proposed neutral records in `support::crates`:
 - `TypeNode::Record(RecordRef)`, retaining a compact copyable graph node.
 - A stable `ExternalKind::Record` tag, distinct from functions/constants.
 
-Resolve the exact table placement before implementation: current TypeGraph is
-signature-local, while record fields need reusable roots. Profile three can use
-one artifact-level type table with ordered function and field roots, leaving the
-older signature-local encodings intact. Bound slots remain interpreted against
-each function's declared binder; record field roots must contain static regions
+Profile three uses one artifact-owned type table with explicit per-function and
+per-field roots, leaving older signature-local encodings intact. Decode and import
+retain shared graph storage; they must not copy the whole table per signature.
+Validate bound slots for each function root against its complete declared binder,
+including retained unused slots; record field roots must contain static regions
 only. Record nodes are leaves in the type graph. A separate by-value nominal
 edge check rejects impossible storage cycles; reference edges must not be
 mistaken for by-value recursion. All definition identities are sorted by their
@@ -64,7 +65,9 @@ aggregate/layout preparation once per nominal. Do not reconstruct annotations,
 parse source, allocate fake constructor functions or create initializer bodies.
 
 Export planning consumes completed typed member/layout facts after the existing
-original/template proof boundary. It must check every reachable nominal's
+original/template proof boundary. Standalone public records are export roots even
+when no function signature names them. Reachable private layout identities remain
+private. Planning must check every exported or reachable nominal's
 semantic and representation contracts before producing metadata. Function import
 continues through the canonical foreign Registry with its exact signature,
 safety, Rust naming/import policy and ordinary shared lowering. No separate
