@@ -46,8 +46,9 @@ large values, padding and Drop. Draft outcomes are in
 `tests/aggregate-outcomes.json`; see `docs/pa30-aggregate-abi.md` for the profile
 and explicit boundaries. Variadic calls and static/aggregate crate-metadata
 transport remain unfinished. The reviewed optional object backend
-profile is selected explicitly; its native tests use the test-only
-`object-interop-tests` Cargo feature and fail if the profile is missing. PA30's
+profile is selected explicitly; its native tests are always registered and run
+with `--ignored` through the grouped maintainer suites. They fail if the profile
+is missing. PA30's
 release target and CI must configure that profile and run those tests before
 activation. See `docs/pa30-import-checkpoint.md` and
 `docs/pa30-callable-checkpoint.md` for qualification and remaining boundaries.
