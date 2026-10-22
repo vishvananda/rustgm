@@ -10,7 +10,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
     ("one-shared", 1, 1, "derived from a shared reference"),
     ("zero-static", 0, 0, ""),
     ("one-static", 1, 1, "cannot write static storage"),
-    ("zst-max-count", 0, 1, "missing value resolution"),
+    ("zst-max-count", 0, 0, ""),
     (
         "zst-null",
         0,
@@ -29,7 +29,12 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         1,
         "constant counted numeric pointer access is not implemented",
     ),
-    ("numeric-zst", 0, 1, "missing value resolution"),
+    (
+        "numeric-zst",
+        0,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
     (
         "numeric-misaligned-zero",
         0,
@@ -43,8 +48,13 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "constant counted pointer is unaligned",
     ),
     ("packed-base-zero", 0, 0, ""),
-    ("zst-expired", 0, 1, "missing value resolution"),
-    ("count-overflow", 1, 1, "missing value resolution"),
+    ("zst-expired", 0, 0, ""),
+    (
+        "count-overflow",
+        1,
+        1,
+        "constant fill byte count exceeds allocation size",
+    ),
     ("out-of-bounds", 1, 1, "constant counted transfer exceeds"),
     ("byte-scalar", 0, 0, ""),
     ("invalid-bool-transport", 0, 0, ""),

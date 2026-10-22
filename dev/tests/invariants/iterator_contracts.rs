@@ -198,7 +198,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    assert_eq!(size_of::<Declarations>(), 8424);
+    // Named static imports add one 48-byte linkage map to the iterator baseline.
+    assert_eq!(size_of::<Declarations>(), 8472);
     assert_eq!(size_of::<Original>(), 56);
     assert_eq!(size_of::<crate::sema::iteration::Registry>(), 304);
     assert_eq!(size_of::<body::ir::Value>(), 24);

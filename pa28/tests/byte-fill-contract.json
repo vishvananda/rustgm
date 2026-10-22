@@ -92,13 +92,13 @@
       "path": "pa28/tests/spec/byte-fill/zst-max-count.rs",
       "sha256": "64dba0b77d4c9f1780272f00990e4c1e0f6e2b6e99c0781ac01af65448098169",
       "rustc_expected": 0,
-      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "profile": "Zero effective bytes from a live aligned unit pointer, including canonical usize::MAX.",
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "diagnostic_contains": "missing value resolution"
+      "diagnostic_contains": ""
     },
     {
       "name": "zst-null",
@@ -144,13 +144,13 @@
       "path": "pa28/tests/spec/byte-fill/numeric-zst.rs",
       "sha256": "72adb86396671096f1dc3f3c566617fb301ae7ef67cf6f486a39505f7327be70",
       "rustc_expected": 0,
-      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "profile": "MAX lookup completes; numeric pointer memory profile remains required work.",
       "frontend_expected": [
         1,
         1,
         1
       ],
-      "diagnostic_contains": "missing value resolution"
+      "diagnostic_contains": "constant counted numeric pointer access is not implemented"
     },
     {
       "name": "numeric-misaligned-zero",
@@ -200,26 +200,26 @@
       "path": "pa28/tests/spec/byte-fill/zst-expired.rs",
       "sha256": "28428dc7ce077e57d2da9ccfaa71fc7d78d330e1bf8441e48b1eab420df4a64f",
       "rustc_expected": 0,
-      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "profile": "Zero effective bytes do not dereference expired storage; transient CTFE control, no native claim.",
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "diagnostic_contains": "missing value resolution"
+      "diagnostic_contains": ""
     },
     {
       "name": "count-overflow",
       "path": "pa28/tests/spec/byte-fill/count-overflow.rs",
       "sha256": "8aa9700f07ff854875cd21b1fe94ba7dbf3902491f8885bb817fbcbe237812e6",
       "rustc_expected": 1,
-      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "profile": "MAX lookup completes; multiplication is rejected by the counted fill byte-size check.",
       "frontend_expected": [
         1,
         1,
         1
       ],
-      "diagnostic_contains": "missing value resolution"
+      "diagnostic_contains": "constant fill byte count exceeds allocation size"
     },
     {
       "name": "out-of-bounds",

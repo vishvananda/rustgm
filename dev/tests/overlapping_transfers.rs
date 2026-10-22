@@ -15,12 +15,7 @@ const ADDITIONAL: &[(&str, i32, i32, &str)] = &[
     ("identical", 0, 0, ""),
     ("aggregate-overlap", 0, 0, ""),
     ("nested-rest-overlap", 0, 0, ""),
-    (
-        "intra-object-profile",
-        0,
-        1,
-        "constant counted pointer reinterpretation is not implemented",
-    ),
+    ("intra-object-profile", 0, 0, ""),
     ("invalid-byte-profile", 0, 0, ""),
     ("invalid-byte-demand", 1, 1, "invalid bool representation"),
     ("local-copy-shadow", 0, 0, ""),
