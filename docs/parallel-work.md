@@ -23,6 +23,14 @@ retains unsafe capture replay, so changes to shared body enums must be coordinat
 before editing them. The integrator owns combined qualification, reviewed text
 oracles, assignment activation and public pushes to main.
 
+The integrator also develops PA29's closed named-record metadata family in the
+isolated `rustgm-pa29-work` checkout while Worker A completes PA25 caller
+transport. Worker A's later PA29 work must coordinate with that checkpoint;
+generic bodies and broader crate contracts remain required. Worker B may prepare
+and independently qualify PA30 source fixtures while a coherent PA26 checkpoint
+awaits integration. This preparation uses the same resource limits and does not
+activate either assignment or change the backend contract.
+
 The course release order remains cumulative. Future work can be developed
 without marking an unfinished prerequisite or assignment active. A worker
 moves to its queued assignment after the integrator accepts its checkpoint;

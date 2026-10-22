@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait C{type Out;fn get(x:Self)->Self::Out;}impl C for u8{type Out=u16;fn get(x:u8)->u16{x as u16}}fn main(){let r:u16=<_ as C>::get(73u8);check(r==73);}

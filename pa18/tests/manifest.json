@@ -6971,6 +6971,352 @@
         "emit": "obj"
       },
       "maintainer_origin": "PA18 lifetime identity in composite builtin bounds"
+    },
+    {
+      "path": "tests/spec/call-argument-context/unconstrained-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/two-items-no-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/item-before-pointer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/pointer-before-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/two-items-result-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/item-before-pointer-block.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/pointer-block-before-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/ordinary-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/generic-const-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/once-side-effect.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/reified-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/reified-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/constructor-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/unit-not-callable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/unit-effect-only.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/unpaid-static-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/crossed-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/distinct-const-applications.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/wrong-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/distinct-items-no-coercion.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "mode": "--emit-lowir"
     }
   ]
 }

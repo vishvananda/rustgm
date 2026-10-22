@@ -1,0 +1,41 @@
+{
+  "status": "planned; independently qualified candidate cases, not an active grading contract",
+  "cases": [
+    {
+      "path": "tests/spec/call-argument-context/forward-constant-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/header-suspension.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    }
+  ]
+}

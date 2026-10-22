@@ -86,7 +86,7 @@ impl-method owner=16 declaration=15 selected=17 default=false
 trait-path source=0:88 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=0:81
 implementation-use source=0:88 owner=16 arguments=[type:29]
 region-var region:1 body=0:95 source=0:94 origin=call-argument pending
-region-var region:2 body=0:95 source=0:93 origin=universal-alias pending
+region-var region:2 body=0:95 source=0:90 origin=universal-alias pending
 region-equal body=0:95 left=region:2 right=bound:0:0
 region-coercion body=0:95 source=0:90 actual=30 expected=39 kind=same-shape pending
 eof owners=2 members=2 parameters=4 predicates=2 impls=1 calls=0 paths=1 impl-uses=1

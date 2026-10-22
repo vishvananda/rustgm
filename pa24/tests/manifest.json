@@ -8444,6 +8444,62 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/returned-items/empty-closure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/captured-closure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/multiple-call-inputs.rs",
+      "mode": "--emit-lowir",
+      "input": "file",
+      "source_sha256": "fcc0ccb744fc1a1b9809a0cba8545a907d9fb436d06fba81f92b9a2ab03b204f",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closures"
+      ],
+      "native": {
+        "kind": "codegen",
+        "reason": "The empty entrypoint does not exercise the generic body; this control checks its validity without claiming runtime coverage."
+      }
     }
   ]
 }

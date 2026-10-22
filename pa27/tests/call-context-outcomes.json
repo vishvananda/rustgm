@@ -1,0 +1,69 @@
+{
+  "status": "planned; independently qualified candidate cases, not an active grading contract",
+  "cases": [
+    {
+      "path": "tests/spec/call-argument-context/unsafe-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/weakened-safe-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/unsafe-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/returned-items/unsafe-without-block.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.returned-items"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/call_inference/returned.rs",
+      "mode": "--emit-lowir"
+    }
+  ]
+}

@@ -11913,6 +11913,78 @@
       },
       "maintainer_origin": "dev/tests/return_regions.rs:REJECTED",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/ordinary-generic-free.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/result-rhs-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/generic-free-first-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/call-argument-context/competing-result-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/argument_expectations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "mode": "--emit-lowir"
     }
   ]
 }

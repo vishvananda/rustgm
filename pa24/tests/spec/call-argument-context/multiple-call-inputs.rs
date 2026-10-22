@@ -1,0 +1,1 @@
+fn apply<F:Fn(u8)->u8+Fn(u16)->u16>(f:F)->u8{f(7u8)}fn main(){}

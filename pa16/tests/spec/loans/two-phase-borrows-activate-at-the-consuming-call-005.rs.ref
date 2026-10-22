@@ -6,8 +6,8 @@ body 1 source=0:39
   place p1 root=l0 parent=p0 dereference mutable=true shared=false
   place p2 root=l1 shared=false
   place p3 root=l1 parent=p2 dereference mutable=false shared=true
-  loan q0 borrow=v1 place=p1 region=g6 kind=two-phase
-  loan q1 borrow=v3 place=p1 region=g4 kind=shared
+  loan q0 borrow=v1 place=p1 region=g4 kind=two-phase
+  loan q1 borrow=v3 place=p1 region=g5 kind=shared
   point t0 block=b0 at=s0 reachable=true
   point t1 block=b0 at=s1 reachable=true
   point t2 block=b0 at=s2 reachable=true
@@ -30,9 +30,9 @@ body 1 source=0:39
   live-region g0 word=0 bits=000000000007ffff
   live-region g2 word=0 bits=000000000007ffff
   live-region g3 word=0 bits=0000000000007fe0
-  live-region g4 word=0 bits=0000000000001fc0
-  live-region g5 word=0 bits=0000000000001f00
-  live-region g6 word=0 bits=0000000000007ff8
+  live-region g4 word=0 bits=0000000000007ff8
+  live-region g5 word=0 bits=0000000000001fc0
+  live-region g6 word=0 bits=0000000000001f00
   state t4 word=0 live=0000000000000001 activated=0000000000000000
   state t5 word=0 live=0000000000000001 activated=0000000000000000
   state t6 word=0 live=0000000000000001 activated=0000000000000000

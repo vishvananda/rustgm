@@ -1,0 +1,18 @@
+function @rg.20() -> void {
+  block ^b0:
+    %t0 = call u16 @rg.19(73)
+    return void
+}
+function @rg.19(%p0 : u8) -> u16 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = convert zext u16 u8 %t0
+    return u16 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.20()
+    return i64 0
+}
