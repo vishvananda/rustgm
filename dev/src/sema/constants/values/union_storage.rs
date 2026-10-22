@@ -12,8 +12,23 @@ pub struct ImageView<'a> {
     pub bytes: &'a [u8],
     /// Bit i (least significant first) describes byte i, independently of payload bits.
     pub initialized: &'a [u64],
+    /// Symbolic bytes are initialized independently of their unavailable numeric bits.
+    pub fragments: &'a [super::ImageFragment],
 }
-impl ImageView<'_> {
+impl<'a> ImageView<'a> {
+    /// Final constants can retain whole symbolic words, never transient fragments.
+    /// # Errors
+    /// Rejects partial or misordered provenance in published immutable storage.
+    pub fn complete_words(self) -> Result<&'a [super::ImageFragment], &'static str> {
+        if self
+            .fragments
+            .iter()
+            .any(|fragment| fragment.source_offset != 0 || fragment.length != 8)
+        {
+            return Err("constant image contains partial or misordered pointer provenance");
+        }
+        Ok(self.fragments)
+    }
     #[must_use]
     pub fn initialized(self, index: usize) -> bool {
         index < self.bytes.len()
@@ -24,6 +39,20 @@ impl ImageView<'_> {
     }
 }
 impl<'a> Reader<'a> {
+    pub(crate) fn has_image_families(self) -> bool {
+        self.facts
+            .constant_images
+            .as_ref()
+            .is_some_and(|arena| !arena.families.is_empty())
+    }
+    pub(crate) fn scalar_union(self, ty: TypeId) -> Result<bool, &'static str> {
+        self.facts
+            .constant_images
+            .as_ref()
+            .and_then(|arena| arena.families.get(&ty))
+            .map(|family| family.scalar)
+            .ok_or("union image requires a prepared family")
+    }
     /// Read immutable typed byte storage without exposing arena identity.
     /// # Errors
     /// Rejects non-images and malformed internal storage.
@@ -41,6 +70,7 @@ impl<'a> Reader<'a> {
             ty: image.ty,
             bytes: &image.bytes,
             initialized: &image.initialized,
+            fragments: &image.fragments,
         })
     }
 }
@@ -76,16 +106,12 @@ impl Evaluator<'_> {
             .list(fields)
             .ok_or("missing scalar union field list")?;
         let count = types.len();
+        let scalar = types.iter().all(|&ty| matches!(facts.types.kind(ty), Some(Kind::Primitive(p)) if images::scalars::width(p).is_ok()));
         let mut work = count
             .checked_mul(2)
             .and_then(|n| n.checked_add(1))
             .filter(|n| *n <= limit)
             .ok_or("constant union image work budget exceeded")?;
-        for &field in types {
-            if !matches!(facts.types.kind(field), Some(Kind::Primitive(p)) if p != Primitive::Str) {
-                return Err("constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented".into());
-            }
-        }
         let [member] = facts.members.variants(item) else {
             return Err("union storage requires one declaration field group".into());
         };
@@ -113,33 +139,31 @@ impl Evaluator<'_> {
         let facts = &mut *self.queries.typing.facts;
         let arena = facts.constant_images.get_or_insert_with(Default::default);
         arena.reserve_family(count)?;
-        let mut primitives = Vec::with_capacity(count);
+        let mut stored = Vec::with_capacity(count);
         for &ty in facts
             .types
             .list(fields)
             .ok_or("missing scalar union fields")?
         {
-            let Some(Kind::Primitive(primitive)) = facts.types.kind(ty) else {
-                return Err("union field changed after preparation".into());
-            };
-            primitives.push(primitive);
+            stored.push(ty);
         }
         arena.families.insert(
             ty,
             Family {
                 start,
                 size,
-                fields: primitives.into_boxed_slice(),
+                scalar,
+                fields: stored.into_boxed_slice(),
             },
         );
         Ok(work)
     }
-    fn union_field(
+    pub(crate) fn union_field_type(
         &mut self,
         ty: TypeId,
         field: Selection,
         limit: usize,
-    ) -> Result<(Primitive, usize, usize), Failure> {
+    ) -> Result<(TypeId, usize, usize), Failure> {
         let work = self.prepare_union(ty, limit)?;
         let family = self
             .facts()
@@ -154,11 +178,25 @@ impl Evaluator<'_> {
             .0
             .checked_sub(family.start)
             .ok_or("union field has a different owner")?;
-        let primitive = *family
+        let ty = *family
             .fields
             .get(index as usize)
             .ok_or("union field has a different owner")?;
-        Ok((primitive, family.size, work))
+        Ok((ty, family.size, work))
+    }
+    fn union_field(
+        &mut self,
+        ty: TypeId,
+        field: Selection,
+        limit: usize,
+    ) -> Result<(Primitive, usize, usize), Failure> {
+        let (ty, size, work) = self.union_field_type(ty, field, limit)?;
+        let Some(Kind::Primitive(primitive)) = self.facts().types.kind(ty) else {
+            return Err(
+                "constant nonprimitive union access requires checked byte execution".into(),
+            );
+        };
+        Ok((primitive, size, work))
     }
     pub(crate) fn union_address(
         &mut self,
@@ -173,7 +211,7 @@ impl Evaluator<'_> {
         if Reader::new(self.facts()).location(location)?.ty != owner {
             return Err("constant union address differs from its canonical owner".into());
         }
-        let (primitive, _, work) = self.union_field(owner, field, limit)?;
+        let (ty, _, work) = self.union_field_type(owner, field, limit)?;
         let Selection::Nominal(field) = field else {
             return Err("union address requires a nominal field".into());
         };
@@ -186,7 +224,7 @@ impl Evaluator<'_> {
             .checked_add(1)
             .filter(|&work| work <= limit)
             .ok_or("constant union address work budget exceeded")?;
-        let value = self.projection(base, u64::from(index), TypeId::primitive(primitive))?;
+        let value = self.projection(base, u64::from(index), ty)?;
         Ok((value, work))
     }
     pub(crate) fn union_value(
@@ -238,7 +276,36 @@ impl Evaluator<'_> {
             .constant_images
             .as_mut()
             .ok_or("missing union image arena")?;
-        arena.reserve_image(size)?;
+        let fragment_count = if let Some(Constant(Value::Image(id))) = prior {
+            arena.get(id)?.fragments.len()
+        } else {
+            0
+        };
+        arena.reserve_image_fragments(size, fragment_count)?;
+        let mut fragments = Vec::new();
+        fragments
+            .try_reserve_exact(fragment_count)
+            .map_err(|_| "constant union fragment update allocation failed")?;
+        if let Some(Constant(Value::Image(id))) = prior {
+            for &fragment in &arena.get(id)?.fragments {
+                let stop = fragment.offset + u64::from(fragment.length);
+                if stop > width as u64 {
+                    let start = fragment.offset.max(width as u64);
+                    let skipped = u8::try_from(start - fragment.offset)
+                        .map_err(|_| "constant union fragment update overflow")?;
+                    fragments.push(super::ImageFragment {
+                        offset: start,
+                        source_offset: fragment
+                            .source_offset
+                            .checked_add(skipped)
+                            .ok_or("constant union fragment update overflow")?,
+                        length: u8::try_from(stop - start)
+                            .map_err(|_| "constant union fragment update overflow")?,
+                        ..fragment
+                    });
+                }
+            }
+        }
         let (mut bytes, mut initialized) = if let Some(Constant(Value::Image(id))) = prior {
             let image = arena.get(id)?;
             (image.bytes.to_vec(), image.initialized.to_vec())
@@ -250,6 +317,7 @@ impl Evaluator<'_> {
             initialized[index / 64] |= 1u64 << (index % 64);
         }
         let value = arena.insert(Image {
+            fragments: fragments.into_boxed_slice(),
             ty,
             bytes: bytes.into_boxed_slice(),
             initialized: initialized.into_boxed_slice(),
@@ -272,6 +340,13 @@ impl Evaluator<'_> {
         let image = Reader::new(self.facts()).image(image)?;
         if image.ty != ty || image.bytes.len() != size {
             return Err("union image differs from its checked storage type".into());
+        }
+        if image
+            .fragments
+            .iter()
+            .any(|fragment| fragment.offset < width as u64)
+        {
+            return Err("constant numeric read uses symbolic pointer bytes".into());
         }
         let scalar = images::scalars::decode(primitive, image.bytes, image.initialized)
             .map_err(Failure::Fault)?;

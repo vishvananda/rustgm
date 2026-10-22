@@ -191,7 +191,7 @@ fn image_addresses_retain_capabilities_and_validate_owners() -> Result<(), Strin
             assert_eq!(projection.ty, location.ty);
             assert_eq!(projection.offset, 0);
             assert!(
-                matches!(projection.storage,ProjectionStorage::UnionScalar { field } if field==selected)
+                matches!(projection.storage,ProjectionStorage::UnionField { field } if field==selected)
             );
         }
     }

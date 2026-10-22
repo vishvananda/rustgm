@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+union P{bits:u64,pointer:*const u32}union B{bits:u32,bytes:[u8;4]}union Z{bits:u32,unit:()}const IMAGE:P=P{bits:37};const BYTES:B=B{bits:37};const RAW:usize={union U{a:*const u32,b:usize}let u=U{b:0};let p=&raw const u.b;unsafe{let r=&*p;*r}};const DIRECT:u32={let u=P{bits:41};unsafe{let r=&u.bits;*r as u32}};const UNIT:()={let u=Z{bits:7};unsafe{let r=&u.unit;*r}};fn main(){check(unsafe{IMAGE.bits}==37);check(unsafe{BYTES.bytes[0]}==37);check(RAW==0);check(DIRECT==41);let _=UNIT;}

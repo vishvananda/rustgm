@@ -1,0 +1,3 @@
+#![allow(dead_code,unused_mut,invalid_reference_casting)]
+trait T{fn value(&self)->u32;}impl T for &u32{fn value(&self)->u32{**self}}union U<'p>{pointer:*const (dyn T+'p),bytes:[u8;16]}static A:u32=37;static B:u32=91;const fn roundtrip<'a,'b>(x:&'a u32,y:&'b u32)->u32{let a:&dyn T=&x;let b:&dyn T=&y;let source=U{pointer:a};let other=U{pointer:b};let mut target=U{bytes:[0;16]};unsafe{core::ptr::copy_nonoverlapping(&raw const source.bytes[0],&raw mut target.bytes[0],12);core::ptr::copy_nonoverlapping(&raw const other.bytes[12],&raw mut target.bytes[12],4);**(target.pointer as *const &u32)}}const X:u32=roundtrip(&A,&B);
+fn main(){let _=X;}

@@ -45,7 +45,13 @@ pub struct Error {
     pub source: NodeKey,
     pub message: &'static str,
 }
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct ReadOperation {
+    frame: usize,
+    position: u32,
+}
 struct Frame {
+    instance: usize,
     context: EvaluationContext,
     body: usize,
     block: BlockId,
@@ -77,6 +83,7 @@ pub struct Machine<'a, 'b> {
         crate::types::TypeId,
     )>,
     waiting: Option<Requirement>,
+    read_operation: Option<ReadOperation>,
     context: EvaluationContext,
 }
 pub(crate) struct State {
@@ -140,6 +147,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             active_inline: HashSet::new(),
             active_anonymous: HashSet::new(),
             waiting: None,
+            read_operation: None,
             context: EvaluationContext::Constant,
         }
     }
@@ -211,8 +219,11 @@ impl<'a, 'b> Machine<'a, 'b> {
     }
     pub(crate) fn advance(&mut self) -> Result<Progress, Error> {
         self.waiting = None;
-        self.run()
-            .map_err(|(index, failure)| self.error(index, failure))
+        let result = self.run();
+        if result.is_err() {
+            self.memory.abandon_byte_reads();
+        }
+        result.map_err(|(index, failure)| self.error(index, failure))
     }
     fn error(&self, index: usize, failure: Failure) -> Error {
         Error {
@@ -296,6 +307,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             .first()
             .ok_or("constant body has no entry block")?;
         let mut frame = Frame {
+            instance: self.work.calls,
             context: self.frame_context(body.owner),
             body: index,
             block: BlockId(0),
@@ -342,6 +354,10 @@ impl<'a, 'b> Machine<'a, 'b> {
             };
             let index = frame.body;
             self.context = frame.context;
+            self.read_operation = Some(ReadOperation {
+                frame: frame.instance,
+                position: frame.next,
+            });
             let mut frame = if frame.operand_cursor == usize::MAX {
                 frame
             } else {

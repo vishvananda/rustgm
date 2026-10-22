@@ -1,4 +1,5 @@
 //! Fresh display IDs preserve physical backing independently of value equality.
+mod images;
 mod rows;
 use super::{Inventory, Limits};
 use crate::sema::model::Declarations;

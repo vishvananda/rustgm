@@ -77,35 +77,10 @@ impl<'a> Reader<'a> {
                 }) {
                     return Err("union byte storage has no structural field view");
                 }
-                let ShapeReadiness::Ready(shape) =
-                    self.facts.aggregates.try_shape(&self.facts.types, ty)?
-                else {
-                    return Err("constant view requires a completed aggregate shape");
-                };
                 let View::Product { variant, .. } = self.view(value)? else {
                     return Err("nominal constant lacks an active product");
                 };
-                let ordinal = if let Some(id) = variant {
-                    let variant = self
-                        .facts
-                        .members
-                        .variants
-                        .get(id.0 as usize)
-                        .ok_or("missing constant variant")?;
-                    if variant.owner != item {
-                        return Err("constant variant has a different owner");
-                    }
-                    variant.ordinal as usize
-                } else if shape.variants().len() == 1 {
-                    0
-                } else {
-                    return Err("constant enum lacks an active variant");
-                };
-                shape
-                    .variants()
-                    .nth(ordinal)
-                    .ok_or("constant variant exceeds its shape")?
-                    .fields
+                self.nominal_stored_fields(ty, item, variant)?
             }
             _ => return Err("constant view requires a closed product type"),
         };
@@ -115,6 +90,82 @@ impl<'a> Reader<'a> {
                 .list(fields)
                 .ok_or("missing stored field list")?,
         ))
+    }
+    fn nominal_stored_fields(
+        self,
+        ty: TypeId,
+        item: crate::types::ItemId,
+        selected: Option<crate::sema::members::VariantId>,
+    ) -> Result<crate::types::ListId, &'static str> {
+        if self
+            .facts
+            .aggregates
+            .get(item)
+            .is_some_and(|definition| definition.kind == crate::types::aggregate::Kind::Union)
+        {
+            return Err("union byte storage has no structural field view");
+        }
+        let ShapeReadiness::Ready(shape) =
+            self.facts.aggregates.try_shape(&self.facts.types, ty)?
+        else {
+            return Err("constant view requires a completed aggregate shape");
+        };
+        let ordinal = if let Some(id) = selected {
+            let variant = self
+                .facts
+                .members
+                .variants
+                .get(id.0 as usize)
+                .ok_or("missing constant variant")?;
+            if variant.owner != item {
+                return Err("constant variant has a different owner");
+            }
+            variant.ordinal as usize
+        } else if shape.variants().len() == 1 {
+            0
+        } else {
+            return Err("constant enum lacks an active variant");
+        };
+        Ok(shape
+            .variants()
+            .nth(ordinal)
+            .ok_or("constant variant exceeds its shape")?
+            .fields)
+    }
+    /// Select retained child types without manufacturing a product to inspect.
+    pub(crate) fn stored_child(
+        self,
+        mut ty: TypeId,
+        variant: Option<crate::sema::members::VariantId>,
+        index: u64,
+    ) -> Result<TypeId, &'static str> {
+        if let Some(Kind::Closure { environment, .. }) = self.facts.types.kind(ty) {
+            ty = environment;
+        }
+        let fields = match self
+            .facts
+            .types
+            .kind(ty)
+            .ok_or("missing stored child owner type")?
+        {
+            Kind::Array { element, length } if variant.is_none() && index < length => {
+                return Ok(element);
+            }
+            Kind::Slice(element) if variant.is_none() => return Ok(element),
+            Kind::Tuple(fields) if variant.is_none() => fields,
+            Kind::Adt(item, _) => self.nominal_stored_fields(ty, item, variant)?,
+            _ => return Err("stored child requires a matching product type and variant"),
+        };
+        self.facts
+            .types
+            .list(fields)
+            .and_then(|fields| {
+                usize::try_from(index)
+                    .ok()
+                    .and_then(|index| fields.get(index))
+            })
+            .copied()
+            .ok_or("stored child ordinal exceeds its owner")
     }
 }
 

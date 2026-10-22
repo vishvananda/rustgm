@@ -330,6 +330,33 @@ impl Dependencies {
         }
         result.callable(&facts.types, body, ty)
     }
+    fn image_dependencies(
+        &mut self,
+        reader: Reader<'_>,
+        ty: TypeId,
+        value: Constant,
+        work: &mut Vec<Work>,
+        result: &mut Discovered,
+    ) -> Result<(), &'static str> {
+        let image = reader.image(value)?;
+        if image.ty != ty {
+            return Err("constant union image differs from dependency storage");
+        }
+        self.charge(image.fragments.len())?;
+        for fragment in image.complete_words()? {
+            match fragment.target {
+                crate::sema::values::WordTarget::Value(value) => match reader.view(value)? {
+                    View::Reference(id) => work.push(Work::Location(id)),
+                    View::Function(instance) => result.calls.push(instance),
+                    _ => return Err("constant image has an invalid dependency word"),
+                },
+                crate::sema::values::WordTarget::Vtable { concrete, target } => {
+                    result.tables.push((concrete, target));
+                }
+            }
+        }
+        Ok(())
+    }
     fn follow(
         &mut self,
         facts: &Declarations,
@@ -386,10 +413,7 @@ impl Dependencies {
                     match reader.view(value)? {
                         View::Function(instance) => result.calls.push(instance),
                         View::Image { .. } => {
-                            if reader.image(value)?.ty != ty {
-                                return Err("constant union image differs from dependency storage");
-                            }
-                            // Scalar-only images contain no pointer or callable relocations.
+                            self.image_dependencies(reader, ty, value, &mut work, result)?;
                         }
                         View::Reference(id) => work.push(Work::Location(id)),
                         View::Repeat { value, length } if length != 0 => {

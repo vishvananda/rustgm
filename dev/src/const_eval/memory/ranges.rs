@@ -122,47 +122,16 @@ impl Machine<'_, '_> {
         root: LocationId,
         path: &[u64],
         range: Range,
-    ) -> Result<Constant, Failure> {
-        if let Some(value) = self.read_byte_range(root, path, range)? {
+        purpose: crate::const_eval::static_reads::ReadPurpose,
+    ) -> Result<super::Read<Constant>, Failure> {
+        if let Some(value) = self.read_byte_range(root, path, range, purpose)? {
             return Ok(value);
         }
-        // Traverse frozen containers without thawing or materializing unselected fields.
-        let mut cell = *self
-            .memory
-            .roots
-            .get(&root)
-            .ok_or("constant range lacks local storage")?;
-        for (position, &index) in path.iter().enumerate() {
-            self.charge(1)?;
-            match &self.memory.cells[cell] {
-                Cell::Frozen(value) => {
-                    let mut value = *value;
-                    self.charge(path.len() - position)?;
-                    for &index in &path[position..] {
-                        value = self.evaluator.field(value, index)?;
-                    }
-                    return self
-                        .evaluator
-                        .sequence_range(value, range.from, range.length);
-                }
-                Cell::Fields { values, .. } => {
-                    cell = *values
-                        .get(
-                            usize::try_from(index)
-                                .map_err(|_| "constant index exceeds host size")?,
-                        )
-                        .ok_or("constant index is out of bounds")?;
-                }
-                Cell::Bytes(_) => return Err("byte root bypassed its range read consumer".into()),
-                Cell::Empty => return Err("constant range reads uninitialized storage".into()),
-            }
-        }
+        let (cell, ty, rest) = self.read_cell_selection(root, path)?;
         match &self.memory.cells[cell] {
             Cell::Frozen(value) => {
                 let value = *value;
-                self.charge(1)?;
-                self.evaluator
-                    .sequence_range(value, range.from, range.length)
+                self.read_frozen(value, ty, &path[rest..], Some(range), purpose)
             }
             Cell::Bytes(_) => Err("byte root bypassed its range snapshot consumer".into()),
             Cell::Empty => Err("constant range reads uninitialized storage".into()),
@@ -185,9 +154,12 @@ impl Machine<'_, '_> {
                 let selected = values[start..end].to_vec();
                 let mut fields = Vec::with_capacity(length);
                 for cell in selected {
-                    fields.push(self.freeze(cell)?);
+                    let super::Read::Value(value) = self.freeze(cell, purpose)? else {
+                        return Ok(super::Read::Pending);
+                    };
+                    fields.push(value);
                 }
-                self.evaluator.fields(&fields, None)
+                self.evaluator.fields(&fields, None).map(super::Read::Value)
             }
         }
     }

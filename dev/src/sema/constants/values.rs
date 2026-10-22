@@ -1,5 +1,8 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
 mod byte_codec;
+mod relocations;
+pub use relocations::{ImageFragment, WordTarget};
+pub(crate) use relocations::{MetadataShape, WordAddress, WordShape};
 mod callables;
 mod footprints;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};

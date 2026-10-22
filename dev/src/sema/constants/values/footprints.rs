@@ -14,7 +14,7 @@ pub(crate) struct StorageLayout {
 #[derive(Clone, Copy)]
 pub(crate) enum ProjectionStorage {
     Product,
-    UnionScalar {
+    UnionField {
         field: crate::sema::members::Selection,
     },
 }
@@ -229,7 +229,7 @@ impl Reader<'_> {
                         .and_then(|index| member.start.checked_add(index))
                         .filter(|&field| member.owner == item && field < member.end)
                         .ok_or("union projection field has a different owner")?;
-                    ProjectionStorage::UnionScalar {
+                    ProjectionStorage::UnionField {
                         field: crate::sema::members::Selection::Nominal(
                             crate::sema::members::FieldId(field),
                         ),
@@ -252,6 +252,7 @@ impl Reader<'_> {
 #[derive(Clone, Copy)]
 pub(crate) enum StoredShape<'a> {
     Scalar,
+    Word,
     Array {
         element: TypeId,
         stride: u64,
@@ -282,6 +283,10 @@ impl<'a> Reader<'a> {
                     return Err("primitive differs from retained storage shape");
                 }
                 Ok(StoredShape::Scalar)
+            }
+            Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. } => {
+                self.word_shape(ty)?;
+                Ok(StoredShape::Word)
             }
             Kind::Array { element, length } => {
                 let Shape::Array {

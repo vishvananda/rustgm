@@ -153,13 +153,23 @@
       "sha256": "44dca8c1317690b95868983b030e30006e435f85fa9357649850acaf8f13dc3b",
       "rustc_expected": 0,
       "status": "independently-qualified",
-      "profile": "relocation-followup",
+      "profile": "symbolic-byte-backing",
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "frontend_reason": "constant byte backing with pointer or enum storage is not implemented"
+      "frontend_reason": "",
+      "initial_profile": {
+        "profile": "relocation-followup",
+        "frontend_expected": [
+          1,
+          1,
+          1
+        ],
+        "frontend_reason": "constant byte backing with pointer or enum storage is not implemented"
+      },
+      "superseded_by": "docs/pa28-relocation-design.md"
     },
     {
       "path": "pa28/tests/spec/byte-transport/large-root-small-transfer.rs",

@@ -18,8 +18,8 @@ const CASES: &[(&str, i32, i32, i32)] = &[
     ("scalar-union/const-function", 0, 0, 0),
     ("scalar-union/nested-product", 0, 0, 0),
     ("scalar-union/static-partial", 0, 0, 0),
-    ("scalar-union/pointer-family", 0, 1, 1),
-    ("scalar-union/array-family", 0, 1, 1),
+    ("scalar-union/pointer-family", 0, 0, 0),
+    ("scalar-union/array-family", 0, 0, 0),
     ("scalar-union/field-address", 1, 1, 1),
     ("scalar-union/ordinary-scalar", 0, 0, 0),
     ("unions/invalid-bool-const", 1, 1, 1),
@@ -112,10 +112,6 @@ fn image_views_preserve_unknown_bytes_and_validity() -> Result<(), Box<dyn std::
             "scalar-union/char-above-unicode",
             "invalid char representation",
         ),
-        (
-            "scalar-union/pointer-family",
-            "all-fields primitive scalar family",
-        ),
     ] {
         let result = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .arg("--emit-constants")
@@ -128,22 +124,34 @@ fn image_views_preserve_unknown_bytes_and_validity() -> Result<(), Box<dyn std::
             String::from_utf8_lossy(&result.stderr)
         );
     }
-    let path = root.join("pa27/tests/spec/scalar-union/static-partial.rs");
-    let run = || {
-        Command::new(env!("CARGO_BIN_EXE_rustgm"))
-            .arg("--emit-constants")
-            .arg(&path)
-            .output()
-    };
-    let first = run()?;
-    let second = run()?;
-    assert!(first.status.success());
-    assert_eq!(first.stdout, second.stdout);
-    let view = String::from_utf8(first.stdout)?;
-    assert!(
-        view.contains("image size=4 bytes=25?????? initialized=0000000000000001"),
-        "{view}"
-    );
+    for (name, payload) in [
+        (
+            "static-partial",
+            "image size=4 bytes=25?????? initialized=0000000000000001",
+        ),
+        (
+            "pointer-family",
+            "image size=8 bytes=2500000000000000 initialized=00000000000000ff",
+        ),
+        (
+            "array-family",
+            "image size=4 bytes=25000000 initialized=000000000000000f",
+        ),
+    ] {
+        let path = root.join(format!("pa27/tests/spec/scalar-union/{name}.rs"));
+        let run = || {
+            Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                .arg("--emit-constants")
+                .arg(&path)
+                .output()
+        };
+        let first = run()?;
+        let second = run()?;
+        assert!(first.status.success());
+        assert_eq!(first.stdout, second.stdout);
+        let view = String::from_utf8(first.stdout)?;
+        assert!(view.contains(payload), "{name}: {view}");
+    }
     Ok(())
 }
 #[test]

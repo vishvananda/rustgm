@@ -33,6 +33,7 @@ impl Evaluator<'_> {
         ty: TypeId,
         bytes: &[u8],
         initialized: &[u64],
+        fragments: &[super::ImageFragment],
         limit: usize,
     ) -> Result<(Constant, usize), Failure> {
         // Revalidate the already prepared scalar family through its canonical field.
@@ -49,6 +50,7 @@ impl Evaluator<'_> {
             .len()
             .checked_mul(2)
             .and_then(|n| n.checked_add(initialized.len().saturating_mul(2)))
+            .and_then(|n| n.checked_add(fragments.len().saturating_mul(16)))
             .filter(|n| *n <= limit)
             .ok_or("constant union snapshot work budget exceeded")?;
         let arena = self
@@ -58,8 +60,9 @@ impl Evaluator<'_> {
             .constant_images
             .as_mut()
             .ok_or("missing constant image arena")?;
-        arena.reserve_image(bytes.len())?;
+        arena.reserve_image_fragments(bytes.len(), fragments.len())?;
         let value = arena.insert(images::Image {
+            fragments: fragments.to_vec().into_boxed_slice(),
             ty,
             bytes: bytes.to_vec().into_boxed_slice(),
             initialized: initialized.to_vec().into_boxed_slice(),

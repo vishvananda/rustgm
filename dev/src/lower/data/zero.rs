@@ -17,6 +17,9 @@ impl Context<'_> {
         if image.ty != ty || size != layout_size || image.bytes.len() as u64 != size {
             return Err("constant union image differs from zero storage type");
         }
+        if !image.fragments.is_empty() {
+            return Ok(false);
+        }
         self.data.charge(image.bytes.len())?;
         Ok(image
             .bytes

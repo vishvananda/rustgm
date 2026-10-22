@@ -189,8 +189,13 @@ impl Inspection<'_> {
             {
                 return Err("constant union image differs from its nominal storage");
             }
-            // The image arena only admits all-fields primitive scalar families.
-            return Ok(Answer::Ordinary);
+            // A union has no active variant from which to refine owned storage.
+            // Pointer words do not grant reference permissions or manufacture an active field.
+            return if self.references {
+                Ok(Answer::Ordinary)
+            } else {
+                self.types.contains(ty)
+            };
         }
         let View::Product { variant, .. } = self.reader.view(value)? else {
             return Err("nominal storage lacks a product value");

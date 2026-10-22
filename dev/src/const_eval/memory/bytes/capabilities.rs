@@ -15,6 +15,7 @@ impl Machine<'_, '_> {
             let length = match shape {
                 StoredShape::Array { length: 0, .. }
                 | StoredShape::Scalar
+                | StoredShape::Word
                 | StoredShape::Unsupported => 0,
                 StoredShape::Array { .. } => 1,
                 StoredShape::Product { fields, .. } => fields.len(),
@@ -30,6 +31,7 @@ impl Machine<'_, '_> {
             let children = match Reader::new(self.evaluator.facts()).storage_shape(ty)? {
                 StoredShape::Array { length: 0, .. }
                 | StoredShape::Scalar
+                | StoredShape::Word
                 | StoredShape::Unsupported => Vec::new(),
                 StoredShape::Array { element, .. } => vec![element],
                 StoredShape::Product { fields, .. } => fields.to_vec(),

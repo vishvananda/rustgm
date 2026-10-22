@@ -79,16 +79,32 @@ impl Machine<'_, '_> {
     }
     pub(super) fn storage_offset(
         &mut self,
-        mut ty: TypeId,
+        ty: TypeId,
         path: &[u64],
     ) -> Result<(TypeId, u64), Failure> {
+        let (ty, offset, _) = self.storage_coordinates::<false>(ty, path)?;
+        Ok((ty, offset))
+    }
+    pub(super) fn storage_coordinates<const IMAGE: bool>(
+        &mut self,
+        mut ty: TypeId,
+        path: &[u64],
+    ) -> Result<(TypeId, u64, Option<super::memory::ImagePath>), Failure> {
         let mut offset = 0u64;
-        for &index in path {
+        let mut image = None;
+        for (position, &index) in path.iter().enumerate() {
             self.charge(1)?;
             let field = Reader::new(self.evaluator.facts()).projection_layout(ty, index)?;
             match field.storage {
                 crate::sema::values::ProjectionStorage::Product => {}
-                crate::sema::values::ProjectionStorage::UnionScalar { .. } => {
+                crate::sema::values::ProjectionStorage::UnionField { .. } => {
+                    if IMAGE && image.is_none() {
+                        image = Some(super::memory::ImagePath {
+                            owner: ty,
+                            prefix: position,
+                            offset,
+                        });
+                    }
                     if field.offset != 0 {
                         return Err("constant union projection has a nonzero offset".into());
                     }
@@ -99,7 +115,7 @@ impl Machine<'_, '_> {
                 .ok_or("constant storage offset overflow")?;
             ty = field.ty;
         }
-        Ok((ty, offset))
+        Ok((ty, offset, image))
     }
     pub(super) fn check_raw_read(
         &mut self,

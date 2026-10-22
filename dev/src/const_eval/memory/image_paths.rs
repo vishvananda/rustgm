@@ -5,15 +5,21 @@ use crate::{
     types::{Kind, aggregate},
 };
 #[derive(Clone, Copy)]
+pub(in crate::const_eval) struct ImagePath {
+    pub owner: crate::types::TypeId,
+    pub prefix: usize,
+    pub offset: u64,
+}
+#[derive(Clone, Copy)]
 pub(in crate::const_eval) enum StorageTarget {
     Product,
-    UnionScalar { field: UnionField, projected: bool },
+    UnionField { field: UnionField, projected: bool },
 }
 impl StorageTarget {
     pub(in crate::const_eval) fn path_len(self, total: usize) -> Result<usize, Failure> {
         if matches!(
             self,
-            Self::UnionScalar {
+            Self::UnionField {
                 projected: true,
                 ..
             }
@@ -28,7 +34,7 @@ impl StorageTarget {
     pub(in crate::const_eval) const fn field(self) -> Option<UnionField> {
         match self {
             Self::Product => None,
-            Self::UnionScalar { field, .. } => Some(field),
+            Self::UnionField { field, .. } => Some(field),
         }
     }
 }
@@ -38,7 +44,7 @@ impl Machine<'_, '_> {
         place: Resolved,
     ) -> Result<StorageTarget, Failure> {
         if let Some(field) = place.union {
-            return Ok(StorageTarget::UnionScalar {
+            return Ok(StorageTarget::UnionField {
                 field,
                 projected: false,
             });
@@ -64,7 +70,7 @@ impl Machine<'_, '_> {
             return Err("constant union projection differs from its declared field type".into());
         }
         match projection.storage {
-            ProjectionStorage::UnionScalar { field } => Ok(StorageTarget::UnionScalar {
+            ProjectionStorage::UnionField { field } => Ok(StorageTarget::UnionField {
                 field: UnionField { owner, field },
                 projected: true,
             }),

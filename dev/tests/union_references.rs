@@ -53,12 +53,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "constant mutable raw references from shared-derived pointers are not implemented",
     ),
     ("direct-borrow-boundary", 0, 0, ""),
-    (
-        "pointer-family-boundary",
-        0,
-        1,
-        "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented",
-    ),
+    ("pointer-family-boundary", 0, 0, ""),
     ("ordinary-scalar", 0, 0, ""),
     (
         "initialize-through-mutable-boundary",

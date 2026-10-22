@@ -1,4 +1,5 @@
 //! Serialize completed constants in canonical byte order, with bounded flat work.
+mod images;
 use super::{Context, Fixup, Key, Target, Type};
 use crate::{
     abi::layout::{Layout, Shape},
@@ -61,26 +62,6 @@ impl Context<'_> {
         }
         init.pad(span.bytes)?;
         self.output.initialize(object.global, &init.items)
-    }
-    fn initialize_image(
-        &mut self,
-        init: &mut Initializer,
-        offset: u64,
-        ty: TypeId,
-        value: Constant,
-        size: u64,
-    ) -> Result<(), &'static str> {
-        let image = self.constants.image(value)?;
-        if image.ty != ty || size != self.layout(ty)?.size || image.bytes.len() as u64 != size {
-            return Err("constant union image differs from emitted storage");
-        }
-        self.data.charge(image.bytes.len())?;
-        for (index, &byte) in image.bytes.iter().enumerate() {
-            // Native padding chooses zero without changing CTFE initialization.
-            let byte = if image.initialized(index) { byte } else { 0 };
-            init.bits(offset + index as u64, 1, u128::from(byte))?;
-        }
-        Ok(())
     }
     fn initialize_value(
         &mut self,

@@ -17,12 +17,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
     ("projected-ordinary-writes", 0, 0, ""),
     ("overlapping-invalid-snapshot", 0, 0, ""),
     ("rest-alias-ordinary-read", 0, 0, ""),
-    (
-        "pointer-neighbor-profile",
-        0,
-        1,
-        "constant byte backing with pointer or enum storage is not implemented",
-    ),
+    ("pointer-neighbor-profile", 0, 0, ""),
     ("large-root-small-transfer", 0, 0, ""),
     ("ordinary-control", 0, 0, ""),
     ("length-with-invalid-element", 0, 0, ""),

@@ -1,30 +1,67 @@
 //! Converted roots have one exclusive physical backing; ordinary roots remain typed.
 mod access;
 mod codec;
+mod continuations;
+mod images;
+mod intervals;
+mod relocations;
+mod slice_words;
+mod sources;
+mod subobjects;
 #[cfg(test)]
 #[path = "../../../tests/invariants/byte_storage.rs"]
 mod tests;
 mod transport;
+mod unions;
+mod words;
 pub(in crate::const_eval) use transport::Snapshot;
 mod capabilities;
-use super::{Cell, Constant, Failure, LocationId, Machine, Reader, TypeId};
+use super::{Cell, Constant, Failure, LocationId, Machine, Read, Reader, TypeId};
 use std::collections::HashMap;
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Id(u32);
 pub(super) struct Backing {
     ty: TypeId,
+    pending_reads: u32,
     bytes: Vec<u8>,
     initialized: Vec<u64>,
+    fragments: Option<Box<relocations::Fragments>>,
 }
 #[derive(Default)]
 pub(super) struct Storage {
+    #[cfg(test)]
+    decoded: usize,
+    #[cfg(test)]
+    checked_duties: usize,
+    #[cfg(test)]
+    paid_duties: usize,
     roots: Vec<Backing>,
     families: HashMap<TypeId, bool>,
     retained: usize,
+    fragment_slots: usize,
+    words: Option<Box<relocations::Words>>,
+    paths: Option<Box<subobjects::Paths>>,
+    reads: Option<Box<continuations::Reads>>,
 }
 impl Storage {
     pub(super) fn retained_slots(&self) -> usize {
         self.retained
+            .saturating_add(self.fragment_slots)
+            .saturating_add(
+                self.reads
+                    .as_ref()
+                    .map_or(0, |reads| reads.retained_slots()),
+            )
+            .saturating_add(
+                self.paths
+                    .as_ref()
+                    .map_or(0, |paths| paths.retained_slots()),
+            )
+            .saturating_add(
+                self.words
+                    .as_ref()
+                    .map_or(0, |words| words.retained_slots()),
+            )
             .saturating_add(self.families.len().saturating_mul(4))
     }
 }
@@ -33,6 +70,9 @@ impl Backing {
         self.bytes
             .capacity()
             .saturating_add(self.initialized.capacity().saturating_mul(size_of::<u64>()))
+            .saturating_add(self.fragments.as_ref().map_or(0, |fragments| {
+                relocations::fragment_slots(fragments).saturating_mul(size_of::<Constant>())
+            }))
             .saturating_add(4 * size_of::<Backing>())
             .div_ceil(size_of::<Constant>())
     }
@@ -40,6 +80,7 @@ impl Backing {
         Snapshot {
             bytes: self.bytes,
             initialized: self.initialized,
+            fragments: self.fragments,
         }
     }
     fn initialized(&self, index: usize) -> bool {
@@ -95,8 +136,10 @@ impl Machine<'_, '_> {
         initialized.resize(words, 0);
         Ok(Backing {
             ty,
+            pending_reads: 0,
             bytes,
             initialized,
+            fragments: None,
         })
     }
     fn convert_byte_root(&mut self, root: LocationId) -> Result<Id, Failure> {
@@ -148,6 +191,17 @@ impl Machine<'_, '_> {
             .retained
             .checked_add(retained)
             .ok_or("constant byte backing retention overflow")?;
+        let fragment_slots = backing
+            .fragments
+            .as_ref()
+            .map_or(0, |tree| relocations::fragment_slots(tree));
+        self.reserve_cells(fragment_slots)?;
+        self.memory.bytes.fragment_slots = self
+            .memory
+            .bytes
+            .fragment_slots
+            .checked_add(fragment_slots)
+            .ok_or("symbolic backing retention overflow")?;
         self.memory.bytes.roots.push(backing);
         self.memory.bytes.retained = retained;
         // All addresses resolve from this root. Its former field cells are unreachable;
@@ -159,12 +213,13 @@ impl Machine<'_, '_> {
         &mut self,
         root: LocationId,
         path: &[u64],
-    ) -> Result<Option<Constant>, Failure> {
+        purpose: crate::const_eval::static_reads::ReadPurpose,
+    ) -> Result<Option<Read<Constant>>, Failure> {
         let Some(id) = self.byte_root(root) else {
             return Ok(None);
         };
         let ty = self.byte_backing(id)?.ty;
         let (selected, offset) = self.storage_offset(ty, path)?;
-        self.decode_bytes(id, offset, selected).map(Some)
+        self.decode_bytes(id, offset, selected, purpose).map(Some)
     }
 }

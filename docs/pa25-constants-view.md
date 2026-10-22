@@ -196,3 +196,20 @@ pointer bits do not include this field. The initial raw-store profile explicitly
 withholds shared-derived interior-mutable writes instead of treating the flag as
 a complete UnsafeCell model. These planned view spellings do not bless active
 references or expand scalar-only metadata export.
+
+
+## Planned symbolic Image vocabulary
+
+The PA28 relocation checkpoint extends `image size=N bytes=HEX initialized=MASK`
+without changing existing scalar-only rows. Each symbolic byte is `@@`, distinct
+from initialized numeric hex and uninitialized `??`. A nonempty sorted suffix is
+`fragments=[OFFSET:SOURCE_OFFSET:LENGTH:TARGET,...]`. Targets are
+`pointer:aN:write=writable|shared-derived`, `function:TYPE`, or
+`vtable:CONCRETE:TARGET`. Allocation aliases retain their existing graph identity;
+no numeric pointer bits or fabricated typed product are rendered. Data-pointer,
+length and vtable words remain independent. Final constants require complete
+ordered symbolic words; transient fragment storage is not a public constant.
+
+This planned vocabulary is qualified by the PA28 literal source/native inventory
+and explicit view inspection, detailed in `docs/pa28-relocation-design.md`. It
+does not add active oracles, assignment activation, or PA29 Image export.

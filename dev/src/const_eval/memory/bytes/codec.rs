@@ -1,5 +1,7 @@
 //! Typed views touch only their selected footprint; raw transport does not decode.
-use super::{Backing, Constant, Failure, Id, Machine, Reader, TypeId};
+use super::continuations::{Duty, Key, Source};
+use super::{Backing, Constant, Failure, Id, Machine, Read, Reader, TypeId};
+use crate::const_eval::static_reads::ReadPurpose;
 use crate::sema::values::StoredShape;
 use crate::{sema::members::VariantId, types::Kind};
 struct Field {
@@ -28,6 +30,26 @@ enum Decode {
         variant: Option<VariantId>,
     },
     Repeat(u64),
+}
+struct Decoder {
+    pending: Vec<Decode>,
+    values: Vec<Constant>,
+    duties: Vec<Duty>,
+    purpose: ReadPurpose,
+    base_slots: usize,
+    temporary: usize,
+}
+impl Decoder {
+    fn retained_slots(&self) -> usize {
+        self.pending
+            .capacity()
+            .saturating_mul(size_of::<Decode>())
+            .saturating_add(self.values.capacity().saturating_mul(size_of::<Constant>()))
+            .saturating_add(self.duties.capacity().saturating_mul(size_of::<Duty>()))
+            .saturating_add(4 * size_of::<Self>())
+            .div_ceil(size_of::<Constant>())
+            .saturating_add(self.temporary)
+    }
 }
 impl Machine<'_, '_> {
     fn byte_fields(&mut self, ty: TypeId) -> Result<(Vec<Field>, Option<VariantId>), Failure> {
@@ -108,10 +130,16 @@ impl Machine<'_, '_> {
                 return Err("primitive bytes differ from retained layout".into());
             }
             self.charge(width)?;
+            self.buffer_fragments(backing, offset, width as u64, &[])?;
             backing.bytes[start..end].copy_from_slice(&bits.to_le_bytes()[..width]);
             for index in start..end {
                 backing.set_initialized(index, true);
             }
+        } else if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            StoredShape::Word
+        ) {
+            self.encode_byte_word(backing, offset, ty, value)?;
         } else if self.byte_union(ty) {
             let image = Reader::new(self.evaluator.facts()).image(value)?;
             if image.ty != ty || image.bytes.len() != end - start {
@@ -124,6 +152,7 @@ impl Machine<'_, '_> {
             for index in 0..width {
                 backing.set_initialized(start + index, image.initialized(index));
             }
+            self.encode_image_fragments(backing, offset, value, width as u64)?;
         } else if let StoredShape::Array {
             element,
             stride,
@@ -187,9 +216,12 @@ impl Machine<'_, '_> {
         let stride =
             usize::try_from(stride).map_err(|_| "repeated byte stride exceeds host size")?;
         self.charge(end - start - stride)?;
-        // This profile has no symbolic relocations. Enabling relocation families
-        // must extend repetition to their transport metadata as well as bytes/masks.
+        let fragments = backing.fragments.as_ref().map_or_else(
+            || Ok(Vec::new()),
+            |tree| self.clip_fragments(tree, offset, stride as u64),
+        )?;
         for target in (start + stride..end).step_by(stride) {
+            self.buffer_fragments(backing, target as u64, stride as u64, &fragments)?;
             backing.bytes.copy_within(start..start + stride, target);
             for index in 0..stride {
                 let initialized = backing.initialized(start + index);
@@ -246,116 +278,386 @@ impl Machine<'_, '_> {
         id: Id,
         offset: u64,
         ty: TypeId,
-    ) -> Result<Constant, Failure> {
-        let mut pending = vec![Decode::Value { ty, offset }];
-        let mut values = Vec::new();
-        while let Some(work) = pending.pop() {
-            self.charge(1)?;
-            match work {
-                Decode::Product { start, variant } => {
-                    let fields = values.split_off(start);
-                    values.push(self.evaluator.fields(&fields, variant)?);
-                }
-                Decode::Repeat(length) => {
-                    let value = values.pop().ok_or("missing repeated byte value")?;
-                    values.push(self.evaluator.repeat(value, length)?);
-                }
-                Decode::Value { ty, offset } => {
-                    let layout = self.footprint(ty)?;
-                    let start =
-                        usize::try_from(offset).map_err(|_| "byte read exceeds host size")?;
-                    let end = offset
-                        .checked_add(layout.size)
-                        .and_then(|n| usize::try_from(n).ok())
-                        .filter(|&n| n <= self.byte_backing(id).map_or(0, |b| b.bytes.len()))
-                        .ok_or("byte read exceeds backing bounds")?;
-                    if matches!(
-                        self.evaluator.facts().types.kind(ty),
-                        Some(Kind::Primitive(_))
-                    ) {
-                        values.push(self.decode_byte_scalar(id, start, end, ty)?);
-                    } else if self.byte_union(ty) {
-                        self.reserve_cells(
-                            (end - start)
-                                .saturating_mul(2)
-                                .div_ceil(size_of::<Constant>())
-                                .saturating_add(4),
-                        )?;
-                        let backing = self.byte_backing(id)?;
-                        let mut mask = vec![0u64; (end - start).div_ceil(64)];
-                        for index in 0..end - start {
-                            if backing.initialized(start + index) {
-                                mask[index / 64] |= 1u64 << (index % 64);
-                            }
-                        }
-                        let bytes = backing.bytes[start..end].to_vec();
-                        let (value, work) = self.evaluator.union_snapshot(
-                            ty,
-                            &bytes,
-                            &mask,
-                            self.limits.steps.saturating_sub(self.work.steps),
-                        )?;
-                        self.charge(work)?;
-                        values.push(value);
-                    } else if let Some(Kind::Array { element, length }) =
-                        self.evaluator.facts().types.kind(ty)
-                        && (length == 0 || self.footprint(element)?.size == 0)
-                    {
-                        if length == 0 {
-                            values.push(self.evaluator.fields(&[], None)?);
-                        } else {
-                            pending.push(Decode::Repeat(length));
-                            pending.push(Decode::Value {
-                                ty: element,
-                                offset,
-                            });
-                        }
-                    } else {
-                        let (fields, variant) = self.byte_fields(ty)?;
-                        self.reserve_cells(
-                            pending
-                                .len()
-                                .saturating_add(values.len())
-                                .saturating_add(fields.len())
-                                .saturating_mul(4),
-                        )?;
-                        pending.push(Decode::Product {
-                            start: values.len(),
-                            variant,
-                        });
-                        for field in fields.into_iter().rev() {
-                            pending.push(Decode::Value {
-                                ty: field.ty,
-                                offset: offset
-                                    .checked_add(field.offset)
-                                    .ok_or("byte read field offset overflow")?,
-                            });
-                        }
+        purpose: ReadPurpose,
+    ) -> Result<Read<Constant>, Failure> {
+        self.decode_source(Source::Backing(id), offset, ty, purpose)
+    }
+    pub(super) fn decode_source(
+        &mut self,
+        source: Source,
+        offset: u64,
+        ty: TypeId,
+        purpose: ReadPurpose,
+    ) -> Result<Read<Constant>, Failure> {
+        let key = Key {
+            source,
+            offset,
+            ty,
+            length: None,
+            purpose,
+            context: self.context,
+        };
+        if let Some(value) = self.resumed_byte_read(key)? {
+            return Ok(value);
+        }
+        let (value, duties) = self.decode_byte_storage(source, offset, ty, purpose)?;
+        self.complete_byte_read(key, value, duties)
+    }
+    fn decode_byte_storage(
+        &mut self,
+        source: Source,
+        offset: u64,
+        ty: TypeId,
+        purpose: ReadPurpose,
+    ) -> Result<(Constant, Vec<Duty>), Failure> {
+        self.reserve_cells(16)?;
+        self.decode_byte_work(source, vec![Decode::Value { ty, offset }], purpose)
+    }
+    pub(super) fn decode_byte_range(
+        &mut self,
+        id: Id,
+        offset: u64,
+        ty: TypeId,
+        range: crate::const_eval::memory::Range,
+        purpose: ReadPurpose,
+    ) -> Result<Read<Constant>, Failure> {
+        self.decode_source_range(Source::Backing(id), offset, ty, range, purpose)
+    }
+    pub(super) fn decode_source_range(
+        &mut self,
+        source: Source,
+        offset: u64,
+        ty: TypeId,
+        range: crate::const_eval::memory::Range,
+        purpose: ReadPurpose,
+    ) -> Result<Read<Constant>, Failure> {
+        let StoredShape::Array {
+            element,
+            stride,
+            length,
+        } = Reader::new(self.evaluator.facts()).storage_shape(ty)?
+        else {
+            return Err("byte range requires retained array storage".into());
+        };
+        if range
+            .from
+            .checked_add(range.length)
+            .is_none_or(|end| end > length)
+        {
+            return Err("byte range exceeds backing bounds".into());
+        }
+        let offset = offset
+            .checked_add(
+                stride
+                    .checked_mul(range.from)
+                    .ok_or("byte range displacement overflow")?,
+            )
+            .ok_or("byte range offset overflow")?;
+        let key = Key {
+            source,
+            offset,
+            ty,
+            length: Some(range.length),
+            purpose,
+            context: self.context,
+        };
+        if let Some(value) = self.resumed_byte_read(key)? {
+            return Ok(value);
+        }
+        let count = if stride == 0 && range.length != 0 {
+            1
+        } else {
+            range.length
+        };
+        let count = usize::try_from(count).map_err(|_| "byte range exceeds host size")?;
+        self.reserve_cells(
+            count
+                .saturating_add(1)
+                .saturating_mul(size_of::<Decode>())
+                .div_ceil(size_of::<Constant>())
+                .saturating_add(16),
+        )?;
+        let mut pending = Vec::new();
+        pending
+            .try_reserve_exact(count.saturating_add(1))
+            .map_err(|_| "byte range decode work allocation failed")?;
+        pending.push(if stride == 0 && range.length != 0 {
+            Decode::Repeat(range.length)
+        } else {
+            Decode::Product {
+                start: 0,
+                variant: None,
+            }
+        });
+        self.charge(count)?;
+        for index in (0..count).rev() {
+            pending.push(Decode::Value {
+                ty: element,
+                offset: offset
+                    .checked_add(
+                        stride
+                            .checked_mul(index as u64)
+                            .ok_or("byte range extent overflow")?,
+                    )
+                    .ok_or("byte range offset overflow")?,
+            });
+        }
+        let (value, duties) = self.decode_byte_work(source, pending, purpose)?;
+        self.complete_byte_read(key, value, duties)
+    }
+    fn decode_byte_work(
+        &mut self,
+        source: Source,
+        pending: Vec<Decode>,
+        purpose: ReadPurpose,
+    ) -> Result<(Constant, Vec<Duty>), Failure> {
+        let mut state = Decoder {
+            pending,
+            values: Vec::new(),
+            duties: Vec::new(),
+            purpose,
+            base_slots: self.slots,
+            temporary: 0,
+        };
+        let previous = self.slots;
+        let result = (|| {
+            while let Some(work) = state.pending.pop() {
+                self.slots = previous
+                    .checked_add(state.retained_slots())
+                    .ok_or("byte decoder temporary retention overflow")?;
+                self.reserve_cells(0)?;
+                self.charge(1)?;
+                match work {
+                    Decode::Product { start, variant } => {
+                        self.reserve_cells(state.values.len().saturating_sub(start))?;
+                        let fields = state.values.split_off(start);
+                        state.temporary = fields.capacity();
+                        self.reserve_decode(&mut state, 1, 0, 0)?;
+                        state.values.push(self.evaluator.fields(&fields, variant)?);
+                        state.temporary = 0;
+                    }
+                    Decode::Repeat(length) => {
+                        let value = state.values.pop().ok_or("missing repeated byte value")?;
+                        self.reserve_decode(&mut state, 1, 0, 0)?;
+                        state.values.push(self.evaluator.repeat(value, length)?);
+                    }
+                    Decode::Value { ty, offset } => {
+                        self.decode_byte_value(source, offset, ty, &mut state)?;
                     }
                 }
             }
-        }
-        if values.len() != 1 {
-            return Err("byte decoding lacks one result".into());
-        }
-        values.pop().ok_or("missing decoded byte value".into())
+            if state.values.len() != 1 {
+                return Err("byte decoding lacks one result".into());
+            }
+            state
+                .values
+                .pop()
+                .ok_or("missing decoded byte value".into())
+        })();
+        self.slots = previous;
+        result.map(|value| (value, state.duties))
     }
-    fn decode_byte_scalar(
+    fn reserve_decode(
         &mut self,
-        id: Id,
+        state: &mut Decoder,
+        values: usize,
+        pending: usize,
+        duties: usize,
+    ) -> Result<(), Failure> {
+        fn growth<T>(values: &Vec<T>, additional: usize) -> usize {
+            if values.capacity().saturating_sub(values.len()) >= additional {
+                0
+            } else {
+                values
+                    .len()
+                    .saturating_add(additional)
+                    .max(values.capacity().saturating_mul(2))
+                    .max(4)
+                    .saturating_mul(size_of::<T>())
+            }
+        }
+        self.slots = state
+            .base_slots
+            .checked_add(state.retained_slots())
+            .ok_or("byte decoder retention overflow")?;
+        let bytes = growth(&state.values, values)
+            .saturating_add(growth(&state.pending, pending))
+            .saturating_add(growth(&state.duties, duties));
+        self.reserve_cells(bytes.div_ceil(size_of::<Constant>()))?;
+        state
+            .values
+            .try_reserve(values)
+            .map_err(|_| "byte decoded values allocation failed")?;
+        state
+            .pending
+            .try_reserve(pending)
+            .map_err(|_| "byte decode work allocation failed")?;
+        state
+            .duties
+            .try_reserve(duties)
+            .map_err(|_| "byte reference duties allocation failed")?;
+        self.slots = state
+            .base_slots
+            .checked_add(state.retained_slots())
+            .ok_or("byte decoder retention overflow")?;
+        self.reserve_cells(0)
+    }
+    fn decode_byte_value(
+        &mut self,
+        source: Source,
+        offset: u64,
+        ty: TypeId,
+        state: &mut Decoder,
+    ) -> Result<(), Failure> {
+        #[cfg(test)]
+        {
+            self.memory.bytes.decoded += 1;
+        }
+        let layout = self.footprint(ty)?;
+        let start = usize::try_from(offset).map_err(|_| "byte read exceeds host size")?;
+        let end = offset
+            .checked_add(layout.size)
+            .and_then(|n| usize::try_from(n).ok())
+            .filter(|&n| n <= self.byte_data(source).map_or(0, |b| b.bytes.len()))
+            .ok_or("byte read exceeds backing bounds")?;
+        self.reserve_decode(state, 1, 0, 0)?;
+        if matches!(
+            self.evaluator.facts().types.kind(ty),
+            Some(Kind::Primitive(_))
+        ) {
+            state
+                .values
+                .push(self.decode_byte_scalar(source, start, end, ty)?);
+        } else if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            StoredShape::Word
+        ) {
+            let (value, duty) = self.decode_byte_word(source, offset, ty)?;
+            if let Some(duty) = duty
+                && state.purpose == ReadPurpose::Value
+            {
+                self.reserve_decode(state, 0, 0, 1)?;
+                state.duties.push(duty);
+            }
+            state.values.push(value);
+        } else if self.byte_union(ty) {
+            state
+                .values
+                .push(self.decode_byte_image(source, start, end, ty)?);
+        } else if let Some(Kind::Array { element, length }) = self.evaluator.facts().types.kind(ty)
+            && (length == 0 || self.footprint(element)?.size == 0)
+        {
+            if length == 0 {
+                state.values.push(self.evaluator.fields(&[], None)?);
+            } else {
+                self.reserve_decode(state, 0, 2, 0)?;
+                state.pending.push(Decode::Repeat(length));
+                state.pending.push(Decode::Value {
+                    ty: element,
+                    offset,
+                });
+            }
+        } else {
+            let (fields, variant) = self.byte_fields(ty)?;
+            state.temporary = fields
+                .capacity()
+                .saturating_mul(size_of::<Field>())
+                .div_ceil(size_of::<Constant>());
+            self.reserve_decode(state, 0, fields.len().saturating_add(1), 0)?;
+            state.pending.push(Decode::Product {
+                start: state.values.len(),
+                variant,
+            });
+            for field in fields.into_iter().rev() {
+                state.pending.push(Decode::Value {
+                    ty: field.ty,
+                    offset: offset
+                        .checked_add(field.offset)
+                        .ok_or("byte read field offset overflow")?,
+                });
+            }
+            state.temporary = 0;
+        }
+        Ok(())
+    }
+    fn decode_byte_image(
+        &mut self,
+        source: Source,
         start: usize,
         end: usize,
         ty: TypeId,
     ) -> Result<Constant, Failure> {
-        let width = end - start;
+        self.reserve_cells(
+            (end - start)
+                .saturating_mul(2)
+                .div_ceil(size_of::<Constant>())
+                .saturating_add(4),
+        )?;
+        let backing = self.byte_data(source)?;
+        let mut mask = vec![0u64; (end - start).div_ceil(64)];
+        for index in 0..end - start {
+            if backing.initialized(start + index) {
+                mask[index / 64] |= 1u64 << (index % 64);
+            }
+        }
+        let bytes = backing.bytes[start..end].to_vec();
+        let previous = self.slots;
+        self.slots = previous
+            .checked_add(
+                (bytes.capacity() + mask.capacity() * size_of::<u64>())
+                    .div_ceil(size_of::<Constant>()),
+            )
+            .ok_or("byte image temporary retention overflow")?;
+        let result = (|| {
+            let fragments = self.source_word_targets(source, start as u64, (end - start) as u64)?;
+            self.slots = self
+                .slots
+                .checked_add(
+                    fragments
+                        .capacity()
+                        .saturating_mul(size_of::<crate::sema::values::ImageFragment>())
+                        .div_ceil(size_of::<Constant>()),
+                )
+                .ok_or("image word snapshot retention overflow")?;
+            let (value, work) = self.evaluator.union_snapshot(
+                ty,
+                &bytes,
+                &mask,
+                &fragments,
+                self.limits.steps.saturating_sub(self.work.steps),
+            )?;
+            self.charge(work)?;
+            Ok(value)
+        })();
+        self.slots = previous;
+        result
+    }
+    pub(super) fn decode_byte_scalar(
+        &mut self,
+        source: Source,
+        start: usize,
+        end: usize,
+        ty: TypeId,
+    ) -> Result<Constant, Failure> {
+        let width = end
+            .checked_sub(start)
+            .ok_or("primitive byte span is reversed")?;
         if width > 16 {
             return Err("primitive byte width exceeds scalar codec".into());
         }
         self.charge(width)?;
-        let backing = self.byte_backing(id)?;
+        if self.source_has_fragments(source, start as u64, width as u64)? {
+            return Err("constant numeric read uses symbolic pointer bytes".into());
+        }
+        let backing = self.byte_data(source)?;
         let mut bits = [0; 16];
         let mut initialized = 0u64;
-        bits[..width].copy_from_slice(&backing.bytes[start..end]);
+        bits[..width].copy_from_slice(
+            backing
+                .bytes
+                .get(start..end)
+                .ok_or("primitive byte read exceeds storage")?,
+        );
         for index in 0..width {
             if backing.initialized(start + index) {
                 initialized |= 1u64 << index;

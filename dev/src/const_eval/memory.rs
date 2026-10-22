@@ -10,6 +10,7 @@ use crate::{
     sema::values::{LocationId, Origin, Reader, View},
     types::TypeId,
 };
+pub(super) use image_paths::ImagePath;
 pub(super) use ranges::{Range, StoragePath};
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Liveness {
@@ -18,6 +19,10 @@ pub(super) enum Liveness {
 }
 use std::collections::{HashMap, HashSet};
 
+pub(super) enum Read<T> {
+    Pending,
+    Value(T),
+}
 enum Cell {
     Bytes(bytes::Id),
     Frozen(Constant),
@@ -60,6 +65,9 @@ pub(super) struct Memory {
     pub(super) ordinary_static_types: HashSet<TypeId>,
 }
 impl Memory {
+    pub(super) fn abandon_byte_reads(&mut self) {
+        self.bytes.abandon_reads();
+    }
     pub(super) fn retained_cells(&self) -> usize {
         self.cells
             .len()
@@ -222,7 +230,11 @@ impl Machine<'_, '_> {
         }
         Ok(cell)
     }
-    fn freeze(&mut self, root: usize) -> Result<Constant, Failure> {
+    fn freeze(
+        &mut self,
+        root: usize,
+        purpose: super::static_reads::ReadPurpose,
+    ) -> Result<Read<Constant>, Failure> {
         let mut stack = vec![(root, false)];
         let mut completed = HashMap::new();
         while let Some((id, finish)) = stack.pop() {
@@ -234,7 +246,9 @@ impl Machine<'_, '_> {
                 Cell::Empty => return Err(Failure::Fault("constant reads uninitialized storage")),
                 Cell::Bytes(storage) => {
                     let storage = *storage;
-                    let value = self.freeze_byte_root(storage)?;
+                    let Read::Value(value) = self.freeze_byte_root(storage, purpose)? else {
+                        return Ok(Read::Pending);
+                    };
                     completed.insert(id, value);
                 }
                 Cell::Fields { values, .. } if !finish => {
@@ -259,6 +273,7 @@ impl Machine<'_, '_> {
         completed
             .get(&root)
             .copied()
+            .map(Read::Value)
             .ok_or("missing constant snapshot".into())
     }
     pub(super) fn read(&mut self, place: Resolved) -> Result<Option<Constant>, Failure> {
@@ -292,14 +307,25 @@ impl Machine<'_, '_> {
         let target = self.storage_target(place)?;
         let path = &path[..target.path_len(path.len())?];
         if let Some(union) = target.field()
-            && let Some(value) = self.read_byte_union(root, path, union, place.ty)?
+            && let Some(value) = self.read_byte_union(root, path, union, place.ty, purpose)?
         {
-            return Ok(Some(value));
+            return Ok(match value {
+                Read::Value(value) => Some(value),
+                Read::Pending => None,
+            });
         }
         let Some(value) = self.read_storage(root, path, range, place.ty, purpose)? else {
             return Ok(None);
         };
         if let Some(union) = target.field() {
+            if !Reader::new(self.evaluator.facts()).scalar_union(union.owner)? {
+                return Ok(
+                    match self.read_image_field(value, union, place.ty, purpose)? {
+                        Read::Value(value) => Some(value),
+                        Read::Pending => None,
+                    },
+                );
+            }
             let (value, work) = self.evaluator.union_read(
                 value,
                 union.owner,
@@ -319,7 +345,12 @@ impl Machine<'_, '_> {
         if let Some(union) = target.field() {
             let (root, path) = self.path(place.address)?.fields_only()?;
             let cell = self.cell(root, &path[..target.path_len(path.len())?])?;
-            let image = self.freeze(cell)?;
+            let Read::Value(image) = self.freeze(cell, super::static_reads::ReadPurpose::Value)?
+            else {
+                return Err(
+                    "untyped union snapshot unexpectedly required typed preparation".into(),
+                );
+            };
             let (image, work) = self.evaluator.union_write(
                 image,
                 union.owner,
@@ -335,22 +366,15 @@ impl Machine<'_, '_> {
         }
     }
     pub(super) fn write(&mut self, address: Constant, value: Constant) -> Result<(), Failure> {
+        let storage = self.path(address)?;
+        if self.write_byte_path(&storage, value)? {
+            return Ok(());
+        }
         let StoragePath {
             root,
             fields: path,
             range,
-        } = self.path(address)?;
-        if self.has_byte_root(root) {
-            self.write_byte_path(
-                &StoragePath {
-                    root,
-                    fields: path,
-                    range,
-                },
-                value,
-            )?;
-            return Ok(());
-        }
+        } = storage;
         if let Some(range) = range {
             return self.write_range(root, &path, range, value);
         }
@@ -446,9 +470,20 @@ impl Machine<'_, '_> {
     fn project(
         &mut self,
         frame: &Frame,
-        address: Resolved,
+        mut address: Resolved,
         projection: crate::body::ir::Projection,
     ) -> Result<Option<Resolved>, Failure> {
+        if let Some(union) = address.union {
+            let (value, work) = self.evaluator.union_address(
+                address.address,
+                union.owner,
+                union.field,
+                self.limits.steps.saturating_sub(self.work.steps),
+            )?;
+            self.charge(work)?;
+            address.address = value;
+            address.union = None;
+        }
         let result = match projection.kind {
             ProjectionKind::CaptureBoundary { .. } => {
                 return Err("captured closure execution is not implemented in constants".into());
@@ -543,6 +578,18 @@ impl Machine<'_, '_> {
             match Reader::new(self.evaluator.facts()).view(value)? {
                 View::Reference(_) => {
                     self.path(value)?;
+                }
+                View::Image { .. } => {
+                    let image = Reader::new(self.evaluator.facts()).image(value)?;
+                    let length = image.fragments.len();
+                    self.charge(length)?;
+                    self.reserve_cells(pending.len().saturating_add(length).saturating_mul(4))?;
+                    let image = Reader::new(self.evaluator.facts()).image(value)?;
+                    for fragment in image.complete_words()? {
+                        if let crate::sema::values::WordTarget::Value(value) = fragment.target {
+                            pending.push(value);
+                        }
+                    }
                 }
                 View::Product { length, .. } => {
                     self.charge(

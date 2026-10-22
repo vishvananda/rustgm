@@ -76,6 +76,33 @@ pub fn check_cases_with(
     cases: &[(&str, &str, bool)],
     frontend: impl Fn(&str, &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    check_inputs(suite, cases, true, frontend)
+}
+/// Literal sources retain leading crate attributes and their independently frozen bytes.
+#[allow(
+    dead_code,
+    reason = "the shared harness is also compiled in suite groups without literal-source inputs"
+)]
+pub fn check_literal_cases(
+    suite: &str,
+    cases: &[(&str, &str, bool)],
+) -> Result<(), Box<dyn std::error::Error>> {
+    check_inputs(suite, cases, false, |_, path| {
+        compile(
+            "frontend",
+            Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                .arg("--emit-lowir")
+                .arg(path)
+                .output()?,
+        )
+    })
+}
+fn check_inputs(
+    suite: &str,
+    cases: &[(&str, &str, bool)],
+    prefix: bool,
+    frontend: impl Fn(&str, &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;
@@ -83,7 +110,11 @@ pub fn check_cases_with(
     std::fs::create_dir_all(&folder)?;
     for &(name, body, panic) in cases {
         let path = folder.join(format!("{name}.rs"));
-        let source = format!("{CHECK}{body}");
+        let source = if prefix {
+            format!("{CHECK}{body}")
+        } else {
+            body.to_owned()
+        };
         std::fs::write(&path, &source)?;
         let independent = folder.join(format!("{name}.rustc"));
         compile(

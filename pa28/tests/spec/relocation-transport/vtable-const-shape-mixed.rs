@@ -1,0 +1,3 @@
+#![allow(dead_code,unused_mut,invalid_reference_casting)]
+trait T<const N:usize>{fn value(&self)->u32;}impl T<1> for u32{fn value(&self)->u32{1}}impl T<2> for u32{fn value(&self)->u32{2}}union U{one:*const dyn T<1>,two:*const dyn T<2>,bytes:[u8;16]}static A:u32=37;const X:*const dyn T<1>={let a:&dyn T<1>=&A;let b:&dyn T<2>=&A;let source=U{one:a};let other=U{two:b};let mut target=U{bytes:[0;16]};unsafe{core::ptr::copy_nonoverlapping(&raw const source.bytes[0],&raw mut target.bytes[0],12);core::ptr::copy_nonoverlapping(&raw const other.bytes[12],&raw mut target.bytes[12],4);target.one}};
+fn main(){let _=X;}

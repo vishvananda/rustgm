@@ -78,40 +78,6 @@ impl Graph<'_> {
         }
         Ok(())
     }
-    fn image_row(
-        &mut self,
-        row: &mut String,
-        ty: TypeId,
-        value: Constant,
-        size: u64,
-    ) -> Result<(), &'static str> {
-        let image = self.reader.image(value)?;
-        if image.ty != ty || image.bytes.len() as u64 != size {
-            return Err("constant view image differs from its stored type");
-        }
-        self.charge(image.bytes.len().saturating_add(image.initialized.len()))?;
-        self.storage(
-            image
-                .bytes
-                .len()
-                .saturating_mul(2)
-                .saturating_add(image.initialized.len().saturating_mul(16))
-                .saturating_add(64),
-        )?;
-        write!(row, "image size={size} bytes=").map_err(|_| "constant view formatting failed")?;
-        for (index, byte) in image.bytes.iter().enumerate() {
-            if image.initialized(index) {
-                write!(row, "{byte:02x}").map_err(|_| "constant view formatting failed")?;
-            } else {
-                row.push_str("??");
-            }
-        }
-        row.push_str(" initialized=");
-        for word in image.initialized {
-            write!(row, "{word:016x}").map_err(|_| "constant view formatting failed")?;
-        }
-        Ok(())
-    }
     fn literal_row(
         &mut self,
         row: &mut String,

@@ -138,6 +138,13 @@ impl Queries<'_> {
                 "constant image contents differ from their canonical owner",
             ));
         }
+        if image
+            .fragments
+            .iter()
+            .any(|fragment| fragment.offset < width as u64)
+        {
+            return Err(self.error(query, "constant numeric read uses symbolic pointer bytes"));
+        }
         super::images::scalars::decode(primitive, image.bytes, image.initialized)
             .map(Value::Scalar)
             .map_err(|e| self.error(query, e))
@@ -155,7 +162,7 @@ impl Queries<'_> {
         let projection = super::values::Reader::new(self.typing.facts)
             .projection_layout(base.ty, index)
             .map_err(|e| self.error(query, e))?;
-        let super::values::ProjectionStorage::UnionScalar {
+        let super::values::ProjectionStorage::UnionField {
             field: crate::sema::members::Selection::Nominal(field),
         } = projection.storage
         else {
@@ -182,20 +189,24 @@ impl Queries<'_> {
                         "constant image field has a different owner or ordinal",
                     )
                 })?;
-            let primitive = family
+            let ty = family
                 .fields
                 .get(ordinal as usize)
                 .copied()
                 .ok_or_else(|| self.error(query, "constant image field is out of bounds"))?;
-            if projection.ty != child.ty
-                || projection.ty != crate::types::TypeId::primitive(primitive)
-                || projection.offset != 0
-            {
+            if projection.ty != child.ty || projection.ty != ty || projection.offset != 0 {
                 return Err(self.error(
                     query,
                     "constant image projection differs from its declared type",
                 ));
             }
+            let Some(crate::types::Kind::Primitive(primitive)) = self.typing.facts.types.kind(ty)
+            else {
+                return Err(self.error(
+                    query,
+                    "nonprimitive union contents require checked byte execution",
+                ));
+            };
             (primitive, family.size)
         };
         Ok((base.ty, primitive, size))

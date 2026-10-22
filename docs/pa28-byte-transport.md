@@ -114,3 +114,10 @@ with `--ignored`; private checks use `cargo test --manifest-path dev/Cargo.toml
 --locked --lib byte_backing_`. No full maintainer or exclusive performance
 matrix was run by this lane. The integrator owns combined release/performance;
 neither assignment is activated and no text reference is regenerated here.
+
+
+The later symbolic-word checkpoint in `docs/pa28-relocation-design.md` supersedes
+the pointer-neighbor profile boundary above. Its unchanged fixture now accepts
+in all three views and executes independently against rustc/CPPGM. Other counts
+and limitations above describe the original scalar checkpoint; the relocation
+review records the exact newer profile and remaining requirements.

@@ -20,6 +20,7 @@ struct TransferSpan {
     range: Option<Range>,
     offset: u64,
     bytes: u64,
+    image: Option<super::memory::ImagePath>,
 }
 const HEADER_SLOTS: usize = (2 * std::mem::size_of::<TransferSpan>()
     + std::mem::size_of::<Constant>())
@@ -97,7 +98,7 @@ impl Machine<'_, '_> {
             return Err("constant copy_nonoverlapping regions overlap".into());
         }
         self.check_raw_write_authority(destination.address, destination.root)?;
-        if self.needs_byte_transfer(source, destination)? {
+        if self.needs_byte_transfer(source, destination) {
             return self.copy_byte_spans(source, destination);
         }
         let Some(snapshot) = self.transfer_snapshot(source)? else {

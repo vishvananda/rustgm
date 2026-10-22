@@ -30,7 +30,7 @@ impl Machine<'_, '_> {
         let (root, mut fields) = path.fields_only()?;
         let root_type = Reader::new(self.evaluator.facts()).location(root)?.ty;
         let layout = self.footprint(root_type)?;
-        let (stored, offset) = self.storage_offset(root_type, &fields)?;
+        let (stored, offset, image) = self.storage_coordinates::<true>(root_type, &fields)?;
         if !Reader::new(self.evaluator.facts()).same_storage_type(stored, ty) {
             return Err("constant counted pointer reinterpretation is not implemented".into());
         }
@@ -89,6 +89,7 @@ impl Machine<'_, '_> {
             range,
             offset,
             bytes,
+            image,
         })
     }
 }

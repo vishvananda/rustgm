@@ -1,0 +1,2 @@
+#![allow(dead_code,unused_mut,invalid_reference_casting)]
+trait T{fn value(&self)->u32;}impl T for &u32{fn value(&self)->u32{**self}}union U<'p>{pointer:*const(dyn T+'p),bytes:[u8;16]}static A:u32=37;const fn escape<'a>(x:&'a u32)-> &'a &'a u32{let a:&dyn T=&x;let source=U{pointer:a};let mut target=U{bytes:[0;16]};unsafe{core::ptr::copy_nonoverlapping(&raw const source.bytes[0],&raw mut target.bytes[0],16);&*(target.pointer as *const &u32)}}const X:&&u32=escape(&A);fn main(){let _=X;}

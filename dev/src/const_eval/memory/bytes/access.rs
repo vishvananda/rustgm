@@ -1,5 +1,5 @@
 //! All views of a converted root resolve against its sole mutable backing.
-use super::{Constant, Failure, Id, Machine, Reader, TypeId};
+use super::{Constant, Failure, Id, Machine, Read, Reader, TypeId};
 use crate::{
     const_eval::memory::{Range, Resolved},
     sema::members::Selection,
@@ -8,9 +8,10 @@ impl Machine<'_, '_> {
     pub(in crate::const_eval::memory) fn freeze_byte_root(
         &mut self,
         id: Id,
-    ) -> Result<Constant, Failure> {
+        purpose: crate::const_eval::static_reads::ReadPurpose,
+    ) -> Result<Read<Constant>, Failure> {
         let ty = self.byte_backing(id)?.ty;
-        self.decode_bytes(id, 0, ty)
+        self.decode_bytes(id, 0, ty, purpose)
     }
     pub(in crate::const_eval::memory) fn check_byte_length(
         &mut self,
@@ -55,7 +56,7 @@ impl Machine<'_, '_> {
             .ok_or("missing byte union ordinal")?;
         let selected = Reader::new(self.evaluator.facts())
             .projection_layout(union.owner, u64::from(ordinal))?;
-        if !matches!(selected.storage,crate::sema::values::ProjectionStorage::UnionScalar{field} if field==union.field)
+        if !matches!(selected.storage,crate::sema::values::ProjectionStorage::UnionField{field} if field==union.field)
         {
             return Err("byte union field differs from its canonical owner".into());
         }
@@ -67,7 +68,8 @@ impl Machine<'_, '_> {
         path: &[u64],
         union: crate::const_eval::memory::UnionField,
         leaf: TypeId,
-    ) -> Result<Option<Constant>, Failure> {
+        purpose: crate::const_eval::static_reads::ReadPurpose,
+    ) -> Result<Option<Read<Constant>>, Failure> {
         let Some(id) = self.byte_root(root) else {
             return Ok(None);
         };
@@ -77,7 +79,7 @@ impl Machine<'_, '_> {
             return Err("byte union read has a different owner".into());
         }
         let (ty, delta) = self.checked_byte_union(union)?;
-        if ty != leaf {
+        if !self.image_field_compatible(ty, leaf) {
             return Err("byte union read differs from its selected field type".into());
         }
         self.decode_bytes(
@@ -86,6 +88,7 @@ impl Machine<'_, '_> {
                 .checked_add(delta)
                 .ok_or("byte union read offset overflow")?,
             ty,
+            purpose,
         )
         .map(Some)
     }
@@ -94,15 +97,16 @@ impl Machine<'_, '_> {
         place: Resolved,
         value: Constant,
     ) -> Result<bool, Failure> {
-        if self.memory.bytes.roots.is_empty() {
-            return Ok(false);
-        }
         if place.union.is_none() {
             return Ok(false);
         }
         let root = self.path(place.address)?.root;
         if self.byte_root(root).is_none() {
-            return Ok(false);
+            let union = place.union.ok_or("missing selected union storage")?;
+            if Reader::new(self.evaluator.facts()).scalar_union(union.owner)? {
+                return Ok(false);
+            }
+            self.convert_byte_root(root)?;
         }
         let (root, ty, offset) = self.byte_selection(place)?;
         self.write_byte_value(root, offset, ty, value)?;
@@ -114,7 +118,13 @@ impl Machine<'_, '_> {
         value: Constant,
     ) -> Result<bool, Failure> {
         if self.byte_root(path.root).is_none() {
-            return Ok(false);
+            if !Reader::new(self.evaluator.facts()).has_image_families() || path.fields.is_empty() {
+                return Ok(false);
+            }
+            if !self.writes_inside_image(path.root, &path.fields)? {
+                return Ok(false);
+            }
+            self.convert_byte_root(path.root)?;
         }
         if let Some(range) = path.range {
             return self.write_byte_range(path.root, &path.fields, range, value);
@@ -123,6 +133,47 @@ impl Machine<'_, '_> {
         let (ty, offset) = self.storage_offset(ty, &path.fields)?;
         self.write_byte_value(path.root, offset, ty, value)?;
         Ok(true)
+    }
+    fn writes_inside_image(
+        &mut self,
+        root: crate::sema::values::LocationId,
+        path: &[u64],
+    ) -> Result<bool, Failure> {
+        let Some(&root) = self.memory.roots.get(&root) else {
+            return Ok(false);
+        };
+        let mut cell = root;
+        let mut frozen = None;
+        for &index in path {
+            self.charge(1)?;
+            let value = if let Some(value) = frozen {
+                value
+            } else {
+                match &self.memory.cells[cell] {
+                    super::super::Cell::Frozen(value) => *value,
+                    super::super::Cell::Fields { values, .. } => {
+                        cell = usize::try_from(index)
+                            .ok()
+                            .and_then(|index| values.get(index))
+                            .copied()
+                            .ok_or("constant index is out of bounds")?;
+                        continue;
+                    }
+                    super::super::Cell::Bytes(_) => {
+                        return Err("byte root bypassed its write consumer".into());
+                    }
+                    super::super::Cell::Empty => return Ok(false),
+                }
+            };
+            if matches!(
+                Reader::new(self.evaluator.facts()).view(value)?,
+                crate::sema::values::View::Image { .. }
+            ) {
+                return Ok(true);
+            }
+            frozen = Some(self.evaluator.field(value, index)?);
+        }
+        Ok(false)
     }
     fn write_byte_value(
         &mut self,
@@ -137,48 +188,26 @@ impl Machine<'_, '_> {
         self.slots = previous
             .checked_add(slots)
             .ok_or("byte temporary retention overflow")?;
-        let result = self.encode_bytes(&mut buffer, 0, ty, value);
+        let result = self
+            .encode_bytes(&mut buffer, 0, ty, value)
+            .and_then(|()| self.commit_byte_snapshot(root, offset, &buffer.snapshot()));
         self.slots = previous;
-        result?;
-        self.commit_byte_snapshot(root, offset, &buffer.snapshot())
+        result
     }
     pub(in crate::const_eval::memory) fn read_byte_range(
         &mut self,
         root: crate::sema::values::LocationId,
         path: &[u64],
         range: Range,
-    ) -> Result<Option<Constant>, Failure> {
+        purpose: crate::const_eval::static_reads::ReadPurpose,
+    ) -> Result<Option<Read<Constant>>, Failure> {
         let Some(id) = self.byte_root(root) else {
             return Ok(None);
         };
         let ty = self.byte_backing(id)?.ty;
         let (ty, offset) = self.storage_offset(ty, path)?;
-        self.charge(usize::try_from(range.length).map_err(|_| "byte range exceeds host size")?)?;
-        self.reserve_cells(
-            usize::try_from(range.length)
-                .map_err(|_| "byte range exceeds host size")?
-                .saturating_mul(4),
-        )?;
-        let mut fields = Vec::new();
-        for index in 0..range.length {
-            let field = Reader::new(self.evaluator.facts()).projection_layout(
-                ty,
-                range
-                    .from
-                    .checked_add(index)
-                    .ok_or("byte range index overflow")?,
-            )?;
-            fields.push(
-                self.decode_bytes(
-                    id,
-                    offset
-                        .checked_add(field.offset)
-                        .ok_or("byte range offset overflow")?,
-                    field.ty,
-                )?,
-            );
-        }
-        Ok(Some(self.evaluator.fields(&fields, None)?))
+        self.decode_byte_range(id, offset, ty, range, purpose)
+            .map(Some)
     }
     pub(in crate::const_eval::memory) fn write_byte_range(
         &mut self,
@@ -260,14 +289,16 @@ impl Machine<'_, '_> {
             }
             Ok::<_, Failure>(())
         })();
+        let result = result.and_then(|()| {
+            let start = range
+                .from
+                .checked_mul(stride)
+                .and_then(|n| offset.checked_add(n))
+                .ok_or("byte range destination offset overflow")?;
+            self.commit_byte_snapshot(root, start, &buffer.snapshot())?;
+            Ok(true)
+        });
         self.slots = previous;
-        result?;
-        let start = range
-            .from
-            .checked_mul(stride)
-            .and_then(|n| offset.checked_add(n))
-            .ok_or("byte range destination offset overflow")?;
-        self.commit_byte_snapshot(root, start, &buffer.snapshot())?;
-        Ok(true)
+        result
     }
 }

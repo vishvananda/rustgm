@@ -73,14 +73,7 @@ impl Machine<'_, '_> {
             ),
             Rvalue::Unit => self.evaluator.fields(&[], None)?,
             Rvalue::Union { field, value } => {
-                let (value, work) = self.evaluator.union_value(
-                    ty,
-                    field,
-                    Self::value(frame, value)?,
-                    self.limits.steps.saturating_sub(self.work.steps),
-                )?;
-                self.charge(work)?;
-                value
+                self.make_union(ty, field, Self::value(frame, value)?)?
             }
             Rvalue::Aggregate { fields, variant } => {
                 let arguments = self.arguments(frame, fields)?;

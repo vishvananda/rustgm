@@ -1,0 +1,176 @@
+//! Symbolic words retain provenance independently of their storage encoding.
+mod addresses;
+use super::Constant;
+use crate::types::TypeId;
+pub(crate) use addresses::WordAddress;
+/// A checked pointer/function word or an existing canonical object vtable.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WordTarget {
+    Value(Constant),
+    Vtable { concrete: TypeId, target: TypeId },
+}
+/// A byte interval copied from one symbolic eight-byte target word.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct ImageFragment {
+    pub offset: u64,
+    pub source_offset: u8,
+    pub length: u8,
+    pub target: WordTarget,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum MetadataShape {
+    Thin,
+    Length,
+    Object,
+}
+#[derive(Clone, Copy)]
+pub(crate) enum WordShape {
+    Function,
+    Data {
+        pointee: TypeId,
+        reference: Option<bool>,
+        metadata: MetadataShape,
+    },
+}
+impl super::Reader<'_> {
+    pub(crate) fn word_shape(self, ty: TypeId) -> Result<WordShape, &'static str> {
+        use crate::{abi::layout::Shape, types::Kind};
+        let shape = match self.facts.types.kind(ty) {
+            Some(Kind::Function { .. }) => WordShape::Function,
+            Some(Kind::Pointer { pointee, .. }) => WordShape::Data {
+                pointee,
+                reference: None,
+                metadata: self.word_metadata(pointee),
+            },
+            Some(Kind::Reference {
+                referent, mutable, ..
+            }) => WordShape::Data {
+                pointee: referent,
+                reference: Some(mutable),
+                metadata: self.word_metadata(referent),
+            },
+            _ => return Err("constant symbolic word requires a pointer or function type"),
+        };
+        let layout = self
+            .facts
+            .layouts
+            .get(ty)
+            .ok_or("missing prepared pointer word layout")?;
+        let wide = matches!(
+            shape,
+            WordShape::Data {
+                metadata: MetadataShape::Length | MetadataShape::Object,
+                ..
+            }
+        );
+        if (wide && (!matches!(layout.shape, Shape::WidePointer) || layout.size != 16))
+            || (!wide && (!matches!(layout.shape, Shape::Scalar) || layout.size != 8))
+        {
+            return Err("symbolic word type differs from its retained pointer layout");
+        }
+        Ok(shape)
+    }
+    fn word_metadata(self, ty: TypeId) -> MetadataShape {
+        match self.facts.types.kind(ty) {
+            Some(
+                crate::types::Kind::Slice(_)
+                | crate::types::Kind::Primitive(crate::types::Primitive::Str),
+            ) => MetadataShape::Length,
+            Some(crate::types::Kind::Dynamic { .. }) => MetadataShape::Object,
+            _ => MetadataShape::Thin,
+        }
+    }
+}
+
+use super::{Evaluator, Failure, Metadata, Reader, Value};
+impl Evaluator<'_> {
+    pub(crate) fn word_shape_key(
+        &mut self,
+        fold: &mut crate::types::substitute::Bound,
+        ty: TypeId,
+        work: usize,
+        bytes: usize,
+    ) -> Result<TypeId, Failure> {
+        fold.apply_bounded(&mut self.queries.typing.facts.types, ty, work, bytes)
+            .map_err(Failure::Invalid)
+    }
+    /// Split physical pointer words without changing their original write authority.
+    pub(crate) fn pointer_words(
+        &mut self,
+        value: Constant,
+    ) -> Result<(WordTarget, Option<Metadata>), Failure> {
+        let value = if matches!(value.0, Value::BytePointer { .. }) {
+            self.literal_address(value)?
+        } else {
+            value
+        };
+        match value.0 {
+            Value::Reference(mut pointer) => {
+                Reader::new(self.facts())
+                    .location(value.location().ok_or("missing pointer word origin")?)?;
+                let metadata = pointer.metadata.take();
+                Ok((
+                    WordTarget::Value(Constant(Value::Reference(pointer))),
+                    metadata,
+                ))
+            }
+            Value::Function(_) => Ok((WordTarget::Value(value), None)),
+            _ => Err("constant numeric or non-pointer symbolic word is not implemented".into()),
+        }
+    }
+}
+impl Reader<'_> {
+    pub(crate) fn function_word(
+        self,
+        expected: TypeId,
+        target: WordTarget,
+    ) -> Result<Constant, &'static str> {
+        let WordTarget::Value(value) = target else {
+            return Err("function pointer word is not a callable");
+        };
+        let super::View::Function(instance) = self.view(value)? else {
+            return Err("function pointer word lacks canonical callable identity");
+        };
+        let Some(
+            crate::types::Kind::FunctionItem {
+                signature: actual, ..
+            }
+            | crate::types::Kind::Closure {
+                signature: actual, ..
+            },
+        ) = self.facts.types.kind(instance.ty())
+        else {
+            return Err("symbolic function word has an invalid instance");
+        };
+        let Some(crate::types::Kind::Function {
+            bound_regions: a_bound,
+            parameters: a_parameters,
+            result: a_result,
+            unsafe_: a_unsafe,
+            convention: a_convention,
+        }) = self.facts.types.kind(actual)
+        else {
+            return Err("symbolic function word lacks an ordinary signature");
+        };
+        let Some(crate::types::Kind::Function {
+            bound_regions,
+            parameters,
+            result,
+            unsafe_,
+            convention,
+        }) = self.facts.types.kind(expected)
+        else {
+            return Err("symbolic function demand lacks a function type");
+        };
+        if a_bound != bound_regions
+            || a_parameters != parameters
+            || a_result != result
+            || a_convention != convention
+            || (a_unsafe && !unsafe_)
+        {
+            return Err("symbolic function word signature reinterpretation is not implemented");
+        }
+        Ok(Constant::function(instance))
+    }
+}

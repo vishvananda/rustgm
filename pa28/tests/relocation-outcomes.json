@@ -1,0 +1,803 @@
+{
+  "stage": "planned",
+  "profile": "symbolic words and fragments; explicit preexisting coercion-cast/raw-slice boundaries",
+  "source_cases": [
+    {
+      "name": "thin-split-same",
+      "path": "pa28/tests/spec/relocation-transport/thin-split-same.rs",
+      "sha256": "c31941174e381afac7427f8e4ea19364e289450b803f7473aeac17ec2fa80a5b",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "thin-reverse-same",
+      "path": "pa28/tests/spec/relocation-transport/thin-reverse-same.rs",
+      "sha256": "681410bc0c0105aeae94778ae45da923fa7e264c6a783d8e5b6c62690d01e913",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "thin-via-two-snapshots",
+      "path": "pa28/tests/spec/relocation-transport/thin-via-two-snapshots.rs",
+      "sha256": "f76a24a65d4ea11e0420abb9f25f948735457f77abac00a45fd15f27ba479258",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "thin-mixed-identities",
+      "path": "pa28/tests/spec/relocation-transport/thin-mixed-identities.rs",
+      "sha256": "dc44b658b10e8967a328d981a4b4b76f0a4098212a1bab15f0f04aa6950e9b1d",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "provenance word",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "partial-numeric-overwrite",
+      "path": "pa28/tests/spec/relocation-transport/partial-numeric-overwrite.rs",
+      "sha256": "752df59f41eeabc782ad98b7e7e22dea757c6cdd8bba016e0bfe46b5c5160c64",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "incomplete or misordered provenance",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "partial-unused-image",
+      "path": "pa28/tests/spec/relocation-transport/partial-unused-image.rs",
+      "sha256": "1e3c10e544f1c896b11ba8e76e4faeb5e77ed51ba068f1250710bab4fac816db",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "partial or misordered pointer provenance",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "numeric-pointer-read",
+      "path": "pa28/tests/spec/relocation-transport/numeric-pointer-read.rs",
+      "sha256": "b20b4affa456fae4c361033f1b6c9bf0353a2ba9001a54f701dc24aeb359ad1d",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "symbolic pointer bytes",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "shared-derived-reassembly",
+      "path": "pa28/tests/spec/relocation-transport/shared-derived-reassembly.rs",
+      "sha256": "0b9a70e806cc4f7a646a84066e9c7492ec75797b43454fe73fb27eeddf427674",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "derived from a shared reference",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "writable-separate-shared",
+      "path": "pa28/tests/spec/relocation-transport/writable-separate-shared.rs",
+      "sha256": "7bab4b0dce436c34f1ae2dbf7f8c02ac8e0dbdab9c01e393b2ba1ff64b32c9ad",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "expired-reassembly",
+      "path": "pa28/tests/spec/relocation-transport/expired-reassembly.rs",
+      "sha256": "224062c46fcb3342cc4c44e5580d583fd7f4235af72dd4ccb53803d5a0d5e0fb",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "expired storage",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "slice-split",
+      "path": "pa28/tests/spec/relocation-transport/slice-split.rs",
+      "sha256": "e759e9b885c0be7e2016a17ea9a77f0c9414e28d28d24909c6d876083529040d",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "constant raw whole-range access is not implemented",
+      "boundary": true,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "slice-mixed-length",
+      "path": "pa28/tests/spec/relocation-transport/slice-mixed-length.rs",
+      "sha256": "509f6fe196d4dbd58713d2f54cae372cf067e8e407545436a12671d18b638a56",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "constant raw whole-range access is not implemented",
+      "boundary": true,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "slice-mixed-length-bounds",
+      "path": "pa28/tests/spec/relocation-transport/slice-mixed-length-bounds.rs",
+      "sha256": "fd790b81e38f485c96bf9b877ecc343c754b74f597d238e3396a42f301f8d3af",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "out of bounds",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "function-split",
+      "path": "pa28/tests/spec/relocation-transport/function-split.rs",
+      "sha256": "bccf426cdd5889197967c53ef06a7a4ab311de1ab786c23575bf686e1c0f7b88",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "object-split",
+      "path": "pa28/tests/spec/relocation-transport/object-split.rs",
+      "sha256": "4f70907bc48551047e6da671201c1fbc153d78e93bcbd5c4fb74eaedca535337",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "operation requires a scalar type",
+      "boundary": true,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "thin-duplicate-cells",
+      "path": "pa28/tests/spec/relocation-transport/thin-duplicate-cells.rs",
+      "sha256": "8954ef4728d88de9accc6b6074a2391ab9060dcd296ea700b086e4d19e9e24a6",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "thin-same-allocation-different-offset",
+      "path": "pa28/tests/spec/relocation-transport/thin-same-allocation-different-offset.rs",
+      "sha256": "6e26e06ba900796e22815bae03369c898534fbb13dd745983075ecf5991bc8d8",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "provenance word",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "complete-image",
+      "path": "pa28/tests/spec/relocation-transport/complete-image.rs",
+      "sha256": "84f79704ea39229582efc54a33e9ca0e1dbb78325d3581367fd29d0f313f7c8a",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "slice-modified-metadata",
+      "path": "pa28/tests/spec/relocation-transport/slice-modified-metadata.rs",
+      "sha256": "23fe32167c3d4ccb6d22d1cdb39695799f7270398453a2865e245d3aab75d5bd",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "constant raw whole-range access is not implemented",
+      "boundary": true,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "complete-slice-image",
+      "path": "pa28/tests/spec/relocation-transport/complete-slice-image.rs",
+      "sha256": "34e465f1271328793dbed8f6b4b34b01f036d87752a661f38dbf28179f043469",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "shared-reference-split",
+      "path": "pa28/tests/spec/relocation-transport/shared-reference-split.rs",
+      "sha256": "f3415ffb7e0bc7b8fccd305d42d779ed820ebe58077a00279f8d96c7d748cf2a",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json"
+    },
+    {
+      "name": "object-separate-vtable-word",
+      "path": "pa28/tests/spec/relocation-transport/object-separate-vtable-word.rs",
+      "sha256": "136b01834741a7db209e155265ea46870e5e4ab27804510ebdd7a4567d62f4df",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "operation requires a scalar type",
+      "boundary": true,
+      "independent_manifest": "declared-vtable.json"
+    },
+    {
+      "name": "object-same-vtable-halves",
+      "path": "pa28/tests/spec/relocation-transport/object-same-vtable-halves.rs",
+      "sha256": "e5d07467731b4dc379b18144ce0cb85369af6ed8bc34a9622a70d4e51f889493",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "operation requires a scalar type",
+      "boundary": true,
+      "independent_manifest": "declared-vtable.json"
+    },
+    {
+      "name": "object-mixed-vtable-halves",
+      "path": "pa28/tests/spec/relocation-transport/object-mixed-vtable-halves.rs",
+      "sha256": "c2084710a150eee71b0709e6e335c9de57f20e5a1683dabba5b47fade5ca6749",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "operation requires a scalar type",
+      "boundary": true,
+      "independent_manifest": "declared-vtable.json"
+    },
+    {
+      "name": "object-numeric-vtable-word",
+      "path": "pa28/tests/spec/relocation-transport/object-numeric-vtable-word.rs",
+      "sha256": "0f38f786c0b2da7dcd40cb3f3228e25d695425833941204804be3e706ab389a2",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "operation requires a scalar type",
+      "boundary": true,
+      "independent_manifest": "declared-vtable.json"
+    },
+    {
+      "name": "thin-duplicate-field-views",
+      "path": "pa28/tests/spec/relocation-transport/thin-duplicate-field-views.rs",
+      "sha256": "5f52264bf59a350926ab1074d9fadaa3665c096ff780802ae5c3b6ed2a92ed02",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases.json"
+    },
+    {
+      "name": "thin-root-first-element-views",
+      "path": "pa28/tests/spec/relocation-transport/thin-root-first-element-views.rs",
+      "sha256": "74cbaedaa480d3a00f7e77acfeee593c275dc902b90e407499c212e73c759c20",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases.json"
+    },
+    {
+      "name": "slice-prefix-data-views",
+      "path": "pa28/tests/spec/relocation-transport/slice-prefix-data-views.rs",
+      "sha256": "7a32b6fbf4118a65edd22924bf5e53dcd9c37704161ce12421a8d64ef5aee52c",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases.json"
+    },
+    {
+      "name": "ordinary-raw-slice-index",
+      "path": "pa28/tests/spec/relocation-transport/ordinary-raw-slice-index.rs",
+      "sha256": "8953124afe38846ae088b510e1b024e62f0e8684abfee66ad960f7896b6ee2cc",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "boundary": true,
+      "independent_manifest": "declared-aliases.json"
+    },
+    {
+      "name": "thin-duplicate-field-views-encoding-reversed",
+      "path": "pa28/tests/spec/relocation-transport/thin-duplicate-field-views-encoding-reversed.rs",
+      "sha256": "d9af1f22ea26172d5b9a52d7ebd61cb108d2d8492cf60dd64086c48d441c468a",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases-reversed.json"
+    },
+    {
+      "name": "thin-duplicate-field-views-copy-reversed",
+      "path": "pa28/tests/spec/relocation-transport/thin-duplicate-field-views-copy-reversed.rs",
+      "sha256": "d0b305156fc723062e6a835fcef089b4f6730e983c96281f32726cb7cb540e85",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases-reversed.json"
+    },
+    {
+      "name": "thin-root-first-element-views-encoding-reversed",
+      "path": "pa28/tests/spec/relocation-transport/thin-root-first-element-views-encoding-reversed.rs",
+      "sha256": "9fb1b09165064163d63351f7114081c0df1cf88da27f06dd1922f9ac75ed54ec",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases-reversed.json"
+    },
+    {
+      "name": "thin-root-first-element-views-copy-reversed",
+      "path": "pa28/tests/spec/relocation-transport/thin-root-first-element-views-copy-reversed.rs",
+      "sha256": "d1641ea7a31f22ba66b920e0f47d6fb9783b915254d0c7f3053206ef9ef8fdb9",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases-reversed.json"
+    },
+    {
+      "name": "slice-prefix-data-views-encoding-reversed",
+      "path": "pa28/tests/spec/relocation-transport/slice-prefix-data-views-encoding-reversed.rs",
+      "sha256": "bdcf57467a3f74be77ce9d68e18c4bb60e81d84888998fd2198e7d8452ca4b1d",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases-reversed.json"
+    },
+    {
+      "name": "slice-prefix-data-views-copy-reversed",
+      "path": "pa28/tests/spec/relocation-transport/slice-prefix-data-views-copy-reversed.rs",
+      "sha256": "2eb556099f7d4d72d8c15d8d63d69aae18a7d9c9c5d8f6df1026cc271bde6803",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases-reversed.json"
+    },
+    {
+      "name": "multiple-static-reference-waits",
+      "path": "pa28/tests/spec/relocation-transport/multiple-static-reference-waits.rs",
+      "sha256": "26d3e71a7833fd25d12b2b5a37b531057eada501eadc0af5276a4f68a7002f51",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-pending.json"
+    },
+    {
+      "name": "reference-read-after-intervening-write",
+      "path": "pa28/tests/spec/relocation-transport/reference-read-after-intervening-write.rs",
+      "sha256": "8b4438f3519d379afaff15790a43057134acd46a03708594b279297766b7a63e",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-pending.json"
+    },
+    {
+      "name": "object-split-typed-let",
+      "path": "pa28/tests/spec/relocation-transport/object-split-typed-let.rs",
+      "sha256": "b3999fb804be7a536a22aff59f48934117c667b1a35e6c2363a88645801aa65f",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-vtable-typed-let.json"
+    },
+    {
+      "name": "object-separate-vtable-word-typed-let",
+      "path": "pa28/tests/spec/relocation-transport/object-separate-vtable-word-typed-let.rs",
+      "sha256": "0ce30758fcf5934c02d040a56b13ce14c9cf969b67787cb41474d78577c5e866",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-vtable-typed-let.json"
+    },
+    {
+      "name": "object-same-vtable-halves-typed-let",
+      "path": "pa28/tests/spec/relocation-transport/object-same-vtable-halves-typed-let.rs",
+      "sha256": "75f6c7bfa8ad6b0be26e35ad9d01ff88dc6828924370b51f4b417bd6092854d4",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-vtable-typed-let.json"
+    },
+    {
+      "name": "object-mixed-vtable-halves-typed-let",
+      "path": "pa28/tests/spec/relocation-transport/object-mixed-vtable-halves-typed-let.rs",
+      "sha256": "e74300949534e057370b8d18adfbcdfca309707bf515db1c97690a571d1e939f",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "provenance word",
+      "boundary": false,
+      "independent_manifest": "declared-vtable-typed-let.json"
+    },
+    {
+      "name": "object-numeric-vtable-word-typed-let",
+      "path": "pa28/tests/spec/relocation-transport/object-numeric-vtable-word-typed-let.rs",
+      "sha256": "a98b9c8aefcd9b8e3b3028fe3a2aaef70ccc5b77b575f6bf536324aed0b86a7e",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "symbolic pointer bytes",
+      "boundary": false,
+      "independent_manifest": "declared-vtable-typed-let.json"
+    },
+    {
+      "name": "vtable-borrowed-concrete-forward",
+      "path": "pa28/tests/spec/relocation-transport/vtable-borrowed-concrete-forward.rs",
+      "sha256": "b2d55255b2f0d19e8ec5b1cbbf61ffc7fc3dc7993761b15a0257b85572fdbfc6",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "required lifetime does not outlive its target",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "vtable-borrowed-concrete-forward-scoped",
+      "path": "pa28/tests/spec/relocation-transport/vtable-borrowed-concrete-forward-scoped.rs",
+      "sha256": "bb751a3eaf02ecf5cc6ff4708578ea779ea2864bb9c0bd430af78ea93a3bc07f",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "vtable-borrowed-concrete-reversed",
+      "path": "pa28/tests/spec/relocation-transport/vtable-borrowed-concrete-reversed.rs",
+      "sha256": "63dbed88975b30b82e70fcb040a2736fd66c407b2d558a97d0772b0dbaa27e14",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "required lifetime does not outlive its target",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "vtable-borrowed-concrete-reversed-scoped",
+      "path": "pa28/tests/spec/relocation-transport/vtable-borrowed-concrete-reversed-scoped.rs",
+      "sha256": "5c22d45a46678b2dfa8fa90f9767c7b0b0003f3135c957aaaaecb01c5c09fa0b",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "vtable-trait-shape-mixed",
+      "path": "pa28/tests/spec/relocation-transport/vtable-trait-shape-mixed.rs",
+      "sha256": "e52c355523ee162e4af71c8f2ea3257516e2b3ec73faf66d4e82e6e6529db701",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "provenance word",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "vtable-const-shape-mixed",
+      "path": "pa28/tests/spec/relocation-transport/vtable-const-shape-mixed.rs",
+      "sha256": "61daa72edb01e5b6a5b8cc5baa5392f73034f2d9910731adcb4cf5bc95ab54f8",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "provenance word",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "vtable-associated-shape-mixed",
+      "path": "pa28/tests/spec/relocation-transport/vtable-associated-shape-mixed.rs",
+      "sha256": "956f43ba7a9ebf6160bc56632bf0ada990a61c766f92585485763c3b0ae6b6c2",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "provenance word",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "union-owned-interior",
+      "path": "pa28/tests/spec/relocation-transport/union-owned-interior.rs",
+      "sha256": "14ee668784e468cc6db67a55988578823753e94447c78e3b0d73dc29bba95d82",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json"
+    },
+    {
+      "name": "union-interior-reference",
+      "path": "pa28/tests/spec/relocation-transport/union-interior-reference.rs",
+      "sha256": "db2aacc4ddedb153a04581c250823d20c95d62856a6779e8c241930ab24f8272",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "expired storage",
+      "boundary": false,
+      "independent_manifest": "declared-shapes-v2.json",
+      "diagnostic_note": "Rust rejects the interior-mutable temporary; frontend independently rejects its expired backing before the interior-reference gate."
+    },
+    {
+      "name": "vtable-scoped-borrowed-object-escape",
+      "path": "pa28/tests/spec/relocation-transport/vtable-scoped-borrowed-object-escape.rs",
+      "sha256": "c5d17de95ed0e67c2edee6fc44e731604b6285047bb8a411a1d9394d0d45cccf",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
+      "independent_contract": "obj/parallel/pa28/relocation-transport/declared-scoped-escape.json",
+      "boundary": true,
+      "diagnostic_note": "Independently invalid Rust; frontend stops at the existing dynamic-reference reconstruction boundary. This is not lifetime-validity evidence."
+    },
+    {
+      "name": "complete-function-image",
+      "path": "pa28/tests/spec/relocation-transport/complete-function-image.rs",
+      "sha256": "05e6337af5ef9eb93ef8c6b7bbdc0cf9abed72d3735057471c9dd718bf81025c",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "independent_contract": "obj/parallel/pa28/relocation-transport/declared-final-images.json",
+      "boundary": false
+    },
+    {
+      "name": "complete-object-image",
+      "path": "pa28/tests/spec/relocation-transport/complete-object-image.rs",
+      "sha256": "fdde27cb801e6e4af2d95b6b8b6c956ca7f621c9deca67ee43fc3dae472269af",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "reason": "",
+      "independent_contract": "obj/parallel/pa28/relocation-transport/declared-final-images.json",
+      "boundary": false
+    },
+    {
+      "name": "vtable-scoped-reference-cell-escape",
+      "path": "pa28/tests/spec/relocation-transport/vtable-scoped-reference-cell-escape.rs",
+      "sha256": "844f57ee1107ebf3ddc6f8e093aecd396a1001c205acd8a5469742e644b54e32",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "reason": "expired storage",
+      "independent_contract": "obj/parallel/pa28/relocation-transport/declared-final-images.json",
+      "boundary": false
+    }
+  ],
+  "native_cases": [
+    {
+      "name": "thin-split-same-literal-native",
+      "path": "pa28/tests/relocation-native/thin-split-same-literal-native.rs",
+      "sha256": "105b2f193d37e673a6a3dd40466e8e5dffae7499a9cdbd12580fcb7460f61884",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-reverse-same-literal-native",
+      "path": "pa28/tests/relocation-native/thin-reverse-same-literal-native.rs",
+      "sha256": "7977d668b2d2ef4461da4c34337ba1becd8d25b76db7074c1b4e1fc8f56bff01",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-via-two-snapshots-literal-native",
+      "path": "pa28/tests/relocation-native/thin-via-two-snapshots-literal-native.rs",
+      "sha256": "e453512f1622328bd030be5d0e6f1ac6c1bbc8aef61c426677b664b8341cac06",
+      "expected_status": 0
+    },
+    {
+      "name": "writable-separate-shared-literal-native",
+      "path": "pa28/tests/relocation-native/writable-separate-shared-literal-native.rs",
+      "sha256": "fbcc56eb22ae72a803402000020e3dbea56a0baf3fe28de7edf3941c4b72c589",
+      "expected_status": 0
+    },
+    {
+      "name": "function-split-literal-native",
+      "path": "pa28/tests/relocation-native/function-split-literal-native.rs",
+      "sha256": "3fb7c06b8884034df9ef675844e6b7d45151c4f36e93ae3e32ec5d77823ec28d",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-duplicate-cells-literal-native",
+      "path": "pa28/tests/relocation-native/thin-duplicate-cells-literal-native.rs",
+      "sha256": "416ccc93e7cf45aebea570005183c258c321abeb82d5f60dd6c50a2544397e5c",
+      "expected_status": 0
+    },
+    {
+      "name": "complete-image-literal-native",
+      "path": "pa28/tests/relocation-native/complete-image-literal-native.rs",
+      "sha256": "f2a3193fbe6bfc280bad5b4eb95090c0e36bd32ac0cf3335f8b0b3a56e605ffb",
+      "expected_status": 0
+    },
+    {
+      "name": "complete-slice-image-literal-native",
+      "path": "pa28/tests/relocation-native/complete-slice-image-literal-native.rs",
+      "sha256": "373e116ef3158952fe77bef14626522d57c279406f439bc387c65811f3feae32",
+      "expected_status": 0
+    },
+    {
+      "name": "shared-reference-split-literal-native",
+      "path": "pa28/tests/relocation-native/shared-reference-split-literal-native.rs",
+      "sha256": "9240d26856123c47e34bfb7eeb288050ede6831865ddc7f4392b59e0d0380c63",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-duplicate-field-views-literal-native",
+      "path": "pa28/tests/relocation-native/thin-duplicate-field-views-literal-native.rs",
+      "sha256": "bb1bead8931cd9c2603346d784c50538c9f6848f65f22d8e09e62352ce3d6f37",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-root-first-element-views-literal-native",
+      "path": "pa28/tests/relocation-native/thin-root-first-element-views-literal-native.rs",
+      "sha256": "3c4ba276618a2bd61d9f28c5af596a158a6dfe623f3404f1db9bb9a6823248f3",
+      "expected_status": 0
+    },
+    {
+      "name": "slice-prefix-data-views-literal-native",
+      "path": "pa28/tests/relocation-native/slice-prefix-data-views-literal-native.rs",
+      "sha256": "30ecf818fe46ed8b038475bebcaec84da8c65c7d263bcc815257698c21d1fc4a",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-duplicate-field-views-encoding-reversed-literal-native",
+      "path": "pa28/tests/relocation-native/thin-duplicate-field-views-encoding-reversed-literal-native.rs",
+      "sha256": "d4f5e794abab71b26052bacd21205718c1d4ed38397bf418011d0e44a0609cbb",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-duplicate-field-views-copy-reversed-literal-native",
+      "path": "pa28/tests/relocation-native/thin-duplicate-field-views-copy-reversed-literal-native.rs",
+      "sha256": "e670ac84b2d92251aabf730f50948ea39fbdb327f6b8c788fdc7e1aa18ba06c1",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-root-first-element-views-encoding-reversed-literal-native",
+      "path": "pa28/tests/relocation-native/thin-root-first-element-views-encoding-reversed-literal-native.rs",
+      "sha256": "bb4bb2b969d81a833d11974ad4db74ace09a46b7e2c7745bda96f3924e96bf3b",
+      "expected_status": 0
+    },
+    {
+      "name": "thin-root-first-element-views-copy-reversed-literal-native",
+      "path": "pa28/tests/relocation-native/thin-root-first-element-views-copy-reversed-literal-native.rs",
+      "sha256": "75e25e3262d94848f4c2fe474fa642c9ddb5177cde1c20948b38a271ed4f648a",
+      "expected_status": 0
+    },
+    {
+      "name": "slice-prefix-data-views-encoding-reversed-literal-native",
+      "path": "pa28/tests/relocation-native/slice-prefix-data-views-encoding-reversed-literal-native.rs",
+      "sha256": "a5f6d977e1c06a9bf8c896b565d48708bc895df5ef79c0b946386af61ccb9aaa",
+      "expected_status": 0
+    },
+    {
+      "name": "slice-prefix-data-views-copy-reversed-literal-native",
+      "path": "pa28/tests/relocation-native/slice-prefix-data-views-copy-reversed-literal-native.rs",
+      "sha256": "75d8549edac0e67c7eb97fd30c675c9143a13ee1e1b03e030c1dbc675df7c0f9",
+      "expected_status": 0
+    },
+    {
+      "name": "multiple-static-reference-waits-literal-native",
+      "path": "pa28/tests/relocation-native/multiple-static-reference-waits-literal-native.rs",
+      "sha256": "659ac9eaf42b0986b3d50b14ddd68d8fc2e38c93cf64b16943eacb44dfb904be",
+      "expected_status": 0
+    },
+    {
+      "name": "reference-read-after-intervening-write-literal-native",
+      "path": "pa28/tests/relocation-native/reference-read-after-intervening-write-literal-native.rs",
+      "sha256": "3c62cec50b149c39daa46fad2e525e743eb11be110b910864e73523b81fc0f9b",
+      "expected_status": 0
+    },
+    {
+      "name": "object-split-typed-let-literal-native",
+      "path": "pa28/tests/relocation-native/object-split-typed-let-literal-native.rs",
+      "sha256": "7204014e339cfeea112d76b61c0e64ab007c8335af421d31a5c1ba5361e294ca",
+      "expected_status": 0
+    },
+    {
+      "name": "object-separate-vtable-word-typed-let-literal-native",
+      "path": "pa28/tests/relocation-native/object-separate-vtable-word-typed-let-literal-native.rs",
+      "sha256": "d05a28568d78f770f4463156f0167d1ed06d97c2d234d9104e367ae098d269b2",
+      "expected_status": 0
+    },
+    {
+      "name": "object-same-vtable-halves-typed-let-literal-native",
+      "path": "pa28/tests/relocation-native/object-same-vtable-halves-typed-let-literal-native.rs",
+      "sha256": "270dba0d1d79a894f4b99b1dc59d13f8b273ad371131b450da0d1b8e4f297bef",
+      "expected_status": 0
+    },
+    {
+      "name": "pointer-neighbor-literal-native",
+      "path": "pa28/tests/relocation-native/pointer-neighbor-literal-native.rs",
+      "sha256": "c66f56a6cc36f929960a28a0bb08d53a430730c3331a6717adf5a2f9361f3bb2",
+      "expected_status": 0
+    },
+    {
+      "name": "vtable-borrowed-concrete-forward-scoped-literal-native",
+      "path": "pa28/tests/relocation-native/vtable-borrowed-concrete-forward-scoped-literal-native.rs",
+      "sha256": "d7088cc68aff1cc67d295f0af0ee50a4bd650eb9d90fc4c8ab0793a82f9b611e",
+      "expected_status": 0
+    },
+    {
+      "name": "vtable-borrowed-concrete-reversed-scoped-literal-native",
+      "path": "pa28/tests/relocation-native/vtable-borrowed-concrete-reversed-scoped-literal-native.rs",
+      "sha256": "7b2449a9a7cf2518b5c4c5de1439daa420c4804b45317b26785771a9c4a0ec7d",
+      "expected_status": 0
+    },
+    {
+      "name": "complete-function-image-literal-native",
+      "path": "pa28/tests/relocation-native/complete-function-image-literal-native.rs",
+      "sha256": "9751bca644edad95a528baa042e7a566d182b26ba0a0b7656d7d24a22121c290",
+      "expected_status": 0
+    },
+    {
+      "name": "complete-object-image-literal-native",
+      "path": "pa28/tests/relocation-native/complete-object-image-literal-native.rs",
+      "sha256": "e2de9fc1aedfc6a7a99ef057bed5d5bde8927c1c0d0f1d339f8766bda542f3e2",
+      "expected_status": 0
+    }
+  ],
+  "qualification": "qualified-development-checkpoint; not assignment activation",
+  "superseded_source_cases": [
+    {
+      "name": "union-references-pointer-family-boundary",
+      "path": "pa27/tests/spec/union-references/pointer-family-boundary.rs",
+      "sha256": "d08e587d3f2c716fdbac267c98adf33638ea80fb6e3df007ad8a74425ff45533",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "union-addresses-pointer-family-boundary",
+      "path": "pa27/tests/spec/union-addresses/pointer-family-boundary.rs",
+      "sha256": "bce2dfaba4927fcae05d6bf6d1db26ad9f0e337c5657e2c7b49126fb28310169",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "union-borrows-pointer-family-boundary",
+      "path": "pa27/tests/spec/union-borrows/pointer-family-boundary.rs",
+      "sha256": "f08c74d5e279ad70d6fc75998d74593256087abfb9f4b35813e4973f228d2971",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "union-borrows-unit-family-boundary",
+      "path": "pa27/tests/spec/union-borrows/unit-family-boundary.rs",
+      "sha256": "c3d7010f760b7db5dec1956a3dd35a7b2ac98038c68eba2755e3a4fe0c56341f",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "scalar-union-pointer-family",
+      "path": "pa27/tests/spec/scalar-union/pointer-family.rs",
+      "sha256": "97b9a0dcf6cbb763ae598e55cd1b29db4bc4b793fb29262c292b2b429b750d85",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "scalar-union-array-family",
+      "path": "pa27/tests/spec/scalar-union/array-family.rs",
+      "sha256": "0d1a1a8cd4b81c7ac6525410e745f0e53193c02ec477f0b5ff2ae23e14e1cf87",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "superseded_native_case": {
+    "path": "pa27/tests/spec/union-borrow-native/mixed-families.rs",
+    "sha256": "110d875c9e8df2d4e81c00243fd617ef4be558b32c4140892086dc0f33a99c43",
+    "expected_status": 0,
+    "independent_contract": "declared-superseded-families.json"
+  }
+}

@@ -83,12 +83,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "raw pointer type reinterpretation in constant execution is not implemented",
     ),
     ("reference-reconstruction-boundary", 0, 0, ""),
-    (
-        "pointer-family-boundary",
-        0,
-        1,
-        "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented",
-    ),
+    ("pointer-family-boundary", 0, 0, ""),
     (
         "mutable-static-unsafe",
         1,

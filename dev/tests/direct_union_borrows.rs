@@ -81,20 +81,8 @@ const CASES: &[(&str, i32, i32, i32, &str)] = &[
         1,
         "constant union scalar read has invalid bool representation",
     ),
-    (
-        "pointer-family-boundary",
-        0,
-        1,
-        1,
-        "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented",
-    ),
-    (
-        "unit-family-boundary",
-        0,
-        1,
-        1,
-        "constant union images require an all-fields primitive scalar family; pointer and aggregate provenance storage is not implemented",
-    ),
+    ("pointer-family-boundary", 0, 0, 0, ""),
+    ("unit-family-boundary", 0, 0, 0, ""),
     ("ordinary-scalar", 0, 0, 0, ""),
     ("raw-base", 0, 0, 0, ""),
     (
@@ -151,6 +139,13 @@ fn direct_union_borrows_values_execute() -> Result<(), Box<dyn std::error::Error
             &[(name, &source, false)],
         )?;
     }
+    let literal = std::fs::read_to_string(
+        root()?.join("pa27/tests/spec/union-borrow-native/mixed-families.rs"),
+    )?;
+    native::check_literal_cases(
+        "parallel/pa27/union-borrow-native",
+        &[("mixed-families", &literal, false)],
+    )?;
     Ok(())
 }
 #[test]

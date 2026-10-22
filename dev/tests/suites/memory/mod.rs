@@ -71,6 +71,8 @@ mod reference_alignment;
 mod reference_cells;
 #[path = "../../reference_reconstruction.rs"]
 mod reference_reconstruction;
+#[path = "../../relocation_transport.rs"]
+mod relocation_transport;
 #[path = "../../helpers/resolve.rs"]
 pub(crate) mod resolve;
 #[path = "../../rmw_intrinsics.rs"]
