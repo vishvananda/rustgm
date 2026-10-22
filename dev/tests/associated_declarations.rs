@@ -44,6 +44,8 @@ mod recipe_frontiers;
 mod result_contracts;
 use crate::qualify as rustc;
 use crate::semantic;
+#[path = "harness/foreign_frontend.rs"]
+mod prepared;
 #[path = "associated_declarations/shorthand.rs"]
 mod shorthand;
 #[path = "associated_declarations/specialization.rs"]

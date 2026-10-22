@@ -1,5 +1,5 @@
 //! Resumable path applicability preserves ambiguity, bounds and caller lifetime proofs.
-use super::{native, object_outcome, semantic};
+use super::{native, object_outcome, prepared, semantic};
 use std::fmt::Write as _;
 const CASES: &[(&str, &str, bool)] = &[
     (
@@ -135,13 +135,7 @@ fn declaration_time_lookup_matches_independent_source_outcomes()
     for &(name, body, accepted) in CASES {
         let source = format!("{}{body}", native::CHECK);
         object_outcome(&format!("lookup-readiness-{name}"), &source, accepted)?;
-        let result = semantic::analyze(&source).and_then(|(mut report, mut facts)| {
-            let entry =
-                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
-            rustgm::lower::instances::build(&report, &mut facts, entry)
-                .map(|_| ())
-                .map_err(|e| e.to_string())
-        });
+        let result = prepared::checked(&source).map(|_| ());
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
     Ok(())

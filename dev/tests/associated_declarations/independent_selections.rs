@@ -1,5 +1,5 @@
 //! Shared closed selection evidence never supplies a caller lifetime assumption.
-use super::{native, object_outcome, semantic};
+use super::{native, object_outcome, prepared};
 
 const CASES: &[(&str, &str, bool)] = &[
     (
@@ -59,13 +59,7 @@ fn closed_targets_preserve_complete_arguments_and_caller_debts()
     for &(name, source, rejected) in CASES {
         let source = format!("{}{source}", native::CHECK);
         object_outcome(&format!("closed-dispatch-{name}"), &source, !rejected)?;
-        let result = semantic::analyze(&source).and_then(|(mut report, mut facts)| {
-            let entry =
-                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
-            rustgm::lower::instances::build(&report, &mut facts, entry)
-                .map(|_| ())
-                .map_err(|e| e.to_string())
-        });
+        let result = prepared::checked(&source).map(|_| ());
         assert_eq!(result.is_err(), rejected, "{name}: {result:?}");
     }
     Ok(())
