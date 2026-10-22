@@ -102,6 +102,7 @@ impl Engine {
         };
         let built = if let Some(witness) = source_value {
             body::instantiate::source_initializer(facts, &template, witness, result, &contract)
+                .and_then(|source| source.into_requested(result))
         } else {
             body::instantiate::selected_initializer(facts, &template, instance, &contract)
         }
@@ -110,7 +111,7 @@ impl Engine {
             .get_or_insert_with(Default::default)
             .insert(instance.definition, (template, contract));
         let mut concrete = built?;
-        if concrete.body.result != result {
+        if source_value.is_none() && concrete.body.result != result {
             return Err(Declarations::error(
                 report,
                 source,

@@ -157,3 +157,82 @@ The 890-file production source map is
 Receipt `4058ce5c61e542a78afcdf3e41874bd5` ended zero with 20,827,602,944
 retained bytes within the unchanged worker budget. Common-control output hashes
 remain equal; no performance neutrality or RSS improvement is claimed.
+
+## Open results in prepared pattern callers
+
+The projection-free source path also accepts canonical shared-reference results
+and aggregates containing them when the selected arguments retain caller-owned
+lifetimes. This is a source computation, not a materialized constant. The full
+selected instance and the exact original initializer remain mandatory; substituting
+the declared result through that instance must produce the exact requested type.
+Projection normalization is not attempted by this gate. The prior closed-result
+path keeps its exact equality check and does not gain an extra contract obligation.
+
+The request's selected arguments and result first pass through the same retained
+PreparedScope equality folder and parked Dispatcher normalization. Reservation
+restoration and all caller debts remain unchanged. Source witness validation is
+repeated on cache reuse and every external resume, including its arity, argument
+kind, original source and caller-region ownership checks.
+
+Initializer specialization imports the requested type through the same
+`Bound::universals` fold used for its selected arguments. It preserves the actual
+body result in the original initializer's universe and adds an ordinary required
+coercion from that result to the imported requested type in the actual instance
+Contract. A private result interface records the request, imported type and exact
+obligation index. It verifies identity and the unchanged coercion before returning
+the instance body to the provider. It carries no proof authority: the provider
+still verifies the original initializer and the complete instance, including the
+captured-lifetime identity assumptions and all original debts, before installing
+Code or publishing a cached value. Ordinary Associated requests retain their
+concreteness and exact materialized-result gates. Callable permission is unchanged.
+
+The completed source payload continues to have `ty=None`; inspection displays
+`status=source-complete result=deferred`. It cannot become a typed value root merely
+because a reference result was computed. Source escape and structural pattern
+equality checks remain in their existing consumers.
+
+Seven declared sources in `lifetime-initializer-open` are independently compiled
+to full pinned Rust 1.98 objects before implementation: shared-reference and
+tuple results, paid lifetime-relation and static bounds, plus dangling storage
+and opposing unpaid bounds. The four positive cases have paired native value
+checks. Dangling storage rejects in every view. The two unpaid caller cases retain
+the existing deferred type-inspection behavior and reject constants/LowIR at the
+actual lifetime-outlives proof; unsupported-profile diagnostics do not count as
+these negative checks. The private result test removes captured identity
+assumptions, removes the indexed coercion and substitutes a different requested
+result; each must fail at its owning identity or ordinary proof check.
+
+Projected result types, open type/const arguments, and nested or non-pattern
+source computations remain required followups. Projected results must retain
+normalization debts through selected original/instance proof and typed escape
+validation. Nested/non-pattern paths must use their actual retained caller proof
+owner; a fabricated PreparedScope or source key alone cannot supply authority.
+No new caller ledger or global scope scan is introduced here.
+
+The open-result batches pass all 13 selected-initializer functions: eight ordinary
+source/inventory functions and five explicitly ignored native groups, executing
+28 paired native programs (four new). Six private functions cover the result
+interface, full witness identity/layout and external suspension matrix, plus
+ordinary source-debt preservation. Strict release all-target/all-feature Clippy,
+the file/architecture audit (1,578 files, zero findings), layout/upstream and all
+8,255 active PA1–24 text comparisons pass unchanged. The first private attempt
+failed because its manually prepared body lacked promotion facts; that failed
+setup and the corrected ordinary promotion/proof path are retained separately.
+
+The request and persistent catalog layouts remain unchanged: witness 24 bytes,
+Target 32, Request 56, roots entry 40, Catalog 192 and Code 328. The private
+ResultInterface is 16 bytes; its source-only wrapper is 768 bytes versus 744
+for Materialized. The existing specialization entry now delegates to a shared
+optional-result helper with `None`; no retained field, map or ordinary-path
+allocation is added. Common ordinary512/constcall64 inspection hashes remain
+equal. This is output/layout evidence, not timing or RSS neutrality; root owns
+the combined measurements and the prior scalar RSS limitation remains open.
+
+Evidence is under `obj/parallel/pa25-open-results/{independent,first,second,third,final}`.
+The final immutable default-feature debug candidate `final/pins/rustgm` has SHA-256
+`36aa6f93fc00ea726a381508278224277416aefabdf9a0318c3edd3aa3101fd0`;
+the 909-file production source map is
+`e671f1fb5d66c1a5f13d7822f262856025fc673973f487bae08d4dd92c7bdf7b`.
+Closing resource receipt `d198de70c10242ffa22dd923d791e24b` ended zero with
+21,365,092,352 retained bytes. No limits were changed, no new performance
+observations were selected, and no generated reference was edited.

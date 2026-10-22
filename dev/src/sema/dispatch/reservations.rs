@@ -29,6 +29,18 @@ impl Dispatcher {
         }
         Ok(selected)
     }
+    pub(in crate::sema) fn source_result(
+        &mut self,
+        facts: &mut Declarations,
+        result: crate::types::TypeId,
+    ) -> Result<crate::types::TypeId, String> {
+        let before = self.normalize.steps;
+        let result = self.normalize.apply(&mut facts.types, result)?;
+        self.context
+            .account_work(self.normalize.steps - before)
+            .map_err(|e| e.to_string())?;
+        Ok(result)
+    }
     pub(in crate::sema) fn reserve_pattern(
         &self,
         facts: &mut Declarations,

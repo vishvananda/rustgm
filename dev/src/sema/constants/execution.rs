@@ -33,7 +33,7 @@ impl Queries<'_> {
                     .ok_or_else(|| self.error(Query::Node(source), "missing source initializer"))?;
                 return self
                     .source_computation(instance, original, result)
-                    .map(|source| Target::SourceAssociated { source, result });
+                    .map(|(source, result)| Target::SourceAssociated { source, result });
             }
             return Ok(Target::Associated { instance, result });
         }

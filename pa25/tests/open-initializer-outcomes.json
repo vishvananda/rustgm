@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "reference",
+      "path": "tests/spec/lifetime-initializer-open/reference.rs",
+      "source_sha256": "31e9b00dc4d16376fbb6f5822e683d8afa9f968182e409c9a2f4bc32dfc2c397",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "product",
+      "path": "tests/spec/lifetime-initializer-open/product.rs",
+      "source_sha256": "4a695216743aeae32a27e2b61a5880b279946e5bf16023c1f4115e0a8b264a72",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "paid-relation",
+      "path": "tests/spec/lifetime-initializer-open/paid-relation.rs",
+      "source_sha256": "76e18568e91428d7dfcd36306ac8da1e03d2e8e0890208dbcc3af26b5be461a3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "paid-static",
+      "path": "tests/spec/lifetime-initializer-open/paid-static.rs",
+      "source_sha256": "aa12f624b49e1a332793297dea32c430365728832ca907c779dbb7c569edb88b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "dangling",
+      "path": "tests/spec/lifetime-initializer-open/dangling.rs",
+      "source_sha256": "d40102ef34c43cac74ae649018e81d0a966bf7759fe1d744734e067d160c1b6e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "diagnostic": "lifetime",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "unpaid-relation",
+      "path": "tests/spec/lifetime-initializer-open/unpaid-relation.rs",
+      "source_sha256": "b7a369cf971841cd9c1f6e066ab0cd4eb961fcc14676e8da88ef48c89e006ee4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "diagnostic": "lifetime",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "unpaid-static",
+      "path": "tests/spec/lifetime-initializer-open/unpaid-static.rs",
+      "source_sha256": "1c3cded67ee2e807e39ec8c21d99e1e0ba268c51de1a90cbbafeda8b1aa437af",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "diagnostic": "lifetime",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    }
+  ]
+}

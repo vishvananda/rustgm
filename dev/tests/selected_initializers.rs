@@ -5,6 +5,8 @@ use crate::native_references as native;
 mod closed;
 #[path = "selected_initializers/computed.rs"]
 mod computed;
+#[path = "selected_initializers/open.rs"]
+mod open;
 #[path = "helpers/objects.rs"]
 mod rustc;
 use crate::resolve as source;

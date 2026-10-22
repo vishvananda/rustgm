@@ -14,7 +14,36 @@ pub(super) fn specialize(
     inputs: &mut Inputs,
     premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
-    let regions = import_regions(facts, inputs, original.universals)?;
+    let (bound, contract, _) = prepare(facts, original, inputs, premises, None)?;
+    Ok((bound, contract))
+}
+pub(super) fn source_result(
+    facts: &mut Declarations,
+    original: &Contract,
+    inputs: &mut Inputs,
+    requested: crate::types::TypeId,
+) -> Result<(Bound, Contract, crate::types::TypeId), &'static str> {
+    let (bound, contract, imported) = prepare(
+        facts,
+        original,
+        inputs,
+        super::Premises::Required,
+        Some(requested),
+    )?;
+    Ok((
+        bound,
+        contract,
+        imported.ok_or("source result import was lost")?,
+    ))
+}
+fn prepare(
+    facts: &mut Declarations,
+    original: &Contract,
+    inputs: &mut Inputs,
+    premises: super::Premises,
+    mut requested: Option<crate::types::TypeId>,
+) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
+    let regions = import_regions(facts, inputs, original.universals, &mut requested)?;
     let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
     if matches!(original.key, crate::body::ir::BodyKey::Closure(_)) {
@@ -88,7 +117,7 @@ pub(super) fn specialize(
         )?;
     }
     argument_assumptions(facts, inputs, &mut contract)?;
-    Ok((bound, contract))
+    Ok((bound, contract, requested))
 }
 
 /// Selected argument formation is caller evidence, including erased arguments.
@@ -152,6 +181,7 @@ fn import_regions(
     facts: &mut Declarations,
     inputs: &mut Inputs,
     universals: u32,
+    requested: &mut Option<crate::types::TypeId>,
 ) -> Result<Bound, &'static str> {
     let mut regions = Bound::universals(universals);
     for capture in &mut inputs.captures {
@@ -172,6 +202,11 @@ fn import_regions(
     if let Some((expected, actual)) = &mut inputs.comparison {
         *expected = regions.apply(&mut facts.types, *expected)?;
         *actual = regions.apply(&mut facts.types, *actual)?;
+    }
+    if let Some(result) = requested {
+        let before = regions.steps;
+        *result = regions.apply(&mut facts.types, *result)?;
+        facts.body_work.canonical_steps += regions.steps - before;
     }
     Ok(regions)
 }
