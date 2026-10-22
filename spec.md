@@ -2036,6 +2036,12 @@ cursor and require the ordinary full membership check. Later region liveness
 does not regenerate an expired loan. Keep full extents compact, account for
 word-boundary continuations and omit exits beyond the point domain. Bound and
 charge index construction and retained event masks as part of loan analysis.
+An empty exit set allocates no point index. Choose direct dense rows only when
+their size is bounded by retained exits and the index budget; otherwise use
+sorted sparse rows over the same flat event payload. The numeric point domain
+alone must never force proportional storage. Charge dense initialization and
+prefix work, sparse sorting and lookup comparisons, and retain maximum-domain
+empty/sparse controls alongside ordinary dense CFG tests.
 
 Collect initial runtime lifetime seeds into one queued entry per region and
 point word before propagating them. Seed collection already precedes propagation;

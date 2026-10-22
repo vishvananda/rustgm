@@ -341,6 +341,7 @@ fn ordinary_execution_keeps_the_component_catalog_absent() {
     );
     assert_eq!(size_of::<crate::sema::values::execution::Target>(), 28);
     assert_eq!(size_of::<crate::sema::values::execution::Request>(), 56);
-    assert_eq!(size_of::<crate::const_eval::code::Code>(), 336);
+    // The two Fx tables omit the former randomized 16-byte hash states.
+    assert_eq!(size_of::<crate::const_eval::code::Code>(), 304);
     assert_eq!(size_of::<body::ir::Value>(), 24);
 }

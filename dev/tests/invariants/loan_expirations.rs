@@ -158,6 +158,7 @@ fn full_extents_and_final_points_do_not_create_expiration_events()
         )?;
         let index = Expirations::new(&loans, &live)?;
         assert!(index.events.is_empty());
+        assert!(matches!(index.rows, super::Rows::Empty));
         let empty = Expirations::new(&[], &live)?;
         assert!(empty.events.is_empty());
         assert_eq!(empty.steps, 0);
@@ -166,5 +167,91 @@ fn full_extents_and_final_points_do_not_create_expiration_events()
         index.prune(&mut state, Point(count - 1), &loans, &live)?;
         assert_eq!((state.words()[0].live, state.words()[0].active), (3, 2));
     }
+    Ok(())
+}
+
+#[test]
+fn sparse_exits_use_retained_rows_instead_of_the_point_domain()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut graph = Graph::new(1_000);
+    let region = graph.region(Kind::Variable { universe: 0 })?;
+    let proof = graph.solve()?;
+    let loans = loans([Region::STATIC, region])?;
+    for count in [32, 128, 512, u32::MAX] {
+        let live = points::infer(
+            &proof,
+            count,
+            [(region, Point(1)), (region, Point(count - 3))],
+            [Region::STATIC],
+            1_000,
+        )?;
+        let index = Expirations::new(&loans, &live)?;
+        let super::Rows::Sparse(rows) = &index.rows else {
+            return Err("sparse exits allocated a dense point index".into());
+        };
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows.capacity(), 2);
+        assert_eq!(index.events.len(), 2);
+        assert!(index.steps <= 32);
+        let mut state = Set::new(1);
+        for start in [1, count - 3, 1] {
+            // A jump/regeneration needs full membership; the following point
+            // consumes its indexed exit and clears both live and active bits.
+            state.copy_from(&[State { live: 3, active: 3 }]);
+            index.prune(&mut state, Point(start), &loans, &live)?;
+            assert_eq!((state.words()[0].live, state.words()[0].active), (3, 3));
+            index.prune(&mut state, Point(start + 1), &loans, &live)?;
+            assert_eq!((state.words()[0].live, state.words()[0].active), (1, 1));
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn dense_exits_keep_direct_rows_and_charge_index_construction()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut graph = Graph::new(1_000);
+    let region = graph.region(Kind::Variable { universe: 0 })?;
+    let proof = graph.solve()?;
+    let loans = loans([region])?;
+    for count in [32, 128, 512] {
+        let live = points::infer(
+            &proof,
+            count,
+            (0..count).step_by(2).map(|point| (region, Point(point))),
+            [],
+            10_000,
+        )?;
+        let index = Expirations::new(&loans, &live)?;
+        let super::Rows::Dense(rows) = &index.rows else {
+            return Err("dense exits lost direct point indexing".into());
+        };
+        assert_eq!(rows.len(), count as usize + 2);
+        assert_eq!(index.event_points(), count as usize / 2);
+        assert!(index.steps >= 3 * rows.len());
+        assert!(index.steps <= 8 * count as usize);
+        let mut state = Set::new(1);
+        for point in 0..count {
+            index.prune(&mut state, Point(point), &loans, &live)?;
+            assert_eq!(state.words()[0].live, 0);
+            if point % 2 == 0 {
+                state.generate(0, true);
+                state.activate(0);
+            }
+        }
+        assert_eq!(state.words()[0].active, 0);
+    }
+    // Work exhaustion is diagnosed before either dense index buffer allocates.
+    let mut exhausted = Expirations {
+        steps: 32_000_000,
+        ..Expirations::default()
+    };
+    assert!(
+        exhausted
+            .dense(Vec::new(), &crate::support::hash::HashMap::default(), 8)
+            .is_err()
+    );
+    assert!(matches!(exhausted.rows, super::Rows::Empty));
+    assert!(exhausted.events.is_empty());
     Ok(())
 }

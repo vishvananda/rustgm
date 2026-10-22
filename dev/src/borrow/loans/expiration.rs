@@ -7,11 +7,21 @@ use crate::support::hash::HashMap;
 #[path = "../../../tests/invariants/loan_expirations.rs"]
 mod tests;
 
-/// Expiring loan words grouped by the point that first excludes them. A
-/// compressed row index per CFG point replaces a hash probe at every point.
+/// Dense CFGs use direct rows; sparse point domains retain only actual exits.
+#[derive(Default)]
+enum Rows {
+    #[default]
+    Empty,
+    Dense(Vec<u32>),
+    Sparse(Vec<(Point, u32)>),
+}
+
+const MAX_ENTRIES: usize = 500_000;
+
+/// Expiring loan words grouped by the point that first excludes them.
 #[derive(Default)]
 pub(super) struct Expirations {
-    starts: Vec<u32>,
+    rows: Rows,
     events: Vec<(usize, u64)>,
     entries: usize,
     pub steps: usize,
@@ -34,7 +44,7 @@ impl Expirations {
                 entries.push((word, bit));
             }
         }
-        // Unsorted (point, region) rows; a counting sort keeps their order.
+        // Unsorted (point, region) rows, bounded by the retained event masks.
         let mut rows = Vec::new();
         for (region, word, mut ends) in regions.endings() {
             result.charge(1)?;
@@ -48,13 +58,35 @@ impl Expirations {
                 result.entries = result
                     .entries
                     .checked_add(loans.len())
-                    .filter(|&count| count <= 500_000)
+                    .filter(|&count| count <= MAX_ENTRIES)
                     .ok_or("loan expiration storage budget exceeded")?;
                 rows.push((point, region));
             }
         }
-        let points = regions.point_count() as usize + 1;
-        let mut starts = vec![0_u32; points + 1];
+        if rows.is_empty() {
+            return Ok(result);
+        }
+        let slots = usize::try_from(regions.point_count())
+            .ok()
+            .and_then(|points| points.checked_add(2))
+            .filter(|&slots| slots <= MAX_ENTRIES && slots <= rows.len() * 8 + 8);
+        if let Some(slots) = slots {
+            result.dense(rows, &words, slots)?;
+        } else {
+            result.sparse(rows, &words)?;
+        }
+        Ok(result)
+    }
+    fn dense(
+        &mut self,
+        rows: Vec<(u32, Region)>,
+        words: &HashMap<Region, Vec<(usize, u64)>>,
+        slots: usize,
+    ) -> Result<(), &'static str> {
+        // Bound both simultaneous index buffers and charge their initialization,
+        // prefix walk and clone, plus event initialization and row counting.
+        self.charge(slots * 3 + self.entries + rows.len())?;
+        let mut starts = vec![0_u32; slots];
         for &(point, region) in &rows {
             let slot = starts
                 .get_mut(point as usize + 1)
@@ -66,30 +98,80 @@ impl Expirations {
             starts[index] += starts[index - 1];
         }
         let mut next = starts.clone();
-        result.events = vec![(0, 0); result.entries];
+        self.events = vec![(0, 0); self.entries];
         for (point, region) in rows {
             let loans = words.get(&region).map_or(&[][..], Vec::as_slice);
             let at = next[point as usize] as usize;
-            result.events[at..at + loans.len()].copy_from_slice(loans);
+            self.events[at..at + loans.len()].copy_from_slice(loans);
             next[point as usize] += u32::try_from(loans.len())
                 .map_err(|_| "loan expiration storage budget exceeded")?;
         }
-        result.starts = starts;
-        Ok(result)
+        self.rows = Rows::Dense(starts);
+        Ok(())
+    }
+    fn sparse(
+        &mut self,
+        mut rows: Vec<(u32, Region)>,
+        words: &HashMap<Region, Vec<(usize, u64)>>,
+    ) -> Result<(), &'static str> {
+        self.charge(rows.len())?;
+        let mut comparisons = 0;
+        rows.sort_unstable_by(|a, b| {
+            comparisons += 1;
+            a.0.cmp(&b.0)
+        });
+        self.charge(comparisons)?;
+        let mut starts = Vec::with_capacity(rows.len());
+        self.events = Vec::with_capacity(self.entries);
+        for (point, region) in rows {
+            if starts.last().is_none_or(|&(last, _)| last != Point(point)) {
+                starts.push((
+                    Point(point),
+                    u32::try_from(self.events.len())
+                        .map_err(|_| "loan expiration storage budget exceeded")?,
+                ));
+            }
+            self.events
+                .extend_from_slice(words.get(&region).map_or(&[][..], Vec::as_slice));
+        }
+        self.rows = Rows::Sparse(starts);
+        Ok(())
     }
     /// CFG points that expire at least one loan word.
     #[cfg(test)]
     fn event_points(&self) -> usize {
-        self.starts
-            .windows(2)
-            .filter(|row| row[0] != row[1])
-            .count()
+        match &self.rows {
+            Rows::Empty => 0,
+            Rows::Dense(starts) => starts.windows(2).filter(|row| row[0] != row[1]).count(),
+            Rows::Sparse(starts) => starts.len(),
+        }
     }
-    fn at(&self, point: Point) -> &[(usize, u64)] {
-        let index = point.0 as usize;
-        match (self.starts.get(index), self.starts.get(index + 1)) {
-            (Some(&start), Some(&end)) => &self.events[start as usize..end as usize],
-            _ => &[],
+    fn at(&self, point: Point) -> (&[(usize, u64)], usize) {
+        match &self.rows {
+            Rows::Empty => (&[], 1),
+            Rows::Dense(starts) => {
+                let index = point.0 as usize;
+                match (starts.get(index), starts.get(index + 1)) {
+                    (Some(&start), Some(&end)) => (&self.events[start as usize..end as usize], 1),
+                    _ => (&[], 1),
+                }
+            }
+            Rows::Sparse(starts) => {
+                let mut steps = 0;
+                let found = starts.binary_search_by(|&(candidate, _)| {
+                    steps += 1;
+                    candidate.0.cmp(&point.0)
+                });
+                if let Ok(index) = found {
+                    let start = starts[index].1 as usize;
+                    let end = starts
+                        .get(index + 1)
+                        .map_or(self.events.len(), |&(_, end)| end as usize);
+                    (&self.events[start..end], steps)
+                } else {
+                    (&[], steps.max(1))
+                }
+            }
         }
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
@@ -114,8 +196,8 @@ impl Expirations {
             .valid_at
             .is_some_and(|previous| previous.0.checked_add(1) == Some(point.0))
         {
-            let entries = self.at(point);
-            steps += entries.len();
+            let (entries, lookup) = self.at(point);
+            steps = lookup + entries.len();
             for &(word, mask) in entries {
                 state.retain(word, !mask);
             }
