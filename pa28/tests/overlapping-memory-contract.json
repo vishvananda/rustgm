@@ -418,11 +418,12 @@
       "sha256": "35ed797296cc5e2bea6f0995a932958ed9f196db6dd1a1f1f9d777a120b67c8f",
       "rustc_expected": 0,
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "frontend_reason": "constant counted union-field byte transport is not implemented"
+      "frontend_reason": "",
+      "superseded_boundary": "byte-transport scalar backing checkpoint"
     },
     {
       "path": "pa28/tests/spec/overlapping-memory/whole-image.rs",
@@ -572,11 +573,12 @@
       "sha256": "58e745d0a48094cc88634f11f66c4702cd3007d90e019a59dee8c7abe347dcf3",
       "rustc_expected": 0,
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "frontend_reason": "constant counted union-field byte transport is not implemented"
+      "frontend_reason": "",
+      "superseded_boundary": "byte-transport scalar backing checkpoint"
     },
     {
       "path": "pa28/tests/spec/overlapping-memory/invalid-byte-demand.rs",
@@ -587,7 +589,8 @@
         1,
         1
       ],
-      "frontend_reason": "constant counted union-field byte transport is not implemented"
+      "frontend_reason": "invalid bool representation",
+      "superseded_boundary": "now actual scalar validity rejection"
     },
     {
       "path": "pa28/tests/spec/overlapping-memory/local-copy-shadow.rs",

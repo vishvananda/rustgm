@@ -190,6 +190,18 @@ while arbitrary invalid/uninitialized-byte constant transport remains required
 work. See `tests/overlapping-memory-contract.json` and
 `docs/pa28-overlapping-memory.md` for the exact profile and qualification.
 
+A scalar byte-backing slice now preserves invalid bool/char bits and uninitialized
+bytes during constant copies without decoding them. Converted allocations retain
+one mutable backing shared by ordinary field accesses, range aliases and raw
+transfers. Selected typed reads still enforce initialization and scalar validity;
+length metadata does not decode unrelated elements. Repeated fills encode once
+and replicate bytes/mask with bounded work. The 22 source outcomes and 15 native
+comparisons are declared in `tests/byte-transport-contract.json`; original
+uninitialized-local hypotheses are retained as E0381 source rejections, without
+native-positive claims. Pointer-bearing/enum backings, symbolic relocations,
+fills and general reinterpretation remain required work. See
+`docs/pa28-byte-transport.md` for the exact scope and superseded boundaries.
+
 The current implementation and release gaps are reconciled in
 `docs/pa27-pa28-remaining.md`; historical checkpoint reviews preserve their
 original observations and explicitly superseded boundaries.

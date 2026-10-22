@@ -62,7 +62,7 @@ reinterpretation. Its outcome contract lives in
 
 Open operation families remain:
 
-- Byte fills and arbitrary uninitialized or invalid byte constant transport,
+- Byte fills and relocation-bearing arbitrary byte constant transport,
   with explicit byte/count overflow, initialization and provenance rules. The
   `copy_nonoverlapping` and overlap-safe `copy` checkpoints supply bounded typed
   initialized-value snapshots over canonical scalar/object or contiguous array
@@ -70,7 +70,11 @@ Open operation families remain:
   scalar bits without typed interpretation. Zero effective bytes use address-only
   validation without reading contents or granting write authority; ordinary
   nonzero memory access retains its existing checks. These typed constant profiles
-  do not complete the untyped memory contract.
+  do not complete the untyped memory contract. A later scalar byte-backing slice
+  now preserves invalid scalar bits and initialization masks across copies and
+  ordinary typed/range aliases; see `docs/pa28-byte-transport.md`. Pointer-bearing
+  and enum roots remain explicit boundaries until symbolic relocation storage
+  and its inspection/emission consumers are implemented.
 - Numeric, bit and cast intrinsic families, including width/sign behavior and
   u128 controls beyond ordinary language arithmetic.
 - Additional atomic widths/types, fences, accessors and update/control methods.
@@ -84,7 +88,7 @@ Open operation families remain:
 The counted-copy development checkpoint qualifies exact typed symbolic spans,
 snapshots and existing runtime transfer loops; its review is
 `docs/pa28-counted-memory.md`. The overlapping-copy checkpoint is reviewed in
-`docs/pa28-overlapping-memory.md`. Fills and arbitrary byte constant transport
+`docs/pa28-overlapping-memory.md`. Fills and relocation-bearing byte constant transport
 remain substantial required follow-ups. Full release, immutable
 performance measurement, active manifests/oracles and publication remain
 integrator-owned. Focused logical work bounds are not wall-time or RSS

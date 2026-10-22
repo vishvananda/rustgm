@@ -1,7 +1,8 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
+mod byte_codec;
 mod callables;
 mod footprints;
-pub(crate) use footprints::{ProjectionStorage, StorageLayout};
+pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;
 mod mutation;

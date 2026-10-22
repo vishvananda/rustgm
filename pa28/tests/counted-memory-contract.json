@@ -421,11 +421,12 @@
       "rustc_expected": 0,
       "sha256": "eeb1f8423f258cba7b2bad93892d3adcf07b2b25e04d4c1b2c789f2a0ac71d8f",
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "frontend_reason": "constant counted union-field byte transport is not implemented"
+      "frontend_reason": "",
+      "superseded_boundary": "byte-transport scalar backing checkpoint"
     },
     {
       "path": "pa28/tests/spec/counted-memory/whole-image.rs",

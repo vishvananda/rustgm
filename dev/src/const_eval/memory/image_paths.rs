@@ -10,7 +10,7 @@ pub(in crate::const_eval) enum StorageTarget {
     UnionScalar { field: UnionField, projected: bool },
 }
 impl StorageTarget {
-    pub(super) fn path_len(self, total: usize) -> Result<usize, Failure> {
+    pub(in crate::const_eval) fn path_len(self, total: usize) -> Result<usize, Failure> {
         if matches!(
             self,
             Self::UnionScalar {

@@ -127,12 +127,7 @@ pub const CASES: &[(&str, i32, i32, &str)] = &[
         1,
         "non-const calls are not allowed in constant initializers",
     ),
-    (
-        "partial-field-profile",
-        0,
-        1,
-        "constant counted union-field byte transport is not implemented",
-    ),
+    ("partial-field-profile", 0, 0, ""),
     ("whole-image", 0, 0, ""),
     (
         "whole-image-uninitialized",

@@ -1,0 +1,457 @@
+{
+  "stage": "qualified-development-checkpoint",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "scope": "Scalar byte/init-mask backing without public schema changes; symbolic relocation extension remains required.",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/byte-transport/invalid-bool-transport.rs",
+      "sha256": "dc7f7618d8ae229e8e26627fa9ab97a29e67fb513c35c23952934885b8b764cd",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/invalid-bool-demand.rs",
+      "sha256": "2f51ffab5dc7b2c0e12db916aa9b0fc8882a36e9ca09337ec7c279b9d2e776ee",
+      "rustc_expected": 1,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "invalid bool representation"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/invalid-char-transport.rs",
+      "sha256": "25db6cab08fb37282167e4bbb67f9765f26459b4dc4fd591b9149ce20aee63c0",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/invalid-char-demand.rs",
+      "sha256": "032c584ec6acda6869555c6018f0a941a4adb8040d121c779c9f0aab752837eb",
+      "rustc_expected": 1,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "invalid char representation"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-transport.rs",
+      "sha256": "45605d8dedf83231b01b493dc06f76edb85ddb692b86bfbe4821cb75099111cb",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-demand.rs",
+      "sha256": "77721ae81ac0b0694d5dda60705d7690f5ca44bddeed11a1bc9e5841bb1e06c3",
+      "rustc_expected": 1,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "uses uninitialized bytes"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-identical.rs",
+      "sha256": "5c8fd539f6822e250ca3ea37eec96fa4dd1dbf3570b381e887a1552bf78a5d6b",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/invalid-restore.rs",
+      "sha256": "aea70b4bdb85d411c9976c2a1fb7b54c53a17e09d12d91be71c894f96a7f6c1d",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/projected-ordinary-writes.rs",
+      "sha256": "9a1086797ae0130d531fd58daaab83e4e5cd7e87e33dda80cbd00f864ae48fd4",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/overlapping-invalid-snapshot.rs",
+      "sha256": "a7aebc780e8306e87ccbc90bdb6b135b2a35b6b3dfc4a0665d7c054dc0fe448c",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/rest-alias-ordinary-read.rs",
+      "sha256": "7113ba758a5e5e2d5dbbce10a844ad0f12ce03a0b16b72b36cb1447225614715",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/pointer-neighbor-profile.rs",
+      "sha256": "44dca8c1317690b95868983b030e30006e435f85fa9357649850acaf8f13dc3b",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "relocation-followup",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant byte backing with pointer or enum storage is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/large-root-small-transfer.rs",
+      "sha256": "9ba9b94715b1c23b60e81768da18c51d41530370a9dcdaaaacd367d804614168",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/ordinary-control.rs",
+      "sha256": "833018d942126c682f3da5593b44430ff7a7a3f46bf40104e7bce459e2b9aaf0",
+      "rustc_expected": 0,
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/length-with-invalid-element.rs",
+      "sha256": "bb5f75e3f6b22e042ab6200352d345d61558f3acb32fb7a6e76e75f36f09afbc",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": "",
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/empty-rest-with-invalid-prefix.rs",
+      "sha256": "4c34905e5b9910d12b00ddad55b40249ff3873830d973fea2d3690e4ef9002cd",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": "",
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/range-assignment-after-conversion.rs",
+      "sha256": "378e4e3e47ea73736c5239c9f90a728201bbbf1ce67d0972c878871eee816d36",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": "",
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-array-restore.rs",
+      "sha256": "6785621da8c7b717c90f1bdc815e6b1b8d037c50ccacaca953bb7575228e6ca9",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": "",
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/zero-sized-field.rs",
+      "sha256": "63576bdff0a442436dbea69fba37022d84300baa4fce416b8e742230a702a985",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": "",
+      "status": "independently-qualified",
+      "profile": "scalar-byte-backing"
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-bool-destination.rs",
+      "sha256": "06807672e398f44ae90ceb9be2541ce25db90843b2e905620752848c4dc038be",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "uninitialized",
+      "status": "corrected-after-independent-E0381",
+      "profile": "source-initialization",
+      "initial_hypothesis": {
+        "rustc_expected": 0,
+        "frontend_expected": [
+          0,
+          0,
+          0
+        ],
+        "frontend_reason": ""
+      }
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-word-destination.rs",
+      "sha256": "572ca60fb9275150b3e0ad050aa2a1bca383b29717d131774e50abeb50306ce7",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "uninitialized",
+      "status": "corrected-after-independent-E0381",
+      "profile": "source-initialization",
+      "initial_hypothesis": {
+        "rustc_expected": 0,
+        "frontend_expected": [
+          0,
+          0,
+          0
+        ],
+        "frontend_reason": ""
+      }
+    },
+    {
+      "path": "pa28/tests/spec/byte-transport/uninitialized-word-demand.rs",
+      "sha256": "323cd745fc6049d07215215231ef35373390eaccf5872689ebc3101ce5c3e469",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "uninitialized",
+      "status": "corrected-after-independent-E0381",
+      "profile": "source-initialization",
+      "initial_hypothesis": {
+        "rustc_expected": 1,
+        "frontend_expected": [
+          1,
+          1,
+          1
+        ],
+        "frontend_reason": "uses uninitialized bytes"
+      }
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/byte-transport-native/invalid-bool-transport.rs",
+      "sha256": "0b9dead4df7cb783897b5c7a769203d3fd603c692c5bd66bed2a106de82598c3",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/invalid-char-transport.rs",
+      "sha256": "7da88fd0e6353a2db239822d1222d96cbbe77c6d7ee5efd4d46ee5d8b8b49e22",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/uninitialized-transport.rs",
+      "sha256": "8c41af2f95eadee39f5e2c30d0252186282e007800483686fb26411318e37ba9",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/uninitialized-identical.rs",
+      "sha256": "b1cd33cca14abc8c729f9c5178c63535c0d034f17a61de40a49b7347ec27da71",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/invalid-restore.rs",
+      "sha256": "b1f3e841adcd7f40b02b99daed84b50f149a8eb1c7f6090421edb04e64b007aa",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/projected-ordinary-writes.rs",
+      "sha256": "d22498b1f6ecd323629de1ab68003dea4e87af5ecd831ddcd5ef0f09b56b1561",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/overlapping-invalid-snapshot.rs",
+      "sha256": "c9f5e966d4d94daf7c2418e9f0505b24a29d945d40930ae85dd4eaa0a8a0904c",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/rest-alias-ordinary-read.rs",
+      "sha256": "48524e502d39b506999a67c5fba1d32e673d592859ef44875537ea0d5443b21b",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/large-root-small-transfer.rs",
+      "sha256": "44411ec0fa74fd548e11c40bcca28f0d27acb5e5ceb959a8ee14a90d34dbcbfd",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/ordinary-control.rs",
+      "sha256": "c729207420f2b5ee387e1574eefb877483988b8e86676704e5caeaf70a817127",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/length-with-invalid-element.rs",
+      "sha256": "99941100fed8309f04fa6a01483b32718f44a4ea1042ffc251220aef20fc865f",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/empty-rest-with-invalid-prefix.rs",
+      "sha256": "6d0277f793472d4891143a7a222413ca87f982903bf59c5e104ea4e262a6cf09",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/range-assignment-after-conversion.rs",
+      "sha256": "9700b40723f01c983ace7a4b2681ac191d268def1460a50a51bb01f66c230256",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/uninitialized-array-restore.rs",
+      "sha256": "5366c22ec5629ca84a5e20a5c2727659636f0e5b18666b621c42e980c59b02a3",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/zero-sized-field.rs",
+      "sha256": "b18f4d08bd631b66d853497308eb5d6e7031bb3563ab721a5e43d6211270290f",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0
+    }
+  ],
+  "rejected_native_hypotheses": [
+    {
+      "path": "pa28/tests/byte-transport-native/uninitialized-bool-destination.rs",
+      "sha256": "c426826655f8a90dcc76b3f1390a0faeb56edda2d86873e9c0a67bf16766276f",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0,
+      "classification": "Rust E0381; no runtime claim",
+      "failed_evidence": "obj/parallel/pa28/byte-transport/eighth/functional.log"
+    },
+    {
+      "path": "pa28/tests/byte-transport-native/uninitialized-word-destination.rs",
+      "sha256": "ec3a6c41850f844963a988edcf8886337cbe16660a3e33ac017bec666eecec2b",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "run_expected": 0,
+      "classification": "Rust E0381; no runtime claim",
+      "failed_evidence": "obj/parallel/pa28/byte-transport/eighth/functional.log"
+    }
+  ],
+  "qualification": {
+    "source_cases": 22,
+    "native_comparisons": 15,
+    "logical_work_cases": 99,
+    "private_tests": 4,
+    "source_initialization_correction": "Original uninitialized-local hypotheses are preserved; all three independently reject with E0381.",
+    "evidence": "obj/parallel/pa28/byte-transport/qualification.json"
+  }
+}

@@ -21,18 +21,8 @@ const ADDITIONAL: &[(&str, i32, i32, &str)] = &[
         1,
         "constant counted pointer reinterpretation is not implemented",
     ),
-    (
-        "invalid-byte-profile",
-        0,
-        1,
-        "constant counted union-field byte transport is not implemented",
-    ),
-    (
-        "invalid-byte-demand",
-        1,
-        1,
-        "constant counted union-field byte transport is not implemented",
-    ),
+    ("invalid-byte-profile", 0, 0, ""),
+    ("invalid-byte-demand", 1, 1, "invalid bool representation"),
     ("local-copy-shadow", 0, 0, ""),
     ("local-core-shadow", 0, 0, ""),
 ];

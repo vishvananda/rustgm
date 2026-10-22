@@ -84,6 +84,10 @@ impl Machine<'_, '_> {
             }
             return Ok(());
         };
+        if self.byte_root(root).is_some() {
+            self.check_byte_length(root, path)?;
+            return Ok(());
+        }
         let mut cell = mut_cell;
         for (position, &index) in path.iter().enumerate() {
             self.charge(1)?;
@@ -104,6 +108,7 @@ impl Machine<'_, '_> {
                         )
                         .ok_or("constant index is out of bounds")?;
                 }
+                Cell::Bytes(_) => return Err("byte root bypassed length metadata consumer".into()),
                 Cell::Empty => return Err("constant length reads uninitialized storage".into()),
             }
         }
@@ -118,6 +123,9 @@ impl Machine<'_, '_> {
         path: &[u64],
         range: Range,
     ) -> Result<Constant, Failure> {
+        if let Some(value) = self.read_byte_range(root, path, range)? {
+            return Ok(value);
+        }
         // Traverse frozen containers without thawing or materializing unselected fields.
         let mut cell = *self
             .memory
@@ -145,6 +153,7 @@ impl Machine<'_, '_> {
                         )
                         .ok_or("constant index is out of bounds")?;
                 }
+                Cell::Bytes(_) => return Err("byte root bypassed its range read consumer".into()),
                 Cell::Empty => return Err("constant range reads uninitialized storage".into()),
             }
         }
@@ -155,6 +164,7 @@ impl Machine<'_, '_> {
                 self.evaluator
                     .sequence_range(value, range.from, range.length)
             }
+            Cell::Bytes(_) => Err("byte root bypassed its range snapshot consumer".into()),
             Cell::Empty => Err("constant range reads uninitialized storage".into()),
             Cell::Fields { values, .. } => {
                 let start =
@@ -188,6 +198,9 @@ impl Machine<'_, '_> {
         range: Range,
         value: Constant,
     ) -> Result<(), Failure> {
+        if self.write_byte_range(root, path, range, value)? {
+            return Ok(());
+        }
         let cell = self.cell(root, path)?;
         self.thaw(cell)?;
         let start = usize::try_from(range.from).map_err(|_| "constant range exceeds host size")?;

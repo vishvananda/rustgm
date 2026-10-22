@@ -1,4 +1,5 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
+mod bytes;
 mod image_paths;
 mod loads;
 mod ranges;
@@ -18,6 +19,7 @@ pub(super) enum Liveness {
 use std::collections::{HashMap, HashSet};
 
 enum Cell {
+    Bytes(bytes::Id),
     Frozen(Constant),
     Fields {
         values: Vec<usize>,
@@ -50,6 +52,7 @@ pub(super) struct Resolved {
 }
 #[derive(Default)]
 pub(super) struct Memory {
+    bytes: bytes::Storage,
     cells: Vec<Cell>,
     roots: HashMap<LocationId, usize>,
     expired: HashSet<LocationId>,
@@ -60,6 +63,7 @@ impl Memory {
     pub(super) fn retained_cells(&self) -> usize {
         self.cells
             .len()
+            .saturating_add(self.bytes.retained_slots())
             .saturating_add(self.ordinary_static_types.len().saturating_mul(4))
     }
     pub(super) fn expire(&mut self, locations: &[LocationId]) {
@@ -228,6 +232,11 @@ impl Machine<'_, '_> {
                     completed.insert(id, *value);
                 }
                 Cell::Empty => return Err(Failure::Fault("constant reads uninitialized storage")),
+                Cell::Bytes(storage) => {
+                    let storage = *storage;
+                    let value = self.freeze_byte_root(storage)?;
+                    completed.insert(id, value);
+                }
                 Cell::Fields { values, .. } if !finish => {
                     stack.push((id, true));
                     stack.extend(values.iter().rev().map(|&child| (child, false)));
@@ -282,6 +291,11 @@ impl Machine<'_, '_> {
         }
         let target = self.storage_target(place)?;
         let path = &path[..target.path_len(path.len())?];
+        if let Some(union) = target.field()
+            && let Some(value) = self.read_byte_union(root, path, union, place.ty)?
+        {
+            return Ok(Some(value));
+        }
         let Some(value) = self.read_storage(root, path, range, place.ty, purpose)? else {
             return Ok(None);
         };
@@ -298,6 +312,9 @@ impl Machine<'_, '_> {
         Ok(Some(value))
     }
     pub(super) fn write_place(&mut self, place: Resolved, value: Constant) -> Result<(), Failure> {
+        if self.write_byte_place(place, value)? {
+            return Ok(());
+        }
         let target = self.storage_target(place)?;
         if let Some(union) = target.field() {
             let (root, path) = self.path(place.address)?.fields_only()?;
@@ -323,6 +340,17 @@ impl Machine<'_, '_> {
             fields: path,
             range,
         } = self.path(address)?;
+        if self.has_byte_root(root) {
+            self.write_byte_path(
+                &StoragePath {
+                    root,
+                    fields: path,
+                    range,
+                },
+                value,
+            )?;
+            return Ok(());
+        }
         if let Some(range) = range {
             return self.write_range(root, &path, range, value);
         }

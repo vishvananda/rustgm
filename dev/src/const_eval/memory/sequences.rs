@@ -7,6 +7,9 @@ impl Machine<'_, '_> {
         root: LocationId,
         path: &[u64],
     ) -> Result<Constant, Failure> {
+        if let Some(value) = self.byte_read(root, path)? {
+            return Ok(value);
+        }
         let mut cell = *self
             .memory
             .roots
@@ -30,6 +33,7 @@ impl Machine<'_, '_> {
                         .copied()
                         .ok_or(Failure::Fault("constant index is out of bounds"))?;
                 }
+                Cell::Bytes(_) => return Err("byte root bypassed its typed read consumer".into()),
                 Cell::Empty => {
                     return Err(Failure::Fault("constant reads uninitialized storage"));
                 }

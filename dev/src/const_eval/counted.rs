@@ -1,4 +1,5 @@
 //! Initialized typed snapshots implement the first bounded counted-copy profile.
+mod bytes;
 mod spans;
 #[cfg(test)]
 #[path = "../../tests/invariants/counted_memory.rs"]
@@ -96,6 +97,9 @@ impl Machine<'_, '_> {
             return Err("constant copy_nonoverlapping regions overlap".into());
         }
         self.check_raw_write_authority(destination.address, destination.root)?;
+        if self.needs_byte_transfer(source, destination)? {
+            return self.copy_byte_spans(source, destination);
+        }
         let Some(snapshot) = self.transfer_snapshot(source)? else {
             return Ok(None);
         };

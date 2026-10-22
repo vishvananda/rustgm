@@ -247,3 +247,129 @@ impl Reader<'_> {
         }
     }
 }
+
+/// Completed physical storage facts; unsupported families remain distinct from unreadiness.
+#[derive(Clone, Copy)]
+pub(crate) enum StoredShape<'a> {
+    Scalar,
+    Array {
+        element: TypeId,
+        stride: u64,
+        length: u64,
+    },
+    Product {
+        fields: &'a [TypeId],
+        variant: Option<crate::sema::members::VariantId>,
+        union: bool,
+    },
+    Unsupported,
+}
+impl<'a> Reader<'a> {
+    pub(crate) fn storage_shape(self, ty: TypeId) -> Result<StoredShape<'a>, &'static str> {
+        let layout = self
+            .facts
+            .layouts
+            .get(ty)
+            .ok_or("missing prepared storage shape")?;
+        match self
+            .facts
+            .types
+            .kind(ty)
+            .ok_or("missing stored shape type")?
+        {
+            Kind::Primitive(p) if p != crate::types::Primitive::Str => {
+                if !matches!(layout.shape, Shape::Scalar) {
+                    return Err("primitive differs from retained storage shape");
+                }
+                Ok(StoredShape::Scalar)
+            }
+            Kind::Array { element, length } => {
+                let Shape::Array {
+                    element: actual,
+                    stride,
+                    length: actual_length,
+                } = layout.shape
+                else {
+                    return Err("array differs from retained storage shape");
+                };
+                if actual != element || actual_length != length {
+                    return Err("array storage shape differs from its canonical type");
+                }
+                Ok(StoredShape::Array {
+                    element,
+                    stride,
+                    length,
+                })
+            }
+            Kind::Tuple(_) => self.stored_product(layout, None, false),
+            Kind::Adt(item, _) => {
+                let definition = self
+                    .facts
+                    .aggregates
+                    .get(item)
+                    .ok_or("missing completed stored nominal")?;
+                let union = match definition.kind {
+                    crate::types::aggregate::Kind::Struct => false,
+                    crate::types::aggregate::Kind::Union => true,
+                    crate::types::aggregate::Kind::Enum => return Ok(StoredShape::Unsupported),
+                };
+                let [id] = self.facts.members.variants(item) else {
+                    return Err("stored nominal requires one declaration variant");
+                };
+                let variant = self
+                    .facts
+                    .members
+                    .variants
+                    .get(id.0 as usize)
+                    .ok_or("missing stored declaration variant")?;
+                if variant.owner != item || variant.ordinal != 0 {
+                    return Err("stored declaration variant has a different owner");
+                }
+                self.stored_product(layout, Some(*id), union)
+            }
+            _ => Ok(StoredShape::Unsupported),
+        }
+    }
+    fn stored_product(
+        self,
+        layout: &crate::abi::layout::Layout,
+        variant: Option<crate::sema::members::VariantId>,
+        union: bool,
+    ) -> Result<StoredShape<'a>, &'static str> {
+        if !matches!(layout.shape, Shape::Aggregate { tag: None, .. }) {
+            return Err("stored product has an unexpected layout tag");
+        }
+        let [stored] = self.facts.layouts.variants(layout) else {
+            return Err("stored product requires one physical variant");
+        };
+        let fields = self
+            .facts
+            .types
+            .list(stored.fields)
+            .ok_or("missing stored product fields")?;
+        if self.facts.layouts.offsets(stored).len() != fields.len() {
+            return Err("stored product offsets differ from its fields");
+        }
+        if let Some(id) = variant {
+            let declaration = self
+                .facts
+                .members
+                .variants
+                .get(id.0 as usize)
+                .ok_or("missing stored variant declaration")?;
+            if declaration
+                .end
+                .checked_sub(declaration.start)
+                .and_then(|n| usize::try_from(n).ok())
+                != Some(fields.len())
+            {
+                return Err("stored product differs from declaration field count");
+            }
+        }
+        Ok(StoredShape::Product {
+            fields,
+            variant,
+            union,
+        })
+    }
+}
