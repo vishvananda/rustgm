@@ -61,5 +61,11 @@ The combined checkpoint subsequently passed 2,588 regular tests, 267 native
 tests and all 8,360 active text cases. Its evidence is in
 `obj/parallel/checked-memory-callers-checkpoint-v2/`, retaining the unchanged
 integration groups from v1 after correcting one exact layout assertion.
-Affected independent qualification and the broader combined performance matrix
-remain pending before publication. PA25 remains planned.
+Thirteen affected independent suites also pass. The broader 70-input combined
+performance comparison confirms the cleanup improvement, with the two width-128
+families using 72.7% and 64.0% fewer instructions and taking 46.7% and 37.3% less
+wall time. All complete scaling series remain within the declared bounds. Two
+RSS flags received one predeclared attribution pass, retaining both sets of
+observations and the measured small stack/page increases. See
+`checked-memory-callers-checkpoint.md` for the full review and limitations.
+PA25 remains planned.
