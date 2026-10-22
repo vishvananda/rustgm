@@ -763,6 +763,13 @@ impl<S: Sources> Engine<'_, S> {
         capture: u32,
     ) -> Result<(), Error> {
         let flags = self.flags(file, visit.owner)?;
+        let builtin = super::bindings::builtin_macro(
+            &self.loader.package,
+            NodeKey {
+                file,
+                node: visit.owner.unwrap_or(visit.node),
+            },
+        )?;
         let context = self.context(
             file,
             self.loader
@@ -801,7 +808,10 @@ impl<S: Sources> Engine<'_, S> {
             }),
             module: visit.module,
             name,
-            body: Body::Declarative(Compiled::new(definition)),
+            body: builtin.map_or_else(
+                || Body::Declarative(Compiled::new(definition)),
+                Body::Builtin,
+            ),
             context,
             introduction: visit.introduction,
             preceding_scope: self.head,

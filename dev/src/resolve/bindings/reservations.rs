@@ -55,6 +55,7 @@ enum Claim {
     Language(LangItem),
     Intrinsic,
     DenyImplementations,
+    BuiltinMacro,
 }
 
 pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> Result<(), Error> {
@@ -162,6 +163,8 @@ fn reserve(
         )
     };
     match claim {
+        // The configured-owner facade has already validated this exact declaration.
+        Claim::BuiltinMacro => {}
         Claim::DenyImplementations => {
             if !source.features.has(Feature::RustcAttributes) {
                 return Err(error("implementation restriction requires rustc_attrs"));
@@ -277,6 +280,7 @@ fn primary(package: &Package, key: NodeKey, kind: DefKind) -> bool {
             | (ItemKind::Struct { .. }, DefKind::Struct)
             | (ItemKind::TypeAlias { .. }, DefKind::TypeAlias)
             | (ItemKind::Impl { .. }, DefKind::SelfType)
+            | (ItemKind::MacroRules { .. }, DefKind::Macro)
     )
 }
 fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
@@ -307,6 +311,20 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
             let mut node = owner.node;
             while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
                 node = value;
+            }
+            if super::source_builtin::claim(
+                package,
+                NodeKey {
+                    file,
+                    node: owner.node,
+                },
+            )?
+            .is_some()
+            {
+                result
+                    .entry(NodeKey { file, node })
+                    .or_default()
+                    .push(Claim::BuiltinMacro);
             }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
                 let error = |message| Error::at(file, attribute.span.start, message);

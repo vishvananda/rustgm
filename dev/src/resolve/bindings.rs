@@ -1,12 +1,15 @@
 //! Configured source providers own real declaration claims and explicit features.
 pub(super) mod policy;
 mod reservations;
+#[path = "bindings/claimed_macros.rs"]
+mod source_builtin;
 use crate::support::{
     bindings::Mode,
     crates::{CrateIdentity, Dependencies},
 };
 pub(super) use reservations::finish;
 pub use reservations::{Declaration, IntrinsicDeclaration, Reservations};
+pub(super) use source_builtin::claim as builtin_macro;
 use std::sync::Arc;
 
 /// Driver-independent source selection, fixed before expansion or ordinary lookup.
