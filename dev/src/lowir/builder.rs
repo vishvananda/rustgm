@@ -10,14 +10,31 @@ use super::{
 use crate::support::hash::HashMap;
 mod objects;
 
+/// A block whose instruction range is still unset; real ranges never start
+/// after they end.
+const UNOPENED: Range = Range { start: 1, end: 0 };
+/// Up to this many distinct spans are deduplicated by scanning the function's
+/// span list; larger functions index them.
+const SCANNED_SPANS: usize = 8;
+
 #[derive(Default)]
 pub struct Builder {
     function: Function,
     current: Option<BlockId>,
-    opened: Vec<bool>,
     spans: HashMap<MemorySpan, SpanId>,
 }
+const fn unopened(range: Range) -> bool {
+    range.start > range.end
+}
 impl Builder {
+    /// Start a body in a recycled, emptied function whose capacity is reused.
+    pub(super) fn reuse(function: Function) -> Self {
+        Self {
+            function,
+            current: None,
+            spans: HashMap::default(),
+        }
+    }
     /// # Errors
     /// Rejects void storage and exhausted identities.
     pub fn slot(&mut self, ty: Type) -> Result<SlotId, &'static str> {
@@ -32,12 +49,31 @@ impl Builder {
         if span.bytes == 0 || span.bytes > i64::MAX as u64 || !span.align.is_power_of_two() {
             return Err("invalid LowIR object span");
         }
-        if let Some(id) = self.spans.get(&span) {
-            return Ok(*id);
+        let known = if self.function.spans.len() <= SCANNED_SPANS {
+            self.function
+                .spans
+                .iter()
+                .position(|known| *known == span)
+                .map(program::index)
+                .transpose()?
+                .map(SpanId)
+        } else {
+            self.spans.get(&span).copied()
+        };
+        if let Some(id) = known {
+            return Ok(id);
         }
         let id = SpanId(program::index(self.function.spans.len())?);
         self.function.spans.push(span);
-        self.spans.insert(span, id);
+        if self.function.spans.len() > SCANNED_SPANS {
+            if self.spans.is_empty() {
+                for (index, known) in self.function.spans.iter().enumerate() {
+                    self.spans.insert(*known, SpanId(program::index(index)?));
+                }
+            } else {
+                self.spans.insert(span, id);
+            }
+        }
         Ok(id)
     }
     /// Reserve positive-sized addressable storage. Rust ZSTs need no object slot.
@@ -100,21 +136,25 @@ impl Builder {
     pub fn block(&mut self) -> Result<BlockId, &'static str> {
         let id = BlockId(program::index(self.function.blocks.len())?);
         self.function.blocks.push(Block {
-            instructions: Range { start: 0, end: 0 },
+            instructions: UNOPENED,
             terminator: Terminator::Unreachable,
         });
-        self.opened.push(false);
         Ok(id)
     }
     /// # Errors
     /// Rejects unknown/revisited blocks and unterminated preceding blocks.
     pub fn enter(&mut self, block: BlockId) -> Result<(), &'static str> {
-        if self.current.is_some() || self.opened.get(block.0 as usize) != Some(&false) {
+        if self.current.is_some()
+            || !self
+                .function
+                .blocks
+                .get(block.0 as usize)
+                .is_some_and(|data| unopened(data.instructions))
+        {
             return Err("invalid LowIR block transition");
         }
         let start = program::index(self.function.instructions.len())?;
         self.function.blocks[block.0 as usize].instructions = Range { start, end: start };
-        self.opened[block.0 as usize] = true;
         self.function.order.push(block);
         self.current = Some(block);
         Ok(())
@@ -432,8 +472,12 @@ impl Builder {
     /// Rejects unfinished blocks, missing entry blocks and unplaced blocks.
     pub fn finish(self) -> Result<Function, &'static str> {
         if self.current.is_some()
-            || self.opened.is_empty()
-            || self.opened.iter().any(|opened| !opened)
+            || self.function.blocks.is_empty()
+            || self
+                .function
+                .blocks
+                .iter()
+                .any(|block| unopened(block.instructions))
         {
             return Err("unfinished LowIR function");
         }

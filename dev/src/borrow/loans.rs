@@ -384,7 +384,27 @@ impl Flow<'_> {
         }
         let data = &self.body.blocks[block];
         let mut ends = self.storage.ends(block).peekable();
-        for at in data.start..=data.end {
+        let mut at = data.start;
+        while at <= data.end {
+            if state.is_empty() {
+                // With no live loan, pruning, activation, inspection, storage
+                // endings and snapshots are no-ops until a statement creates
+                // one; the next prune then revalidates the state fully.
+                let next = (at..data.end)
+                    .find(|&statement| self.generates(statement))
+                    .unwrap_or(data.end + 1);
+                if next > at {
+                    let node = NodeKey {
+                        node: data.source,
+                        ..self.body.source
+                    };
+                    self.charge((next - at) as usize)
+                        .map_err(|message| Error { node, message })?;
+                    while ends.next_if(|(position, _)| *position < next).is_some() {}
+                    at = next;
+                    continue;
+                }
+            }
             let node = NodeKey {
                 node: if at < data.end {
                     self.body.statements[at as usize].source
@@ -394,23 +414,28 @@ impl Flow<'_> {
                 ..self.body.source
             };
             let error = |message| Error { node, message };
+            let current = at;
+            at += 1;
             self.charge(1).map_err(error)?;
-            let point = self.point(block, at).map_err(error)?;
+            let point = self.point(block, current).map_err(error)?;
             self.prune(state, point).map_err(error)?;
-            while let Some((_, end)) = ends.peek().filter(|(position, _)| *position == at).copied()
+            while let Some((_, end)) = ends
+                .peek()
+                .filter(|(position, _)| *position == current)
+                .copied()
             {
                 if inspect {
                     self.ending(state, end, None).map_err(error)?;
                 }
                 ends.next();
             }
-            if at == data.end {
+            if current == data.end {
                 if RECORD && inspect {
                     inspection::record(&mut self.snapshots, point, state).map_err(error)?;
                 }
                 continue;
             }
-            let action = self.body.statements[at as usize].action;
+            let action = self.body.statements[current as usize].action;
             if let Action::Evaluate(id) = action {
                 self.activation(state, id, inspect).map_err(error)?;
             }
@@ -425,6 +450,13 @@ impl Flow<'_> {
             }
         }
         Ok(())
+    }
+    /// Whether this statement creates at least one tracked loan.
+    pub(super) fn generates(&self, statement: u32) -> bool {
+        matches!(
+            self.body.statements[statement as usize].action,
+            Action::Evaluate(id) if self.generated[id.0 as usize].0 < self.generated[id.0 as usize].1
+        )
     }
     fn solve<const RECORD: bool>(&mut self) -> Result<(), Error> {
         let error = |message| Error {
@@ -678,6 +710,24 @@ fn finish<const RECORD: bool>(
         .chain(contract.identities.parameters().map(|(_, region)| region));
     let regions = points::infer(&contract.solution, uses.points, seeds, external, 32_000_000)
         .map_err(error)?;
+    if !RECORD
+        && !body
+            .values
+            .iter()
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+    {
+        // Without a borrow no loan exists: pruning, accesses, destructor
+        // accesses and storage endings have nothing to check.
+        return Ok(Report {
+            analysis: Analysis {
+                loans: 0,
+                steps: uses.steps + regions.steps,
+                points: uses.points,
+                region_words: regions.mask_count(),
+            },
+            inspection: None,
+        });
+    }
     let mut flow = Flow {
         types,
         body,

@@ -97,8 +97,13 @@ pub fn select(
             }
         }
     }
+    let mut recording = super::flags::Recording::for_body(facts.body());
     facts
-        .visit_events(|event, point| {
+        .visit_transfers(|transition, point| {
+            recording.push(transition);
+            let initialization::Transition::Observe(event) = transition else {
+                return Ok(());
+            };
             builder.charge(1)?;
             if let initialization::Event::Cleanup(candidate) = event {
                 let body = facts.body();
@@ -127,7 +132,11 @@ pub fn select(
         steps: &mut builder.plan.steps,
         retained: builder.retained,
     }
-    .record(facts, builder.plan.cleanups.iter().map(|c| c.candidate))
+    .record_from(
+        facts,
+        recording,
+        builder.plan.cleanups.iter().map(|c| c.candidate),
+    )
     .map_err(error)?;
     Ok(builder.plan)
 }

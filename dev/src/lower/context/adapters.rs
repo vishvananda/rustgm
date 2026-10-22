@@ -17,7 +17,7 @@ impl Context<'_> {
         let Owner::ClosureAdapter {
             adapter: selected,
             signature,
-        } = self.bodies.bodies[index].owner
+        } = self.body(index).owner
         else {
             return Err("receiver adapter body has another owner");
         };

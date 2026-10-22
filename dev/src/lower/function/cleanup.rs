@@ -71,7 +71,7 @@ fn real_edge(terminator: ir::Terminator, target: ir::BlockId) -> bool {
         _ => false,
     }
 }
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn target(
         &self,
         source: usize,

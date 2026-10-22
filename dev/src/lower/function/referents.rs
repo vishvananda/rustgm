@@ -13,7 +13,7 @@ use crate::{
     types::TypeId,
 };
 
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn metadata(&mut self, place: Place) -> Result<Value, &'static str> {
         // A selected reborrow can form a slice directly from array storage,
         // without an intermediate wide pointer or a metadata-bearing projection.
@@ -26,7 +26,7 @@ impl Lower<'_, '_> {
             return Err("unsized place lacks projection metadata");
         };
         self.place_metadata
-            .get(&id)
+            .get(id)
             .copied()
             .ok_or("place metadata does not dominate its use")
     }

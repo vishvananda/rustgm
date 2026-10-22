@@ -214,12 +214,24 @@ pub fn analyze<'a, S: BuildHasher>(
     copies: &mut Copies,
     body: &'a Body,
 ) -> Result<Facts<'a>, Error> {
+    let order = crate::borrow::order::Order::new(body);
+    analyze_ordered(types, definitions, derives, copies, body, order.as_ref())
+}
+/// `analyze`, reusing a reverse-postorder walk already computed for the body.
+pub(crate) fn analyze_ordered<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
+    copies: &mut Copies,
+    body: &'a Body,
+    order: Option<&crate::borrow::order::Order>,
+) -> Result<Facts<'a>, Error> {
     let mut ownership = super::prepare(types, definitions, derives, copies, body, true)?;
     let consumption = Effects::build(body, types, &ownership.paths).map_err(|message| Error {
         node: body.source,
         message,
     })?;
-    let storage = crate::borrow::storage::check(body).map_err(|error| Error {
+    let storage = crate::borrow::storage::check_ordered(body, order).map_err(|error| Error {
         node: error.node,
         message: error.message,
     })?;
@@ -233,7 +245,7 @@ pub fn analyze<'a, S: BuildHasher>(
         owners: &owners,
         consumption: &consumption,
     };
-    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow))?;
+    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow), order)?;
     super::guards::verify(body, &ownership, types)?;
     let words = (ownership.paths.bits as usize).div_ceil(64);
     Ok(Facts {

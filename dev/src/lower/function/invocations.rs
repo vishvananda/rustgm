@@ -5,7 +5,7 @@ use crate::{
     lowir::vocabulary::Type,
     types::{Kind, TypeId, instance::Instance},
 };
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn invoke(
         &mut self,
         id: crate::body::ir::ValueId,

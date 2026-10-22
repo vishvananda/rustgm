@@ -79,6 +79,11 @@ impl Liveness {
                 .get(&(region, point.0 / 64))
                 .is_some_and(|bits| bits & (1 << (point.0 % 64)) != 0))
     }
+    /// CFG points covered by this liveness proof.
+    #[must_use]
+    pub(crate) const fn point_count(&self) -> u32 {
+        self.points
+    }
     #[must_use]
     pub fn mask_count(&self) -> usize {
         self.word_count

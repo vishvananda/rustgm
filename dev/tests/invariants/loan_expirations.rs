@@ -112,7 +112,7 @@ fn continuous_regions_pay_for_words_and_exits_instead_of_loans_times_points()
         )?;
         let loans = loans(std::iter::repeat_n(region, width as usize))?;
         let index = Expirations::new(&loans, &live)?;
-        assert_eq!(index.events.len(), 1);
+        assert_eq!(index.event_points(), 1);
         assert_eq!(index.entries, (width as usize).div_ceil(64));
         let mut state = Set::new(loans.len().div_ceil(64));
         let mut work = index.steps;

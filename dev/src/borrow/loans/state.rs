@@ -19,6 +19,9 @@ impl Set {
     pub fn words(&self) -> &[State] {
         &self.words
     }
+    pub fn is_empty(&self) -> bool {
+        self.next(0).is_none()
+    }
     pub fn depth(&self) -> usize {
         self.occupied.depth() + 1
     }

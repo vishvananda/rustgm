@@ -94,19 +94,35 @@ pub struct Plan {
     pub steps: usize,
 }
 
+impl Plan {
+    /// Release construction slack before the plan is retained for lowering.
+    pub(crate) fn shrink_to_fit(&mut self) {
+        self.cleanups.shrink_to_fit();
+        self.nodes.shrink_to_fit();
+        self.fields.shrink_to_fit();
+        self.intervals.shrink_to_fit();
+        self.variants.shrink_to_fit();
+        self.flags.shrink_to_fit();
+        self.events.shrink_to_fit();
+    }
+}
 /// Proved plans in body order, with their immutable shared glue recipes.
 /// Construction is restricted to the combined ownership/lifetime/loan boundary.
 pub struct Proof {
-    pub(super) plans: Vec<Option<Plan>>,
+    pub(super) plans: Vec<Option<Box<Plan>>>,
     pub(super) recipes: glue::Recipes,
 }
 impl Proof {
     #[must_use]
     pub fn plan(&self, body: usize) -> Option<&Plan> {
-        self.plans.get(body).and_then(Option::as_ref)
+        self.plans.get(body).and_then(Option::as_deref)
     }
     #[must_use]
     pub const fn recipes(&self) -> &glue::Recipes {
         &self.recipes
+    }
+    /// Move every body plan out so lowering can release each after use.
+    pub(crate) fn take_plans(&mut self) -> Vec<Option<Box<Plan>>> {
+        std::mem::take(&mut self.plans)
     }
 }

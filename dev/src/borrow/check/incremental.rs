@@ -15,7 +15,8 @@ use std::hash::BuildHasher;
 
 pub(crate) struct Proved {
     body: Body,
-    plan: Option<destruction::Plan>,
+    /// Boxed: most bodies retain no runtime cleanup plan.
+    plan: Option<Box<destruction::Plan>>,
     destruction: bool,
     static_targets: Option<Box<crate::types::substitute::Bound>>,
 }
@@ -33,7 +34,7 @@ impl Proved {
         &self.body
     }
     pub(crate) fn plan(&self) -> Option<&destruction::Plan> {
-        self.plan.as_ref()
+        self.plan.as_deref()
     }
 }
 
@@ -229,20 +230,45 @@ impl Verifier {
         Ok(Proved {
             static_targets: super::static_targets::prepare(contract).map_err(error)?,
             body,
-            plan,
+            plan: plan.map(Box::new),
             destruction: self.drops.is_some(),
         })
     }
 }
 
-/// Consume immutable proved bodies in their final order, then lend the existing
-/// executable token. No caller can mutate the owned bodies between proof and use.
-pub(crate) fn with_checked<T>(
+/// Immutable proved bodies in their final order with their selected cleanup.
+/// Inspection borrows the existing executable token; lowering may consume the
+/// bodies once, in demand order, releasing each after its emission.
+pub(crate) struct Assembled {
+    program: Program,
+    destruction: Option<Box<destruction::Proof>>,
+}
+impl Assembled {
+    /// Lend the existing executable token. No caller can mutate the owned
+    /// bodies between proof and use.
+    pub(crate) fn with_checked<T>(self, use_checked: impl FnOnce(&Checked<'_>) -> T) -> T {
+        use_checked(&Checked {
+            program: &self.program,
+            destruction: self.destruction,
+        })
+    }
+    #[cfg(test)]
+    pub(crate) const fn program(&self) -> &Program {
+        &self.program
+    }
+    /// Hand the proved bodies and cleanup proof to executable lowering, which
+    /// consumes each body once and never mutates it.
+    pub(crate) fn into_lowering(self) -> (Program, Option<Box<destruction::Proof>>) {
+        (self.program, self.destruction)
+    }
+}
+
+/// Consume immutable proved bodies in their final order.
+pub(crate) fn assemble(
     mut program: Program,
     bodies: Vec<Proved>,
     recipes: Option<glue::Recipes>,
-    use_checked: impl FnOnce(&Checked<'_>) -> T,
-) -> Result<T, Error> {
+) -> Result<Assembled, Error> {
     if !program.bodies.is_empty()
         || program.drops.is_some() != recipes.is_some()
         || program
@@ -259,13 +285,31 @@ pub(crate) fn with_checked<T>(
         });
     }
     let mut plans = Vec::with_capacity(bodies.len());
-    for proved in bodies {
+    program.bodies.reserve_exact(bodies.len());
+    // Release the proved records progressively while their bodies move.
+    let mut bodies = bodies;
+    bodies.reverse();
+    while let Some(proved) = bodies.pop() {
         program.bodies.push(proved.body);
         plans.push(proved.plan);
+        if bodies.len() < bodies.capacity() / 2 {
+            bodies.shrink_to_fit();
+        }
     }
     let destruction = recipes.map(|recipes| Box::new(destruction::Proof { plans, recipes }));
-    Ok(use_checked(&Checked {
-        program: &program,
+    Ok(Assembled {
+        program,
         destruction,
-    }))
+    })
+}
+/// Consume immutable proved bodies in their final order, then lend the existing
+/// executable token. No caller can mutate the owned bodies between proof and use.
+#[cfg(test)]
+pub(crate) fn with_checked<T>(
+    program: Program,
+    bodies: Vec<Proved>,
+    recipes: Option<glue::Recipes>,
+    use_checked: impl FnOnce(&Checked<'_>) -> T,
+) -> Result<T, Error> {
+    Ok(assemble(program, bodies, recipes)?.with_checked(use_checked))
 }

@@ -35,6 +35,12 @@ enum Original<'a> {
 impl Builder {
     pub(super) fn new(mut program: Program) -> Result<(Self, Vec<Body>), &'static str> {
         let ordinary = std::mem::take(&mut program.bodies);
+        // Whole-program region tables exist only for body inspection views;
+        // proofs and lowering read the per-body contracts instead.
+        program.region_equalities = Vec::new();
+        program.coercions = Vec::new();
+        program.outlives = Vec::new();
+        program.body_regions = Vec::new();
         let methods = program.drops.as_ref().map(|d| d.methods.as_slice());
         let recipes = methods.map(glue::Cache::new).transpose()?;
         let verifier = incremental::Verifier::new(methods)?;
@@ -430,10 +436,16 @@ impl Builder {
         }
         Ok(methods)
     }
+    #[cfg(test)]
     pub(super) fn with_checked<T>(
         self,
         use_checked: impl FnOnce(&borrow::Checked<'_>) -> T,
     ) -> Result<T, borrow::Error> {
+        Ok(self.assemble()?.with_checked(use_checked))
+    }
+    /// Complete the append-only proof; every original nested region proof
+    /// must have been consumed by its body.
+    pub(super) fn assemble(self) -> Result<incremental::Assembled, borrow::Error> {
         if self
             .original_regions
             .as_ref()
@@ -444,11 +456,10 @@ impl Builder {
                 message: "unconsumed original nested region proof".into(),
             });
         }
-        incremental::with_checked(
+        incremental::assemble(
             self.program,
             self.bodies,
             self.recipes.map(glue::Cache::into_recipes),
-            use_checked,
         )
     }
 }

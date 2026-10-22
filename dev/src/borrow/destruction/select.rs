@@ -7,7 +7,7 @@ use crate::{
     body::ir::{Body, Selection},
     borrow::ownership::{
         Component, Error, PathId, Paths,
-        initialization::{self, Candidate, Event, Point, Status},
+        initialization::{self, Candidate, Event, Point, Status, Transition},
     },
 };
 
@@ -72,17 +72,22 @@ pub fn select(
                 .insert((parent, field), PathId(compact(index).map_err(error)?));
         }
     }
+    let mut recording = super::flags::Recording::for_body(body);
     facts
-        .visit_events(|event, point| {
-            builder.charge(1)?;
-            if let Event::Cleanup(candidate) = event {
-                builder.cleanup(body, candidate, point)?;
+        .visit_transfers(|transition, point| {
+            recording.push(transition);
+            if let Transition::Observe(event) = transition {
+                builder.charge(1)?;
+                if let Event::Cleanup(candidate) = event {
+                    builder.cleanup(body, candidate, point)?;
+                }
             }
             Ok(())
         })
         .map_err(error)?;
     builder.flags().map_err(error)?;
-    super::flags::elaborate(&mut builder.plan, facts, builder.retained).map_err(error)?;
+    super::flags::elaborate(&mut builder.plan, facts, recording, builder.retained)
+        .map_err(error)?;
     Ok(builder.plan)
 }
 impl Builder<'_, '_> {

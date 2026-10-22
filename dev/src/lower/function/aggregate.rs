@@ -11,7 +11,7 @@ use crate::{
     types::TypeId,
 };
 
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn is_variant(
         &mut self,
         place: Place,

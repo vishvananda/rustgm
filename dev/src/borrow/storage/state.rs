@@ -66,6 +66,30 @@ pub(super) fn successors(terminator: Terminator) -> [Option<crate::body::ir::Blo
         Terminator::Return(_) | Terminator::Unreachable | Terminator::Panic => [None, None],
     }
 }
+/// Blocks reachable from the entry along validated successor edges.
+pub(super) fn reachable(body: &Body, state: &mut State) -> Result<Vec<bool>, &'static str> {
+    if body.blocks.is_empty() {
+        return Err("body has no storage entry");
+    }
+    let mut reached = vec![false; body.blocks.len()];
+    let mut pending = Vec::with_capacity(body.blocks.len().min(64));
+    pending.push(0_usize);
+    reached[0] = true;
+    while let Some(block) = pending.pop() {
+        state.charge(1)?;
+        for target in successors(body.blocks[block].terminator)
+            .into_iter()
+            .flatten()
+        {
+            let next = target.0 as usize;
+            if !reached[next] {
+                reached[next] = true;
+                pending.push(next);
+            }
+        }
+    }
+    Ok(reached)
+}
 pub(super) fn solve(
     body: &Body,
     index: &Index,

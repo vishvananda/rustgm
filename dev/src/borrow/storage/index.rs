@@ -5,7 +5,6 @@ use crate::body::{
     scopes,
     storage::{End, Location},
 };
-use crate::support::hash::HashSet;
 
 #[derive(Clone, Copy)]
 pub(crate) enum EventKind {
@@ -28,8 +27,12 @@ pub(super) struct Mask {
     pub bits: u64,
 }
 pub(super) struct Index {
+    /// Empty when the body materializes no temporary: every lookup then
+    /// reports the same missing materialization as an explicit `None` slot.
     pub values: Vec<Option<u32>>,
     roots: Vec<Option<u32>>,
+    /// Leading projections whose roots are untracked (no temporary storage).
+    untracked: usize,
     pub permanent: Vec<bool>,
     pub permanent_masks: Vec<u64>,
     members: Vec<Mask>,
@@ -74,9 +77,15 @@ impl Index {
         if scopes.is_empty() {
             return Err("missing root storage scope");
         }
+        let tracked = !body.temporaries.is_empty();
         let mut index = Self {
-            values: vec![None; body.values.len()],
-            roots: Vec::with_capacity(body.projections.len()),
+            values: if tracked {
+                vec![None; body.values.len()]
+            } else {
+                Vec::new()
+            },
+            roots: Vec::with_capacity(if tracked { body.projections.len() } else { 0 }),
+            untracked: 0,
             permanent: Vec::with_capacity(body.temporaries.len()),
             permanent_masks: vec![0; body.temporaries.len().div_ceil(64)],
             members: Vec::new(),
@@ -92,10 +101,17 @@ impl Index {
             ),
             edge_starts: Vec::new(),
         };
-        index.births(body, state)?;
+        if tracked {
+            index.births(body, state)?;
+        }
         index.exits(body, state)?;
         for projection in &body.projections {
             let base = index.root(projection.base)?;
+            if !tracked {
+                // Without temporaries every valid base is untracked storage.
+                index.untracked += 1;
+                continue;
+            }
             let root = if projection.kind.is_dereference() {
                 None
             } else {
@@ -190,7 +206,10 @@ impl Index {
     }
     fn exits(&mut self, body: &Body, state: &mut State) -> Result<(), &'static str> {
         let storage = body.storage.as_ref().ok_or("missing body storage facts")?;
-        let mut ranges = HashSet::default();
+        // Transfer walks every scope exit again when it ends storage, so each
+        // range is validated in the same charged walk; repeated adjacent
+        // ranges, such as successive failure exits, are validated once.
+        let mut previous = None;
         for (ordinal, exit) in storage.exits.iter().enumerate() {
             match exit.end {
                 End::Scopes(range) => {
@@ -201,7 +220,7 @@ impl Index {
                     {
                         return Err("invalid storage exit scope");
                     }
-                    if ranges.insert((range.inner, range.outer)) {
+                    if previous.replace(range) != Some(range) {
                         let mut next = Some(range.inner);
                         while next != range.outer {
                             state.charge(1)?;
@@ -268,6 +287,7 @@ impl Index {
                 .flatten()
                 .map(Some)
                 .ok_or("place lacks a materialization record"),
+            Place::Projection(id) if (id.0 as usize) < self.untracked => Ok(None),
             Place::Projection(id) => self
                 .roots
                 .get(id.0 as usize)
@@ -277,6 +297,9 @@ impl Index {
         }
     }
     pub(super) fn members(&self, scope: scopes::Id) -> &[Mask] {
+        if self.members.is_empty() {
+            return &[];
+        }
         &self.members[self.scope_starts[scope.0 as usize]..self.scope_starts[scope.0 as usize + 1]]
     }
     pub(super) fn events(&self, block: usize) -> &[Event] {

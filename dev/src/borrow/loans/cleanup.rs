@@ -12,6 +12,12 @@ use crate::{
 };
 
 impl Flow<'_> {
+    /// Whether this ordered event executes a statement that creates a loan.
+    fn generates_at(&self, plan: Schedule<'_>, index: usize) -> bool {
+        let event = &plan.events[index];
+        matches!(event.effect, Effect::Statement)
+            && matches!(event.location, Location::At { before, .. } if self.generates(before))
+    }
     pub(super) fn cleanup_edge<const RECORD: bool>(
         &mut self,
         block: usize,
@@ -44,7 +50,25 @@ impl Flow<'_> {
         state: &mut Set,
         inspect: bool,
     ) -> Result<(), Error> {
-        for index in range {
+        let mut next = range.start;
+        while next < range.end {
+            if state.is_empty() {
+                // With no live loan only a loan-creating statement changes the
+                // state; pruning, endings, accesses and snapshots are no-ops.
+                let skip = (next..range.end)
+                    .find(|&index| self.generates_at(plan, index))
+                    .unwrap_or(range.end);
+                if skip > next {
+                    self.charge(skip - next).map_err(|message| Error {
+                        node: self.body.source,
+                        message,
+                    })?;
+                    next = skip;
+                    continue;
+                }
+            }
+            let index = next;
+            next += 1;
             let event = &plan.events[index];
             let mut node = self.body.source;
             if let Location::At { block, before } = event.location {

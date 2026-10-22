@@ -51,12 +51,59 @@ pub struct Facts {
 /// Reuse lookup and traversal capacity across bodies; only scope records survive building.
 #[derive(Default)]
 pub(crate) struct Scratch {
-    boundaries: HashMap<(NodeId, Kind), Id>,
-    nodes: HashMap<NodeId, Node>,
+    index: NodeIndex,
+    /// Expression scope facts in recording order, located through `index`.
+    nodes: Vec<Node>,
+    /// Next scope with the same source node, parallel to the scope records.
+    same_source: Vec<u32>,
+    /// Spare scope-record capacity; finished bodies receive exact copies.
+    scopes: Vec<Scope>,
     bindings: HashMap<DefId, Id>,
     pending: Vec<Work>,
     pattern_work: Vec<NodeId>,
     extensions: HashMap<NodeId, Lifetime>,
+}
+const NONE: u32 = u32::MAX;
+/// Nodes this far below the root use the sparse table instead of the window.
+const DENSE_SPAN: u32 = 1 << 20;
+/// Per-body slots keyed by syntax node: a recorded expression fact and the
+/// first scope whose boundary is that node. Children are allocated before their
+/// parents, so a body's nodes are dense below its root; any other node, such as
+/// later expansion output, uses the sparse table.
+#[derive(Default)]
+struct NodeIndex {
+    root: u32,
+    window: Vec<[u32; 2]>,
+    sparse: HashMap<NodeId, [u32; 2]>,
+}
+impl NodeIndex {
+    fn reset(&mut self, root: NodeId) {
+        self.root = root.0;
+        self.window.clear();
+        recycle(&mut self.sparse);
+    }
+    fn get(&self, node: NodeId) -> [u32; 2] {
+        match self.root.checked_sub(node.0) {
+            Some(offset) if offset < DENSE_SPAN => self
+                .window
+                .get(offset as usize)
+                .copied()
+                .unwrap_or([NONE; 2]),
+            _ => self.sparse.get(&node).copied().unwrap_or([NONE; 2]),
+        }
+    }
+    fn slot(&mut self, node: NodeId) -> &mut [u32; 2] {
+        match self.root.checked_sub(node.0) {
+            Some(offset) if offset < DENSE_SPAN => {
+                let offset = offset as usize;
+                if offset >= self.window.len() {
+                    self.window.resize(offset + 1, [NONE; 2]);
+                }
+                &mut self.window[offset]
+            }
+            _ => self.sparse.entry(node).or_insert([NONE; 2]),
+        }
+    }
 }
 impl Facts {
     pub(crate) fn into_scopes(self) -> Vec<Scope> {
@@ -66,29 +113,44 @@ impl Facts {
         Self::with_scratch(source, Scratch::default())
     }
     fn with_scratch(source: NodeId, mut scratch: Scratch) -> Self {
-        scratch.boundaries.insert((source, Kind::Body), Id(0));
+        scratch.index.reset(source);
+        scratch.index.slot(source)[1] = 0;
+        scratch.same_source.push(NONE);
+        let mut scopes = std::mem::take(&mut scratch.scopes);
+        scopes.push(Scope {
+            parent: None,
+            source,
+            kind: Kind::Body,
+        });
         Self {
-            scopes: vec![Scope {
-                parent: None,
-                source,
-                kind: Kind::Body,
-            }],
+            scopes,
             scratch,
             work: 0,
         }
     }
     pub(crate) fn finish(mut self) -> (Vec<Scope>, Scratch) {
-        recycle(&mut self.scratch.boundaries);
-        recycle(&mut self.scratch.nodes);
+        self.scratch.index.reset(NodeId(0));
+        self.scratch.nodes.clear();
+        self.scratch.same_source.clear();
         recycle(&mut self.scratch.bindings);
         self.scratch.pending.clear();
         self.scratch.pattern_work.clear();
         recycle(&mut self.scratch.extensions);
-        (self.scopes, self.scratch)
+        let scopes = self.scopes.as_slice().to_vec();
+        self.scopes.clear();
+        self.scratch.scopes = self.scopes;
+        (scopes, self.scratch)
     }
     #[must_use]
     pub fn boundary(&self, source: NodeId, kind: Kind) -> Option<Id> {
-        self.scratch.boundaries.get(&(source, kind)).copied()
+        let mut id = self.scratch.index.get(source)[1];
+        while id != NONE {
+            if self.scopes[id as usize].kind == kind {
+                return Some(Id(id));
+            }
+            id = self.scratch.same_source[id as usize];
+        }
+        None
     }
     #[must_use]
     pub fn scopes(&self) -> &[Scope] {
@@ -96,7 +158,8 @@ impl Facts {
     }
     #[must_use]
     pub fn node(&self, node: NodeId) -> Option<Node> {
-        self.scratch.nodes.get(&node).copied()
+        let entry = self.scratch.index.get(node)[0];
+        self.scratch.nodes.get(entry as usize).copied()
     }
     #[must_use]
     pub fn binding(&self, definition: DefId) -> Option<Id> {
@@ -197,9 +260,10 @@ enum Work {
     ExtendPlace(NodeId, Lifetime),
 }
 struct Walker<'a> {
-    report: &'a Report,
     types: &'a Declarations,
     source: NodeKey,
+    /// The owner file's configured syntax, resolved once per body.
+    syntax: &'a crate::expand::crate_syntax::ConfiguredSyntax<crate::literal::storage::StoredValue>,
     facts: Facts,
 }
 fn analyze(
@@ -227,9 +291,9 @@ fn analyze_at(
         ));
     }
     let mut walker = Walker {
-        report,
         types,
         source,
+        syntax: &report.package.unit(source.file).configured,
         facts: Facts::with_scratch(root.node, scratch),
     };
     let context = Context {
@@ -266,7 +330,8 @@ fn analyze_at(
         walker.visit(work).map_err(|e| report.diagnostic(e))?;
     }
     for (node, lifetime) in &walker.facts.scratch.extensions {
-        let Some(info) = walker.facts.scratch.nodes.get_mut(node) else {
+        let entry = walker.facts.scratch.index.get(*node)[0];
+        let Some(info) = walker.facts.scratch.nodes.get_mut(entry as usize) else {
             return Err(walker.error(*node, "extended expression lacks scope facts"));
         };
         info.temporary = *lifetime;
@@ -276,32 +341,13 @@ fn analyze_at(
 }
 impl Walker<'_> {
     fn child(&self, index: u32) -> NodeId {
-        self.report
-            .package
-            .unit(self.source.file)
-            .configured
-            .ast
-            .edges[index as usize]
+        self.syntax.ast.edges[index as usize]
     }
     fn kind(&self, node: NodeId) -> Syntax {
-        self.report
-            .package
-            .unit(self.source.file)
-            .configured
-            .ast
-            .node(node)
-            .kind
+        self.syntax.ast.node(node).kind
     }
     fn error(&self, node: NodeId, message: &'static str) -> Error {
-        let offset = self
-            .report
-            .package
-            .unit(self.source.file)
-            .configured
-            .ast
-            .node(node)
-            .span
-            .start;
+        let offset = self.syntax.ast.node(node).span.start;
         Error::at(self.source.file, offset, message)
     }
     fn push(&mut self, work: Work) -> Result<(), Error> {
@@ -322,7 +368,7 @@ impl Walker<'_> {
         Ok(())
     }
     fn active(&self, node: NodeId) -> bool {
-        self.report.package.unit(self.source.file).configured.active[node.0 as usize]
+        self.syntax.active[node.0 as usize]
     }
     fn record(&mut self, node: NodeId, context: Context) -> Result<(), Error> {
         let info = Node {
@@ -330,28 +376,34 @@ impl Walker<'_> {
             temporary: context.temporary,
             extended: false,
         };
-        if self.facts.scratch.nodes.insert(node, info).is_some() {
+        let entry = u32::try_from(self.facts.scratch.nodes.len())
+            .ok()
+            .filter(|&entry| entry != NONE)
+            .ok_or_else(|| self.error(node, "too many temporary scope facts"))?;
+        let slot = &mut self.facts.scratch.index.slot(node)[0];
+        if *slot != NONE {
             return Err(self.error(node, "expression has repeated scope ownership"));
         }
+        *slot = entry;
+        self.facts.scratch.nodes.push(info);
         Ok(())
     }
     fn scope(&mut self, node: NodeId, kind: Kind, context: Context) -> Result<Context, Error> {
         let id = Id(u32::try_from(self.facts.scopes.len())
-            .map_err(|_| self.error(node, "too many temporary scopes"))?);
+            .ok()
+            .filter(|&id| id != NONE)
+            .ok_or_else(|| self.error(node, "too many temporary scopes"))?);
+        if self.facts.boundary(node, kind).is_some() {
+            return Err(self.error(node, "repeated scope boundary identity"));
+        }
         self.facts.scopes.push(Scope {
             parent: Some(context.scope),
             source: node,
             kind,
         });
-        if self
-            .facts
-            .scratch
-            .boundaries
-            .insert((node, kind), id)
-            .is_some()
-        {
-            return Err(self.error(node, "repeated scope boundary identity"));
-        }
+        let first = &mut self.facts.scratch.index.slot(node)[1];
+        let next = std::mem::replace(first, id.0);
+        self.facts.scratch.same_source.push(next);
         Ok(Context {
             scope: id,
             temporary: Lifetime::Scope(id),

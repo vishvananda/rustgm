@@ -545,7 +545,13 @@ fn prepare_ordinary(
         .prepare_original_regions(facts, &inputs, &bodies)
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     let mut ordinary = Ordinary::default();
-    for body in bodies {
+    // Prove in program order while releasing the moved-from body records.
+    let mut bodies = bodies;
+    bodies.reverse();
+    while let Some(body) = bodies.pop() {
+        if bodies.len() < bodies.capacity() / 2 {
+            bodies.shrink_to_fit();
+        }
         let source = body.source;
         let closure = if let Owner::Closure { identity, .. } = body.owner {
             Some(identity)

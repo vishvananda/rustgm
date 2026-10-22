@@ -57,7 +57,7 @@ impl Storage {
         !self.places.is_empty() && self.places.contains(&place)
     }
 }
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn zero_backing(&mut self, ty: TypeId) -> Result<Address, &'static str> {
         let layout = self.context.layout(ty)?;
         if layout.size != 0 {

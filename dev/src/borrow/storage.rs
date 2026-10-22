@@ -85,12 +85,22 @@ impl Analysis {
 /// # Errors
 /// Reports invalid metadata, unavailable temporary places or bounded-dataflow exhaustion.
 pub fn check(body: &Body) -> Result<Analysis, Error> {
+    check_ordered(body, None)
+}
+/// `check`, reusing a reachability walk already computed for this body.
+pub(crate) fn check_ordered(
+    body: &Body,
+    order: Option<&super::order::Order>,
+) -> Result<Analysis, Error> {
     let error = |message| Error {
         node: body.source,
         message,
     };
     let mut state = State::new(body.temporaries.len());
     let index = Index::new(body, &mut state).map_err(error)?;
+    if body.temporaries.is_empty() {
+        return untracked(body, index, state, order).map_err(error);
+    }
     let (incoming, reachable) = state::solve(body, &index, &mut state).map_err(error)?;
     let words = state.words.len();
     for (block, reached) in reachable.iter().copied().enumerate() {
@@ -123,6 +133,44 @@ pub fn check(body: &Body) -> Result<Analysis, Error> {
         index,
         incoming,
         words,
+    })
+}
+/// With no materialized temporary there is no storage bit to solve or end:
+/// validated scope exits clear nothing. Only reachability and the inspection
+/// pass's materialization checks remain, visited in the same block order.
+fn untracked(
+    body: &Body,
+    index: Index,
+    mut state: State,
+    order: Option<&super::order::Order>,
+) -> Result<Analysis, &'static str> {
+    let reachable = if let Some(order) = order {
+        state.charge(order.blocks.len())?;
+        order.reachable.clone()
+    } else {
+        state::reachable(body, &mut state)?
+    };
+    for (block, reached) in reachable.iter().copied().enumerate() {
+        if !reached {
+            continue;
+        }
+        let data = &body.blocks[block];
+        state.charge((data.end - data.start) as usize + 1)?;
+        for point in data.start..data.end {
+            inspect_action(
+                body,
+                &index,
+                &mut state,
+                body.statements[point as usize].action,
+            )?;
+        }
+    }
+    Ok(Analysis {
+        reachable,
+        steps: state.steps,
+        index,
+        incoming: Vec::new(),
+        words: 0,
     })
 }
 fn transfer(

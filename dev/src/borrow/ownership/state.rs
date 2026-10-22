@@ -135,6 +135,7 @@ pub(super) fn verify<I: Maybe>(
     facts: &mut BodyFacts,
     types: &crate::types::Store,
     flow: Option<&Flow<'_>>,
+    order: Option<&crate::borrow::order::Order>,
 ) -> Result<Vec<Word<I>>, Error> {
     let flow = if I::TRACK_VALUES { flow } else { None };
     let error = |message| Error {
@@ -149,6 +150,32 @@ pub(super) fn verify<I: Maybe>(
         .checked_mul(body.blocks.len())
         .filter(|n| *n <= 64_000_000 / std::mem::size_of::<Word<I>>())
         .ok_or_else(|| error("ownership state exceeds 64 MB budget"))?;
+    let computed;
+    let order = if order.is_some() {
+        order
+    } else {
+        computed = crate::borrow::order::Order::new(body);
+        computed.as_ref()
+    };
+    if let Some(order) = order.filter(|order| order.acyclic)
+        && let Ok(incoming) = verify_acyclic(body, facts, types, flow, (words, size), order)
+    {
+        return Ok(incoming);
+    }
+    verify_iterative(body, facts, types, flow, (words, size))
+}
+/// Canonical fixed point followed by one inspection pass in block order.
+fn verify_iterative<I: Maybe>(
+    body: &Body,
+    facts: &mut BodyFacts,
+    types: &crate::types::Store,
+    flow: Option<&Flow<'_>>,
+    (words, size): (usize, usize),
+) -> Result<Vec<Word<I>>, Error> {
+    let error = |message| Error {
+        node: body.source,
+        message,
+    };
     let mut incoming = vec![Word::<I>::default(); size];
     let mut outgoing = vec![Word::<I>::default(); if flow.is_some() { words } else { 0 }];
     let mut state = State {
@@ -171,7 +198,11 @@ pub(super) fn verify<I: Maybe>(
         state
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
-        transfer_block(body, facts, &mut state, index, None, flow)?;
+        if flow.is_some() {
+            transfer_block(body, facts, &mut state, index, None, flow)?;
+        } else {
+            transfer_plain(body, facts, &mut state, index, None)?;
+        }
         let edges = flow.filter(|f| f.storage.has_edge_ends(index));
         if edges.is_some() {
             state.charge(words).map_err(error)?;
@@ -229,12 +260,124 @@ pub(super) fn verify<I: Maybe>(
         state
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
-        transfer_block(body, facts, &mut state, index, Some(types), flow)?;
+        if flow.is_some() {
+            transfer_block(body, facts, &mut state, index, Some(types), flow)?;
+        } else {
+            transfer_plain(body, facts, &mut state, index, Some(types))?;
+        }
     }
     facts.reachable = reached;
     Ok(incoming)
 }
 
+/// In reverse postorder of an acyclic CFG every predecessor's final state
+/// precedes a block, so one inspected pass computes the fixed point. Any
+/// failure is discarded: the caller reruns the canonical passes, which report
+/// the first error in block order.
+fn verify_acyclic<I: Maybe>(
+    body: &Body,
+    facts: &mut BodyFacts,
+    types: &crate::types::Store,
+    flow: Option<&Flow<'_>>,
+    (words, size): (usize, usize),
+    order: &crate::borrow::order::Order,
+) -> Result<Vec<Word<I>>, Error> {
+    let error = |message| Error {
+        node: body.source,
+        message,
+    };
+    let mut incoming = vec![Word::<I>::default(); size];
+    let mut outgoing = vec![Word::<I>::default(); if flow.is_some() { words } else { 0 }];
+    let mut state = State {
+        words: vec![Word::default(); words],
+        remaining: 32_000_000,
+    };
+    let mut reached = vec![false; body.blocks.len()];
+    reached[0] = true;
+    for &index in &order.blocks {
+        let block = &body.blocks[index];
+        state
+            .charge(words * 2 + (block.end - block.start) as usize + 1)
+            .map_err(error)?;
+        state
+            .words
+            .copy_from_slice(&incoming[index * words..(index + 1) * words]);
+        // Inspection only reads the state, so the inspected transfer leaves
+        // exactly the state of the uninspected fixed-point transfer.
+        if flow.is_some() {
+            transfer_block(body, facts, &mut state, index, Some(types), flow)?;
+        } else {
+            transfer_plain(body, facts, &mut state, index, Some(types))?;
+        }
+        let edges = flow.filter(|f| f.storage.has_edge_ends(index));
+        if edges.is_some() {
+            state.charge(words).map_err(error)?;
+            outgoing.copy_from_slice(&state.words);
+        }
+        for target in successors(block.terminator).into_iter().flatten() {
+            if let Some(flow) = edges {
+                state.charge(words).map_err(error)?;
+                state.words.copy_from_slice(&outgoing);
+                flow.edge(
+                    &facts.paths,
+                    &mut state,
+                    Location::Edge {
+                        block: BlockId(
+                            u32::try_from(index).map_err(|_| error("too many ownership blocks"))?,
+                        ),
+                        target,
+                    },
+                    |_, _| Ok(()),
+                )
+                .map_err(error)?;
+            }
+            let next = target.0 as usize;
+            let target = &mut incoming[next * words..(next + 1) * words];
+            if reached[next] {
+                for (old, new) in target.iter_mut().zip(&state.words) {
+                    *old = Word {
+                        must: old.must & new.must,
+                        may: old.may | new.may,
+                        initialized: old.initialized.join(new.initialized),
+                    };
+                }
+            } else {
+                target.copy_from_slice(&state.words);
+                reached[next] = true;
+            }
+        }
+    }
+    facts.reachable = reached;
+    Ok(incoming)
+}
+
+/// The transfer of a block without cleanup flow, optionally inspecting each
+/// statement against its incoming state first.
+fn transfer_plain<I: Maybe>(
+    body: &Body,
+    facts: &BodyFacts,
+    state: &mut State<I>,
+    index: usize,
+    types: Option<&crate::types::Store>,
+) -> Result<(), Error> {
+    let block = &body.blocks[index];
+    for statement in &body.statements[block.start as usize..block.end as usize] {
+        let error = |message| {
+            let mut node = body.source;
+            node.node = statement.source;
+            Error { node, message }
+        };
+        if let Some(types) = types {
+            facts
+                .inspect(body, types, state, statement.action)
+                .map_err(error)?;
+        }
+        facts
+            .transfer(body, state, statement.action)
+            .map_err(error)?;
+    }
+    Ok(())
+}
 fn transfer_block<I: Maybe>(
     body: &Body,
     facts: &BodyFacts,

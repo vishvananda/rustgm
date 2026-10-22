@@ -9,7 +9,7 @@ use crate::{
     types::{Kind, TypeId},
 };
 
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     pub(super) fn dynamic_selection(
         &mut self,
         id: ProjectionId,

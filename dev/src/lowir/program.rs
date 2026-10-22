@@ -223,13 +223,44 @@ pub struct Program {
     pub(super) objects: Option<Box<super::boundary::Signatures>>,
     pub symbols: Vec<Symbol>,
     pub(super) names: crate::support::hash::HashMap<String, Name>,
+    /// The last installed body's emptied construction vectors, lent to the
+    /// next body so functions do not regrow their storage from empty.
+    pub(super) spare: Option<Function>,
+}
+/// Move a construction vector's elements into an exact-size vector, leaving
+/// the emptied construction capacity behind for reuse.
+fn exact<T>(source: &mut Vec<T>) -> Vec<T> {
+    let mut result = Vec::with_capacity(source.len());
+    result.append(source);
+    result
+}
+impl Function {
+    /// An exact-size copy that leaves this function empty for reuse.
+    fn take_exact(&mut self) -> Self {
+        Self {
+            objects: self.objects.take(),
+            slots: exact(&mut self.slots),
+            spans: exact(&mut self.spans),
+            temporaries: exact(&mut self.temporaries),
+            literals: exact(&mut self.literals),
+            arguments: exact(&mut self.arguments),
+            instructions: exact(&mut self.instructions),
+            blocks: exact(&mut self.blocks),
+            order: exact(&mut self.order),
+        }
+    }
 }
 impl Program {
+    /// A builder for the next body that reuses the emptied storage of the
+    /// last installed body.
+    pub fn body_builder(&mut self) -> super::builder::Builder {
+        super::builder::Builder::reuse(self.spare.take().unwrap_or_default())
+    }
     /// Install exactly one function body for a canonical symbol declaration.
     ///
     /// # Errors
     /// Rejects invalid or noncanonical identities and repeated installation.
-    pub fn define(&mut self, symbol: SymbolId, body: Function) -> Result<(), &'static str> {
+    pub fn define(&mut self, symbol: SymbolId, mut body: Function) -> Result<(), &'static str> {
         let target = self
             .symbols
             .get(symbol.0 as usize)
@@ -240,7 +271,8 @@ impl Program {
         if target.body.is_some() {
             return Err("multiple function definitions for one LowIR symbol");
         }
-        self.symbols[symbol.0 as usize].body = Some(body);
+        self.symbols[symbol.0 as usize].body = Some(body.take_exact());
+        self.spare = Some(body);
         Ok(())
     }
     /// # Errors

@@ -409,6 +409,35 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    /// The identity a consumed body leaves behind: owner, source, result type,
+    /// instance and constant context, without any CFG payload.
+    #[must_use]
+    pub(crate) fn header(&self) -> Self {
+        Self {
+            static_types: None,
+            mutable_statics: None,
+            const_context: self.const_context,
+            instance: self.instance,
+            owned: None,
+            storage: None,
+            promotions: None,
+            resolved_callables: None,
+            closure_calls: None,
+            temporaries: Vec::new(),
+            guards: Vec::new(),
+            guard_places: Vec::new(),
+            projections: Vec::new(),
+            owner: self.owner,
+            source: self.source,
+            result: self.result,
+            locals: Vec::new(),
+            values: Vec::new(),
+            scalars: Vec::new(),
+            arguments: Vec::new(),
+            statements: Vec::new(),
+            blocks: Vec::new(),
+        }
+    }
     /// Owned payload only: shared static metadata and canonical arena values
     /// remain charged to their original owners, never to each cloned body.
     pub(crate) fn allocation_bytes(&self) -> usize {

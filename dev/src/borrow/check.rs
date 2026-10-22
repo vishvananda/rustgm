@@ -216,14 +216,17 @@ pub fn verify_destruction<'a, S: BuildHasher>(
         let contract = by_key
             .get(&body.key())
             .ok_or_else(|| error(Some(body.source), "body has no lifetime proof"))?;
-        plans.push(prove_cleanup(
-            environment,
-            &mut components,
-            &mut drop_regions,
-            body,
-            contract,
-            &mut catalog,
-        )?);
+        plans.push(
+            prove_cleanup(
+                environment,
+                &mut components,
+                &mut drop_regions,
+                body,
+                contract,
+                &mut catalog,
+            )?
+            .map(Box::new),
+        );
     }
     Ok(Checked {
         program,
@@ -267,16 +270,18 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
     contract: &regions::Body,
 ) -> Result<(ownership::BodyFacts, loans::Report), Error> {
     let mut copies = super::permissions::check(environment, contract)?.map(Copies::in_environment);
-    let storage = storage::check(body).map_err(|e| Error {
+    let order = super::order::Order::new(body);
+    let storage = storage::check_ordered(body, order.as_ref()).map_err(|e| Error {
         node: Some(e.node),
         message: e.message.into(),
     })?;
-    let owned = ownership::analyze_body(
+    let owned = ownership::analyze_body_ordered(
         environment.types,
         environment.definitions,
         environment.derives,
         copies.as_mut().unwrap_or(environment.copies),
         body,
+        order.as_ref(),
     )
     .map_err(|e| Error {
         node: Some(e.node),
@@ -335,9 +340,9 @@ fn prove_cleanup<S: BuildHasher>(
     )
     .map_err(|e| error(Some(e.node), e.message))?;
     // Keep no event tape when no runtime cleanup remains, after proving liveness.
-    Ok(plan
-        .cleanups
-        .iter()
-        .any(|c| c.node.is_some())
-        .then_some(plan))
+    Ok(plan.cleanups.iter().any(|c| c.node.is_some()).then(|| {
+        let mut plan = plan;
+        plan.shrink_to_fit();
+        plan
+    }))
 }

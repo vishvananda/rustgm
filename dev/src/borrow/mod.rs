@@ -8,6 +8,7 @@ pub use check::{
 pub mod destruction;
 pub mod liveness;
 pub mod loans;
+mod order;
 pub mod ownership;
 mod permissions;
 mod places;

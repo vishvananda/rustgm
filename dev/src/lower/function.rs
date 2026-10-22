@@ -56,20 +56,61 @@ impl Selected {
         }
     }
 }
-struct Lower<'a, 'b> {
+/// Dense per-projection facts of one body.
+pub(super) struct ProjectionMap<V> {
+    slots: Vec<Option<V>>,
+}
+impl<V> Default for ProjectionMap<V> {
+    fn default() -> Self {
+        Self { slots: Vec::new() }
+    }
+}
+impl<V: Copy> ProjectionMap<V> {
+    fn reset(&mut self, projections: usize) {
+        self.slots.clear();
+        self.slots.resize(projections, None);
+    }
+    fn get(&self, id: ir::ProjectionId) -> Option<&V> {
+        self.slots.get(id.0 as usize)?.as_ref()
+    }
+    fn insert(&mut self, id: ir::ProjectionId, value: V) {
+        let index = id.0 as usize;
+        if index >= self.slots.len() {
+            self.slots.resize(index + 1, None);
+        }
+        self.slots[index] = Some(value);
+    }
+}
+/// Per-body lowering vectors whose capacity is reused by the next body.
+#[derive(Default)]
+pub(super) struct Scratch {
+    object_arguments: Vec<crate::lowir::boundary::Value>,
+    locals: Vec<Option<Address>>,
+    place_metadata: ProjectionMap<Value>,
+    projections: Vec<Projected>,
+    selections: ProjectionMap<selections::Recipe>,
+    selection_paths: ProjectionMap<std::num::NonZeroU32>,
+    selection_work: Vec<(ir::ProjectionId, selections::Step)>,
+    selection_steps: Vec<selections::Dynamic>,
+    address_work: Vec<usize>,
+    values: Vec<Option<Selected>>,
+    blocks: Vec<BlockId>,
+    arguments: Vec<Value>,
+}
+struct Lower<'a, 'b, 'c> {
     body_index: usize,
     native: crate::lowir::program::SignatureId,
     object_arguments: Vec<crate::lowir::boundary::Value>,
-    context: &'a mut Context<'b>,
+    context: &'a mut Context<'c>,
     body: &'b ir::Body,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
     builder: Builder,
     locals: Vec<Option<Address>>,
     addresses: references::Storage,
-    place_metadata: crate::support::hash::HashMap<ir::ProjectionId, Value>,
+    place_metadata: ProjectionMap<Value>,
     projections: Vec<Projected>,
-    selections: crate::support::hash::HashMap<ir::ProjectionId, selections::Recipe>,
-    selection_paths: crate::support::hash::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
+    selections: ProjectionMap<selections::Recipe>,
+    selection_paths: ProjectionMap<std::num::NonZeroU32>,
     selection_work: Vec<(ir::ProjectionId, selections::Step)>,
     selection_steps: Vec<selections::Dynamic>,
     address_work: Vec<usize>,
@@ -79,11 +120,11 @@ struct Lower<'a, 'b> {
     source: NodeId,
     arguments: Vec<Value>,
 }
-pub(super) fn lower<'a>(
-    context: &mut Context<'a>,
+pub(super) fn lower<'b>(
+    context: &mut Context<'_>,
     body_index: usize,
-    body: &'a ir::Body,
-    plan: Option<&'a crate::borrow::destruction::Plan>,
+    body: &'b ir::Body,
+    plan: Option<&'b crate::borrow::destruction::Plan>,
     native: crate::lowir::program::SignatureId,
 ) -> Result<Function, Error> {
     let cleanup = plan
@@ -93,28 +134,46 @@ pub(super) fn lower<'a>(
             node: body.source,
             message,
         })?;
+    let builder = context.output.body_builder();
+    let mut scratch = std::mem::take(&mut context.lowering);
+    scratch.object_arguments.clear();
+    scratch.locals.clear();
+    scratch.place_metadata.reset(body.projections.len());
+    scratch.projections.clear();
+    scratch
+        .projections
+        .resize(body.projections.len(), Projected::Pending);
+    scratch.selections.reset(body.projections.len());
+    scratch.selection_paths.reset(body.projections.len());
+    scratch.selection_work.clear();
+    scratch.selection_steps.clear();
+    scratch.address_work.clear();
+    scratch.values.clear();
+    scratch.values.resize(body.values.len(), None);
+    scratch.blocks.clear();
+    scratch.arguments.clear();
     let mut lower = Lower {
         body_index,
         native,
-        object_arguments: Vec::new(),
+        object_arguments: scratch.object_arguments,
         context,
         body,
         cleanup,
-        builder: Builder::default(),
-        locals: Vec::new(),
+        builder,
+        locals: scratch.locals,
         addresses: references::Storage::default(),
-        place_metadata: crate::support::hash::HashMap::default(),
-        projections: vec![Projected::Pending; body.projections.len()],
-        selections: crate::support::hash::HashMap::default(),
-        selection_paths: crate::support::hash::HashMap::default(),
-        selection_work: Vec::new(),
-        selection_steps: Vec::new(),
-        address_work: Vec::new(),
-        values: vec![None; body.values.len()],
-        blocks: Vec::new(),
+        place_metadata: scratch.place_metadata,
+        projections: scratch.projections,
+        selections: scratch.selections,
+        selection_paths: scratch.selection_paths,
+        selection_work: scratch.selection_work,
+        selection_steps: scratch.selection_steps,
+        address_work: scratch.address_work,
+        values: scratch.values,
+        blocks: scratch.blocks,
         panic: None,
         source: body.source.node,
-        arguments: Vec::new(),
+        arguments: scratch.arguments,
     };
     lower.run().map_err(|message| Error {
         node: NodeKey {
@@ -123,12 +182,26 @@ pub(super) fn lower<'a>(
         },
         message,
     })?;
+    lower.context.lowering = Scratch {
+        object_arguments: lower.object_arguments,
+        locals: lower.locals,
+        place_metadata: lower.place_metadata,
+        projections: lower.projections,
+        selections: lower.selections,
+        selection_paths: lower.selection_paths,
+        selection_work: lower.selection_work,
+        selection_steps: lower.selection_steps,
+        address_work: lower.address_work,
+        values: lower.values,
+        blocks: lower.blocks,
+        arguments: lower.arguments,
+    };
     lower.builder.finish().map_err(|message| Error {
         node: body.source,
         message,
     })
 }
-impl Lower<'_, '_> {
+impl Lower<'_, '_, '_> {
     fn run(&mut self) -> Result<(), &'static str> {
         let (order, seen, checked_edges) = order(self.body)?;
         self.initialize_storage(&order, checked_edges)?;
@@ -822,7 +895,8 @@ fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>, bool), &'static str>
         return Err("body has no entry block");
     }
     let mut seen = vec![false; body.blocks.len()];
-    let mut stack = vec![(0, false)];
+    let mut stack = Vec::with_capacity(body.blocks.len() * 2 + 1);
+    stack.push((0, false));
     let mut order = Vec::with_capacity(body.blocks.len());
     let mut checked_edges = false;
     while let Some((index, exiting)) = stack.pop() {

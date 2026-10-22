@@ -8,6 +8,7 @@ use crate::{
 pub(super) fn elaborate(
     plan: &mut Plan,
     facts: &initialization::Facts<'_>,
+    recording: Recording,
     retained: usize,
 ) -> Result<(), &'static str> {
     Recorder {
@@ -16,7 +17,43 @@ pub(super) fn elaborate(
         steps: &mut plan.steps,
         retained,
     }
-    .record(facts, plan.cleanups.iter().map(|c| c.candidate))
+    .record_from(facts, recording, plan.cleanups.iter().map(|c| c.candidate))
+}
+/// Transitions captured by the selection replay so elaboration need not replay
+/// the same initialization transfers again. An oversized body keeps no copy and
+/// elaboration replays its transfers instead.
+#[derive(Default)]
+pub(super) struct Recording {
+    transitions: Vec<Transition>,
+    overflow: bool,
+}
+impl Recording {
+    const LIMIT: usize = 1 << 20;
+    /// Reserve for a body's typical transition count: roughly a point, a
+    /// statement and an initialization write per statement.
+    pub(super) fn for_body(body: &crate::body::ir::Body) -> Self {
+        let estimate = body
+            .statements
+            .len()
+            .saturating_mul(3)
+            .saturating_add(body.blocks.len())
+            .min(Self::LIMIT);
+        Self {
+            transitions: Vec::with_capacity(estimate),
+            overflow: false,
+        }
+    }
+    pub(super) fn push(&mut self, transition: Transition) {
+        if self.overflow {
+            return;
+        }
+        if self.transitions.len() >= Self::LIMIT {
+            self.overflow = true;
+            self.transitions = Vec::new();
+            return;
+        }
+        self.transitions.push(transition);
+    }
 }
 pub(super) struct Recorder<'a> {
     pub events: &'a mut Vec<Event>,
@@ -25,6 +62,26 @@ pub(super) struct Recorder<'a> {
     pub retained: usize,
 }
 impl Recorder<'_> {
+    /// Elaborate recorded transitions, replaying them only if none were kept.
+    pub(super) fn record_from(
+        &mut self,
+        facts: &initialization::Facts<'_>,
+        recording: Recording,
+        mut candidates: impl Iterator<Item = initialization::Candidate>,
+    ) -> Result<(), &'static str> {
+        if recording.overflow {
+            return self.record(facts, candidates);
+        }
+        let mut cleanup = 0_usize;
+        self.events.reserve(recording.transitions.len());
+        for transition in recording.transitions {
+            self.transition(transition, &mut cleanup, &mut candidates)?;
+        }
+        if candidates.next().is_some() {
+            return Err("selected cleanup was not elaborated");
+        }
+        Ok(())
+    }
     pub(super) fn record(
         &mut self,
         facts: &initialization::Facts<'_>,
@@ -32,65 +89,72 @@ impl Recorder<'_> {
     ) -> Result<(), &'static str> {
         let mut cleanup = 0_usize;
         facts.visit_transfers(|transition, _| {
-            self.charge(1)?;
-            let event = match transition {
-                Transition::Observe(initialization::Event::Point(location)) => Event {
-                    location,
-                    effect: Effect::Point,
-                },
-                Transition::Observe(initialization::Event::Cleanup(candidate)) => {
-                    let expected = candidates.next().ok_or("missing selected cleanup")?;
-                    if expected.location != candidate.location
-                        || expected.place != candidate.place
-                        || expected.cause != candidate.cause
-                        || expected.path != candidate.path
-                    {
-                        return Err("cleanup selection and elaboration disagree");
-                    }
-                    let index = u32::try_from(cleanup).map_err(|_| "too many cleanup events")?;
-                    cleanup += 1;
-                    Event {
-                        location: candidate.location,
-                        effect: Effect::Cleanup(index),
-                    }
-                }
-                Transition::Statement(location) => Event {
-                    location,
-                    effect: Effect::Statement,
-                },
-                Transition::Birth { location, value } => Event {
-                    location,
-                    effect: Effect::Birth(value),
-                },
-                Transition::StorageEnd { location, end } => Event {
-                    location,
-                    effect: Effect::StorageEnd(end),
-                },
-                Transition::Initialize {
-                    location,
-                    start,
-                    end,
-                    initialized,
-                } => {
-                    if !initialized && start != end {
-                        self.push(Event {
-                            location,
-                            effect: Effect::Deinitialize { start, end },
-                        })?;
-                    }
-                    let Some(event) = self.update(location, start, end, initialized)? else {
-                        return Ok(());
-                    };
-                    event
-                }
-            };
-            self.push(event)?;
-            Ok(())
+            self.transition(transition, &mut cleanup, &mut candidates)
         })?;
         if candidates.next().is_some() {
             return Err("selected cleanup was not elaborated");
         }
         Ok(())
+    }
+    fn transition(
+        &mut self,
+        transition: Transition,
+        cleanup: &mut usize,
+        candidates: &mut impl Iterator<Item = initialization::Candidate>,
+    ) -> Result<(), &'static str> {
+        self.charge(1)?;
+        let event = match transition {
+            Transition::Observe(initialization::Event::Point(location)) => Event {
+                location,
+                effect: Effect::Point,
+            },
+            Transition::Observe(initialization::Event::Cleanup(candidate)) => {
+                let expected = candidates.next().ok_or("missing selected cleanup")?;
+                if expected.location != candidate.location
+                    || expected.place != candidate.place
+                    || expected.cause != candidate.cause
+                    || expected.path != candidate.path
+                {
+                    return Err("cleanup selection and elaboration disagree");
+                }
+                let index = u32::try_from(*cleanup).map_err(|_| "too many cleanup events")?;
+                *cleanup += 1;
+                Event {
+                    location: candidate.location,
+                    effect: Effect::Cleanup(index),
+                }
+            }
+            Transition::Statement(location) => Event {
+                location,
+                effect: Effect::Statement,
+            },
+            Transition::Birth { location, value } => Event {
+                location,
+                effect: Effect::Birth(value),
+            },
+            Transition::StorageEnd { location, end } => Event {
+                location,
+                effect: Effect::StorageEnd(end),
+            },
+            Transition::Initialize {
+                location,
+                start,
+                end,
+                initialized,
+            } => {
+                if !initialized && start != end {
+                    self.push(Event {
+                        location,
+                        effect: Effect::Deinitialize { start, end },
+                    })?;
+                }
+                let Some(event) = self.update(location, start, end, initialized)? else {
+                    return Ok(());
+                };
+                event
+            }
+        };
+        self.push(event)
     }
     fn push(&mut self, event: Event) -> Result<(), &'static str> {
         self.retained = self
