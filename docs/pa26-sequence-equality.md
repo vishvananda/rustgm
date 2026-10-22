@@ -26,4 +26,8 @@ Evidence is retained under `obj/parallel/pa26/sequences`: `declared-v1/v2/v4/v5`
 
 ## Required follow-ups
 
+The later combined qualification, two reviewed diagnostic oracles and measured
+performance are recorded in
+[the publication checkpoint](pa26-pa30-records-checkpoint.md).
+
 Sequence PartialOrd/Ord, tuple and str comparison families remain required, as do remaining dot-call RHS inference and unsuffixed assignment inference, reference/unary arithmetic forms, Deref and remaining library hooks, iteration, question-mark, broader derives and formatting. The unchanged range-indexing positive is also pending. PA30's remaining ABI/layout profiles and cumulative qualification stay queued. This checkpoint does not activate PA26 or PA30.

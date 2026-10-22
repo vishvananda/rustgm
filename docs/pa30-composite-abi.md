@@ -15,4 +15,4 @@ python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run aggre
 python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run aggregate_calling --ignored
 ```
 
-This is a planned-assignment checkpoint, not activation or full PA30 completion. Aggregate crate-metadata transport and the remaining foreign-interface contracts still require their owning checks. The integrator owns combined release qualification and independently reviewed oracle publication.
+This is a planned-assignment checkpoint, not activation or full PA30 completion. Aggregate crate-metadata transport and the remaining foreign-interface contracts still require their owning checks. The integrator's combined release qualification, performance measurements and reviewed oracle publication are recorded in [the publication checkpoint](pa26-pa30-records-checkpoint.md).
