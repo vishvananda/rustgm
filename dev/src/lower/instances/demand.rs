@@ -12,6 +12,7 @@ use crate::{
     sema::model::Declarations,
     types::{ItemId, Kind, instance::Instance},
 };
+mod paid_owners;
 
 enum Work {
     Adapter(body::invocation_entries::Entry, NodeKey),
@@ -545,6 +546,28 @@ fn prepare_ordinary(
             .map_err(|e| diagnostic(report, Some(body.source), e))?;
     }
     body::promote::analyze(report, facts, &mut program)?;
+    let pending = paid_owners::prepare(facts, templates, &program, &mut inputs)
+        .map_err(|e| diagnostic(report, None, e.into()))?;
+    if !pending.is_empty() {
+        return paid_owners::build(
+            report,
+            facts,
+            templates,
+            program,
+            inputs,
+            pending,
+            paid_owners::Demands {
+                context: constants.as_ref().ok_or_else(|| {
+                    diagnostic(
+                        report,
+                        None,
+                        "conditional inline execution requires its checked provider".into(),
+                    )
+                })?,
+                globals,
+            },
+        );
+    }
     if let Some(context) = constants {
         context.constants(report, facts, &mut program, globals)?;
     } else {

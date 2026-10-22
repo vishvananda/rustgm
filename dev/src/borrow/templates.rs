@@ -71,6 +71,53 @@ impl Checked<'_> {
         }
         Ok(collector.steps())
     }
+    /// Transport data is derived from an exact checked original, never a runtime permit.
+    pub(crate) fn conditional_sources(
+        &self,
+        sources: &mut crate::body::conditional_inputs::Sources,
+    ) -> Result<(), &'static str> {
+        for (&key, &index) in &self.anonymous {
+            sources.steps = sources.steps.saturating_add(1);
+            let input = &self.contracts[index];
+            if key != input.key {
+                return Err("conditional original index changed its contract owner");
+            }
+            let Some(summary) = &self.regions.bodies[index].output else {
+                continue;
+            };
+            let Some((parent, goals)) = summary.parent_goals(input)? else {
+                continue;
+            };
+            let link = input
+                .output
+                .as_ref()
+                .ok_or("conditional original lost its link")?;
+            sources.insert(
+                input.source,
+                parent,
+                link,
+                goals,
+                summary.execution_conditions(input)?,
+            )?;
+        }
+        Ok(())
+    }
+    pub(crate) fn conditional_original(
+        &self,
+        source: crate::body::ir::NodeKey,
+    ) -> Result<(&Contract, &regions::OutputSummary), &'static str> {
+        let index = *self
+            .anonymous
+            .get(&crate::body::ir::BodyKey::Anonymous(source))
+            .ok_or("conditional child has no checked executable original")?;
+        let input = &self.contracts[index];
+        let summary = self.regions.bodies[index]
+            .output
+            .as_ref()
+            .ok_or("conditional original has no checked output summary")?;
+        summary.parent_goals(input)?;
+        Ok((input, summary))
+    }
     pub(crate) fn is_empty(&self) -> bool {
         self.templates.bodies.is_empty()
     }

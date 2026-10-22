@@ -205,13 +205,23 @@ impl Code {
     }
 }
 
-type AnonymousIndex = HashMap<
-    (
-        crate::sema::inline_constants::InlineInstance,
-        crate::types::TypeId,
-    ),
-    usize,
->;
+type InlineKey = (
+    crate::sema::inline_constants::InlineInstance,
+    crate::types::TypeId,
+);
+#[derive(Default)]
+pub(crate) struct AnonymousIndex {
+    ordinary: HashMap<InlineKey, usize>,
+    scoped: Option<Box<super::lease_codes::Scoped>>,
+}
+impl AnonymousIndex {
+    pub(crate) fn get(&self, key: &InlineKey) -> Option<&usize> {
+        self.scoped
+            .as_deref()
+            .and_then(|scoped| scoped.lookup(*key))
+            .or_else(|| self.ordinary.get(key))
+    }
+}
 type AssociatedIndex = HashMap<(crate::sema::values::Instance, crate::types::TypeId), usize>;
 type SourceIndex =
     HashMap<crate::sema::values::execution::SourceComputation, (usize, crate::types::TypeId)>;
@@ -265,6 +275,59 @@ impl Catalog {
         self.bytes = bytes;
         Ok(())
     }
+    pub(crate) fn enter_scope(&mut self) -> Result<super::lease_codes::Scope, &'static str> {
+        let extra = if self.anonymous.is_none() {
+            size_of::<AnonymousIndex>()
+        } else {
+            0
+        } + if self.anonymous.as_deref().is_none_or(|a| a.scoped.is_none()) {
+            size_of::<super::lease_codes::Scoped>()
+        } else {
+            0
+        };
+        if self.bytes.saturating_add(extra) > 64 * 1024 * 1024 {
+            return Err("conditional code scope exceeds storage budget");
+        }
+        self.bytes = self.bytes.saturating_add(extra);
+        self.anonymous
+            .get_or_insert_with(Default::default)
+            .scoped
+            .get_or_insert_with(Default::default)
+            .enter(&mut self.bytes)
+    }
+    pub(crate) fn current_scope(&self, scope: super::lease_codes::Scope) -> bool {
+        self.anonymous
+            .as_deref()
+            .and_then(|a| a.scoped.as_deref())
+            .is_some_and(|scoped| scoped.current(scope))
+    }
+    pub(crate) fn retire_scope(
+        &mut self,
+        scope: super::lease_codes::Scope,
+    ) -> Result<(), &'static str> {
+        self.anonymous
+            .as_mut()
+            .and_then(|a| a.scoped.as_mut())
+            .ok_or("conditional code scope disappeared")?
+            .retire(scope)
+    }
+    pub(crate) fn validate_entry(&self, index: usize) -> Result<(), &'static str> {
+        if self.bodies.get(index).is_none() {
+            return Err("constant code index has no retained body");
+        }
+        if let Some(scoped) = self.anonymous.as_deref().and_then(|a| a.scoped.as_deref()) {
+            scoped.validate(index)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn paid_anonymous(
+        &mut self,
+        scope: super::lease_codes::Scope,
+        body: &Body,
+        requested: crate::types::TypeId,
+    ) -> Result<usize, &'static str> {
+        self.insert_body(body, false, Some(requested), &[], Some(scope))
+    }
     pub(crate) fn initializer(
         &mut self,
         index: usize,
@@ -281,7 +344,7 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn insert(&mut self, body: &Body) -> Result<usize, &'static str> {
-        self.insert_body(body, false, None, &[])
+        self.insert_body(body, false, None, &[], None)
     }
     pub(crate) fn source_initializer(
         &mut self,
@@ -328,7 +391,7 @@ impl Catalog {
         }
         let prior = self.bytes;
         self.bytes = bytes;
-        let index = match self.insert_body(body, true, Some(source.2), results) {
+        let index = match self.insert_body(body, true, Some(source.2), results, None) {
             Ok(index) => index,
             Err(error) => {
                 self.bytes = prior;
@@ -353,7 +416,7 @@ impl Catalog {
             instance.enclosing(),
             crate::sema::inline_constants::Context::SourceInitializer(_)
         );
-        self.insert_body(body, source_only, Some(requested), results)
+        self.insert_body(body, source_only, Some(requested), results, None)
     }
     fn insert_body(
         &mut self,
@@ -361,6 +424,7 @@ impl Catalog {
         source_only: bool,
         requested: Option<crate::types::TypeId>,
         results: &[(ValueId, crate::types::TypeId)],
+        scope: Option<super::lease_codes::Scope>,
     ) -> Result<usize, &'static str> {
         if !source_only
             && matches!(body.owner, Owner::AnonymousInstance(instance)
@@ -431,9 +495,11 @@ impl Catalog {
             self.expressions.insert(body.source, index);
         }
         if let Owner::AnonymousInstance(instance) = body.owner
+            && scope.is_none()
             && self
                 .anonymous
                 .get_or_insert_with(Default::default)
+                .ordinary
                 .insert((instance, published), index)
                 .is_some()
         {
@@ -449,9 +515,29 @@ impl Catalog {
         {
             return Err("duplicate selected initializer execution body");
         }
-        self.bodies.push(std::rc::Rc::new(code));
         self.bytes = bytes;
+        self.register_scope(scope, body.owner, published, index)?;
+        self.bodies.push(std::rc::Rc::new(code));
         Ok(index)
+    }
+    fn register_scope(
+        &mut self,
+        scope: Option<super::lease_codes::Scope>,
+        owner: Owner,
+        published: crate::types::TypeId,
+        index: usize,
+    ) -> Result<(), &'static str> {
+        if let Some(scope) = scope {
+            let Owner::AnonymousInstance(instance) = owner else {
+                return Err("conditional code has no exact inline instance");
+            };
+            self.anonymous
+                .as_mut()
+                .and_then(|map| map.scoped.as_mut())
+                .ok_or("conditional code has no live scope")?
+                .insert(scope, (instance, published), index, &mut self.bytes)?;
+        }
+        Ok(())
     }
 }
 impl Index<usize> for Catalog {

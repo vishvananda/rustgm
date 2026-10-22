@@ -19,6 +19,14 @@ impl Engine {
                 "anonymous instance identity changed",
             ));
         }
+        if self
+            .original_components
+            .as_ref()
+            .and_then(|rows| rows.active.as_ref())
+            .is_some_and(|active| active.owner.pending().has_source(source))
+        {
+            return self.paid_anonymous_root(report, facts, instance, result);
+        }
         if let crate::sema::inline_constants::Context::SourceInitializer(witness) =
             instance.enclosing()
         {
@@ -104,7 +112,7 @@ impl Engine {
         }
         Ok(())
     }
-    fn anonymous_template(
+    pub(super) fn anonymous_template(
         &mut self,
         report: &Report,
         facts: &mut Declarations,

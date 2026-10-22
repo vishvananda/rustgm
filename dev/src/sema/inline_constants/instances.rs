@@ -139,8 +139,9 @@ impl InlineInstance {
 }
 #[derive(Default)]
 pub(super) struct Values {
-    completed:
+    pub(super) completed:
         crate::support::hash::HashMap<(InlineInstance, crate::types::TypeId), values::Constant>,
+    pub(super) journals: Option<Box<super::journals::Journals>>,
 }
 impl super::Registry {
     #[must_use]
@@ -192,6 +193,9 @@ impl super::Registry {
         let values = self.instances.get_or_insert_with(Default::default);
         if values.completed.len() >= 1_000_000 {
             return Err("anonymous instance value limit exceeded");
+        }
+        if let Some(journals) = &mut values.journals {
+            journals.record(key, value);
         }
         values.completed.insert(key, value);
         self.instance_publications += 1;

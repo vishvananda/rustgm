@@ -168,8 +168,90 @@ pub(crate) fn with_result(
         return Err("anonymous result selects another original contract");
     }
     let mut inputs = anonymous_inputs(facts, instance, original)?;
-    let (mut substitution, mut contract, imported) =
+    let (substitution, contract, imported) =
         contracts::source_result(facts, original, &mut inputs, requested)?;
+    finish_result(
+        facts,
+        template,
+        ImportedResult {
+            instance,
+            requested,
+            original,
+            imported,
+        },
+        substitution,
+        contract,
+    )
+}
+pub(crate) fn conditional_result(
+    facts: &mut Declarations,
+    template: &Template,
+    port: &crate::body::conditional_inputs::Port,
+    original: &Contract,
+) -> Result<super::initializers::SourceMaterialized, &'static str> {
+    let instance = port.instance;
+    let requested = port.result;
+    if original.key != template.body.key()
+        || original.source != instance.source()
+        || !original
+            .output
+            .as_ref()
+            .is_some_and(|link| std::sync::Arc::ptr_eq(link, &port.link))
+        || !matches!(instance.enclosing(), Context::Callable(_))
+    {
+        return Err("conditional child transport selects another original interface");
+    }
+    // This is the actual original declaration body, not an invocation of the
+    // closure's public signature. Its exact parent supplied all bridge slots;
+    // no receiver or guessed inherited prefix is introduced into this child.
+    let mut inputs = Inputs {
+        caller: crate::sema::values::execution::CallerInstance::Inline(instance),
+        instance: None,
+        bindings: Vec::new(),
+        captures: Vec::new(),
+        comparison: None,
+        connections: Some(crate::body::invocation_entries::SourceBindings {
+            original: original.universals,
+            slots: port.slots.clone(),
+            equalities: Vec::new(),
+            proof: None,
+        }),
+    };
+    let (substitution, contract, imported) =
+        contracts::conditional_result(facts, original, &mut inputs, requested)?;
+    finish_result(
+        facts,
+        template,
+        ImportedResult {
+            instance,
+            requested,
+            original,
+            imported,
+        },
+        substitution,
+        contract,
+    )
+}
+#[derive(Clone, Copy)]
+struct ImportedResult<'a> {
+    instance: InlineInstance,
+    requested: crate::types::TypeId,
+    original: &'a Contract,
+    imported: crate::types::TypeId,
+}
+fn finish_result(
+    facts: &mut Declarations,
+    template: &Template,
+    result: ImportedResult<'_>,
+    mut substitution: crate::types::substitute::Bound,
+    mut contract: Contract,
+) -> Result<super::initializers::SourceMaterialized, &'static str> {
+    let ImportedResult {
+        instance,
+        requested,
+        original,
+        imported,
+    } = result;
     let actual = super::caller_transport::result_root(
         facts,
         template.body.source,
@@ -322,13 +404,16 @@ pub(super) fn initializer_inputs(
 
 /// Lifetime-only source bodies do not pass through generic materialization.
 /// Select their exact callable identity without changing the body owner or ABI.
-pub(crate) fn close_operands(facts: &Declarations, body: &mut Body) -> Result<(), &'static str> {
+pub(crate) fn original_context(
+    facts: &Declarations,
+    body: &Body,
+) -> Result<Option<Instance>, &'static str> {
     if !facts
         .inline_constants
         .as_deref()
         .is_some_and(|registry| registry.has_children(body.source))
     {
-        return Ok(());
+        return Ok(None);
     }
     let owner = match body.owner {
         Owner::Function { definition, .. } => Some(definition),
@@ -339,7 +424,7 @@ pub(crate) fn close_operands(facts: &Declarations, body: &mut Body) -> Result<()
         _ => None,
     };
     if owner.is_some_and(|owner| facts.generics.has_parameters(owner)) {
-        return Ok(());
+        return Ok(None);
     }
     let ty = match body.owner {
         Owner::Function { definition, .. } => facts
@@ -351,12 +436,12 @@ pub(crate) fn close_operands(facts: &Declarations, body: &mut Body) -> Result<()
         _ => None,
     };
     let Some(ty) = ty else {
-        return Ok(());
+        return Ok(None);
     };
     if facts.types.contains_parameters(ty) != Some(false)
         || facts.types.contains_projections(ty) != Some(false)
     {
-        return Ok(());
+        return Ok(None);
     }
     let callable = if matches!(
         facts.types.kind(ty),
@@ -366,5 +451,12 @@ pub(crate) fn close_operands(facts: &Declarations, body: &mut Body) -> Result<()
     } else {
         Instance::new(&facts.types, ty)?
     };
-    operands(facts, body, Selection::Callable(callable))
+    Ok(Some(callable))
+}
+
+pub(crate) fn close_operands(facts: &Declarations, body: &mut Body) -> Result<(), &'static str> {
+    if let Some(callable) = original_context(facts, body)? {
+        operands(facts, body, Selection::Callable(callable))?;
+    }
+    Ok(())
 }

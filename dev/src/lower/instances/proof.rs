@@ -24,8 +24,29 @@ pub(super) struct Builder {
     recipes: Option<glue::Cache>,
     dependencies: Dependencies,
     adapters: bool,
-    original_regions:
-        Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, borrow::regions::Body>>,
+    original_regions: Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, RegionProof>>,
+}
+enum RegionProof {
+    Ordinary(borrow::regions::Body),
+    Parent(borrow::regions::Retained),
+}
+pub(super) enum Staged {
+    Ordinary(Box<incremental::PairedProved>),
+    Parent(incremental::OwnedParent),
+}
+impl Staged {
+    pub(super) fn body(&self) -> &Body {
+        match self {
+            Self::Ordinary(p) => p.body(),
+            Self::Parent(p) => p.body(),
+        }
+    }
+    pub(super) fn paired(&self) -> &incremental::PairedProved {
+        match self {
+            Self::Ordinary(p) => p,
+            Self::Parent(p) => p.paired(),
+        }
+    }
 }
 enum Original<'a> {
     Ordinary,
@@ -134,7 +155,10 @@ impl Builder {
             crate::support::hash::BuildFxHasher::default(),
         );
         for proof in regions.bodies {
-            if retained.insert(proof.key, proof).is_some() {
+            if retained
+                .insert(proof.key, RegionProof::Ordinary(proof))
+                .is_some()
+            {
                 return Err(borrow::Error {
                     node: None,
                     message: "duplicate original region proof".into(),
@@ -143,6 +167,133 @@ impl Builder {
         }
         self.original_regions = Some(retained);
         Ok(())
+    }
+    pub(super) fn prepare_parent_regions(
+        &mut self,
+        facts: &mut Declarations,
+        inputs: &crate::support::hash::HashMap<crate::body::ir::BodyKey, std::sync::Arc<Contract>>,
+        bodies: &[Body],
+    ) -> Result<(), borrow::Error> {
+        let error = |message: &str| borrow::Error {
+            node: None,
+            message: message.into(),
+        };
+        for body in bodies {
+            inputs
+                .get(&body.key())
+                .ok_or_else(|| error("conditional group lost its contract"))?
+                .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+                .map_err(error)?;
+        }
+        let contracts = crate::body::regions::Contracts {
+            bodies: Vec::new(),
+            callables: &facts.lifetimes.callables,
+            nominal_requirements: &facts.lifetimes.nominal_requirements,
+        };
+        let pairs = bodies
+            .iter()
+            .map(|body| {
+                inputs
+                    .get(&body.key())
+                    .map(|input| (std::sync::Arc::clone(input), body))
+                    .ok_or_else(|| error("conditional group lost its contract"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let retained = borrow::regions::check_retained_group(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &contracts,
+            pairs,
+        )
+        .map_err(|e| borrow::Error {
+            node: e.source,
+            message: e.message,
+        })?;
+        self.original_regions = Some(
+            retained
+                .into_iter()
+                .map(|proof| (proof.input().key, RegionProof::Parent(proof)))
+                .collect(),
+        );
+        Ok(())
+    }
+    pub(super) fn stage_parent(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        body: Body,
+        pending: Option<crate::body::conditional_inputs::Pending>,
+    ) -> Result<Staged, borrow::Error> {
+        let source = body.source;
+        let retained = self
+            .original_regions
+            .as_mut()
+            .and_then(|r| r.remove(&body.key()))
+            .ok_or_else(|| borrow::Error {
+                node: Some(source),
+                message: "missing paired conditional region proof".into(),
+            })?;
+        let RegionProof::Parent(retained) = retained else {
+            return Err(borrow::Error {
+                node: Some(source),
+                message: "conditional parent has an ordinary region cache row".into(),
+            });
+        };
+        let mut catalog = self
+            .recipes
+            .take()
+            .map(|cache| cache.attach(&facts.types, &facts.aggregates, &facts.members));
+        let mut environment = borrow::Environment {
+            types: &facts.types,
+            definitions: &facts.aggregates,
+            derives: &facts.derives,
+            copies: &mut facts.copies,
+        };
+        let proved = match pending {
+            Some(pending) => self
+                .verifier
+                .prove_parent(
+                    &mut environment,
+                    templates,
+                    retained,
+                    body,
+                    (pending, &mut facts.body_work.canonical_steps),
+                    catalog.as_mut(),
+                )
+                .map(Staged::Parent),
+            None => self
+                .verifier
+                .prove_paired(
+                    &mut environment,
+                    templates,
+                    retained,
+                    body,
+                    catalog.as_mut(),
+                )
+                .map(|proved| Staged::Ordinary(Box::new(proved))),
+        };
+        self.recipes = catalog.map(glue::Catalog::into_cache);
+        proved
+    }
+    pub(super) fn append_proved(
+        &mut self,
+        facts: &mut Declarations,
+        mut proof: incremental::Proved,
+    ) -> Result<usize, borrow::Error> {
+        proof
+            .resolve_callables(&mut facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(proof.body().source),
+                message: message.into(),
+            })?;
+        let index = self.bodies.len();
+        self.adapters |= proof
+            .body()
+            .closure_calls
+            .as_deref()
+            .is_some_and(crate::body::invocation_entries::Entries::has_adapters);
+        self.bodies.push(proof);
+        Ok(index)
     }
     pub(super) fn push(
         &mut self,
@@ -340,7 +491,13 @@ impl Builder {
             self.original_regions
                 .as_mut()
                 .and_then(|regions| regions.remove(&body.key()))
-                .map(Ok)
+                .map(|proof| match proof {
+                    RegionProof::Ordinary(proof) => Ok(proof),
+                    RegionProof::Parent(_) => Err(borrow::regions::Error {
+                        source: Some(body.source),
+                        message: "paired parent proof requires its actual owner path".into(),
+                    }),
+                })
         } else {
             None
         }

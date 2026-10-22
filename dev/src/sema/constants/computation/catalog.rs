@@ -15,6 +15,10 @@ use std::{
 static NEXT_EPOCH: AtomicU32 = AtomicU32::new(1);
 const LIMIT: usize = 64 * 1024 * 1024;
 
+/// Catalog identity rejects foreign contexts; it grants no caller or proof authority.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) struct DeclarationEpoch(NonZeroU32);
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Handle {
     epoch: NonZeroU32,
@@ -124,6 +128,9 @@ pub(super) struct Catalog {
     pub(super) namespaces: Option<Box<super::namespaces::Namespaces>>,
 }
 impl Catalog {
+    pub(super) const fn epoch(&self) -> DeclarationEpoch {
+        DeclarationEpoch(self.epoch)
+    }
     pub(super) fn new() -> Result<Self, &'static str> {
         let epoch = NEXT_EPOCH
             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| n.checked_add(1))

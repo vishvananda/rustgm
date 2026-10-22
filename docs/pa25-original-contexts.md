@@ -1,5 +1,10 @@
 # Original conditional components
 
+The actual-parent consumer in [pa25-paid-parents.md](pa25-paid-parents.md) now
+supports the unchanged lifetime-only closure/paid-lifetime programs. The text
+below records the separate 484c original-component prerequisite and its frozen
+evidence; its old specialized-output frontier is superseded only for that family.
+
 The constant provider now proves a deferred anonymous original together with its
 actual original parent and sibling output dependencies. This is original-body
 preparation, not permission to execute a selected anonymous instance. The unchanged

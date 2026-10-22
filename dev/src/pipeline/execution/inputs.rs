@@ -13,7 +13,7 @@ use std::{cell::RefCell, rc::Rc};
 
 #[derive(Clone, Default)]
 pub(crate) struct Context {
-    engine: Rc<RefCell<Engine>>,
+    pub(super) engine: Rc<RefCell<Engine>>,
 }
 enum Slot {
     Local(usize),
@@ -124,6 +124,22 @@ impl Context {
         program: &mut Program,
         globals: &[DefId],
     ) -> Result<(), Error> {
+        self.constants_except(
+            report,
+            facts,
+            program,
+            globals,
+            &crate::support::hash::HashSet::default(),
+        )
+    }
+    pub(crate) fn constants_except(
+        &self,
+        report: &Report,
+        facts: &mut Declarations,
+        program: &mut Program,
+        globals: &[DefId],
+        skip: &crate::support::hash::HashSet<BodyKey>,
+    ) -> Result<(), Error> {
         let inputs = Rc::clone(
             &self
                 .engine
@@ -180,10 +196,13 @@ impl Context {
             body::constants::analyze_bodies(
                 report,
                 facts,
-                slots.iter().filter_map(|slot| match slot {
-                    Slot::Local(index) => local.get(*index),
-                    Slot::Shared(definition) => store.get(definition),
-                }),
+                slots
+                    .iter()
+                    .filter_map(|slot| match slot {
+                        Slot::Local(index) => local.get(*index),
+                        Slot::Shared(definition) => store.get(definition),
+                    })
+                    .filter(|body| !skip.contains(&body.key())),
                 globals,
             )
         };

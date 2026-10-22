@@ -1,4 +1,6 @@
 //! Owned immutable bodies let demand discovery append proofs without revisiting earlier CFGs.
+mod completed_scope;
+mod parents;
 use super::{Checked, Environment, Error};
 use crate::{
     body::{
@@ -11,6 +13,8 @@ use crate::{
     },
     types::Kind,
 };
+pub(crate) use completed_scope::{CompleteGroup, PairedProved, ParentMember};
+pub(crate) use parents::{OwnedParent, PaidInline, ScopeOwner};
 use std::hash::BuildHasher;
 
 pub(crate) struct Proved {

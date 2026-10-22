@@ -5,6 +5,7 @@ mod build;
 mod caller_identity;
 mod clone_factories;
 mod collection_factories;
+pub(crate) mod conditional_inputs;
 pub mod constants;
 pub(crate) mod dispatch;
 pub mod drops;

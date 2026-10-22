@@ -1,6 +1,7 @@
 //! Bounded constant execution consumes selected typed CFGs, never source syntax.
 pub(crate) mod code;
 mod counted;
+pub(crate) mod lease_codes;
 mod memory;
 mod offsets;
 mod place_cache;
@@ -252,6 +253,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         arguments: &[Constant],
         return_to: Option<ValueId>,
     ) -> Result<(), Failure> {
+        self.bodies.validate_entry(index)?;
         let body = self.bodies[index].clone();
         if !body.const_context {
             return Err(Failure::Fault(

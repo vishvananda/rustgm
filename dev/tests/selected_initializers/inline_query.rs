@@ -9,6 +9,8 @@ const ACCEPTED: &[&str] = &[
     "required",
     "nested",
     "siblings",
+    "closure",
+    "paid-lifetime",
 ];
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -39,28 +41,22 @@ fn nested_query_callers_preserve_their_actual_parent_premises() -> TestResult {
     Ok(())
 }
 #[test]
-fn projected_inline_results_retain_their_required_execution_frontiers() -> TestResult {
+fn conditional_inline_results_preserve_lifetime_and_fault_rejections() -> TestResult {
     let evidence = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/parallel/pa25-inline-queries/remaining")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&evidence)?;
-    for name in ["closure", "paid-lifetime"] {
-        super::checked_sources::check_modes(
-            &fixture(name),
-            &evidence,
-            name,
-            (
-                0,
-                [0, 1, 1],
-                "anonymous specialized output interface is not implemented",
-            ),
-        )?;
-    }
     super::checked_sources::check(
         &fixture("foreign-lifetime"),
         &evidence,
         "foreign-lifetime",
         (1, 1, "required lifetime does not outlive its target"),
+    )?;
+    super::checked_sources::check_modes(
+        &fixture("faulting-child"),
+        &evidence,
+        "faulting-child",
+        (1, [0, 1, 1], "divides by zero"),
     )?;
     super::checked_sources::check_modes(
         &fixture("unpaid-lifetime"),

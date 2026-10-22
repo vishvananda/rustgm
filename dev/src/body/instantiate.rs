@@ -23,7 +23,8 @@ pub(crate) use closures::{
 };
 mod inputs;
 pub(crate) use anonymous::{
-    close_operands as close_inline_operands, with_result as anonymous_result,
+    close_operands as close_inline_operands, conditional_result as conditional_anonymous_result,
+    original_context as original_inline_context, with_result as anonymous_result,
 };
 use inputs::Inputs;
 mod projections;

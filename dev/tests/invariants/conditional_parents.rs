@@ -287,24 +287,16 @@ fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
 }
 
 #[test]
-fn provider_retains_complete_original_components_before_specialization() -> Result {
+fn provider_originals_feed_actual_parent_proof_before_execution() -> Result {
     for name in ["closure", "paid-lifetime"] {
         let mut report = crate::test_source::resolve(&fixture(name)?, true)?;
         let analysis = crate::pipeline::analyze_source(&report)?;
         assert!(analysis.prepared.original_contexts.is_some());
         let mut facts = analysis.facts;
         let entry = crate::sema::entry::select(&mut report, &facts)?;
-        let error =
-            crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)
-                .err()
-                .ok_or("specialized conditional output unexpectedly acquired authority")?;
-        eprintln!("{name} remaining specialized frontier: {error}");
-        assert!(
-            !error
-                .to_string()
-                .contains("requires its checked parent contract"),
-            "{error}"
-        );
+        crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)?;
+        // Original context-only rows still cannot pay a foreign caller: the
+        // neighboring invariant checks that independently of this full demand.
     }
     let report =
         crate::test_source::resolve(&fixture("paid-lifetime")?.replace(" where 'a:'b", ""), true)?;

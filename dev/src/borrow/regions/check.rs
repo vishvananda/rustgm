@@ -282,6 +282,34 @@ pub(super) fn body(
     cfg: Option<&crate::body::ir::Body>,
     children: &[&super::output::Summary],
 ) -> Result<Body, Error> {
+    body_inner(types, variances, queries, input, cfg, children, None)
+}
+pub(crate) fn paid_inline(
+    types: &Store,
+    variances: &Variances,
+    queries: &mut Queries<'_>,
+    input: &Contract,
+    cfg: &crate::body::ir::Body,
+    paid: &crate::borrow::incremental::PaidInline<'_>,
+) -> Result<Body, Error> {
+    let result = body_inner(types, variances, queries, input, Some(cfg), &[], Some(paid))?;
+    if result.needs_parent() {
+        return Err(Error {
+            source: Some(input.source),
+            message: "paid child retains an unpaid parent requirement".into(),
+        });
+    }
+    Ok(result)
+}
+fn body_inner(
+    types: &Store,
+    variances: &Variances,
+    queries: &mut Queries<'_>,
+    input: &Contract,
+    cfg: Option<&crate::body::ir::Body>,
+    children: &[&super::output::Summary],
+    paid: Option<&crate::borrow::incremental::PaidInline<'_>>,
+) -> Result<Body, Error> {
     let error = |message| Error {
         source: Some(input.source),
         message,
@@ -297,6 +325,7 @@ pub(super) fn body(
     for &(a, b) in &input.assumptions {
         constraints.assume(a, b).map_err(|e| error(e.to_string()))?;
     }
+    assume_paid(paid, cfg, input, &mut constraints).map_err(error)?;
     super::interfaces::assume_inputs(types, queries, input, &mut constraints)?;
     constraints
         .assume_outlives_clauses(queries, input.type_assumptions.iter().copied())
@@ -525,6 +554,21 @@ fn apply<'a>(
                 crate::types::relations::ProofScope::ROOT,
                 source,
             )?;
+        }
+    }
+    Ok(())
+}
+
+fn assume_paid(
+    paid: Option<&crate::borrow::incremental::PaidInline<'_>>,
+    cfg: Option<&crate::body::ir::Body>,
+    input: &Contract,
+    constraints: &mut Constraints<'_>,
+) -> Result<(), String> {
+    if let Some(paid) = paid {
+        let cfg = cfg.ok_or("paid child proof requires its actual CFG")?;
+        for &(a, b) in paid.conditions(input, cfg)?.unwrap_or(&[]) {
+            constraints.assume(a, b).map_err(|e| e.to_string())?;
         }
     }
     Ok(())
