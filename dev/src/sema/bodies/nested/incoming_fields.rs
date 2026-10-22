@@ -90,10 +90,10 @@ impl super::Checker<'_> {
         region: RegionId,
         parent: crate::resolve::unit::NodeKey,
     ) -> Result<(), super::Error> {
-        if !region
-            .0
-            .checked_sub(1)
-            .and_then(|index| self.facts.body_regions.get(index as usize))
+        if !self
+            .facts
+            .body_regions
+            .get(parent, region)
             .is_some_and(|fact| fact.body == parent)
         {
             return Err(self.error(

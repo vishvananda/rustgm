@@ -61,20 +61,22 @@ fn interleaved_definitions_retain_linear_callable_scope_storage()
         for entry in &facts.quantified_proofs {
             scopes += entry.evidence.proof.scope_count();
             for id in entry.evidence.proof.regions.clone() {
-                let region = facts
-                    .body_regions
-                    .get(id as usize - 1)
-                    .ok_or("missing proof region")?;
-                foreign += usize::from(region.body != entry.body);
+                foreign += usize::from(
+                    facts
+                        .body_regions
+                        .get(entry.body, rustgm::types::RegionId(id))
+                        .is_none_or(|region| region.body != entry.body),
+                );
             }
         }
         println!(
             "proof-stream-{count}: proofs={} scopes={scopes} foreign_gap_ids={foreign}",
             facts.quantified_proofs.len()
         );
-        assert!(
-            foreign > 0,
-            "the source must interleave distinct body allocations"
+        // Interleaved bodies number their regions in their own units.
+        assert_eq!(
+            foreign, 0,
+            "a proof interval must not contain foreign bodies"
         );
         assert!(
             scopes <= 4 * count + 16,

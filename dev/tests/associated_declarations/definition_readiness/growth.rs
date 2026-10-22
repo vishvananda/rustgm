@@ -84,7 +84,10 @@ fn initializer_waits_share_work_across_repeated_callers() -> Result<(), Box<dyn 
                 proofs += 1;
                 for owned in entry.evidence.proof.owned_regions() {
                     for id in owned {
-                        let region = &facts.body_regions[id as usize - 1];
+                        let region = facts
+                            .body_regions
+                            .get(body, rustgm::types::RegionId(id))
+                            .ok_or("missing owned proof region")?;
                         assert_eq!(region.body, body);
                         assert!(matches!(region.origin, BodyRegionOrigin::QuantifiedProof));
                     }
@@ -94,7 +97,12 @@ fn initializer_waits_share_work_across_repeated_callers() -> Result<(), Box<dyn 
                     .proof
                     .regions
                     .clone()
-                    .filter(|&id| facts.body_regions[id as usize - 1].body != body)
+                    .filter(|&id| {
+                        facts
+                            .body_regions
+                            .get(body, rustgm::types::RegionId(id))
+                            .is_none_or(|region| region.body != body)
+                    })
                     .count();
             }
             println!(
@@ -110,10 +118,9 @@ fn initializer_waits_share_work_across_repeated_callers() -> Result<(), Box<dyn 
             assert!(work.projection_steps <= 16 * width + 32);
             assert!(work.steps <= 128 * (width + callers) + 128);
             assert!(work.peak_suspended_slots <= 128 * width + 128);
-            assert!(
-                foreign > 0,
-                "the initializer must cross other bodies' allocations"
-            );
+            // Other bodies number their regions in their own units, so the
+            // initializer's proof interval contains no foreign identities.
+            assert_eq!(foreign, 0, "the initializer proof owns its whole interval");
             assert!(proofs <= 4 * width + 8);
             if family == "callers" {
                 let actual = (

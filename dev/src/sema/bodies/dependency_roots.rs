@@ -301,7 +301,7 @@ fn original(
     }
     if facts
         .body_regions
-        .get(region.0 as usize - 1)
+        .get(source, region)
         .is_some_and(|row| row.body == source)
     {
         Ok(())

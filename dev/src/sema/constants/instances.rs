@@ -337,10 +337,8 @@ impl Queries<'_> {
                     .typing
                     .facts
                     .body_regions
-                    .len()
-                    .checked_add(1)
-                    .and_then(|n| u32::try_from(n).ok())
-                    .ok_or_else(|| {
+                    .frontier(scope.body)
+                    .map_err(|_| {
                         self.error(Query::Node(key), "pattern dispatch region overflow")
                     })?;
                 self.pattern_dispatch = Some(
@@ -393,10 +391,8 @@ impl Queries<'_> {
             .typing
             .facts
             .body_regions
-            .len()
-            .checked_add(1)
-            .and_then(|n| u32::try_from(n).ok())
-            .ok_or_else(|| self.error(Query::Node(key), "constant dispatch region overflow"))?;
+            .frontier(scope.body())
+            .map_err(|_| self.error(Query::Node(key), "constant dispatch region overflow"))?;
         let mut dispatch = match self.typing.availability {
             crate::sema::traits::implementations::Availability::Declarations => {
                 crate::sema::dispatch::Dispatcher::declaration(first)

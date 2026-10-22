@@ -124,6 +124,11 @@ impl SourceComputation {
     pub(crate) fn selected(self, facts: &Declarations) -> Result<Instance, &'static str> {
         Ok(self.entry(facts)?.0.selected)
     }
+    /// The body whose numbering unit holds this computation's caller regions.
+    #[cfg(test)]
+    pub(crate) fn caller_source(self, facts: &Declarations) -> Result<NodeKey, &'static str> {
+        Ok(self.entry(facts)?.1.source)
+    }
     fn entry(
         self,
         facts: &Declarations,
@@ -178,7 +183,7 @@ impl SourceComputation {
                 if region.bound_parts().is_some()
                     || !facts
                         .body_regions
-                        .get(region.0 as usize - 1)
+                        .get(caller.source, region)
                         .is_some_and(|owner| {
                             owner.body == caller.source && owner.source == caller.source
                         })
@@ -202,7 +207,7 @@ impl SourceComputation {
                     visits += 1;
                     if !facts
                         .body_regions
-                        .get(region.0 as usize - 1)
+                        .get(caller.source, *region)
                         .is_some_and(|owner| {
                             owner.body == caller.source && owner.source == caller.source
                         })

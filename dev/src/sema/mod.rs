@@ -3,6 +3,7 @@ pub mod alias_requirements;
 mod annotations;
 pub mod associated;
 pub mod bodies;
+pub mod body_regions;
 pub mod closures;
 mod constants;
 pub mod crates;

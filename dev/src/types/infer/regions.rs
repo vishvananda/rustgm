@@ -1,7 +1,6 @@
 //! Binder substitution over unresolved type graphs preserves their inference variables.
 mod escaping;
 use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
-use crate::support::hash::HashMap;
 use crate::types::substitute::Bound;
 
 pub(super) struct MappedRegions {
@@ -32,6 +31,16 @@ impl Context {
         if amount == 0 {
             return Ok(MappedRegions {
                 term: root,
+                projections: false,
+            });
+        }
+        // An inference variable keeps its identity under every binder fold;
+        // this is the mapping's own first step, without building the fold.
+        let variable = self.root(root)?;
+        if let Value::Variable(_) = self.terms[variable.0 as usize].value {
+            self.step()?;
+            return Ok(MappedRegions {
+                term: variable,
                 projections: false,
             });
         }
@@ -140,12 +149,19 @@ impl Context {
 /// changing the fold or solving source holes requires a fresh cache.
 #[derive(Default)]
 pub(crate) struct RegionMapping {
-    results: HashMap<(TermId, u16), TermId>,
+    results: super::memo::Memo<(TermId, u16), TermId>,
     work: Vec<((TermId, u16), bool)>,
     children: Vec<TermId>,
     projections: bool,
 }
 impl RegionMapping {
+    /// Forget every result, keeping small storage for the next fold.
+    pub(crate) fn clear(&mut self) {
+        self.results.clear();
+        self.work.clear();
+        self.children.clear();
+        self.projections = false;
+    }
     pub(crate) fn apply(
         &mut self,
         context: &mut Context,
@@ -158,7 +174,7 @@ impl RegionMapping {
         while let Some(((id, depth), finish)) = self.work.pop() {
             context.step()?;
             let id = context.root(id)?;
-            if self.results.contains_key(&(id, depth)) {
+            if self.results.get(&(id, depth)).is_some() {
                 continue;
             }
             if bound.regions_only()
@@ -213,8 +229,7 @@ impl RegionMapping {
             for index in term.start..term.end {
                 let child = context.root(context.edges[index as usize])?;
                 self.children.push(
-                    *self
-                        .results
+                    self.results
                         .get(&(child, child_depth))
                         .ok_or(Error::InvalidIdentity)?,
                 );
@@ -235,11 +250,7 @@ impl RegionMapping {
             context.folded_slot_facts(id, value)?;
             self.results.insert((id, depth), value);
         }
-        let term = self
-            .results
-            .get(&(root, 0))
-            .copied()
-            .ok_or(Error::InvalidIdentity)?;
+        let term = self.results.get(&(root, 0)).ok_or(Error::InvalidIdentity)?;
         Ok(term)
     }
 }

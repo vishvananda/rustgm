@@ -39,10 +39,11 @@ impl Checker<'_> {
             roots.extend(method.value_types(solved));
         }
         let node = self.state.body.node;
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|count| count.checked_add(1))
-            .ok_or_else(|| self.error(node, "storage proof region identity space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "storage proof region identity space exhausted"))?;
         let proof = Obligations::new(first);
         let cursor = Cursor::new(
             None,
@@ -113,10 +114,11 @@ impl Checker<'_> {
         if !self.facts.aggregates.has_projected_templates() {
             return Ok(());
         }
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|count| count.checked_add(1))
-            .ok_or_else(|| self.error(node, "storage proof region identity space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "storage proof region identity space exhausted"))?;
         let mut proof = Obligations::new(first);
         let mut session = crate::sema::projections::Concrete::new(
             None,

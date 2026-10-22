@@ -293,6 +293,18 @@ fn captured_context_identity_cannot_replace_public_signature_or_erased_slots()
     Ok(())
 }
 
+/// A caller region, read in the caller body's numbering unit.
+fn caller_region(
+    facts: &mut crate::sema::model::Declarations,
+    caller: crate::resolve::unit::NodeKey,
+    region: crate::types::RegionId,
+) -> Result<&mut crate::sema::model::BodyRegion, &'static str> {
+    facts
+        .body_regions
+        .get_mut(caller, region)
+        .ok_or("missing caller region")
+}
+
 #[test]
 fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
 -> Result<(), Box<dyn std::error::Error>> {
@@ -338,13 +350,13 @@ fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
             })
         })
         .ok_or("missing caller lifetime")?;
-    let old = facts.body_regions[region.0 as usize - 1];
-    facts.body_regions[region.0 as usize - 1].body.node = crate::syntax::ast::NodeId::new(
-        facts.body_regions[region.0 as usize - 1].body.node.get() + 1,
-    );
+    let caller = witness.caller_source(&facts)?;
+    let old = *caller_region(&mut facts, caller, region)?;
+    caller_region(&mut facts, caller, region)?.body.node =
+        crate::syntax::ast::NodeId::new(old.body.node.get() + 1);
     assert!(executor.check(&report, &mut facts, request.target).is_err());
     assert!(executor.advance(&report, &mut facts, &request).is_err());
-    facts.body_regions[region.0 as usize - 1] = old;
+    *caller_region(&mut facts, caller, region)? = old;
     assert!(executor.check(&report, &mut facts, request.target).is_ok());
     let row = facts
         .inline_constants

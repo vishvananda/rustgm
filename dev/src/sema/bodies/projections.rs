@@ -168,10 +168,11 @@ impl Checker<'_> {
         // A canonical declaration type already has determined inputs. Keep its
         // written body lifetimes while proving its complete nested binder tree;
         // replacing the whole type with caller aliases would change its return contract.
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "body projection region space exhausted"))?;
         let mut proof = Obligations::new(first);
         // Call arguments already use free aliases for caller universals. Their
         // environment must use the same representation, without duplicate
@@ -519,10 +520,11 @@ impl Checker<'_> {
         {
             return Ok(Completion::Waiting(query, false));
         }
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "body projection region space exhausted"))?;
         let mut proof = Obligations::new(first);
         let scope = self
             .state

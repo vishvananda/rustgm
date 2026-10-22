@@ -1,16 +1,17 @@
 //! Append-only semantic facts are consumed once, independently of defining-body order.
 use super::{Contract, Contracts, Declarations, Kind, NodeKey, Obligation, Proof};
+use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, Function};
 use crate::support::hash::HashMap;
-use crate::{
-    sema::model::{AdjustmentKind, BodyRegionOrigin, Function},
-    types::RegionId,
-};
 
 #[derive(Default)]
 struct Bucket {
     // Preserve the public contract order even when foreign bodies interleave.
     obligations: [Vec<Obligation>; 6],
     proofs: Vec<Proof>,
+    /// Region log positions visited while reserved for proof evidence. A
+    /// pattern proof published without gaps later reclassifies its reserved
+    /// regions as inference variables, possibly after they were visited.
+    reserved: Vec<usize>,
 }
 
 /// Retained completed contracts and cursors over the shared semantic fact streams.
@@ -173,7 +174,19 @@ impl Collector {
 
     fn populate(&mut self, facts: &Declarations, contract: &mut Contract) {
         super::output_interface(facts, contract);
-        if let Some(bucket) = self.pending.remove(&contract.source) {
+        if let Some(mut bucket) = self.pending.remove(&contract.source) {
+            for &position in &bucket.reserved {
+                let Some(allocated) = facts.body_regions.log().get(position) else {
+                    continue;
+                };
+                let origin = allocated.region.origin;
+                if !matches!(origin, BodyRegionOrigin::QuantifiedProof) {
+                    bucket.obligations[0].push(Obligation {
+                        source: allocated.region.source,
+                        kind: variable(allocated.id, origin),
+                    });
+                }
+            }
             contract
                 .obligations
                 .extend(bucket.obligations.into_iter().flatten());
@@ -197,6 +210,7 @@ impl Collector {
                     bucket.obligations[order].push(Obligation { source, kind });
                 }
                 Fact::Proof(proof) => bucket.proofs.push(proof.clone()),
+                Fact::Reserved(position) => bucket.reserved.push(position),
             }
             Ok(())
         })
@@ -206,6 +220,17 @@ impl Collector {
 pub(super) enum Fact<'a> {
     Obligation(usize, Kind),
     Proof(&'a Proof),
+    /// A region log position reserved for proof evidence when visited.
+    Reserved(usize),
+}
+fn variable(id: crate::types::RegionId, origin: BodyRegionOrigin) -> Kind {
+    Kind::Variable {
+        id,
+        needs_provenance: matches!(
+            origin,
+            BodyRegionOrigin::ExpressionBorrow | BodyRegionOrigin::PatternBorrow
+        ),
+    }
 }
 #[derive(Default)]
 pub(super) struct Cursor {
@@ -215,7 +240,7 @@ pub(super) struct Cursor {
 impl Cursor {
     fn frontier(&self, facts: &Declarations) -> Result<[usize; 7], &'static str> {
         let next = [
-            facts.body_regions.len(),
+            facts.body_regions.log().len(),
             facts.region_equalities.len(),
             facts.outlives.len(),
             facts.coercions.len(),
@@ -239,24 +264,16 @@ impl Cursor {
         mut add: impl FnMut(NodeKey, NodeKey, Fact<'_>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let next = self.frontier(facts)?;
-        for (i, value) in facts.body_regions.iter().enumerate().skip(self.cursors[0]) {
-            if !matches!(value.origin, BodyRegionOrigin::QuantifiedProof) {
+        let log = facts.body_regions.log();
+        for (position, allocated) in log.iter().enumerate().skip(self.cursors[0]) {
+            let value = &allocated.region;
+            if matches!(value.origin, BodyRegionOrigin::QuantifiedProof) {
+                add(value.body, value.source, Fact::Reserved(position))?;
+            } else {
                 add(
                     value.body,
                     value.source,
-                    Fact::Obligation(
-                        0,
-                        Kind::Variable {
-                            id: RegionId(
-                                u32::try_from(i + 1).map_err(|_| "too many lifetime variables")?,
-                            ),
-                            needs_provenance: matches!(
-                                value.origin,
-                                BodyRegionOrigin::ExpressionBorrow
-                                    | BodyRegionOrigin::PatternBorrow
-                            ),
-                        },
-                    ),
+                    Fact::Obligation(0, variable(allocated.id, value.origin)),
                 )?;
             }
         }

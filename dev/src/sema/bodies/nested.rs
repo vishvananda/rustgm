@@ -127,6 +127,11 @@ impl Checker<'_> {
         if scheduler.entries.len() >= 1_000_000 {
             return Err(self.error(entry.source, "nested body work limit exceeded"));
         }
+        // A nested body shares its parent's inference graph and region identities.
+        self.facts
+            .body_regions
+            .nest(child.body, self.state.body)
+            .map_err(|e| self.error(entry.source, e))?;
         let index = scheduler.entries.len();
         scheduler.entries.push(entry);
         self.state.closure_children.push(index);

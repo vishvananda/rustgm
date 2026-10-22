@@ -257,7 +257,7 @@ fn owned_regions(
             || id.bound_parts().is_some()
             || !facts
                 .body_regions
-                .get(id.0 as usize - 1)
+                .get(contract.source, id)
                 .is_some_and(|record| record.body == contract.source)
         {
             return Err("original initializer identity belongs to another body");

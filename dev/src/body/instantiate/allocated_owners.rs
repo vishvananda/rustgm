@@ -63,7 +63,7 @@ impl Operation {
             .owner
             .source_caller(facts, body.source, body.instance)?;
         with_registered_namespace(facts, body.source, caller, |_, _| Ok(()))?;
-        let first = frontier(facts)?;
+        let first = frontier(facts, body.source)?;
         facts.body_work.canonical_steps = facts
             .body_work
             .canonical_steps
@@ -133,7 +133,7 @@ impl Operation {
         if id == 0
             || !facts
                 .body_regions
-                .get(id as usize - 1)
+                .get(self.source, crate::types::RegionId(id))
                 .is_some_and(|r| r.body == self.source && r.source == self.source)
         {
             return Err("normalization original proof has foreign caller ownership");
@@ -213,7 +213,7 @@ impl Operation {
                 .owner
                 .source_caller(facts, body.source, body.instance)?
                 != self.caller
-            || frontier(facts)? != self.first
+            || frontier(facts, self.source)? != self.first
             || next != self.next
             || contract.proofs.len() < self.originals.len()
         {
@@ -257,8 +257,12 @@ impl Operation {
         Ok(())
     }
 }
-fn frontier(facts: &Declarations) -> Result<u32, &'static str> {
-    u32::try_from(facts.body_regions.len().saturating_add(1))
+/// The source body's next region identity: published normalization regions are
+/// reserved in that body's numbering unit.
+fn frontier(facts: &Declarations, body: NodeKey) -> Result<u32, &'static str> {
+    facts
+        .body_regions
+        .frontier(body)
         .ok()
         .filter(|&first| first < 0x8000_0000)
         .ok_or("normalization allocation identity space exhausted")

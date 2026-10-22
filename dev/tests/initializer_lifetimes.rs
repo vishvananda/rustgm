@@ -124,12 +124,18 @@ fn local_borrow_region_retains_actual_initializer_owner() -> Result<(), Box<dyn 
     let report = source::resolve(CASES[0].1, true)?;
     let analysis = rustgm::pipeline::analyze_source(&report)?;
     let initializer = analysis.facts.initializers.first().ok_or("initializer")?;
-    let mut borrows = analysis.facts.body_regions.iter().filter(|region| {
-        matches!(
-            region.origin,
-            rustgm::sema::model::BodyRegionOrigin::ExpressionBorrow
-        )
-    });
+    let mut borrows = analysis
+        .facts
+        .body_regions
+        .log()
+        .iter()
+        .map(|allocated| &allocated.region)
+        .filter(|region| {
+            matches!(
+                region.origin,
+                rustgm::sema::model::BodyRegionOrigin::ExpressionBorrow
+            )
+        });
     let borrow = borrows.next().ok_or("missing owned borrow region")?;
     assert_eq!(borrow.body, initializer.value);
     assert!(borrows.next().is_none());

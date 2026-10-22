@@ -201,7 +201,7 @@ fn prefix_storage_preserves_compact_public_records() {
     );
     assert_eq!(size_of::<super::super::Work>(), 40);
     // Iteration adds one demand-only pending-plan owner to the existing boxed calls.
-    assert_eq!(size_of::<super::super::calls::CallTypes>(), 616);
+    assert_eq!(size_of::<super::super::calls::CallTypes>(), 672);
     assert_eq!(size_of::<Inputs>(), 8);
     assert_eq!(size_of::<TypeId>(), 4);
     assert_eq!(size_of::<Kind>(), 24);

@@ -53,7 +53,11 @@ impl Queries<'_> {
         frames.children = remaining;
         let result = (|| {
             if dispatcher.is_none() {
-                let first = u32::try_from(self.typing.facts.body_regions.len() + 1)
+                let first = self
+                    .typing
+                    .facts
+                    .body_regions
+                    .frontier(scope.body)
                     .map_err(|_| "source caller region overflow")?;
                 dispatcher = Some(Dispatcher::pattern(
                     self.typing.facts,

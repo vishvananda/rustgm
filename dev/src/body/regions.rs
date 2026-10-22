@@ -157,6 +157,9 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
                 bodies[target].obligations.push(Obligation { source, kind });
             }
             incremental::Fact::Proof(proof) => bodies[target].proofs.push(proof.clone()),
+            // One pass after analysis sees final origins: a reserved region
+            // still belongs to proof evidence.
+            incremental::Fact::Reserved(_) => {}
         }
         Ok(())
     })?;

@@ -74,15 +74,13 @@ impl Checker<'_> {
         key: NodeKey,
         context: regions::Context,
     ) -> Result<u32, Error> {
-        let first = if matches!(
-            context.position,
-            regions::Position::Local(_) | regions::Position::Constant(_)
-        ) {
-            u32::try_from(self.facts.body_regions.len())
-                .ok()
-                .and_then(|n| n.checked_add(1))
-                .filter(|n| *n < 0x8000_0000)
-                .ok_or_else(|| self.error(key, "projection region identity space exhausted"))?
+        let first = if let regions::Position::Local(body) | regions::Position::Constant(body) =
+            context.position
+        {
+            self.facts
+                .body_regions
+                .frontier(NodeKey { node: body, ..key })
+                .map_err(|_| self.error(key, "projection region identity space exhausted"))?
         } else {
             self.projections
                 .scopes

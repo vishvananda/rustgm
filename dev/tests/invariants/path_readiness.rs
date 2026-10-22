@@ -116,7 +116,7 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
             source: key,
             origin: BodyRegionOrigin::Annotation,
         };
-        facts.body_regions.push(region);
+        facts.body_regions.allocate(region)?;
         let ty = facts.types.intern(Kind::Reference {
             region: RegionId(1),
             mutable: false,
@@ -162,7 +162,9 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
                 );
                 assert_eq!(observations(&query, &facts)?, before);
             }
-            facts.body_regions.extend([region; 3]);
+            for _ in 0..3 {
+                facts.body_regions.allocate(region)?;
+            }
             let crate::sema::traits::selection::Dependency::Header(owner) = owner else {
                 return Err("expected an implementation header dependency".into());
             };
@@ -177,7 +179,7 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
         }
         assert!(delayed.is_empty());
         assert_eq!(waits, depth + 2);
-        assert_eq!(facts.body_regions.len(), 1 + 3 * waits);
+        assert_eq!(facts.body_regions.log().len(), 1 + 3 * waits);
         assert_eq!(
             (
                 facts.quantified_proofs.len(),
@@ -202,7 +204,7 @@ fn observations(
         query.prefix.steps,
         trial.context.steps,
         facts.methods.selection_probes,
-        facts.body_regions.len(),
+        facts.body_regions.log().len(),
         trial.pending.cursor,
         trial.pending.first,
     ))

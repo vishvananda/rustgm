@@ -254,7 +254,8 @@ pub enum BodyRegionOrigin {
     PatternBorrow,
     PatternInput,
 }
-/// Existential region identity `1 + ordinal`; these are obligations, not proofs.
+/// Existential region identity `1 + ordinal` within the numbering unit of its
+/// body (see [`super::body_regions`]); these are obligations, not proofs.
 #[derive(Clone, Copy)]
 pub struct BodyRegion {
     pub body: NodeKey,
@@ -417,7 +418,7 @@ pub struct Declarations {
     pub(crate) primitive_methods: Option<Box<super::primitive_methods::Registry>>,
     pub layouts: crate::abi::layout::Layouts,
     pub region_equalities: Vec<RegionEquality>,
-    pub body_regions: Vec<BodyRegion>,
+    pub body_regions: super::body_regions::BodyRegions,
     initializer_indices: Option<Box<[Option<std::num::NonZeroU32>]>>,
     pub initializers: Vec<Initializer>,
     pub types: Store,
@@ -494,7 +495,7 @@ impl Declarations {
         bodies
     }
     pub(super) fn lifetime_fact_count(&self) -> usize {
-        self.body_regions.len()
+        self.body_regions.log().len()
             + self.region_equalities.len()
             + self.coercions.len()
             + self.outlives.len()
@@ -598,7 +599,7 @@ impl Declarations {
             primitive_methods: None,
             layouts: crate::abi::layout::Layouts::default(),
             region_equalities: Vec::new(),
-            body_regions: Vec::new(),
+            body_regions: super::body_regions::BodyRegions::default(),
             initializer_indices: None,
             initializers: Vec::new(),
             types: Store::default(),

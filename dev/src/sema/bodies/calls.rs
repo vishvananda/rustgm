@@ -31,6 +31,13 @@ pub(super) struct CallTypes {
     signatures: HashMap<TermId, TypeId>,
     universal_regions: Vec<RegionId>,
     universals: Option<Bound>,
+    /// Storage of finished call instantiations, kept across bodies.
+    pub instantiations: crate::types::infer::InstantiationPool,
+    /// Storage of the two binder folds that open a call signature.
+    pub openings: Option<Box<(infer::RegionMapping, infer::RegionMapping)>>,
+    /// Value types already published for the finishing body, with the node
+    /// conditions that decide their storage and formation facts.
+    pub published: Vec<(TypeId, bool, bool)>,
 }
 #[derive(Default)]
 struct Constraint {
@@ -88,7 +95,9 @@ impl CallTypes {
         self.methods.clear();
         self.comparison_borrows.clear();
         self.invocations.clear();
-        self.nominal_receivers.clear();
+        for (_, fields) in self.nominal_receivers.drain() {
+            fields.parameters.recycle(&mut self.instantiations);
+        }
         self.field_receivers.clear();
         self.field_receiver_set.clear();
         self.signatures.clear();
@@ -188,10 +197,11 @@ impl Checker<'_> {
             return Ok(actual);
         }
         let ty = self.alias_type(node, ty)?;
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "body region identity space exhausted"))?;
         let specialized = self
             .state
             .infer
@@ -204,7 +214,8 @@ impl Checker<'_> {
         };
         self.facts
             .body_regions
-            .extend(std::iter::repeat_n(region, specialized.regions as usize));
+            .allocate_reserved(region, first, specialized.regions as usize)
+            .map_err(|e| self.error(node, e))?;
         self.known(node, specialized.ty)
     }
     pub(super) fn prepare_universals(&mut self, node: NodeId) -> Result<(), Error> {

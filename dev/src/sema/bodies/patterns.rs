@@ -271,17 +271,15 @@ impl Checker<'_> {
         body: crate::resolve::unit::NodeKey,
         origin: BodyRegionOrigin,
     ) -> Result<RegionId, Error> {
-        let ordinal = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .filter(|n| *n < 0x8000_0000)
-            .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
-        self.facts.body_regions.push(BodyRegion {
-            body,
-            source: self.key(node),
-            origin,
-        });
-        Ok(RegionId(ordinal))
+        let source = self.key(node);
+        self.facts
+            .body_regions
+            .allocate(BodyRegion {
+                body,
+                source,
+                origin,
+            })
+            .map_err(|e| self.error(node, e))
     }
     fn pattern_adjust(
         &mut self,

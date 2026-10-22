@@ -427,6 +427,12 @@ impl<'a> Checker<'a> {
     }
     fn prepare_constant(&mut self, initializer: super::model::Initializer) -> Result<(), Error> {
         let key = initializer.semantic_source();
+        // Annotation regions were numbered for the syntax root; the semantic
+        // owner continues in that unit.
+        self.facts
+            .body_regions
+            .nest(key, initializer.value)
+            .map_err(|e| Declarations::error(self.report, key, e))?;
         let ty = initializer.ty;
         let owner = initializer.definition;
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
@@ -459,6 +465,7 @@ impl<'a> Checker<'a> {
         self.state.parameter_copies = None;
         self.state.parameter_shapes = None;
         self.state.body = key;
+        self.facts.body_regions.activate(key);
         self.prepare_file(key.file);
         self.state.module = module;
         self.state.result = ty;
@@ -665,6 +672,7 @@ impl Checker<'_> {
         };
         self.prepare_file(body.file);
         self.state.body = body;
+        self.facts.body_regions.activate(body);
         self.prepare_bound_environment(body.node, function.definition, Some(function.signature))?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
@@ -969,35 +977,7 @@ impl Checker<'_> {
             let ty = solved.types[receiver.0 as usize];
             self.prepare_storage(body, ty)?;
         }
-        for index in 0..self.state.touched.len() {
-            let node = self.state.touched[index];
-            let term = self.term(node)?;
-            let key = self.key(node);
-            let ty = solved.types[term.0 as usize];
-            self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
-            if key != self.state.body
-                && self
-                    .facts
-                    .inline_constants
-                    .as_deref()
-                    .and_then(|registry| registry.get(key))
-                    .is_some_and(|body| body.root.is_some())
-            {
-                self.facts
-                    .node_mut(key)
-                    .ok_or_else(|| {
-                        Declarations::error(self.report, key, "missing inline expression facts")
-                    })?
-                    .adjustment = None;
-                self.facts.reference_adjustments.remove(&key);
-                self.facts.pointer_adjustments.remove(&key);
-                self.facts.unsizing_adjustments.remove(&key);
-            }
-            self.facts
-                .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
-                .ty = Some(ty);
-        }
+        self.publish_touched_types(solved, &mut well_formed, &mut nominal_types)?;
         for index in 0..self.state.call_types.methods.len() {
             let (node, pending) = &self.state.call_types.methods[index];
             let (node, types) = (*node, pending.value_types(solved));
@@ -1063,6 +1043,61 @@ impl Checker<'_> {
             }
         }
         nominal_types.finish(self)
+    }
+    /// Publish each touched node's solved type. A value type repeated under the
+    /// same node conditions adds no fact: its requirements, storage and
+    /// formation were already published. Bodies repeat a few types, so a
+    /// short list finds them.
+    fn publish_touched_types(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+        well_formed: &mut HashSet<TypeId>,
+        nominal_types: &mut bounds::Requirements,
+    ) -> Result<(), Error> {
+        const PUBLISHED: usize = 32;
+        let mut published = std::mem::take(&mut self.state.call_types.published);
+        published.clear();
+        for index in 0..self.state.touched.len() {
+            let node = self.state.touched[index];
+            let term = self.term(node)?;
+            let key = self.key(node);
+            let ty = solved.types[term.0 as usize];
+            let conditions = (
+                ty,
+                self.state.type_annotations.contains(&node),
+                self.state.annotation_children.contains(&node),
+            );
+            if !published.contains(&conditions) {
+                if published.len() < PUBLISHED {
+                    published.push(conditions);
+                }
+                self.value_type(node, ty, well_formed, nominal_types)?;
+            }
+            if key != self.state.body
+                && self
+                    .facts
+                    .inline_constants
+                    .as_deref()
+                    .and_then(|registry| registry.get(key))
+                    .is_some_and(|body| body.root.is_some())
+            {
+                self.facts
+                    .node_mut(key)
+                    .ok_or_else(|| {
+                        Declarations::error(self.report, key, "missing inline expression facts")
+                    })?
+                    .adjustment = None;
+                self.facts.reference_adjustments.remove(&key);
+                self.facts.pointer_adjustments.remove(&key);
+                self.facts.unsizing_adjustments.remove(&key);
+            }
+            self.facts
+                .node_mut(key)
+                .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
+                .ty = Some(ty);
+        }
+        self.state.call_types.published = published;
+        Ok(())
     }
     fn value_type(
         &mut self,

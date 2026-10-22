@@ -194,10 +194,10 @@ fn trait_requirements(
     }
     let empty = Assumptions::default();
     let assumptions = caller.traits.unwrap_or(&empty);
-    let mut first_region = u32::try_from(facts.body_regions.len())
-        .ok()
-        .and_then(|n| n.checked_add(1))
-        .ok_or("method trait region identity space exhausted")?;
+    let mut first_region = facts
+        .body_regions
+        .probe_frontier()
+        .map_err(|_| "method trait region identity space exhausted")?;
     let mut pending: Vec<_> = goals.iter().collect();
     while !pending.is_empty() {
         let before = pending.len();

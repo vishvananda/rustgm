@@ -87,7 +87,7 @@ pub(crate) fn concrete_prepared(
         region_equalities: facts.region_equalities.clone(),
         coercions: facts.coercions.clone(),
         outlives: facts.outlives.clone(),
-        body_regions: facts.body_regions.clone(),
+        body_regions: facts.body_regions.log().to_vec(),
     };
     for function in &facts.functions {
         if function.body.is_none()

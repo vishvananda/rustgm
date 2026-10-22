@@ -244,6 +244,8 @@ pub struct Store {
     closures: Option<Vec<closure::Declaration>>,
     nominal_sizes: Option<std::sync::Arc<sizedness::Rules>>,
     has_nominals: bool,
+    /// Compiled callable signature templates (see `infer::plans`).
+    plans: infer::plans::Plans,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -280,6 +282,7 @@ impl Default for Store {
             closures: None,
             nominal_sizes: None,
             has_nominals: false,
+            plans: infer::plans::Plans::default(),
         }
     }
 }
@@ -294,6 +297,12 @@ impl Store {
             .saturating_add(self.argument_extent())
             .saturating_add(self.trait_application_count())
             .saturating_add(self.quantified_clauses().len())
+    }
+    pub(crate) fn take_plans(&mut self) -> infer::plans::Plans {
+        std::mem::take(&mut self.plans)
+    }
+    pub(crate) fn restore_plans(&mut self, plans: infer::plans::Plans) {
+        self.plans = plans;
     }
     pub(crate) fn find_kind(&self, kind: Kind) -> Option<TypeId> {
         self.index.get(&kind).copied()

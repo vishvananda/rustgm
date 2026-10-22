@@ -86,7 +86,7 @@ fn source_aliases_close_before_numerically_colliding_external_arguments() -> Res
     let mut fixture = fixture()?;
     let ranges = append(&mut fixture, 1);
     let index = ranges[0].start;
-    let region_count = fixture.facts.body_regions.len();
+    let region_count = fixture.facts.body_regions.log().len();
     let equation_count = fixture.facts.region_equalities.len();
     canonicalize(
         &mut fixture.facts,
@@ -135,7 +135,7 @@ fn source_aliases_close_before_numerically_colliding_external_arguments() -> Res
             .and_then(|mut args| args.next()),
         Some(Argument::Lifetime(fixture.region))
     );
-    assert_eq!(fixture.facts.body_regions.len(), region_count);
+    assert_eq!(fixture.facts.body_regions.log().len(), region_count);
     assert_eq!(fixture.facts.region_equalities.len(), equation_count);
     assert!(actual.result_type(&mut fixture.facts).is_err());
     Ok(())
@@ -209,15 +209,12 @@ fn foreign_and_stale_equation_publication_cannot_change_dependency_rows() -> Res
         )
         .is_err()
     );
-    fixture.facts.body_regions[fixture.region.0 as usize - 1]
-        .body
-        .node = crate::syntax::ast::NodeId::new(
-        fixture.facts.body_regions[fixture.region.0 as usize - 1]
-            .body
-            .node
-            .get()
-            + 1,
-    );
+    let record = fixture
+        .facts
+        .body_regions
+        .get_mut(fixture.source, fixture.region)
+        .ok_or("missing source region")?;
+    record.body.node = crate::syntax::ast::NodeId::new(record.body.node.get() + 1);
     assert!(
         canonicalize(
             &mut fixture.facts,

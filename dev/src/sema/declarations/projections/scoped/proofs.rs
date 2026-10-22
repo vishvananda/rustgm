@@ -86,8 +86,8 @@ impl Checker<'_> {
         }
         let allocated = proof.regions.clone();
         let sink = if let Some(index) = reserved {
-            if usize::try_from(allocated.start).ok() != self.facts.body_regions.len().checked_add(1)
-            {
+            let body = self.facts.quantified_proofs[index].body;
+            if self.facts.body_regions.frontier(body) != Ok(allocated.start) {
                 return Err(self.error(key, "unreserved projection proof has foreign identities"));
             }
             Sink::Body(index)
@@ -100,11 +100,16 @@ impl Checker<'_> {
             let body = self.facts.quantified_proofs[index].body;
             self.facts
                 .body_regions
-                .extend(allocated.map(|_| BodyRegion {
-                    body,
-                    source: key,
-                    origin: BodyRegionOrigin::QuantifiedProof,
-                }));
+                .allocate_reserved(
+                    BodyRegion {
+                        body,
+                        source: key,
+                        origin: BodyRegionOrigin::QuantifiedProof,
+                    },
+                    allocated.start,
+                    allocated.len(),
+                )
+                .map_err(|e| self.error(key, e))?;
         }
         Ok(())
     }
@@ -117,7 +122,8 @@ impl Checker<'_> {
     ) -> Result<Sink, Error> {
         if let regions::Position::Local(body) | regions::Position::Constant(body) = context.position
         {
-            if usize::try_from(first).ok() != self.facts.body_regions.len().checked_add(1) {
+            let body = NodeKey { node: body, ..key };
+            if self.facts.body_regions.frontier(body) != Ok(first) {
                 return Err(self.error(key, "scoped proof has foreign body region identities"));
             }
             if context
@@ -128,7 +134,6 @@ impl Checker<'_> {
                     self.error(key, "local projection proof requires its callable universe")
                 );
             }
-            let body = NodeKey { node: body, ..key };
             if matches!(context.position, regions::Position::Constant(_)) {
                 self.facts.constant_annotation_bodies.insert(body);
             }

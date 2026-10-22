@@ -13,7 +13,9 @@ mod freshen;
 pub use freshen::FreshRegions;
 mod import;
 mod indices;
+mod memo;
 pub mod objects;
+pub(crate) mod plans;
 pub mod predicates;
 pub mod probe;
 pub mod projections;
@@ -28,7 +30,7 @@ mod specialize;
 mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
 use crate::support::hash::{HashMap, HashSet};
-pub use substitute::Instantiation;
+pub use substitute::{Instantiation, InstantiationPool};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TermId(pub u32);

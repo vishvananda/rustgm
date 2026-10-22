@@ -178,9 +178,11 @@ fn declared_source_aliases_do_not_admit_missing_or_foreign_ownership() -> Result
     let before = facts.body_work.canonical_steps;
     assert!(parameters.validate(&mut facts).is_err());
     assert!(facts.body_work.canonical_steps > before);
-    let mut record = facts.body_regions[region.0 as usize - 1];
+    let record = facts
+        .body_regions
+        .get_mut(contract.source, region)
+        .ok_or("missing owned region")?;
     record.body.node = crate::syntax::ast::NodeId::new(record.body.node.get() + 1);
-    facts.body_regions[region.0 as usize - 1] = record;
     assert!(owned_regions(&mut facts, &contract).is_err());
     Ok(())
 }

@@ -98,7 +98,7 @@ impl Checker<'_> {
                     && self
                         .facts
                         .body_regions
-                        .get(caller.0 as usize - 1)
+                        .get(parent, *caller)
                         .is_some_and(|fact| fact.body == parent)
             })
             .map(|(caller, private)| (private, caller))
@@ -114,7 +114,7 @@ impl Checker<'_> {
                     && self
                         .facts
                         .body_regions
-                        .get(region.0 as usize - 1)
+                        .get(source, region)
                         .is_some_and(|fact| {
                             fact.body == source
                                 && !matches!(fact.origin, BodyRegionOrigin::UniversalAlias)

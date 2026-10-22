@@ -102,7 +102,7 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             writeln!(out, "-")?;
         }
     }
-    type_view::body_regions(&facts.body_regions, out)?;
+    type_view::body_regions(facts.body_regions.log(), out)?;
     type_view::regions(&facts.region_equalities, out)?;
     type_view::coercions(&facts.coercions, out)?;
     type_view::outlives(&facts.outlives, out)?;
@@ -218,7 +218,7 @@ pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         facts.patterns.decisions.len(),
         facts.patterns.arms.len(),
         facts.patterns.decisions.iter().map(|m| m.work).sum::<u64>(),
-        facts.body_regions.len(),
+        facts.body_regions.log().len(),
         facts.region_equalities.len(),
         facts.patterns.conditions.len(),
         facts.patterns.chains.len()

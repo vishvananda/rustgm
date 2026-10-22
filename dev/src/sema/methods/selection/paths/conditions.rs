@@ -127,9 +127,6 @@ impl Pending {
 fn frontier(facts: &Declarations) -> Result<u32, &'static str> {
     facts
         .body_regions
-        .len()
-        .checked_add(1)
-        .and_then(|n| u32::try_from(n).ok())
-        .filter(|n| *n < 0x8000_0000)
-        .ok_or("method trait region identity space exhausted")
+        .probe_frontier()
+        .map_err(|_| "method trait region identity space exhausted")
 }

@@ -13,7 +13,15 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        let first = self.facts.body_regions.len();
+        // Closure inputs number their annotation regions in the closure body's unit.
+        let body = match context.position {
+            regions::Position::Local(body) | regions::Position::Constant(body) => {
+                Some(NodeKey { node: body, ..key })
+            }
+            _ => None,
+        };
+        let first = body.map_or(Ok(1), |body| self.facts.body_regions.frontier(body));
+        let first = first.map_err(|e| self.error(key, e))? as usize - 1;
         for index in parameters.start..parameters.end {
             let unit = self.report.package.unit(key.file);
             let mut node = unit.configured.ast.edges[index as usize];
@@ -30,17 +38,17 @@ impl Checker<'_> {
             self.node_work(key.file, ty, context);
             self.drain(steps, limit)?;
         }
-        let mut regions = Vec::new();
-        for (index, region) in self.facts.body_regions.iter().enumerate().skip(first) {
-            if matches!(
-                region.origin,
-                crate::sema::model::BodyRegionOrigin::Annotation
-            ) {
-                regions.push(crate::types::RegionId(u32::try_from(index + 1).map_err(
-                    |_| self.error(key, "closure input lifetime limit exceeded"),
-                )?));
-            }
-        }
+        let regions: Vec<_> = body
+            .into_iter()
+            .flat_map(|body| self.facts.body_regions.regions_after(body, first))
+            .filter(|(_, region)| {
+                matches!(
+                    region.origin,
+                    crate::sema::model::BodyRegionOrigin::Annotation
+                )
+            })
+            .map(|(id, _)| id)
+            .collect();
         if !regions.is_empty() {
             self.facts.closures.inputs.insert(key, regions);
         }

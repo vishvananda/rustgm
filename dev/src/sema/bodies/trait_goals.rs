@@ -113,11 +113,10 @@ impl Checker<'_> {
     }
 
     pub(super) fn trait_region_start(&self, node: NodeId) -> Result<u32, Error> {
-        u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .filter(|n| *n < 0x8000_0000)
-            .ok_or_else(|| self.error(node, "trait region identity space exhausted"))
+        self.facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "trait region identity space exhausted"))
     }
 
     pub(super) fn retain_trait_evidence(

@@ -244,7 +244,7 @@ fn decoded_text_identity_and_coverage_preserve_exact_bytes() -> Result<(), Strin
     let useful: Vec<_> = facts.patterns.arms.iter().map(|a| a.useful).collect();
     assert_eq!(useful, [true, false, true, true, true, true, true]);
     assert!(facts.region_equalities.is_empty());
-    assert!(facts.body_regions.is_empty());
+    assert!(facts.body_regions.log().is_empty());
     let (_, facts) = analyze(r#"fn f(x:&[u8]){match x{[..,98]=>(),b"ab"=>(),_=>()}}"#)?;
     assert_eq!(
         facts

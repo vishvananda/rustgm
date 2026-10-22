@@ -555,6 +555,9 @@ impl Checker<'_> {
                         "annotation traversal work budget exceeded",
                     ));
                 }
+                if matches!(kind, Kind::Closure { .. } | Kind::Block { .. }) {
+                    self.nest_local_body(NodeKey { file, node }, inherited, context)?;
+                }
                 children.clear();
                 ast.push_children(node, &mut children);
                 stack.extend(children.iter().rev().map(|&child| (child, context)));
@@ -567,6 +570,27 @@ impl Checker<'_> {
                     &mut scan,
                 )?;
             }
+        }
+        Ok(())
+    }
+    /// Closures and inline constants share their enclosing body's region identities.
+    fn nest_local_body(
+        &mut self,
+        key: NodeKey,
+        inherited: regions::Context,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if let (
+            regions::Position::Local(own),
+            regions::Position::Local(outer) | regions::Position::Constant(outer),
+        ) = (context.position, inherited.position)
+            && own == key.node
+            && outer != key.node
+        {
+            self.facts
+                .body_regions
+                .nest(key, NodeKey { node: outer, ..key })
+                .map_err(|e| self.error(key, e))?;
         }
         Ok(())
     }
@@ -1441,20 +1465,18 @@ impl Checker<'_> {
                     .constant_annotation_bodies
                     .insert(NodeKey { node: body, ..key });
             }
-            let ordinal = u32::try_from(self.facts.body_regions.len())
-                .ok()
-                .and_then(|n| n.checked_add(1))
-                .filter(|n| *n < 0x8000_0000)
-                .ok_or_else(|| self.error(key, "body region identity space exhausted"))?;
-            self.facts.body_regions.push(super::model::BodyRegion {
-                body: NodeKey {
-                    file: key.file,
-                    node: body,
-                },
-                source: key,
-                origin: super::model::BodyRegionOrigin::Annotation,
-            });
-            return Ok(RegionId(ordinal));
+            return self
+                .facts
+                .body_regions
+                .allocate(super::model::BodyRegion {
+                    body: NodeKey {
+                        file: key.file,
+                        node: body,
+                    },
+                    source: key,
+                    origin: super::model::BodyRegionOrigin::Annotation,
+                })
+                .map_err(|e| self.error(key, e));
         }
         self.regions.elided(context).map_err(|e| self.error(key, e))
     }

@@ -177,9 +177,10 @@ fn each_call_instantiates_late_lifetimes_once_and_retains_input_result_identity(
     assert_eq!(
         facts
             .body_regions
+            .log()
             .iter()
             .filter(|r| matches!(
-                r.origin,
+                r.region.origin,
                 rustgm::sema::model::BodyRegionOrigin::CallArgument
             ))
             .count(),

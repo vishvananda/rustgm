@@ -438,8 +438,9 @@ fn shared_body_evidence_excludes_intervening_and_final_ordinary_allocations() ->
     assert!(proof.has_gaps());
     let owned: crate::support::hash::HashSet<_> = proof.owned_regions().flatten().collect();
     let mut foreign = 0;
-    for (index, region) in facts.body_regions.iter().enumerate() {
-        let id = u32::try_from(index + 1)?;
+    // Every region belongs to the one body, so log order is identity order.
+    for allocated in facts.body_regions.log() {
+        let (id, region) = (allocated.id.0, &allocated.region);
         let ours = matches!(
             region.origin,
             sema::model::BodyRegionOrigin::QuantifiedProof
@@ -450,7 +451,7 @@ fn shared_body_evidence_excludes_intervening_and_final_ordinary_allocations() ->
     assert_eq!(foreign, 2);
     assert_eq!(
         proof.regions.end,
-        u32::try_from(facts.body_regions.len() + 1)?
+        u32::try_from(facts.body_regions.log().len() + 1)?
     );
     Ok(())
 }
@@ -509,7 +510,7 @@ fn growing_body_roots_share_opening_and_nominal_prefixes() -> ResultTest {
         assert_eq!(shared.evidence.proof.scope_count(), 1);
         assert_eq!(shared.evidence.sources.len(), width);
         // Repeated roots must add no query work, sources or allocations.
-        let first = checker.facts.body_regions.len();
+        let first = checker.facts.body_regions.log().len();
         for root in &roots {
             checker.nominal_requirements(body.node, *root, &mut requirements)?;
         }
@@ -519,7 +520,7 @@ fn growing_body_roots_share_opening_and_nominal_prefixes() -> ResultTest {
             .ok_or("missing shared proof")?;
         assert_eq!(shared.context.steps, query_work);
         assert_eq!(shared.evidence.sources.len(), width);
-        assert_eq!(checker.facts.body_regions.len(), first);
+        assert_eq!(checker.facts.body_regions.log().len(), first);
         requirements.finish(&mut checker)?;
         let growth = checker.facts.types.len() - before;
         let contracts = regions::collect(checker.facts)?;

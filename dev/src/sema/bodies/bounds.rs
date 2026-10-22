@@ -205,10 +205,11 @@ impl Checker<'_> {
     }
     fn projected_storage_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
         let ty = self.alias_type(node, ty)?;
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|count| count.checked_add(1))
-            .ok_or_else(|| self.error(node, "too many body proof regions"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "too many body proof regions"))?;
         let mut proof = self.state.nominal_shapes.take().unwrap_or_else(|| {
             Box::new(crate::sema::nominals::Proof::for_declaration(
                 self.state.method_environment.clone(),
@@ -379,10 +380,11 @@ impl Checker<'_> {
         }
         let assumed = self.bound_method_requirement(node, owner)?;
         let mut substitution = substitute::Bound::new(regions);
-        let mut inference = crate::types::infer::Instantiation::new(
+        let mut inference = crate::types::infer::Instantiation::pooled(
             &mut self.state.infer,
             &self.facts.types,
             bindings,
+            &mut self.state.call_types.instantiations,
         )
         .map_err(|e| self.error(node, e))?;
         // Equivalent requirements under this one call substitution need one proof.
@@ -411,6 +413,7 @@ impl Checker<'_> {
                 &mut inference,
             )?;
         }
+        inference.recycle(&mut self.state.call_types.instantiations);
         Ok(())
     }
 

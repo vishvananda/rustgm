@@ -1,8 +1,8 @@
 //! Deterministic type facts are an output view; later phases consume the model.
 mod dynamic;
 use super::model::{
-    AdjustmentKind, BodyRegion, BodyRegionOrigin, Declarations, InitializerKind, Operation,
-    RegionEquality, Scalar,
+    AdjustmentKind, BodyRegionOrigin, Declarations, InitializerKind, Operation, RegionEquality,
+    Scalar,
 };
 use crate::{
     literal::value::FloatBits,
@@ -52,7 +52,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
             initializer.value.node.get()
         )?;
     }
-    body_regions(&facts.body_regions, out)?;
+    body_regions(facts.body_regions.log(), out)?;
     regions(&facts.region_equalities, out)?;
     coercions(&facts.coercions, out)?;
     outlives(&facts.outlives, out)?;
@@ -196,8 +196,12 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
 ///
 /// # Errors
 /// Propagates output errors.
-pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<()> {
-    for (ordinal, variable) in regions.iter().enumerate() {
+pub fn body_regions(
+    regions: &[super::body_regions::AllocatedRegion],
+    out: &mut impl Write,
+) -> io::Result<()> {
+    for allocated in regions {
+        let variable = &allocated.region;
         let origin = match variable.origin {
             BodyRegionOrigin::QuantifiedProof => "quantified-proof",
             BodyRegionOrigin::Annotation => "annotation",
@@ -212,7 +216,7 @@ pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<
         writeln!(
             out,
             "region-var region:{} body={}:{} source={}:{} origin={origin} pending",
-            ordinal + 1,
+            allocated.id.0,
             variable.body.file.0,
             variable.body.node.get(),
             variable.source.file.0,

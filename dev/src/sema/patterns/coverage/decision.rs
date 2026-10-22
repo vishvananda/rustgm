@@ -56,8 +56,7 @@ impl Node {
             | u128::from(self.one.0)
     }
 }
-/// Packed unique and computed tables: open addressing with linear probing,
-/// insert-only between clears, at most half full.
+/// Packed table keys, spread into probe positions.
 trait Packed: Copy + Eq + Default {
     fn spread(self) -> u64;
 }
@@ -74,16 +73,21 @@ impl Packed for u128 {
         (low ^ high.wrapping_mul(0xbf58_476d_1ce4_e5b9)).spread()
     }
 }
-const VACANT: u32 = u32::MAX;
+/// A slot is live only in the decision space whose epoch it records, so
+/// starting a new space clears both tables in constant time.
 #[derive(Clone, Copy, Default)]
 struct Slot<K> {
     key: K,
     value: u32,
+    epoch: u32,
 }
+/// Exact unique table: open addressing with linear probing, insert-only
+/// within one epoch, at most half full.
 #[derive(Default)]
 struct Table<K> {
     slots: Vec<Slot<K>>,
     len: usize,
+    epoch: u32,
 }
 impl<K: Packed> Table<K> {
     fn get(&self, key: K) -> Option<Id> {
@@ -92,7 +96,7 @@ impl<K: Packed> Table<K> {
         let mut index = key.spread() as usize & mask;
         loop {
             let slot = self.slots[index];
-            if slot.value == VACANT {
+            if slot.epoch != self.epoch {
                 return None;
             }
             if slot.key == key {
@@ -110,10 +114,11 @@ impl<K: Packed> Table<K> {
         let mut index = key.spread() as usize & mask;
         loop {
             let slot = &mut self.slots[index];
-            if slot.value == VACANT {
+            if slot.epoch != self.epoch {
                 *slot = Slot {
                     key,
                     value: value.0,
+                    epoch: self.epoch,
                 };
                 self.len += 1;
                 return;
@@ -127,19 +132,11 @@ impl<K: Packed> Table<K> {
     }
     fn grow(&mut self) {
         let capacity = self.slots.len().saturating_mul(2).max(16);
-        let previous = std::mem::replace(
-            &mut self.slots,
-            vec![
-                Slot {
-                    key: K::default(),
-                    value: VACANT,
-                };
-                capacity
-            ],
-        );
+        let previous = std::mem::replace(&mut self.slots, vec![Slot::default(); capacity]);
+        let epoch = std::mem::replace(&mut self.epoch, 1);
         self.len = 0;
         for slot in previous {
-            if slot.value != VACANT {
+            if slot.epoch == epoch {
                 self.insert(slot.key, Id(slot.value));
             }
         }
@@ -147,23 +144,99 @@ impl<K: Packed> Table<K> {
     fn clear(&mut self) {
         if self.slots.len() > RETAINED_ENTRIES.saturating_mul(2) {
             self.slots = Vec::new();
-        } else {
-            self.slots.fill(Slot {
-                key: K::default(),
-                value: VACANT,
-            });
         }
         self.len = 0;
+        self.epoch = next_epoch(&mut self.slots, self.epoch);
     }
+}
+/// Lossy computed table in the style of CUDD: direct-mapped, a colliding
+/// result replaces its predecessor and a lost result is recomputed. Its size
+/// follows the results recorded in the current space, never earlier ones,
+/// so the work of one decision space depends only on that space.
+#[derive(Default)]
+struct Computed {
+    slots: Vec<Slot<u64>>,
+    mask: usize,
+    filled: usize,
+    epoch: u32,
+}
+impl Computed {
+    const INITIAL: usize = 1 << 6;
+    const MAXIMUM: usize = 1 << 16;
+    fn get(&self, key: u64) -> Option<Id> {
+        #[expect(clippy::cast_possible_truncation, reason = "masked slot index")]
+        let slot = self.slots.get(key.spread() as usize & self.mask)?;
+        (slot.epoch == self.epoch && slot.key == key).then_some(Id(slot.value))
+    }
+    fn insert(&mut self, key: u64, value: Id) {
+        if self.slots.is_empty() {
+            self.slots = vec![Slot::default(); Self::INITIAL];
+            self.mask = Self::INITIAL - 1;
+            self.epoch = 1;
+        } else if self.filled.saturating_mul(4) > self.mask && self.mask < Self::MAXIMUM - 1 {
+            self.grow();
+        }
+        #[expect(clippy::cast_possible_truncation, reason = "masked slot index")]
+        let slot = &mut self.slots[key.spread() as usize & self.mask];
+        if slot.epoch != self.epoch {
+            self.filled += 1;
+        }
+        *slot = Slot {
+            key,
+            value: value.0,
+            epoch: self.epoch,
+        };
+    }
+    /// Double the space's slots in place, keeping every live result: a result
+    /// at index `i` either stays or moves to `i + old size`, which no other
+    /// result targets and which this space has not written yet.
+    fn grow(&mut self) {
+        let size = self.mask + 1;
+        self.mask = self.mask * 2 + 1;
+        if self.slots.len() <= self.mask {
+            self.slots.resize(self.mask + 1, Slot::default());
+        }
+        for index in 0..size {
+            let slot = self.slots[index];
+            if slot.epoch != self.epoch {
+                continue;
+            }
+            #[expect(clippy::cast_possible_truncation, reason = "masked slot index")]
+            let target = slot.key.spread() as usize & self.mask;
+            if target != index {
+                self.slots[target] = slot;
+                // Epochs start at one, so zero marks a vacated slot.
+                self.slots[index].epoch = 0;
+            }
+        }
+    }
+    fn clear(&mut self) {
+        if self.slots.len() > RETAINED_ENTRIES.saturating_mul(2) {
+            self.slots = Vec::new();
+        }
+        self.mask = self.slots.len().min(Self::INITIAL).saturating_sub(1);
+        self.filled = 0;
+        self.epoch = next_epoch(&mut self.slots, self.epoch);
+    }
+}
+/// Advance a table epoch, invalidating every slot; a wrapped epoch rewrites them.
+fn next_epoch<K: Default + Copy>(slots: &mut [Slot<K>], epoch: u32) -> u32 {
+    if epoch == u32::MAX {
+        slots.fill(Slot::default());
+        return 1;
+    }
+    epoch + 1
 }
 struct Partition {
     position: Position,
     zero: Query,
     one: Query,
 }
+/// Subproblem results travel on a value stack, so a computed entry lost to a
+/// collision never invalidates the traversal that produced it.
 enum Work {
     Enter(Query),
-    Finish(Query, Partition),
+    Finish(Query, Position),
 }
 enum RangeWork {
     Enter { lower: u128, upper: u128, level: u8 },
@@ -178,9 +251,10 @@ pub struct Graph {
     maxima: Vec<u128>,
     nodes: Vec<Node>,
     index: Table<u128>,
-    queries: Table<u64>,
+    computed: Computed,
     /// Reusable traversal stacks; each operation leaves them empty.
     stack: Vec<Work>,
+    results: Vec<Id>,
     ranges: Vec<RangeWork>,
     values: Vec<Id>,
     work: u64,
@@ -199,8 +273,9 @@ impl Graph {
         self.maxima.clear();
         self.nodes.clear();
         self.index.clear();
-        self.queries.clear();
+        self.computed.clear();
         self.stack.clear();
+        self.results.clear();
         self.ranges.clear();
         self.values.clear();
         self.work = 0;
@@ -388,57 +463,53 @@ impl Graph {
         if let Some(result) = Self::simple(root) {
             return Ok(result);
         }
-        if let Some(result) = self.queries.get(root.packed()) {
+        if let Some(result) = self.computed.get(root.packed()) {
             return Ok(result);
         }
         let mut work = std::mem::take(&mut self.stack);
+        let mut results = std::mem::take(&mut self.results);
         work.clear();
+        results.clear();
         work.push(Work::Enter(root));
-        let result = self.solve(&mut work);
+        let result = self.solve(&mut work, &mut results);
         work.clear();
+        results.clear();
         self.stack = work;
-        result?;
-        self.queries
-            .get(root.packed())
-            .ok_or("missing coverage result")
+        self.results = results;
+        result
     }
-    fn solve(&mut self, work: &mut Vec<Work>) -> Result<(), &'static str> {
+    fn solve(&mut self, work: &mut Vec<Work>, results: &mut Vec<Id>) -> Result<Id, &'static str> {
         while let Some(next) = work.pop() {
             self.charge()?;
             match next {
                 Work::Enter(query) => {
-                    if self.queries.get(query.packed()).is_some() {
-                        continue;
-                    }
-                    if let Some(result) = Self::simple(query) {
-                        self.queries.insert(query.packed(), result);
+                    if let Some(result) = self
+                        .computed
+                        .get(query.packed())
+                        .or_else(|| Self::simple(query))
+                    {
+                        results.push(result);
                         continue;
                     }
                     let partition = self.split(query)?;
-                    let (zero, one) = (partition.zero, partition.one);
-                    work.push(Work::Finish(query, partition));
-                    work.push(Work::Enter(one));
-                    work.push(Work::Enter(zero));
+                    work.push(Work::Finish(query, partition.position));
+                    work.push(Work::Enter(partition.one));
+                    work.push(Work::Enter(partition.zero));
                 }
-                Work::Finish(query, partition) => {
-                    let zero = self
-                        .queries
-                        .get(partition.zero.packed())
-                        .ok_or("missing lower coverage subproblem")?;
-                    let one = self
-                        .queries
-                        .get(partition.one.packed())
-                        .ok_or("missing upper coverage subproblem")?;
+                Work::Finish(query, position) => {
+                    let one = results.pop().ok_or("missing upper coverage subproblem")?;
+                    let zero = results.pop().ok_or("missing lower coverage subproblem")?;
                     let result = self.intern(Node {
-                        position: partition.position,
+                        position,
                         zero,
                         one,
                     })?;
-                    self.queries.insert(query.packed(), result);
+                    self.computed.insert(query.packed(), result);
+                    results.push(result);
                 }
             }
         }
-        Ok(())
+        results.pop().ok_or("missing coverage result")
     }
     pub fn witness(&mut self, mut id: Id) -> Result<Vec<(Variable, u128)>, &'static str> {
         let mut values: Vec<(Variable, u128)> = Vec::new();

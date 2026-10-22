@@ -15,10 +15,11 @@ impl Checker<'_> {
         left: TypeId,
         right: TypeId,
     ) -> Result<(), Error> {
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|count| count.checked_add(1))
-            .ok_or_else(|| self.error(node, "associated equality region space exhausted"))?;
+        let first = self
+            .facts
+            .body_regions
+            .frontier(self.state.body)
+            .map_err(|_| self.error(node, "associated equality region space exhausted"))?;
         let mut proof = Obligations::new(first);
         let left = self.normalize_body_type(node, &mut proof, ScopeId::ROOT, left)?;
         let right = self.normalize_body_type(node, &mut proof, ScopeId::ROOT, right)?;

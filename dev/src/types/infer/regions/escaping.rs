@@ -1,6 +1,7 @@
 //! Read-only binder demand over a partial graph, without creating type identities.
-use super::super::{Constructor, Context, Error, RegionId, Store, TermId, Value, arguments::Slot};
-use crate::support::hash::HashSet;
+use super::super::{
+    Constructor, Context, Error, RegionId, Store, TermId, Value, arguments::Slot, memo::Memo,
+};
 use crate::types::arguments::Argument;
 
 impl Context {
@@ -11,12 +12,13 @@ impl Context {
         store: &Store,
         root: TermId,
     ) -> Result<bool, Error> {
-        let mut work = vec![(root, 0_u16)];
-        let mut seen = HashSet::default();
+        let mut work = Vec::with_capacity(8);
+        work.push((root, 0_u16));
+        let mut seen = Memo::default();
         while let Some((id, depth)) = work.pop() {
             self.step()?;
             let id = self.root(id)?;
-            if !seen.insert((id, depth)) {
+            if seen.insert((id, depth), ()).is_some() {
                 continue;
             }
             let term = self.terms[id.0 as usize];
