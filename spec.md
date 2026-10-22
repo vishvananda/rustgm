@@ -3107,6 +3107,22 @@ recreate a region-by-word matrix just to print the view.
 Destruction consumes initialization/move facts to elaborate conditional drops.
 Async transformation accounts for borrows, pinning and cancellation cleanup.
 
+## Crate calling-convention transport
+
+Crate metadata retains a fixed callable's ABI independently of its safety,
+linkage and lifetime slots. Import into the existing typed callable convention;
+never reconstruct this identity from a symbol spelling. Select the foreign
+profile only when at least one exported callable has C ABI, and preserve the
+exact wire bytes of older Rust-only profiles. The foreign profile explicitly
+selects signature-local or shared nominal graph ownership. Validate the selected
+graph once and reuse indexed type remapping; an ABI bit never duplicates the
+graph or grants permission to call a const or generic body.
+
+Unknown conventions, variadic bits, noncanonical ownership tags and a redundant
+all-Rust foreign profile fail at decoding. Existing body, lifetime, ownership and
+layout checks still precede artifact publication. A calling-convention extension
+does not imply support for a new exported type, static or body contract.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

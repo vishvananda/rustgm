@@ -131,7 +131,6 @@ fn unsupported_public_contracts_are_diagnosed_and_unused_bodies_still_checked()
     for text in [
         "pub fn id<T:Copy>(n:T)->T{n}",
         "pub const fn f(n:u32)->u32{n}",
-        "pub extern \"C\" fn f(n:u32)->u32{n}",
         "#[target_feature(enable=\"sse2\")]pub unsafe fn f(n:u32)->u32{n}",
         "pub fn f<'a:'b,'b>(n:&'a u32)->&'b u32{n}",
         "pub struct S;",
@@ -147,6 +146,15 @@ fn unsupported_public_contracts_are_diagnosed_and_unused_bodies_still_checked()
         );
         assert!(result.is_err(), "dropped public contract: {text}");
     }
+    let foreign = "pub extern \"C\" fn f(n:u32)->u32{n}";
+    crate::qualify::qualify(
+        "parallel/pa30/foreign-metadata/former-boundary",
+        foreign,
+        true,
+    )?;
+    let (_, interface) = compile(foreign, "c_abi")?;
+    assert_eq!(interface.functions()[0].signature().abi(), crates::Abi::C);
+    assert_eq!(crates::encode(&interface)?[12], 4);
     assert!(
         compile(
             "fn bad(){let x:u8;let _=x+1;}pub fn f(n:u32)->u32{n}",

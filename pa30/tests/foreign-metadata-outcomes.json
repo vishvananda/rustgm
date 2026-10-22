@@ -1,0 +1,132 @@
+{
+  "status": "independently qualified maintainer checkpoint; planned assignment; no text references",
+  "profile": "Rust 1.98.0 edition2024 Linux x86-64; fixed Rust/C callable ABI transport, existing scalar/reference/closed-record graphs",
+  "cases": [
+    {
+      "path": "tests/spec/foreign-metadata/first.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": false,
+      "source_sha256": "331dcdf5878e5764bda5b19d5d70dd6e42c36b19c8e5251ce6966aa4587924f8"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/second.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": false,
+      "source_sha256": "1e58e7906cd409129f3878442b27b3061b95cf4c9748a7f720936b19a067c27a"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/pass-direct.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "b64ba2ec8f47cc4ec81b503ace5380f4d1099ba7097f98170c1a248554f433ee"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/pass-pointer.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "8b7e5333a6fb3e8052a0f0a6e2e7692e66a47cf90e47d0c483489de669475d1c"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/pass-unsafe.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "853d9c95d5df1540eda89994ad87ff0572929e4d0faa4b54d52f0c0a0ceb380f"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/pass-borrowed.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "52756e01e634474950da24045386df8840c6f485f03ec3877ea487e2cbe58658"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/pass-real.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "c7143b8f4d10561b0630d4f00214bf6d018d411846561cf195a65a155874169f"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/pass-record-reference.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "code": null,
+      "native": true,
+      "source_sha256": "9f54cb44a155f4dca1226f42fd2e78e5b8017930284591377aea5f80c6048d72"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/reject-c-as-rust.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "code": "E0308",
+      "native": false,
+      "source_sha256": "cbfbd237bf854cb9c7ddad1257ea9285a9427f0512ed7af9872adc7dd9357400"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/reject-rust-as-c.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "code": "E0308",
+      "native": false,
+      "source_sha256": "a21d2ce729e243f4179b3c1e475c92b8a28c76177b291a45eb39f277b2eb6e7b"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/reject-unsafe-call.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "code": "E0133",
+      "native": false,
+      "source_sha256": "94ebe4717abe29c08d6e7c0f0d578e41b0158f7eee52d00ae58ab7ad50fc7d18"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/reject-unsafe-pointer.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "code": "E0308",
+      "native": false,
+      "source_sha256": "30a24ba4549f958d925e009890e8f02017e14a08ded277ec6cbccd64c392861a"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/reject-dangling.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "code": "E0515",
+      "native": false,
+      "source_sha256": "31edb69ab789c4c3fd5cd0d93da2d1d2246165ef848a8d4e81ad45fdc8336409"
+    },
+    {
+      "path": "tests/spec/foreign-metadata/reject-exclusive-result.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "code": "E0499",
+      "native": false,
+      "source_sha256": "417b935d577de0d800c19bfb8b9367a1c699118c977dd05c87fd9aa76ae697b5"
+    }
+  ]
+}

@@ -7,6 +7,13 @@ use std::{
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TypeRef(pub u16);
+/// Calling convention is retained independently of function safety and linkage.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Abi {
+    #[default]
+    Rust,
+    C,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Lifetime {
     Static,
@@ -134,6 +141,7 @@ pub struct Signature {
     result: TypeRef,
     bound_regions: u16,
     unsafe_: bool,
+    abi: Abi,
 }
 impl Signature {
     /// Preserve the original closed scalar constructor and its wire encoding.
@@ -227,7 +235,18 @@ impl Signature {
             result,
             bound_regions,
             unsafe_,
+            abi: Abi::Rust,
         })
+    }
+    /// Select a fixed calling convention without changing the validated type graph.
+    #[must_use]
+    pub const fn with_abi(mut self, abi: Abi) -> Self {
+        self.abi = abi;
+        self
+    }
+    #[must_use]
+    pub const fn abi(&self) -> Abi {
+        self.abi
     }
     #[must_use]
     pub const fn types(&self) -> &TypeGraph {

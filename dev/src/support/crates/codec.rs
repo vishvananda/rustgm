@@ -5,8 +5,8 @@ mod scalars;
 mod signatures;
 mod writer;
 use super::{
-    CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, Scalar, Signature, Symbol, TypeGraph,
+    Abi, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES,
+    MAX_DEPENDENCIES, MAX_FUNCTIONS, Scalar, Signature, Symbol, TypeGraph,
 };
 use reader::Reader;
 use writer::Writer;
@@ -20,6 +20,7 @@ const PROFILE_SCALAR_RUST_FUNCTIONS: u8 = 0;
 const PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES: u8 = 1;
 const PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES: u8 = 2;
 const PROFILE_NAMED_RECORDS: u8 = 3;
+const PROFILE_FOREIGN_FUNCTIONS: u8 = 4;
 const PROFILE: [u8; 3] = [
     TARGET_LINUX_X86_64,
     LANGUAGE_RUST_1_98_EDITION_2024,
@@ -35,12 +36,19 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.u16(SCHEMA)?;
     out.bytes(&PROFILE[..2])?;
     let shared = interface.nominals();
+    let foreign = interface
+        .functions()
+        .iter()
+        .any(|function| function.signature().abi() != Abi::Rust);
     let typed = shared.is_none()
-        && interface
-            .functions()
-            .iter()
-            .any(|function| !function.signature().is_scalar());
-    out.u8(if shared.is_some() {
+        && (foreign
+            || interface
+                .functions()
+                .iter()
+                .any(|function| !function.signature().is_scalar()));
+    out.u8(if foreign {
+        PROFILE_FOREIGN_FUNCTIONS
+    } else if shared.is_some() {
         PROFILE_NAMED_RECORDS
     } else if typed {
         PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES
@@ -49,6 +57,9 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     } else {
         PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES
     })?;
+    if foreign {
+        out.u8(u8::from(shared.is_some()))?;
+    }
     out.identity(interface.identity())?;
     out.u32(interface.dependencies().len())?;
     for dependency in interface.dependencies() {
@@ -75,7 +86,7 @@ fn encode_function(
     out.u32(0)?; // Owner ordinal zero is this crate, never a local DefId.
     out.bytes(&[1, 1, 1])?; // Value namespace, Function kind, Export linkage.
     out.u8(u8::from(function.signature().unsafe_()))?;
-    out.bytes(&[0, 0])?; // Rust ABI, nonvariadic. No const-body permission bit.
+    out.bytes(&[u8::from(function.signature().abi() == Abi::C), 0])?; // Nonvariadic; no const-body permission.
     out.path(function.definition().path())?;
     match function.symbol() {
         Symbol::Rust => out.u8(0)?,
@@ -103,9 +114,19 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         return Err("metadata magic or schema mismatch");
     }
     let profile = input.bytes(3)?;
-    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_NAMED_RECORDS {
+    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_FOREIGN_FUNCTIONS {
         return Err("metadata target, language or profile mismatch");
     }
+    let foreign = profile[2] == PROFILE_FOREIGN_FUNCTIONS;
+    let shared = if foreign {
+        match input.u8()? {
+            0 => false,
+            1 => true,
+            _ => return Err("unknown metadata graph ownership"),
+        }
+    } else {
+        profile[2] == PROFILE_NAMED_RECORDS
+    };
     let identity = input.identity()?;
     let count = input.count(MAX_DEPENDENCIES, 10)?;
     let mut dependencies = Vec::with_capacity(count);
@@ -115,14 +136,14 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     if dependencies.windows(2).any(|pair| pair[0] >= pair[1]) {
         return Err("metadata dependencies are not canonical");
     }
-    let nominal = if profile[2] == PROFILE_NAMED_RECORDS {
+    let nominal = if shared {
         Some(nominals::decode(&mut input, &identity, dependencies.len())?)
     } else {
         None
     };
     let count = input.count(MAX_FUNCTIONS, 21)?;
     let mut functions = Vec::with_capacity(count);
-    let typed = profile[2] == PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES;
+    let typed = profile[2] == PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES || (foreign && !shared);
     for _ in 0..count {
         functions.push(decode_function(
             &mut input,
@@ -130,6 +151,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
             dependencies.len(),
             typed,
             nominal.as_ref().map(super::Nominals::types),
+            foreign,
         )?);
     }
     if functions
@@ -138,12 +160,19 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     {
         return Err("metadata definitions are duplicate or noncanonical");
     }
-    if typed
+    if profile[2] == PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES
         && functions
             .iter()
             .all(|function| function.signature().is_scalar())
     {
         return Err("borrowed metadata profile requires a typed signature");
+    }
+    if foreign
+        && functions
+            .iter()
+            .all(|function| function.signature().abi() == Abi::Rust)
+    {
+        return Err("foreign metadata profile requires a foreign calling convention");
     }
     let constants = if profile[2] == PROFILE_SCALAR_RUST_FUNCTIONS {
         Vec::new()
@@ -171,6 +200,7 @@ fn decode_function(
     dependencies: usize,
     typed: bool,
     shared: Option<&TypeGraph>,
+    foreign: bool,
 ) -> Result<Function, &'static str> {
     input.owner(dependencies)?;
     if input.bytes(3)? != [1, 1, 1] {
@@ -183,9 +213,11 @@ fn decode_function(
     if flags > 1 {
         return Err("unknown metadata function flags");
     }
-    if input.bytes(2)? != [0, 0] {
-        return Err("unsupported metadata calling convention");
-    }
+    let abi = match input.bytes(2)? {
+        [0, 0] => Abi::Rust,
+        [1, 0] if foreign => Abi::C,
+        _ => return Err("unsupported metadata calling convention"),
+    };
     let path = input.path()?;
     let symbol = match input.u8()? {
         0 => Symbol::Rust,
@@ -202,7 +234,7 @@ fn decode_function(
     };
     Function::new(
         ExternalDef::new(owner.clone(), path, ExternalKind::Function)?,
-        signature,
+        signature.with_abi(abi),
         symbol,
     )
 }

@@ -54,7 +54,12 @@ coercions; all arguments retain move, borrow and evaluation-order checks.
 `tests/variadic-outcomes.json` and `tests/variadic-tail-outcomes.json` declare
 42 source outcomes and 23 native comparisons. See
 `docs/pa30-variadic-calls.md` for the typed transport, qualification and retained
-boundaries. Static/aggregate crate-metadata transport remains unfinished.
+boundaries. The fixed-callable metadata checkpoint preserves C ABI separately
+from safety, linkage and lifetime slots across separately compiled crates.
+Profile four reuses the existing scalar/reference and closed-record graphs;
+`tests/foreign-metadata-outcomes.json` declares its independent source and native
+controls. See `docs/pa30-foreign-metadata.md`. Static, variadic-declaration and
+aggregate ABI crate-metadata transport remain unfinished.
 The reviewed optional object backend
 profile is selected explicitly; its native tests are always registered and run
 with `--ignored` through the grouped maintainer suites. They fail if the profile

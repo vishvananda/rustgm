@@ -12,7 +12,7 @@ pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, Scalar, Symbol};
 pub use nominals::{Nominals, Record, RecordField, RecordRef};
 pub use scalar_value::{Constant, ScalarValue};
-pub use type_graph::{Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
+pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 
 pub(crate) const MAX_BYTES: usize = 16_000_000;
 pub(crate) const MAX_FUNCTIONS: usize = 100_000;

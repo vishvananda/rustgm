@@ -10,6 +10,7 @@ pub struct Build {
     pub second: PathBuf,
     family: &'static str,
     crate_name: &'static str,
+    stage: u8,
 }
 pub fn checked(
     label: &str,
@@ -40,10 +41,21 @@ pub fn build_borrowed(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
 pub fn build_records(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
     build_sources(tag, "closed-records", "records")
 }
+pub fn build_foreign(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
+    build_sources_in(tag, "foreign-metadata", "foreign", 30)
+}
 fn build_sources(
     tag: &str,
     family: &'static str,
     crate_name: &'static str,
+) -> Result<Build, Box<dyn std::error::Error>> {
+    build_sources_in(tag, family, crate_name, 29)
+}
+fn build_sources_in(
+    tag: &str,
+    family: &'static str,
+    crate_name: &'static str,
+    stage: u8,
 ) -> Result<Build, Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -63,6 +75,7 @@ fn build_sources(
         second,
         family,
         crate_name,
+        stage,
     };
     for name in ["first", "second"] {
         let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
@@ -91,8 +104,14 @@ fn build_sources(
 }
 impl Build {
     pub fn fixture(&self, name: &str) -> PathBuf {
-        self.root
-            .join(format!("pa29/tests/spec/{}/{name}.rs", self.family))
+        self.root.join(format!(
+            "pa{}/tests/spec/{}/{name}.rs",
+            self.stage, self.family
+        ))
+    }
+    fn rust_library(&self, name: &str) -> PathBuf {
+        self.folder
+            .join(format!("lib{}-{name}.rlib", self.crate_name))
     }
     pub fn client(&self, name: &str, reverse: bool) -> Command {
         let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
@@ -119,12 +138,11 @@ impl Build {
                 .arg(format!("metadata={name}"))
                 .arg(self.fixture(name))
                 .arg("-o")
-                .arg(self.folder.join(format!("lib{name}.rlib")));
+                .arg(self.rust_library(name));
             if name == "second" {
-                command.arg("--extern").arg(format!(
-                    "one={}",
-                    self.folder.join("libfirst.rlib").display()
-                ));
+                command
+                    .arg("--extern")
+                    .arg(format!("one={}", self.rust_library("first").display()));
             }
             checked(&format!("{name}.rustc"), &self.folder, &mut command)?;
         }
@@ -136,15 +154,9 @@ impl Build {
             .arg("-L")
             .arg(format!("dependency={}", self.folder.display()))
             .arg("--extern")
-            .arg(format!(
-                "one={}",
-                self.folder.join("libfirst.rlib").display()
-            ))
+            .arg(format!("one={}", self.rust_library("first").display()))
             .arg("--extern")
-            .arg(format!(
-                "two={}",
-                self.folder.join("libsecond.rlib").display()
-            ));
+            .arg(format!("two={}", self.rust_library("second").display()));
     }
     pub fn qualify_client(
         &self,

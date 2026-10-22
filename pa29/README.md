@@ -59,6 +59,13 @@ method and destruction contracts remain explicit profile errors. See
 `docs/pa29-closed-records.md` for the independent source/native qualification
 and remaining assignment work.
 
+Profile four additionally retains fixed C callable conventions using the same
+signature-local or shared nominal type graphs. Safety, late-bound lifetime slots
+and exact linkage stay independent. Rust-only artifacts retain profiles zero
+through three byte-for-byte. This PA30 extension grants no const or generic-body
+permission and adds no static or C aggregate transport. See
+`docs/pa30-foreign-metadata.md`.
+
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error
 contract and example outputs before declaring this assignment active.
