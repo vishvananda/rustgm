@@ -135,12 +135,14 @@ impl Parser<'_, '_> {
                 .span
                 .start,
         );
-        self.node(
+        let owner = self.node(
             start,
             Kind::Attributed {
                 attributes: range,
                 value,
             },
-        )
+        )?;
+        self.ast.pending.owners.push(owner);
+        Ok(owner)
     }
 }

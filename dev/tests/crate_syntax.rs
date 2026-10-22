@@ -219,3 +219,88 @@ fn crate_rendering_is_atomic_for_configuration_failures() {
     );
     assert!(output.is_empty());
 }
+
+/// The configuration contract as a full preorder walk from the root.
+struct Walked {
+    owners: Vec<(NodeId, bool)>,
+    active: Vec<bool>,
+    literals: Vec<NodeId>,
+}
+fn walk_configuration(
+    source: &str,
+    ast: &rustgm::syntax::ast::Ast<'_>,
+    config: &Config,
+) -> Result<Walked, String> {
+    let mut walked = Walked {
+        owners: Vec::new(),
+        active: vec![false; ast.nodes.len()],
+        literals: Vec::new(),
+    };
+    let mut seen = vec![false; ast.nodes.len()];
+    let mut work = vec![ast.root];
+    let mut children = Vec::new();
+    while let Some(node) = work.pop() {
+        let index = node.get() as usize;
+        assert!(!std::mem::replace(&mut seen[index], true), "shared node");
+        if let Kind::Attributed { attributes, .. } = ast.node(node).kind {
+            let mut configured = rustgm::expand::configured::Attributes::default();
+            for capture in &ast.attributes[attributes.start as usize..attributes.end as usize] {
+                configured
+                    .push_owned(&capture.forest, source, capture.attribute, config)
+                    .map_err(|e| format!("{e:?}"))?;
+            }
+            walked.owners.push((node, configured.enabled()));
+            if !configured.enabled() {
+                continue;
+            }
+        }
+        walked.active[index] = true;
+        if matches!(ast.node(node).kind, Kind::DeferredLiteral(_)) {
+            walked.literals.push(node);
+        }
+        children.clear();
+        ast.push_children(node, &mut children);
+        work.extend(children.iter().rev());
+    }
+    Ok(walked)
+}
+
+#[test]
+fn configuration_matches_a_preorder_walk_without_walking_enabled_syntax() -> Result<(), String> {
+    // Function generics are walked before an ABI literal and tuple fields
+    // after a trailing where clause; only literal numbering could differ
+    // there, so these sources keep literals out of those positions.
+    let sources = [
+        "#![allow(unused)] #[inline] fn f(#[cfg(false)] a:u8, #[allow(x)] b:[u8;2]){let x=#[allow(y)] 1+2; match x{#[cfg(true)] 3=>{} _=>{}}}",
+        "#[cfg(false)] mod m{#![cfg(bad())] fn g(){7invalid;}} #[cfg_attr(true,cfg(false))] fn h(){8;} fn k(){9;}",
+        "#[derive(Clone)] struct S<#[cfg(false)] T, const N:usize>{#[cfg(true)] a:[u8;4], #[cfg(false)] b:[u8;5]}",
+        "enum E{#[cfg(false)] A=1, #[allow(x)] B=2} impl E{#[inline] #[cfg(true)] fn f(&self)->u8{#[cfg(false)] {3}; 4}}",
+        "mod a{#![allow(x)] #[cfg(true)] mod b{#![allow(y)] fn c(){let _=(5,#[allow(z)] 6);}}} fn d(){10;}",
+        "fn f(){let c=|#[cfg(false)] x:u8, #[allow(y)] y:u8|y+11; let s=S{#[cfg(true)] a:12, #[cfg(false)] b:13};}",
+    ];
+    let config = Config::default();
+    for source in sources {
+        let ast = parse_crate(source).map_err(|e| format!("{e:?}"))?;
+        let walked = walk_configuration(source, &ast, &config)?;
+        let report = crate_syntax::configure(source, ast, &config).map_err(|e| format!("{e:?}"))?;
+        let owners: Vec<_> = report.owners.iter().map(|o| (o.node, o.enabled)).collect();
+        assert_eq!(owners, walked.owners, "{source}");
+        assert_eq!(report.active, walked.active, "{source}");
+        let first = report.ast.literals.len() - walked.literals.len();
+        for (offset, node) in walked.literals.iter().enumerate() {
+            let expected = u32::try_from(first + offset).map_err(|e| e.to_string())?;
+            assert_eq!(
+                report.ast.node(*node).kind,
+                Kind::Literal(expected),
+                "{source}"
+            );
+        }
+        for (index, node) in report.ast.nodes.iter().enumerate() {
+            if matches!(node.kind, Kind::DeferredLiteral(_)) {
+                assert!(!report.active[index], "{source}");
+            }
+        }
+        assert!(report.ast.pending.owners.is_empty() && report.ast.pending.literals.is_empty());
+    }
+    Ok(())
+}

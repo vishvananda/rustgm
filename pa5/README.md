@@ -109,7 +109,8 @@ active [NODE_IDS]
 Effects use PA3's `keep`, `cfg=true`, `cfg=false`, `cfg_attr=true` and
 `cfg_attr=false`. Effect IDs and parent IDs refer to one global dense effect
 array. `active` lists reachable enabled nodes in ascending ID order. Disabled
-subtrees and unused construction atoms are absent. The syntax log still shows
+subtrees are absent; grammar leaves no unreachable construction atoms, so
+configuration need not walk enabled syntax. The syntax log still shows
 all constructed nodes, including disabled syntax, for deterministic diagnostic
 inspection. It is the active map that gates semantic work.
 

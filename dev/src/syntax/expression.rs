@@ -176,6 +176,12 @@ impl<'source> Parser<'source, '_> {
         });
         Ok(id)
     }
+    /// A literal token whose value configuration interprets only if active.
+    fn deferred_literal(&mut self, token: Token) -> Result<NodeId, LexError> {
+        let id = self.node(token.start, Kind::DeferredLiteral(token))?;
+        self.ast.pending.literals.push(id);
+        Ok(id)
+    }
     /// `list` for exactly one child, without staging it in scratch.
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(
@@ -344,7 +350,7 @@ impl<'source> Parser<'source, '_> {
         if literal_candidate(token.kind, word) {
             if self.extended && literal::is_token(self.cursor.source, token) {
                 self.required()?;
-                return self.node(token.start, Kind::DeferredLiteral(token));
+                return self.deferred_literal(token);
             }
             if let Some(value) = literal::interpret(self.cursor.source, token)? {
                 self.cursor.take()?;

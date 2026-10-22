@@ -366,7 +366,7 @@ impl Parser<'_, '_> {
             if !literal::is_token(self.cursor.source, token) {
                 return Err(error(token.start, "expected literal pattern"));
             }
-            let literal = self.node(token.start, Kind::DeferredLiteral(token))?;
+            let literal = self.deferred_literal(token)?;
             return if negative {
                 self.node(
                     start,

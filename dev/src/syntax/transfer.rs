@@ -55,6 +55,7 @@ impl Extent {
             captures: prefix(&ast.captures, self.captures)?,
             root: self.root,
             lookahead_high_water: self.lookahead_high_water,
+            pending: super::ast::Pending::default(),
         })
     }
 }
@@ -103,7 +104,10 @@ impl Bases {
         })
     }
     fn node(&self, node: &mut NodeId) {
-        *node = NodeId::new(node.get() + self.nodes);
+        *node = self.rebased(*node);
+    }
+    fn rebased(&self, node: NodeId) -> NodeId {
+        NodeId::new(node.get() + self.nodes)
     }
     fn optional(&self, node: &mut Option<NodeId>) {
         if let Some(node) = node {
@@ -158,6 +162,14 @@ pub fn append<L, M>(
         destination.lookahead_high_water = destination
             .lookahead_high_water
             .max(source.lookahead_high_water);
+        // Appended IDs follow every existing one, so both lists stay ascending.
+        let pending = &mut destination.pending;
+        pending
+            .owners
+            .extend(source.pending.owners.iter().map(|n| bases.rebased(*n)));
+        pending
+            .literals
+            .extend(source.pending.literals.iter().map(|n| bases.rebased(*n)));
     }
     result.map(|()| NodeId::new(source.root.get() + bases.nodes))
 }

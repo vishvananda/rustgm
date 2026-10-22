@@ -1,4 +1,4 @@
-//! Attribute owners are visited top-down; disabled subtrees leave the worklist.
+//! Attribute owners are evaluated top-down from parse records; only disabled subtrees are walked.
 use super::{
     config::Config,
     configured::{Attributes, ConfiguredAttribute, Effect},
@@ -42,6 +42,12 @@ pub fn analyze<'s>(source: &'s str, config: &Config) -> Result<ConfiguredCrate<'
 
 /// Configure a newly parsed source or expansion without parsing its spelling again.
 ///
+/// Parsed syntax has no unreachable nodes and every child precedes its parent,
+/// so a subtree is the contiguous ID range ending at its root. Owners are
+/// evaluated in preorder, merged with deferred literals by that range; only the
+/// subtrees of disabled owners are walked. Arenas built without the parser
+/// record no owners or deferred literals.
+///
 /// # Errors
 /// Rejects demanded attribute predicates and literal values in enabled syntax.
 pub fn configure<'s>(
@@ -49,58 +55,58 @@ pub fn configure<'s>(
     mut ast: crate::syntax::ast::Ast<'s>,
     config: &Config,
 ) -> Result<ConfiguredCrate<'s>, LexError> {
-    let mut active = vec![false; ast.nodes.len()];
-    let mut work = Vec::with_capacity(64);
-    work.push(ast.root);
-    let mut owners = Vec::new();
+    let pending = std::mem::take(&mut ast.pending);
+    let mut active = vec![true; ast.nodes.len()];
+    let mut scratch = Vec::new();
+    let mut order = Vec::with_capacity(pending.owners.len());
+    for &owner in &pending.owners {
+        order.push((subtree_start(&ast, owner, &mut scratch), owner));
+    }
+    // An ancestor's range starts no later than a descendant's and ends after it.
+    order.sort_unstable_by_key(|&(start, owner)| (start, std::cmp::Reverse(owner.get())));
+    // Usually every deferred literal is enabled: size its value arena once.
+    ast.literals.reserve(pending.literals.len());
+    let mut literals = pending.literals.iter().copied().peekable();
+    let mut owners = Vec::with_capacity(order.len());
     let mut attributes = Attributes::default();
     let mut effects = Vec::new();
-    while let Some(node) = work.pop() {
-        let index = node.get() as usize;
-        if active[index] {
+    for (start, node) in order {
+        // A literal before the owner's range precedes the owner in preorder.
+        while let Some(literal) = literals.next_if(|literal| literal.get() < start) {
+            interpret(source, &mut ast, &active, literal)?;
+        }
+        if !active[node.get() as usize] {
             continue;
         }
-        if let Kind::Attributed {
+        let Kind::Attributed {
             attributes: range, ..
-        } = ast.nodes[index].kind
-        {
-            let first = effects.len();
-            configure_owner(&ast, range, source, config, &mut attributes, &mut effects)?;
-            let enabled = attributes.enabled();
-            attributes.clear();
-            owners.push(Owner {
-                node,
-                enabled,
-                attributes: first..effects.len(),
-            });
-            if !enabled {
-                continue;
+        } = ast.nodes[node.get() as usize].kind
+        else {
+            return Err(crate::syntax::token_tree::error(
+                ast.nodes[node.get() as usize].span.start,
+                "attribute owner is not attributed syntax",
+            ));
+        };
+        let first = effects.len();
+        configure_owner(&ast, range, source, config, &mut attributes, &mut effects)?;
+        let enabled = attributes.enabled();
+        attributes.clear();
+        owners.push(Owner {
+            node,
+            enabled,
+            attributes: first..effects.len(),
+        });
+        if !enabled {
+            scratch.clear();
+            scratch.push(node);
+            while let Some(disabled) = scratch.pop() {
+                active[disabled.get() as usize] = false;
+                ast.push_children(disabled, &mut scratch);
             }
         }
-        active[index] = true;
-        match ast.nodes[index].kind {
-            Kind::DeferredLiteral(token) => {
-                let value = crate::literal::interpret(source, token)?.ok_or(
-                    crate::syntax::token_tree::error(token.start, "expected literal token"),
-                )?;
-                let literal = u32::try_from(ast.literals.len()).map_err(|_| {
-                    crate::syntax::token_tree::error(token.start, "too many literals")
-                })?;
-                ast.literals.push(value);
-                ast.nodes[index].kind = Kind::Literal(literal);
-            }
-            // The most frequent leaves have no children to visit.
-            Kind::Name(_) | Kind::Literal(_) | Kind::CrateRoot(_) => {}
-            _ => {
-                let mark = work.len();
-                ast.push_children(node, &mut work);
-                match work.len() - mark {
-                    0 | 1 => {}
-                    2 => work.swap(mark, mark + 1),
-                    _ => work[mark..].reverse(),
-                }
-            }
-        }
+    }
+    for literal in literals {
+        interpret(source, &mut ast, &active, literal)?;
     }
     Ok(ConfiguredCrate {
         ast,
@@ -108,6 +114,45 @@ pub fn configure<'s>(
         active,
         effects,
     })
+}
+
+/// The first node created in `node`'s subtree: its smallest child's, recursively.
+fn subtree_start<L>(ast: &Syntax<L>, mut node: NodeId, scratch: &mut Vec<NodeId>) -> u32 {
+    loop {
+        scratch.clear();
+        ast.push_children(node, scratch);
+        match scratch.iter().copied().min_by_key(|child| child.get()) {
+            Some(child) => node = child,
+            None => return node.get(),
+        }
+    }
+}
+
+/// Decode an enabled deferred literal into the next literal identity.
+fn interpret<'s>(
+    source: &'s str,
+    ast: &mut crate::syntax::ast::Ast<'s>,
+    active: &[bool],
+    node: NodeId,
+) -> Result<(), LexError> {
+    let index = node.get() as usize;
+    if !active[index] {
+        return Ok(());
+    }
+    let Kind::DeferredLiteral(token) = ast.nodes[index].kind else {
+        return Err(crate::syntax::token_tree::error(
+            ast.nodes[index].span.start,
+            "deferred literal is not literal syntax",
+        ));
+    };
+    let value = crate::literal::interpret(source, token)?.ok_or(
+        crate::syntax::token_tree::error(token.start, "expected literal token"),
+    )?;
+    let literal = u32::try_from(ast.literals.len())
+        .map_err(|_| crate::syntax::token_tree::error(token.start, "too many literals"))?;
+    ast.literals.push(value);
+    ast.nodes[index].kind = Kind::Literal(literal);
+    Ok(())
 }
 
 /// Evaluate one owner's attributes, appending their effects with parent

@@ -356,6 +356,17 @@ pub struct Node {
     pub kind: Kind,
 }
 
+/// Configuration inputs of an unconfigured arena, each in ascending node ID
+/// (creation) order. The parser and fragment transfer append them as nodes
+/// are created; configuration consumes them instead of walking the tree.
+#[derive(Debug, Default)]
+pub struct Pending {
+    /// Every `Attributed` attribute owner.
+    pub owners: Vec<NodeId>,
+    /// Every `DeferredLiteral` token node.
+    pub literals: Vec<NodeId>,
+}
+
 #[derive(Debug)]
 pub struct Syntax<L> {
     pub nodes: Vec<Node>,
@@ -370,6 +381,7 @@ pub struct Syntax<L> {
     pub captures: Vec<Forest>,
     pub root: NodeId,
     pub lookahead_high_water: usize,
+    pub pending: Pending,
 }
 
 pub type Ast<'source> = Syntax<Value<'source>>;
@@ -389,6 +401,7 @@ impl<L> Default for Syntax<L> {
             captures: Vec::new(),
             root: NodeId::new(0),
             lookahead_high_water: 0,
+            pending: Pending::default(),
         }
     }
 }
@@ -455,6 +468,7 @@ impl<L> Syntax<L> {
             captures: self.captures,
             root: self.root,
             lookahead_high_water: self.lookahead_high_water,
+            pending: self.pending,
             literals: self
                 .literals
                 .into_iter()
