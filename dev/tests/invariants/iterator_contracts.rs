@@ -257,8 +257,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // The integrated 8544-byte base retains pointer methods; Clone adds one lazy pointer.
-    assert_eq!(size_of::<Declarations>(), 8552);
+    // Nullable policies and layout caches add two cold pointers to the 8552-byte base.
+    assert_eq!(size_of::<Declarations>(), 8568);
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.
     assert_eq!(size_of::<crate::sema::iteration::Registry>(), 312);

@@ -221,8 +221,8 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
         size_of::<types::infer::Context>(),
         size_of::<types::Store>()
     );
-    // Integrated source-context and library catalogs precede this Clone checkpoint.
-    assert_eq!(size_of::<Declarations>(), 8552);
+    // Nullable policies and layout caches add two cold pointers to the 8552-byte base.
+    assert_eq!(size_of::<Declarations>(), 8568);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2152);
     assert_eq!(size_of::<Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 448);

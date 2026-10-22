@@ -67,7 +67,7 @@ fn projected_inline_results_retain_their_required_execution_frontiers() -> TestR
         (
             1,
             [0, 1, 1],
-            "required lifetime does not outlive its target",
+            "source initializer declared lifetime premise is not paid by caller inputs",
         ),
     )?;
     Ok(())

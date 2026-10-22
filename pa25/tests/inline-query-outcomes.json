@@ -210,8 +210,8 @@
         "--emit-lowir": 1
       },
       "native": false,
-      "status": "rejects the actual unpaid caller lifetime relation after open-type specialization; original source and status retained",
-      "diagnostic": "required lifetime does not outlive its target"
+      "status": "rejects the actual unpaid caller lifetime premise before declared-premise specialization; original source and status retained",
+      "diagnostic": "source initializer declared lifetime premise is not paid by caller inputs"
     },
     {
       "name": "siblings",
