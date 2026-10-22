@@ -1,10 +1,6 @@
 //! Canonical insertion bounds preorder queries without forbidding later empty joins.
 use super::*;
-use crate::{
-    resolve::unit::FileId,
-    sema::model::BodyRegionOrigin,
-    syntax::ast::NodeId,
-};
+use crate::{resolve::unit::FileId, sema::model::BodyRegionOrigin, syntax::ast::NodeId};
 use std::cell::Cell;
 
 thread_local! {
@@ -102,11 +98,20 @@ fn nonempty_units_cannot_merge_or_change_original_owner() -> Result<(), &'static
         regions.nest(key(1), key(0)),
         Err("nested body already numbered its own regions")
     );
-    assert_eq!(regions.get(key(0), left).map(|fact| fact.body), Some(key(0)));
-    assert_eq!(regions.get(key(1), right).map(|fact| fact.body), Some(key(1)));
+    assert_eq!(
+        regions.get(key(0), left).map(|fact| fact.body),
+        Some(key(0))
+    );
+    assert_eq!(
+        regions.get(key(1), right).map(|fact| fact.body),
+        Some(key(1))
+    );
     assert!(regions.get(key(2), left).is_none());
     regions.nest(key(2), key(1))?;
-    assert_eq!(regions.get(key(2), right).map(|fact| fact.body), Some(key(1)));
+    assert_eq!(
+        regions.get(key(2), right).map(|fact| fact.body),
+        Some(key(1))
+    );
     assert_eq!(regions.unit_of(key(0)), key(0));
     assert_eq!(regions.unit_of(key(1)), key(1));
     Ok(())
@@ -120,11 +125,20 @@ fn activated_empty_root_joins_the_existing_parent_cache() -> Result<(), &'static
     assert_eq!(regions.frontier(key(1))?, 1);
     regions.nest(key(1), key(0))?;
     assert_eq!(regions.frontier(key(1))?, original.0 + 1);
-    assert_eq!(regions.get(key(1), original).map(|fact| fact.body), Some(key(0)));
+    assert_eq!(
+        regions.get(key(1), original).map(|fact| fact.body),
+        Some(key(0))
+    );
     let joined = regions.allocate(annotation(key(1)))?;
     assert_eq!(joined.0, original.0 + 1);
-    assert_eq!(regions.get(key(1), joined).map(|fact| fact.body), Some(key(1)));
-    assert_eq!(regions.get(key(0), original).map(|fact| fact.body), Some(key(0)));
+    assert_eq!(
+        regions.get(key(1), joined).map(|fact| fact.body),
+        Some(key(1))
+    );
+    assert_eq!(
+        regions.get(key(0), original).map(|fact| fact.body),
+        Some(key(0))
+    );
     assert_eq!(
         regions.nest(key(0), key(2)),
         Err("nested body already numbered its own regions")

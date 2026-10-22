@@ -225,10 +225,7 @@ pub(crate) struct Catalog {
     pub anonymous: Option<Box<AnonymousIndex>>,
     pub associated: Option<Box<AssociatedIndex>>,
     pub sources: Option<Box<SourceIndex>>,
-    #[expect(
-        clippy::box_collection,
-        reason = "pure layout data allocates only on reached source intrinsic calls"
-    )]
+    // Pure layout data allocates only on reached source intrinsic calls.
     layout_results: Option<Box<HashMap<Instance, u64>>>,
 }
 impl Catalog {

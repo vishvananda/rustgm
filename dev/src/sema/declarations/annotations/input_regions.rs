@@ -10,10 +10,7 @@ struct Input {
 
 #[derive(Default)]
 pub(in crate::sema::declarations) struct Inputs {
-    #[expect(
-        clippy::box_collection,
-        reason = "closure annotation ownership is allocated only on first demand"
-    )]
+    // Closure annotation ownership is allocated only on first demand.
     entries: Option<Box<HashMap<NodeKey, Input>>>,
 }
 
