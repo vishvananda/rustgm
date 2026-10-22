@@ -56,8 +56,8 @@ default lints enabled; no synthetic main was added.
 Evidence is in `obj/parallel/pa24/release-inventory-v1/` and
 `obj/parallel/pa24/release-oracles-v1/`. The latter contains generated candidate
 sidecars and their compiler/fixture/case-contract provenance, followed by a second
-467-case byte comparison. Those oracles are staged for review, not installed in
-the course. Successful LowIR cases have empty diagnostics; the 144 rejections
+467-case byte comparison. At that checkpoint the oracles were staged for review;
+the final installation is recorded below. Successful LowIR cases have empty diagnostics; the 144 rejections
 have empty output and exit 1.
 
 Review found one invalid semantic inference in this otherwise passing inventory:
@@ -75,7 +75,7 @@ found exactly one changed sidecar, this case's diagnostic: the metadata-profile
 error at byte zero becomes `required lifetime does not outlive its target` at
 byte 47. Source bytes, declared outcomes and the other sidecars are unchanged.
 Generation and a subsequent byte comparison both passed. These reviewed
-sidecars remain staged; they have not activated PA24.
+sidecars were retained for the final installation recorded below.
 
 The correction's default-feature binary SHA-256 is
 `ece395550188b349a3d9dae9b98b03616d7b362334c5179d8bbd7d6c5872e80a`.
@@ -145,9 +145,16 @@ of the performance review.
 The reviewed v2 handout, manifest, 1,401 generated sidecars and provenance are
 installed together with assignment status and root text/source/native selection.
 The release-install receipt binds every payload file to its reviewed staged hash.
-Post-install layout, harness and owning-target validation must complete before
-the public main fast-forward. A planned assignment must not report an empty-suite
-pass.
+Post-install validation at `75944f83` passed all 81 harness tests, the 38-stage
+layout check, all 467 PA24 text comparisons and the owning native target's
+467 source outcomes, 311 executable comparisons, two code-generation controls
+and ten object controls. The compiler remains byte-identical to the qualified
+candidate above. Resource receipt `8e618879fedd45df874e3e6cc780beb3` finished with
+status zero; `obj/parallel/pa24-release-installed-v1/checks.json` records the
+command and log SHA-256
+`1c34830e64235be234910e9acbf7d67a646879b006865f84791c71fa6f21588e`.
+These checks qualify the PA24 release for the public main fast-forward.
+Planned assignments after PA24 continue to reject empty-suite success.
 
 PA25–PA30 keep their full independent responsibilities and queued work. This
 review supplies no evidence that those later stages are complete.
