@@ -7,21 +7,32 @@ impl Obligations {
     /// Restore only components anchored in the caller, preserving every equation
     /// in this proof. `require` must still discharge them before publication.
     pub(crate) fn restoration(&self) -> Result<Bound, &'static str> {
-        self.restore(false)
+        self.restore::<false>(false, &mut 0)
+    }
+
+    pub(crate) fn restoration_counted(&self, work: &mut usize) -> Result<Bound, &'static str> {
+        self.restore::<true>(false, work)
     }
 
     /// Partial inference can determine a previously unknown input with a fresh
     /// lifetime. Keep it only when the body retains this selection's whole proof.
     pub(crate) fn body_restoration(&self) -> Result<Bound, &'static str> {
-        self.restore(true)
+        self.restore::<false>(true, &mut 0)
     }
 
-    fn restore(&self, retain_private: bool) -> Result<Bound, &'static str> {
+    fn restore<const COUNTED: bool>(
+        &self,
+        retain_private: bool,
+        work: &mut usize,
+    ) -> Result<Bound, &'static str> {
         if self.equalities.len() > 1_000_000 {
             return Err("lifetime restoration work budget exceeded");
         }
         let mut edges: HashMap<RegionId, Vec<RegionId>> = HashMap::new();
         for &(left, right) in &self.equalities {
+            if COUNTED {
+                *work += 1;
+            }
             edges.entry(left).or_default().push(right);
             edges.entry(right).or_default().push(left);
         }
@@ -30,6 +41,9 @@ impl Obligations {
         let mut pending = Vec::new();
         let mut replacements = HashMap::new();
         for &start in edges.keys() {
+            if COUNTED {
+                *work += 1;
+            }
             if !seen.insert(start) {
                 continue;
             }
@@ -37,6 +51,9 @@ impl Obligations {
             pending.push(start);
             let mut anchor: Option<RegionId> = None;
             while let Some(region) = pending.pop() {
+                if COUNTED {
+                    *work += 1;
+                }
                 component.push(region);
                 if !self.owns_region(region) {
                     if region.bound_parts().is_none() && region.0 >= self.regions.start {
@@ -47,6 +64,9 @@ impl Obligations {
                     }
                 }
                 for &next in edges.get(&region).into_iter().flatten() {
+                    if COUNTED {
+                        *work += 1;
+                    }
                     if seen.insert(next) {
                         pending.push(next);
                     }
@@ -54,6 +74,9 @@ impl Obligations {
             }
             if let Some(anchor) = anchor {
                 for &region in &component {
+                    if COUNTED {
+                        *work += 1;
+                    }
                     replacements.insert(region, anchor);
                 }
             }

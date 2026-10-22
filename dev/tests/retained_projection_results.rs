@@ -468,6 +468,11 @@ fn symbolic_results_execute_with_later_input_proofs() -> Result<(), Box<dyn std:
                 "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}type F<T>=for<'a>fn(<W<T>as A<'a>>::Out,T);fn g(x:&u8,y:u16){check(*x==7);check(y==9);}fn main(){let f:F<_>=g;f(&7,9);}",
                 false,
             ),
+            (
+                "associated-constant-public-binder",
+                "fn identity(x:&u8)->&u8{x}trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a>for Tag{type Out=for<'b>fn(&'b u8)->&'b u8;const V:Self::Out=identity;}fn get<'a,T:Pick<'a>>()->T::Out{let n=T::V;n}fn main(){let f=get::<Tag>();let x=7u8;check(*f(&x)==7);}",
+                false,
+            ),
         ],
     )
 }

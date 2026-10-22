@@ -1,4 +1,5 @@
 //! Canonical projections retain opened lifetimes and selection across header dependencies.
+mod application_anchors;
 mod opening;
 use super::{
     Assumptions, Availability, Declarations, Environment, Instantiation, Obligations, Predicate,
@@ -22,6 +23,7 @@ pub(in crate::sema) enum Progress {
 pub(in crate::sema) struct Query {
     state: State,
     alias: Alias,
+    requested_arguments: crate::types::GenericArgs,
     requirement: Predicate,
     goal: Goal,
     assumptions: Option<Arc<Assumptions>>,
@@ -105,6 +107,7 @@ pub(in crate::sema) fn begin_reusing(
     Query {
         state,
         alias: request.alias.with_arguments(arguments),
+        requested_arguments: request.alias.arguments(),
         requirement,
         goal,
         assumptions: None,
@@ -370,6 +373,15 @@ impl Query {
         let proof = self.state.finish();
         if let Some(Resolution::Type(ty)) = &mut resolution {
             *ty = proof.restoration()?.apply(&mut facts.types, *ty)?;
+        } else if resolution == Some(Resolution::Opaque)
+            && let Some(ty) = application_anchors::restore(
+                &mut facts.types,
+                &proof,
+                self.alias.with_arguments(self.requested_arguments),
+                &mut facts.body_work.canonical_steps,
+            )?
+        {
+            resolution = Some(Resolution::Type(ty));
         }
         Ok(Progress::Ready(Projected {
             provisional_size,
