@@ -121,3 +121,113 @@ fn common_request_layout_and_closed_argument_rules_are_unchanged() {
     assert_eq!(size_of::<crate::const_eval::code::Catalog>(), 192);
     assert_eq!(size_of::<crate::const_eval::code::Code>(), 328);
 }
+
+#[test]
+fn closed_result_gate_does_not_admit_caller_regions_or_new_pointer_families()
+-> Result<(), &'static str> {
+    let mut types = crate::types::Store::default();
+    let byte = TypeId::primitive(crate::types::Primitive::U8);
+    for (region, mutable, accepted) in [
+        (RegionId::STATIC, false, true),
+        (RegionId::STATIC, true, false),
+        (RegionId(1), false, false),
+        (RegionId::bound(0, 0)?, false, false),
+    ] {
+        let ty = types.intern(Kind::Reference {
+            mutable,
+            region,
+            referent: byte,
+        })?;
+        assert_eq!(closed_result(&types, ty), accepted);
+        if !mutable {
+            let fields = types.intern_list(&[ty, byte])?;
+            let tuple = types.intern(Kind::Tuple(fields))?;
+            assert_eq!(closed_result(&types, tuple), accepted);
+        }
+    }
+    let pointer = types.intern(Kind::Pointer {
+        mutable: false,
+        pointee: byte,
+    })?;
+    assert!(!closed_result(&types, pointer));
+    Ok(())
+}
+
+struct Observed {
+    inner: Box<dyn Executor>,
+    counts: Rc<Cell<[usize; 2]>>,
+}
+impl Executor for Observed {
+    fn check(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut crate::sema::model::Declarations,
+        target: Target,
+    ) -> Result<(), crate::resolve::package::Error> {
+        self.inner.check(report, facts, target)
+    }
+    fn advance(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut crate::sema::model::Declarations,
+        request: &Request,
+    ) -> Result<Progress, crate::resolve::package::Error> {
+        let result = self.inner.advance(report, facts, request);
+        if matches!(request.target, Target::SourceAssociated { .. }) {
+            let mut counts = self.counts.get();
+            counts[0] += 1;
+            counts[1] += usize::from(matches!(result, Ok(Progress::Prepare(_))));
+            self.counts.set(counts);
+        }
+        result
+    }
+}
+
+#[test]
+fn wide_source_requests_revalidate_after_external_pattern_preparation()
+-> Result<(), Box<dyn std::error::Error>> {
+    use std::fmt::Write;
+    for width in [8, 32, 128] {
+        for calls in [8, 32] {
+            let params = (0..width)
+                .map(|n| format!("'a{n}"))
+                .collect::<Vec<_>>()
+                .join(",");
+            let args = vec!["'a"; width].join(",");
+            let fields = (0..width)
+                .map(|n| format!("&'a{n} u8"))
+                .collect::<Vec<_>>()
+                .join(",");
+            let mut text = format!(
+                "const M:u8=7;struct S<{params}>({fields});impl<{params}>S<{params}>{{const C:u8={{let n=q0();n}};}}\nfn f<'a>(_:&'a u8,x:u8)->bool{{match x{{S::<{args}>::C=>true,_=>false}}}}\n"
+            );
+            for n in 0..calls {
+                let result = if n + 1 < calls {
+                    format!("q{}()", n + 1)
+                } else {
+                    "7".into()
+                };
+                writeln!(text, "const fn q{n}()->u8{{match 7u8{{M=>{result},_=>0}}}}")?;
+            }
+            writeln!(text, "fn main(){{let n=7;let _=f(&n,7);}}")?;
+            let report = crate::test_source::resolve(&text, true)?;
+            let context = crate::pipeline::execution::Context::default();
+            let counts = Rc::new(Cell::new([0; 2]));
+            let facts = crate::sema::declarations::analyze_with_executor(
+                &report,
+                Box::new(Observed {
+                    inner: context.executor(),
+                    counts: Rc::clone(&counts),
+                }),
+            )?;
+            let analysis = crate::pipeline::analyze(&report, facts)?;
+            assert_eq!(counts.get(), [calls + 1, calls]);
+            eprintln!(
+                "source width={width} calls={calls} advance/prepare={:?} machine_resumes={}",
+                counts.get(),
+                analysis.facts.constant_work.resumes
+            );
+        }
+    }
+    Ok(())
+}

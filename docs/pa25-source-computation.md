@@ -1,7 +1,8 @@
 # Open-lifetime initializer source computation
 
-This checkpoint computes a selected associated initializer's primitive source
-value when its lifetime arguments remain open in the original caller. It is a
+The initial checkpoint computes a selected associated initializer's primitive
+source value when its lifetime arguments remain open in the original caller.
+The closed-result extension below admits additional already canonical results. It is a
 bounded PA25 step, not completion of the assignment or of all associated-value
 contexts. Ordinary materialized `Target::Associated` still requires concrete
 arguments and a uniquely validated canonical result.
@@ -91,10 +92,68 @@ neutrality. The next combined immutable performance study must cover those
 ordinary controls and changed-path demands. Prior unexplained scalar RSS evidence
 remains unresolved.
 
-Required remaining work includes nonprimitive/reference or projected results,
+Required remaining work includes open-reference or projected results,
 open type/const argument contexts, and source computation outside the prepared
 pattern-caller path, including nested non-pattern contexts. Those need exact
 existing caller proof integration and result normalization debts; no static
 substitution or source selection alone can authorize them. PA25 allocation,
 validity and sequence-view work owned in the other lanes remains separate. This
 checkpoint does not activate PA25 or broaden PA29 metadata.
+
+## Closed results
+
+The next bounded family accepts already canonical tuples, fixed arrays and
+nominals, plus shared references whose declared result region is static. The
+original initializer's exact result TypeId must still equal the request. Cached
+Store properties must show no parameters, projections or outer region context;
+this check performs no result substitution or speculative normalization. A
+caller-bound reference, including one inside a tuple, remains outside this
+family. Standalone mutable references and raw pointers are not added.
+
+Nothing changes the source witness, original/template/instance proof, structural
+pattern equality, final escape checks, caller obligations or untyped completed
+payload. Full witness validation still occurs before cache reuse and on external
+resumption. No sealed reuse cache is introduced. The helper adds no retained
+field, map or allocation.
+
+Declared fixtures under `lifetime-initializer-results` cover tuples, arrays,
+derived records/enums, promoted/static shared references and a tuple containing
+a static reference. Seven positives and two negatives are independently compiled
+to full Rust objects before changing the result gate. The dangling result fails
+its lifetime check, and the nonstructural record fails the existing PartialEq
+pattern requirement. All seven positive values have paired native checks. The
+original paid/unpaid caller, foreign witness and cache/publication tests remain
+part of the focused qualification.
+
+Performance inputs under
+`obj/parallel/pa25-source-computation/performance/inputs` retain distinct open
+caller counts 16/64/256 and a wide-argument/forward-callee matrix. The qualified
+manifest records every input and output hash. Common ordinary512/constcall64
+inputs remain unchanged under `pa25-inline-const/performance`; root owns the
+combined immutable measurements. The original wide forward-callee family has one source advance and no external
+suspension, with 8/32 internal machine preparations. A separate pending-pattern
+family retains widths 8/32/128 and 8/32 callee scopes: every width records exactly
+9/33 source advances and 8/32 external preparations. A private invariant delegates
+to the actual checked provider and verifies those counts. All witness checks stay
+in place. These are preparation counts, not timing or RSS claims.
+
+The closed-result functional batches pass all 11 selected-initializer integration
+functions, including four native groups with 24 paired programs (seven new).
+Four private functions cover witness rejection/layout, the closed-result gate and
+the external resumption matrix. The closing batch reruns the two new source/native
+functions after the lint-only nested-pattern correction. Strict release
+all-target/all-feature Clippy, file/architecture audit (1,526 files, no findings),
+layout/upstream and all 8,255 active text comparisons pass. Every new scaling
+input also passes pinned full-object Rust, constants and LowIR. Failed author
+syntax, expected-diagnostic and lint observations remain retained separately.
+
+Closing evidence is `obj/parallel/pa25-closed-results/final-second/`; the merged
+15-input qualified manifest has SHA-256
+`dc177517a9bc79ffb77ab27e33522cb07caa7662373789bfe9b5bf9f64f89092`.
+The immutable default-feature debug candidate is `pins/rustgm`, SHA-256
+`c19e4bac987cba4be6f54a88fb71d8a50c619421cd5524d4a8888da50fce0c08`.
+The 890-file production source map is
+`81e33b28c8b44cb574e1101c3c0e86d17e56fec49e335c6b8f5f7043d1b26a87`.
+Receipt `4058ce5c61e542a78afcdf3e41874bd5` ended zero with 20,827,602,944
+retained bytes within the unchanged worker budget. Common-control output hashes
+remain equal; no performance neutrality or RSS improvement is claimed.

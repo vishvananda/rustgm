@@ -66,9 +66,9 @@ impl SourceComputation {
             || !matches!(initializer.kind, InitializerKind::Const)
             || initializer.semantic_source() != original
             || initializer.ty != result
-            || !matches!(facts.types.kind(result), Some(Kind::Primitive(_)))
+            || !closed_result(&facts.types, result)
         {
-            return Err("source computation requires its original closed primitive initializer");
+            return Err("source computation requires its original closed value initializer");
         }
         // Validate exact parameter arity/kinds without resolving or interning a result.
         selected.selected_arguments(facts)?;
@@ -94,6 +94,24 @@ impl SourceComputation {
         }
         Ok(())
     }
+}
+fn closed_result(types: &crate::types::Store, result: TypeId) -> bool {
+    matches!(
+        types.kind(result),
+        Some(
+            Kind::Primitive(_)
+                | Kind::Tuple(_)
+                | Kind::Array { .. }
+                | Kind::Adt(_, _)
+                | Kind::Reference {
+                    mutable: false,
+                    region: RegionId::STATIC,
+                    ..
+                }
+        )
+    ) && types.contains_parameters(result) == Some(false)
+        && types.contains_projections(result) == Some(false)
+        && types.needs_region_context(result) == Some(false)
 }
 impl Queries<'_> {
     pub(super) fn source_computation(

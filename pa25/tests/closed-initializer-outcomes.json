@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "tuple",
+      "path": "tests/spec/lifetime-initializer-results/tuple.rs",
+      "source_sha256": "93783d7f22eb96ac0ea9d78c7f90609e5509f9d7afb641de93a7457eb66ae133",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "array",
+      "path": "tests/spec/lifetime-initializer-results/array.rs",
+      "source_sha256": "5b84e586e9574ad80123a7d222fa76d6b7a73900ce9002e338376b1f6195ead0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "record",
+      "path": "tests/spec/lifetime-initializer-results/record.rs",
+      "source_sha256": "f53a6eada9bdb2aace5dc080fe62af9892f03781fdb5a883024f4cd197feff41",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "enum",
+      "path": "tests/spec/lifetime-initializer-results/enum.rs",
+      "source_sha256": "6067eb61de39f76e35efcaa1bae686e7ef868a4f0d7e10ff14166ff1e5d988df",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "promoted-reference",
+      "path": "tests/spec/lifetime-initializer-results/promoted-reference.rs",
+      "source_sha256": "b27585b2f86a66fe6302399ab9efd04287aeca403212e14f05bb9d70bb173c54",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "static-reference",
+      "path": "tests/spec/lifetime-initializer-results/static-reference.rs",
+      "source_sha256": "b072d4edc0a1903f6b621d636327a1be9185a7fda2933124cb4774674afa99ea",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "reference-product",
+      "path": "tests/spec/lifetime-initializer-results/reference-product.rs",
+      "source_sha256": "bc7332bfb69408d86e88fac8dcdd70093102c4e6bcb6a426d55f0c6eb05c4a71",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "dangling-reference",
+      "path": "tests/spec/lifetime-initializer-results/dangling-reference.rs",
+      "source_sha256": "62cdcb870bf001b36a20853f688ccf61361c595ec6af591e7edf16298f080bdb",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native": false,
+      "diagnostic": "lifetime",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "nonstructural-record",
+      "path": "tests/spec/lifetime-initializer-results/nonstructural-record.rs",
+      "source_sha256": "fefcb1db8b3bf7508916d50718dd53b918f06d0096ae54bf906a6fa50708fd5f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native": false,
+      "diagnostic": "PartialEq",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    }
+  ]
+}
