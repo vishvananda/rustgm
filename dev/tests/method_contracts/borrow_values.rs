@@ -1,7 +1,6 @@
 //! Sized expectations constrain value-producing borrow operands before formation.
 use super::{native, rustc, semantic};
 const CHECK: &str = "fn check(b:bool){if !b{let z=0;let _=1/z;}}";
-const REQUIRED_GAP: &str = "borrow-readiness-v18-early-nominal-value";
 const CASES: &[(&str, &str, bool)] = &[
     (
         "borrow-context-v15-known-block-reference",
@@ -251,16 +250,7 @@ fn borrowed_values_preserve_sized_expectations_and_unsized_hints()
                 .map(|_| ())
                 .map_err(|e| e.to_string())
         })();
-        // The unchanged original is Rust-positive but still needs CTFE's
-        // nested-DST unsizing metadata. Keep it required, not passing coverage.
-        if name == REQUIRED_GAP {
-            assert!(
-                result.as_ref().is_err_and(
-                    |error| error.contains("constant slice place lacks length metadata")
-                ),
-                "{result:?}"
-            );
-        } else if result.is_ok() != accepted {
+        if result.is_ok() != accepted {
             failures.push(format!("{name}: {result:?}"));
         }
     }
@@ -275,7 +265,7 @@ fn borrowed_values_execute_without_losing_metadata_or_reborrows()
     // those uninstantiated signatures, rather than claiming runtime invocation.
     let cases = CASES
         .iter()
-        .filter(|case| case.2 && case.0 != REQUIRED_GAP)
+        .filter(|case| case.2)
         .map(|&(name, source, _)| {
             Ok((
                 name,
