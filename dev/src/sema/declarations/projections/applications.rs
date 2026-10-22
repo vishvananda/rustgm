@@ -53,9 +53,10 @@ impl Checker<'_> {
         let scope = self.report.resolution.definitions[owner.0 as usize]
             .members
             .ok_or_else(|| self.error(key, "missing trait member scope"))?;
-        self.report.resolution.scopes[scope.0 as usize]
+        self.report
+            .resolution
             .bindings
-            .get(&(name, Namespace::Type))
+            .get(scope, name, Namespace::Type)
             .map(|b| b.target)
             .filter(|id| {
                 self.facts.associated.trait_owner(*id) == Some(owner)

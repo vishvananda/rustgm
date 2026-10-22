@@ -9,6 +9,7 @@ pub use super::builtins::{
     LanguageOutput as BuiltinLanguageOutput, LibraryNominal, LibraryTypes,
     SliceLength as LibrarySliceLength, Traits as BuiltinTraits,
 };
+pub use super::table::BindingTable;
 use super::{
     names::NameId,
     package::ModuleId,
@@ -156,8 +157,6 @@ pub struct Scope {
     pub trait_access: Option<Access>,
     pub nominal_self: Option<DefId>,
     pub label_barrier: bool,
-    pub bindings: HashMap<(NameId, Namespace), Binding>,
-    pub order: Vec<(NameId, Namespace)>,
 }
 #[derive(Clone, Debug)]
 pub struct Import {
@@ -297,7 +296,11 @@ impl NodeScopes {
         let slots = &mut self.slots[file.0 as usize];
         if owner == file {
             if node.get() as usize >= slots.len() {
-                slots.resize(node.get() as usize + 1, VACANT);
+                // Scopes spread over the whole file: grow geometrically.
+                slots.resize(
+                    (node.get() as usize + 1).next_power_of_two().max(64),
+                    VACANT,
+                );
             }
             let slot = &mut slots[node.get() as usize];
             if slot.module == module {
@@ -361,6 +364,8 @@ pub struct Resolution {
     pub anonymous_types: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,
     pub scopes: Vec<Scope>,
+    /// Every scope's bindings, in one table keyed by scope, name and namespace.
+    pub bindings: BindingTable,
     pub definitions: Vec<Definition>,
     pub references: Vec<Reference>,
     pub associated_paths: HashMap<NodeKey, AssociatedPath>,

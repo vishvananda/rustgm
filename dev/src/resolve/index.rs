@@ -8,7 +8,6 @@ use super::{
     package::{Error, ModuleId, Package},
     unit::{FileId, NodeKey},
 };
-use crate::support::hash::HashMap;
 use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
@@ -128,6 +127,21 @@ impl Context {
         }
     }
 }
+/// Spellings of the language primitive types, in definition order.
+pub(crate) const PRIMITIVES: [&str; 17] = [
+    "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64",
+    "u128", "usize", "f32", "f64",
+];
+/// Declarations the expansion scan leaves to resolution, in scan order: they
+/// keep the identities the second declaration walk used to give them.
+#[derive(Clone, Copy)]
+pub(crate) enum Pending {
+    /// Unnameable `impl Trait` inputs of a function, in its body context.
+    Anonymous(Context, NodeId, Item),
+    Generic(Context, NodeId, u32),
+    /// A restricted visibility no expansion step validated: textual macros.
+    Visibility(Context, NodeId, Visibility),
+}
 #[derive(Default)]
 pub(crate) struct State {
     pub facts: Resolution,
@@ -169,6 +183,8 @@ pub(crate) struct Resolver<'a> {
     pub builtin_names: &'a mut Vec<u8>,
 }
 impl Resolver<'_> {
+    /// Declare scopes and forward-visible items of unexpanded modules. The
+    /// expansion scan does this work itself while it expands a crate.
     pub fn collect(&mut self) -> Result<(), Error> {
         self.facts
             .module_scopes
@@ -176,10 +192,20 @@ impl Resolver<'_> {
         if self.facts.scopes.is_empty() {
             self.new_scope(None, ModuleId(0), true)?;
         }
-        for spelling in [
-            "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32",
-            "u64", "u128", "usize", "f32", "f64",
-        ] {
+        self.primitives()?;
+        self.module(ModuleId(0), ScopeId(0));
+        while let Some((c, node)) = self.pending.pop() {
+            self.walk_inner(c, node)?;
+        }
+        Ok(())
+    }
+    /// Language primitive types, found after every lexical scope. Defined once:
+    /// resolution after expansion defines them unless an import needed them first.
+    pub fn primitives(&mut self) -> Result<(), Error> {
+        if !self.facts.primitives.is_empty() {
+            return Ok(());
+        }
+        for spelling in PRIMITIVES {
             let name = self
                 .package
                 .names
@@ -199,10 +225,6 @@ impl Resolver<'_> {
                 members: None,
             });
             self.facts.primitives.insert(name, id);
-        }
-        self.module(ModuleId(0), ScopeId(0));
-        while let Some((c, node)) = self.pending.pop() {
-            self.walk_inner(c, node)?;
         }
         Ok(())
     }
@@ -245,22 +267,75 @@ impl Resolver<'_> {
             trait_access: None,
             nominal_self: None,
             label_barrier: barrier,
-            bindings: HashMap::default(),
-            order: Vec::new(),
         });
         Ok(id)
     }
-    fn node_scope(&mut self, c: Context, node: NodeId, barrier: bool) -> Result<ScopeId, Error> {
-        if self.hygiene.is_some()
-            && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
-        {
-            let frame = &mut self.facts.scopes[scope.0 as usize];
-            frame.parent = Some(c.scope);
-            frame.barrier = barrier;
-            frame.label_barrier = barrier;
-            return Ok(scope);
+    /// A lexical scope introduced by an expression, binder or type node; only
+    /// closures stop label lookup. An `if` scope covers its condition and
+    /// consequence but not its alternative.
+    pub fn lexical_scope(&mut self, c: Context, node: NodeId) -> Result<ScopeId, Error> {
+        let scope = self.new_scope(Some(c.scope), c.module, false)?;
+        self.facts.scopes[scope.0 as usize].label_barrier =
+            matches!(self.kind(c, node), Kind::Closure { .. });
+        self.facts.node_scopes.insert(c.module, c.file, node, scope);
+        Ok(scope)
+    }
+    /// Define what the expansion scan recorded, publishing generic parameters
+    /// to the imports that observed their keys.
+    pub fn declare_pending(
+        &mut self,
+        pending: &[Pending],
+        work: &mut super::imports::Work,
+    ) -> Result<(), Error> {
+        work.extend(self.facts);
+        for declaration in pending {
+            let (Pending::Anonymous(c, node, _)
+            | Pending::Generic(c, node, _)
+            | Pending::Visibility(c, node, _)) = *declaration;
+            // Eager macro arguments the scan visited are retired after use.
+            if !self.active(c, node) {
+                continue;
+            }
+            match *declaration {
+                Pending::Anonymous(c, node, item) => {
+                    self.reserve_anonymous_parameters(c, node, item)?;
+                }
+                Pending::Visibility(c, _, visibility) => {
+                    self.visibility(c, visibility)?;
+                }
+                Pending::Generic(c, node, index) => {
+                    let id = self.generic(c, node, index)?;
+                    let definition = &self.facts.definitions[id.0 as usize];
+                    work.declared(
+                        &self.facts.bindings,
+                        (definition.scope, definition.name, definition.namespace),
+                    );
+                }
+            }
         }
-        self.new_scope(Some(c.scope), c.module, barrier)
+        Ok(())
+    }
+    /// Define a generic parameter in its owner's scope.
+    pub fn generic(&mut self, c: Context, node: NodeId, index: u32) -> Result<DefId, Error> {
+        let generic = self.package.unit(c.file).configured.ast.generics[index as usize];
+        let name = self.package.name(c.file, generic.name)?;
+        let namespace = match generic.flavor {
+            GenericFlavor::Lifetime => Namespace::Lifetime,
+            GenericFlavor::Type => Namespace::Type,
+            GenericFlavor::Const => Namespace::Value,
+        };
+        self.define(
+            Definition {
+                name,
+                namespace,
+                kind: DefKind::Generic,
+                scope: c.scope,
+                node: Some(NodeKey { file: c.file, node }),
+                access: Access::Within(c.module),
+                members: None,
+            },
+            false,
+        )
     }
     pub fn define(&mut self, definition: Definition, shadow: bool) -> Result<DefId, Error> {
         let id = DefId(
@@ -273,37 +348,41 @@ impl Resolver<'_> {
                 .ok_or_else(|| Error::at(FileId(0), 0, "local binding has no source"))?;
             let offset = super::hygiene::name_offset(self.package, key);
             let context = self.package.expansion_context(key.file, offset)?;
-            if let Some(hygiene) = self.hygiene {
-                hygiene
-                    .define(&definition, id, context, shadow)
-                    .map_err(|e| Error::at(key.file, offset, e))?;
-            }
+            self.facts
+                .bindings
+                .define_local(
+                    (definition.scope, definition.name, definition.namespace),
+                    context,
+                    Binding {
+                        target: id,
+                        access: definition.access,
+                        origin: Origin::Direct,
+                        ambiguous: false,
+                    },
+                    shadow,
+                )
+                .map_err(|e| Error::at(key.file, offset, e))?;
             self.facts.definitions.push(definition);
             return Ok(id);
         }
-        let scope = &mut self.facts.scopes[definition.scope.0 as usize];
-        let key = (definition.name, definition.namespace);
         let binding = Binding {
             target: id,
             access: definition.access,
             origin: Origin::Direct,
             ambiguous: false,
         };
-        // One probe decides duplication, first-declaration order and the binding.
-        match scope.bindings.entry(key) {
-            std::collections::hash_map::Entry::Occupied(mut entry) => {
-                if shadow || matches!(entry.get().origin, Origin::Glob(_)) {
-                    entry.insert(binding);
-                    self.facts.definitions.push(definition);
-                    return Ok(id);
-                }
-            }
-            std::collections::hash_map::Entry::Vacant(entry) => {
-                entry.insert(binding);
-                scope.order.push(key);
-                self.facts.definitions.push(definition);
-                return Ok(id);
-            }
+        if self
+            .facts
+            .bindings
+            .declare(
+                (definition.scope, definition.name, definition.namespace),
+                binding,
+                shadow,
+            )
+            .map_err(|e| Error::at(FileId(0), 0, e))?
+        {
+            self.facts.definitions.push(definition);
+            return Ok(id);
         }
         let node = definition.node;
         Err(Error::at(
@@ -359,8 +438,7 @@ impl Resolver<'_> {
             otherwise,
         } = self.kind(c, node)
         {
-            let scope = self.node_scope(c, node, false)?;
-            self.facts.node_scopes.insert(c.module, c.file, node, scope);
+            let scope = self.lexical_scope(c, node)?;
             let condition_context = Context { scope, ..c };
             if let Some(otherwise) = otherwise {
                 self.pending.push((c, otherwise));
@@ -375,39 +453,13 @@ impl Resolver<'_> {
             | Kind::Closure { .. }
             | Kind::Arm { .. }
             | Kind::For { .. }
-            | Kind::If { .. }
             | Kind::While { .. }
             | Kind::Label { .. }
             | Kind::Bound { .. }
             | Kind::Where { .. }
-            | Kind::FunctionType(_) => {
-                c.scope = self.node_scope(c, node, false)?;
-                self.facts.scopes[c.scope.0 as usize].label_barrier =
-                    matches!(self.kind(c, node), Kind::Closure { .. });
-                self.facts
-                    .node_scopes
-                    .insert(c.module, c.file, node, c.scope);
-            }
+            | Kind::FunctionType(_) => c.scope = self.lexical_scope(c, node)?,
             Kind::Generic(index) => {
-                let generic = self.package.unit(c.file).configured.ast.generics[index as usize];
-                let name = self.package.name(c.file, generic.name)?;
-                let namespace = match generic.flavor {
-                    GenericFlavor::Lifetime => Namespace::Lifetime,
-                    GenericFlavor::Type => Namespace::Type,
-                    GenericFlavor::Const => Namespace::Value,
-                };
-                self.define(
-                    Definition {
-                        name,
-                        namespace,
-                        kind: DefKind::Generic,
-                        scope: c.scope,
-                        node: Some(NodeKey { file: c.file, node }),
-                        access: Access::Within(c.module),
-                        members: None,
-                    },
-                    false,
-                )?;
+                self.generic(c, node, index)?;
             }
             Kind::Macro { .. } => {
                 self.facts
@@ -436,18 +488,6 @@ impl Resolver<'_> {
     fn item(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
         let access = self.visibility(c, item.visibility)?;
-        if let Some(hygiene) = self.hygiene {
-            if matches!(item.kind, ItemKind::MacroRules { .. }) {
-                hygiene.scope(c.module, node, c.scope);
-                self.facts
-                    .node_scopes
-                    .insert(c.module, c.file, node, c.scope);
-                return Ok(());
-            }
-            if matches!(item.kind, ItemKind::Use(_)) {
-                return Ok(());
-            }
-        }
         if let ItemKind::Use(tree) = item.kind {
             return self.import(c, tree, &[], false, access);
         }
@@ -458,41 +498,25 @@ impl Resolver<'_> {
                 .children
                 .get(&(c.module, key))
                 .ok_or_else(|| self.error(c, node, "missing loaded module"))?;
-            let scope = if self.hygiene.is_some() {
-                self.facts.module_scopes[module.0 as usize]
-            } else {
-                self.new_scope(None, module, true)?
-            };
-            if self.hygiene.is_none() {
-                self.item_definition(
-                    c,
-                    node,
-                    item,
-                    (Namespace::Type, DefKind::Module),
-                    access,
-                    Some(scope),
-                )?;
-            }
+            let scope = self.new_scope(None, module, true)?;
+            self.item_definition(
+                c,
+                node,
+                item,
+                (Namespace::Type, DefKind::Module),
+                access,
+                Some(scope),
+            )?;
             self.module(module, scope);
             return Ok(());
         }
-        let body_context = if self.hygiene.is_some()
-            && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
-        {
-            Context {
-                scope,
-                foreign: c.foreign_children(node, item.kind),
-                ..c
-            }
-        } else {
-            self.declare_item(c, node, item, access)?
-        };
+        let body_context = self.declare_item(c, node, item, access)?;
         self.reserve_anonymous_parameters(body_context, node, item)?;
         self.push_pending(body_context, node);
         Ok(())
     }
     /// Register an ordinary item and its member namespaces without walking its
-    /// children. Expansion deliberately leaves generic parameters to resolution.
+    /// children; generic parameters are defined when the walk reaches them.
     #[expect(
         clippy::too_many_lines,
         reason = "one item-header dispatch defines its namespaces, member scope and enum variants"
@@ -525,7 +549,7 @@ impl Resolver<'_> {
                 | ItemKind::Static { .. }
         );
         let body = if owned {
-            self.node_scope(c, node, true)?
+            self.new_scope(Some(c.scope), c.module, true)?
         } else {
             c.scope
         };
@@ -569,7 +593,8 @@ impl Resolver<'_> {
                 self.facts.foreign_owners.insert(definition, owner);
             }
             if external.is_some() {
-                self.expose_external(c, definition);
+                self.expose_external(c, definition)
+                    .map_err(|e| self.error(c, node, e))?;
             }
             if matches!(kind, DefKind::Struct | DefKind::Enum) {
                 self.facts.scopes[body.0 as usize].nominal_self = Some(definition);

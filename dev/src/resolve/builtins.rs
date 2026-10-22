@@ -54,11 +54,10 @@ impl Resolver<'_> {
         };
         let name = self.package.name(c.file, span)?;
         if self.facts.crates.is_some()
-            && let Some(binding) = self.facts.extern_scope.and_then(|scope| {
-                self.facts.scopes[scope.0 as usize]
-                    .bindings
-                    .get(&(name, Namespace::Type))
-            })
+            && let Some(binding) = self
+                .facts
+                .extern_scope
+                .and_then(|scope| self.facts.bindings.get(scope, name, Namespace::Type))
         {
             return Ok(self.facts.definitions[binding.target.0 as usize].members);
         }
@@ -75,36 +74,39 @@ impl Resolver<'_> {
             .names
             .intern("core")
             .map_err(|e| self.error(c, node, e))?;
-        let target =
-            self.facts.scopes[external.0 as usize].bindings[&(core, Namespace::Type)].target;
+        let target = self
+            .facts
+            .bindings
+            .get(external, core, Namespace::Type)
+            .ok_or_else(|| self.error(c, node, "missing external core crate"))?
+            .target;
         Ok(self.facts.definitions[target.0 as usize].members)
     }
 
-    pub(super) fn expose_external(&mut self, c: Context, target: DefId) {
+    pub(super) fn expose_external(
+        &mut self,
+        c: Context,
+        target: DefId,
+    ) -> Result<(), &'static str> {
         if c.scope != ScopeId(0) {
-            return;
+            return Ok(());
         }
         let Some(external) = self.facts.extern_scope else {
-            return;
+            return Ok(());
         };
-        let definition = &self.facts.definitions[target.0 as usize];
-        let key = (definition.name, Namespace::Type);
-        let scope = &mut self.facts.scopes[external.0 as usize];
-        if scope
-            .bindings
-            .insert(
-                key,
-                Binding {
-                    target,
-                    access: Access::Public,
-                    origin: super::model::Origin::Direct,
-                    ambiguous: false,
-                },
-            )
-            .is_none()
-        {
-            scope.order.push(key);
-        }
+        let name = self.facts.definitions[target.0 as usize].name;
+        self.facts.bindings.insert(
+            external,
+            name,
+            Namespace::Type,
+            Binding {
+                target,
+                access: Access::Public,
+                origin: super::model::Origin::Direct,
+                ambiguous: false,
+            },
+        )?;
+        Ok(())
     }
 
     /// Whether this name's spelling is compared by builtin path preparation.
@@ -299,11 +301,7 @@ impl Resolver<'_> {
     ) -> Result<ScopeId, Error> {
         self.facts
             .extern_scope
-            .filter(|scope| {
-                self.facts.scopes[scope.0 as usize]
-                    .bindings
-                    .contains_key(&(name, Namespace::Type))
-            })
+            .filter(|scope| self.facts.bindings.contains(*scope, name, Namespace::Type))
             .ok_or_else(|| self.error(c, node, "external-crate paths require external metadata"))
     }
 
@@ -319,9 +317,10 @@ impl Resolver<'_> {
         let external = self.facts.extern_scope?;
         if let Some(target) = self.facts.library_types.prelude(name, namespace) {
             let scope = self.facts.definitions[target.0 as usize].scope;
-            return self.facts.scopes[scope.0 as usize]
+            return self
+                .facts
                 .bindings
-                .get(&(name, namespace))
+                .get(scope, name, namespace)
                 .copied()
                 .map(|binding| (scope, binding));
         }
@@ -335,9 +334,9 @@ impl Resolver<'_> {
             .chain(self.facts.builtin_traits.identities())
             .find(|id| self.facts.definitions[id.0 as usize].name == name);
         let scope = builtin.map_or(external, |id| self.facts.definitions[id.0 as usize].scope);
-        self.facts.scopes[scope.0 as usize]
+        self.facts
             .bindings
-            .get(&(name, Namespace::Type))
+            .get(scope, name, Namespace::Type)
             .map(|binding| (scope, *binding))
     }
 }

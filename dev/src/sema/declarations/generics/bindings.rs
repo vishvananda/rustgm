@@ -289,9 +289,11 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "missing associated binding trait"))?;
             let owner = DefId(application.item.0);
             if let Some(scope) = self.report.resolution.definitions[owner.0 as usize].members {
-                let member = self.report.resolution.scopes[scope.0 as usize]
+                let member = self
+                    .report
+                    .resolution
                     .bindings
-                    .get(&(name, Namespace::Type))
+                    .get(scope, name, Namespace::Type)
                     .map(|b| b.target);
                 if let Some(member) = member.filter(|id| {
                     self.facts.associated.trait_owner(*id) == Some(owner)

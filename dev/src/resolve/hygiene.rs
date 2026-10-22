@@ -1,7 +1,7 @@
 //! Local binding histories preserve definition-site visibility across shadowing.
 use super::{
     expansion,
-    model::{Binding, DefId, DefKind, Definition, Namespace, Origin, Resolution, ScopeId},
+    model::{Binding, DefKind, Namespace, NodeScopes, Resolution, ScopeId},
     package::ModuleId,
     unit::NodeKey,
 };
@@ -12,39 +12,6 @@ pub(crate) struct Ident(u64);
 impl Ident {
     pub const fn new(name: NameId, context: ContextId) -> Self {
         Self((context.0 as u64) << 32 | name.0 as u64)
-    }
-}
-#[derive(Clone, Copy)]
-enum History {
-    One(Binding),
-    Many(usize),
-}
-
-/// `(scope, name)` and `(context, namespace)` packed into two words.
-#[derive(Clone, Copy, PartialEq, Eq)]
-struct Key(u64, u64);
-impl std::hash::Hash for Key {
-    /// One finalized word: the multiplicative table hash only propagates
-    /// upward, so the scope in the high half must be mixed into the low bits
-    /// that select a bucket.
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        state.write_u64(mix(self.0 ^ mix(self.1)));
-    }
-}
-/// The 64-bit `MurmurHash3` finalizer.
-const fn mix(mut value: u64) -> u64 {
-    value ^= value >> 33;
-    value = value.wrapping_mul(0xff51_afd7_ed55_8ccd);
-    value ^= value >> 33;
-    value = value.wrapping_mul(0xc4ce_b9fe_1a85_ec53);
-    value ^ (value >> 33)
-}
-impl Key {
-    const fn new(scope: ScopeId, name: NameId, namespace: Namespace, context: ContextId) -> Self {
-        Self(
-            (scope.0 as u64) << 32 | name.0 as u64,
-            (context.0 as u64) << 8 | namespace as u64,
-        )
     }
 }
 struct MacroSite {
@@ -59,28 +26,28 @@ pub(crate) struct Query {
     pub context: ContextId,
     pub visible: usize,
 }
+/// Macro definition sites; the locals themselves live in the binding table.
 pub(crate) struct Hygiene {
     sites: Vec<MacroSite>,
     definitions: HashMap<(ModuleId, NodeId), usize>,
     expansions: Vec<usize>,
-    locals: HashMap<Key, History>,
-    shadowed: Vec<Vec<Binding>>,
-    /// Hygienic locals per scope and per name: lookups skip probes that
-    /// cannot match, so item references never touch the local table.
-    scope_locals: Vec<u32>,
-    named_locals: Vec<bool>,
 }
 impl Hygiene {
+    /// Macro sites start at the scopes the expansion scan recorded for their
+    /// definitions; the bodies walk later records what each site can see.
     pub fn new(
         definitions: &[expansion::Definition],
         invocations: &[expansion::Invocation],
+        scopes: &NodeScopes,
     ) -> Self {
         Self {
             sites: definitions
                 .iter()
                 .map(|d| MacroSite {
                     context: d.context,
-                    scope: None,
+                    scope: d
+                        .node
+                        .and_then(|node| scopes.get(&(d.module, node.node)).copied()),
                     visible: 0,
                 })
                 .collect(),
@@ -90,15 +57,6 @@ impl Hygiene {
                 .filter_map(|(index, d)| d.node.map(|node| ((d.module, node.node), index)))
                 .collect(),
             expansions: invocations.iter().map(|i| i.definition).collect(),
-            locals: HashMap::default(),
-            shadowed: Vec::new(),
-            scope_locals: Vec::new(),
-            named_locals: Vec::new(),
-        }
-    }
-    pub fn scope(&mut self, module: ModuleId, node: NodeId, scope: ScopeId) {
-        if let Some(index) = self.definitions.get(&(module, node)) {
-            self.sites[*index].scope = Some(scope);
         }
     }
     pub fn snapshot(&mut self, module: ModuleId, node: NodeId, scope: ScopeId, visible: usize) {
@@ -109,52 +67,6 @@ impl Hygiene {
     }
     pub const fn is_local(kind: DefKind) -> bool {
         matches!(kind, DefKind::Local | DefKind::Parameter | DefKind::Label)
-    }
-    pub fn define(
-        &mut self,
-        definition: &Definition,
-        target: DefId,
-        context: ContextId,
-        shadow: bool,
-    ) -> Result<(), &'static str> {
-        let key = Key::new(
-            definition.scope,
-            definition.name,
-            definition.namespace,
-            context,
-        );
-        let binding = Binding {
-            target,
-            access: definition.access,
-            origin: Origin::Direct,
-            ambiguous: false,
-        };
-        if let Some(history) = self.locals.get_mut(&key) {
-            if !shadow {
-                return Err("duplicate hygienic local binding");
-            }
-            match *history {
-                History::One(previous) => {
-                    let index = self.shadowed.len();
-                    self.shadowed.push(vec![previous, binding]);
-                    *history = History::Many(index);
-                }
-                History::Many(index) => self.shadowed[index].push(binding),
-            }
-        } else {
-            self.locals.insert(key, History::One(binding));
-            let scope = definition.scope.0 as usize;
-            if scope >= self.scope_locals.len() {
-                self.scope_locals.resize(scope + 1, 0);
-            }
-            self.scope_locals[scope] = self.scope_locals[scope].saturating_add(1);
-            let name = definition.name.0 as usize;
-            if name >= self.named_locals.len() {
-                self.named_locals.resize(name + 1, false);
-            }
-            self.named_locals[name] = true;
-        }
-        Ok(())
     }
     fn site(&self, context: ContextId) -> Result<&MacroSite, &'static str> {
         let index = context
@@ -178,11 +90,6 @@ impl Hygiene {
         let mut barriers = 0;
         let mut label_barrier = false;
         let mut remaining = (self.expansions.len() + 1).saturating_mul(facts.scopes.len() + 1);
-        let named = self
-            .named_locals
-            .get(query.name.0 as usize)
-            .copied()
-            .unwrap_or(false);
         while remaining > 0 {
             remaining -= 1;
             let Some(scope) = current else {
@@ -199,32 +106,14 @@ impl Hygiene {
                 .scopes
                 .get(scope.0 as usize)
                 .ok_or("invalid hygienic scope")?;
+            // One probe answers both the local history and the ordinary binding.
+            let entry = facts.bindings.probe(scope, query.name, query.namespace);
             if barriers == 0
                 && !label_barrier
-                && named
-                && self
-                    .scope_locals
-                    .get(scope.0 as usize)
-                    .is_some_and(|count| *count > 0)
+                && let Some(entry) = entry
+                && let Some(binding) = facts.bindings.local(entry, query.context, query.visible)
             {
-                let key = Key::new(scope, query.name, query.namespace, query.context);
-                if let Some(history) = self.locals.get(&key) {
-                    let found = match *history {
-                        History::One(binding) => {
-                            ((binding.target.0 as usize) < query.visible).then_some(binding)
-                        }
-                        History::Many(index) => {
-                            let history = &self.shadowed[index];
-                            let end = history.partition_point(|binding| {
-                                (binding.target.0 as usize) < query.visible
-                            });
-                            end.checked_sub(1).map(|index| history[index])
-                        }
-                    };
-                    if let Some(binding) = found {
-                        return Ok(Some((scope, binding)));
-                    }
-                }
+                return Ok(Some((scope, binding)));
             }
             if query.context.0 != 0 {
                 let site = self.site(query.context)?;
@@ -234,7 +123,7 @@ impl Hygiene {
                     continue;
                 }
             }
-            if let Some(binding) = frame.bindings.get(&(query.name, query.namespace))
+            if let Some(binding) = entry.and_then(|entry| facts.bindings.binding(entry))
                 && binding.is_lexical(&facts.definitions, frame.associated)
                 && (barriers == 0
                     || !facts.definitions[binding.target.0 as usize].kind.is_local()

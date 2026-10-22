@@ -22,9 +22,10 @@ pub fn select(report: &mut Report, facts: &Declarations) -> Result<DefId, Error>
         .module_scopes
         .first()
         .ok_or_else(|| error("missing root scope"))?;
-    let binding = report.resolution.scopes[root.0 as usize]
+    let binding = report
+        .resolution
         .bindings
-        .get(&(name, Namespace::Value))
+        .get(root, name, Namespace::Value)
         .ok_or_else(|| error("an executable requires a root main function"))?;
     if binding.ambiguous {
         return Err(error("ambiguous main function"));

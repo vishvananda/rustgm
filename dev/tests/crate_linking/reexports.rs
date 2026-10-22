@@ -58,13 +58,13 @@ fn module(report: &Report, owner: &CrateIdentity, path: &[&str]) -> Result<Scope
 }
 
 fn binding(report: &Report, scope: ScopeId, name: &str, namespace: Namespace) -> Result<DefId> {
-    let frame = &report.resolution.scopes[scope.0 as usize];
-    let key = frame
-        .order
-        .iter()
-        .find(|(id, ns)| *ns == namespace && report.package.names.get(*id) == name)
+    let (_, _, binding) = report
+        .resolution
+        .bindings
+        .scope(scope)
+        .find(|(id, ns, _)| *ns == namespace && report.package.names.get(*id) == name)
         .ok_or("missing public spelling")?;
-    Ok(frame.bindings.get(key).ok_or("missing binding")?.target)
+    Ok(binding.target)
 }
 
 #[test]

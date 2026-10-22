@@ -1,7 +1,7 @@
 //! Deterministic diagnostic view of typed name facts; never consumed by semantics.
 use super::{
     expansion::{Body, Report},
-    model::{Access, Resolution, Target},
+    model::{Access, Resolution, ScopeId, Target},
     names::NameId,
     package::Package,
 };
@@ -58,16 +58,14 @@ pub fn write(package: &Package, facts: &Resolution, out: &mut impl Write) -> io:
         }
         writeln!(out)?;
     }
-    for (index, scope) in facts.scopes.iter().enumerate() {
-        for key in &scope.order {
-            let Some(binding) = scope.bindings.get(key) else {
-                continue;
-            };
+    for index in 0..facts.scopes.len() {
+        let scope = ScopeId(u32::try_from(index).map_err(|_| io::Error::other("too many scopes"))?);
+        for (name, namespace, binding) in facts.bindings.scope(scope) {
             write!(
                 out,
                 "binding scope={index} {} name={} def={} {:?} ambiguous={} access=",
-                key.1.name(),
-                key.0.0,
+                namespace.name(),
+                name.0,
                 binding.target.0,
                 binding.origin,
                 binding.ambiguous

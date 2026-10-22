@@ -68,12 +68,13 @@ impl Resolver<'_> {
                     WireNamespace::Type => Namespace::Type,
                     WireNamespace::Value => Namespace::Value,
                 };
-                let frame = &mut self.facts.scopes[scope.0 as usize];
-                let key = (name, namespace);
-                if frame
+                let previous = self
+                    .facts
                     .bindings
                     .insert(
-                        key,
+                        scope,
+                        name,
+                        namespace,
                         Binding {
                             target,
                             access: Access::Public,
@@ -81,11 +82,10 @@ impl Resolver<'_> {
                             ambiguous: false,
                         },
                     )
-                    .is_some()
-                {
+                    .map_err(error)?;
+                if previous.is_some() {
                     return Err(error("duplicate imported public metadata binding"));
                 }
-                frame.order.push(key);
             }
         }
         Ok(())

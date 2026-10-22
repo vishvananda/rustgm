@@ -1,8 +1,8 @@
 //! Import dependencies and glob deltas wake only the scopes and paths they affect.
 use super::{
-    index::Resolver,
+    index::{PRIMITIVES, Resolver},
     lookup::{BindingKey, Lookup, LookupMode, Observations, Selection},
-    model::{Access, Binding, DefId, DefKind, Import, Namespace, Origin, ScopeId},
+    model::{Access, Binding, BindingTable, DefId, DefKind, Import, Namespace, Origin, ScopeId},
     names::NameId,
     package::Error,
 };
@@ -22,21 +22,24 @@ pub(crate) struct Work {
     globs: HashMap<ScopeId, Vec<usize>>,
     sources: Vec<Option<ScopeId>>,
     resolved: Vec<bool>,
-    /// Per-scope change journals, materialized on first use (`journaled`).
+    /// Per-scope change journals, materialized on first use (`journaled`) and
+    /// sized on demand, so creating a scope costs the worklist nothing.
     changes: Vec<Vec<Key>>,
     journaled: Vec<bool>,
-    /// Each scope's order length when this state was created. A journal and its
-    /// recorded keys start from that prefix, so creation stays linear in scopes.
-    snapshot: Vec<u32>,
+    /// Binding keys created before this state. A journal starts from its
+    /// scope's keys among them, so creation stays linear in scopes.
+    snapshot: u32,
     cursors: Vec<usize>,
     errors: Vec<Option<Error>>,
-    recorded: HashSet<BindingKey>,
     candidates: HashMap<BindingKey, Vec<Binding>>,
     provided: Vec<HashSet<Key>>,
     textual: HashMap<usize, TextualSource>,
     attempts: usize,
     observe: bool,
     selections: Vec<Selection>,
+    /// Imports naming `primitive` that ran before the primitive index existed;
+    /// `finish_imports` retries them once it is published.
+    primitive_paths: Vec<usize>,
     pub events: Vec<BindingKey>,
 }
 impl Work {
@@ -49,16 +52,11 @@ impl Work {
             globs: HashMap::default(),
             sources: vec![None; count],
             resolved: vec![false; count],
-            changes: facts.scopes.iter().map(|_| Vec::new()).collect(),
-            journaled: vec![false; facts.scopes.len()],
-            snapshot: facts
-                .scopes
-                .iter()
-                .map(|scope| u32::try_from(scope.order.len()).unwrap_or(u32::MAX))
-                .collect(),
+            changes: Vec::new(),
+            journaled: Vec::new(),
+            snapshot: facts.bindings.created(),
             cursors: vec![0; count],
             errors: (0..count).map(|_| None).collect(),
-            recorded: HashSet::default(),
             candidates: HashMap::default(),
             provided: (0..count).map(|_| HashSet::default()).collect(),
             textual: facts
@@ -69,6 +67,7 @@ impl Work {
             attempts: 0,
             observe: false,
             selections: Vec::new(),
+            primitive_paths: Vec::new(),
             events: Vec::new(),
         }
     }
@@ -76,8 +75,6 @@ impl Work {
         self.observe = true;
     }
     pub fn extend(&mut self, facts: &super::model::Resolution) {
-        self.changes.resize_with(facts.scopes.len(), Vec::new);
-        self.journaled.resize(facts.scopes.len(), false);
         for index in self.resolved.len()..facts.imports.len() {
             self.queue.push_back(index);
             self.queued.push(true);
@@ -90,24 +87,28 @@ impl Work {
     }
     /// Publish a direct declaration already installed by the shared item indexer.
     /// Its scope order was recorded by `define`; only dependency journals remain.
-    pub fn declared(&mut self, scopes: &[super::model::Scope], key: BindingKey) {
-        self.journal(scopes, key.0);
-        self.recorded.insert(key);
+    pub fn declared(&mut self, bindings: &BindingTable, key: BindingKey) {
+        self.journal(bindings, key.0);
         self.changes[key.0.0 as usize].push((key.1, key.2));
         self.changed(key);
     }
-    /// Materialize a scope's journal and recorded keys from its creation-time prefix.
-    fn journal(&mut self, scopes: &[super::model::Scope], scope: ScopeId) {
+    /// Materialize a scope's journal from the keys it recorded before this state.
+    fn journal(&mut self, bindings: &BindingTable, scope: ScopeId) {
         let index = scope.0 as usize;
+        if index >= self.journaled.len() {
+            self.journaled.resize(index + 1, false);
+            self.changes.resize_with(index + 1, Vec::new);
+        }
         if self.journaled[index] {
             return;
         }
         self.journaled[index] = true;
-        let prefix = self.snapshot.get(index).map_or(0, |len| *len as usize);
-        let order = &scopes[index].order[..prefix];
-        self.changes[index].splice(0..0, order.iter().copied());
-        self.recorded
-            .extend(order.iter().map(|key| (scope, key.0, key.1)));
+        let snapshot = self.snapshot;
+        let keys = bindings
+            .keys(scope)
+            .filter(|&(_, created)| created < snapshot)
+            .map(|(key, _)| key);
+        self.changes[index].splice(0..0, keys);
     }
     pub fn set_textual(&mut self, index: usize, binding: TextualSource) {
         let previous = self
@@ -152,12 +153,11 @@ impl Work {
             if selected.lexical && (glob || more_expanded) {
                 let mut current = facts.scopes[key.0.0 as usize].parent;
                 while let Some(scope) = current {
-                    let frame = &facts.scopes[scope.0 as usize];
-                    if let Some(outer) = frame.bindings.get(&(key.1, key.2)) {
+                    if let Some(outer) = facts.bindings.get(scope, key.1, key.2) {
                         return (outer.ambiguous || outer.target != binding.target)
                             && (glob || !marks.ancestor(defined, marks.binding(*outer)));
                     }
-                    current = frame.parent;
+                    current = facts.scopes[scope.0 as usize].parent;
                 }
             }
             false
@@ -202,6 +202,21 @@ impl Resolver<'_> {
     pub fn imports(&mut self) -> Result<(), Error> {
         let mut work = Work::new(self.facts);
         self.drive_imports(&mut work)?;
+        self.diagnose_imports(work)
+    }
+    /// Finish the expansion phase's import worklist instead of re-queueing
+    /// every import: only imports woken by later declarations run again.
+    pub fn finish_imports(&mut self, mut work: Work) -> Result<(), Error> {
+        work.observe = false;
+        work.extend(self.facts);
+        for index in std::mem::take(&mut work.primitive_paths) {
+            work.wake(index);
+        }
+        self.drive_imports(&mut work)?;
+        self.diagnose_imports(work)
+    }
+    /// Report the first failed or unresolved import, in import order.
+    fn diagnose_imports(&self, work: Work) -> Result<(), Error> {
         for (index, error) in work.errors.into_iter().enumerate() {
             if let Some(error) = error {
                 return Err(error);
@@ -242,6 +257,46 @@ impl Resolver<'_> {
             import.node.node,
             message,
         )
+    }
+    /// Demand-create language metadata a type-namespace import path may name
+    /// and publish the new declarations to the worklist.
+    fn prepare_import_path(
+        &mut self,
+        index: usize,
+        import: &Import,
+        c: super::index::Context,
+        path: &[NameId],
+        work: &mut Work,
+    ) -> Result<(), Error> {
+        let before = self.facts.definitions.len();
+        // Expansion defines primitives late; a primitive first segment needs them now.
+        if !import.absolute
+            && self.facts.primitives.is_empty()
+            && path
+                .first()
+                .is_some_and(|name| PRIMITIVES.contains(&self.package.names.get(*name)))
+        {
+            self.primitives()?;
+        }
+        if self.facts.primitives.is_empty()
+            && path
+                .iter()
+                .skip(1)
+                .any(|name| self.package.names.get(*name) == "primitive")
+        {
+            work.primitive_paths.push(index);
+        }
+        self.prepare_builtin_path(c, import.node.node, import.absolute, Namespace::Type, path)?;
+        if self.facts.definitions.len() != before {
+            work.extend(self.facts);
+            for definition in &self.facts.definitions[before..] {
+                work.declared(
+                    &self.facts.bindings,
+                    (definition.scope, definition.name, definition.namespace),
+                );
+            }
+        }
+        Ok(())
     }
     fn import_lookup(
         &mut self,
@@ -289,17 +344,7 @@ impl Resolver<'_> {
             import.scope,
         );
         if ns == Namespace::Type {
-            let before = self.facts.definitions.len();
-            self.prepare_builtin_path(c, import.node.node, import.absolute, Namespace::Type, path)?;
-            if self.facts.definitions.len() != before {
-                work.extend(self.facts);
-                for definition in &self.facts.definitions[before..] {
-                    work.declared(
-                        &self.facts.scopes,
-                        (definition.scope, definition.name, definition.namespace),
-                    );
-                }
-            }
+            self.prepare_import_path(index, import, c, path, work)?;
         }
         let mut observed = Observations {
             selected: Some(std::mem::take(&mut work.selections)),
@@ -375,7 +420,7 @@ impl Resolver<'_> {
                     {
                         inaccessible =
                             Some(self.import_error(import, "private import or widened visibility"));
-                        self.withdraw_single((import.scope, name, ns), origin, work);
+                        self.withdraw_single((import.scope, name, ns), origin, work)?;
                         continue;
                     }
                     work.resolved[index] = true;
@@ -393,9 +438,7 @@ impl Resolver<'_> {
                         continue;
                     }
                     let key = (import.scope, name, ns);
-                    if let Some(previous) = self.facts.scopes[import.scope.0 as usize]
-                        .bindings
-                        .get(&(name, ns))
+                    if let Some(previous) = self.facts.bindings.get(import.scope, name, ns)
                         && !matches!(previous.origin, Origin::Glob(_))
                         && previous.origin != origin
                     {
@@ -416,9 +459,9 @@ impl Resolver<'_> {
                             ..binding
                         }),
                         work,
-                    );
+                    )?;
                 }
-                Lookup::Missing => self.withdraw_single((import.scope, name, ns), origin, work),
+                Lookup::Missing => self.withdraw_single((import.scope, name, ns), origin, work)?,
                 Lookup::Associated(..) | Lookup::Member(..) => {
                     return Err(self.import_error(import, "associated items cannot be imported"));
                 }
@@ -431,15 +474,22 @@ impl Resolver<'_> {
         }
         Ok(())
     }
-    fn withdraw_single(&mut self, key: BindingKey, origin: Origin, work: &mut Work) {
-        if self.facts.scopes[key.0.0 as usize]
+    fn withdraw_single(
+        &mut self,
+        key: BindingKey,
+        origin: Origin,
+        work: &mut Work,
+    ) -> Result<(), Error> {
+        if self
+            .facts
             .bindings
-            .get(&(key.1, key.2))
+            .get(key.0, key.1, key.2)
             .is_some_and(|b| b.origin == origin)
         {
             let fallback = self.glob_binding(key, work);
-            self.publish(key, fallback, work);
+            self.publish(key, fallback, work)?;
         }
+        Ok(())
     }
     fn glob(&mut self, index: usize, import: &Import, work: &mut Work) -> Result<(), Error> {
         let found = self.import_lookup(index, import, &import.path, Namespace::Type, work)?;
@@ -458,8 +508,7 @@ impl Resolver<'_> {
                     .ok_or_else(|| self.import_error(import, "missing glob scope"))?
             }
             Lookup::Missing => {
-                self.disconnect_glob(index, import, work);
-                return Ok(());
+                return self.disconnect_glob(index, import, work);
             }
             Lookup::Associated(..) | Lookup::Member(..) => {
                 return Err(self.import_error(import, "glob target is not a module or enum"));
@@ -469,22 +518,23 @@ impl Resolver<'_> {
             return Err(self.import_error(import, "cannot glob-import a scope into itself"));
         }
         if work.sources[index] != Some(source) {
-            self.disconnect_glob(index, import, work);
+            self.disconnect_glob(index, import, work)?;
             work.sources[index] = Some(source);
             work.globs.entry(source).or_default().push(index);
         }
         work.resolved[index] = true;
         let module = self.facts.scopes[import.scope.0 as usize].module;
-        work.journal(&self.facts.scopes, source);
+        work.journal(&self.facts.bindings, source);
         let end = work.changes[source.0 as usize].len();
         for offset in work.cursors[index]..end {
             let key = work.changes[source.0 as usize][offset];
             if !Namespace::IMPORTABLE.contains(&key.1) {
                 continue;
             }
-            let binding = self.facts.scopes[source.0 as usize]
+            let binding = self
+                .facts
                 .bindings
-                .get(&key)
+                .get(source, key.0, key.1)
                 .copied()
                 .filter(|b| self.visible(b.access, module));
             let binding = binding.map(|binding| Binding {
@@ -496,12 +546,17 @@ impl Resolver<'_> {
                 origin: Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX)),
                 ..binding
             });
-            self.contribute(index, (import.scope, key.0, key.1), binding, work);
+            self.contribute(index, (import.scope, key.0, key.1), binding, work)?;
         }
         work.cursors[index] = end;
         Ok(())
     }
-    fn disconnect_glob(&mut self, index: usize, import: &Import, work: &mut Work) {
+    fn disconnect_glob(
+        &mut self,
+        index: usize,
+        import: &Import,
+        work: &mut Work,
+    ) -> Result<(), Error> {
         if let Some(source) = work.sources[index].take()
             && let Some(subscribers) = work.globs.get_mut(&source)
         {
@@ -512,9 +567,10 @@ impl Resolver<'_> {
         let mut keys: Vec<_> = provided.into_iter().collect();
         keys.sort_by_key(|key| (key.0.0, key.1.name()));
         for key in keys {
-            self.contribute(index, (import.scope, key.0, key.1), None, work);
+            self.contribute(index, (import.scope, key.0, key.1), None, work)?;
         }
         work.cursors[index] = 0;
+        Ok(())
     }
     fn contribute(
         &mut self,
@@ -522,7 +578,7 @@ impl Resolver<'_> {
         key: BindingKey,
         binding: Option<Binding>,
         work: &mut Work,
-    ) {
+    ) -> Result<(), Error> {
         let origin = Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX));
         let candidates = work.candidates.entry(key).or_default();
         let previous = candidates.iter().find(|b| b.origin == origin).copied();
@@ -540,18 +596,19 @@ impl Resolver<'_> {
         } else {
             work.provided[index].remove(&(key.1, key.2));
         }
-        if self.facts.scopes[key.0.0 as usize]
+        if self
+            .facts
             .bindings
-            .get(&(key.1, key.2))
+            .get(key.0, key.1, key.2)
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
             if previous != binding {
                 work.changed(key);
             }
-            return;
+            return Ok(());
         }
         let merged = self.glob_binding(key, work);
-        self.publish(key, merged, work);
+        self.publish(key, merged, work)
     }
     fn glob_binding(&self, key: BindingKey, work: &Work) -> Option<Binding> {
         let candidates = work.candidates.get(&key)?;
@@ -568,24 +625,29 @@ impl Resolver<'_> {
         }
         Some(result)
     }
-    pub fn publish(&mut self, key: BindingKey, binding: Option<Binding>, work: &mut Work) {
-        work.journal(&self.facts.scopes, key.0);
-        let frame = &mut self.facts.scopes[key.0.0 as usize];
-        let name = (key.1, key.2);
-        let previous = frame.bindings.get(&name).copied();
+    pub fn publish(
+        &mut self,
+        key: BindingKey,
+        binding: Option<Binding>,
+        work: &mut Work,
+    ) -> Result<(), Error> {
+        work.journal(&self.facts.bindings, key.0);
+        let (scope, name, namespace) = key;
+        let previous = self.facts.bindings.get(scope, name, namespace).copied();
         if previous == binding {
-            return;
+            return Ok(());
         }
         if let Some(binding) = binding {
-            if work.recorded.insert(key) {
-                frame.order.push(name);
-            }
-            frame.bindings.insert(name, binding);
+            self.facts
+                .bindings
+                .insert(scope, name, namespace, binding)
+                .map_err(|e| Error::at(super::unit::FileId(0), 0, e))?;
         } else {
-            frame.bindings.remove(&name);
+            self.facts.bindings.remove(scope, name, namespace);
         }
-        work.changes[key.0.0 as usize].push(name);
+        work.changes[scope.0 as usize].push((name, namespace));
         work.changed(key);
+        Ok(())
     }
     fn can_reexport(&self, target: Access, requested: Access) -> bool {
         match (target, requested) {

@@ -160,18 +160,20 @@ impl Resolver<'_> {
                 .copied()
                 .ok_or_else(|| error("missing imported crate root"))?;
             let name = self.package.names.intern(alias.alias()).map_err(error)?;
-            let key = (name, Namespace::Type);
-            let scope = &mut self.facts.scopes[external.0 as usize];
-            scope.order.push(key);
-            scope.bindings.insert(
-                key,
-                Binding {
-                    target,
-                    access: Access::Public,
-                    origin: Origin::Direct,
-                    ambiguous: false,
-                },
-            );
+            self.facts
+                .bindings
+                .insert(
+                    external,
+                    name,
+                    Namespace::Type,
+                    Binding {
+                        target,
+                        access: Access::Public,
+                        origin: Origin::Direct,
+                        ambiguous: false,
+                    },
+                )
+                .map_err(error)?;
         }
         self.facts.extern_scope = Some(external);
         self.facts.crates = Some(Box::new(imported));
@@ -298,10 +300,7 @@ impl Resolver<'_> {
             } else {
                 Namespace::Type
             };
-            if let Some(binding) = self.facts.scopes[scope.0 as usize]
-                .bindings
-                .get(&(name, namespace))
-            {
+            if let Some(binding) = self.facts.bindings.get(scope, name, namespace) {
                 scope = self.facts.definitions[binding.target.0 as usize]
                     .members
                     .ok_or_else(|| error("conflicting imported module path"))?;

@@ -74,6 +74,10 @@ pub struct Report {
     pub captures: Registry,
     pub textual_scopes: Scopes,
     pub resolution: Resolution,
+    /// The import worklist at its fixpoint over the scan's declarations, and
+    /// the declarations the scan left to resolution in scan order.
+    pub(crate) imports: Option<super::imports::Work>,
+    pub(crate) pending: Vec<super::index::Pending>,
     pub(crate) names_resolved: bool,
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -229,13 +233,16 @@ pub fn analyze_with_crates(
         })
         .and_then(|()| engine.run());
     result.map_err(|error| engine.diagnostic(error))?;
+    let (resolution, imports, pending) = engine.paths.finish();
     Ok(Report {
         package: engine.loader.package,
         definitions: engine.definitions,
         invocations: engine.invocations,
         captures: engine.captures,
         textual_scopes: engine.scopes,
-        resolution: engine.paths.state.facts,
+        resolution,
+        imports: Some(imports),
+        pending,
         names_resolved: false,
     })
 }
@@ -592,6 +599,14 @@ impl<S: Sources> Engine<'_, S> {
             }
             return self.register(visit, file, path, capture, context);
         }
+        // The alternative of an `if` stays outside the scope of its condition.
+        let mut outside = None;
+        let context = Context {
+            module: visit.module,
+            file,
+            scope: visit.path_scope,
+            foreign: visit.foreign,
+        };
         if let Some(scope) = item_scope {
             if scope != visit.path_scope {
                 self.work.push(Work::Restore(self.head));
@@ -605,6 +620,26 @@ impl<S: Sources> Engine<'_, S> {
                 visit.module,
                 visit.node,
             )?;
+        } else if let Kind::Generic(index) = kind {
+            self.paths.generic(context, visit.node, index);
+        } else if matches!(
+            kind,
+            Kind::If { .. }
+                | Kind::Closure { .. }
+                | Kind::Arm { .. }
+                | Kind::For { .. }
+                | Kind::While { .. }
+                | Kind::Label { .. }
+                | Kind::Bound { .. }
+                | Kind::Where { .. }
+                | Kind::FunctionType(_)
+        ) {
+            if let Kind::If { otherwise, .. } = kind {
+                outside = otherwise.map(|node| (node, visit.path_scope));
+            }
+            visit.path_scope = self
+                .paths
+                .lexical(&mut self.loader.package, context, visit.node)?;
         }
         self.children.clear();
         self.loader
@@ -625,25 +660,46 @@ impl<S: Sources> Engine<'_, S> {
             in_block: visit.in_block || matches!(kind, Kind::Block { .. }),
             ..visit
         };
-        let parent = self.frames[frame as usize];
-        let inherited = Visit {
-            node: parent.node,
-            ..child
-        } == parent;
-        let shared = if inherited {
-            frame
-        } else {
-            let mark = self.frame_mark()?;
-            self.work.push(Work::Frames(mark));
-            self.frames.push(child);
-            mark
-        };
+        if let Some((otherwise, path_scope)) = outside
+            && self.children.last() == Some(&otherwise)
+        {
+            // Visited last, after the condition's scope frame is released.
+            self.children.pop();
+            let shared = self.share_frame(
+                frame,
+                Visit {
+                    path_scope,
+                    ..child
+                },
+            )?;
+            self.work.push(Work::Visit {
+                node: otherwise,
+                frame: shared,
+            });
+        }
+        let shared = self.share_frame(frame, child)?;
         self.work
             .extend(self.children.iter().rev().map(|node| Work::Visit {
                 node: *node,
                 frame: shared,
             }));
         Ok(())
+    }
+    /// The frame for children visited with `child`: the parent's own frame
+    /// when they inherit it unchanged, otherwise a new one released after them.
+    fn share_frame(&mut self, frame: u32, child: Visit) -> Result<u32, Error> {
+        let parent = self.frames[frame as usize];
+        if (Visit {
+            node: parent.node,
+            ..child
+        }) == parent
+        {
+            return Ok(frame);
+        }
+        let mark = self.frame_mark()?;
+        self.work.push(Work::Frames(mark));
+        self.frames.push(child);
+        Ok(mark)
     }
     fn module(&mut self, visit: Visit, file: FileId, visibility: Visibility) -> Result<(), Error> {
         let child = self.loader.load_module(
@@ -736,19 +792,22 @@ impl<S: Sources> Engine<'_, S> {
             .scopes
             .define(self.head, name, index)
             .map_err(|e| Error::at(file, e.offset, e.message))?;
+        let context = Context {
+            module: visit.module,
+            file,
+            scope: visit.path_scope,
+            foreign: visit.foreign,
+        };
         self.paths.definition(
             &mut self.loader.package,
-            Context {
-                module: visit.module,
-                file,
-                scope: visit.path_scope,
-                foreign: visit.foreign,
-            },
+            context,
             visit.node,
             name,
             flags.exported,
             (index, visit.introduction),
         )?;
+        self.paths
+            .macro_visibility(context, visit.node, item.visibility);
         Ok(())
     }
     fn lookup_call(&mut self, index: usize) -> Result<Option<usize>, Error> {

@@ -50,10 +50,7 @@ impl Resolver<'_> {
             return Ok(());
         }
         let name = path[index];
-        if self.facts.scopes[library.0 as usize]
-            .bindings
-            .contains_key(&(name, Namespace::Type))
-        {
+        if self.facts.bindings.contains(library, name, Namespace::Type) {
             return Ok(());
         }
         let scope = self.new_scope(None, ModuleId(0), true)?;
@@ -75,18 +72,21 @@ impl Resolver<'_> {
             .collect();
         primitives.sort_by_key(|(_, target)| target.0);
         for (name, target) in primitives {
-            let key = (name, Namespace::Type);
-            let scope = &mut self.facts.scopes[scope.0 as usize];
-            scope.bindings.insert(
-                key,
-                Binding {
-                    target,
-                    access: Access::Public,
-                    origin: Origin::Direct,
-                    ambiguous: false,
-                },
-            );
-            scope.order.push(key);
+            // The flat table records each key's first-binding order.
+            self.facts
+                .bindings
+                .insert(
+                    scope,
+                    name,
+                    Namespace::Type,
+                    Binding {
+                        target,
+                        access: Access::Public,
+                        origin: Origin::Direct,
+                        ambiguous: false,
+                    },
+                )
+                .map_err(|message| self.error(c, node, message))?;
         }
         Ok(())
     }

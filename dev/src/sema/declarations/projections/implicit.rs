@@ -289,9 +289,11 @@ impl Checker<'_> {
             let scope = self.report.resolution.definitions[trait_item.0 as usize]
                 .members
                 .ok_or_else(|| self.error(key, "missing shorthand trait scope"))?;
-            if let Some(binding) = self.report.resolution.scopes[scope.0 as usize]
+            if let Some(binding) = self
+                .report
+                .resolution
                 .bindings
-                .get(&(name, Namespace::Type))
+                .get(scope, name, Namespace::Type)
                 && self.facts.associated.trait_owner(binding.target) == Some(DefId(trait_item.0))
                 && self
                     .facts

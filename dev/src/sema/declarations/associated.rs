@@ -117,10 +117,7 @@ impl Checker<'_> {
         let scope = definition
             .members
             .ok_or_else(|| self.error(key, "missing enum member scope"))?;
-        let Some(binding) = self.report.resolution.scopes[scope.0 as usize]
-            .bindings
-            .get(&(name, namespace))
-        else {
+        let Some(binding) = self.report.resolution.bindings.get(scope, name, namespace) else {
             return Ok(None);
         };
         let module = self.report.resolution.scopes[use_scope.0 as usize].module;

@@ -30,16 +30,11 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
     let mut explicit = false;
     let mut visits = 0usize;
     while let Some((scope, path)) = work.pop() {
-        let frame = &report.resolution.scopes[scope.0 as usize];
         let mut bindings = Vec::new();
-        for key in &frame.order {
-            let Some(binding) = frame
-                .bindings
-                .get(key)
-                .filter(|b| b.access == Access::Public)
-            else {
+        for (name, _, binding) in report.resolution.bindings.scope(scope) {
+            if binding.access != Access::Public {
                 continue;
-            };
+            }
             if binding.ambiguous {
                 return Err(error(
                     "ambiguous public bindings are outside the metadata profile",
@@ -74,7 +69,7 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
                 target
             };
             bindings.push(
-                PublicBinding::new(report.package.names.get(key.0).to_owned(), target)
+                PublicBinding::new(report.package.names.get(name).to_owned(), target)
                     .map_err(error)?,
             );
         }
