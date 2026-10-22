@@ -2,6 +2,8 @@
 mod allocation;
 mod arguments;
 mod dependencies;
+mod observed_constants;
+pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};
 mod implementation;
 mod objects;
 mod reservations;
@@ -225,7 +227,33 @@ impl Dispatcher {
         facts: &mut Declarations,
         instance: super::values::Instance,
     ) -> Result<super::values::Instance, String> {
-        let selected = self.select_constant(facts, instance)?;
+        self.constant_using::<false>(facts, instance, &mut |_, _| {
+            Ok(ConstantDecision::Checked(None))
+        })
+    }
+    /// Observe only newly selected evidence; the ordinary route has no observer
+    /// and retains its existing cache and publication behavior.
+    pub(in crate::sema) fn source_constant(
+        &mut self,
+        facts: &mut Declarations,
+        instance: super::values::Instance,
+        observer: &mut impl FnMut(
+            &mut Declarations,
+            ConstantProof<'_>,
+        ) -> Result<ConstantDecision, String>,
+    ) -> Result<super::values::Instance, String> {
+        self.constant_using::<true>(facts, instance, observer)
+    }
+    fn constant_using<const OBSERVE: bool>(
+        &mut self,
+        facts: &mut Declarations,
+        instance: super::values::Instance,
+        observer: &mut impl FnMut(
+            &mut Declarations,
+            ConstantProof<'_>,
+        ) -> Result<ConstantDecision, String>,
+    ) -> Result<super::values::Instance, String> {
+        let selected = self.select_constant_using::<OBSERVE>(facts, instance, observer)?;
         facts.constant_targets.insert(instance, selected);
         let share = self.share_constants && self.caller.is_none();
         let mut incomplete = 0;
@@ -299,7 +327,8 @@ impl Dispatcher {
                 match dependency {
                     super::values::Dependency::Constant(instance) => {
                         let source = instance.substitute(&mut facts.types, &mut substitution)?;
-                        let target = self.select_constant(facts, source)?;
+                        let target =
+                            self.select_constant_using::<OBSERVE>(facts, source, observer)?;
                         facts.constant_targets.insert(source, target);
                         work.push((target, None));
                     }
@@ -318,50 +347,6 @@ impl Dispatcher {
             }
         }
         Ok(selected)
-    }
-    fn select_constant(
-        &mut self,
-        facts: &mut Declarations,
-        instance: super::values::Instance,
-    ) -> Result<super::values::Instance, String> {
-        if let Some(&selected) = self.constants.get(&instance) {
-            return Ok(selected);
-        }
-        let Some(owner) = facts.associated.trait_owner(instance.definition) else {
-            return Ok(instance);
-        };
-        let arguments = arguments::Arguments::constant(facts, instance)?;
-        let predicate = arguments.goal(facts, owner)?;
-        if self.caller.is_none() && predicate.contains_parameters(&facts.types)? {
-            return Err("concrete constant retains unresolved arguments".into());
-        }
-        let (owner, arguments, evidence) = self.implementation(facts, predicate)?;
-        let definition = facts
-            .generics
-            .implementations
-            .as_ref()
-            .and_then(|registry| {
-                registry.available_constant(owner, instance.definition, self.availability)
-            })
-            .ok_or("selected implementation lacks the trait constant")?;
-        let result = if definition == instance.definition {
-            instance
-        } else {
-            super::values::Instance {
-                definition,
-                arguments,
-            }
-        };
-        let result = implementation::restore_constant(
-            facts,
-            &mut self.context,
-            result,
-            &evidence,
-            &self.obligations,
-        )?;
-        self.extend_evidence(evidence)?;
-        self.constants.insert(instance, result);
-        Ok(result)
     }
     fn implementation(
         &mut self,

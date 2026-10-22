@@ -3,6 +3,7 @@ use super::native;
 use std::path::{Path, PathBuf};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 const ACCEPTED: &[&str] = &[
+    "paid",
     "ordinary",
     "pattern",
     "inline",

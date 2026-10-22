@@ -66,8 +66,10 @@ debts. They do not close the following required families:
 - Selected type arguments containing open caller lifetimes now route through
   recursive, bounded Instance-keyed observation and actual caller ownership.
   Ordinary, pattern, inline, nested, projected and nested-callable controls execute.
-  A paid trait-implementation premise still requires actual caller proof before
-  specialization may assume it; a source handle alone grants no such authority.
+  Paid trait-implementation premises now execute after the actual caller's input
+  proof solves raw selection and equality debts, as recorded in
+  [the caller-premise checkpoint](pa25-caller-premises.md). A source handle alone
+  still grants no declared-premise authority.
   Unused rigid type parameters in generic constant patterns also remain a required
   positive family, separately from parameter-free open-Type routing.
 - Source-associated uses inside conditional nested-output contracts. The original
@@ -527,3 +529,9 @@ are exact. The raw PA20 stage still exits one for that retained review set; the
 closing comparison explicitly verifies its complete identity. Current-public
 case counts, the earlier oracle prerequisites, combined release and performance
 qualification remain integrator-owned.
+
+
+The requirement-level post-premise inventory is maintained in
+[PA25 completion gaps](pa25-completion-gaps.md). It separates demonstrated
+Rust-positive blockers from integrated coverage reconciliation and release work,
+and records the PA29 generic/const-body contracts needed for upstream core.

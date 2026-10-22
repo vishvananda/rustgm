@@ -315,6 +315,9 @@ impl Queries<'_> {
                 )
                 .map_err(|e| self.error(Query::Node(key), e))?;
         }
+        instance = self
+            .canonical_pattern_input(instance)
+            .map_err(|e| self.error(Query::Node(key), e))?;
         if let Some(scope) = self.pattern_scope {
             // Inherent values already retain their owner bounds from inference.
             // With no associated dependencies there is no implementation to select.

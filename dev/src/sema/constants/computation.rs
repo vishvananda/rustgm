@@ -8,6 +8,7 @@ pub(crate) use namespaces::{
     available as caller_namespace_available, published as caller_published, reserve_normalization,
     with_namespace, with_registered_namespace,
 };
+mod paid_inputs;
 mod seals;
 use super::{Declarations, Error, InitializerKind, NodeKey, Queries, Query, TypeId};
 use crate::{
@@ -110,6 +111,12 @@ impl SourceComputation {
         Ok(())
     }
 
+    pub(crate) fn paid_premises(self, facts: &Declarations) -> Result<bool, &'static str> {
+        let (entry, caller) = self.entry(facts)?;
+        entry.seal.map_or(Ok(false), |seal| {
+            seal.validate_paid(facts, entry.caller, caller)
+        })
+    }
     pub(crate) fn result(self, facts: &Declarations) -> Result<TypeId, &'static str> {
         Ok(self.entry(facts)?.0.requested)
     }
@@ -161,6 +168,7 @@ impl SourceComputation {
         if let Some(seal) = entry.seal {
             Self::shape(facts, entry.selected, entry.original)?;
             seal.validate(facts, entry.selected, result)?;
+            seal.validate_paid(facts, entry.caller, caller)?;
         } else {
             Self::schema(facts, entry.selected, entry.original, result)?;
         }
@@ -342,8 +350,8 @@ impl Queries<'_> {
         original: NodeKey,
         result: TypeId,
     ) -> Result<super::values::execution::Target, Error> {
-        SourceComputation::shape(self.typing.facts, selected, original)
-            .map_err(|e| self.error(Query::Node(original), e))?;
+        // Bound caller roots must first enter the exact parked dispatcher.
+        // Seal::prepare applies the unchanged shape gate in that owned namespace.
         let actual_result = result;
         let aliases = self
             .typing
@@ -355,7 +363,7 @@ impl Queries<'_> {
         let input = selected;
         self.with_parked_caller(
             aliases,
-            |dispatcher, facts, scope, reservation, regions, publication| {
+            |dispatcher, facts, scope, reservation, regions, publication, inputs| {
                 dispatcher.retain_source_aliases(facts, selected, regions)?;
                 let selected = selected.substitute(&mut facts.types, regions)?;
                 let result = regions.apply(&mut facts.types, result)?;
@@ -371,10 +379,20 @@ impl Queries<'_> {
                         result,
                     });
                 }
-                let seal = seals::Seal::prepare(facts, dispatcher, selected, result)?;
+                let publication = catalog::Publication::new(publication)?;
+                publication.validate(facts, scope.body)?;
+                let key = catalog::CallerKey {
+                    source: scope.body,
+                    declaration: scope.owner,
+                    universals: scope.binders,
+                    enclosing: catalog::Enclosing::Original,
+                };
+                let (selected, paid) =
+                    paid_inputs::select(facts, dispatcher, key, publication, inputs, selected)?;
+                let seal =
+                    seals::Seal::prepare(facts, dispatcher, selected, result)?.with_paid(paid)?;
                 let requested = seal.result();
                 dispatcher.reserve_pattern(facts, scope.body, reservation)?;
-                let publication = catalog::Publication::new(publication)?;
                 let known = facts
                     .source_computations
                     .as_deref()

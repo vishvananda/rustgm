@@ -54,7 +54,6 @@ impl State {
     pub(super) const fn region_frontier(&self) -> u32 {
         self.obligations.regions.end
     }
-    #[cfg(test)]
     pub(crate) const fn selection_steps(&self) -> usize {
         self.context.steps
     }
@@ -63,7 +62,17 @@ impl State {
         facts: &mut Declarations,
         universals: u32,
     ) -> Result<Self, &'static str> {
-        let mut state = Self::new(facts, None, Some((universals, 1)))?;
+        Self::instance_at(facts, universals, 1)
+    }
+
+    /// Keep an independent validated selection after the actual caller's last
+    /// allocation. Its returned proof still owns all new IDs and every debt.
+    pub(crate) fn instance_at(
+        facts: &mut Declarations,
+        universals: u32,
+        first: u32,
+    ) -> Result<Self, &'static str> {
+        let mut state = Self::new(facts, None, Some((universals, first)))?;
         state.availability = Availability::Validated;
         Ok(state)
     }

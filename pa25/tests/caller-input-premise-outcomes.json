@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "paid-ordinary",
+      "path": "tests/spec/caller-input-premises/paid-ordinary.rs",
+      "source_sha256": "b1b80dd790b18327eb6e09090793576317567fcb25e62c4e474ebfb650ebcfd4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": ""
+    },
+    {
+      "name": "paid-pattern",
+      "path": "tests/spec/caller-input-premises/paid-pattern.rs",
+      "source_sha256": "23e5902a90e62d816b3bbc7d3bd663c889c33b031eaa23e76c8b7e962c310cc7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": ""
+    },
+    {
+      "name": "unpaid-pattern",
+      "path": "tests/spec/caller-input-premises/unpaid-pattern.rs",
+      "source_sha256": "8f8dd00e9474383941463ef4b86c4f39320faa8715b3d8a20df3523605be4673",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "not paid by caller inputs"
+    },
+    {
+      "name": "paid-inline",
+      "path": "tests/spec/caller-input-premises/paid-inline.rs",
+      "source_sha256": "ec86eb4a981607a96046100986ef69c767560b8ba6c912b019732623941fc1d5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": ""
+    },
+    {
+      "name": "paid-nested",
+      "path": "tests/spec/caller-input-premises/paid-nested.rs",
+      "source_sha256": "41c404780d1639784adb250b7432f55b660186ce1a73b2d21605479358ae8017",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": ""
+    },
+    {
+      "name": "foreign-bound",
+      "path": "tests/spec/caller-input-premises/foreign-bound.rs",
+      "source_sha256": "416c92f9fcfc6171ba83c3565773057a43d074223df160d9efa591668ab276a4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "not paid by caller inputs"
+    },
+    {
+      "name": "body-debt",
+      "path": "tests/spec/caller-input-premises/body-debt.rs",
+      "source_sha256": "5f09780b7a7a5ec790c7d1ab011a2b05ad4778744934c5db3141885a3dd6a2eb",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "not paid by caller inputs"
+    },
+    {
+      "name": "cache-unpaid",
+      "path": "tests/spec/caller-input-premises/cache-unpaid.rs",
+      "source_sha256": "1888d4d991bfada8f1b621e8efbf8a128b44797ede612ae472b9d9011c659416",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "not paid by caller inputs"
+    },
+    {
+      "name": "nested-binder-unpaid",
+      "path": "tests/spec/caller-input-premises/nested-binder-unpaid.rs",
+      "source_sha256": "fe78b4bdba5069a26610f1b78badc30cff5d0eb9f9e160c250284bb558f33e4d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "not paid by caller inputs"
+    },
+    {
+      "name": "static-control",
+      "path": "tests/spec/caller-input-premises/static-control.rs",
+      "source_sha256": "b54ec3539a448a2d43da90f9ea17e53ec77a30d980f5844199f1a63ad98ac3c3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": ""
+    },
+    {
+      "name": "distinct-instances",
+      "path": "tests/spec/caller-input-premises/distinct-instances.rs",
+      "source_sha256": "0d36e36ab16ab4adaa0c5414964ccb86db8164a04d2a83a50b6cb68dbd088055",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": ""
+    },
+    {
+      "name": "unpaid-inline",
+      "path": "tests/spec/caller-input-premises/unpaid-inline.rs",
+      "source_sha256": "d7bd548fdce1190cae9a62b1cdbb19d1ae282f9e2ea1b0c41a576b6243808c7b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "status": "Qualified by Rust1.98 full object emission, checked views and native positives; original source hypotheses/failed probes remain in pa25-paid-premises evidence.",
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "not paid by caller inputs"
+    }
+  ]
+}

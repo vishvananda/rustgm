@@ -8,6 +8,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn frame(queries: &mut Queries<'_>, body: crate::resolve::unit::NodeKey) -> Result<FrameId, Error> {
     let id = queries.append_pattern_frame(Frame {
         source_regions: None,
+        inputs: None,
         prepared: None,
         cursor: 0,
         saved: None,
@@ -178,6 +179,7 @@ fn duplicate_entry_and_storage_preflight_do_not_consume_active_state() -> TestRe
     let before = frames.slots.len();
     let extra = Frame {
         source_regions: None,
+        inputs: None,
         prepared: None,
         cursor: 0,
         saved: None,

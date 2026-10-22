@@ -6,6 +6,7 @@ pub(super) struct Seal {
     selected: Instance,
     actual: TypeId,
     requested: TypeId,
+    paid: Option<super::paid_inputs::Paid>,
 }
 impl Seal {
     pub(super) const fn result(self) -> TypeId {
@@ -37,6 +38,7 @@ impl Seal {
             selected,
             actual,
             requested,
+            paid: None,
         })
     }
     pub(super) fn validate(
@@ -64,6 +66,28 @@ impl Seal {
             return Err("source result seal substituted declaration changed");
         }
         Ok(())
+    }
+    pub(super) fn with_paid(
+        mut self,
+        paid: Option<super::paid_inputs::Paid>,
+    ) -> Result<Self, &'static str> {
+        if paid.is_some_and(|paid| !paid.selects(self.selected)) {
+            return Err("paid source premise belongs to another selected instance");
+        }
+        self.paid = paid;
+        Ok(self)
+    }
+    pub(super) fn validate_paid(
+        self,
+        facts: &Declarations,
+        caller: super::catalog::CallerId,
+        key: super::catalog::CallerKey,
+    ) -> Result<bool, &'static str> {
+        let Some(paid) = self.paid else {
+            return Ok(false);
+        };
+        paid.validate(facts, caller, key, self.selected)?;
+        Ok(true)
     }
     pub(super) fn projected(self, facts: &Declarations) -> bool {
         facts.types.contains_projections(self.actual) == Some(true)

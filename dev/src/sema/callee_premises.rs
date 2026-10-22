@@ -1,4 +1,6 @@
 //! A checked callable's declared trait premises retain their specialized lifetime witnesses.
+mod input_proof;
+mod original_inputs;
 use super::{model::Declarations, nominals::traits::State};
 use crate::{
     resolve::model::DefId,
@@ -11,6 +13,8 @@ use crate::{
         substitute::Bound,
     },
 };
+pub(crate) use input_proof::Inputs;
+pub(in crate::sema) use original_inputs::OriginalInputs;
 use std::collections::HashMap;
 
 pub(crate) struct Assumptions {
@@ -28,8 +32,24 @@ pub(crate) fn specialize(
     substitution: &mut Bound,
     universals: u32,
 ) -> Result<Option<Assumptions>, &'static str> {
+    requirements(facts, owner, substitution, universals, 1)?
+        .map(|proof| witnesses(facts, proof, universals))
+        .transpose()
+}
+
+/// Return the selected implementation's debts before converting any of them
+/// into a checked callee's declared-premise witnesses. Source callers must prove
+/// this whole payload against their own actual inputs before using that route.
+pub(crate) fn requirements(
+    facts: &mut Declarations,
+    owner: DefId,
+    substitution: &mut Bound,
+    universals: u32,
+    first: u32,
+) -> Result<Option<Obligations>, &'static str> {
     let mut predicates = Vec::new();
     for predicate in facts.generics.declared_predicates_in_scope(owner) {
+        facts.body_work.canonical_steps += 1;
         let body = match predicate.value {
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
@@ -60,7 +80,7 @@ pub(crate) fn specialize(
         .into_iter()
         .map(|predicate| substitution.clause(&mut facts.types, predicate))
         .collect::<Result<Vec<_>, _>>()?;
-    clauses(facts, &predicates, universals)
+    clauses(facts, &predicates, universals, first)
 }
 
 /// Only an independently validated declared implementation condition may use
@@ -69,9 +89,11 @@ fn clauses(
     facts: &mut Declarations,
     predicates: &[Clause],
     universals: u32,
-) -> Result<Option<Assumptions>, &'static str> {
+    first: u32,
+) -> Result<Option<Obligations>, &'static str> {
     let mut state = None;
     for &predicate in predicates {
+        facts.body_work.canonical_steps += 1;
         if !predicate.has_free_regions(&facts.types)? {
             continue;
         }
@@ -79,19 +101,19 @@ fn clauses(
             return Err("instance premise retains an unresolved parameter");
         }
         if state.is_none() {
-            state = Some(State::instance(facts, universals)?);
+            let selected = State::instance_at(facts, universals, first)?;
+            facts.body_work.canonical_steps += selected.selection_steps();
+            state = Some(selected);
         }
-        if !state
-            .as_mut()
-            .ok_or("missing instance premise selection")?
-            .prove_clause(facts, predicate, true)?
-        {
+        let selected = state.as_mut().ok_or("missing instance premise selection")?;
+        let before = selected.selection_steps();
+        let proven = selected.prove_clause(facts, predicate, true);
+        facts.body_work.canonical_steps += selected.selection_steps().saturating_sub(before);
+        if !proven? {
             return Err("instance premise has no validated implementation");
         }
     }
-    state
-        .map(|state| witnesses(facts, state.finish(), universals))
-        .transpose()
+    Ok(state.map(State::finish))
 }
 
 /// A canonical implementation condition is validated even without lifetime
@@ -217,3 +239,7 @@ fn region(
     };
     Ok(region)
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/paid_selection.rs"]
+mod tests;

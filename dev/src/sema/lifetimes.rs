@@ -21,6 +21,46 @@ pub struct FunctionRegions {
     pub bounds: Vec<(crate::types::RegionId, crate::types::RegionId)>,
 }
 
+impl FunctionRegions {
+    /// Exact declaration-to-callable relocation; source slots stay distinct from
+    /// early callable arguments and the public late-bound function frame.
+    pub(crate) fn callable_mapping(
+        &self,
+        work: &mut usize,
+    ) -> Result<Vec<crate::types::RegionId>, &'static str> {
+        use crate::types::RegionId;
+        if self.total > 65_536 {
+            return Err("too many callable lifetime slots");
+        }
+        let mut mapping = vec![RegionId::STATIC; self.total as usize];
+        *work = work.saturating_add(mapping.len());
+        for (ordinal, &index) in self.late.iter().enumerate() {
+            *work = work.saturating_add(1);
+            *mapping
+                .get_mut(usize::from(index))
+                .ok_or("invalid callable late lifetime slot")? = RegionId::bound(
+                0,
+                u16::try_from(ordinal).map_err(|_| "too many callable parameters")?,
+            )?;
+        }
+        for ordinal in 0..self.captures as usize + self.early.len() {
+            *work = work.saturating_add(1);
+            let index = if ordinal < self.captures as usize {
+                ordinal
+            } else {
+                usize::from(self.early[ordinal - self.captures as usize].1)
+            };
+            *mapping
+                .get_mut(index)
+                .ok_or("invalid callable early lifetime slot")? = RegionId::bound(
+                1,
+                u16::try_from(ordinal).map_err(|_| "too many callable parameters")?,
+            )?;
+        }
+        Ok(mapping)
+    }
+}
+
 #[derive(Default)]
 pub struct Lifetimes {
     pub(crate) rigid_inputs: Option<Box<crate::types::variance::RigidInputs>>,

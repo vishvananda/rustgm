@@ -317,27 +317,12 @@ impl super::comparisons::LibraryContracts<'_> {
         {
             return Ok(());
         }
-        let mut mapping = vec![RegionId::STATIC; scheme.total as usize];
-        let captured = (0..scheme.captures)
-            .map(|index| {
-                u16::try_from(index)
-                    .map_err(|_| self.error(key, "too many captured lifetime parameters"))
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-        let early_slots = captured
-            .into_iter()
-            .chain(scheme.early.iter().map(|(_, index)| *index))
-            .collect::<Vec<_>>();
-        for (depth, indices) in [(0, scheme.late.as_slice()), (1, early_slots.as_slice())] {
-            for (ordinal, &index) in indices.iter().enumerate() {
-                mapping[usize::from(index)] = RegionId::bound(
-                    depth,
-                    u16::try_from(ordinal)
-                        .map_err(|_| self.error(key, "too many callable parameters"))?,
-                )
-                .map_err(|e| self.error(key, e))?;
-            }
-        }
+        let mut work = 0;
+        let mapping = scheme
+            .callable_mapping(&mut work)
+            .map_err(|e| self.error(key, e));
+        self.facts.body_work.canonical_steps += work;
+        let mapping = mapping?;
         let bound = |region: RegionId| -> Result<RegionId, Error> {
             if region == RegionId::STATIC {
                 return Ok(region);
@@ -360,7 +345,7 @@ impl super::comparisons::LibraryContracts<'_> {
             .collect::<Result<Vec<_>, Error>>()?;
         let late = u32::try_from(scheme.late.len())
             .map_err(|_| self.error(key, "too many late parameters"))?;
-        let early = u32::try_from(early_slots.len())
+        let early = u32::try_from(scheme.captures as usize + scheme.early.len())
             .map_err(|_| self.error(key, "too many early parameters"))?;
         let signature = crate::types::substitute::Bound::new(mapping)
             .signature(&mut self.facts.types, signature, late)

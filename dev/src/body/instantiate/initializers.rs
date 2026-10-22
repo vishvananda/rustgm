@@ -24,6 +24,7 @@ pub(crate) fn with_contract(
         anonymous::Selection::Initializer(instance),
         substitution,
         contract,
+        Premises::Required,
     )
 }
 fn materialize(
@@ -32,6 +33,7 @@ fn materialize(
     selection: anonymous::Selection,
     mut substitution: crate::types::substitute::Bound,
     mut contract: Contract,
+    premises: Premises,
 ) -> Result<Materialized, &'static str> {
     let (crate::body::ir::Owner::InitializerInstance { instance, .. }, _, _) =
         selection.owner(facts, &template.body)?
@@ -48,7 +50,7 @@ fn materialize(
         Some(&mut contract),
         None,
         Context {
-            premises: Premises::Required,
+            premises,
             cleanup: &mut cleanup,
         },
     )?;
@@ -76,6 +78,11 @@ pub(crate) fn source(
     {
         return Err("source computation selects another original initializer contract");
     }
+    let premises = if witness.paid_premises(facts)? {
+        Premises::Declared
+    } else {
+        Premises::Required
+    };
     if template.body.result == result && facts.types.needs_region_context(result) == Some(false) {
         let mut inputs = anonymous::initializer_inputs(facts, selected.selected)?;
         let (substitution, contract) = contracts::initializer(facts, original, &mut inputs)?;
@@ -86,6 +93,7 @@ pub(crate) fn source(
                 anonymous::Selection::SourceInitializer(witness),
                 substitution,
                 contract,
+                premises,
             )?,
             interface: None,
         });
@@ -119,6 +127,7 @@ pub(crate) fn source(
             anonymous::Selection::SourceInitializer(witness),
             substitution,
             contract,
+            premises,
         )?,
         interface: Some(ResultInterface {
             requested: result,

@@ -15,7 +15,7 @@ use std::collections::HashMap;
 #[cfg(test)]
 mod tests;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(in crate::sema) enum Availability {
     Validated,
     /// The declaration pipeline must validate every header before returning facts.

@@ -42,19 +42,19 @@ fn missing_foreign_and_stale_original_equalities_grant_no_alias()
             right: RegionId::bound(0, 0)?,
         },
     ];
-    let (mut fold, _) = prepared.caller_regions(&facts)?;
+    let (mut fold, _) = prepared.caller_regions(&facts, None)?;
     assert_eq!(fold.region(RegionId(1), 0)?, RegionId::bound(0, 0)?);
     assert!(fold.region(RegionId(3), 0).is_err());
     facts.region_equalities[1].body = other;
-    assert!(prepared.caller_regions(&facts).is_err());
+    assert!(prepared.caller_regions(&facts, None).is_err());
     facts.region_equalities[1].body = body;
     prepared.scope.proof = Some(Ranges::new(0..1, 1..1)?);
-    let (mut fold, _) = prepared.caller_regions(&facts)?;
+    let (mut fold, _) = prepared.caller_regions(&facts, None)?;
     assert!(fold.region(RegionId(1), 0).is_err());
     prepared.scope.proof = Some(Ranges::new(0..3, 3..3)?);
-    assert!(prepared.caller_regions(&facts).is_err());
+    assert!(prepared.caller_regions(&facts, None).is_err());
     prepared.scope.proof = None;
-    assert!(prepared.caller_regions(&facts).is_err());
+    assert!(prepared.caller_regions(&facts, None).is_err());
     assert_eq!(size_of::<Ranges>(), 16);
     assert_eq!(size_of::<Option<Ranges>>(), 16);
     Ok(())

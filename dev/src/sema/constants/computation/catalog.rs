@@ -23,6 +23,14 @@ pub(super) struct Handle {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct CallerId(NonZeroU32);
 
+/// A typed caller-row identity in this simultaneously live declaration catalog.
+/// It is neither an emitted identity nor a completed premise proof by itself.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) struct CallerOwner {
+    epoch: NonZeroU32,
+    caller: CallerId,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum Enclosing {
     Original,
@@ -170,6 +178,32 @@ impl Catalog {
         self.caller_indices.insert(key, id);
         self.bytes = bytes;
         Ok(id)
+    }
+    pub(super) fn caller_owner(&self, caller: CallerId) -> Result<CallerOwner, &'static str> {
+        self.callers
+            .get(caller.0.get() as usize - 1)
+            .ok_or("stale paid source caller")?;
+        Ok(CallerOwner {
+            epoch: self.epoch,
+            caller,
+        })
+    }
+    pub(super) fn validate_caller_owner(
+        &self,
+        owner: CallerOwner,
+        caller: CallerId,
+        key: CallerKey,
+    ) -> Result<(), &'static str> {
+        if owner.epoch != self.epoch
+            || owner.caller != caller
+            || self
+                .callers
+                .get(caller.0.get() as usize - 1)
+                .is_none_or(|row| row.key != key)
+        {
+            return Err("paid source caller belongs to another catalog or complete context");
+        }
+        Ok(())
     }
     /// Input validation and debt retention belong to the enclosing checked minting path.
     pub(super) fn retain_use(&mut self, value: Use) -> Result<Handle, &'static str> {

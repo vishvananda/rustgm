@@ -16,6 +16,7 @@ impl Queries<'_> {
         }
         let id = self.append_pattern_frame(Frame {
             source_regions: None,
+            inputs: None,
             prepared: None,
             cursor: 0,
             saved: None,
@@ -77,6 +78,7 @@ impl Queries<'_> {
         let scope = self.pattern_scope;
         let id = self.append_pattern_frame(Frame {
             source_regions: None,
+            inputs: None,
             prepared: None,
             cursor: 0,
             saved: None,

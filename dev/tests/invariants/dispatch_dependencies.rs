@@ -316,3 +316,97 @@ fn closed_dispatch_cache_stays_usable_with_unrelated_latent_collection_headers()
     );
     Ok(())
 }
+
+#[test]
+fn source_observer_borrows_only_each_selection_and_never_the_growing_prefix()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::{RegionId, outlives::Queries, relations::Constraints};
+    let (_, mut facts) = facts(
+        "trait A<'a,'b>{const C:usize;}struct S;impl<'a:'b,'b>A<'a,'b>for S{const C:usize=3;}fn main(){let _=<S as A<'static,'static>>::C;}",
+    )?;
+    let instance = *facts.constant_uses.values().next().ok_or("use")?;
+    let a = RegionId::bound(0, 0)?;
+    let b = RegionId::bound(0, 1)?;
+    let mut arguments = facts
+        .types
+        .arguments(instance.arguments)
+        .ok_or("arguments")?
+        .collect::<Vec<_>>();
+    arguments[0] = Argument::Lifetime(a);
+    arguments[1] = Argument::Lifetime(b);
+    let input = Instance {
+        arguments: facts.types.intern_arguments(&arguments)?,
+        ..instance
+    };
+    for (first, paid) in [(100, true), (300, false), (500, true)] {
+        let mut dispatch = Dispatcher::new(2, first)?;
+        let mut opening = crate::types::lifetime_proof::Obligations::new(first);
+        opening.regions.end = first + 2;
+        opening
+            .equalities
+            .extend([(RegionId(first), a), (RegionId(first + 1), b)]);
+        let mut fresh = 0;
+        let mut warm = 0;
+        let mut visits = 0;
+        let mut selected = None;
+        let mut observe =
+            |facts: &mut Declarations, observed: crate::sema::dispatch::ConstantProof<'_>| {
+                assert_eq!(observed.input, input);
+                assert!(matches!(observed.availability, Availability::Validated));
+                if let Some(proof) = observed.proof {
+                    fresh += 1;
+                    assert_eq!(proof.regions.start, first + 2);
+                    assert_eq!(observed.first, proof.regions.end);
+                    visits += proof.retained_allocation().visits;
+                    let mut constraints =
+                        Constraints::new(&facts.types, &facts.lifetimes.variances, 2, 1_000_000)
+                            .map_err(|e| e.to_string())?;
+                    if paid {
+                        constraints.assume(a, b).map_err(|e| e.to_string())?;
+                    }
+                    let mut queries = Queries::new(
+                        &facts.types,
+                        &facts.lifetimes.nominal_requirements,
+                        &facts.lifetimes.callables,
+                    );
+                    opening.require(&mut constraints, &mut queries)?;
+                    proof.require(&mut constraints, &mut queries)?;
+                    constraints.solve().map_err(|e| e.to_string())?;
+                    selected = Some(observed.selected);
+                } else {
+                    warm += 1;
+                    assert_eq!(
+                        selected,
+                        Some(observed.selected),
+                        "warm identity alone cannot mint authority"
+                    );
+                }
+                Ok(crate::sema::dispatch::ConstantDecision::Checked(None))
+            };
+        let result = dispatch.source_constant(&mut facts, input, &mut observe);
+        assert_eq!(result.is_ok(), paid);
+        if paid {
+            let expected = result?;
+            for _ in 0..128 {
+                assert_eq!(
+                    dispatch.source_constant(&mut facts, input, &mut observe)?,
+                    expected
+                );
+            }
+            assert_eq!((fresh, warm), (1, 128));
+            assert!(visits < 32);
+            assert!(
+                !dispatch.finish().is_empty(),
+                "observer must not consume caller debts"
+            );
+        } else {
+            assert_eq!(fresh, 1);
+            assert_eq!(warm, 0);
+            assert!(
+                !dispatch.constants.contains_key(&input),
+                "failed callback cannot publish selection"
+            );
+        }
+    }
+    Ok(())
+}

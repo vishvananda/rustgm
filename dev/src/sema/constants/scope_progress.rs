@@ -126,6 +126,7 @@ impl Queries<'_> {
         let bytes = scope.allocation().bytes;
         let id = self.append_pattern_frame(Frame {
             source_regions: None,
+            inputs: None,
             prepared: Some(scope),
             cursor: 0,
             saved: None,

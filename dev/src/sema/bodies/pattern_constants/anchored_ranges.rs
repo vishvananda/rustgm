@@ -80,12 +80,23 @@ impl PreparedScope {
             self.scope.values.binders as usize,
         ))
     }
+    #[cfg(test)]
     pub(in crate::sema) fn caller_regions(
         &self,
         facts: &Declarations,
+        inputs: Option<crate::sema::callee_premises::Inputs<'_>>,
     ) -> Result<(Bound, usize), &'static str> {
-        let mut equations = RegionEquations::default();
         let mut work = 0;
+        let fold = self.caller_regions_counted(facts, inputs, &mut work)?;
+        Ok((fold, work))
+    }
+    pub(in crate::sema) fn caller_regions_counted(
+        &self,
+        facts: &Declarations,
+        inputs: Option<crate::sema::callee_premises::Inputs<'_>>,
+        work: &mut usize,
+    ) -> Result<Bound, &'static str> {
+        let mut equations = RegionEquations::default();
         let ranges = self
             .scope
             .proof
@@ -104,13 +115,29 @@ impl PreparedScope {
                 return Err("pattern caller equality range has a foreign owner");
             }
         }
-        for slice in slices {
-            work += slice.len();
-            work += equations.extend(slice.iter().map(|fact| (fact.left, fact.right)))?;
+        if let Some(inputs) = inputs {
+            if inputs.source != self.scope.values.body
+                || inputs.universals != self.scope.values.binders
+            {
+                return Err("prepared input header belongs to another pattern caller");
+            }
+            equations = inputs.aliases(
+                facts,
+                slices
+                    .into_iter()
+                    .flatten()
+                    .map(|fact| (fact.left, fact.right)),
+                work,
+            )?;
+        } else {
+            for slice in slices {
+                *work += slice.len();
+                *work += equations.extend(slice.iter().map(|fact| (fact.left, fact.right)))?;
+            }
         }
         let mut fold = Bound::close_projection_regions(1, 0, HashMap::new())?;
         fold.exchange_projection_equations(&mut equations)?;
-        Ok((fold, work))
+        Ok(fold)
     }
 }
 

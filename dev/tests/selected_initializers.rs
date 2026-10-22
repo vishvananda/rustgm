@@ -11,6 +11,8 @@ mod closed;
 mod computed;
 #[path = "selected_initializers/open.rs"]
 mod open;
+#[path = "selected_initializers/paid.rs"]
+mod paid;
 #[path = "helpers/objects.rs"]
 mod rustc;
 #[path = "selected_initializers/type_arguments.rs"]

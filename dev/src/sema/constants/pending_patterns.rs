@@ -22,6 +22,7 @@ pub(super) struct Saved {
 }
 pub(super) struct Frame {
     pub prepared: Option<PreparedScope>,
+    pub inputs: Option<Box<crate::sema::callee_premises::OriginalInputs>>,
     pub source_regions: Option<Box<crate::types::substitute::Bound>>,
     pub cursor: usize,
     pub saved: Option<Saved>,

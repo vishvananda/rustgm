@@ -12,6 +12,7 @@ impl Queries<'_> {
             &mut Reservation,
             &mut crate::types::substitute::Bound,
             [std::ops::Range<usize>; 2],
+            crate::sema::callee_premises::Inputs<'_>,
         ) -> Result<T, String>,
     ) -> Result<T, String> {
         self.check_pattern_storage(0).map_err(|e| e.to_string())?;
@@ -93,6 +94,11 @@ impl Queries<'_> {
                 reservation,
                 regions,
                 publication,
+                parent
+                    .inputs
+                    .as_deref()
+                    .ok_or("missing parked caller inputs")?
+                    .view(),
             )
         })();
         self.restore_parked_caller(child, dispatcher)?;
@@ -178,7 +184,7 @@ impl Queries<'_> {
     }
 }
 
-fn same_scope(left: PatternScope, right: PatternScope) -> bool {
+pub(super) fn same_scope(left: PatternScope, right: PatternScope) -> bool {
     left.body == right.body
         && left.owner == right.owner
         && left.binders == right.binders

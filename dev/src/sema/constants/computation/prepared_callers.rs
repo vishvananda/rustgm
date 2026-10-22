@@ -15,13 +15,14 @@ pub(crate) enum PreparedConstant {
     Selected(Instance),
     Source(SourceComputation),
 }
-pub(crate) struct BodyCaller {
+pub(crate) struct BodyCaller<'a> {
+    inputs: Option<crate::sema::callee_premises::Inputs<'a>>,
     key: catalog::CallerKey,
     publication: catalog::Publication,
     aliases: Bound,
     reservation: Reservation,
 }
-impl BodyCaller {
+impl<'a> BodyCaller<'a> {
     pub(crate) fn needed(
         facts: &Declarations,
         instance: Instance,
@@ -65,12 +66,43 @@ impl BodyCaller {
                 .flatten()
                 .is_some_and(|ty| facts.types.contains_projections(ty) == Some(true)))
     }
+    #[cfg(test)]
     pub(crate) fn new(
         facts: &mut Declarations,
         source: NodeKey,
         enclosing: CallerInstance,
         universals: u32,
         equalities: impl IntoIterator<Item = Pair>,
+    ) -> Result<Self, &'static str> {
+        Self::new_using(facts, source, enclosing, universals, equalities, None)
+    }
+    pub(crate) fn with_inputs(
+        facts: &mut Declarations,
+        source: NodeKey,
+        enclosing: CallerInstance,
+        universals: u32,
+        equalities: impl IntoIterator<Item = Pair>,
+        inputs: crate::sema::callee_premises::Inputs<'a>,
+    ) -> Result<Self, &'static str> {
+        if inputs.source != source || inputs.universals != universals {
+            return Err("source caller inputs belong to another body or binder");
+        }
+        Self::new_using(
+            facts,
+            source,
+            enclosing,
+            universals,
+            equalities,
+            Some(inputs),
+        )
+    }
+    fn new_using(
+        facts: &mut Declarations,
+        source: NodeKey,
+        enclosing: CallerInstance,
+        universals: u32,
+        equalities: impl IntoIterator<Item = Pair>,
+        inputs: Option<crate::sema::callee_premises::Inputs<'a>>,
     ) -> Result<Self, &'static str> {
         let catalog = &facts
             .source_computations
@@ -89,12 +121,22 @@ impl BodyCaller {
             return Err("source caller body binder changed from its completed publication");
         }
         key.universals = universals;
-        let mut equations = RegionEquations::default();
-        let work = equations.extend(equalities)?;
+        let mut work = 0;
+        let equations = if let Some(inputs) = inputs {
+            inputs.prepare(facts)?;
+            inputs.aliases(facts, equalities, &mut work)
+        } else {
+            let mut equations = RegionEquations::default();
+            equations
+                .extend_counted(equalities, &mut work)
+                .map(|()| equations)
+        };
+        facts.body_work.canonical_steps += work;
+        let mut equations = equations?;
         let mut aliases = Bound::close_projection_regions(1, 0, std::collections::HashMap::new())?;
         aliases.exchange_projection_equations(&mut equations)?;
-        facts.body_work.canonical_steps += work;
         Ok(Self {
+            inputs,
             key,
             publication,
             aliases,
@@ -177,12 +219,24 @@ impl BodyCaller {
         if !Self::needed(facts, selected, result)? {
             return Ok(PreparedConstant::Selected(selected));
         }
+        let (selected, paid) = if let Some(inputs) = self.inputs {
+            super::paid_inputs::select(
+                facts,
+                dispatcher,
+                self.key,
+                self.publication,
+                inputs,
+                selected,
+            )?
+        } else {
+            (selected, None)
+        };
         let original = facts
             .initializer_index(selected.definition)
             .and_then(|n| facts.initializers.get(n))
             .ok_or("source operand has no original initializer")?
             .semantic_source();
-        let seal = Seal::prepare(facts, dispatcher, selected, result)?;
+        let seal = Seal::prepare(facts, dispatcher, selected, result)?.with_paid(paid)?;
         let requested = seal.result();
         dispatcher.reserve_pattern(facts, self.key.source, &mut self.reservation)?;
         let catalog = &mut facts

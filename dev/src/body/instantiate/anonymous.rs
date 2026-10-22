@@ -248,6 +248,10 @@ fn anonymous_inputs(
                 Some(crate::types::Kind::Closure { .. })
             ) {
                 inputs::closure(facts, callable, true)?
+            } else if let Some(inputs) =
+                inputs::original_function_context(facts, instance, original)?
+            {
+                inputs
             } else {
                 inputs::select(facts, callable)?
             }

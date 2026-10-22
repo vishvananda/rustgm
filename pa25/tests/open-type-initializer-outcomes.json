@@ -153,7 +153,7 @@
         "--emit-lowir": 0
       },
       "native": true,
-      "status": "Required positive frontier: selected initializer specialization must prove its declared impl premise from actual caller inputs before using it as evidence. Current candidate reaches actual lifetime rejection; no Declared authority from source handle.",
+      "status": "Qualified unchanged original positive: exact caller input proof pays raw declared implementation premises before source specialization; no source-handle authority.",
       "diagnostic": ""
     },
     {

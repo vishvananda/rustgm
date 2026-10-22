@@ -38,6 +38,12 @@ pub struct Body {
     last_child: Option<Id>,
     next_sibling: Option<Id>,
 }
+impl Body {
+    pub(crate) const fn context_owner(&self) -> NodeKey {
+        self.context_owner
+    }
+}
+
 pub struct RootFacts {
     pub node: super::model::NodeFacts,
     pub reference: Option<super::model::ReferenceAdjustment>,

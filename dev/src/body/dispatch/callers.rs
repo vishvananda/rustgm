@@ -2,11 +2,11 @@
 use super::{Body, Contract, Declarations, Kind, Rvalue};
 use crate::sema::{dispatch::Dispatcher, values::execution::BodyCaller};
 
-pub(super) fn prepare(
+pub(super) fn prepare<'a>(
     facts: &mut Declarations,
     body: &mut Body,
-    contract: &Contract,
-) -> Result<(Option<BodyCaller>, Dispatcher), String> {
+    contract: &'a Contract,
+) -> Result<(Option<BodyCaller<'a>>, Dispatcher), String> {
     let has_source = body
         .values
         .iter()
@@ -45,7 +45,7 @@ pub(super) fn prepare(
         let enclosing = body
             .owner
             .source_caller(facts, body.source, body.instance)?;
-        Some(crate::sema::values::execution::BodyCaller::new(
+        Some(crate::sema::values::execution::BodyCaller::with_inputs(
             facts,
             body.source,
             enclosing,
@@ -66,6 +66,15 @@ pub(super) fn prepare(
                         .iter()
                         .flat_map(|proof| proof.proof.root_equalities()),
                 ),
+            crate::sema::callee_premises::Inputs {
+                source: contract.source,
+                universals: contract.universals,
+                signature: contract.signature,
+                parameters: &contract.parameters,
+                assumptions: &contract.assumptions,
+                type_assumptions: &contract.type_assumptions,
+                require_result: contract.output.is_some() || contract.require_result_formation,
+            },
         )?)
     } else {
         None

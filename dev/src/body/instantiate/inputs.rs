@@ -121,6 +121,84 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
     })
 }
 
+/// A lifetime-only declaration context is not an invocation with erased arguments.
+/// Its exact anonymous Contract already retains the original slots and bounds.
+pub(super) fn original_function_context(
+    facts: &mut Declarations,
+    instance: crate::sema::inline_constants::InlineInstance,
+    original: &crate::body::regions::Contract,
+) -> Result<Option<Inputs>, &'static str> {
+    use crate::sema::inline_constants::{Context, InlineInstance};
+    let Context::Callable(callable) = instance.enclosing() else {
+        return Ok(None);
+    };
+    let Some(Kind::FunctionItem {
+        item,
+        signature,
+        arguments,
+    }) = facts.types.kind(callable.ty())
+    else {
+        return Ok(None);
+    };
+    if arguments != crate::types::GenericArgs::EMPTY {
+        return Ok(None);
+    }
+    let owner = DefId(item.0);
+    let Some(scheme) = facts.lifetimes.functions.get(&owner) else {
+        return Ok(None);
+    };
+    if scheme.captures == 0 && scheme.early.is_empty() {
+        return Ok(None);
+    }
+    let header = facts
+        .lifetimes
+        .callables
+        .get(item)
+        .ok_or("anonymous original callable lost its lifetime header")?;
+    let function = facts
+        .function_indices
+        .get(&owner)
+        .and_then(|&index| facts.functions.get(index))
+        .ok_or("anonymous original callable has no real function")?;
+    let inline = facts
+        .inline_constants
+        .as_deref()
+        .and_then(|registry| registry.get(instance.source()))
+        .ok_or("anonymous original callable has no typed inline body")?;
+    if facts.generics.has_parameters(owner)
+        || facts.definitions.get(item.0 as usize).copied().flatten() != Some(callable.ty())
+        || function.definition != owner
+        || function.body != Some(inline.context_owner())
+        || function.signature != signature
+        || header.parameters as usize != scheme.captures as usize + scheme.early.len()
+        || inline.universals != scheme.total
+        || original.key != crate::body::ir::BodyKey::Anonymous(instance.source())
+        || original.source != instance.source()
+        || original.universals != inline.universals
+        || InlineInstance::select(facts, instance.source(), instance.enclosing())? != instance
+    {
+        return Err("anonymous original callable context changed its declaration or binder");
+    }
+    let mut work = 0;
+    let mapping = scheme.callable_mapping(&mut work);
+    facts.body_work.canonical_steps += work;
+    let mut relocation = Bound::new(mapping?);
+    let late = u32::try_from(scheme.late.len()).map_err(|_| "too many callable late lifetimes")?;
+    let expected = relocation.signature(&mut facts.types, signature, late);
+    facts.body_work.canonical_steps += relocation.steps;
+    if expected? != header.signature {
+        return Err("anonymous original callable differs from its exact public relocation");
+    }
+    Ok(Some(Inputs {
+        caller: crate::sema::values::execution::CallerInstance::Inline(instance),
+        instance: None,
+        bindings: Vec::new(),
+        captures: Vec::new(),
+        comparison: None,
+        connections: None,
+    }))
+}
+
 pub(super) fn closure(
     facts: &mut Declarations,
     instance: Instance,
@@ -276,3 +354,7 @@ pub(super) fn owner(
         _ => Err("instance does not select its original body owner"),
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/original_contexts.rs"]
+mod tests;
