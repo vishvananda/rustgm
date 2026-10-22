@@ -255,6 +255,7 @@ fn materialize(
             .and_then(|c| c.signature)
             .ok_or("captured execution requires its specialized contract")?;
     }
+    inputs::prepare_signature(facts, body.owner)?;
     facts.prepare_opaque_storage()?;
     let needed = &mut cleanup.needed;
     if let Some(owned) = &source.owned {

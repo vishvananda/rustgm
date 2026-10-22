@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct S<'a,T>{s:&'a[T]}impl<'a,T> core::iter::Iterator for S<'a,T>{type Item=&'a T;fn next(&mut self)->Option<&'a T>{let s=self.s;match s{[first,rest @ ..]=>{self.s=rest;Some(first)},[]=>None}}}fn iter<'a,T,const N:usize>(a:&'a[T;N])->S<'a,T>{S{s:a}}fn main(){let mut n=0u8;for x in iter(&[2u8,3]){n+=*x;}check(n==5);}

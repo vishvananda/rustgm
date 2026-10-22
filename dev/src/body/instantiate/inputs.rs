@@ -5,8 +5,43 @@ use crate::{
     resolve::model::DefId,
     types::{Kind, TypeId, arguments::Argument, instance::Instance},
 };
+#[cfg(test)]
+#[path = "../../../tests/invariants/public_signature_storage.rs"]
+mod tests;
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
+
+/// The selected public callable keeps its own binder, distinct from the body's
+/// opened proof interface. Prepare its physical roots without substituting them
+/// again or treating field readiness as lifetime or callable evidence.
+pub(super) fn prepare_signature(
+    facts: &mut Declarations,
+    owner: Owner,
+) -> Result<(), &'static str> {
+    let Owner::Function { signature, .. } = owner else {
+        return Ok(());
+    };
+    let Some(Kind::Function {
+        parameters, result, ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("selected function owner has no public signature");
+    };
+    let count = facts
+        .types
+        .list(parameters)
+        .ok_or("invalid public parameters")?
+        .len();
+    for index in 0..count {
+        let ty = facts
+            .types
+            .list(parameters)
+            .ok_or("invalid public parameters")?[index];
+        facts.aggregates.prepare(&mut facts.types, ty)?;
+    }
+    facts.aggregates.prepare(&mut facts.types, result)
+}
+
 pub(super) struct Inputs {
     pub(super) caller: crate::sema::values::execution::CallerInstance,
     pub(super) instance: Option<Instance>,

@@ -721,6 +721,178 @@
         "status": 1,
         "emit": "obj"
       }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/checked-shared-split.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "db2a27197b3d1e61c275684c83a310d124c29cfb88851e6b9031e6c954646ed1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/checked-split-no-copy.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "fbe78e12537e2d7d15ebd8c3e686532b2888312e8e6f046502e22e86b84f2b85",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/checked-split-empty-zst.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "f940c64c46b9c3fea859dc0aebb339a70fa38aee9980340621f6a60705b404b7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/checked-array-unsizing.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "4a320ba26659df0bc82e63b45b8b5cbc4780cf9657dbe3812c77c8fec159d90f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/qualified-generic-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "3530d12077b3634588c42886ce16df8ffdbcd61ccb0c30aa43f9378890ea031b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/inherent-generic-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "24d47d324f6f7859bf958c8bc426d0313df676b88bcd67ff33ea230424098f4d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/generic-function-option-ref.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "777ae6c31d1a98372b345e780b200405f7c4dc1a0655a0ae97979c9453b14de3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/reified-generic-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "37bbdbe2811234ee77d783c6e51e77c9fa34a02f51e9002d71ec0e4d3dbb5894",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/item-escape-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "57d0127fbe89b27f99df7c78f0c9741bb2195d323ff7e419e1055641a0de6013",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/generic-storage/pointee-loan-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "9dc2399b33d48e6c4a3e5343711d68642b0995bf237a489813d023a133836ff7",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
     }
   ]
 }

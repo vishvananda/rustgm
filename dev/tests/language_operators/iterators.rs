@@ -2,6 +2,16 @@
 use super::{mutation::frontend, native, rustc};
 use std::path::{Path, PathBuf};
 const CASES: &[(&str, bool)] = &[
+    ("generic-storage/checked-shared-split", true),
+    ("generic-storage/checked-split-no-copy", true),
+    ("generic-storage/checked-split-empty-zst", true),
+    ("generic-storage/checked-array-unsizing", true),
+    ("generic-storage/qualified-generic-next", true),
+    ("generic-storage/inherent-generic-next", true),
+    ("generic-storage/generic-function-option-ref", true),
+    ("generic-storage/reified-generic-next", true),
+    ("generic-storage/item-escape-reject", false),
+    ("generic-storage/pointee-loan-reject", false),
     ("owned-iterator", true),
     ("explicit-into-iterator", true),
     ("generic-into-iterator", true),
@@ -81,15 +91,37 @@ fn custom_iteration_matches_declared_outcomes() -> Result<(), Box<dyn std::error
 #[test]
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn custom_iteration_preserves_calls_loans_and_cleanup() -> Result<(), Box<dyn std::error::Error>> {
+    native_cases("parallel/pa26/iteration/native", |name| {
+        name != "no-prelude-iterator"
+    })
+}
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn generic_iteration_preserves_public_signature_storage() -> Result<(), Box<dyn std::error::Error>>
+{
+    native_cases("parallel/pa26/iteration/generic-storage-native", |name| {
+        name.starts_with("generic-storage/")
+    })
+}
+fn native_cases(
+    evidence: &str,
+    include: impl Fn(&str) -> bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     let check = "fn check(b:bool){if !b{let z=0;let _=1/z;}}";
     let sources = CASES
         .iter()
-        .filter(|case| case.1 && case.0 != "no-prelude-iterator")
+        .filter(|case| case.1 && include(case.0))
         .map(|case| Ok((case.0, std::fs::read_to_string(fixture(case.0))?)))
         .collect::<Result<Vec<_>, std::io::Error>>()?;
     let cases = sources
         .iter()
-        .map(|(name, source)| (*name, source.strip_prefix(check).unwrap_or(source), false))
+        .map(|(name, source)| {
+            (
+                name.strip_prefix("generic-storage/").unwrap_or(name),
+                source.strip_prefix(check).unwrap_or(source),
+                false,
+            )
+        })
         .collect::<Vec<_>>();
-    native::check_cases("parallel/pa26/iteration/native", &cases)
+    native::check_cases(evidence, &cases)
 }
