@@ -16,6 +16,9 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<bool, Error> {
+        if self.schedule_primitive_constant(key, context, steps, limit, scan)? {
+            return Ok(true);
+        }
         if self.schedule_trait_callable(key, context, steps, limit, scan)? {
             return Ok(true);
         }
@@ -55,6 +58,9 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
+        if self.complete_primitive_constant(key)? {
+            return Ok(());
+        }
         if self.complete_slice_prefix(key, context, steps, limit, scan)? {
             return Ok(());
         }

@@ -1334,6 +1334,17 @@ impl Checker<'_> {
         reason = "typed expression constraints keep operand and result relationships in one dispatch"
     )]
     fn expression(&mut self, node: NodeId) -> Result<TermId, Error> {
+        if let Some(value) = super::primitive_constants::selected(self.facts, self.key(node))
+            .map_err(|e| self.error(node, e))?
+        {
+            let ty = self
+                .facts
+                .types
+                .constant(value)
+                .ok_or_else(|| self.error(node, "missing primitive constant value"))?
+                .ty;
+            return self.known(node, ty);
+        }
         match self.kind(node) {
             Kind::Match { value, arms } => self.match_result(node, value, arms),
             Kind::Arm { guard, value, .. } => {

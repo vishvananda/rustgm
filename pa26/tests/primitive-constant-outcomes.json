@@ -1,0 +1,1072 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/primitive-constants/max-u8.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "f31326a1e2adb27b6e1defca0463f8b1beff5cfdc0603ce3fcb9a4e667c498bb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-u16.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "207ba4c9e6b9347b60ab7ec10de691242472ac1cf7b506403c2d94349766367a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-u32.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "f8d190077b83a8b6e6db929d5eee890680d4cdbe129b54e8ccc76c6737a6f0f0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-u64.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "01dcae71c8a5c4518622abb2959bb6126dfb97ed6a144ffb8bc5d19680d58899",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-u128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "db1dbb495dac0ee3659f9fe3ea9c0d45056bd7ebc228f66756b1fe1def8309c6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-usize.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "5ce709ae8e215f52ef5181308cda9126277a5db5455af4ba47d6b72d48d0c5d5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-i8.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "2c4a3508988f890b3a9c5f8c3db75b9115172ade0526bf9f80d73a8d63da3d16",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-i16.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "9cb64211dce14a85fe76c7eaec93b138f4c94db9e17f2a2cf7842f261ee5d1a6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-i32.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "659e5f7b36f1f063734a410aca0f8538b63ac178c808713b97e43bb7e5daa9b3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-i64.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "1dc316aa302b704565321d610e30871c9e8d93840d5da01f2d898562ebde59a4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-i128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "ba0c6e67db7d0a706e884d6c22c8b8a4e2fac270bd46ab4b5dd1fc416702264a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/max-isize.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "e7a587ebc7aba90bc84211e207dddbd862ded8a11b8dc5a9663132d826e11fe7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/type-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "b844278f21201975e3faefe7d0c123a95441bdddbde2e4fc46b5d1df7c6ac495",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/nested-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "b77bea725413d70a80b39ef954509dff34ab0a6fb691a41f1c5be85a1c73cd52",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/inherent-self.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "7698a1b64dc79ffab768a723f2d81a772832788ea35c8d087dae95a69fb426a2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/qualified-type.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "aac06c2c1303e3944c2f0339b9684684ba506a1d671acf4eab41d761d1e714d2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/core-primitive.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "07d691fc91bce0a6ecbccc38376c1f09b2a4c43b2999d0bb0c006d132b4389b0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/std-primitive.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "386f2290da79d41c0b709c12273e49d5746edb6ce95799eee3bbce5735987ec5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/no-prelude.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "7d768d9ab4c168072a1b227eff5e3be248220a75c1881a7fafbdfd3ef1e5fd3f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/lexical-lookalike.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "0efb24bd00efe3f5cdf086866c40f01fe6d9a357c84f304dca7b66af3f8257aa",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/nominal-alias-lookalike.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "7af839d3fdc3c0fd9d910ac590ae77ac7c3c7d108e9d940b3b055963d69f9d22",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/explicit-trait-owner.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "58cb434cf411212d7c573c49e6fd488175c68d9f0610e908b75bb848f0eaf6e4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/trait-generic-owner.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "bbbe5868db4196394a977984f5269c2936cef10b5a2aece015cc26fde62836f7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/promotion.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "30d96fda1c76b32ad51292b0fd025ec6c5ba0b0bf0be19282e6b4eb92fc0e9f0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/mutable-temporary.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "b577bb34d05bc806430b21f9c7885ed9ff40f200e9e87ba11959e1ebd36055a7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/constant-pattern.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "b1404ce7e607d5ba8e51dc3a03964cef586b074515753d6cd46d660182b1dc56",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/const-generic.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "95b64f2e61cb7931c1ef882f858ef7473ae9c09645450c348a7504da4d520310",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/inline-constant.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "126797e4c101768651705615022038c87bb8629bd08268b77f7080a87ed89d07",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/wrong-result.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "53012eaa65c7b3be88b4e9435c43e60df8d1681a25bdce12fd7c99528254581e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/member-arguments.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "5e5da326a89f33c872a309d7e75b9994d9ca270e5eb93e0489fed7d532050e38",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/primitive-arguments.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "07d22ac44286a998ff7a13f0613b799ee581762743b7eba640983e7fc4c2481d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/not-callable.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "07bc5f106e58985a4c15affe160b38784de56e1f793acf619b0893ff517084c5",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/assign-constant.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "c3e28509606b783cd813b19691d04dc7cb8d47f0f1fa6750d1b253c8cc60b8c2",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/bool-no-member.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "8d56bf9dfc26f80623b914321a90278cb361481057d6a9f0569783fbbe2af299",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/str-no-member.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "c6792c6659f907f10aabbac0312e6e66ab78f7d6456073ccc192dc361e1de0da",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/unbounded-generic.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "15cfc1049fa9699b89843fe55706cd0e2c646938dcbe632f37d49609f0a7351e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/primitive-import.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "a2f9dfb04d8635753a40118d4617c420de9cd0f9fde0be0d02c2334f8372ca0b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/float-required.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "7419b303197de90adbd19de01526b341c6325458a1262c7c6842bba26c74a544",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "required_gap": "Rust-positive primitive constant not yet implemented"
+    },
+    {
+      "path": "tests/spec/primitive-constants/char-required.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "5ca261b7ead6180554e917836eeb0207ddd3ea6634e69d5a8505f73c3daee44b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "required_gap": "Rust-positive primitive constant not yet implemented"
+    },
+    {
+      "path": "tests/spec/primitive-constants/impl-self.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "79ec781924eb400cb02b386c756d74622a42baa92d727d917348581ede71b184",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/impl-self-constant-precedence.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "e622c759e559c4dd2267f74bff9686b26b7318b52bf53f9efd860cf7d1b9dcc7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/impl-self-explicit-trait.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "80e6db2f45b396c7c95f67f1585174d7cc6509d30a638bdd3549c0e7d9957690",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/trait-default-self.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "258c2bbf9be7c7e7aa5a758f9d79dce33356c8ab0dc45640dc2cd31aaea81cb8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/forward-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "29e3a29f8189253882546d4bb05d5759130d7ab76a401b603e5af65e5b6077dd",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/shadow-with-canonical-escape.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "41444e675e28519f493f2c3b63379b977dc3a10202019a222ebd886109ba08db",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/source-core-lookalike.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "20faf62b3cf95f56b89171856212cbd16f708d077dfc17fca288555754dd47ea",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/direct-pattern.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "a9a332e0dd14cc22ad4f3effaf718a08d60e297786ca35b637162e618e568dd6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/range-pattern.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "524c76ef9a02e68d190015ec471d8f0a2e448d3936240aadd7064b617aebe8fa",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/self-in-initializer.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "cd0797191df454390c696cc73203e5c73305aeee6fec13c9e182c91001536550",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/aliased-self-priority.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "53cb67fff2fb5fbbfe5262377a72815d6a0c0644749cedaede52a28abebee033",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/empty-prefix-arguments.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "6e78eeec6f40cf0ca9e73a064a706c007046914fb788047d83479f19caea8052",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/empty-member-arguments.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "70115ebeaaa5f7933a1d8ae2f5ab45853eae30b85b6113b23be502ecb25f2d3d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/no-implicit-prelude-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "d461c9895a5e9dbadcf47aa586d55700201c2c3d771e55652960a8c79293625f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/bool-trait-constant.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "5efdeebe600b8dcb1b36ce1beafaf049a2eb43f33b8571db5d9a642b6e69cb36",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/float-trait-priority.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "92f169294346232bf7ca34524162e4835b2cb56177fc991ccc1bde041d9b8893",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/alias-nominal-constant.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "4e4f8e7c4b245bfbac29cd283cedfd7272408ffecf7c54580ee472880d552a7a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/generic-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "c4da272a8d0245698c0365b39aa037f05f59f33eba7e2846b10ed76e2e206669",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/nested-generic-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "c62ace1f8807b9cc44415e898c42b4f6b7cce091970d21e75424ba5329be49cb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/projected-concrete-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "16180d810a17838d9ad180771d04d5b11df7ac236d0d4b909ad5057b8f409695",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/generic-alias-wrong-arity.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "2a44b5f260f480951ccf939126ec134631df559c6284200146f1a7c93781f8a3",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/generic-alias-unresolved.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "ec324424a48b5cb1456a0801586707bd5538784aa999eb5d6dc0e69522995281",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/primitive-constants/generic-nominal-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.primitive-constants"
+      ],
+      "source_sha256": "a1aef606995e38b857bd56c1ebc01f9beb6a55de5bf00b7f764d1f3654469539",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

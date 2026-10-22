@@ -1414,6 +1414,17 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing local place"))
     }
     fn path(&mut self, node: NodeId) -> Result<Rvalue, Error> {
+        if let Some(value) = crate::sema::primitive_constants::selected(
+            self.facts,
+            NodeKey {
+                file: self.body.source.file,
+                node,
+            },
+        )
+        .map_err(|e| self.error(node, e))?
+        {
+            return Ok(Rvalue::ConstArgument(value));
+        }
         if let Some(Operation::Construct { variant }) = self.fact(node)?.operation {
             let start = self.index(node, self.body.arguments.len())?;
             return Ok(Rvalue::Aggregate {

@@ -115,6 +115,20 @@ impl Builder<'_> {
                 }
                 self.scratch.work.push(Work::Place(value));
             }
+            Kind::Path { .. } | Kind::Name(_)
+                if crate::sema::primitive_constants::selected(
+                    self.facts,
+                    crate::resolve::unit::NodeKey {
+                        file: self.body.source.file,
+                        node,
+                    },
+                )
+                .map_err(|e| self.error(node, e))?
+                .is_some() =>
+            {
+                self.scratch.work.push(Work::TemporaryPlace(node));
+                self.enter_materialized(node);
+            }
             Kind::Path { .. } | Kind::Name(_) => {
                 let Some(Target::Definition(definition)) = self.fact(node)?.reference else {
                     return Err(self.error(node, "missing place resolution"));

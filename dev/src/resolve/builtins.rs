@@ -1,6 +1,7 @@
 //! Demand-created language trait metadata, resolved through ordinary namespaces.
 mod intrinsics;
 mod library;
+mod primitives;
 mod traits;
 use super::{
     index::{Context, Resolver},
@@ -165,6 +166,7 @@ impl Resolver<'_> {
         }
         self.prepare_trait_metadata(c, node, absolute, path)?;
         if !library_shadowed {
+            self.prepare_primitive_module(c, node, absolute, path)?;
             self.prepare_library_metadata(c, node, absolute, path)?;
             self.prepare_intrinsic_metadata(c, node, path)?;
         }

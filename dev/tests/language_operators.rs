@@ -148,3 +148,6 @@ mod collections;
 
 #[path = "language_operators/lexicographic.rs"]
 mod lexicographic;
+
+#[path = "language_operators/limits.rs"]
+mod limits;

@@ -472,7 +472,8 @@ impl Resolver<'_> {
                     LibraryType::from_name(spelling).is_some()
                         || matches!(
                             spelling,
-                            "Some"
+                            "primitive"
+                                | "Some"
                                 | "None"
                                 | "Ok"
                                 | "Err"

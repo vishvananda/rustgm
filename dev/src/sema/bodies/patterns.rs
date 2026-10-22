@@ -220,6 +220,13 @@ impl Checker<'_> {
                 }
                 Ok(PatternKind::Or(Alternatives { start, end }))
             }
+            Kind::Path { .. } | Kind::Qualified { .. }
+                if super::super::primitive_constants::selected(self.facts, self.key(node))
+                    .map_err(|e| self.error(node, e))?
+                    .is_some() =>
+            {
+                self.scalar_pattern(node, term)
+            }
             Kind::Binding { .. } | Kind::Path { .. } | Kind::Qualified { .. }
                 if self.pattern_constant(node).is_some() =>
             {

@@ -72,6 +72,20 @@ impl Checker<'_> {
         };
         let value = if let Kind::Literal(index) = self.kind(literal) {
             self.literal(literal, index)?
+        } else if !negative
+            && let Some(value) =
+                super::super::primitive_constants::selected(self.facts, self.key(literal))
+                    .map_err(|e| self.error(literal, e))?
+        {
+            let ty = self
+                .facts
+                .types
+                .constant(value)
+                .ok_or_else(|| self.error(literal, "missing primitive pattern constant"))?
+                .ty;
+            let value = self.known(literal, ty)?;
+            self.request_pattern_node(literal, None);
+            value
         } else if !negative && let Some(definition) = self.pattern_constant(literal) {
             let value = self.pattern_constant_term(literal, definition)?;
             self.request_pattern_constant(literal, definition, None);

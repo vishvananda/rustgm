@@ -105,6 +105,9 @@ impl Checker<'_> {
         self.state.pattern_constants = true;
     }
     pub(super) fn request_pattern_literal(&mut self, node: NodeId, pattern: PatternId) {
+        self.request_pattern_node(node, Some(pattern));
+    }
+    pub(super) fn request_pattern_node(&mut self, node: NodeId, pattern: Option<PatternId>) {
         let key = self.key(node);
         self.state
             .pending_patterns
@@ -113,7 +116,7 @@ impl Checker<'_> {
             .push((
                 key,
                 super::super::constants::PatternValue::Literal(key),
-                Some(pattern),
+                pattern,
             ));
         self.state.pattern_constants = true;
     }

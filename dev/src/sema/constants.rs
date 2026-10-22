@@ -874,6 +874,18 @@ impl Queries<'_> {
         reason = "One typed expression dispatch validates constant eligibility and retains its selected dependencies"
     )]
     fn classify(&mut self, key: NodeKey) -> Result<Expression, Error> {
+        if let Some(value) = super::primitive_constants::selected(self.typing.facts, key)
+            .map_err(|e| self.error(Query::Node(key), e))?
+        {
+            let value = values::Constant::argument(&self.typing.facts.types, value)
+                .map_err(|e| self.error(Query::Node(key), e))?
+                .ok_or_else(|| self.error(Query::Node(key), "unresolved primitive constant"))?;
+            return Ok(Expression::Value(Value::Scalar(
+                value
+                    .as_scalar()
+                    .map_err(|e| self.error(Query::Node(key), e.message()))?,
+            )));
+        }
         if self
             .typing
             .facts

@@ -308,3 +308,14 @@ implemented programs execute independently and through CPPGM. Sequence ordering,
 tuple/str comparisons and other required hooks remain unfinished. See
 `docs/pa26-sequence-equality.md` for lazy contract publication, size/scaling
 controls and exact text review. This does not activate PA26.
+
+## Maintainer integer MAX checkpoint
+
+The twelve integer primitives now expose canonical typed `MAX` constants through
+ordinary qualified paths, aliases, constant queries and scalar patterns. A lazy
+value-use owner keeps them separate from callable factories and source
+initializers; `Self::MAX` preserves inherent-versus-trait precedence.
+`tests/primitive-constant-outcomes.json` declares source and native controls;
+`docs/pa26-integer-max.md` records the implementation, layout and evidence.
+Float/char MAX, other primitive constants and legacy numeric modules remain
+required work. PA26 remains planned.

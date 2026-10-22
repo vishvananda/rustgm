@@ -32,6 +32,7 @@ mod method_paths;
 mod method_prefix;
 mod methods;
 mod objects;
+mod primitive_constants;
 mod projections;
 mod receivers;
 mod slice_methods;
