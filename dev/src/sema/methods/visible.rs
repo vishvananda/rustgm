@@ -1,4 +1,5 @@
 //! Trait lookup consumes final lexical bindings and shares inherited candidate lists.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
         expansion::Report,
@@ -8,10 +9,7 @@ use crate::{
     sema::model::Declarations,
     types::ItemId,
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub(super) struct Index {
@@ -175,7 +173,7 @@ impl Index {
         let Some(traits) = self.scopes.remove(&scope) else {
             return Ok(());
         };
-        let mut names: HashMap<NameId, Vec<DefId>> = HashMap::new();
+        let mut names: HashMap<NameId, Vec<DefId>> = HashMap::default();
         for owner in traits {
             self.account(1 + self.members.get(&owner).map_or(0, HashMap::len))?;
             if let Some(members) = self.members.get(&owner) {

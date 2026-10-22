@@ -1,6 +1,7 @@
 //! Closed-profile equality obligations with a greatest fixed point for reference cycles.
 use super::{ItemId, Kind, Primitive, Store, TypeId, aggregate::Definitions};
-use std::{collections::HashMap, hash::BuildHasher};
+use crate::support::hash::HashMap;
+use std::hash::BuildHasher;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Properties {
@@ -60,7 +61,7 @@ impl Equality {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &std::collections::HashMap<ItemId, Properties, S>,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
         self.demand_with_copy(types, definitions, selected, ty, |_| {
@@ -76,7 +77,7 @@ impl Equality {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &std::collections::HashMap<ItemId, Properties, S>,
         ty: TypeId,
         mut copy: impl FnMut(TypeId) -> Result<bool, &'static str>,
     ) -> Result<Properties, &'static str> {
@@ -149,7 +150,7 @@ impl Query {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &std::collections::HashMap<ItemId, Properties, S>,
         known: &HashMap<TypeId, Properties>,
         copy: &mut impl FnMut(TypeId) -> Result<bool, &'static str>,
         scope: Option<(ItemId, Properties)>,

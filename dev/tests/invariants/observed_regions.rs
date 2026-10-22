@@ -13,8 +13,8 @@ fn reference(store: &mut Store, region: RegionId) -> Result<TypeId, &'static str
 #[test]
 fn observed_free_ids_preserve_nested_binders_and_fixed_restore_authority()
 -> Result<(), &'static str> {
-    assert_eq!(size_of::<Bound>(), 208);
-    assert_eq!(size_of::<Mapping>(), 80);
+    assert_eq!(size_of::<Bound>(), 192);
+    assert_eq!(size_of::<Mapping>(), 64);
     let mut store = Store::default();
     let local = reference(&mut store, RegionId::bound(0, 0)?)?;
     let outer = reference(&mut store, RegionId(19))?;
@@ -31,7 +31,7 @@ fn observed_free_ids_preserve_nested_binders_and_fixed_restore_authority()
     assert_eq!(fold.collect_observed_free_regions()?, [RegionId(19)]);
     fold.validate_observation_owner()?;
     assert!(fold.validate_restore_owner().is_err());
-    let mut restore = Bound::restore_budgeted_regions(HashMap::new(), 1000, 1 << 20)?;
+    let mut restore = Bound::restore_budgeted_regions(HashMap::default(), 1000, 1 << 20)?;
     assert!(restore.region(RegionId(19), 0).is_err());
     assert!(restore.validate_observation_owner().is_err());
     let mut ordinary = Bound::observe_regions();

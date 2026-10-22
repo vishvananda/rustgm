@@ -2,7 +2,7 @@
 mod propagate;
 mod verify;
 use super::graph::{Region, Solution};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Point(pub u32);
@@ -205,8 +205,8 @@ pub fn infer(
         result: Liveness {
             points,
             regions: proof.regions,
-            masks: HashMap::new(),
-            full: HashSet::new(),
+            masks: HashMap::default(),
+            full: HashSet::default(),
             word_count: 0,
             steps: 0,
         },

@@ -67,7 +67,7 @@ pub struct Traits {
     pub(super) ops: Option<ScopeId>,
     entries: [Option<DefId>; 11],
     callables: Option<Box<[Callable; 3]>>,
-    language: std::collections::HashMap<Hook, Language>,
+    language: crate::support::hash::HashMap<Hook, Language>,
     comparisons: Option<Box<comparisons::Comparisons>>,
     iteration: Option<Box<iteration::Registry>>,
 }

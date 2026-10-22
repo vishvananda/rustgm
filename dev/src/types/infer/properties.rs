@@ -1,12 +1,13 @@
 //! Built-in predicate possibility after isolated equations, under actual caller assumptions.
 use super::{Constructor, Context, Error, Store, TermId, TypeId, Value};
+use crate::support::hash::HashMap;
 use crate::types::{
     ItemId, Primitive,
     aggregate::Definitions,
     copy::{Copies, Declaration, Properties},
     parameters::{environment::Environment, shape::Shapes},
 };
-use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
+use std::{hash::BuildHasher, sync::Arc};
 
 #[derive(Clone, Copy)]
 pub struct Possible {
@@ -37,7 +38,7 @@ impl Query {
     #[must_use]
     pub fn new(environment: Arc<Environment>) -> Self {
         Self {
-            cache: HashMap::new(),
+            cache: HashMap::default(),
             copies: Copies::for_derive(Some(Arc::clone(&environment))),
             shapes: Shapes::new(environment),
         }
@@ -49,7 +50,7 @@ impl Query {
         context: &mut Context,
         store: &mut Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Declaration, S>,
+        selected: &std::collections::HashMap<ItemId, Declaration, S>,
         root: TermId,
     ) -> Result<Possible, &'static str> {
         let root = context.root(root).map_err(inference)?;
@@ -132,7 +133,7 @@ impl Query {
         &mut self,
         store: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Declaration, S>,
+        selected: &std::collections::HashMap<ItemId, Declaration, S>,
         ty: TypeId,
     ) -> Result<Possible, &'static str> {
         let field_only = match store.kind(ty) {
@@ -160,7 +161,7 @@ fn partial<S: BuildHasher>(
     kind: Constructor,
     children: &[Possible],
     definitions: &Definitions,
-    selected: &HashMap<ItemId, Declaration, S>,
+    selected: &std::collections::HashMap<ItemId, Declaration, S>,
 ) -> Possible {
     let mut value = Possible::UNKNOWN;
     match kind {

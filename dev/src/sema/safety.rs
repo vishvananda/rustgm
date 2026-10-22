@@ -5,7 +5,7 @@ use crate::resolve::{
     package::{Error, ModuleId},
     unit::NodeKey,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Level {

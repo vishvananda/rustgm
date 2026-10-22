@@ -6,12 +6,12 @@ use super::{
     package::{Error, ModuleId},
     unit::NodeKey,
 };
+use crate::support::hash::HashSet;
 use crate::support::library_types::LibraryType;
 use crate::syntax::{
     ast::{Kind, List, NodeId, TypeFlavor},
     item::{GenericFlavor, ItemKind},
 };
-use std::collections::HashSet;
 impl Resolver<'_> {
     pub fn bodies(&mut self) -> Result<(), Error> {
         for index in 0..self.package.modules.len() {
@@ -103,11 +103,11 @@ impl Resolver<'_> {
                 self.optional(c, ty, Namespace::Type)?;
                 self.optional(c, value, Namespace::Value)?;
                 self.optional(c, otherwise, Namespace::Value)?;
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())
+                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())
             }
             Kind::LetCondition { pattern, value } => {
                 self.visit(c, value, Namespace::Value)?;
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())
+                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())
             }
             Kind::For {
                 pattern,
@@ -118,7 +118,7 @@ impl Resolver<'_> {
                     .builtin_traits
                     .note_collection(c.module, NodeKey { file: c.file, node });
                 self.visit(c, iterator, Namespace::Value)?;
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())?;
+                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())?;
                 self.visit(c, body, Namespace::Value)
             }
             Kind::Arm {
@@ -126,7 +126,7 @@ impl Resolver<'_> {
                 guard,
                 value,
             } => {
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())?;
+                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())?;
                 self.optional(c, guard, Namespace::Value)?;
                 self.visit(c, value, Namespace::Value)
             }
@@ -142,10 +142,10 @@ impl Resolver<'_> {
             }
             Kind::Parameter { pattern, ty } => {
                 self.optional(c, ty, Namespace::Type)?;
-                self.bind_pattern(c, pattern, DefKind::Parameter, &mut HashSet::new())
+                self.bind_pattern(c, pattern, DefKind::Parameter, &mut HashSet::default())
             }
             Kind::Receiver { .. } => {
-                self.bind_pattern(c, node, DefKind::Parameter, &mut HashSet::new())
+                self.bind_pattern(c, node, DefKind::Parameter, &mut HashSet::default())
             }
             Kind::Cast { value, ty } => {
                 self.visit(c, value, Namespace::Value)?;
@@ -343,7 +343,7 @@ impl Resolver<'_> {
             | Kind::Pattern { .. }
             | Kind::StructPattern { .. }
             | Kind::ReferencePattern { .. } => {
-                self.bind_pattern(c, node, DefKind::Local, &mut HashSet::new())
+                self.bind_pattern(c, node, DefKind::Local, &mut HashSet::default())
             }
             _ => {
                 let mark = self.scratch.len();
@@ -362,7 +362,7 @@ impl Resolver<'_> {
         }
     }
     fn parameters(&mut self, c: Context, parameters: List) -> Result<(), Error> {
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         for offset in parameters.start..parameters.end {
             let mut node = self.package.unit(c.file).configured.ast.edges[offset as usize];
             if !self.active(c, node) {

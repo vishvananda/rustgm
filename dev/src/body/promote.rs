@@ -6,6 +6,7 @@ mod session;
 pub(crate) use session::Scratch;
 mod values;
 use super::ir::{Body, Program, ProjectionId, Rvalue, ValueId};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, package::Error as Diagnostic},
     sema::{
@@ -14,7 +15,6 @@ use crate::{
     },
     types::Kind as Type,
 };
-use std::collections::HashMap;
 
 /// Completed promotion facts, distinct from storage-liveness and loan proofs.
 #[derive(Clone, Default)]
@@ -248,7 +248,7 @@ impl<'a, 'b> Engine<'a, 'b> {
             sources: Vec::new(),
             body,
             evaluator,
-            states: HashMap::new(),
+            states: HashMap::default(),
             work: Vec::new(),
             roots: Vec::new(),
             steps: 0,

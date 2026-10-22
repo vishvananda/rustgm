@@ -1,7 +1,7 @@
 //! Function-item templates preserve formal early arguments across inferred uses.
 use super::parameters::ParameterId;
 use super::{ItemId, Kind, RegionId, Store, TypeId, outlives::Pair};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// Source calling convention; safety and constant eligibility are independent.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
@@ -234,7 +234,8 @@ impl Templates {
             return Err("invalid callable template bound");
         }
         if parameter_owners.len() > 1 {
-            let unique: std::collections::HashSet<_> = parameter_owners.iter().copied().collect();
+            let unique: crate::support::hash::HashSet<_> =
+                parameter_owners.iter().copied().collect();
             if unique.len() != parameter_owners.len() {
                 return Err("repeated callable parameter owner");
             }

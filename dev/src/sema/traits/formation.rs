@@ -1,5 +1,6 @@
 //! Declaration formation defers local-dependent inputs without granting caller permissions.
 use super::{Contracts, Requirements};
+use crate::support::hash::HashMap;
 use crate::types::{
     RegionId, Store, TypeId,
     arguments::Argument,
@@ -11,7 +12,7 @@ use crate::types::{
     },
     substitute::Bound,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 pub(in crate::sema) enum Formation {
     Ordinary(Predicate, Arc<Requirements>),
@@ -68,7 +69,7 @@ pub(super) struct Cache {
 impl Default for Cache {
     fn default() -> Self {
         Self {
-            completed: HashMap::new(),
+            completed: HashMap::default(),
             captures: Captures::new(1),
             lower: Bound::lower(1),
             work: 0,

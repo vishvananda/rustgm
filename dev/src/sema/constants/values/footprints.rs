@@ -1,10 +1,10 @@
 //! Raw access footprints reuse canonical ABI records after bounded readiness checks.
 use super::{Evaluator, Failure, Reader};
+use crate::support::hash::HashSet;
 use crate::{
     abi::layout::Shape,
     types::{Kind, TypeId, aggregate::ShapeReadiness},
 };
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 pub(crate) struct StorageLayout {
@@ -32,7 +32,7 @@ impl Evaluator<'_> {
                 .ok_or("constant storage layout work budget exceeded".into());
         }
         let mut pending = vec![ty];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut work = 0usize;
         while let Some(next) = pending.pop() {
             work = work

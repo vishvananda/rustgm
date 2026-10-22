@@ -165,11 +165,11 @@ impl State for Population<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::support::hash::HashSet;
     use crate::{
         borrow::liveness::components::Builder,
         types::{RegionId, outlives::Parts, parameters::ParameterId},
     };
-    use std::collections::HashSet;
 
     fn analysis() -> Analysis {
         Analysis {
@@ -225,8 +225,8 @@ mod tests {
             output.seeds.clear();
             output.parameter_seeds.clear();
             population.seed(&mut output, Point(0), borrow)?;
-            let mut regions = HashSet::new();
-            let mut parameters = HashSet::new();
+            let mut regions = HashSet::default();
+            let mut parameters = HashSet::default();
             for (index, (rs, ps)) in sets.iter().enumerate() {
                 if expected[index] || borrow == Some(index) {
                     regions.extend(rs.iter().copied());

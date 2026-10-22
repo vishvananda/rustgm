@@ -1,10 +1,10 @@
 //! Reduce tail conditions once per declaration, composing typed argument substitutions.
 use super::{Condition, Rule, Rules};
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, ItemId, Kind, Primitive, Store, TypeId,
     aggregate::{self, Definitions},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Key {
@@ -67,7 +67,7 @@ impl Rules {
             return Ok(None);
         }
         let pending = self.pending.remove(&item).unwrap_or_else(|| Pending {
-            states: HashMap::new(),
+            states: HashMap::default(),
             work: vec![(Key::Item(item), false)],
         });
         let pending = Builder {

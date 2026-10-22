@@ -2,8 +2,8 @@
 use super::{
     BinderId, Checker, DefId, Error, Kind, List, NodeKey, RegionId, Type, TypeId, regions,
 };
+use crate::support::hash::HashSet;
 use crate::{sema::lifetimes::FunctionRegions, types::bound_uses::Uses};
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 pub(super) struct SignatureTypes {

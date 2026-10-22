@@ -1,11 +1,12 @@
 //! Coverage inhabitation is visibility-sensitive and stops at reference boundaries.
 use super::decision::Graph;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::Access, package::ModuleId},
     sema::{members::VariantId, model::Declarations},
     types::{ItemId, Kind, TypeId},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub struct Cache {

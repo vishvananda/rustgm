@@ -1,5 +1,6 @@
 //! The same canonical graph has different captures inside and outside a quantified binder.
 use super::Uses;
+use crate::support::hash::HashSet;
 use crate::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     arguments::Argument,
@@ -9,7 +10,6 @@ use crate::types::{
     },
     traits::Application,
 };
-use std::collections::HashSet;
 
 fn reference(store: &mut Store, depth: u16, slot: u16) -> Result<TypeId, &'static str> {
     store.intern(Kind::Reference {
@@ -46,9 +46,9 @@ fn application_memoization_keeps_ordinary_and_quantified_depths_separate()
     for (first, second, expected) in [(ordinary, quantified, 1), (quantified, ordinary, 7)] {
         let mut uses = Uses::default();
         uses.clause(&store, first)?;
-        assert_eq!(uses.indices, HashSet::from([expected]));
+        assert_eq!(uses.indices, HashSet::from_iter([expected]));
         uses.clause(&store, second)?;
-        assert_eq!(uses.indices, HashSet::from([1, 7]));
+        assert_eq!(uses.indices, HashSet::from_iter([1, 7]));
         let steps = uses.steps;
         uses.clause(&store, first)?;
         uses.clause(&store, second)?;
@@ -83,7 +83,7 @@ fn whole_clause_occurrences_keep_callable_locals_and_enclosing_captures_distinct
     )?;
     let mut uses = Uses::default();
     uses.clause(&store, clause)?;
-    assert_eq!(uses.indices, HashSet::from([5, 7]));
+    assert_eq!(uses.indices, HashSet::from_iter([5, 7]));
     let outlives = quantify(
         &mut store,
         2,
@@ -93,7 +93,7 @@ fn whole_clause_occurrences_keep_callable_locals_and_enclosing_captures_distinct
         },
     )?;
     uses.clause(&store, outlives)?;
-    assert_eq!(uses.indices, HashSet::from([3, 5, 7]));
+    assert_eq!(uses.indices, HashSet::from_iter([3, 5, 7]));
     assert!(clause.ordinary().is_err());
     Ok(())
 }

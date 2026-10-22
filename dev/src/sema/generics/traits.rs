@@ -1,5 +1,6 @@
 //! Expand only Self requirements into an owner's immutable assumption environment.
 use super::{DefId, Generics, Predicate};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     Store,
     parameters::{
@@ -7,7 +8,7 @@ use crate::types::{
         predicates::{Bound, Predicate as Input},
     },
 };
-use std::collections::{HashMap, HashSet, hash_map::Entry};
+use std::collections::hash_map::Entry;
 
 impl Generics {
     /// Body lifetime formation consumes the declaration's already filtered inputs.
@@ -55,14 +56,14 @@ impl Generics {
         store: &mut Store,
         mut inputs: Vec<Predicate>,
     ) -> Result<(Vec<Predicate>, usize), &'static str> {
-        let mut written = HashSet::new();
+        let mut written = HashSet::default();
         inputs.retain(|p| written.insert(p.value));
         let mut seen = Consequences::new(store, &inputs)?;
         let mut work = inputs;
         let initial = work.len();
         let mut next = 0;
         let mut steps = 0_usize;
-        let mut binders = HashMap::new();
+        let mut binders = HashMap::default();
         let mut results: Vec<Predicate> = Vec::new();
         let mut ordinary = true;
         let mut ordinary_end = usize::MAX;

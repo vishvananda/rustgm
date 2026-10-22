@@ -4,8 +4,8 @@ use super::{
     bounded::{self, Budget},
     region_mapping::{Mapping, Mode, Retained},
 };
+use crate::support::hash::HashMap;
 use crate::types::RegionId;
-use std::collections::HashMap;
 pub(super) struct Owner {
     pub(super) budget: Budget,
     pub(super) external: usize,

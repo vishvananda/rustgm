@@ -1,8 +1,8 @@
 //! Binder substitution over unresolved type graphs preserves their inference variables.
 mod escaping;
 use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
+use crate::support::hash::HashMap;
 use crate::types::substitute::Bound;
-use std::collections::HashMap;
 
 pub(super) struct MappedRegions {
     pub term: TermId,

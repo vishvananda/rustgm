@@ -4,11 +4,9 @@ use super::{
     clauses::{Clause, QuantifiedId},
     predicates::{Bound, Predicate},
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Store, infer, subject_head::Head};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::OnceLock,
-};
+use std::sync::OnceLock;
 
 #[derive(Clone, Default)]
 pub(crate) struct ClauseIndex {
@@ -68,7 +66,7 @@ impl ClauseIndex {
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
         self.parameter_traits
             .get_or_init(|| {
-                let mut index: HashMap<ParameterId, Vec<ItemId>> = HashMap::new();
+                let mut index: HashMap<ParameterId, Vec<ItemId>> = HashMap::default();
                 for &(item, head) in self.candidates.keys() {
                     if let Head::Parameter(parameter) = head {
                         index.entry(parameter).or_default().push(item);

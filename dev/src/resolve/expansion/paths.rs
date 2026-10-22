@@ -2,6 +2,7 @@
 use super::{
     Builtin, Call, Error, MacroTarget, ModuleId, NodeId, NodeKey, Package, bindings::Bindings,
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     expand::{
         stream::ContextId,
@@ -16,7 +17,7 @@ use crate::{
     support::names::NameId,
     syntax::item::Visibility,
 };
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
 pub(super) struct Paths {
     pub state: State,
@@ -46,7 +47,7 @@ impl Paths {
             access: Access::Public,
             members: Some(scope),
         });
-        let mut macro_targets = HashMap::new();
+        let mut macro_targets = HashMap::default();
         for builtin in Builtin::ALL
             .into_iter()
             .filter(|builtin| *builtin != Builtin::OptionEnv)
@@ -84,7 +85,7 @@ impl Paths {
             textual: Vec::new(),
             text_ready: VecDeque::new(),
             text_queued: Vec::new(),
-            waiting: HashMap::new(),
+            waiting: HashMap::default(),
         })
     }
     pub fn item(

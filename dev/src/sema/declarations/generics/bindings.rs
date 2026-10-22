@@ -2,6 +2,7 @@
 mod selectors;
 use super::bounds::lexical::Scope;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::Namespace,
     syntax::ast::{List, NodeId},
@@ -11,7 +12,6 @@ use crate::{
         projection,
     },
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 struct Arguments {
@@ -270,7 +270,7 @@ impl Checker<'_> {
     ) -> Result<projection::Application, Error> {
         let root = predicate;
         let mut work = vec![predicate];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut selected = None;
         while let Some(predicate) = work.pop() {
             if !seen.insert(predicate) {

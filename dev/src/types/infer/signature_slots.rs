@@ -2,9 +2,9 @@
 mod classes;
 mod transport;
 use super::{Constructor, Context, Domain, Error, Store, TermId, Value};
+use crate::support::hash::HashMap;
 use crate::types::closure::{ClosureId, Declaration};
 use classes::Classes;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Class {
@@ -45,8 +45,8 @@ impl Slots {
 
     fn new() -> Self {
         Self {
-            definitions: HashMap::new(),
-            frames: HashMap::new(),
+            definitions: HashMap::default(),
+            frames: HashMap::default(),
             classes: Classes::default(),
         }
     }
@@ -116,7 +116,7 @@ impl Context {
             .ok_or(Error::Budget)?;
         self.preflight_signature_records(additional)?;
         self.account_work(slots.len())?;
-        let mut distinct = std::collections::HashSet::new();
+        let mut distinct = crate::support::hash::HashSet::default();
         for (index, &slot) in slots.iter().enumerate() {
             let term = self
                 .terms

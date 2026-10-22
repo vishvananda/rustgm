@@ -13,7 +13,7 @@ impl Graph {
         if self.verifications.is_some() || self.members.is_some() {
             return Err(Error::Identity);
         }
-        let mut conditions = HashSet::new();
+        let mut conditions = HashSet::default();
         let mut solver = Solver::new(self);
         solver.propagate(|longer, shorter, source| {
             let outer = |region| {

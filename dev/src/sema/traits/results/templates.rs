@@ -1,4 +1,5 @@
 //! Close declaration rules once, then select candidates before mapping caller inputs.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -11,10 +12,7 @@ use crate::{
         },
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 #[derive(Default)]
 pub(super) struct Index {
@@ -109,7 +107,7 @@ impl Closure {
             template,
             pending,
             index: Index::default(),
-            binders: HashMap::new(),
+            binders: HashMap::default(),
             steps,
         }
     }
@@ -121,7 +119,7 @@ impl Closure {
         Ok(())
     }
     fn complete(mut self, facts: &mut Declarations) -> Result<(Index, usize), String> {
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         while let Some(clause) = self.pending.pop() {
             self.charge(1)?;
             if seen.insert(clause) {

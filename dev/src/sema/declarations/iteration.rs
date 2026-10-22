@@ -122,7 +122,7 @@ impl Checker<'_> {
                 ItemId(declaration.definition.0),
                 Header {
                     self_type: subject,
-                    self_bounds: std::collections::HashSet::new(),
+                    self_bounds: crate::support::hash::HashSet::default(),
                     parameters: Vec::new(),
                     predicates: Vec::new(),
                     results,

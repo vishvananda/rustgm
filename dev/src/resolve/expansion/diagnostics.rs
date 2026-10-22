@@ -3,8 +3,8 @@ use super::{
     ContextId, Definition, Engine, Error, FileId, Invocation, Location, Package, Report, Sources,
     Span, Stream,
 };
+use crate::support::hash::HashSet;
 use crate::{lex::token::LexError, resolve::package::ExpansionTrace};
-use std::collections::HashSet;
 
 impl<S: Sources> Engine<'_, S> {
     pub(super) fn diagnostic(&self, error: Error) -> Error {
@@ -128,7 +128,7 @@ fn project(
         if context.is_none() && error.introduction.0 != 0 {
             context = Some(error.introduction);
         }
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         while let Some(current) = context.filter(|context| context.0 != 0) {
             if seen.len() >= 4096 || !seen.insert(current) {
                 return Err("invalid diagnostic expansion ancestry");

@@ -1,10 +1,10 @@
 //! Object defaults distinguish callable quantifiers from early lifetime arguments.
 use super::{Checker, DefId, Error, Kind, NodeKey, RegionId, Work, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::{DefKind, Namespace, Target},
     types::{arguments::Argument, bound_uses::Uses, parameters::uses::Uses as Parameters},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Times {
@@ -40,7 +40,7 @@ impl Checker<'_> {
             let parameters = self.signature_syntax(key, Some(owner))?.parameters;
             let ast = &self.report.package.unit(key.file).configured.ast;
             let mut work = ast.list(parameters).to_vec();
-            let mut seen = HashSet::new();
+            let mut seen = HashSet::default();
             while let Some(node) = work.pop() {
                 if !seen.insert(node) {
                     continue;
@@ -136,8 +136,8 @@ impl Checker<'_> {
         constrained: bool,
     ) -> Result<(HashSet<DefId>, bool), Error> {
         let mut work = roots.to_vec();
-        let mut seen = HashSet::new();
-        let mut names = HashSet::new();
+        let mut seen = HashSet::default();
+        let mut names = HashSet::default();
         let mut opaque = false;
         while let Some(node) = work.pop() {
             if !seen.insert(node)

@@ -2,7 +2,8 @@
 use super::{
     CrateIdentity, Interface, MAX_COMPONENTS, MAX_DEPENDENCIES, MAX_FUNCTIONS, MAX_NAME_BYTES,
 };
-use std::collections::{HashMap, VecDeque};
+use crate::support::hash::HashMap;
+use std::collections::VecDeque;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Dependency {

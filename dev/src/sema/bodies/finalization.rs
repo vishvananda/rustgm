@@ -3,11 +3,11 @@ use super::{
     AdjustmentKind, Checker, Declarations, Dependency, Error, NodeId, NodeKey, Operation,
     RegionEquality, field_storage::Batch, hidden_results::HiddenResults,
 };
+use crate::support::hash::HashMap;
 use crate::{
     sema::traits::selection::Source,
     types::{GenericArgs, infer::Solved, parameters::predicates::Predicate},
 };
-use std::collections::HashMap;
 
 pub(super) enum Finalization {
     Closures(HashMap<usize, Source>),

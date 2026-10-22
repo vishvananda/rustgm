@@ -1,7 +1,7 @@
 //! Adjacent universal binders compose formulas without introducing proof permissions.
 use super::{Clause, Quantified};
+use crate::support::hash::HashMap;
 use crate::types::{RegionId, Store, bound_uses::captures::Slots, substitute::Bound};
-use std::collections::HashMap;
 
 /// Bind clauses already written inside one surrounding universal binder.
 /// Reuse this folder for one store and fixed outer arity across the whole batch.
@@ -22,7 +22,7 @@ impl Quantifier {
         Ok(Self {
             count,
             outer_slots: Slots::at(1),
-            openings: HashMap::new(),
+            openings: HashMap::default(),
             steps: 0,
         })
     }

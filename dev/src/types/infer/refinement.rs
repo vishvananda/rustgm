@@ -6,8 +6,8 @@ use super::{
     constants::ConstTermId,
     import::{Import, Mapping, Tracking},
 };
+use crate::support::hash::HashSet;
 use crate::types::substitute::Bound;
-use std::collections::HashSet;
 
 /// An isolated query can refine its imported type/const holes. The source may
 /// acquire additional constraints while the query waits. This transport grants
@@ -290,8 +290,8 @@ impl Inputs {
     fn discover(context: &mut Context, roots: &[Argument]) -> Result<Self, Error> {
         context.account_work(roots.len())?;
         let mut result = Self::default();
-        let mut types = HashSet::new();
-        let mut constants = HashSet::new();
+        let mut types = HashSet::default();
+        let mut constants = HashSet::default();
         let mut pending: Vec<_> = roots.iter().rev().copied().collect();
         while let Some(root) = pending.pop() {
             context.step()?;

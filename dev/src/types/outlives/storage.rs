@@ -1,7 +1,7 @@
 //! Canonical component sets retain compact lifetime-only identities on the ordinary path.
 use super::{ParameterId, Parts, RegionId};
+use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
-use std::collections::HashMap;
 
 const SYMBOLIC: u32 = 1 << 31;
 

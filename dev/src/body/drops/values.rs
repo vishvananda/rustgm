@@ -4,7 +4,7 @@ use crate::body::{
     scopes::Lifetime,
     storage::Location,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// Returning transfers the result before the callee's local cleanup starts.
 #[derive(Clone, Copy)]

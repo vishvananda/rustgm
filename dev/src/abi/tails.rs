@@ -1,10 +1,10 @@
 //! Unsized place alignment and field offsets never pretend to be a value layout.
 use super::layout::{Layouts, MAX_SIZE, Range, padded, validate_repr};
+use crate::support::hash::HashMap;
 use crate::types::{
     Kind, ListId, Primitive, Store, TypeId,
     aggregate::{self, Definitions, Repr, Representation},
 };
-use std::collections::HashMap;
 
 mod alignment;
 pub use alignment::{Alignment, Offset};

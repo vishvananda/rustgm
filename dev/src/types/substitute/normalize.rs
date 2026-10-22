@@ -2,10 +2,10 @@
 mod aliases;
 mod scopes;
 use super::{Action, Bound, Key};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{Kind, Store, TypeId, lifetime_proof::ScopeId};
 pub use aliases::Alias;
 use scopes::{Frame, Suspended};
-use std::collections::{HashMap, HashSet};
 
 /// Inputs have already been normalized in the indicated surrounding binder depth.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

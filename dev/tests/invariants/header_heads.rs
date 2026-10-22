@@ -1,5 +1,6 @@
 //! Early constructor identities must not evaluate constants or prove projections.
 use super::{Heads, Rigid};
+use crate::support::hash::HashMap;
 use crate::{
     expand::config::Config,
     resolve::{
@@ -14,7 +15,7 @@ use crate::{
     syntax::{ast::Kind, item::ItemKind},
     types::{ItemId, Primitive},
 };
-use std::{collections::HashMap, fmt::Write as _, path::Path};
+use std::{fmt::Write as _, path::Path};
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 struct NoFiles;
@@ -34,7 +35,7 @@ fn fixture(source: &str) -> TestResult<(Report, Declarations, HashMap<String, No
         &Config::default(),
     )?)?;
     let facts = Declarations::new(&report)?;
-    let mut aliases = HashMap::new();
+    let mut aliases = HashMap::default();
     for definition in &report.resolution.definitions {
         if definition.kind != DefKind::TypeAlias {
             continue;

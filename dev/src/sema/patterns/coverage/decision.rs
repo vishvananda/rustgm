@@ -1,5 +1,5 @@
 //! Reduced binary decisions over scalar ranks; updates share unchanged domain subtrees.
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Id(u32);
@@ -71,8 +71,8 @@ impl Graph {
         Self {
             maxima: Vec::new(),
             nodes: Vec::new(),
-            index: HashMap::new(),
-            queries: HashMap::new(),
+            index: HashMap::default(),
+            queries: HashMap::default(),
             work: 0,
             limit,
         }

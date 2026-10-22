@@ -10,7 +10,8 @@ use crate::support::crates::{
     Constant, Dependencies, ExternalDef, ExternalKind, Function, Interface,
     Namespace as WireNamespace, Record, Static,
 };
-use std::{collections::HashMap, sync::Arc};
+use crate::support::hash::HashMap;
+use std::sync::Arc;
 
 pub struct Imported {
     dependencies: Arc<Dependencies>,
@@ -81,7 +82,7 @@ impl Resolver<'_> {
         let artifacts = Arc::clone(&dependencies);
         let mut imported = Imported {
             dependencies,
-            definitions: HashMap::new(),
+            definitions: HashMap::default(),
             functions: Vec::new(),
             constants: Vec::new(),
             records: Vec::new(),

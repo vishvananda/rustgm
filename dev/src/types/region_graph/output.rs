@@ -32,7 +32,7 @@ impl Graph {
                 return Err(Error::Identity.into());
             }
         }
-        let mut conditions = HashMap::new();
+        let mut conditions = HashMap::default();
         let mut solver = Solver::new(&self);
         solver.charge_many(interface.len())?;
         solver.propagate(|longer, shorter, source| {

@@ -1,12 +1,10 @@
 //! Resumable declaration bodies retain only their own slots, independent of crate size.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::unit::{FileId, NodeKey},
     types::infer::TermId,
 };
-use std::{
-    collections::HashMap,
-    ops::{Index, IndexMut},
-};
+use std::ops::{Index, IndexMut};
 
 pub(super) enum Terms {
     Dense(Vec<Vec<Option<TermId>>>),
@@ -25,7 +23,7 @@ impl Terms {
         }
     }
     pub fn sparse() -> Self {
-        Self::Sparse(HashMap::new())
+        Self::Sparse(HashMap::default())
     }
     /// Keep the suspended owner's entries, without scanning unrelated file slots.
     pub fn retain_sparse(&mut self, keys: impl Iterator<Item = NodeKey>) {
@@ -93,7 +91,7 @@ impl<T: Default + Copy> Slots<T> {
     }
     pub fn sparse() -> Self {
         Self {
-            storage: Storage::Sparse(HashMap::new()),
+            storage: Storage::Sparse(HashMap::default()),
             empty: T::default(),
         }
     }

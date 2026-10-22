@@ -155,7 +155,7 @@ fn shared_reference_values_execute() -> Result<(), Box<dyn std::error::Error>> {
 }
 #[test]
 fn repeated_shared_references_have_bounded_work() -> Result<(), Box<dyn std::error::Error>> {
-    let mut ordinary = std::collections::HashMap::new();
+    let mut ordinary = rustgm::support::hash::HashMap::default();
     let mut overhead = None;
     for raw in [false, true] {
         let mut previous = None;

@@ -6,6 +6,7 @@ mod normalization;
 mod parents;
 mod selection;
 use super::{Checker, Error, NodeId, TermId};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{alias_requirements::Expansion, annotations::Fields, generics::AnnotationArgument},
     types::{
@@ -19,7 +20,6 @@ use crate::{
         parameters::{ParameterId, uses::Uses},
     },
 };
-use std::collections::{HashMap, HashSet};
 
 struct Contract {
     expansion: Expansion,
@@ -88,12 +88,12 @@ impl Default for Data {
             scopes: Obligations::new(1),
             continuation: None,
             environment: std::cell::OnceCell::new(),
-            tasks: HashMap::new(),
-            equations: HashMap::new(),
-            normalizations: HashSet::new(),
-            normalization_waiters: HashMap::new(),
-            input_scopes: HashMap::new(),
-            normal_forms: HashMap::new(),
+            tasks: HashMap::default(),
+            equations: HashMap::default(),
+            normalizations: HashSet::default(),
+            normalization_waiters: HashMap::default(),
+            input_scopes: HashMap::default(),
+            normal_forms: HashMap::default(),
         }
     }
 }

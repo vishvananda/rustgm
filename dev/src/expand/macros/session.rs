@@ -7,6 +7,7 @@ use super::{
     prepare::{self, Prepared},
     transcribe::{self, Transcription},
 };
+use crate::support::hash::HashMap;
 use crate::{
     expand::{config::Config, crate_syntax},
     lex::token::LexError,
@@ -17,7 +18,6 @@ use crate::{
         token_tree::{Forest, Span, error},
     },
 };
-use std::collections::HashMap;
 
 pub struct Definition {
     pub name: NameId,
@@ -48,7 +48,7 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
     let configured = crate_syntax::analyze(source, config)?;
     let ast = &configured.ast;
     let mut report = Report::default();
-    let mut visible = HashMap::new();
+    let mut visible = HashMap::default();
     let mut changes = Vec::new();
     let mut work = vec![Work::Visit(ast.root)];
     let mut children = Vec::new();

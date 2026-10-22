@@ -8,11 +8,11 @@ use super::{
     package::{Error, ModuleId, Package},
     unit::{FileId, NodeKey},
 };
+use crate::support::hash::HashMap;
 use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
 };
-use std::collections::HashMap;
 #[derive(Clone, Copy)]
 pub(crate) struct Context {
     pub module: ModuleId,
@@ -137,7 +137,7 @@ impl Resolver<'_> {
             trait_access: None,
             nominal_self: None,
             label_barrier: barrier,
-            bindings: HashMap::new(),
+            bindings: HashMap::default(),
             order: Vec::new(),
         });
         Ok(id)

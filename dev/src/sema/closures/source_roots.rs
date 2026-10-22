@@ -1,7 +1,7 @@
 //! Imported formation facts retain their exact source root and both lifetime views.
 use super::{Environment, captures::PathId};
+use crate::support::hash::HashSet;
 use crate::types::TypeId;
-use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FormationInput {
@@ -19,7 +19,7 @@ impl Environment {
         if self.path_types.len() != count || self.formation_types.len() != count {
             return Err("capture formation type coverage differs from path forest");
         }
-        let mut roots = HashSet::new();
+        let mut roots = HashSet::default();
         let mut inputs = Vec::new();
         let mut work = 0;
         for path in self

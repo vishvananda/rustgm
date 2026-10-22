@@ -88,7 +88,7 @@ impl Checker<'_> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
         }
-        let mut trait_proofs = std::collections::HashMap::new();
+        let mut trait_proofs = crate::support::hash::HashMap::default();
         for index in 0..self.facts.destructors.implementations().len() {
             if let Some(proof) = self.validate_drop_traits(index)? {
                 trait_proofs.insert(index, proof);

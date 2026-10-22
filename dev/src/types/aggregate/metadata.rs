@@ -3,8 +3,8 @@
 #[path = "../../../tests/invariants/metadata_preparation.rs"]
 mod tests;
 use super::Definitions;
+use crate::support::hash::HashSet;
 use crate::types::{ItemId, Kind, Store, TypeId};
-use std::collections::HashSet;
 
 /// Physical preparation never treats provisional Sized properties as storage facts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -51,7 +51,7 @@ impl Definitions {
         mut ty: TypeId,
         mode: Readiness,
     ) -> Result<MetadataPreparation, &'static str> {
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         loop {
             self.instances
                 .get_or_insert_with(Default::default)

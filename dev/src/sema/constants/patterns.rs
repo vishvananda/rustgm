@@ -1,5 +1,6 @@
 //! Translate shared constant values into selected patterns with use-site provenance.
 use super::{Declarations, Error, NodeKey, Report, Type, Value, VariantId, products};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         members::{FieldId, Selection},
@@ -7,7 +8,6 @@ use crate::{
     },
     types::{Primitive, TypeId},
 };
-use std::collections::HashMap;
 
 struct Expansion<'a> {
     facts: &'a mut Declarations,
@@ -33,9 +33,9 @@ pub(super) fn expand(
         facts,
         source,
         work: vec![(root, value)],
-        products: HashMap::new(),
-        references: HashMap::new(),
-        texts: HashMap::new(),
+        products: HashMap::default(),
+        references: HashMap::default(),
+        texts: HashMap::default(),
         remaining: 1_000_000,
     };
     let facts = &mut *expansion.facts;

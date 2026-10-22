@@ -296,7 +296,7 @@ fn common_request_layout_and_closed_argument_rules_are_unchanged() {
     assert_eq!(size_of::<Request>(), 56);
     assert_eq!(size_of::<(Target, usize)>(), 40);
     // Checked source initializer execution adds one lazy SourceIndex box slot.
-    assert_eq!(size_of::<crate::const_eval::code::Catalog>(), 200);
+    assert_eq!(size_of::<crate::const_eval::code::Catalog>(), 152);
     eprintln!(
         "caller-layout source={} target={} request={} code={} declarations={}",
         size_of::<SourceComputation>(),
@@ -305,10 +305,10 @@ fn common_request_layout_and_closed_argument_rules_are_unchanged() {
         size_of::<crate::const_eval::code::Code>(),
         size_of::<Declarations>()
     );
-    assert_eq!(size_of::<crate::const_eval::code::Code>(), 336);
+    assert_eq!(size_of::<crate::const_eval::code::Code>(), 304);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 464);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
 }
 
 #[test]

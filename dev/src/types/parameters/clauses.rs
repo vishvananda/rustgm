@@ -2,10 +2,10 @@
 mod composition;
 mod equivalence;
 use super::predicates::Predicate;
+use crate::support::hash::HashMap;
 use crate::types::{Store, bound_uses::captures::Slots};
 pub use composition::Quantifier;
 pub(crate) use equivalence::Comparison;
-use std::collections::HashMap;
 #[cfg(test)]
 mod slot_validation;
 

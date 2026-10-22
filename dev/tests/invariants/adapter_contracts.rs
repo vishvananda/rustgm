@@ -191,7 +191,7 @@ fn proved_sources(
     inputs: &[Contract],
 ) -> TestResult<(super::super::Builder, usize, usize)> {
     let (mut builder, bodies) = super::super::Builder::new(program)?;
-    let inputs: std::collections::HashMap<_, _> =
+    let inputs: crate::support::hash::HashMap<_, _> =
         inputs.iter().cloned().map(|c| (c.key, c)).collect();
     builder.prepare_original_regions(facts, &inputs, &bodies)?;
     let mut source = None;

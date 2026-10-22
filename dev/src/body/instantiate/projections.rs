@@ -64,7 +64,7 @@ pub(super) fn needs_field_normalization(
         .chain(body.values.iter().map(|value| value.ty))
         .chain(body.projections.iter().map(|projection| projection.ty))
         .collect::<Vec<_>>();
-    let mut seen = std::collections::HashSet::new();
+    let mut seen = crate::support::hash::HashSet::default();
     let mut steps = 0_usize;
     while let Some(ty) = work.pop() {
         steps = steps.saturating_add(1);

@@ -2,11 +2,11 @@
 use super::{
     Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId, closures::expectations::Hints,
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::model::{BodyRegionOrigin, Outlives},
     types::{GenericArgs, RegionId, infer, substitute::Bound},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct CallTypes {
@@ -15,10 +15,6 @@ pub(super) struct CallTypes {
     pub input_context: super::callee_inputs::Inputs,
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub assumed_obligations: HashSet<usize>,
-    #[expect(
-        clippy::box_collection,
-        reason = "ordinary call inference keeps specialized obligation metadata unallocated"
-    )]
     constraints: Option<Box<HashMap<usize, Constraint>>>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub constants: Vec<super::item_values::Pending>,

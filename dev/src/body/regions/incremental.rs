@@ -1,10 +1,10 @@
 //! Append-only semantic facts are consumed once, independently of defining-body order.
 use super::{Contract, Contracts, Declarations, Kind, NodeKey, Obligation, Proof};
+use crate::support::hash::HashMap;
 use crate::{
     sema::model::{AdjustmentKind, BodyRegionOrigin, Function},
     types::RegionId,
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 struct Bucket {
@@ -100,7 +100,7 @@ impl Collector {
     pub fn finish(mut self, facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         self.update(facts)?;
         let mut bodies = Vec::new();
-        let mut index = HashMap::new();
+        let mut index = HashMap::default();
         for function in &facts.functions {
             if let Some(source) = function.body {
                 self.function(facts, function)?;

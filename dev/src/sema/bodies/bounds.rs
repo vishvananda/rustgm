@@ -380,7 +380,7 @@ impl Checker<'_> {
         .map_err(|e| self.error(node, e))?;
         // Equivalent requirements under this one call substitution need one proof.
         // Keep declaration clauses intact and retain the first clause's own binder.
-        let mut quantified = std::collections::HashSet::new();
+        let mut quantified = crate::support::hash::HashSet::default();
         for predicate in predicates {
             if let crate::types::parameters::clauses::Clause::ForAll(id) = predicate.value {
                 let (key, work) = self

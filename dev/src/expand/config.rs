@@ -1,4 +1,5 @@
 //! Fixed course target facts plus explicit, repeatable custom cfg options.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     lex::{
         keyword,
@@ -7,10 +8,7 @@ use crate::{
     literal::{self, Value},
     syntax::token_tree::{Delimiter, Forest, TreeKind, TreeRange, error},
 };
-use std::{
-    borrow::Cow,
-    collections::{HashMap, HashSet},
-};
+use std::borrow::Cow;
 
 const TARGET_VALUES: &[(&str, &str)] = &[
     ("panic", "abort"),

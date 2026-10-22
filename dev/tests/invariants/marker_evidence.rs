@@ -22,7 +22,7 @@ fn projected_auto_promises_preserve_parent_proofs_in_each_scope()
         // Even an available conditional result summary cannot replace the
         // parent's proof. Exercise the selector independently of publication order.
         let member = ItemId(tests::definition(&report, "Out")?.0);
-        let promises = Arc::new(std::collections::HashMap::from([(
+        let promises = Arc::new(crate::support::hash::HashMap::from_iter([(
             member,
             crate::types::projection::Builtins::bound(Bound::Auto(AutoTrait::Send)),
         )]));

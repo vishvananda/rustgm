@@ -22,7 +22,7 @@ struct Link {
 }
 struct Places<'a> {
     promotions: Option<&'a crate::body::promote::Facts>,
-    extended: std::collections::HashSet<ValueId>,
+    extended: crate::support::hash::HashSet<ValueId>,
     projections: Vec<Origin>,
     links: Vec<Link>,
     work: usize,
@@ -31,7 +31,7 @@ impl<'a> Places<'a> {
     fn new(body: &'a Body) -> Result<Self, &'static str> {
         let mut this = Self {
             promotions: body.promotions.as_ref(),
-            extended: std::collections::HashSet::new(),
+            extended: crate::support::hash::HashSet::default(),
             projections: Vec::new(),
             links: Vec::new(),
             work: 0,

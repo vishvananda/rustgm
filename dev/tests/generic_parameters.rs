@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::{
     abi::layout::Layouts,
     types::{
@@ -14,7 +15,6 @@ use rustgm::{
         substitute::Bound,
     },
 };
-use std::collections::HashMap;
 
 fn type_parameter(
     store: &mut Store,
@@ -251,12 +251,12 @@ fn closed_proofs_require_generic_environments_instead_of_fabricated_facts()
     );
     assert!(
         Copies::default()
-            .demand(&store, &definitions, &HashMap::new(), parameter)
+            .demand(&store, &definitions, &HashMap::default(), parameter)
             .is_err()
     );
     assert!(
         Equality::default()
-            .demand(&store, &definitions, &HashMap::new(), parameter)
+            .demand(&store, &definitions, &HashMap::default(), parameter)
             .is_err()
     );
     assert!(
@@ -283,7 +283,7 @@ fn closed_proofs_require_generic_environments_instead_of_fabricated_facts()
     })?;
     assert!(
         Copies::default()
-            .demand(&store, &definitions, &HashMap::new(), shared)?
+            .demand(&store, &definitions, &HashMap::default(), shared)?
             .copy
     );
     assert!(!NeedsDrop::new([]).demand(&store, &definitions, shared)?);

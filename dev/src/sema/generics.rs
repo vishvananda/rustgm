@@ -4,6 +4,7 @@ pub(super) mod captures;
 mod families;
 mod input_contracts;
 mod traits;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     types::{
@@ -13,10 +14,7 @@ use crate::{
         substitute::Bound,
     },
 };
-use std::{
-    collections::{HashMap, hash_map::Entry},
-    sync::Arc,
-};
+use std::{collections::hash_map::Entry, sync::Arc};
 
 pub(super) use crate::types::parameters::argument_id as parameter_id;
 
@@ -137,7 +135,7 @@ pub struct Generics {
     pub(super) parents: HashMap<DefId, DefId>,
     pub storage: Option<crate::types::aggregate::finiteness::Storage>,
     pub(super) size_rules: Option<Box<super::nominals::sizes::Pending>>,
-    pub(super) nominal_contracts: std::collections::HashSet<DefId>,
+    pub(super) nominal_contracts: crate::support::hash::HashSet<DefId>,
     pub(super) nominal_requirements:
         HashMap<TypeId, Arc<[crate::types::parameters::clauses::Clause]>>,
     pub(super) has_nominal_requirements: bool,
@@ -156,7 +154,7 @@ pub struct Generics {
     pub constructor_uses: HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
     /// Implicit callable factories selected while checking expressions. Nominal
     /// declarations alone do not require synthetic field-transfer bodies.
-    pub(crate) referenced_constructors: std::collections::HashSet<ItemId>,
+    pub(crate) referenced_constructors: crate::support::hash::HashSet<ItemId>,
     pub annotation_uses: HashMap<crate::resolve::unit::NodeKey, AnnotationUse>,
     pub(super) annotation_projections: HashMap<crate::resolve::unit::NodeKey, AnnotationProjection>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
@@ -224,7 +222,7 @@ impl Generics {
         types: &Store,
         originals: &super::unreduced::Types,
         owner: DefId,
-    ) -> Result<std::collections::HashSet<u16>, &'static str> {
+    ) -> Result<crate::support::hash::HashSet<u16>, &'static str> {
         let mut uses = crate::types::bound_uses::Uses::default();
         for predicate in self.predicates.get(&owner).into_iter().flatten() {
             uses.clause(types, predicate.value)?;

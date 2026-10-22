@@ -139,7 +139,8 @@ impl InlineInstance {
 }
 #[derive(Default)]
 pub(super) struct Values {
-    completed: std::collections::HashMap<(InlineInstance, crate::types::TypeId), values::Constant>,
+    completed:
+        crate::support::hash::HashMap<(InlineInstance, crate::types::TypeId), values::Constant>,
 }
 impl super::Registry {
     #[must_use]

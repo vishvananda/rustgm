@@ -1,11 +1,11 @@
 //! Resolved destructor contracts, independent of cleanup scheduling and code emission.
 mod instances;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, RegionId, TypeId, outlives::Pair, region_graph},
 };
 pub use instances::select;
-use std::collections::{HashMap, HashSet};
 
 pub struct Coverage {
     /// Impl arguments expressed using the nominal declaration's parameters.
@@ -108,7 +108,7 @@ pub(super) fn check_bounds(
         };
         slots.push(graph.region(kind).map_err(|e| e.to_string())?);
     }
-    let mut variables = HashMap::new();
+    let mut variables = HashMap::default();
     if let Some(evidence) = evidence {
         for id in evidence.regions.clone() {
             let variable = graph
@@ -142,7 +142,7 @@ pub(super) fn check_bounds(
             .require(resolve(a)?, resolve(b)?, 0)
             .map_err(|e| e.to_string())?;
     }
-    let mut parameters = HashMap::new();
+    let mut parameters = HashMap::default();
     for &(id, shorter) in assumptions.scalars.parameters {
         let longer = parameter_region(&mut graph, &mut parameters, id)?;
         graph

@@ -1,12 +1,12 @@
 //! Infer nominal lifetime contracts once; static field requirements need declared proof.
 use super::{Checker, DefId, Error, ItemId};
+use crate::support::hash::HashMap;
 use crate::types::{
     RegionId,
     outlives::{Bounds, Pair, ParameterPair, TypeComponents},
     parameters::{ParameterId, clauses::Clause, predicates::Bound},
     region_graph::{self, Graph, Region},
 };
-use std::collections::HashMap;
 
 impl Checker<'_> {
     pub(super) fn nominal_outlives(&mut self) -> Result<(), Error> {
@@ -29,7 +29,7 @@ impl Checker<'_> {
             families,
         )
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        let mut explicit: HashMap<ItemId, Vec<Pair>> = HashMap::new();
+        let mut explicit: HashMap<ItemId, Vec<Pair>> = HashMap::default();
         for &(item, pair) in &self.facts.lifetimes.nominal_bounds {
             explicit.entry(item).or_default().push(pair);
         }
@@ -202,8 +202,8 @@ impl Proof {
     fn new() -> Self {
         Self {
             graph: Graph::new(1_000_000),
-            regions: HashMap::new(),
-            parameters: HashMap::new(),
+            regions: HashMap::default(),
+            parameters: HashMap::default(),
         }
     }
     fn region(&mut self, id: RegionId) -> Result<Region, String> {

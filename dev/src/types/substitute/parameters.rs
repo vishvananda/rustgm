@@ -1,11 +1,11 @@
 //! Joint parameter replacement shares the lifetime folder and its capture rules.
 use super::{Action, Bound};
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, ItemId, Store, TypeId,
     arguments::{Argument, ConstId, ConstKind},
     parameters::{ParameterId, ParameterKind},
 };
-use std::collections::HashMap;
 
 enum Arguments {
     All {
@@ -41,7 +41,10 @@ impl Bound {
     ) -> Result<Self, &'static str> {
         let mut bound = Self::new(regions);
         bound.account_arguments(arguments.len().saturating_add(bound.arguments.len()))?;
-        let mut mappings = HashMap::with_capacity(arguments.len());
+        let mut mappings = HashMap::with_capacity_and_hasher(
+            arguments.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for &(id, argument) in arguments {
             let parameter = store
                 .parameter(id)

@@ -2,10 +2,10 @@
 mod dependencies;
 mod graph;
 use super::{model::Declarations, projections::Concrete};
+use crate::support::hash::HashSet;
 use crate::types::{ItemId, TypeId};
 pub(crate) use graph::Registry;
 use graph::{Recipe, RecipeId};
-use std::collections::HashSet;
 #[cfg(test)]
 #[path = "../../tests/invariants/stored_fields.rs"]
 mod tests;
@@ -35,7 +35,7 @@ impl Query {
         Self {
             graph: Some(graph::Build::new(root)),
             work: Vec::new(),
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             field: None,
             complete: false,
         }

@@ -1,7 +1,7 @@
 //! Complete demanded field/argument instances before immutable property queries.
 use super::Definitions;
+use crate::support::hash::HashSet;
 use crate::types::{Kind, ListId, Store, TypeId};
-use std::collections::HashSet;
 
 impl Definitions {
     /// Prepare this root's fields and nominal type arguments without expanding
@@ -37,7 +37,7 @@ impl Definitions {
         {
             return *result;
         }
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let result = self.prepare_graph(types, root, references, &mut seen);
         let instances = self.instances.get_or_insert_with(Default::default);
         if result.is_ok() {

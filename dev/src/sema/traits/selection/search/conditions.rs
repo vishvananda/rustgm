@@ -1,10 +1,10 @@
 //! Canonical implementation conditions descend on the existing iterative proof stack.
 use super::{Context, Decision, Declarations, Frame, Predicate, Search, Trial, inference};
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, infer::Instantiation, lifetime_proof::ScopeId, parameters::clauses::Clause,
     substitute::Bound,
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(in crate::sema::traits::selection) struct Conditions {

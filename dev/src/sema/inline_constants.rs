@@ -1,15 +1,13 @@
 //! Inline constants retain semantic body identity independently of runtime storage.
 mod instances;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::values::Constant,
     types::TypeId,
 };
 pub use instances::{Context, InlineInstance};
-use std::{
-    cell::Cell,
-    collections::{HashMap, HashSet},
-};
+use std::cell::Cell;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Id(u32);

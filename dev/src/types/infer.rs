@@ -27,7 +27,7 @@ mod signature_slots;
 mod specialize;
 mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 pub use substitute::Instantiation;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -121,10 +121,6 @@ pub struct Context {
     arguments: Option<Box<arguments::Storage>>,
     dependencies: Option<Box<dependencies::Storage>>,
     resolution: Option<Box<resolve::Resolution>>,
-    #[expect(
-        clippy::box_collection,
-        reason = "contexts without completed composite inputs keep only one pointer for this cache"
-    )]
     settled: Option<Box<HashMap<TermId, completed::Completed>>>,
     generalization: freshen::Scratch,
     terms: Vec<Term>,

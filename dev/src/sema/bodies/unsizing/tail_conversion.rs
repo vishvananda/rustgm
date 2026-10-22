@@ -1,7 +1,7 @@
 //! Unsizing follows one physical tail; marker arguments are not extra obligations.
 use super::{Checker, Constructor, Error, NodeId, Pending, TermId};
+use crate::support::hash::HashSet;
 use crate::types::{ItemId, TypeId, infer::arguments::Argument};
-use std::collections::HashSet;
 
 type Pair = (TermId, TermId);
 struct Selected {
@@ -45,7 +45,7 @@ impl Checker<'_> {
         }
         let mut pair = (source, target);
         let mut parents = Vec::new();
-        let mut active = HashSet::new();
+        let mut active = HashSet::default();
         let mut relations = Vec::new();
         let mut result = loop {
             self.state.reference_steps += 1;

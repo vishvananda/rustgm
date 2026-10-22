@@ -1,7 +1,7 @@
 //! Resolved names reserve candidate owners before their environments are elaborated.
 use super::{Checker, DefId, DefKind, Error, NodeKey, Type};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{resolve::names::NameId, sema::associated::OwnerKind, types::ItemId};
-use std::collections::{HashMap, HashSet};
 #[cfg(test)]
 #[path = "../../../tests/invariants/inherent_headers.rs"]
 mod tests;
@@ -69,7 +69,7 @@ impl Checker<'_> {
     pub(super) fn reserve_inherent_headers(&mut self) -> Result<(), Error> {
         let mut heads = super::heads::Heads::new(self.report, &self.facts);
         let mut pending = Pending::default();
-        let mut trait_names = HashSet::new();
+        let mut trait_names = HashSet::default();
         for member in self.facts.associated.members() {
             let owner = self.facts.associated.get(member.owner).ok_or_else(|| {
                 Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")

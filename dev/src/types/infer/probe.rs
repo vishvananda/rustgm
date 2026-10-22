@@ -3,7 +3,7 @@ use super::{
     Constructor, Context, Domain, Error, Store, TermId, Value, arguments::Slot,
     constants::ConstTermId, import::Import,
 };
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 
 /// One isolated query over a fixed source graph. This is an inference transport,
 /// not implementation-selection or bound evidence. Keep the source's equations
@@ -144,7 +144,7 @@ impl Probe {
     }
 
     fn inputs_preserved(&mut self) -> Result<bool, Error> {
-        let mut variables = HashSet::new();
+        let mut variables = HashSet::default();
         for &(original, domain) in &self.variables {
             self.context.step()?;
             let copied = self.context.root(self.mappings.types[&original])?;
@@ -155,7 +155,7 @@ impl Probe {
                 return Ok(false);
             }
         }
-        let mut constants = HashSet::new();
+        let mut constants = HashSet::default();
         for &original in &self.constants {
             self.context.step()?;
             let copied = self
@@ -171,7 +171,7 @@ impl Probe {
 
     fn exportable(&mut self, store: &Store, root: TermId, reverse: &Import) -> Result<bool, Error> {
         let mut work = vec![root];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         while let Some(id) = work.pop() {
             self.context.step()?;
             let id = self.context.root(id)?;

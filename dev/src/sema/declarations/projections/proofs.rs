@@ -1,5 +1,6 @@
 //! Projected annotations retain their declaration or body proof until the owning gate.
 use super::{Checker, DefId, Error, NodeKey, regions};
+use crate::support::hash::HashMap;
 use crate::{
     sema::traits::obligations::Obligations,
     types::{
@@ -7,7 +8,7 @@ use crate::{
         substitute::Bound,
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 impl Checker<'_> {
     pub(super) fn projection_environment(

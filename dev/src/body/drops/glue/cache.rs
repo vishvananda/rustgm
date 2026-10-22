@@ -1,12 +1,12 @@
 //! Recipe state survives append-only type and instance discovery without retaining borrows.
 use super::{Catalog, Recipes};
+use crate::support::hash::HashMap;
 use crate::{
     body::drops::Method,
     resolve::model::DefId,
     sema::members::Members,
     types::{ItemId, Store, TypeId, aggregate::Definitions, destruction::NeedsDrop},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Key {
@@ -39,7 +39,7 @@ impl Cache {
             .checked_mul(2 * (size_of::<(ItemId, DefId)>() + size_of::<ItemId>()))
             .filter(|n| *n <= 64_000_000)
             .ok_or("destruction methods exceed 64 MB budget")?;
-        let mut selected = HashMap::new();
+        let mut selected = HashMap::default();
         for method in methods {
             if selected.insert(method.item, method.function).is_some() {
                 return Err("duplicate destructor recipe method");
@@ -49,7 +49,7 @@ impl Cache {
         Ok(Self {
             methods: selected,
             needs,
-            states: HashMap::new(),
+            states: HashMap::default(),
             storage: Recipes::default(),
             work: Vec::new(),
             retained,

@@ -39,7 +39,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let item = self.item(key)?;
         let mut syntax = Vec::new();
-        let mut type_parameters = std::collections::HashSet::new();
+        let mut type_parameters = crate::support::hash::HashSet::default();
         for key in parameters {
             if self.generic_syntax(*key)?.flavor == GenericFlavor::Type {
                 type_parameters.insert(self.generic_binding(*key)?);
@@ -155,7 +155,7 @@ impl Checker<'_> {
         key: NodeKey,
         subject: Subject,
         list: List,
-        parameters: &std::collections::HashSet<DefId>,
+        parameters: &crate::support::hash::HashSet<DefId>,
         scope: (regions::Context, Option<Scope>),
         output: &mut Vec<Syntax>,
     ) -> Result<(), Error> {
@@ -392,7 +392,7 @@ impl Checker<'_> {
             return Ok(());
         };
         self.work.push(Work::Bounds(owner, context));
-        let mut subjects = std::collections::HashSet::new();
+        let mut subjects = crate::support::hash::HashSet::default();
         for bound in bounds.iter().rev() {
             let bound_context = bound.context(context);
             if let Written::User { path, definition } = bound.bound {
@@ -429,7 +429,7 @@ impl Checker<'_> {
                 == crate::resolve::model::DefKind::TypeAlias;
         let mut work = vec![(key.node, true)];
         let mut children = Vec::new();
-        let mut seen = std::collections::HashSet::new();
+        let mut seen = crate::support::hash::HashSet::default();
         while let Some((node, mut explicit_lifetimes)) = work.pop() {
             if !seen.insert(node) {
                 continue;

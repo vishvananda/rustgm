@@ -186,7 +186,7 @@ fn nominal(
 
 #[test]
 fn every_field_wait_retains_the_graph_frontier_in_deep_shared_recipes() -> TestResult {
-    use std::collections::HashSet;
+    use rustgm::support::hash::HashSet;
     for count in [8_u32, 32, 128] {
         let (mut facts, leaf) = context()?;
         let mut root = leaf;
@@ -207,7 +207,7 @@ fn every_field_wait_retains_the_graph_frontier_in_deep_shared_recipes() -> TestR
         let mut proof = Obligations::new(1000);
         let mut cursor =
             projections::Cursor::new(None, &proof, ScopeId::ROOT, Availability::Validated)?;
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut selections = 0;
         loop {
             let raw = match caller.advance(&mut facts, &mut query)? {

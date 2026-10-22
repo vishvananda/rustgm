@@ -1,7 +1,7 @@
 //! Reuse canonical type tails while distinguishing Self from its associated results.
 use super::{Error, charge};
+use crate::support::hash::HashMap;
 use crate::types::{GenericArgs, Kind, Store, TypeId, arguments::Argument};
-use std::collections::HashMap;
 
 pub(super) struct Occurrences {
     self_type: TypeId,
@@ -13,7 +13,7 @@ impl Occurrences {
         Self {
             self_type,
             projections,
-            completed: HashMap::new(),
+            completed: HashMap::default(),
         }
     }
     pub fn arguments(

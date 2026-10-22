@@ -3,8 +3,8 @@
 #[path = "../../../tests/invariants/erased_promises.rs"]
 mod tests;
 use super::{ItemId, Store};
+use crate::support::hash::HashMap;
 use crate::types::{GenericArgs, Kind, RegionId, TypeId, arguments::Argument};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Promise {

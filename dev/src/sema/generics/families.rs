@@ -1,5 +1,6 @@
 //! A selected associated definition substitutes parent and family arguments together.
 use super::{DefId, Parameter, parameter_id};
+use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
     types::{
@@ -10,7 +11,7 @@ use crate::{
         substitute::{Bound, families as family},
     },
 };
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::hash_map::Entry;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Application {

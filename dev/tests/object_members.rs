@@ -214,7 +214,7 @@ fn check_body_proofs(source: &str) -> Result<(), String> {
         |_, _| Err("object member controls have no owned nominal fields"),
     )
     .map_err(|e| e.to_string())?;
-    let sources: std::collections::HashSet<_> =
+    let sources: rustgm::support::hash::HashSet<_> =
         program.bodies.iter().map(|body| body.source).collect();
     contracts
         .bodies

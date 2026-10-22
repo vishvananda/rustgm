@@ -1,5 +1,6 @@
 //! Instantiated nominal requirements retain the scope of surrounding callable binders.
 use super::Declarations;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
     types::{
@@ -14,7 +15,6 @@ use crate::{
         substitute,
     },
 };
-use std::collections::{HashMap, HashSet};
 
 /// One immutable caller environment; immediate contracts remain shared in the store.
 #[derive(Default)]
@@ -46,7 +46,7 @@ impl Requirements {
         let scope = self.scopes.entry(depth).or_insert_with(|| Scope {
             captures: Captures::new(depth),
             lower: substitute::Bound::lower(depth),
-            predicates: HashMap::new(),
+            predicates: HashMap::default(),
         });
         if let Some(&result) = scope.predicates.get(&predicate) {
             return Ok(result);
@@ -88,7 +88,7 @@ pub(super) fn requirements_inside(
 ) -> Result<Vec<Clause>, &'static str> {
     let mut work = vec![(root, depth)];
     let mut predicates = Vec::new();
-    let mut unique = HashSet::new();
+    let mut unique = HashSet::default();
     while let Some((ty, depth)) = work.pop() {
         if !checked.types.insert((ty, depth)) {
             continue;

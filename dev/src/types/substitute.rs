@@ -18,7 +18,7 @@ mod predicates;
 mod region_mapping;
 mod universals;
 use super::{Kind, ListId, RegionId, Store, TypeId, arguments::Argument};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 type Key = (TypeId, u16);
 const WORK_LIMIT: usize = 1_000_000;
@@ -56,7 +56,7 @@ impl Bound {
             arguments,
             action: Action::Remove,
             parameters: None,
-            completed: HashMap::new(),
+            completed: HashMap::default(),
             applications: None,
             work: Vec::new(),
             children: Vec::new(),

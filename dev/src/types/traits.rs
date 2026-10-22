@@ -1,6 +1,6 @@
 //! Canonical trait applications preserve declaration identity and all explicit arguments.
 use super::{GenericArgs, ItemId, Properties, Store};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ApplicationId(pub u32);

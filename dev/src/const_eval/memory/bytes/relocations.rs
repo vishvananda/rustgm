@@ -14,7 +14,8 @@ struct Word {
     target: WordTarget,
     key: WordKey,
 }
-use std::collections::{BTreeMap, HashMap};
+use crate::support::hash::HashMap;
+use std::collections::BTreeMap;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct WordId(u32);
 #[derive(Clone, Copy)]

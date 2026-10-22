@@ -20,7 +20,7 @@ pub(in crate::const_eval) use transport::Snapshot;
 mod capabilities;
 mod raw;
 use super::{Cell, Constant, Failure, LocationId, Machine, Read, Reader, TypeId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Id(u32);
 pub(super) struct Backing {

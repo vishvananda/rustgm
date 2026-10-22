@@ -1,5 +1,6 @@
 //! Finalize nested bodies iteratively after caller constraints determine their inputs.
 use super::{Checker, Error, InputRefresh, Scheduler, Work};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         bodies::{Dependency, finalization::Finalization},
@@ -8,7 +9,6 @@ use crate::{
     },
     types::{Kind, infer::Solved},
 };
-use std::collections::HashMap;
 
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn finish_closure_child(

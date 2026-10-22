@@ -81,7 +81,7 @@ impl Checker<'_> {
                 "type/const parameters and lifetime bounds require later semantic assignments",
             ));
         }
-        let mut names = std::collections::HashSet::new();
+        let mut names = crate::support::hash::HashSet::default();
         let mut non_lifetime = false;
         let mut defaulted = false;
         for node in &nodes {

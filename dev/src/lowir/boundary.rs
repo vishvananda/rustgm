@@ -3,7 +3,8 @@ use super::{
     program::{self, MemorySpan, Program, SignatureId},
     vocabulary::Type as Scalar,
 };
-use std::{collections::HashMap, sync::Arc};
+use crate::support::hash::HashMap;
+use std::sync::Arc;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Class {
     Integer,

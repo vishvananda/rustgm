@@ -2,9 +2,9 @@
 mod binders;
 mod rebase;
 use super::{Constructor, Context, Error, Store, TermId, Value, arguments::Slot};
+use crate::support::hash::HashSet;
 use binders::Binders;
 use rebase::Rebasing;
-use std::collections::HashSet;
 
 enum Work {
     Pair(TermId, TermId),
@@ -67,7 +67,7 @@ impl Context {
         for &count in ambient {
             binders.enter_rigid(count)?;
         }
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut rebasing = Rebasing::default();
         while let Some(next) = work.pop() {
             self.step()?;

@@ -91,7 +91,7 @@ impl Checker<'_> {
             let bounds = declaration.bounds.clone();
             let mut substitution = crate::types::substitute::Bound::defining_results(
                 &self.facts.types,
-                std::collections::HashMap::from([(declaration.application, hidden)]),
+                crate::support::hash::HashMap::from_iter([(declaration.application, hidden)]),
             )
             .map_err(|e| self.error(source.node, e))?;
             self.prove_bound(source.node, hidden, Bound::Sized)?;
@@ -183,7 +183,7 @@ impl Checker<'_> {
         let mut closing = crate::types::substitute::Bound::close_projection_regions(
             1,
             0,
-            std::collections::HashMap::new(),
+            crate::support::hash::HashMap::default(),
         )
         .map_err(error)?;
         closing

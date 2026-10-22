@@ -120,9 +120,9 @@ fn formation_axes(count: u16, components: bool, targets: bool) -> Result {
         } else {
             &ids[index..=index]
         };
-        let expected: std::collections::HashSet<_> =
+        let expected: crate::support::hash::HashSet<_> =
             expected.iter().map(|&id| (id, target)).collect();
-        let actual: std::collections::HashSet<_> =
+        let actual: crate::support::hash::HashSet<_> =
             found.scalars.parameters.iter().copied().collect();
         assert_eq!(actual, expected);
         assert_eq!(actual.len(), found.scalars.parameters.len());

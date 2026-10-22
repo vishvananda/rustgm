@@ -1,5 +1,6 @@
 //! Canonical names occupy one byte arena; repeated ASCII lookups allocate nothing.
-use std::{collections::hash_map::RandomState, hash::BuildHasher};
+use crate::support::hash::BuildFxHasher;
+use std::hash::BuildHasher;
 use unicode_normalization::UnicodeNormalization;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -15,7 +16,7 @@ pub struct Names {
     bytes: String,
     entries: Vec<Entry>,
     slots: Vec<Option<NameId>>,
-    hash: RandomState,
+    hash: BuildFxHasher,
     scratch: String,
 }
 impl Names {

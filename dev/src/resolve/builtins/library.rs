@@ -1,11 +1,11 @@
 //! Nominal metadata registers distinct library types, parameters and constructor identities.
 use super::{Context, DefId, DefKind, Error, NameId, Namespace, Resolver, ScopeId};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{package::ModuleId, unit::NodeKey},
     support::library_types::{LibraryField, LibraryModule, LibraryParameter, LibraryType},
     syntax::ast::NodeId,
 };
-use std::collections::HashMap;
 mod slices;
 pub use slices::SliceLength;
 

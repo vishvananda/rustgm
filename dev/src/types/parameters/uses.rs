@@ -1,9 +1,9 @@
 //! Shared type graphs are visited once while accumulating rigid parameter uses.
 mod sole;
 use super::ParameterId;
+use crate::support::hash::HashSet;
 use crate::types::{Kind, Store, TypeId, arguments::Argument};
 pub(crate) use sole::Sole;
-use std::collections::HashSet;
 #[derive(Default)]
 pub struct Uses {
     opaque_projections: bool,

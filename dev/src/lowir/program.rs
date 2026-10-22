@@ -222,7 +222,7 @@ pub struct Program {
     pub signatures: Vec<Signature>,
     pub(super) objects: Option<Box<super::boundary::Signatures>>,
     pub symbols: Vec<Symbol>,
-    pub(super) names: std::collections::HashMap<String, Name>,
+    pub(super) names: crate::support::hash::HashMap<String, Name>,
 }
 impl Program {
     /// Install exactly one function body for a canonical symbol declaration.

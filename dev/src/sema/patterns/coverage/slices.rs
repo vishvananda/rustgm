@@ -1,7 +1,7 @@
 //! Finite length partitions preserve prefix/suffix aliasing without enumerating values.
 use super::{Coverage, Id, Kind, PatternId, Query, Roots, Step, Work};
 use crate::sema::patterns::{Fields, Projection};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Default)]
 struct Positions {
@@ -19,8 +19,8 @@ impl Coverage<'_> {
         if self.slice_aliases.is_some() {
             return Ok(());
         }
-        let mut bounds = HashMap::new();
-        let mut seen = HashSet::new();
+        let mut bounds = HashMap::default();
+        let mut seen = HashSet::default();
         let mut work = match self.roots {
             Roots::Pattern(pattern) => vec![pattern],
             Roots::Arms(arms) => arms.iter().filter_map(|arm| arm.pattern).collect(),
@@ -65,9 +65,9 @@ impl Coverage<'_> {
                 Kind::Wildcard | Kind::Range(_) | Kind::Text(_) => {}
             }
         }
-        let mut aliases = HashMap::new();
+        let mut aliases = HashMap::default();
         for (ty, positions) in bounds {
-            let mut lengths = HashSet::new();
+            let mut lengths = HashSet::default();
             for start in positions.prefix {
                 for &end in &positions.suffix {
                     self.graph.charge()?;

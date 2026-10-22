@@ -2,13 +2,13 @@
 mod controls;
 mod extend;
 mod walk;
+use crate::support::hash::HashMap;
 use crate::{
     lex::token::Punctuation,
     resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
     sema::model::{Declarations, Function, Initializer},
     syntax::ast::{Kind as Syntax, List, NodeId, Unary},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Id(pub u32);
@@ -108,7 +108,7 @@ fn recycle<K, V>(table: &mut HashMap<K, V>) {
     // HashMap clearing visits capacity. A large body must not make every
     // subsequent small body pay to reset its oversized lookup tables.
     if table.capacity() > 4096 && table.len() < table.capacity() / 8 {
-        *table = HashMap::new();
+        *table = HashMap::default();
     } else {
         table.clear();
     }

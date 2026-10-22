@@ -1,10 +1,10 @@
 //! Visit relevant trait members once and retain each member's separate contribution.
 use super::{Analysis, Checker, DefId, Error, Family, Site, charge, uses::Collector};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefKind,
     types::{GenericArgs, Kind, parameters::clauses::Clause},
 };
-use std::collections::{HashMap, HashSet};
 
 impl Analysis {
     pub(super) fn collect(&mut self, checker: &mut Checker<'_>) -> Result<(), Error> {
@@ -39,7 +39,7 @@ impl Analysis {
     }
 
     fn register_families(&mut self, checker: &Checker<'_>) -> Result<HashSet<DefId>, Error> {
-        let mut owners = HashSet::new();
+        let mut owners = HashSet::default();
         for member in checker.facts.associated.members() {
             let id = member.definition;
             let Some(owner) = checker.facts.associated.trait_owner(id) else {
@@ -75,8 +75,8 @@ impl Analysis {
                     source,
                     formal,
                     users: 0,
-                    votes: HashMap::new(),
-                    required: HashSet::new(),
+                    votes: HashMap::default(),
+                    required: HashSet::default(),
                 },
             );
         }

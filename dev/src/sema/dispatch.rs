@@ -11,6 +11,7 @@ use super::{
     model::Declarations,
     traits::{assumptions::Assumptions, selection},
 };
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     types::{
@@ -20,7 +21,6 @@ use crate::{
 };
 pub(crate) use dependencies::Dependencies;
 pub(crate) use objects::object_method;
-use std::collections::HashMap;
 use std::sync::Arc;
 pub(crate) use tables::table_method;
 
@@ -73,9 +73,9 @@ impl Dispatcher {
             normalize: Bound::new(regions),
             context: Context::default(),
             obligations,
-            selected: HashMap::new(),
-            constants: HashMap::new(),
-            expanded: HashMap::new(),
+            selected: HashMap::default(),
+            constants: HashMap::default(),
+            expanded: HashMap::default(),
             caller: None,
             retained: None,
         })

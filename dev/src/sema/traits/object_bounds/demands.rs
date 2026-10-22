@@ -1,6 +1,7 @@
 //! Immutable object contracts supply inference goals, never assumed evidence.
 pub(in crate::sema) mod pending;
 use super::graph::{self, Graph};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -13,10 +14,7 @@ use crate::{
         },
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/contextual_demands.rs"]
 mod tests;
@@ -118,7 +116,7 @@ fn prepare(
     })?;
     let mut graph = Graph::new(Clause::ForAll(root));
     let mut clauses = Vec::new();
-    let mut seen = HashSet::new();
+    let mut seen = HashSet::default();
     let mut inspections = 0_usize;
     while let Some(visit) = graph.next(facts)? {
         for clause in std::iter::once(visit.clause).chain(visit.implied) {

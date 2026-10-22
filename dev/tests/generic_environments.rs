@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     aggregate::Definitions,
@@ -7,7 +8,7 @@ use rustgm::types::{
         environment::{Abilities, Environment},
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 fn parameter(store: &mut Store, owner: u32) -> Result<(ParameterId, TypeId), &'static str> {
     let id = store.intern_parameter(Parameter {
@@ -23,7 +24,7 @@ fn move_abilities_follow_the_fixed_environment() -> Result<(), &'static str> {
     let mut types = Store::default();
     let (id, ty) = parameter(&mut types, 0)?;
     let definitions = Definitions::default();
-    let derives = HashMap::new();
+    let derives = HashMap::default();
     let tuple = types.intern_list(&[ty, TypeId::primitive(Primitive::U8)])?;
     let tuple = types.intern(Kind::Tuple(tuple))?;
     let array = types.intern(Kind::Array {
@@ -98,7 +99,7 @@ fn scopes_and_failed_queries_do_not_leak_assumptions() -> Result<(), &'static st
     let (a, a_type) = parameter(&mut types, 0)?;
     let (b, b_type) = parameter(&mut types, 1)?;
     let definitions = Definitions::default();
-    let derives = HashMap::new();
+    let derives = HashMap::default();
     let environment = Arc::new(Environment::new(&types, &[(a, Abilities::default())])?);
     assert_eq!(environment.abilities(a), Some(Abilities::default()));
     assert_eq!(environment.abilities(b), None);
@@ -146,7 +147,7 @@ fn references_and_callable_abilities_do_not_depend_on_referents() -> Result<(), 
     let environment = Arc::new(Environment::new(&types, &[(id, Abilities::default())])?);
     let mut query = Copies::in_environment(environment);
     let definitions = Definitions::default();
-    let derives = HashMap::new();
+    let derives = HashMap::default();
     let parameters = types.intern_list(&[ty])?;
     let signature = types.intern(Kind::Function {
         bound_regions: 0,
@@ -227,7 +228,7 @@ fn shared_type_graph_is_queried_once_per_environment() -> Result<(), &'static st
     let mut query = Copies::in_environment(environment);
     assert!(
         !query
-            .demand(&types, &Definitions::default(), &HashMap::new(), root)?
+            .demand(&types, &Definitions::default(), &HashMap::default(), root)?
             .copy
     );
     assert_eq!(query.steps, 4097);

@@ -1,10 +1,10 @@
 //! Typed signature graphs use one indexed remap per import, never source reconstruction.
 use super::{Declarations, Error, error, scalar};
+use crate::support::hash::HashMap;
 use crate::{
     support::crates::{Abi, Lifetime, RecordRef, Signature, TypeGraph, TypeNode, TypeRef},
     types::{GenericArgs, ItemId, Kind, RegionId, TypeId, callable::Convention},
 };
-use std::collections::HashMap;
 
 pub(super) fn import(facts: &mut Declarations, signature: &Signature) -> Result<TypeId, Error> {
     let types = import_graph(facts, signature.types(), &[])?;
@@ -219,7 +219,7 @@ pub(super) fn export_roots(
 }
 pub(super) fn export(facts: &Declarations, signature: TypeId) -> Result<Signature, Error> {
     let mut graph = Export::default();
-    let roots = export_roots(facts, signature, &mut graph, &HashMap::new())?;
+    let roots = export_roots(facts, signature, &mut graph, &HashMap::default())?;
     Signature::with_types(
         graph.nodes,
         roots.slots,

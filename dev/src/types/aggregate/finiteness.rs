@@ -1,11 +1,11 @@
 //! Finite storage follows declaration fields and stored parameter positions, never expanded instances.
 mod conditions;
 use super::Definitions;
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     GenericArgs, ItemId, Kind, Store, TypeId, arguments::Argument, parameters::ParameterId,
 };
 use conditions::{Conditions, Term};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
@@ -199,15 +199,15 @@ impl Graph {
         Ok(())
     }
     fn check_cycles(&mut self, schemas: &[(ItemId, GenericArgs)]) -> Result<(), Error> {
-        let mut edges: HashMap<ItemId, Vec<ItemId>> = HashMap::new();
-        let mut seen = HashSet::new();
+        let mut edges: HashMap<ItemId, Vec<ItemId>> = HashMap::default();
+        let mut seen = HashSet::default();
         for &(owner, dependency, condition) in &self.edges {
             self.equations.charge(1)?;
             if self.equations.value(condition) && seen.insert((owner, dependency)) {
                 edges.entry(owner).or_default().push(dependency);
             }
         }
-        let mut states = HashMap::new();
+        let mut states = HashMap::default();
         let mut work = Vec::new();
         for &(root, _) in schemas {
             work.push((root, false));

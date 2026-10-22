@@ -7,7 +7,7 @@ pub(crate) mod premise_index;
 pub mod shape;
 pub mod uses;
 use super::{ItemId, Kind, Primitive, Store, TypeId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ParameterId(pub u32);

@@ -2,10 +2,8 @@
 pub mod regions;
 use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use crate::support::hash::{HashMap, HashSet};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Default)]
 enum State {
@@ -57,7 +55,7 @@ impl NeedsDrop {
             scope: Some(Box::new(Scope {
                 environment,
                 builtins: None,
-                states: HashMap::new(),
+                states: HashMap::default(),
             })),
             custom: Arc::clone(&self.custom),
             states: Vec::new(),

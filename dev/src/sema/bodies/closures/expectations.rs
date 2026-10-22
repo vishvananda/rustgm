@@ -1,7 +1,7 @@
 //! Declared callable output requirements supply context, never selection permission.
 use super::{Checker, Constructor, Error, NodeId, TermId};
+use crate::support::hash::HashMap;
 use crate::types::infer::{arguments::Argument, predicates::Predicate};
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(in crate::sema::bodies) struct Hints {

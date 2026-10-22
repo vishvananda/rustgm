@@ -7,8 +7,8 @@ use super::{
     predicates::{Bound, Predicate},
     uses::Uses,
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{Kind, Store, TypeId, bound_uses};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Parameter {
@@ -42,7 +42,7 @@ impl Constraints {
         let mut result = Self {
             header,
             known,
-            waiting: HashMap::new(),
+            waiting: HashMap::default(),
             dependencies: Vec::new(),
             ready: Vec::new(),
             steps,

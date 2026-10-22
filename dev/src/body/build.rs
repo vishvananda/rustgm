@@ -31,6 +31,7 @@ use super::ir::{
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
 };
 use super::{scopes, storage::Range as ScopeRange};
+use crate::support::hash::HashMap;
 use crate::{
     lex::token::Punctuation as Op,
     resolve::{
@@ -43,7 +44,6 @@ use crate::{
     syntax::ast::{BlockFlavor, Kind, List, NodeId},
     types::{Kind as Type, TypeId},
 };
-use std::collections::HashMap;
 
 /// Construct function and initializer CFGs from the completed type-checking result.
 ///
@@ -67,7 +67,7 @@ pub(crate) fn concrete_except(
     facts: &Declarations,
     template: impl Fn(DefId) -> bool,
 ) -> Result<Program, Error> {
-    concrete_prepared(report, facts, template, HashMap::new())
+    concrete_prepared(report, facts, template, HashMap::default())
 }
 pub(crate) fn concrete_prepared(
     report: &Report,
@@ -326,10 +326,6 @@ enum Work {
 }
 struct Scratch {
     receivers: HashMap<NodeId, ValueId>,
-    #[expect(
-        clippy::box_collection,
-        reason = "comparison-only scratch stays pointer-sized and unallocated for ordinary CFG construction"
-    )]
     comparison_arguments: Option<Box<HashMap<NodeId, ValueId>>>,
     unadjusted: Vec<NodeId>,
     scopes: scopes::Scratch,
@@ -363,7 +359,7 @@ struct Builder<'a> {
 impl Scratch {
     fn new(facts: &Declarations) -> Self {
         Self {
-            receivers: HashMap::new(),
+            receivers: HashMap::default(),
             comparison_arguments: None,
             scopes: scopes::Scratch::default(),
             unadjusted: Vec::new(),
@@ -373,7 +369,7 @@ impl Scratch {
             bindings: Vec::new(),
             work: Vec::new(),
             live: Vec::new(),
-            controls: HashMap::new(),
+            controls: HashMap::default(),
             reach: Vec::new(),
             places: Vec::new(),
             field_values: Vec::new(),

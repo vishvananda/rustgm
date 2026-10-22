@@ -1,10 +1,10 @@
 //! Completed, debt-free dependency closures are independent of a requesting body.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
     sema::{traits::implementations::Availability, values::Instance},
     types::parameters::predicates::Predicate,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(crate) struct Dependencies {

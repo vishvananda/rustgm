@@ -123,7 +123,7 @@ fn mapping_preserves_empty_and_nested_binders_and_opens_captures_in_source_order
     let mapped = environment.substitute_regions(&mut store, &mut fold)?;
     assert_eq!(
         fold.opened_regions()
-            .collect::<std::collections::HashMap<_, _>>(),
+            .collect::<crate::support::hash::HashMap<_, _>>(),
         [
             (RegionId::bound(0, 1)?, RegionId(7)),
             (RegionId::bound(0, 0)?, RegionId(8)),

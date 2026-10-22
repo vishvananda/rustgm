@@ -1,5 +1,6 @@
 //! Iterative depth-first demand distinguishes recursion from unbounded instance growth.
 use super::{dependencies::Dependencies, diagnostic, proof};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::{
         self,
@@ -11,7 +12,6 @@ use crate::{
     sema::model::Declarations,
     types::{ItemId, Kind, instance::Instance},
 };
-use std::collections::{HashMap, HashSet};
 
 enum Work {
     Adapter(body::invocation_entries::Entry, NodeKey),
@@ -235,8 +235,8 @@ fn materialize(
     ordinary: &Ordinary,
 ) -> Result<proof::Builder, Error> {
     let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
-    let mut instances = HashMap::new();
-    let mut visited = HashSet::new();
+    let mut instances = HashMap::default();
+    let mut visited = HashSet::default();
     let mut budget = Budget::default();
     let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {

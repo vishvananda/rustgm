@@ -1,5 +1,6 @@
 //! Lookup retains one trial while independent declarations allocate body lifetimes.
 use super::super::{Mode, OwnedCaller, Progress, Query};
+use crate::support::hash::HashMap;
 use crate::{
     expand::config::Config,
     resolve::{
@@ -20,7 +21,7 @@ use crate::{
         ItemId, Kind, Primitive, RegionId, TypeId, infer::Context, parameters::predicates::Bound,
     },
 };
-use std::{collections::HashMap, fmt::Write as _, path::Path};
+use std::{fmt::Write as _, path::Path};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 struct NoFiles;
 impl Sources for NoFiles {
@@ -61,7 +62,7 @@ fn fixture(depth: usize) -> TestResult<(Report, Declarations, DefId)> {
 }
 
 fn delay(facts: &mut Declarations) -> TestResult<HashMap<DefId, (ItemId, Implementation)>> {
-    let mut delayed = HashMap::new();
+    let mut delayed = HashMap::default();
     let mut seeds = Vec::new();
     for header in facts.generics.implementations() {
         let Bound::Trait(application) = header.predicate.bound else {

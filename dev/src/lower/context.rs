@@ -2,6 +2,7 @@
 mod adapters;
 mod c_boundary;
 use super::{Error, data, function, remainder};
+use crate::support::hash::HashMap;
 use crate::{
     abi::layout::{Layout, Layouts},
     body::ir::{self, Owner},
@@ -22,7 +23,6 @@ use crate::{
     syntax::ast::NodeId,
     types::{Kind, Primitive, Store, TypeId, aggregate::Definitions, instance::Instance},
 };
-use std::collections::HashMap;
 
 pub(super) struct Context<'a> {
     pub intrinsics: &'a crate::resolve::model::Intrinsics,
@@ -122,7 +122,7 @@ impl<'a> Context<'a> {
             .unwrap_or(0);
         let mut context = Self {
             intrinsics: &facts.intrinsics,
-            intrinsic_symbols: HashMap::new(),
+            intrinsic_symbols: HashMap::default(),
             types: &facts.types,
             aggregates: &facts.aggregates,
             members: &facts.members,
@@ -131,7 +131,7 @@ impl<'a> Context<'a> {
             initializers: &facts.initializers,
             foreign: facts.foreign.as_deref(),
             crates: facts.crates.as_deref(),
-            imported_symbols: HashMap::new(),
+            imported_symbols: HashMap::default(),
             layouts,
             bodies,
             destruction,
@@ -139,19 +139,19 @@ impl<'a> Context<'a> {
             data: data::Storage::default(),
             storage_mutation: None,
             body_indices: vec![None; size],
-            closure_indices: HashMap::new(),
-            adapter_indices: HashMap::new(),
-            instance_indices: HashMap::new(),
+            closure_indices: HashMap::default(),
+            adapter_indices: HashMap::default(),
+            instance_indices: HashMap::default(),
             symbols: vec![None; bodies.bodies.len()],
-            signatures: HashMap::new(),
+            signatures: HashMap::default(),
             c_abi: None,
             queue: Vec::new(),
             drop_queue: Vec::new(),
             drop_symbols: vec![None; destruction.map_or(0, |d| d.recipes().recipes().len())],
             objects: &facts.objects,
-            virtual_symbols: HashMap::new(),
+            virtual_symbols: HashMap::default(),
             object_callables: None,
-            table_symbols: HashMap::new(),
+            table_symbols: HashMap::default(),
             table_queue: Vec::new(),
             abort: None,
             remainders: [None; 2],

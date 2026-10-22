@@ -2,6 +2,7 @@
 pub(crate) mod incremental;
 mod static_targets;
 use super::{loans, ownership, regions, storage};
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{Body, NodeKey, Program},
     types::{
@@ -11,7 +12,7 @@ use crate::{
         outlives::LiveRegions,
     },
 };
-use std::{collections::HashMap, hash::BuildHasher};
+use std::hash::BuildHasher;
 
 pub struct Checked<'a> {
     program: &'a Program,
@@ -59,7 +60,7 @@ impl std::error::Error for Error {}
 pub struct Environment<'a, S: BuildHasher> {
     pub types: &'a Store,
     pub definitions: &'a Definitions,
-    pub derives: &'a HashMap<ItemId, Declaration, S>,
+    pub derives: &'a std::collections::HashMap<ItemId, Declaration, S>,
     pub copies: &'a mut Copies,
 }
 /// # Errors
@@ -147,7 +148,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     let by_key: HashMap<_, _> = if templates.is_none() {
         contracts.bodies.iter().map(|b| (b.key, b)).collect()
     } else {
-        HashMap::new()
+        HashMap::default()
     };
     let mut components = LiveRegions::default();
     for (ordinal, body) in program.bodies.iter().enumerate() {

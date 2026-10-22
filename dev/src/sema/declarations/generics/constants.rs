@@ -202,7 +202,7 @@ impl Checker<'_> {
             return Ok(self.report.resolution.scopes[scope.0 as usize].module);
         }
         let modules = self.constant_modules.get_or_insert_with(|| {
-            let mut modules = std::collections::HashMap::new();
+            let mut modules = crate::support::hash::HashMap::default();
             for &(module, node) in self.report.resolution.node_scopes.keys() {
                 let file = self.report.package.modules[module.0 as usize].file;
                 modules

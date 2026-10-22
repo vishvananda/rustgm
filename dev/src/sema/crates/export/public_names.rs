@@ -1,12 +1,12 @@
 //! Traverse public module identities once; aliases retain their defining targets.
 use super::{DefId, DefKind, Error, Report, error, records};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::{Access, Origin, ScopeId},
     support::crates::{
         CrateIdentity, ExternalDef, ExternalKind, PublicBinding, PublicModule, PublicNames,
     },
 };
-use std::collections::{HashMap, HashSet};
 
 pub(super) struct Plan {
     pub owned: Vec<(DefId, ExternalDef)>,
@@ -23,8 +23,8 @@ pub(super) fn collect(report: &Report, identity: &CrateIdentity) -> Result<Plan,
         .collect();
     let root = report.resolution.module_scopes[0];
     let mut work = vec![(root, Vec::new())];
-    let mut seen = HashSet::from([root]);
-    let mut targets = HashMap::<DefId, ExternalDef>::new();
+    let mut seen = HashSet::from_iter([root]);
+    let mut targets = HashMap::<DefId, ExternalDef>::default();
     let mut owned = Vec::new();
     let mut modules = Vec::new();
     let mut explicit = false;

@@ -1,5 +1,6 @@
 //! Header contexts survive declaration dependencies without recursive drains or replay.
 use super::{Checker, DefId, Error, Partial, Work, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::associated::{Owner, OwnerId, OwnerKind},
     types::{
@@ -7,7 +8,6 @@ use crate::{
         parameters::predicates::{Bound, Predicate},
     },
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub(in crate::sema::declarations) enum Phase {

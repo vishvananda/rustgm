@@ -4,6 +4,7 @@ use super::{
     package::{Error, Module, ModuleId, Package},
     unit::{FileId, NodeKey, Unit},
 };
+use crate::support::hash::HashMap;
 use crate::{
     expand::{config::Config, configured::Effect},
     literal::Value,
@@ -14,10 +15,7 @@ use crate::{
         item::ItemKind,
     },
 };
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 pub struct InputFile {
     /// Canonical identity supplied by the driver, used only for cache/cycle keys.
@@ -177,7 +175,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                     root: root_node,
                 }],
                 names,
-                children: HashMap::new(),
+                children: HashMap::default(),
             },
             sources,
             config,
@@ -186,12 +184,12 @@ impl<'a, S: Sources> Loader<'a, S> {
                 relative: None,
             }],
             identities: vec![root.identity.clone()],
-            cache: HashMap::from([(root.identity, FileId(0))]),
+            cache: HashMap::from_iter([(root.identity, FileId(0))]),
             separate_instances: false,
-            includes: HashMap::new(),
-            include_requests: HashMap::new(),
-            resources: HashMap::new(),
-            environment: HashMap::new(),
+            includes: HashMap::default(),
+            include_requests: HashMap::default(),
+            resources: HashMap::default(),
+            environment: HashMap::default(),
         })
     }
     pub(crate) fn isolate_expansions(&mut self) {

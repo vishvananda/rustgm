@@ -7,13 +7,14 @@ mod tables;
 #[path = "../../tests/invariants/erased_entries.rs"]
 mod tests;
 mod upcasts;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     types::{TypeId, instance::Instance, substitute::Bound, traits::ApplicationId},
 };
 pub(crate) use captured::{Captured, captured_permissions, prepare_captured};
 pub(crate) use operators::{Operator, prepare_operator};
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 pub(crate) use tables::{complete_tables, prepare_table};
 pub(crate) use upcasts::prepare_upcast;
 
@@ -89,7 +90,7 @@ struct Storage {
     upcasts: HashMap<(TypeId, TypeId), Upcast>,
     shape_tables: Vec<Vec<TableId>>,
     pending: Vec<(TypeId, ShapeId)>,
-    pending_keys: std::collections::HashSet<(TypeId, ShapeId)>,
+    pending_keys: crate::support::hash::HashSet<(TypeId, ShapeId)>,
     fresh: Vec<TableId>,
     erase: Bound,
     compatibility: super::dyn_compat::Queries,
@@ -99,18 +100,18 @@ impl Default for Storage {
     fn default() -> Self {
         Self {
             shapes: Vec::new(),
-            shape_ids: HashMap::new(),
-            calls: HashMap::new(),
-            operators: HashMap::new(),
-            callable_targets: HashMap::new(),
-            captured_targets: HashMap::new(),
+            shape_ids: HashMap::default(),
+            calls: HashMap::default(),
+            operators: HashMap::default(),
+            callable_targets: HashMap::default(),
+            captured_targets: HashMap::default(),
             tables: Vec::new(),
-            table_ids: HashMap::new(),
-            conversions: HashMap::new(),
-            upcasts: HashMap::new(),
+            table_ids: HashMap::default(),
+            conversions: HashMap::default(),
+            upcasts: HashMap::default(),
             shape_tables: Vec::new(),
             pending: Vec::new(),
-            pending_keys: std::collections::HashSet::new(),
+            pending_keys: crate::support::hash::HashSet::default(),
             fresh: Vec::new(),
             erase: Bound::shape(),
             compatibility: super::dyn_compat::Queries::default(),

@@ -1,7 +1,7 @@
 //! Canonical generic arguments in declaration order, with a lifetime-only fast path.
 use super::{GenericArgs, Kind, Primitive, RegionId, Store, TypeId};
+use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
-use std::collections::HashMap;
 
 const MIXED: u32 = 0x8000_0000;
 

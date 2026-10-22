@@ -1,11 +1,11 @@
 //! Header member routes depend on resolved trait identities, never unfinished proof contracts.
 use super::{Checker, DefId, Error, NodeKey, Predicate, Seed, Work, regions};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefKind, names::NameId},
     sema::associated::OwnerKind,
     types::parameters::predicates::Bound,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Headers {
@@ -19,7 +19,7 @@ pub(super) struct Headers {
 }
 impl Headers {
     fn check_cycles(&mut self) -> Result<(), (DefId, &'static str)> {
-        let mut states = HashMap::new();
+        let mut states = HashMap::default();
         for index in 0..self.order.len() {
             let root = self.order[index];
             let mut work = vec![(root, false)];
@@ -54,7 +54,7 @@ impl Headers {
         if self.reachable.contains_key(&name) {
             return Ok(());
         }
-        let mut reached = HashSet::new();
+        let mut reached = HashSet::default();
         let mut work = self.declarations.get(&name).cloned().unwrap_or_default();
         while let Some(owner) = work.pop() {
             self.charge(1)?;
@@ -68,7 +68,7 @@ impl Headers {
     fn inputs(&mut self, name: NameId, roots: &[DefId]) -> Result<Vec<Seed>, &'static str> {
         self.reach(name)?;
         let mut work = roots.to_vec();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut inputs = Vec::new();
         while let Some(owner) = work.pop() {
             self.charge(1)?;

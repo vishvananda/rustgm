@@ -1,5 +1,6 @@
 //! Original initializer operands retain only their own rigid declaration parameters.
 use super::{Body, Contract, Declarations};
+use crate::support::hash::HashSet;
 use crate::{
     body::ir::{BodyKey, Owner},
     sema::{model::Initializer, values::Instance},
@@ -10,7 +11,6 @@ use crate::{
         parameters::{ParameterId, uses::Uses},
     },
 };
-use std::collections::HashSet;
 
 pub(super) struct Parameters {
     allowed: HashSet<ParameterId>,
@@ -89,7 +89,7 @@ fn resolve_parameters(
     if !dependent {
         return super::resolve(facts, body, contract);
     }
-    let mut allowed = HashSet::new();
+    let mut allowed = HashSet::default();
     for parameter in facts.generics.parameters_in_scope(definition) {
         facts.body_work.canonical_steps += 1;
         if matches!(parameter.argument, Argument::Lifetime(_)) {
@@ -246,7 +246,7 @@ fn owned_regions(
     facts: &mut Declarations,
     contract: &Contract,
 ) -> Result<HashSet<RegionId>, &'static str> {
-    let mut owned = HashSet::new();
+    let mut owned = HashSet::default();
     let mut work = 0_usize;
     let mut add = |id: RegionId| -> Result<(), &'static str> {
         work = work.saturating_add(1);

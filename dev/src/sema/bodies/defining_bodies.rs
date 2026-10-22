@@ -1,7 +1,7 @@
 //! Hidden-type dependencies retain callers while each defining body is typed once.
 use super::{Checker, Declarations, Error, Requirement, State};
+use crate::support::hash::HashMap;
 use crate::{resolve::expansion::Report, types::opaque::OpaqueId};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 enum Status {

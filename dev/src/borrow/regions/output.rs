@@ -1,5 +1,6 @@
 //! Conditional child proofs are consumed once by the exact enclosing body.
 use super::{Analysis, Body, Error, check};
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{Body as Cfg, NodeKey},
@@ -13,7 +14,7 @@ use crate::{
         variance::Variances,
     },
 };
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 pub struct Summary {
     pub(super) parent: NodeKey,
@@ -54,7 +55,10 @@ pub(super) fn finish(
         return constraints.prove().map(|proof| (proof, None));
     };
     let mut interface = Vec::with_capacity(link.bridges.len());
-    let mut mapping = HashMap::with_capacity(link.bridges.len());
+    let mut mapping = HashMap::with_capacity_and_hasher(
+        link.bridges.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for bridge in &link.bridges {
         let region = RegionId::bound(0, bridge.slot).map_err(|_| region_graph::Error::Identity)?;
         interface.push(region);
@@ -123,7 +127,10 @@ fn ordering(inputs: &[(&Contract, Option<&Cfg>)]) -> Result<Order, Error> {
         source: Some(inputs[index].0.source),
         message: message.into(),
     };
-    let mut index = HashMap::with_capacity(inputs.len());
+    let mut index = HashMap::with_capacity_and_hasher(
+        inputs.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for (ordinal, (input, cfg)) in inputs.iter().enumerate() {
         index
             .entry(input.source)

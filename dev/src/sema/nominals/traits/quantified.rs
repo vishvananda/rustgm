@@ -3,6 +3,7 @@ use super::{
     Assumptions, Availability, Context, Declarations, Obligations, State, select_requirement,
     selection,
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     RegionId,
     lifetime_proof::ScopeId,
@@ -12,10 +13,7 @@ use crate::types::{
     },
     substitute::Bound,
 };
-use std::{
-    collections::{HashMap, HashSet},
-    ops::Range,
-};
+use std::ops::Range;
 
 #[derive(Default)]
 pub(in crate::sema) struct Queries {

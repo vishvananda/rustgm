@@ -25,7 +25,7 @@ pub(crate) struct Registry {
     pub canonical: BuiltinCollections,
     pub originals: [Option<Original>; 4],
     pub prefixes:
-        std::collections::HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
+        crate::support::hash::HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
 }
 impl Registry {
     pub fn associated(

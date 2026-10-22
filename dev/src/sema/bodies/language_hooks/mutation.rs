@@ -1,7 +1,7 @@
 //! Mutable place consumers refine ordinary selected index calls in their own body.
 use super::{Checker, Error, Hook, NodeId, TermId};
+use crate::support::hash::{HashMap, HashSet};
 use crate::syntax::ast::{Kind, Unary};
-use std::collections::{HashMap, HashSet};
 #[derive(Clone, Copy)]
 struct Selected {
     method: usize,

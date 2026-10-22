@@ -1,5 +1,6 @@
 //! Shared indices for ordered cleanup, statement and edge points.
 use super::{Effect, Event};
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{BlockId, Body},
@@ -7,7 +8,6 @@ use crate::{
     },
     borrow::regions::points::Point,
 };
-use std::collections::HashMap;
 
 pub(crate) struct Index {
     pub(crate) blocks: Vec<std::ops::Range<usize>>,
@@ -23,8 +23,8 @@ impl Index {
             .ok_or("too many destruction liveness points")?;
         let mut result = Self {
             blocks: vec![0..0; body.blocks.len()],
-            edges: HashMap::new(),
-            points: HashMap::new(),
+            edges: HashMap::default(),
+            points: HashMap::default(),
             count,
         };
         for (index, event) in events.iter().enumerate() {

@@ -3,11 +3,11 @@ mod completion;
 mod incoming_fields;
 pub(super) mod output;
 use super::{Checker, Dependency, Error, NodeId, State, Work, closures, inline};
+use crate::support::hash::HashMap;
 use crate::{
     sema::traits::selection::Source,
     types::infer::{Solved, arguments::Argument, refinement::Refinement},
 };
-use std::collections::HashMap;
 
 enum Direction {
     Inward,

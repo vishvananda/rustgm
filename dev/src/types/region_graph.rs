@@ -5,8 +5,8 @@ mod output;
 mod quantifier_elimination;
 pub(crate) use output::{Conditional, OutputError};
 mod verify;
+use crate::support::hash::{HashMap, HashSet};
 pub use members::{ChoicesId, MembershipId};
-use std::collections::{HashMap, HashSet};
 pub(crate) use verify::Answers;
 pub use verify::VerificationId;
 
@@ -106,7 +106,7 @@ impl Solution {
         if self.graph.incoming[0].is_none() {
             return Ok(Vec::new());
         }
-        let mut seen = HashSet::from([Region::STATIC]);
+        let mut seen = HashSet::from_iter([Region::STATIC]);
         let mut work = vec![Region::STATIC];
         let mut steps = 0_usize;
         while let Some(shorter) = work.pop() {
@@ -373,9 +373,9 @@ impl<'a> Solver<'a> {
         Self {
             graph,
             steps: 0,
-            reached: HashSet::new(),
+            reached: HashSet::default(),
             work: Vec::new(),
-            assumed: HashMap::new(),
+            assumed: HashMap::default(),
             marks: vec![0; graph.kinds.len()],
             epoch: 0,
             search: Vec::new(),

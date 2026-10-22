@@ -3,11 +3,12 @@
 #[path = "../../../tests/invariants/notification_routing.rs"]
 mod tests;
 use super::NodeId;
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     Store,
     infer::{Context, Error, dependencies::WatchId, predicates::Predicate},
 };
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
 #[derive(Default)]
 struct Data {

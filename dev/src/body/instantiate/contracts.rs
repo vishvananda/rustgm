@@ -186,7 +186,7 @@ fn argument_assumptions(
             projections.extend_from_slice(requirements.projections);
         }
     }
-    let mut folds = std::collections::HashMap::new();
+    let mut folds = crate::support::hash::HashMap::default();
     for (projection, shorter) in projections {
         let ty = if projection.depth == 0 {
             projection.ty

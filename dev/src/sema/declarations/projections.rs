@@ -10,6 +10,7 @@ mod proofs;
 mod scoped;
 mod selection;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::{DefKind, Namespace},
     types::{
@@ -17,7 +18,6 @@ use crate::{
         substitute::{Normalizer, Request, Resolution, Step},
     },
 };
-use std::collections::HashMap;
 
 struct Selected {
     request: Request,
@@ -68,7 +68,7 @@ pub(super) struct Pending {
     plans: Vec<scoped::Plan>,
     body_sinks: HashMap<NodeKey, usize>,
     environments: HashMap<DefId, super::State>,
-    raw_bound_nodes: std::collections::HashSet<NodeKey>,
+    raw_bound_nodes: crate::support::hash::HashSet<NodeKey>,
     raw_bounds: HashMap<DefId, bound_environments::Bounds>,
     raw_environments:
         HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,

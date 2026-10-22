@@ -4,11 +4,11 @@ use super::{
     unit::{FileId, NodeKey, Unit},
 };
 use crate::expand::stream::{ContextId, Origin};
+use crate::support::hash::HashMap;
 use crate::syntax::{
     ast::{Kind, NodeId},
     token_tree::Span,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ModuleId(pub u32);

@@ -1,7 +1,8 @@
 //! Resume input queries only when one of their unresolved leaves changes.
 mod walk;
 use super::{Context, Error, Store, TermId, constants::ConstTermId};
-use std::collections::{HashMap, HashSet, VecDeque};
+use crate::support::hash::{HashMap, HashSet};
+use std::collections::VecDeque;
 
 /// Identifies one readiness query in its original inference context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -80,7 +81,7 @@ impl Storage {
             .checked_sub(1)
             .ok_or(Error::InvalidIdentity)?;
         if watch.remaining == 0 {
-            watch.seen = HashSet::new();
+            watch.seen = HashSet::default();
             watch.state = State::Resolved;
             self.ready.push_back(id);
         }
@@ -159,7 +160,7 @@ impl Context {
         let id = WatchId(u32::try_from(storage.watches.len()).map_err(|_| Error::Overflow)?);
         storage.watches.push(Watch {
             remaining: 0,
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             changes,
             state: State::Initial,
         });
@@ -189,7 +190,7 @@ impl Context {
             .and_then(|s| s.watches.get_mut(id.0 as usize))
             .ok_or(Error::InvalidIdentity)?;
         watch.state = State::Cancelled;
-        watch.seen = HashSet::new();
+        watch.seen = HashSet::default();
         Ok(())
     }
 

@@ -362,9 +362,9 @@ pub enum BodyKey {
 #[derive(Clone)]
 pub struct Body {
     /// Canonical types of static places actually referenced by this CFG.
-    pub static_types: Option<std::sync::Arc<std::collections::HashMap<DefId, TypeId>>>,
+    pub static_types: Option<std::sync::Arc<crate::support::hash::HashMap<DefId, TypeId>>>,
     /// Immutable declaration permissions, shared by checked bodies and instances.
-    pub mutable_statics: Option<std::sync::Arc<std::collections::HashSet<DefId>>>,
+    pub mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<DefId>>>,
     /// Constant eligibility applies independently of whether execution is demanded.
     pub const_context: bool,
     /// Concrete specialization identity; diagnostics keep the original source owner.
@@ -394,7 +394,7 @@ pub struct Body {
 }
 #[derive(Clone, Default)]
 pub struct ResolvedCallables {
-    targets: std::collections::HashMap<
+    targets: crate::support::hash::HashMap<
         crate::types::instance::Instance,
         crate::types::instance::Instance,
     >,
@@ -474,11 +474,13 @@ impl Body {
     }
     pub(crate) fn callable_targets(
         &self,
-    ) -> std::collections::HashMap<crate::types::instance::Instance, crate::types::instance::Instance>
-    {
+    ) -> crate::support::hash::HashMap<
+        crate::types::instance::Instance,
+        crate::types::instance::Instance,
+    > {
         self.resolved_callables
             .as_ref()
-            .map_or_else(std::collections::HashMap::new, |resolved| {
+            .map_or_else(crate::support::hash::HashMap::default, |resolved| {
                 resolved.targets.clone()
             })
     }

@@ -44,8 +44,8 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> 
 pub struct Prepared {
     scratch: Option<Box<Scratch>>,
     query: Option<NeedsDrop>,
-    bodies: std::collections::HashMap<crate::resolve::model::DefId, Template>,
-    anonymous: std::collections::HashMap<crate::resolve::unit::NodeKey, Template>,
+    bodies: crate::support::hash::HashMap<crate::resolve::model::DefId, Template>,
+    anonymous: crate::support::hash::HashMap<crate::resolve::unit::NodeKey, Template>,
     built: usize,
     reused: usize,
 }

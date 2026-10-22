@@ -1,7 +1,7 @@
 //! Retain the exact candidate and proof frontier while a header is prepared.
 use super::{Action, Caller, Decision, Declarations, Dependency, Frame, Node, Predicate, Search};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{sema::traits::implementations::Availability, types::shape_key::ShapeKey};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Progress {
@@ -65,12 +65,12 @@ impl<'a> Search<'a> {
                 availability,
                 builtins,
                 nodes: Vec::new(),
-                active: HashSet::new(),
-                auto_active: HashMap::new(),
+                active: HashSet::default(),
+                auto_active: HashMap::default(),
                 next_auto_segment: 0,
-                auto_provisional: HashMap::new(),
-                families: HashSet::new(),
-                completed: HashMap::new(),
+                auto_provisional: HashMap::default(),
+                families: HashSet::default(),
+                completed: HashMap::default(),
                 cycles: 0,
                 reused: false,
                 steps: 0,

@@ -3,12 +3,11 @@
 //! These charges cover vector slots and hash-table entry capacity. Allocator
 //! headers, hash control bytes and shared immutable `Arc`/`Rc` pointees are excluded;
 //! this is a deterministic work/storage policy, not a heap-size measurement.
-use std::collections::HashMap;
 
 pub(crate) fn vector<T>(values: &Vec<T>) -> usize {
     values.capacity().saturating_mul(size_of::<T>())
 }
-pub(crate) fn map<K, V, S>(values: &HashMap<K, V, S>) -> usize {
+pub(crate) fn map<K, V, S>(values: &std::collections::HashMap<K, V, S>) -> usize {
     values.capacity().saturating_mul(size_of::<(K, V)>())
 }
 /// Reserve a conservative entry-slot charge before constructing a new map.
@@ -41,7 +40,7 @@ impl Allocation {
     pub fn vector<T>(&mut self, values: &Vec<T>) {
         self.add(vector(values));
     }
-    pub fn map<K, V, S>(&mut self, values: &HashMap<K, V, S>) {
+    pub fn map<K, V, S>(&mut self, values: &std::collections::HashMap<K, V, S>) {
         self.add(map(values));
     }
     pub fn set<T, S>(&mut self, values: &std::collections::HashSet<T, S>) {

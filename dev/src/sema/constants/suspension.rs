@@ -1,6 +1,6 @@
 //! A declaration query preserves its evaluation graph while one initializer becomes ready.
 use super::{DefId, Error, Expression, NodeKey, Queries, Query, Scratch, State, Work, instances};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 pub(in crate::sema) enum Dependency {
     Body(crate::sema::bodies::Dependency),
@@ -21,7 +21,7 @@ pub(in crate::sema) struct Continuation {
     work: instances::Worklist,
     steps: usize,
     limit: usize,
-    checked_members: std::collections::HashSet<Query>,
+    checked_members: crate::support::hash::HashSet<Query>,
 }
 
 impl Queries<'_> {

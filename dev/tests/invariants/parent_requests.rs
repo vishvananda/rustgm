@@ -12,8 +12,8 @@ fn reference(store: &mut crate::types::Store, region: RegionId) -> Result<TypeId
 fn selected_arguments_are_inserted_only_after_owned_equality_restoration() -> Result {
     let local = RegionId(7);
     let external = RegionId(41);
-    let owned = HashSet::from([local]);
-    let actuals = HashSet::from([external]);
+    let owned = HashSet::from_iter([local]);
+    let actuals = HashSet::from_iter([external]);
     let mut equations = RegionEquations::default();
     let mut work = 0;
     assert_eq!(
@@ -54,7 +54,7 @@ fn selected_arguments_are_inserted_only_after_owned_equality_restoration() -> Re
         replacement(
             local,
             &actuals,
-            &HashSet::new(),
+            &HashSet::default(),
             &[external],
             &mut equations,
             &mut work
@@ -79,7 +79,7 @@ fn selected_arguments_are_inserted_only_after_owned_equality_restoration() -> Re
     assert!(
         replacement(
             local,
-            &HashSet::from([local]),
+            &HashSet::from_iter([local]),
             &owned,
             &[local],
             &mut equations,
@@ -90,7 +90,7 @@ fn selected_arguments_are_inserted_only_after_owned_equality_restoration() -> Re
     assert_eq!(
         replacement(
             local,
-            &HashSet::from([external]),
+            &HashSet::from_iter([external]),
             &owned,
             &[external],
             &mut equations,
@@ -102,8 +102,8 @@ fn selected_arguments_are_inserted_only_after_owned_equality_restoration() -> Re
 }
 #[test]
 fn matching_shape_or_outlives_cannot_replace_a_missing_parent_equality() -> Result {
-    let owned = HashSet::from([RegionId(7), RegionId(8)]);
-    let external = HashSet::from([RegionId(41)]);
+    let owned = HashSet::from_iter([RegionId(7), RegionId(8)]);
+    let external = HashSet::from_iter([RegionId(41)]);
     let mut equations = RegionEquations::default();
     let mut work = 0;
     equations.extend_counted([(RegionId(7), RegionId(8))], &mut work)?;
@@ -146,8 +146,11 @@ fn request_restoration_preserves_nested_public_binders_and_rejects_unknown_roots
         unsafe_: false,
         convention: crate::types::callable::Convention::RUST,
     })?;
-    let mut fold =
-        Bound::restore_budgeted_regions(HashMap::from([(RegionId(7), RegionId(41))]), WORK, BYTES)?;
+    let mut fold = Bound::restore_budgeted_regions(
+        HashMap::from_iter([(RegionId(7), RegionId(41))]),
+        WORK,
+        BYTES,
+    )?;
     let mapped = fold.apply(&mut store, function)?;
     let Some(Kind::Function {
         parameters: input,

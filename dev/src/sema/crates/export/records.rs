@@ -1,6 +1,7 @@
 //! Discover completed closed records once, then encode canonical shared roots.
 use super::super::type_transport;
 use super::{Declarations, DefId, Error, Prepared, PreparedFunction, Report, error};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::Access,
     sema::members::{Field, Name, VariantId},
@@ -11,7 +12,6 @@ use crate::{
     syntax::item::Shape,
     types::{GenericArgs, ItemId, Kind, aggregate},
 };
-use std::collections::{HashMap, HashSet};
 
 struct Declaration {
     item: ItemId,
@@ -147,7 +147,7 @@ fn discover(
                 .ok_or_else(|| error("missing nominal export type"))?,
         );
     }
-    let mut seen = HashSet::new();
+    let mut seen = HashSet::default();
     let mut records = Vec::new();
     let mut contracts = None;
     while let Some(ty) = work.pop() {
@@ -311,7 +311,7 @@ impl Contracts {
                 _ => {}
             }
         }
-        let mut open = HashSet::new();
+        let mut open = HashSet::default();
         for (file, unit) in report.package.units.iter().enumerate() {
             let file = u32::try_from(file).map_err(|_| error("too many export source files"))?;
             for owner in &unit.configured.owners {

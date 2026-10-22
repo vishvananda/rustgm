@@ -1,6 +1,6 @@
 //! Persistent textual scope links stop lookup at unresolved expansion output.
+use crate::support::hash::HashMap;
 use crate::{lex::token::LexError, support::names::NameId, syntax::token_tree::error};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Scope(pub u32);
@@ -40,8 +40,8 @@ impl Default for Scopes {
     fn default() -> Self {
         Self {
             entries: vec![Entry::Root],
-            cache: HashMap::new(),
-            waiting: HashMap::new(),
+            cache: HashMap::default(),
+            waiting: HashMap::default(),
             scratch: Vec::new(),
             lookup_steps: 0,
         }

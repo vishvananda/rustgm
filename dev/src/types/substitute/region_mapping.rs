@@ -1,6 +1,6 @@
 //! Simultaneous lifetime replacement preserves surrounding and nested binder identities.
 use super::{Action, Bound, RegionId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 pub(super) enum Mode {
     Observe,
@@ -139,7 +139,7 @@ impl Bound {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Regions(Box::new(Mapping {
             mode: Mode::Observe,
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         fold
     }
@@ -175,7 +175,7 @@ impl Bound {
         fold.steps = scopes.len();
         fold.action = Action::Regions(Box::new(Mapping {
             mode: Mode::Scopes(scopes),
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         Ok(fold)
     }
@@ -200,7 +200,7 @@ impl Bound {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Regions(Box::new(Mapping {
             mode: Mode::Rebase { source, first },
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         Ok(fold)
     }
@@ -218,7 +218,7 @@ impl Bound {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Regions(Box::new(Mapping {
             mode: Mode::Open { first, next: first },
-            replacements: HashMap::new(),
+            replacements: HashMap::default(),
         }));
         Ok(fold)
     }
@@ -366,17 +366,17 @@ mod tests {
     fn retained_intervals_reject_invalid_or_overlapping_free_identity_ranges() {
         for (start, end) in [(0, 2), (2, 2), (4, 3), (1, 0x8000_0000)] {
             let intervals = std::iter::once(start..end).collect();
-            assert!(Bound::restore_streamed_regions(HashMap::new(), intervals).is_err());
+            assert!(Bound::restore_streamed_regions(HashMap::default(), intervals).is_err());
         }
         for intervals in [vec![1..4, 3..6], vec![5..7, 1..3]] {
-            assert!(Bound::restore_streamed_regions(HashMap::new(), intervals).is_err());
+            assert!(Bound::restore_streamed_regions(HashMap::default(), intervals).is_err());
         }
     }
 
     #[test]
     fn retained_interval_boundaries_exclude_every_gap() -> Result<(), &'static str> {
         let intervals = (1..4096).step_by(3).map(|start| start..start + 2).collect();
-        let mut fold = Bound::restore_streamed_regions(HashMap::new(), intervals)?;
+        let mut fold = Bound::restore_streamed_regions(HashMap::default(), intervals)?;
         for id in 1..4096 {
             if id % 3 == 0 {
                 assert!(fold.region(RegionId(id), 0).is_err());

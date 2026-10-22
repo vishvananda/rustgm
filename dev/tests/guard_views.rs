@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::{
     body::ir::*,
     borrow::ownership,
@@ -6,7 +7,6 @@ use rustgm::{
     syntax::ast::NodeId,
     types::{ItemId, Kind, Primitive, Store, TypeId, aggregate, copy::Copies},
 };
-use std::collections::HashMap;
 
 const BYTE: TypeId = TypeId::primitive(Primitive::U8);
 struct Fixture {
@@ -184,7 +184,7 @@ impl Fixture {
         ownership::verify(
             &self.types,
             &self.definitions,
-            &HashMap::new(),
+            &HashMap::default(),
             &mut Copies::default(),
             &program,
         )

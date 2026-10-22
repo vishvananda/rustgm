@@ -1,6 +1,7 @@
 //! Declaration rules and caller-owned size queries have distinct lifetimes.
 mod query;
 use crate::resolve::unit::NodeKey;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -11,10 +12,7 @@ use crate::{
     },
 };
 pub(in crate::sema) use query::{Progress, Query, Step};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 pub(in crate::sema) struct Requirement {
     pub body: NodeKey,

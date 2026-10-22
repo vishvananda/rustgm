@@ -7,7 +7,8 @@ use crate::sema::{
     bodies::{Dependency, Requirement, projections},
     traits::{assumptions::Assumptions, obligations::Reservation},
 };
-use std::{collections::HashMap, sync::Arc};
+use crate::support::hash::HashMap;
+use std::sync::Arc;
 
 pub(in crate::sema::bodies) enum Progress {
     Ready(HashMap<usize, Source>),
@@ -31,7 +32,7 @@ impl Checker<'_> {
         body: NodeId,
     ) -> Result<Progress, Error> {
         let Some(mut pending) = self.take_trait_goals(body)? else {
-            return Ok(Progress::Ready(HashMap::new()));
+            return Ok(Progress::Ready(HashMap::default()));
         };
         pending.finishing = true;
         loop {
@@ -105,11 +106,11 @@ impl Checker<'_> {
                 finishing: false,
                 cursor: 0,
                 current: None,
-                evidence: HashMap::new(),
+                evidence: HashMap::default(),
                 assumptions: self.trait_assumptions(body)?.unwrap_or_default(),
                 query: None,
                 reservation: Reservation::default(),
-                partial: HashMap::new(),
+                partial: HashMap::default(),
             }
         };
         for index in pending.registered..self.state.call_types.obligations.len() {

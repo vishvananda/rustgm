@@ -1,5 +1,6 @@
 //! Execute proved cleanup events in body order, splitting only real cleanup edges.
 use super::{Lower, ir};
+use crate::support::hash::HashMap;
 use crate::{
     body::storage::Location,
     borrow::destruction::{Effect, Plan, timeline::Index},
@@ -8,7 +9,6 @@ use crate::{
         program::{BlockId, Terminator},
     },
 };
-use std::collections::HashMap;
 
 pub(super) struct Pending<'a> {
     pub plan: &'a Plan,
@@ -23,7 +23,7 @@ impl<'a> Pending<'a> {
             plan,
             timeline: Index::new(body, &plan.events)?,
             state: super::super::cleanup::State::default(),
-            edges: HashMap::new(),
+            edges: HashMap::default(),
             lanes: Vec::new(),
         })
     }

@@ -1,5 +1,6 @@
 //! Exact outer constructors, before const arguments or field graphs are evaluated.
 use crate::sema::traits::heads::Head as Rigid;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
@@ -14,7 +15,6 @@ use crate::{
     },
     types::{ItemId, Primitive},
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/header_heads.rs"]
 mod tests;
@@ -69,9 +69,9 @@ impl<'a> Heads<'a> {
         Self {
             report,
             facts,
-            aliases: HashMap::new(),
-            parameters: HashMap::new(),
-            states: HashMap::new(),
+            aliases: HashMap::default(),
+            parameters: HashMap::default(),
+            states: HashMap::default(),
             work: Vec::new(),
             steps: 0,
         }

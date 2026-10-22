@@ -20,12 +20,12 @@ use super::{
     ir::{Body, Rvalue, ValueId},
     regions::{Contract, Kind, Obligation},
 };
+use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
     support::call_traits::CallTrait,
     types::{Kind as Type, TypeId, closure::CallKind, instance::Instance},
 };
-use std::collections::HashMap;
 
 /// Construction is private to canonical selection and complete structural matching.
 #[derive(Clone, Copy)]

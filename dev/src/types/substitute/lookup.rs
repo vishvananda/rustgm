@@ -1,11 +1,11 @@
 //! Lower captured coordinates into existing canonical identities without interning.
 use super::{Bound, Key, WORK_LIMIT, rewrite};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     GenericArgs, ListId, RegionId, Store, TypeId,
     arguments::{Argument, ConstId},
     traits::ApplicationId,
 };
-use std::collections::{HashMap, HashSet};
 
 enum Error {
     Absent,
@@ -35,8 +35,8 @@ impl Lookup {
         Self {
             amount,
             bound: Bound::lower(amount),
-            absent: HashSet::new(),
-            applications: HashMap::new(),
+            absent: HashSet::default(),
+            applications: HashMap::default(),
         }
     }
     pub(crate) const fn steps(&self) -> usize {

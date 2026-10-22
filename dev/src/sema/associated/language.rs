@@ -1,8 +1,8 @@
 //! Typed language contracts have no source owner or generated AST declaration.
 use super::{DefId, Inventory, Schema};
 use crate::support::call_traits::CallTrait;
+use crate::support::hash::HashMap;
 use crate::support::language_hooks::Hook;
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Declarations {

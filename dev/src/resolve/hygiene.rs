@@ -5,8 +5,8 @@ use super::{
     package::ModuleId,
     unit::NodeKey,
 };
+use crate::support::hash::HashMap;
 use crate::{expand::stream::ContextId, support::names::NameId, syntax::ast::NodeId};
-use std::collections::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Ident(u64);
 impl Ident {
@@ -66,7 +66,7 @@ impl Hygiene {
                 .filter_map(|(index, d)| d.node.map(|node| ((d.module, node.node), index)))
                 .collect(),
             expansions: invocations.iter().map(|i| i.definition).collect(),
-            locals: HashMap::new(),
+            locals: HashMap::default(),
             shadowed: Vec::new(),
         }
     }

@@ -21,7 +21,7 @@ pub(super) enum Liveness {
     Required,
     AddressOnly,
 }
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 pub(super) enum Read<T> {
     Pending,
@@ -252,7 +252,7 @@ impl Machine<'_, '_> {
         purpose: super::static_reads::ReadPurpose,
     ) -> Result<Read<Constant>, Failure> {
         let mut stack = vec![(root, false)];
-        let mut completed = HashMap::new();
+        let mut completed = HashMap::default();
         while let Some((id, finish)) = stack.pop() {
             self.charge(1)?;
             match &self.memory.cells[id] {
@@ -591,7 +591,7 @@ impl Machine<'_, '_> {
     }
     pub(super) fn validate_result(&mut self, root: Constant, ty: TypeId) -> Result<(), Failure> {
         let mut pending = vec![root];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         while let Some(value) = pending.pop() {
             if !seen.insert(value) {
                 continue;

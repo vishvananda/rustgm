@@ -1,6 +1,6 @@
 //! Projected tails retain every eligible argument; actual field conversion needs proof.
 use super::{Definitions, ItemId, Kind, Rules, Store, Uses};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Candidates {
@@ -64,7 +64,7 @@ impl Rules {
         definitions: &Definitions,
         mut item: ItemId,
     ) -> Result<bool, &'static str> {
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let result = loop {
             self.charge(1)?;
             if let Some(&result) = self.projected.tails.get(&item) {

@@ -4,7 +4,7 @@ use crate::const_eval::{
     ReadOperation,
     static_reads::{EvaluationContext, ReadPurpose},
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Source {
     Backing(Id),

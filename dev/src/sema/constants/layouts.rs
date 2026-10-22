@@ -1,7 +1,7 @@
 //! Layout prerequisites share the constant work stack, including unexecuted borrows.
 use super::{Error, NodeKey, Queries, Query, Type, TypeId, Work};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{sema::model::ReferenceAlignment, types::aggregate};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Scratch {

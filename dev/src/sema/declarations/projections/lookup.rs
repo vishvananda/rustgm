@@ -2,6 +2,7 @@
 mod headers;
 use super::{Checker, DefId, Error, NodeKey, Work, regions};
 use crate::sema::declarations::generics::bounds::lexical::Scope;
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     parameters::{
         clauses::Clause,
@@ -9,7 +10,6 @@ use crate::types::{
     },
     substitute,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub(in super::super) struct Seed {
@@ -153,7 +153,7 @@ impl Checker<'_> {
             .remove(&key)
             .ok_or_else(|| self.error(key, "missing shorthand bound query"))?;
         let mut result = Vec::with_capacity(seeds.len());
-        let mut opened = HashMap::new();
+        let mut opened = HashMap::default();
         for seed in seeds {
             let predicate = *self
                 .projections

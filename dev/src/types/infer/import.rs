@@ -4,7 +4,7 @@ use super::{
     arguments::{Argument, Slot},
     constants::ConstTermId,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/binder_import.rs"]
 mod object_tests;

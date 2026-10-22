@@ -24,7 +24,7 @@ pub(in crate::sema) fn advance(
     discriminants: &mut super::Discriminants,
     input: Input,
     continuation: Option<Box<super::suspension::Continuation>>,
-    ready: &std::collections::HashSet<crate::resolve::model::DefId>,
+    ready: &crate::support::hash::HashSet<crate::resolve::model::DefId>,
 ) -> Result<Progress, Error> {
     let Input { key, ty, module } = input;
     scratch.typing.resumable();

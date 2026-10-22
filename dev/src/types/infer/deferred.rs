@@ -4,8 +4,9 @@ mod occurrences;
 mod predicate_inputs;
 mod rewrite;
 use super::{Constructor, Context, Error, Kind, Store, TermId, Value};
+use crate::support::hash::HashMap;
 pub use predicate_inputs::ProjectionInputs;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 /// A body-local equation identity, retained until its normalization debt is discharged.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

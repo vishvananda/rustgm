@@ -1,4 +1,5 @@
 //! Const expressions may bind their own lifetimes, but cannot capture outer generics.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
@@ -9,7 +10,6 @@ use crate::{
     sema::model::Declarations,
     syntax::ast::Kind,
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 struct Capture {

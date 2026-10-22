@@ -1,9 +1,9 @@
 //! Sparse declaration types retain projection inputs independently of their normal forms.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{GenericArgs, ItemId, ListId, TypeId, parameters::clauses::Clause},
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct Types {

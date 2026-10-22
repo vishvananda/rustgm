@@ -3,12 +3,12 @@
 #[path = "../../../tests/invariants/selected_constants.rs"]
 mod tests;
 use super::{Error, NodeKey, Queries, Query, Work};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
     types::{GenericArgs, TypeId, arguments::Argument, substitute::Bound},
 };
-use std::collections::HashMap;
 
 /// A typed use or selected initializer. Trait declarations still require dispatch.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

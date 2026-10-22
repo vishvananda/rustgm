@@ -1,4 +1,5 @@
 //! Callable demands come from executable uses and typed constant storage graphs.
+use crate::support::hash::HashSet;
 use crate::{
     abi::layout::Layouts,
     body::{
@@ -11,7 +12,6 @@ use crate::{
     },
     types::{Kind, TypeId, instance::Instance},
 };
-use std::collections::HashSet;
 
 #[derive(Default)]
 pub(super) struct Dependencies {

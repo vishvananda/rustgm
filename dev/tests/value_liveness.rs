@@ -276,7 +276,7 @@ fn imaginary_edges_keep_uses_and_empty_blocks_have_distinct_points()
             assert!(flow.seeds.contains(&(parameter_region, point)));
         }
     }
-    let mut unique = std::collections::HashSet::new();
+    let mut unique = rustgm::support::hash::HashSet::default();
     for (i, block) in cfg.blocks.iter().enumerate() {
         let id = BlockId(u32::try_from(i)?);
         for statement in block.start..=block.end {

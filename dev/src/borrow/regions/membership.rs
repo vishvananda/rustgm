@@ -1,11 +1,11 @@
 //! Share capture lists while consuming the existing body-obligation stream.
 use super::constraints::Constraints;
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, RegionId, Store,
     arguments::Argument,
     region_graph::{ChoicesId, MembershipId},
 };
-use std::collections::HashMap;
 
 pub(super) struct Requests<'a> {
     types: &'a Store,
@@ -16,7 +16,7 @@ impl<'a> Requests<'a> {
     pub(super) fn new(types: &'a Store) -> Self {
         Self {
             types,
-            choices: HashMap::new(),
+            choices: HashMap::default(),
             members: Vec::new(),
         }
     }

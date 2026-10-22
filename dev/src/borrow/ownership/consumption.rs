@@ -4,6 +4,7 @@ use super::{
     initialization::{Maybe, Transition},
     state::{self, State},
 };
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{Action, BlockId, Body, Rvalue, ValueId},
@@ -11,7 +12,6 @@ use crate::{
     },
     types::{Kind, Store},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Disposition {

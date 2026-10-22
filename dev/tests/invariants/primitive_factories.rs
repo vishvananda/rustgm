@@ -454,7 +454,7 @@ fn primitive_ordering_factories_keep_exact_member_results_and_slots() -> Result 
     assert_eq!(selected.len(), 6);
     let empty = crate::body::templates::Templates { bodies: Vec::new() };
     let checked = originals(&mut facts, &empty)?;
-    let mut methods = std::collections::HashSet::new();
+    let mut methods = crate::support::hash::HashSet::default();
     for selection in selected {
         let source = selection.validate(&mut facts)?;
         let method = source.comparison.ok_or("ordering member")?;

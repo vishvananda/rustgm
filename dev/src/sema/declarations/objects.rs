@@ -10,8 +10,8 @@ use super::{
     generics::bounds::{Written, lexical::Scope},
     regions,
 };
+use crate::support::hash::HashMap;
 use crate::types::parameters::predicates::{Bound, Predicate};
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Syntax {
@@ -251,7 +251,7 @@ impl Checker<'_> {
 
     pub(super) fn validate_objects(&mut self) -> Result<(), Error> {
         let mut queries = crate::sema::dyn_compat::Queries::default();
-        let mut checked = std::collections::HashSet::new();
+        let mut checked = crate::support::hash::HashSet::default();
         let uses = std::mem::take(&mut self.object_syntax.uses);
         for (source, ty, principal) in uses {
             let Some(Type::Dynamic {

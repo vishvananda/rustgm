@@ -1,11 +1,11 @@
 //! Opaque result bounds are alternatives, retained until symbolic and runtime proof.
 use super::{Constraints, Error, Region, Scope, identity_guard::View};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     Kind,
     outlives::{Projection, ResultId, TypeComponents},
     region_graph::VerificationId,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Assumption {
@@ -38,8 +38,8 @@ impl State {
             proof,
             state: self,
             source: 0,
-            nodes: HashMap::new(),
-            done: HashMap::new(),
+            nodes: HashMap::default(),
+            done: HashMap::default(),
             work: Vec::new(),
         }
         .build(Key {
@@ -65,8 +65,8 @@ impl State {
                 proof,
                 state: self,
                 source: request.source,
-                nodes: HashMap::new(),
-                done: HashMap::new(),
+                nodes: HashMap::default(),
+                done: HashMap::default(),
                 work: Vec::new(),
             }
             .run(request)?;

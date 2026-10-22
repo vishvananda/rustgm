@@ -204,7 +204,7 @@ fn inspect_selected<R>(
     let inputs = contracts.bodies;
     publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
     if !facts.opaques.owners.is_empty() {
-        let owners: std::collections::HashMap<_, _> = facts
+        let owners: crate::support::hash::HashMap<_, _> = facts
             .functions
             .iter()
             .filter(|f| facts.opaques.owners.contains_key(&f.definition))

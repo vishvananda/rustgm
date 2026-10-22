@@ -1,10 +1,10 @@
 //! Prove representation constraints without inventing concrete layouts for rigid parameters.
 use super::layout::{Error, Layouts, validate_repr};
+use crate::support::hash::HashMap;
 use crate::types::{
     Kind, Primitive, Store, TypeId,
     aggregate::{self, Definitions, Representation},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 struct Properties {

@@ -1,6 +1,6 @@
 //! Concrete field normal forms are structural data, separate from their raw proof roots.
 use super::{Definitions, ListId, ShapeReadiness, Store, TypeId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Default)]
 pub(super) struct Fields {

@@ -1,7 +1,8 @@
 //! Checked source preconditions remain debts for every selected caller.
 use super::{Bodies, ClosureId, NodeKey, RegionId};
+use crate::support::hash::HashMap;
 use crate::types::outlives::Pair;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 type Requirements = Option<Arc<[Pair]>>;
 #[derive(Default)]
 pub(super) struct Catalog {

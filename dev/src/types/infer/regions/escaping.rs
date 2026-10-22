@@ -1,7 +1,7 @@
 //! Read-only binder demand over a partial graph, without creating type identities.
 use super::super::{Constructor, Context, Error, RegionId, Store, TermId, Value, arguments::Slot};
+use crate::support::hash::HashSet;
 use crate::types::arguments::Argument;
-use std::collections::HashSet;
 
 impl Context {
     /// Inspect current inputs only. Unsolved holes contain no lifetime occurrence;
@@ -12,7 +12,7 @@ impl Context {
         root: TermId,
     ) -> Result<bool, Error> {
         let mut work = vec![(root, 0_u16)];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         while let Some((id, depth)) = work.pop() {
             self.step()?;
             let id = self.root(id)?;

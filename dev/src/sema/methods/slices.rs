@@ -1,6 +1,7 @@
 //! The registered slice method retains exact identity and typed prefix demand.
 mod preparation;
 use super::{DefId, Methods, NodeKey, TypeId};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::names::NameId,
     sema::model::{Declarations, Function},
@@ -10,7 +11,6 @@ use crate::{
     },
 };
 pub(in crate::sema) use preparation::prepare;
-use std::collections::HashMap;
 #[derive(Clone, Copy)]
 pub(crate) struct Length {
     pub owner: DefId,
@@ -39,7 +39,7 @@ impl Methods {
             length,
             name,
             demanded: false,
-            prefixes: HashMap::new(),
+            prefixes: HashMap::default(),
         }));
         Ok(())
     }

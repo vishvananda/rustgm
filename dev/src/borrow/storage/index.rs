@@ -5,7 +5,7 @@ use crate::body::{
     scopes,
     storage::{End, Location},
 };
-use std::collections::HashSet;
+use crate::support::hash::HashSet;
 
 #[derive(Clone, Copy)]
 pub(crate) enum EventKind {
@@ -190,7 +190,7 @@ impl Index {
     }
     fn exits(&mut self, body: &Body, state: &mut State) -> Result<(), &'static str> {
         let storage = body.storage.as_ref().ok_or("missing body storage facts")?;
-        let mut ranges = HashSet::new();
+        let mut ranges = HashSet::default();
         for (ordinal, exit) in storage.exits.iter().enumerate() {
             match exit.end {
                 End::Scopes(range) => {

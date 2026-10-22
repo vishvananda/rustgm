@@ -280,7 +280,7 @@ fn object_pointers_use_vtable_metadata_without_becoming_copy_values() -> Result<
         .ok_or("missing object pointer layout")?;
     assert!(matches!(layout.shape, Shape::WidePointer));
     assert_eq!((layout.size, layout.align), (16, 8));
-    let selected = std::collections::HashMap::new();
+    let selected = rustgm::support::hash::HashMap::default();
     let mut copies = copy::Copies::default();
     assert!(!copies.demand(&types, &definitions, &selected, object)?.copy);
     assert!(

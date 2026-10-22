@@ -1,6 +1,7 @@
 //! Prefix-only candidate probes never consume result or call-argument constraints.
 mod applicability;
 mod paths;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
@@ -25,7 +26,7 @@ pub(super) use applicability::inference;
 pub(in crate::sema) use paths::{
     OwnedCaller as PathCaller, Progress as PathProgress, Query as PathQuery,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) struct Caller<'a> {

@@ -1,5 +1,6 @@
 //! Nominal size proofs share a normalizer per actual callable scope.
 use super::{Declarations, State};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         nominals::sizes,
@@ -11,7 +12,7 @@ use crate::{
         substitute::Bound,
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 struct Scope {
     sizes: sizes::Query,

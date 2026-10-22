@@ -1,7 +1,7 @@
 //! Paired binder slots form a bijection; unused declared slots need no partner.
 use super::super::{Error, RegionId, signature_slots::Owner};
+use crate::support::hash::HashMap;
 use crate::types::closure::ClosureId;
-use std::collections::HashMap;
 
 struct Frame {
     scope: usize,
@@ -75,8 +75,8 @@ impl Binders {
             scope: self.next,
             counts: (left, right),
             rigid,
-            forward: HashMap::new(),
-            reverse: HashMap::new(),
+            forward: HashMap::default(),
+            reverse: HashMap::default(),
             owners: (None, None),
         });
         Ok(())

@@ -1,7 +1,7 @@
 //! Only explicit type-parameter lifetime bounds supply generic object defaults.
 use super::{Checker, DefId, Error, Kind, NodeKey, RegionId, regions};
+use crate::support::hash::HashMap;
 use crate::{resolve::model::Target, types::arguments::Argument};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Source {

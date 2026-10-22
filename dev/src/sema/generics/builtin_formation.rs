@@ -1,7 +1,8 @@
 //! Body formation reads the normalized independent input checked for its own declaration.
 use super::{DefId, Generics, TypeId};
+use crate::support::hash::HashMap;
 use crate::types::parameters::clauses::QuantifiedId;
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::hash_map::Entry;
 
 #[derive(Default)]
 pub(super) struct Builtins {

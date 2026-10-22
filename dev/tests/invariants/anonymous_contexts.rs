@@ -170,7 +170,7 @@ fn captured_unused_arguments_retain_complete_value_contexts()
     let Captured { facts, values, .. } = captured()?;
     assert_eq!(values.len(), 3);
     assert_eq!(facts.constant_work.anonymous_instances, 3);
-    let mut arguments = std::collections::HashSet::new();
+    let mut arguments = crate::support::hash::HashSet::default();
     for (instance, _, _) in &values {
         let Context::Callable(callable) = instance.enclosing() else {
             return Err("callable".into());

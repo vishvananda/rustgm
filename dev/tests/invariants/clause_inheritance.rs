@@ -4,6 +4,7 @@ mod formation;
 #[path = "clause_inheritance/ownership.rs"]
 mod ownership;
 use super::{Contracts, Header};
+use crate::support::hash::HashSet;
 use crate::{
     resolve::{
         model::DefId,
@@ -22,7 +23,6 @@ use crate::{
         traits::Application,
     },
 };
-use std::collections::HashSet;
 
 fn source(index: u32) -> NodeKey {
     NodeKey {
@@ -53,7 +53,7 @@ fn header(store: &mut Store, owner: ItemId, count: u16) -> Result<Header, &'stat
     Ok(Header {
         self_type,
         parameters,
-        self_bounds: HashSet::new(),
+        self_bounds: HashSet::default(),
         predicates: Vec::new(),
         results: Vec::new(),
         regions: Vec::new(),
@@ -153,7 +153,7 @@ fn nested_supertraits_compose_independent_slots_and_preserve_outer_captures()
         }],
     );
     generics.complete_environment(&mut store, owner)?;
-    let expected = HashSet::from([input, middle, last]);
+    let expected = HashSet::from_iter([input, middle, last]);
     assert_eq!(
         generics.environments[&owner]
             .trait_clauses()

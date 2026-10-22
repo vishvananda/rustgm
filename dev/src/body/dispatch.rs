@@ -3,12 +3,12 @@ use super::{
     ir::{Body, Rvalue},
     regions::{Contract, Kind, Obligation},
 };
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
     types::{Kind as Type, RegionId, substitute::Bound},
 };
-use std::collections::HashMap;
 mod callers;
 mod originals;
 pub(crate) use originals::{anonymous as original_anonymous, initializer as original_initializer};
@@ -35,7 +35,7 @@ fn resolve_with_original(
         return super::invocation_entries::select(facts, body, contract).map_err(String::from);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
-    let mut replacements = HashMap::new();
+    let mut replacements = HashMap::default();
     for value in &mut body.values {
         if let Rvalue::AssociatedConstant(instance) = value.kind
             && let Some(parameters) = &mut original

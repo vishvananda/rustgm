@@ -22,7 +22,7 @@ pub enum SharedMutation {
     Ordinary,
     Interior,
 }
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
@@ -66,7 +66,7 @@ pub struct Definition {
 }
 #[derive(Default)]
 pub struct Definitions {
-    pending_discriminants: HashMap<ItemId, std::collections::HashSet<u32>>,
+    pending_discriminants: HashMap<ItemId, crate::support::hash::HashSet<u32>>,
     discriminant_indexing: usize,
     discriminant_publications: usize,
     unions: bool,
@@ -78,8 +78,8 @@ pub struct Definitions {
     instances: Option<Box<instances::Instances>>,
     storage: Option<Box<field_forms::Fields>>,
     metadata_ready: HashMap<TypeId, metadata::Readiness>,
-    suppressed_fields: std::collections::HashSet<ItemId>,
-    interior_storage: std::collections::HashSet<ItemId>,
+    suppressed_fields: crate::support::hash::HashSet<ItemId>,
+    interior_storage: crate::support::hash::HashSet<ItemId>,
 }
 impl Definitions {
     pub(crate) fn mark_discriminants_pending(&mut self, item: ItemId) -> Result<(), &'static str> {

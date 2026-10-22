@@ -1,9 +1,9 @@
 //! Match body-universal slots without conflating nested callable binders.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::closures::Execution,
     types::{Kind, RegionId, Store, TypeId, region_graph::Error, structural::Compare},
 };
-use std::collections::{HashMap, HashSet};
 struct Matcher<'a> {
     types: &'a Store,
     universals: u32,
@@ -103,7 +103,10 @@ impl Bindings {
         if actual.len().saturating_add(self.slots.len()) > 1_000_000 {
             return Err("adapter prefix mapping exceeds its work budget");
         }
-        let mut images = HashMap::<RegionId, u16>::with_capacity(self.slots.len());
+        let mut images = HashMap::<RegionId, u16>::with_capacity_and_hasher(
+            self.slots.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for (slot, region) in self.slots {
             images
                 .entry(region)
@@ -161,10 +164,10 @@ impl<'a> Matcher<'a> {
         Self {
             types,
             universals,
-            slots: HashMap::new(),
+            slots: HashMap::default(),
             equalities: Vec::new(),
             work: vec![(formal, actual, 0)],
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             steps: 0,
         }
     }

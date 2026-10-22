@@ -1,6 +1,7 @@
 //! Capture shifts depend on canonical structure and depth, never on caller permissions.
 use super::{Store, TypeId, substitute::Bound};
-use std::collections::{HashMap, hash_map::Entry};
+use crate::support::hash::HashMap;
+use std::collections::hash_map::Entry;
 
 #[derive(Default)]
 pub(super) struct Shifts {

@@ -3,10 +3,10 @@
 #[path = "../../../tests/invariants/prefix_arguments.rs"]
 mod tests;
 use super::{Checker, Constructor, Dependency, Error, NodeId, TermId, Work};
+use crate::support::hash::{HashMap, HashSet};
 use crate::syntax::ast::{Kind, Unary};
 use crate::types::Store;
 use crate::types::infer::{Context, Error as InferError};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Inputs {

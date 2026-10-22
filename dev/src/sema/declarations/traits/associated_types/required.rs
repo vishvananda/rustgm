@@ -2,11 +2,12 @@
 mod sites;
 mod uses;
 use super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     RegionId, TypeId, outlives::Queries, projection::Application, region_graph::VerificationId,
     relations::Constraints,
 };
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Condition {

@@ -1,12 +1,13 @@
 //! Projection queries retain both source proof scopes and callable scopes introduced by types.
 mod proofs;
 use super::{Checker, Error, NodeKey, Request, aliases, regions};
+use crate::support::hash::HashMap;
 use crate::types::{
     lifetime_proof::{ScopeId, ScopePlan, map_scopes},
     parameters::environment::Environment,
     substitute::{Bound, Normalizer},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Default)]
 pub(super) enum Ambient {

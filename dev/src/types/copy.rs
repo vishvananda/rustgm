@@ -1,7 +1,8 @@
 //! Copy/Clone obligations under fixed assumptions, independent of storage layout.
 use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Primitive, Store, TypeId, aggregate::Definitions};
-use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
+use crate::support::hash::HashMap;
+use std::{hash::BuildHasher, sync::Arc};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Properties {
@@ -99,7 +100,7 @@ impl Copies {
             scope: Some(Box::new(Scope {
                 environment: Some(environment),
                 builtins: None,
-                states: HashMap::new(),
+                states: HashMap::default(),
             })),
             ..Self::default()
         }
@@ -113,7 +114,7 @@ impl Copies {
             scope: Some(Box::new(Scope {
                 environment,
                 builtins: None,
-                states: HashMap::new(),
+                states: HashMap::default(),
             })),
             declaration: true,
             ..Self::default()
@@ -133,7 +134,7 @@ impl Copies {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Declaration, S>,
+        selected: &std::collections::HashMap<ItemId, Declaration, S>,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
         match self.state(ty) {
@@ -196,7 +197,7 @@ impl Copies {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Declaration, S>,
+        selected: &std::collections::HashMap<ItemId, Declaration, S>,
     ) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
             let kind = types.kind(ty).ok_or("invalid Copy type")?;
@@ -275,7 +276,7 @@ impl Copies {
     fn initial_properties<S: BuildHasher>(
         &self,
         types: &Store,
-        selected: &HashMap<ItemId, Declaration, S>,
+        selected: &std::collections::HashMap<ItemId, Declaration, S>,
         kind: Kind,
         assumed: bool,
     ) -> Result<Properties, &'static str> {

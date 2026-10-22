@@ -169,7 +169,7 @@ impl super::super::comparisons::LibraryContracts<'_> {
             status: crate::sema::iteration::collections::Status::Prepared,
             canonical,
             originals,
-            prefixes: std::collections::HashMap::new(),
+            prefixes: crate::support::hash::HashMap::default(),
         };
         self.facts
             .iteration

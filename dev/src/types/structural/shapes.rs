@@ -1,12 +1,11 @@
 //! Lifetime-erased fingerprints only select candidates; complete input matching proves identity.
+use crate::support::hash::FxHasher;
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, Kind, ListId, Store, TypeId, arguments::Argument, region_graph::Error,
     traits::ApplicationId,
 };
-use std::{
-    collections::{HashMap, hash_map::DefaultHasher},
-    hash::{Hash, Hasher},
-};
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Key {
@@ -58,7 +57,7 @@ impl Shapes {
         }
         self.completed.get(&root).copied().ok_or(Error::Identity)
     }
-    fn child(&mut self, key: Key, finish: bool, hash: &mut DefaultHasher) -> Result<(), Error> {
+    fn child(&mut self, key: Key, finish: bool, hash: &mut FxHasher) -> Result<(), Error> {
         self.charge(1)?;
         if let Some(value) = self.completed.get(&key) {
             value.hash(hash);
@@ -70,7 +69,7 @@ impl Shapes {
         Ok(())
     }
     fn inspect(&mut self, types: &Store, key: Key, finish: bool) -> Result<u64, Error> {
-        let mut hash = DefaultHasher::new();
+        let mut hash = FxHasher::default();
         std::mem::discriminant(&key).hash(&mut hash);
         match key {
             Key::Type(ty) => self.ty(types.kind(ty).ok_or(Error::Identity)?, finish, &mut hash)?,
@@ -103,7 +102,7 @@ impl Shapes {
         }
         Ok(hash.finish())
     }
-    fn ty(&mut self, kind: Kind, finish: bool, hash: &mut DefaultHasher) -> Result<(), Error> {
+    fn ty(&mut self, kind: Kind, finish: bool, hash: &mut FxHasher) -> Result<(), Error> {
         std::mem::discriminant(&kind).hash(hash);
         match kind {
             Kind::Closure {

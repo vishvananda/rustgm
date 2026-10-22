@@ -3,7 +3,7 @@ mod view;
 use crate::body::ir::{
     Action, Body, LocalId, LocalKind, Place, ProjectionKind, Selection, ValueId,
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) struct Id(pub usize);
@@ -53,11 +53,11 @@ impl Index {
     pub fn new(body: &Body) -> Result<Self, &'static str> {
         let mut this = Self {
             paths: Vec::new(),
-            roots: HashMap::new(),
-            children: HashMap::new(),
+            roots: HashMap::default(),
+            children: HashMap::default(),
             projections: Vec::new(),
-            aliases: HashMap::new(),
-            expanded: HashMap::new(),
+            aliases: HashMap::default(),
+            expanded: HashMap::default(),
             alternatives: Vec::new(),
             left: Vec::new(),
             right: Vec::new(),

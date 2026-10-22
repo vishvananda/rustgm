@@ -1,4 +1,5 @@
 //! Retained linkage attributes decode literal tokens once into the owning exact-name pool.
+use crate::support::hash::HashMap;
 use crate::{
     literal::{self, Value},
     resolve::{
@@ -15,7 +16,6 @@ use crate::{
         token_tree::Forest,
     },
 };
-use std::collections::HashMap;
 #[derive(Clone, Copy, Default)]
 pub(in crate::sema::declarations) struct Attributes {
     pub link: Option<SymbolNameId>,
@@ -26,7 +26,7 @@ pub(in crate::sema::declarations) fn collect(
     report: &Report,
     registry: &mut Option<Box<Registry>>,
 ) -> Result<HashMap<NodeKey, Attributes>, Error> {
-    let mut sources = HashMap::new();
+    let mut sources = HashMap::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;

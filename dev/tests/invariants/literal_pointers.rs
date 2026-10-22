@@ -22,9 +22,9 @@ fn expansion(facts: &mut Declarations) -> Expansion<'_> {
         facts,
         source,
         work: Vec::new(),
-        products: HashMap::new(),
-        references: HashMap::new(),
-        texts: HashMap::new(),
+        products: HashMap::default(),
+        references: HashMap::default(),
+        texts: HashMap::default(),
         remaining: 1_000_000,
     }
 }

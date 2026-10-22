@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::{
     expand::config::Config,
     resolve::{
@@ -6,10 +7,7 @@ use rustgm::{
     },
     support::source::SourceFile,
 };
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 #[derive(Default)]
 struct Files {

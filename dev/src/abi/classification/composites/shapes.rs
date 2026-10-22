@@ -1,10 +1,10 @@
 //! Validate every nested representation, including fields of objects passed in memory.
 use super::{Class, Field, Kind, Node, Query, TypeId};
+use crate::support::hash::HashSet;
 use crate::{
     abi::layout::{Layout, Shape},
     types::{Kind as Type, aggregate::Representation},
 };
-use std::collections::HashSet;
 enum Work {
     Enter(TypeId),
     Finish(TypeId, Node),
@@ -12,7 +12,7 @@ enum Work {
 impl Query<'_> {
     pub(super) fn validate(&mut self, root: TypeId) -> Result<(), &'static str> {
         let mut work = vec![Work::Enter(root)];
-        let mut active = HashSet::new();
+        let mut active = HashSet::default();
         while let Some(next) = work.pop() {
             self.charge(1)?;
             match next {

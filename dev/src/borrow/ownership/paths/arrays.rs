@@ -1,6 +1,6 @@
 //! Partition only selected array boundaries, then number their shared move bits.
 use super::{Component, PathId, Paths};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// A physical array interval; unselected ranges share one initialization bit.
 pub struct Segment {

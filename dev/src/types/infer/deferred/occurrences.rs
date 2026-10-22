@@ -1,7 +1,7 @@
 //! Normalize projected occurrences without waiting for unrelated output holes.
 use super::super::{Constructor, Context, Error, Store, TermId, Value};
+use crate::support::hash::HashSet;
 use crate::types::lifetime_proof::ScopeId;
-use std::collections::HashSet;
 
 impl Context {
     /// Traverse all predicate inputs together so repeated root DAGs share work.
@@ -97,7 +97,7 @@ impl Context {
         mut scope: impl FnMut(ScopeId, TermId, u32) -> Result<ScopeId, Error>,
     ) -> Result<Vec<(ScopeId, TermId)>, Error> {
         let mut roots = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         while let Some((ambient, term)) = work.pop() {
             self.step()?;
             let term = self.root(term)?;

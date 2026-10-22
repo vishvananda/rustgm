@@ -2,6 +2,7 @@
 mod nested;
 mod receivers;
 use super::{Checker, Domain, Error, Kind, NodeId, TermId, places::Places};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::{
@@ -15,7 +16,6 @@ use crate::{
     types::{closure::CallKind, infer},
 };
 pub(super) use nested::children;
-use std::collections::{HashMap, HashSet};
 
 pub(super) struct Captures {
     pub plan: Plan,
@@ -71,10 +71,10 @@ impl Checker<'_> {
         };
         let mut collector = Collector {
             children,
-            nested_accesses: HashMap::new(),
+            nested_accesses: HashMap::default(),
             places: Places::new(bindings),
             mentions: Vec::new(),
-            mentioned: HashSet::new(),
+            mentioned: HashSet::default(),
             pending: Vec::new(),
             calls: self
                 .state
@@ -131,7 +131,7 @@ impl Checker<'_> {
                 })
                 .map(|adjustment| adjustment.node)
                 .collect(),
-            adjusted_accesses: HashMap::new(),
+            adjusted_accesses: HashMap::default(),
             kind: CallKind::Shared,
             moving,
             work: 0,

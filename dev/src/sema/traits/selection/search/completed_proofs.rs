@@ -1,7 +1,7 @@
 //! Reuse completed, debt-free concrete proofs within one immutable caller and mode.
 use super::{Decision, Declarations, Frame, Node, Predicate, Query, Source};
+use crate::support::hash::HashMap;
 use crate::types::lifetime_proof::ScopeId;
-use std::collections::HashMap;
 
 /// Owned by one fixed environment, implementation view and builtin-retention mode.
 /// No failed search, provisional answer or caller-allocated witness enters this map.

@@ -5,11 +5,11 @@ pub(crate) use normalizations::Expansion;
 #[cfg(test)]
 mod tests;
 use super::traits::obligations::Obligations;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::model::DefId,
     types::{GenericArgs, ItemId, Store, lifetime_proof::ScopeId, substitute::Bound},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Use {
@@ -152,7 +152,7 @@ impl Requirements {
     ) -> Result<Expansion, &'static str> {
         let mut result = Expansion::new(first);
         let mut pending = vec![(ScopeId::ROOT, use_)];
-        let mut nested = HashSet::new();
+        let mut nested = HashSet::default();
         while let Some((caller, use_)) = pending.pop() {
             scope.charge(1)?;
             let fresh = if caller == ScopeId::ROOT {

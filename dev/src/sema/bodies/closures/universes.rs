@@ -1,7 +1,7 @@
 //! Each closure proves its body against fresh input universals, never caller locals.
 use super::{Bound, Error};
+use crate::support::hash::HashMap;
 use crate::{sema::bodies::calls::CallTypes, types::RegionId};
-use std::collections::HashMap;
 
 pub(in crate::sema::bodies) struct Interface {
     pub opening: Bound,
@@ -32,7 +32,7 @@ impl Interface {
         let Some(Kind::Function { bound_regions, .. }) = store.kind(signature) else {
             return Err("closure execution Self lacks its public binder");
         };
-        let mut mapping = HashMap::new();
+        let mut mapping = HashMap::default();
         for (source, universal) in self.opening.universal_pairs() {
             let Some((0, slot)) = universal.bound_parts() else {
                 return Err("closure body slot has a different binder");
@@ -127,7 +127,7 @@ impl Interface {
         calls: &CallTypes,
         output: bool,
     ) -> Result<HashMap<RegionId, RegionId>, &'static str> {
-        let mut mapping = HashMap::new();
+        let mut mapping = HashMap::default();
         for (source, universal) in self.opening.universal_pairs() {
             if !output
                 || source.bound_parts().is_none()
@@ -183,7 +183,7 @@ impl super::Checker<'_> {
             .extend(solved.region_equalities.iter().copied())
             .map_err(|e| self.error(node, e))?;
         // Only static and this body's bound slots may anchor a formal signature.
-        let mut fold = Bound::close_projection_regions(1, 0, HashMap::new())
+        let mut fold = Bound::close_projection_regions(1, 0, HashMap::default())
             .map_err(|e| self.error(node, e))?;
         fold.exchange_projection_equations(&mut equations)
             .map_err(|e| self.error(node, e))?;

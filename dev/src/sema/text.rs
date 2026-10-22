@@ -1,8 +1,6 @@
 //! Selected text literals and demanded constants share one canonical byte arena.
-use std::{
-    collections::{HashMap, hash_map::RandomState},
-    hash::BuildHasher,
-};
+use crate::support::hash::{BuildFxHasher, HashMap};
+use std::hash::BuildHasher;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Id(pub u32);
@@ -16,7 +14,7 @@ pub struct Texts {
     bytes: Vec<u8>,
     entries: Vec<Entry>,
     buckets: HashMap<u64, Id>,
-    hash: RandomState,
+    hash: BuildFxHasher,
 }
 impl Texts {
     /// # Errors

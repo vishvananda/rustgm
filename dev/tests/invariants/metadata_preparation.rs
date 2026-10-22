@@ -65,8 +65,8 @@ fn physical_preparation_upgrades_only_completed_ordinary_entries() -> Result {
     assert_eq!(std::mem::size_of::<TypeId>(), 4);
     assert_eq!(std::mem::size_of::<(TypeId, Readiness)>(), 8);
     assert_eq!(
-        std::mem::size_of::<std::collections::HashMap<TypeId, Readiness>>(),
-        std::mem::size_of::<std::collections::HashSet<TypeId>>()
+        std::mem::size_of::<crate::support::hash::HashMap<TypeId, Readiness>>(),
+        std::mem::size_of::<crate::support::hash::HashSet<TypeId>>()
     );
     Ok(())
 }

@@ -32,9 +32,9 @@ pub mod traits;
 pub mod unsizing;
 pub mod variance;
 
+use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
 use properties::{Properties, Property};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TypeId(pub u32);

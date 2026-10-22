@@ -224,7 +224,7 @@ impl Checker<'_> {
         &mut self,
         owner: crate::sema::associated::Owner,
         definition: DefId,
-        self_bounds: std::collections::HashSet<NodeKey>,
+        self_bounds: crate::support::hash::HashSet<NodeKey>,
     ) -> Result<(), Error> {
         let schema = self
             .facts

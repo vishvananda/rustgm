@@ -1,7 +1,7 @@
 //! Projection equalities retain complete binders and index their declaring member.
 use super::{Bound, Clause, Predicate};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind, Store, parameters::clauses::QuantifiedId, substitute};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Default)]
 pub(super) struct Equalities {

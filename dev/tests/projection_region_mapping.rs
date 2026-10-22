@@ -1,6 +1,6 @@
 //! Region opening/restoration must preserve nested binders and reject leaked solver identities.
+use rustgm::support::hash::HashMap;
 use rustgm::types::{Kind, RegionId, Store, TypeId, substitute::Bound};
-use std::collections::HashMap;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[test]
@@ -100,7 +100,7 @@ fn restoring_raises_captured_results_beneath_new_local_binders() -> TestResult {
     let captured = reference(&mut store, RegionId::bound(3, 9)?)?;
     let expected = pointer(&mut store, &[local], captured)?;
     let mut restore =
-        Bound::restore_regions(HashMap::from([(RegionId(21), RegionId::bound(2, 9)?)]));
+        Bound::restore_regions(HashMap::from_iter([(RegionId(21), RegionId::bound(2, 9)?)]));
     assert_eq!(restore.apply(&mut store, signature)?, expected);
     Ok(())
 }
@@ -131,7 +131,7 @@ fn restoration_is_simultaneous_and_rejects_unknown_or_overflowing_captures() -> 
     let a = reference(&mut store, RegionId(1))?;
     let b = reference(&mut store, RegionId(2))?;
     let c = reference(&mut store, RegionId(3))?;
-    let mut restore = Bound::restore_regions(HashMap::from([
+    let mut restore = Bound::restore_regions(HashMap::from_iter([
         (RegionId(1), RegionId(2)),
         (RegionId(2), RegionId(3)),
     ]));
@@ -139,8 +139,10 @@ fn restoration_is_simultaneous_and_rejects_unknown_or_overflowing_captures() -> 
     assert_eq!(restore.apply(&mut store, b)?, c);
     assert!(restore.apply(&mut store, c).is_err());
     let signature = pointer(&mut store, &[], a)?;
-    let mut overflowing =
-        Bound::restore_regions(HashMap::from([(RegionId(1), RegionId::bound(0x7fff, 0)?)]));
+    let mut overflowing = Bound::restore_regions(HashMap::from_iter([(
+        RegionId(1),
+        RegionId::bound(0x7fff, 0)?,
+    )]));
     assert!(overflowing.apply(&mut store, signature).is_err());
     Ok(())
 }

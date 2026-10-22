@@ -4,6 +4,7 @@ use super::{
     flags::Recorder,
     schedule::{Cleanup, Schedule},
 };
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::Selection,
     borrow::ownership::{
@@ -12,7 +13,6 @@ use crate::{
     },
     types::{ItemId, Kind, Store, TypeId, aggregate::Definitions, destruction::NeedsDrop},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 enum Tracking {
@@ -66,7 +66,7 @@ pub fn select(
         needed,
         custom,
         paths: &facts.ownership.paths,
-        fields: HashMap::new(),
+        fields: HashMap::default(),
         work: Vec::new(),
         plan: Plan::default(),
         retained: 0,

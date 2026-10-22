@@ -1,6 +1,6 @@
 //! Shared variance products and reverse dependencies, without expanding nominal fields.
 use super::Variance;
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 const LIMIT: usize = 1_000_000;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -50,7 +50,7 @@ impl Default for Solver {
                 pending: false,
             })
             .collect(),
-            products: HashMap::new(),
+            products: HashMap::default(),
             edges: Vec::new(),
             queue: Vec::new(),
             steps: 0,

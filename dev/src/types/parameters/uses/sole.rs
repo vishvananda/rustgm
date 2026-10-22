@@ -1,4 +1,5 @@
 //! One-parameter summaries share type, list and argument graphs across default bounds.
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, Kind, ListId, Store, TypeId,
     arguments::{Argument, ConstId, ConstKind},
@@ -9,7 +10,6 @@ use crate::types::{
     },
     traits::ApplicationId,
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/default_occurrences.rs"]
 mod tests;

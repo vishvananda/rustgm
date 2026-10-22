@@ -1,7 +1,7 @@
 //! Validate unused declarations too; closed shapes avoid quadratic concrete-impl scans.
 use super::{Checker, DefId, Error, NodeKey, TypeId};
+use crate::support::hash::HashMap;
 use crate::{sema::methods::overlap, types::substitute::Bound};
-use std::collections::HashMap;
 
 #[derive(Default)]
 struct Bucket {
@@ -42,8 +42,8 @@ impl Checker<'_> {
         if buckets.is_empty() {
             return Ok(());
         }
-        let mut headers = HashMap::new();
-        let mut pairs = HashMap::new();
+        let mut headers = HashMap::default();
+        let mut pairs = HashMap::default();
         let mut shapes = Bound::shape();
         for (key, members) in buckets {
             let mut bucket = Bucket::default();

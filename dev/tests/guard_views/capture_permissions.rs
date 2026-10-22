@@ -12,7 +12,7 @@ fn inspect(f: &Fixture) -> Result<(), &'static str> {
     ownership::analyze_body(
         &f.types,
         &f.definitions,
-        &HashMap::new(),
+        &HashMap::default(),
         &mut Copies::default(),
         &body,
     )

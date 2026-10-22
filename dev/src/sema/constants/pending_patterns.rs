@@ -3,12 +3,12 @@ use super::{
     PatternScope,
     instances::{Context, ValueScope},
 };
+use crate::support::hash::HashMap;
 use crate::{
     resolve::unit::NodeKey,
     sema::{bodies::PreparedScope, dispatch::Dispatcher, traits::obligations::Reservation},
     support::retained::Allocation,
 };
-use std::collections::HashMap;
 
 pub(super) const LIMIT: usize = 64 * 1024 * 1024;
 #[derive(Clone, Copy, PartialEq, Eq)]

@@ -6,7 +6,7 @@ use super::{
     arguments::Argument,
     parameters::{ParameterId, uses::Uses},
 };
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 /// A selected terminal conversion survives structural wrappers and specialization.
 /// Its types are proof inputs; consumers must not rediscover eligibility.
@@ -63,7 +63,7 @@ impl Rules {
     ) -> Result<Option<u32>, &'static str> {
         let root = Key::Item(item);
         let mut work = vec![(root, false)];
-        let mut active = HashSet::new();
+        let mut active = HashSet::default();
         while let Some((key, finish)) = work.pop() {
             self.charge(1)?;
             if self.completed.contains_key(&key) {

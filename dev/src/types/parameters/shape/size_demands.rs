@@ -1,7 +1,7 @@
 //! Hidden storage conditions suspend one shape frontier, including its callable scopes.
 use super::{Properties, Shapes, cache_depth};
+use crate::support::hash::HashMap;
 use crate::types::{Kind, Store, TypeId, lifetime_proof::ScopeId};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Request {

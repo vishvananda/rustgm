@@ -2,6 +2,7 @@
 use super::model::{
     Atom, Definition, Fragment, Kind, List, Node, NodeId, Repetition, Rule, Variable, VariableId,
 };
+use crate::support::hash::HashMap;
 use crate::{
     lex::token::{Kind as TokenKind, LexError, Punctuation as P, Token},
     support::names::{NameId, Names},
@@ -10,7 +11,6 @@ use crate::{
         token_tree::{Delimiter, Forest, Span, TreeKind, TreeRange, error},
     },
 };
-use std::collections::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Mode {
     Matcher,
@@ -36,7 +36,7 @@ pub fn compile(source: &str, forest: &Forest, names: &mut Names) -> Result<Defin
         names,
         definition: Definition::default(),
         variables: Vec::new(),
-        by_name: HashMap::new(),
+        by_name: HashMap::default(),
         repetitions: Vec::new(),
         scratch: Vec::new(),
         depth: 0,

@@ -7,7 +7,7 @@ use super::{
     },
     vocabulary::{Binary, Convert, Predicate, Type, Unary},
 };
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 mod objects;
 
 #[derive(Default)]

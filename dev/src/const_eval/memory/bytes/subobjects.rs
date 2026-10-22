@@ -2,7 +2,7 @@
 mod index;
 use super::{Constant, Failure, Machine, Reader, TypeId};
 use crate::sema::values::{StoredShape, WordAddress};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Key {
     root: TypeId,

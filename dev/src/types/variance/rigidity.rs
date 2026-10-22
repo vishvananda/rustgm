@@ -1,6 +1,6 @@
 //! Early invariant inputs reuse the variance solver without assuming unfinished callees.
 use super::{Definitions, Graph, ItemId, Kind, Store, TypeId, Variance};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 #[cfg(test)]
 #[path = "../../../tests/invariants/invariant_inputs.rs"]
 mod tests;

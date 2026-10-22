@@ -139,7 +139,7 @@ fn scope(parent: Option<ScopeId>, closure: bool) -> Scope {
         trait_access: None,
         nominal_self: None,
         label_barrier: closure,
-        bindings: std::collections::HashMap::default(),
+        bindings: rustgm::support::hash::HashMap::default(),
         order: Vec::new(),
     }
 }

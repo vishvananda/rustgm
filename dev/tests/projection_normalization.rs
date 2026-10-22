@@ -382,7 +382,7 @@ fn sibling_callable_requests_have_independent_scopes_and_caches() -> TestResult 
 
 #[test]
 fn empty_callable_binders_preserve_depth_with_linear_iterative_work() -> TestResult {
-    use std::collections::HashSet;
+    use rustgm::support::hash::HashSet;
     let mut store = Store::default();
     let byte = TypeId::primitive(Primitive::U8);
     let projection = projected(&mut store, byte)?;
@@ -399,7 +399,7 @@ fn empty_callable_binders_preserve_depth_with_linear_iterative_work() -> TestRes
     }
     let mut fold = Normalizer::default();
     let mut step = fold.start(&mut store, root)?;
-    let mut scopes = HashSet::new();
+    let mut scopes = HashSet::default();
     let mut expected_depth = 1024;
     while let Step::Resolve(query) = step {
         assert_eq!(query.depth, expected_depth);

@@ -1,5 +1,6 @@
 //! Caller constraints settle before an inline result is published under its own body.
 use super::{Checker, Error, InputRefresh, Work};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         bodies::{Dependency, closures::Scheduler, finalization::Finalization},
@@ -7,7 +8,6 @@ use crate::{
     },
     types::infer::Solved,
 };
-use std::collections::HashMap;
 
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn finish_inline_child(

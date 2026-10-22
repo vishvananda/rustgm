@@ -1,3 +1,4 @@
+use rustgm::support::hash::HashMap;
 use rustgm::{
     abi::layout::Layouts,
     types::{
@@ -11,7 +12,6 @@ use rustgm::{
         substitute::Bound,
     },
 };
-use std::collections::HashMap;
 
 #[test]
 fn canonical_arguments_retain_kinds_order_types_and_all_constant_bits() -> Result<(), &'static str>
@@ -244,7 +244,7 @@ fn mixed_argument_substitution_preserves_nested_binders_and_constants() -> Resul
     assert_eq!(substitution.steps, steps);
     let mut uses = Uses::default();
     uses.collect(&store, expected)?;
-    assert_eq!(uses.indices, std::collections::HashSet::from([5]));
+    assert_eq!(uses.indices, rustgm::support::hash::HashSet::from_iter([5]));
     Ok(())
 }
 
@@ -267,7 +267,7 @@ fn repeated_generic_type_edges_are_visited_once_per_binder() -> Result<(), &'sta
     assert!(substitution.steps < 4096 * 12);
     let mut uses = Uses::default();
     uses.collect(&store, root)?;
-    assert_eq!(uses.indices, std::collections::HashSet::from([0]));
+    assert_eq!(uses.indices, rustgm::support::hash::HashSet::from_iter([0]));
     assert!(uses.steps < 4096 * 8);
     Ok(())
 }
@@ -354,12 +354,12 @@ fn declaration_fields_cannot_be_reused_as_generic_instance_fields()
     assert!(Layouts::default().demand(&store, &definitions, ty).is_err());
     assert!(
         Copies::default()
-            .demand(&store, &definitions, &HashMap::new(), ty)
+            .demand(&store, &definitions, &HashMap::default(), ty)
             .is_err()
     );
     assert!(
         Equality::default()
-            .demand(&store, &definitions, &HashMap::new(), ty)
+            .demand(&store, &definitions, &HashMap::default(), ty)
             .is_err()
     );
     assert!(

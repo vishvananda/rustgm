@@ -7,9 +7,9 @@ use super::{
     arguments::{Argument, ConstId, ConstKind},
     parameters::{ParameterId, ParameterKind},
 };
+use crate::support::hash::{HashMap, HashSet};
 pub(crate) use rigidity::RigidInputs;
 use solver::{Solver, Term};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Variance {

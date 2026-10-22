@@ -1,5 +1,6 @@
 //! Remap a shared artifact graph once, after reserving every closed nominal identity.
 use super::{Declarations, Error, error, type_transport};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         crates::Imported,
@@ -9,7 +10,6 @@ use crate::{
     support::crates::{CrateIdentity, Function, Nominals, Record},
     types::{GenericArgs, ItemId, Kind, TypeId, aggregate},
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Prepared {

@@ -8,6 +8,7 @@ mod selected;
 #[path = "../../tests/invariants/execution_storage.rs"]
 mod storage_tests;
 use super::Prepared;
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         self,
@@ -28,7 +29,7 @@ use crate::{
     types::{ItemId, Kind, parameters::environment::Environment},
 };
 pub(crate) use inputs::Context;
-use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 pub(super) struct Proxy(pub Rc<RefCell<Engine>>);
 impl Executor for Proxy {
@@ -83,7 +84,7 @@ pub(super) struct Engine {
     runtime_templates: Option<Rc<Templates>>,
     runtime_template_indices: HashMap<DefId, usize>,
     retained_expressions: usize,
-    charged_templates: std::collections::HashSet<DefId>,
+    charged_templates: crate::support::hash::HashSet<DefId>,
 }
 impl Engine {
     pub(super) fn transfer(

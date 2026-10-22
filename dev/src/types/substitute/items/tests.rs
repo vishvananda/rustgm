@@ -1,9 +1,9 @@
 //! Callable substitution must distinguish surrounding binders and reuse shared DAGs.
+use crate::support::hash::HashMap;
 use crate::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId, arguments::Argument,
     substitute::Bound,
 };
-use std::collections::HashMap;
 
 fn callable(store: &mut Store, item: u32, region: RegionId) -> Result<TypeId, &'static str> {
     let reference = store.intern(Kind::Reference {
@@ -44,7 +44,7 @@ fn selected_items_preserve_local_binders_and_shift_outer_arguments() -> Result<(
     let root = store.intern(Kind::Tuple(elements))?;
     let expected = store.intern_list(&[target, expected_outer, local])?;
     let expected = store.intern(Kind::Tuple(expected))?;
-    let mut fold = Bound::selected_items(&store, HashMap::from([(source, target)]))?;
+    let mut fold = Bound::selected_items(&store, HashMap::from_iter([(source, target)]))?;
     assert_eq!(fold.apply(&mut store, root)?, expected);
     assert_eq!(fold.apply(&mut store, local)?, local);
     Ok(())
@@ -72,7 +72,7 @@ fn selected_items_visit_shared_subtrees_once() -> Result<(), &'static str> {
         let children = store.intern_list(&[expected, expected])?;
         expected = store.intern(Kind::Tuple(children))?;
     }
-    let mut fold = Bound::selected_items(&store, HashMap::from([(source, target)]))?;
+    let mut fold = Bound::selected_items(&store, HashMap::from_iter([(source, target)]))?;
     assert_eq!(fold.apply(&mut store, root)?, expected);
     assert!(
         fold.steps < 2_000,

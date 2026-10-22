@@ -24,7 +24,7 @@ use std::sync::Arc;
 
 pub(crate) struct State {
     reusable: [Option<Box<selection::Reuse>>; 2],
-    normalized: std::collections::HashMap<crate::types::TypeId, crate::types::TypeId>,
+    normalized: crate::support::hash::HashMap<crate::types::TypeId, crate::types::TypeId>,
     assumptions: Assumptions,
     environment: Option<Arc<Environment>>,
     context: Context,
@@ -111,7 +111,7 @@ impl State {
             .map_err(|_| "declaration assumption work exhausted")?;
         Ok(Self {
             reusable: [None, None],
-            normalized: std::collections::HashMap::new(),
+            normalized: crate::support::hash::HashMap::default(),
             assumptions,
             environment,
             context,

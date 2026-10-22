@@ -1,5 +1,6 @@
 //! Canonical radix maps share matching requirements without copying growing prefixes.
-use std::{collections::HashMap, hash::Hash};
+use crate::support::hash::HashMap;
+use std::hash::Hash;
 #[cfg(test)]
 #[path = "../../tests/invariants/outlives_maps.rs"]
 mod tests;
@@ -59,8 +60,8 @@ impl<V> Default for Map<V> {
     fn default() -> Self {
         Self {
             nodes: Vec::new(),
-            index: HashMap::new(),
-            unions: HashMap::new(),
+            index: HashMap::default(),
+            unions: HashMap::default(),
             steps: 0,
         }
     }

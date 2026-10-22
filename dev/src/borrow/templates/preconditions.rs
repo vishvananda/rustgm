@@ -1,4 +1,5 @@
 //! Conjunctive source-root formation requirements remain debts at every actual caller.
+use crate::support::hash::HashSet;
 use crate::{
     body::regions::Contract,
     types::{
@@ -7,7 +8,7 @@ use crate::{
         outlives::{Bounds, Pair, Queries},
     },
 };
-use std::{collections::HashSet, sync::Arc};
+use std::sync::Arc;
 
 pub(super) struct Collector<'a> {
     types: &'a Store,

@@ -161,8 +161,9 @@ fn writable_allocations_and_readonly_reference_slots_are_distinct()
 #[test]
 fn canonical_factory_identity_and_body_work_remain_additive()
 -> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::support::hash::HashSet;
     use rustgm::{body::ir::Rvalue, support::library_types::LibraryType};
-    use std::{collections::HashSet, fmt::Write};
+    use std::fmt::Write;
     for callers in [8, 32, 128] {
         let mut text = String::from("use core::sync::atomic::AtomicU32;");
         for caller in 0..callers {
@@ -199,7 +200,7 @@ fn canonical_factory_identity_and_body_work_remain_additive()
         );
         assert!(facts.body_work.steps < 256 * (callers + 1));
         let program = rustgm::body::build(&report, &facts)?;
-        let mut instances = HashSet::new();
+        let mut instances = HashSet::default();
         let mut operations = 0;
         for body in &program.bodies {
             for value in &body.values {

@@ -1,10 +1,8 @@
 //! One caller retains its size proof frontier across missing field declarations.
 use super::{Declarations, Environment, ItemId, Kind, TypeId, assumed, prepare};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{Primitive, parameters::environment::BuiltinQuery, sizedness::Condition};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 pub(in crate::sema) enum Progress {
     Ready { sized: bool, provisional: bool },
@@ -38,11 +36,11 @@ impl Query {
         Self {
             environment,
             permissions: None,
-            answers: HashMap::new(),
+            answers: HashMap::default(),
             temporary: Vec::new(),
-            tails: HashMap::new(),
+            tails: HashMap::default(),
             conditions: super::Conditions::default(),
-            active: HashSet::new(),
+            active: HashSet::default(),
             root: None,
             projection: None,
             work: Vec::new(),

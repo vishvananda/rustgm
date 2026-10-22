@@ -1,6 +1,6 @@
 //! Assigned structural equations retain one monotone history even without type links.
 use super::{Class, Error, TermId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 struct Node {
     parent: TermId,

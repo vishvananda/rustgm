@@ -1,11 +1,12 @@
 //! Runtime slots retain complete trait inputs while sharing repeated supertraits.
 use super::{Method, Shape, ShapeId, Slot};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefId},
     sema::{model::Declarations, traits::object_bounds},
     types::{Kind, TypeId, parameters::predicates::Bound},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 pub(super) fn prepare(
     report: &Report,
@@ -57,9 +58,9 @@ fn collect(
     let mut shape = Shape {
         object,
         slots: Vec::new(),
-        indices: HashMap::new(),
+        indices: HashMap::default(),
         upcasts: Vec::new(),
-        upcast_indices: HashMap::new(),
+        upcast_indices: HashMap::default(),
     };
     for &clause in applications {
         let predicate = object_bounds::graph::quantified_value(&facts.types, clause)?;

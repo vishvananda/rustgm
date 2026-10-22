@@ -1,10 +1,10 @@
 //! Publish portable hidden types without mixing different precise capture lists.
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
     types::{GenericArgs, Kind, opaque::RegionChoice, substitute::Bound},
 };
-use std::collections::HashMap;
 
 impl Declarations {
     pub(crate) fn close_opaque_results(
@@ -15,7 +15,7 @@ impl Declarations {
         let Some(ids) = self.opaques.owners.get(&owner) else {
             return Ok(());
         };
-        let mut mappings: HashMap<_, HashMap<_, _>> = HashMap::new();
+        let mut mappings: HashMap<_, HashMap<_, _>> = HashMap::default();
         for &RegionChoice {
             captures,
             region,
@@ -34,7 +34,7 @@ impl Declarations {
                 Bound::close_projection_regions(1, 0, mapping).map(|fold| (captures, fold))
             })
             .collect::<Result<_, _>>()?;
-        let mut closed = Bound::close_projection_regions(1, 0, HashMap::new())?;
+        let mut closed = Bound::close_projection_regions(1, 0, HashMap::default())?;
         for id in ids {
             let declaration = self
                 .opaques

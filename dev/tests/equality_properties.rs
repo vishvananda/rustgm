@@ -1,9 +1,9 @@
+use rustgm::support::hash::HashMap;
 use rustgm::types::{
     ItemId, Kind, Primitive, RegionId, Store, TypeId,
     aggregate::{self, Definitions, Repr, Variant},
     equality::{Equality, Properties},
 };
-use std::collections::HashMap;
 const BOTH: Properties = Properties {
     partial_eq: true,
     eq: true,
@@ -48,7 +48,7 @@ fn recursive_equality_dependencies_propagate_failures_to_every_parent() -> Resul
                 }],
             )?;
         }
-        let selected = HashMap::from([(ItemId(0), BOTH), (ItemId(1), BOTH)]);
+        let selected = HashMap::from_iter([(ItemId(0), BOTH), (ItemId(1), BOTH)]);
         for order in [[a, b, a_ref, b_ref], [b, a, b_ref, a_ref]] {
             let mut equality = Equality::default();
             let expected = if bad { Properties::default() } else { BOTH };
@@ -127,7 +127,7 @@ fn equality_type_obligations_remain_distinct_from_actual_structural_values()
             discriminant: 0,
         }],
     )?;
-    let selected = HashMap::from([(ItemId(1), BOTH)]);
+    let selected = HashMap::from_iter([(ItemId(1), BOTH)]);
     let partial = Properties {
         partial_eq: true,
         eq: false,
@@ -153,7 +153,7 @@ fn deep_equality_graphs_are_iterative_and_repeated_queries_are_constant_work()
 -> Result<(), &'static str> {
     let mut types = Store::default();
     let definitions = Definitions::default();
-    let selected = HashMap::<ItemId, Properties>::new();
+    let selected = HashMap::<ItemId, Properties>::default();
     let mut root = TypeId::primitive(Primitive::U8);
     for _ in 0..20_000 {
         root = types.intern(Kind::Array {

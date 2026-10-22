@@ -1,12 +1,10 @@
+use rustgm::support::hash::HashMap;
 use rustgm::{
     expand::config::Config,
     resolve::load::{self, InputFile, Sources},
     support::source::SourceFile,
 };
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 #[derive(Default)]
 struct Memory {
     files: HashMap<PathBuf, String>,

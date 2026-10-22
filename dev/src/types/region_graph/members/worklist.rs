@@ -1,7 +1,7 @@
 //! One monotonic worklist grows hidden regions to minimal permitted captures.
 use super::{Error, Graph, Members, Region, domains::Domains};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::region_graph::Solver;
-use std::collections::{HashMap, HashSet};
 
 struct Group {
     region: Region,
@@ -60,7 +60,7 @@ pub(super) fn select(graph: &Graph, members: &Members) -> Result<(Vec<Region>, u
     let mut changes = Changes {
         watch,
         lower: vec![Vec::new(); groups.len()],
-        seen: HashSet::new(),
+        seen: HashSet::default(),
         queued: vec![true; groups.len()],
         work,
     };
@@ -107,7 +107,7 @@ fn groups(
     solver: &mut Solver<'_>,
 ) -> Result<(Vec<Group>, HashMap<Region, usize>), Error> {
     let mut groups: Vec<Group> = Vec::new();
-    let mut indexes: HashMap<Region, usize> = HashMap::new();
+    let mut indexes: HashMap<Region, usize> = HashMap::default();
     for request in &members.requests {
         solver.charge()?;
         let region = classes[request.region.0 as usize];
@@ -150,8 +150,8 @@ fn upper_bounds(
         }
     }
     let mut work = Vec::new();
-    let mut seen = HashSet::new();
-    let mut filtered = HashSet::new();
+    let mut seen = HashSet::default();
+    let mut filtered = HashSet::default();
     for (index, kind) in graph.kinds.iter().enumerate() {
         if kind.rigid() {
             let region = Region(u32::try_from(index).map_err(|_| Error::Budget)?);

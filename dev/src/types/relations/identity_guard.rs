@@ -1,7 +1,7 @@
 //! Conditional equality compares complete typed inputs without constraining inference.
 use super::{Constraints, Error, Region, RegionId, Relation, Scope, TypeId, structural::Compare};
+use crate::support::hash::HashSet;
 use crate::types::{outlives::Projection, region_graph::VerificationId};
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 pub(super) struct View {
@@ -50,7 +50,7 @@ impl Constraints<'_> {
             left,
             right,
             work: vec![(left.projection.ty, right.projection.ty, 0)],
-            seen: HashSet::new(),
+            seen: HashSet::default(),
             guards: Vec::new(),
         };
         while let Some((a, b, depth)) = query.work.pop() {

@@ -1,5 +1,6 @@
 //! Primitive constants are typed language values, not source initializers or methods.
 use super::model::Declarations;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::unit::NodeKey,
     types::{
@@ -7,7 +8,6 @@ use crate::{
         arguments::{ConstId, Constant},
     },
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../tests/invariants/integer_limits.rs"]
 mod tests;

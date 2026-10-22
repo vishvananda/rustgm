@@ -1,5 +1,6 @@
 //! Borrowed temporary addresses are materialized where their values dominate uses.
 use super::{Address, Lower, Representation, Selected};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::ir::{self, Action, Place, Rvalue, ValueId},
     lowir::{
@@ -8,7 +9,6 @@ use crate::{
     },
     types::TypeId,
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct Storage {

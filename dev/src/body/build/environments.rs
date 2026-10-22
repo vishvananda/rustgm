@@ -9,8 +9,8 @@ use crate::{
 };
 pub(super) struct Places {
     fields: Vec<Place>,
-    mentions: std::collections::HashSet<PathId>,
-    pub(super) validated: std::collections::HashSet<(PathId, PathId, u32)>,
+    mentions: crate::support::hash::HashSet<PathId>,
+    pub(super) validated: crate::support::hash::HashSet<(PathId, PathId, u32)>,
 }
 pub(super) enum Access {
     Ordinary,
@@ -64,7 +64,7 @@ impl Builder<'_> {
                 self.capture_places = Some(Box::new(Places {
                     fields: Vec::new(),
                     mentions,
-                    validated: std::collections::HashSet::new(),
+                    validated: crate::support::hash::HashSet::default(),
                 }));
             }
             return Ok(());
@@ -121,7 +121,7 @@ impl Builder<'_> {
         self.capture_places = Some(Box::new(Places {
             fields: places,
             mentions,
-            validated: std::collections::HashSet::new(),
+            validated: crate::support::hash::HashSet::default(),
         }));
         Ok(())
     }

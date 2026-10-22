@@ -1,7 +1,7 @@
 //! Typed field instances share declaration identity and discriminants.
 use super::{Definition, Variant};
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{Kind, ListId, Store, TypeId, substitute::Bound};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 struct Range {

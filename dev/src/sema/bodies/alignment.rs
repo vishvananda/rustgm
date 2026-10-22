@@ -1,5 +1,6 @@
 //! Retain packed-place obligations before unreachable syntax loses its CFG.
 use super::{Checker, Error, Kind, NodeId, Type};
+use crate::support::hash::HashMap;
 use crate::{
     sema::{
         model::ReferenceAlignment,
@@ -7,7 +8,6 @@ use crate::{
     },
     types::TypeId,
 };
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Pending {

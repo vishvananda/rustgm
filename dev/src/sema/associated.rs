@@ -4,6 +4,7 @@ mod language;
 #[cfg(test)]
 #[path = "../../tests/invariants/owner_slots.rs"]
 mod tests;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
@@ -15,7 +16,6 @@ use crate::{
     types::TypeId,
 };
 pub(crate) use comparisons::LibraryDefault;
-use std::collections::HashMap;
 
 /// Requirements on a projected result, distinct from assumptions about its inputs.
 pub struct TypeContract {
@@ -243,7 +243,7 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         ));
     }
     let mut result = Inventory::default();
-    let mut scopes = HashMap::new();
+    let mut scopes = HashMap::default();
     for (index, definition) in report.resolution.definitions.iter().enumerate() {
         if definition.kind != DefKind::SelfType {
             continue;

@@ -2,6 +2,7 @@ pub mod atomic_ordering;
 pub mod call_traits;
 pub mod comparisons;
 pub mod crates;
+pub mod hash;
 pub(crate) mod intern_slice;
 pub mod intrinsics;
 pub mod iteration;

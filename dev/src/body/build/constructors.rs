@@ -1,5 +1,6 @@
 //! Constructor factories share one retained field-move CFG across ordinary and generic uses.
 use super::{Action, Error, Owner, Place, Rvalue, Type, TypeId, ValueId, ValueList};
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::Body,
@@ -10,7 +11,7 @@ use crate::{
     sema::{members::VariantId, model::Declarations},
     types::destruction::NeedsDrop,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 fn selected(facts: &Declarations) -> impl Iterator<Item = (DefId, TypeId, VariantId)> + '_ {
     facts
@@ -67,7 +68,7 @@ pub fn templates(
     templates: &mut Templates,
     contracts: &mut Vec<Contract>,
 ) -> Result<(), Error> {
-    let mut environments = HashMap::new();
+    let mut environments = HashMap::default();
     let query = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
     let selected = selected(facts)
         .filter(|(definition, _, variant)| {

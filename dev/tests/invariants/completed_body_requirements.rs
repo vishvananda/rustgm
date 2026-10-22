@@ -436,7 +436,7 @@ fn shared_body_evidence_excludes_intervening_and_final_ordinary_allocations() ->
     let proof = &facts.quantified_proofs[0].evidence.proof;
     assert_eq!(proof.scope_count(), 1);
     assert!(proof.has_gaps());
-    let owned: std::collections::HashSet<_> = proof.owned_regions().flatten().collect();
+    let owned: crate::support::hash::HashSet<_> = proof.owned_regions().flatten().collect();
     let mut foreign = 0;
     for (index, region) in facts.body_regions.iter().enumerate() {
         let id = u32::try_from(index + 1)?;

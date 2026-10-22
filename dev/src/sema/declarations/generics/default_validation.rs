@@ -1,5 +1,6 @@
 //! Closed parameter defaults are checked independently; dependent defaults remain templates.
 use super::{Checker, DefId, Error, NodeKey};
+use crate::support::hash::HashMap;
 use crate::{
     sema::nominals::Proof,
     types::{
@@ -9,7 +10,6 @@ use crate::{
         substitute,
     },
 };
-use std::collections::HashMap;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/default_clauses.rs"]
 mod tests;
@@ -125,8 +125,8 @@ impl Checker<'_> {
         &self,
         owner: DefId,
     ) -> Result<HashMap<ParameterId, Vec<usize>>, &'static str> {
-        let mut result: HashMap<ParameterId, Vec<usize>> = HashMap::new();
-        let mut subjects = HashMap::new();
+        let mut result: HashMap<ParameterId, Vec<usize>> = HashMap::default();
+        let mut subjects = HashMap::default();
         let mut uses = Sole::default();
         for (index, predicate) in self
             .facts

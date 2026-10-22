@@ -1,5 +1,6 @@
 //! A checked callable's declared trait premises retain their specialized lifetime witnesses.
 use super::{model::Declarations, nominals::traits::State};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     types::{
@@ -11,7 +12,6 @@ use crate::{
         substitute::Bound,
     },
 };
-use std::collections::HashMap;
 
 pub(crate) struct Assumptions {
     pub universals: u32,
@@ -124,7 +124,7 @@ fn witnesses(
         regions: Vec::new(),
         types: Vec::new(),
     };
-    let mut mapping = HashMap::new();
+    let mut mapping = HashMap::default();
     for index in 0..first {
         let region = universal(index)?;
         mapping.insert(region, region);

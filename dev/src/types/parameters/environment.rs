@@ -21,10 +21,11 @@ use super::{
     clauses::Clause,
     predicates::{Bound, Predicate},
 };
+use crate::support::hash::HashMap;
 use crate::types::Store;
 use crate::types::{Kind, TypeId};
 use premises::TraitAssumptions;
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::hash_map::Entry;
 use std::sync::Arc;
 
 /// Language-provided abilities used by move checking. Copy entails Clone.
@@ -52,7 +53,7 @@ pub struct Environment {
 #[derive(Clone, Default)]
 struct Assumptions {
     predicates: HashMap<TypeId, Abilities>,
-    sized: std::collections::HashSet<TypeId>,
+    sized: crate::support::hash::HashSet<TypeId>,
     region_mapping: bool,
 }
 impl Environment {
@@ -180,7 +181,7 @@ impl Environment {
         if assumptions.len() > 1_000_000 {
             return Err("parameter environment storage budget exceeded");
         }
-        let mut parameters: HashMap<ParameterId, Abilities> = HashMap::new();
+        let mut parameters: HashMap<ParameterId, Abilities> = HashMap::default();
         let mut shape_assumptions = false;
         for (id, bounds) in assumptions {
             if !matches!(

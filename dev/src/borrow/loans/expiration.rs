@@ -1,7 +1,7 @@
 //! Index region exits once; consecutive CFG points visit only expiring loans.
 use super::{Loan, Point, Set, points};
 use crate::borrow::regions::graph::Region;
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 #[cfg(test)]
 #[path = "../../../tests/invariants/loan_expirations.rs"]
@@ -19,7 +19,7 @@ impl Expirations {
         if loans.is_empty() {
             return Ok(result);
         }
-        let mut words: HashMap<Region, Vec<(usize, u64)>> = HashMap::new();
+        let mut words: HashMap<Region, Vec<(usize, u64)>> = HashMap::default();
         for (loan, data) in loans.iter().enumerate() {
             result.charge(1)?;
             let entries = words.entry(data.region).or_default();

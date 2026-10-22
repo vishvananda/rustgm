@@ -1,6 +1,7 @@
 //! Discover named backing through completed values before publishing storage roots.
 mod values;
 use super::{Declarations, DefId, Error, Report, error, records};
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{
         foreign,
@@ -14,7 +15,6 @@ use crate::{
     syntax::item::Safety,
     types::TypeId,
 };
-use std::collections::{HashMap, HashSet};
 
 pub(super) struct Entry {
     pub definition: DefId,
@@ -42,9 +42,9 @@ pub(super) fn prepare(
 ) -> Result<Prepared, Error> {
     let public_set: HashSet<_> = public.iter().copied().collect();
     let mut definitions = public.to_vec();
-    let mut seen = HashSet::new();
-    let mut values = HashSet::new();
-    let mut locations = HashMap::new();
+    let mut seen = HashSet::default();
+    let mut values = HashSet::default();
+    let mut locations = HashMap::default();
     let mut prepared = Prepared::default();
     let mut steps = 0usize;
     while let Some(definition) = definitions.pop() {

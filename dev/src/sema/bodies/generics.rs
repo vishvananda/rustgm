@@ -235,7 +235,7 @@ impl Checker<'_> {
         &mut self,
         solved: &infer::Solved,
         predicates: &[crate::types::parameters::predicates::Predicate],
-        evidence: &std::collections::HashMap<usize, Source>,
+        evidence: &crate::support::hash::HashMap<usize, Source>,
     ) -> Result<(), Error> {
         for index in 0..self.state.call_types.generic.len() {
             let (node, owner, term) = self.state.call_types.generic[index];

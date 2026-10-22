@@ -65,7 +65,7 @@ pub(super) fn concrete(
     facts: &super::Declarations,
     scratch: &mut super::Scratch,
     program: &mut super::Program,
-    prepared: &mut std::collections::HashMap<crate::body::ir::BodyKey, super::Body>,
+    prepared: &mut crate::support::hash::HashMap<crate::body::ir::BodyKey, super::Body>,
     mut query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<(), super::Error> {
     for (source, ty) in facts.constant_bodies() {

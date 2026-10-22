@@ -1,5 +1,6 @@
 //! Named object equalities preserve quantifiers introduced by supertraits.
 use super::{Checker, Error, NodeKey, Pending, Predicate, Type, graph::Graph};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         model::{DefId, Namespace},
@@ -14,7 +15,7 @@ use crate::{
         projection, substitute,
     },
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 pub(super) struct Members {
     names: HashMap<NameId, Candidate>,
@@ -140,7 +141,7 @@ impl Checker<'_> {
         }
         let mut graph = Graph::new(root);
         let mut direct = true;
-        let mut names: HashMap<NameId, Candidate> = HashMap::new();
+        let mut names: HashMap<NameId, Candidate> = HashMap::default();
         while let Some(visit) = graph
             .next(&mut self.facts)
             .map_err(|e| self.error(source, e))?

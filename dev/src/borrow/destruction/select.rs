@@ -2,6 +2,7 @@
 use super::{
     Cleanup, Condition, Field, Flag, Interval, Node, NodeId, Operation, Plan, Variant, glue,
 };
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{Body, Selection},
     borrow::ownership::{
@@ -9,7 +10,6 @@ use crate::{
         initialization::{self, Candidate, Event, Point, Status},
     },
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 enum Tracking {
@@ -56,7 +56,7 @@ pub fn select(
     let mut builder = Builder {
         catalog,
         paths: &facts.ownership.paths,
-        fields: HashMap::new(),
+        fields: HashMap::default(),
         plan: Plan::default(),
         work: Vec::new(),
         retained: 0,

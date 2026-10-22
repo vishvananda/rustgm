@@ -163,7 +163,7 @@ fn independent_symbolic_functions_reuse_syntax_and_preserve_owners() -> Result<(
     let (_, facts) = semantic::analyze(&source)?;
     assert_eq!(facts.functions.len(), 512);
     assert_eq!(facts.generics.environments.len(), 512);
-    let signatures: std::collections::HashSet<_> =
+    let signatures: rustgm::support::hash::HashSet<_> =
         facts.functions.iter().map(|f| f.signature).collect();
     assert_eq!(signatures.len(), 512);
     Ok(())

@@ -1,7 +1,7 @@
 //! Typed const inference variables are distinct from rigid canonical parameters.
 use super::{Context, Error, Primitive, Store, TypeId};
+use crate::support::hash::HashMap;
 use crate::types::arguments::{ConstId, ConstKind, Constant};
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ConstTermId(pub u32);

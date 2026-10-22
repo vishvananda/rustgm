@@ -40,6 +40,7 @@ use super::{
     members::VariantId,
     model::{Cast, Declarations, InitializerKind, Operation, Scalar},
 };
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     lex::token::Punctuation as Op,
     resolve::{
@@ -51,7 +52,6 @@ use crate::{
     syntax::ast::{BlockFlavor, Kind, Unary},
     types::{Kind as Type, Primitive, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Value {
@@ -282,8 +282,8 @@ impl<'a> Queries<'a> {
             report,
             typing: bodies::Checker::with_scratch(report, facts, scratch.typing),
             discriminants,
-            expressions: HashMap::new(),
-            states: HashMap::new(),
+            expressions: HashMap::default(),
+            states: HashMap::default(),
             work: instances::Worklist::default(),
             instances: instances::Instances::default(),
             scan: scratch.scan,
@@ -291,14 +291,14 @@ impl<'a> Queries<'a> {
             limit,
             source_work,
             preparation_steps: scratch.preparation_steps,
-            pattern_values: HashSet::new(),
+            pattern_values: HashSet::default(),
             pattern_frames: None,
             drop_scratch: scratch.drops,
             layout_scratch: scratch.layouts,
             pattern_scope: None,
             pattern_dispatch: None,
             value_scope: None,
-            checked_members: HashSet::new(),
+            checked_members: HashSet::default(),
         }
     }
     fn into_scratch(self) -> Scratch {

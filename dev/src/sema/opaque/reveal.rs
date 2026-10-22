@@ -1,9 +1,9 @@
 //! Storage heads share complete capture substitution without rewriting callable identity.
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::model::Declarations,
     types::{Kind, TypeId},
 };
-use std::collections::{HashMap, HashSet};
 
 impl Declarations {
     /// Prepare appended canonical applications once, independently of caller proofs.
@@ -12,7 +12,7 @@ impl Declarations {
         if self.opaques.declarations.is_empty() {
             return Ok(());
         }
-        let mut pending = HashMap::new();
+        let mut pending = HashMap::default();
         let mut roots = Vec::new();
         while self.opaques.storage_cursor < self.types.len() {
             let index = self.opaques.storage_cursor;
@@ -39,7 +39,7 @@ impl Declarations {
             }
         }
         let mut path = Vec::new();
-        let mut active = HashSet::new();
+        let mut active = HashSet::default();
         for &root in &roots {
             if !pending.contains_key(&root) {
                 continue;

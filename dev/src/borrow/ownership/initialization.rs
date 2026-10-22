@@ -17,10 +17,7 @@ use crate::{
         copy::{Copies, Declaration},
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    hash::BuildHasher,
-};
+use std::hash::BuildHasher;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
@@ -72,7 +69,7 @@ impl Facts<'_> {
     pub fn check_destructor_moves<S: BuildHasher>(
         &self,
         types: &Store,
-        custom: &HashSet<ItemId, S>,
+        custom: &std::collections::HashSet<ItemId, S>,
     ) -> Result<(), Error> {
         self.destructor_moves(types, |item| custom.contains(&item))
     }
@@ -213,7 +210,7 @@ fn validate_path(path: &Path, bits: u32, words: usize) -> Result<(), &'static st
 pub fn analyze<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Declaration, S>,
+    derives: &std::collections::HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &'a Body,
 ) -> Result<Facts<'a>, Error> {

@@ -1,6 +1,7 @@
 //! A sealed proof retains the exact immutable templates checked under their assumptions.
 mod preconditions;
 use super::{Environment, Error, loans, regions};
+use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{BodyKey, Owner, Selection},
@@ -9,7 +10,7 @@ use crate::{
     },
     types::{ItemId, TypeId, closure::ClosureId, variance::Variances},
 };
-use std::{collections::HashMap, hash::BuildHasher};
+use std::hash::BuildHasher;
 
 pub struct Checked<'a> {
     templates: &'a Templates,
@@ -118,9 +119,12 @@ pub fn verify<'a, S: BuildHasher>(
     custom: &[ItemId],
     position: impl Fn(TypeId, Selection) -> Result<(u32, u32), &'static str>,
 ) -> Result<Checked<'a>, Error> {
-    let mut index = HashMap::with_capacity(templates.bodies.len());
-    let mut closures = HashMap::new();
-    let mut anonymous = HashMap::new();
+    let mut index = HashMap::with_capacity_and_hasher(
+        templates.bodies.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
+    let mut closures = HashMap::default();
+    let mut anonymous = HashMap::default();
     for (ordinal, template) in templates.bodies.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {

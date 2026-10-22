@@ -1,11 +1,12 @@
 //! Sparse universe metadata preserves selected graph debts without copying ancestor proofs.
 use super::{Decision, Declarations, Evidence, Node, Predicate, Query};
+use crate::support::hash::HashMap;
 use crate::types::{
     RegionId,
     lifetime_proof::{Obligations, ScopeId},
     substitute::Bound,
 };
-use std::{collections::HashMap, ops::Range};
+use std::ops::Range;
 
 struct Universe {
     parent: ScopeId,
@@ -168,7 +169,7 @@ impl Scopes {
         caller_end: u32,
     ) -> Result<(Bound, usize), &'static str> {
         let mut depth = 0_u16;
-        let mut anchors = HashMap::new();
+        let mut anchors = HashMap::default();
         let mut steps = 0;
         while scope != parent {
             let universe = scope

@@ -3,7 +3,7 @@ use super::{
     Access, Action, Body, Component, LocalId, LocalKind, PathId, Paths, Place, PlaceInfo, Root,
     Store, arrays,
 };
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 struct Context<'a> {
     types: &'a Store,
@@ -29,7 +29,7 @@ impl Paths {
         fields: &mut HashMap<(PathId, Component), PathId>,
         arrays: &mut arrays::Arrays,
     ) -> Result<(), &'static str> {
-        let mut sources: HashMap<LocalId, Vec<Place>> = HashMap::new();
+        let mut sources: HashMap<LocalId, Vec<Place>> = HashMap::default();
         for statement in &body.statements {
             if let Action::BindView { view, place } = statement.action {
                 if let Place::Temporary(id) = place {
@@ -49,7 +49,7 @@ impl Paths {
         };
         for view in order {
             let mut targets = Vec::new();
-            let mut seen = HashSet::new();
+            let mut seen = HashSet::default();
             for source in &sources[&view] {
                 let info = self.place(*source)?;
                 // Enclosing views precede their nested bindings. Enforce that

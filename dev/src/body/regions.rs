@@ -7,13 +7,13 @@ mod incremental;
 use super::ir::NodeKey;
 pub use crate::sema::model::BuiltinRequirements;
 pub use crate::sema::model::LifetimeProof as Proof;
+use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
     types::{RegionId, TypeId, outlives::Pair},
 };
 use anonymous::header as anonymous_header;
 pub use incremental::Collector;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
 pub enum Kind {
@@ -115,7 +115,7 @@ pub struct Contracts<'a> {
 /// Rejects missing body owners and overflowing inference identities.
 pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     let mut bodies = Vec::new();
-    let mut index = HashMap::new();
+    let mut index = HashMap::default();
     for function in &facts.functions {
         if let Some(source) = function.body {
             index.insert(source, bodies.len());

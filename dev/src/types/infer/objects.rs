@@ -1,7 +1,7 @@
 //! Object constraints preserve invariant trait inputs and a separate outer lifetime.
 mod requirements;
 use super::{Constructor, Context, Error, Kind, RegionId, Store, TermId};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 /// Context-owned metadata keeps the common inference term compact.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -1,4 +1,5 @@
 //! Drop checking follows owned fields; references do not own their referents.
+use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::Definitions,
@@ -8,10 +9,7 @@ use crate::types::{
     },
     parameters::environment::{BuiltinQuery, Environment},
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Key {
@@ -47,7 +45,7 @@ impl Regions {
             custom: Arc::default(),
             environment: None,
             builtins: None,
-            states: HashMap::new(),
+            states: HashMap::default(),
             lists: Lists::default(),
             work: Vec::new(),
             retained: 0,
@@ -68,7 +66,7 @@ impl Regions {
             custom: Arc::clone(&self.custom),
             environment: Some(environment),
             builtins: None,
-            states: HashMap::new(),
+            states: HashMap::default(),
             lists: Lists::default(),
             work: Vec::new(),
             retained: 0,

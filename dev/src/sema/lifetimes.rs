@@ -1,11 +1,12 @@
 //! Lifetime parameter identities and reusable substitutions over declaration templates.
 use super::model::Declarations;
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
     syntax::ast::{Kind, List},
     types::{GenericArgs, Store, TypeId, substitute::Bound},
 };
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::hash_map::Entry;
 
 #[derive(Clone)]
 pub struct FunctionRegions {

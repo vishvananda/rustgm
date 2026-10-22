@@ -53,7 +53,7 @@ fn conditional_derives_preserve_stronger_copy_bounds_for_packed_clone() -> Resul
     for ty in [small, clone_only] {
         definitions.prepare(&mut types, ty)?;
     }
-    let selected = std::collections::HashMap::from([
+    let selected = rustgm::support::hash::HashMap::from_iter([
         (
             wrapper,
             Properties {
@@ -145,7 +145,7 @@ fn custom_drop_retains_type_argument_lifetimes_independently_of_copy() -> Result
     let mut drops = NeedsDrop::in_environment([owner], Arc::clone(&copy));
     assert!(drops.demand(&types, &definitions, symbolic)?);
     assert!(drops.demand(&types, &definitions, concrete)?);
-    let selected = std::collections::HashMap::new();
+    let selected = rustgm::support::hash::HashMap::default();
     let environment = Environment::new(&types, &[(id, Abilities::default())])?.with_predicates(
         &types,
         &[Predicate {
@@ -331,7 +331,7 @@ fn field_availability_does_not_authorize_recursive_by_value_layouts() -> Result<
         NeedsDrop::new([]).demand(&types, &definitions, root),
         Err("recursive by-value destruction requirement")
     );
-    let selected = std::collections::HashMap::from([(
+    let selected = rustgm::support::hash::HashMap::from_iter([(
         item,
         Properties {
             copy: true,
@@ -523,7 +523,7 @@ fn reference_equality_preparation_is_distinct_from_owned_layout_preparation()
     definitions.prepare(&mut types, reference)?;
     assert!(definitions.shape(&types, wrapper).is_err());
     definitions.prepare_equality(&mut types, reference)?;
-    let selected = std::collections::HashMap::from([(
+    let selected = rustgm::support::hash::HashMap::from_iter([(
         owner,
         EqualityProperties {
             partial_eq: true,
@@ -566,7 +566,7 @@ fn shared_generic_field_graphs_are_iterative_and_memoized() -> Result<(), Box<dy
     let mut layouts = Layouts::default();
     let id = layouts.demand(&types, &definitions, root)?;
     assert_eq!(layouts.at(id).ok_or("layout")?.size, 0);
-    let selected = std::collections::HashMap::from([(
+    let selected = rustgm::support::hash::HashMap::from_iter([(
         owner,
         Properties {
             copy: true,
@@ -615,8 +615,8 @@ fn packed_generic_equality_requires_copy_predicates_from_the_same_environment()
         partial_eq: true,
         eq: true,
     };
-    let selected = std::collections::HashMap::from([(owner, both), (inner, both)]);
-    let copy_derives = std::collections::HashMap::new();
+    let selected = rustgm::support::hash::HashMap::from_iter([(owner, both), (inner, both)]);
+    let copy_derives = rustgm::support::hash::HashMap::default();
     let mut copies = Copies::default();
     let mut query = Equality::default();
     for (argument, expected) in [

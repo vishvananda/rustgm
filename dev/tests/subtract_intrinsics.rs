@@ -181,7 +181,7 @@ fn check_shim(body: &rustgm::lowir::program::Function) -> Result<(), Box<dyn std
         vocabulary::{Binary, Type},
     };
     let (mut atomic, mut negation, mut reconstruction, mut tags) = (0, 0, 0, 0);
-    let mut orders = std::collections::HashSet::new();
+    let mut orders = rustgm::support::hash::HashSet::default();
     for instruction in &body.instructions {
         match instruction.operation {
             Operation::AtomicAddFetch {
@@ -229,6 +229,9 @@ fn check_shim(body: &rustgm::lowir::program::Function) -> Result<(), Box<dyn std
         }
     }
     assert_eq!((atomic, negation, reconstruction, tags), (5, 5, 5, 1));
-    assert_eq!(orders, std::collections::HashSet::from([0, 2, 3, 4, 5]));
+    assert_eq!(
+        orders,
+        rustgm::support::hash::HashSet::from_iter([0, 2, 3, 4, 5])
+    );
     Ok(())
 }

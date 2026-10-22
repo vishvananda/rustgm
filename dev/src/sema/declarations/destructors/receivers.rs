@@ -27,7 +27,7 @@ impl Checker<'_> {
             return Err(self.error(key, "invalid typed Drop receiver"));
         };
         let declared = self.declared_regions(key, declared)?;
-        let mut method_slots = std::collections::HashSet::new();
+        let mut method_slots = crate::support::hash::HashSet::default();
         for &definition in &declared {
             method_slots.insert(
                 self.regions

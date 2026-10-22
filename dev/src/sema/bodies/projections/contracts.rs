@@ -52,7 +52,7 @@ impl Checker<'_> {
             .graft(source, ambient)
             .map_err(|e| self.error(node, e))?;
         let roots = proof.type_roots().collect::<Vec<_>>();
-        let mut normalized = HashMap::new();
+        let mut normalized = HashMap::default();
         for (scope, ty) in roots {
             let result = self.normalize_body_type(node, proof, scope, ty)?;
             normalized.insert((scope, ty), result);

@@ -78,7 +78,7 @@ fn reference_comparison_layout_remains_compact() {
             std::mem::size_of::<super::mechanical::Pending>(),
             std::mem::size_of::<super::Node>(),
         ),
-        (1408, 80, 160),
+        (1312, 80, 160),
         "reference comparison must retain the qualified x86-64 search layout",
     );
 }

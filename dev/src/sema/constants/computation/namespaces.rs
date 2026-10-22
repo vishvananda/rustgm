@@ -1,7 +1,8 @@
 //! One exact caller namespace transports source locals before actual arguments enter.
 use super::{CallerInstance, Declarations, NodeKey, catalog::CallerKey};
+use crate::support::hash::HashMap;
 use crate::{sema::traits::obligations::Reservation, types::lifetime_proof::OwnedTransport};
-use std::{collections::HashMap, ops::Range};
+use std::ops::Range;
 
 struct Entry {
     transport: Option<OwnedTransport>,
@@ -16,8 +17,8 @@ pub(super) struct Namespaces {
 impl Namespaces {
     pub(super) fn new() -> Self {
         Self {
-            entries: HashMap::new(),
-            observations: HashMap::new(),
+            entries: HashMap::default(),
+            observations: HashMap::default(),
             bytes: size_of::<Self>(),
         }
     }

@@ -1,6 +1,6 @@
 //! Demand a fully determined inference subtree without applying numeric fallback.
 use super::{Context, Domain, Error, Store, TermId, TypeId, Value};
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 #[cfg(test)]
 #[path = "../../../tests/invariants/settled_inputs.rs"]
 mod settled_tests;
@@ -34,12 +34,12 @@ impl Resolution {
             .saturating_mul(4)
             .max(64);
         if self.results.capacity() > retained {
-            self.results = HashMap::new();
+            self.results = HashMap::default();
         } else {
             self.results.clear();
         }
         if self.active.capacity() > retained {
-            self.active = HashSet::new();
+            self.active = HashSet::default();
         } else {
             self.active.clear();
         }

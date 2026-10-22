@@ -1,5 +1,6 @@
 //! Shorthand selects a unique declaration application; ordinary normalization proves its use.
 use super::{Checker, DefId, Error, NodeKey, Type, Work, regions};
+use crate::support::hash::HashSet;
 use crate::{
     resolve::{
         model::{DefKind, Namespace},
@@ -12,7 +13,6 @@ use crate::{
         projection,
     },
 };
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 struct Path {
@@ -268,7 +268,7 @@ impl Checker<'_> {
             return Ok(cached);
         }
         let mut work = vec![root];
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut selected = None;
         while let Some(predicate) = work.pop() {
             if !seen.insert(predicate) {

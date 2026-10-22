@@ -1,4 +1,5 @@
 use super::{closure, signature};
+use rustgm::support::hash::HashMap;
 use rustgm::{
     abi::layout::Layouts,
     types::{
@@ -13,7 +14,6 @@ use rustgm::{
         outlives::{Bounds, LiveRegions, Queries},
     },
 };
-use std::collections::HashMap;
 
 #[test]
 fn storage_properties_ignore_signature_and_unused_parent_arguments()
@@ -50,13 +50,13 @@ fn storage_properties_ignore_signature_and_unused_parent_arguments()
         let ty = closure(&mut store, id, signature, args, &fields)?;
         assert_eq!(
             copies
-                .demand(&store, &definitions, &HashMap::new(), ty)?
+                .demand(&store, &definitions, &HashMap::default(), ty)?
                 .copy,
             copy
         );
         assert!(
             !equality
-                .demand(&store, &definitions, &HashMap::new(), ty)?
+                .demand(&store, &definitions, &HashMap::default(), ty)?
                 .partial_eq
         );
         let layout = layouts.demand(&store, &definitions, ty)?;
@@ -126,7 +126,7 @@ fn shared_nested_environments_are_queried_once_and_drop_iteratively()
             ty = closure(&mut store, id, signature, GenericArgs::EMPTY, &[ty, ty])?;
         }
         let definitions = Definitions::default();
-        let selected = HashMap::new();
+        let selected = HashMap::default();
         let mut copies = Copies::default();
         assert!(copies.demand(&store, &definitions, &selected, ty)?.copy);
         assert!(copies.steps <= depth * 3 + 2, "{}", copies.steps);
@@ -166,7 +166,7 @@ fn an_unused_rigid_parameter_does_not_require_storage_proofs()
     let mut definitions = Definitions::default();
     assert!(
         Copies::default()
-            .demand(&store, &definitions, &HashMap::new(), ty)?
+            .demand(&store, &definitions, &HashMap::default(), ty)?
             .copy
     );
     let mut layouts = Layouts::default();

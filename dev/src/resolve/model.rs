@@ -10,8 +10,8 @@ pub use super::builtins::{
     SliceLength as LibrarySliceLength, Traits as BuiltinTraits,
 };
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
+use crate::support::hash::HashMap;
 use crate::syntax::ast::NodeId;
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ScopeId(pub u32);
@@ -257,7 +257,7 @@ pub struct Resolution {
     pub crates: Option<Box<super::crates::Imported>>,
     /// Actual external-block ownership, retained through expansion by declaration identity.
     pub foreign_owners: HashMap<DefId, NodeKey>,
-    pub foreign_blocks: std::collections::HashSet<NodeKey>,
+    pub foreign_blocks: crate::support::hash::HashSet<NodeKey>,
     /// Unnameable `impl Trait` input parameters, grouped by their owning function.
     pub anonymous_parameters: HashMap<NodeKey, Vec<NodeKey>>,
     pub builtin_traits: BuiltinTraits,

@@ -1,9 +1,9 @@
 //! Canonical raw-pointer methods retain their impl parameter and full receiver identity.
 mod preparation;
 use super::{DefId, Methods, NodeKey, TypeId};
+use crate::support::hash::HashMap;
 use crate::{resolve::names::NameId, types::parameters::ParameterId};
 pub(in crate::sema) use preparation::prepare;
-use std::collections::HashMap;
 #[derive(Clone, Copy)]
 pub(crate) struct Offset {
     pub definition: DefId,

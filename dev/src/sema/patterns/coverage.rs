@@ -8,6 +8,7 @@ mod text;
 mod witness;
 
 use super::{Arm, Kind, PatternId, Projection, scalar::Domain};
+use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, package::ModuleId},
     sema::{members::VariantId, model::Declarations},
@@ -16,7 +17,7 @@ use crate::{
 use decision::{Graph, Id, Operation, Variable};
 pub use inhabited::Cache;
 use inhabited::Inhabited;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct PlaceId(u32);
@@ -119,9 +120,9 @@ impl<'a> Coverage<'a> {
                 parent: None,
                 variable: None,
             }],
-            projections: HashMap::new(),
+            projections: HashMap::default(),
             inputs: Vec::new(),
-            patterns: HashMap::new(),
+            patterns: HashMap::default(),
             covered: Id::EMPTY,
             universe,
             roots,

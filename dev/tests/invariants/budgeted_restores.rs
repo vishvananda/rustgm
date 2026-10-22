@@ -13,7 +13,7 @@ fn reference(store: &mut Store, region: RegionId) -> Result<TypeId, &'static str
 }
 fn folder(bytes: usize, work: usize) -> Result<Bound, &'static str> {
     Bound::restore_budgeted_regions(
-        HashMap::from([
+        HashMap::from_iter([
             (RegionId(1), RegionId(20)),
             (RegionId::bound(0, 0)?, RegionId::bound(0, 1)?),
         ]),
@@ -23,7 +23,7 @@ fn folder(bytes: usize, work: usize) -> Result<Bound, &'static str> {
 }
 #[test]
 fn restore_budget_preserves_layout_and_never_retains_unknown_ids() -> Result<(), &'static str> {
-    assert_eq!(size_of::<Bound>(), 208);
+    assert_eq!(size_of::<Bound>(), 192);
     assert_eq!(size_of::<Mapping>(), size_of::<PreviousMapping>());
     eprintln!(
         "restore-layout bound={} mapping={} previous-mapping={}",
@@ -55,7 +55,7 @@ fn restore_budget_preserves_layout_and_never_retains_unknown_ids() -> Result<(),
         convention: crate::types::callable::Convention::RUST,
     })?;
     let result = fold.apply(&mut store, ty)?;
-    let mut ordinary = Bound::restore_regions(HashMap::from([
+    let mut ordinary = Bound::restore_regions(HashMap::from_iter([
         (RegionId(1), RegionId(20)),
         (RegionId::bound(0, 0)?, RegionId::bound(0, 1)?),
     ]));
@@ -184,7 +184,7 @@ fn predicate_and_argument_scratch_keep_the_same_persistent_owner() -> Result<(),
     })?);
     let mut fold = folder(1 << 20, 10000)?;
     let result = fold.clause(&mut store, clause)?;
-    let mut ordinary = Bound::restore_regions(HashMap::from([
+    let mut ordinary = Bound::restore_regions(HashMap::from_iter([
         (RegionId(1), RegionId(20)),
         (RegionId::bound(0, 0)?, RegionId::bound(0, 1)?),
     ]));

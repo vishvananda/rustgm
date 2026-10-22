@@ -3,11 +3,11 @@ use super::{
     Constructor, Context, Error, Store, TermId, TypeId, Value,
     arguments::{Argument, Slot},
 };
+use crate::support::hash::HashMap;
 use crate::types::{
     arguments::ConstKind,
     parameters::{ParameterId, ParameterKind},
 };
-use std::collections::HashMap;
 
 /// A simultaneous binding environment for several templates in the same body.
 /// Cached results retain inference terms, so later equations refine every use.
@@ -65,7 +65,10 @@ impl Instantiation {
         bindings: &[(ParameterId, Argument)],
     ) -> Result<Self, Error> {
         context.account_work(bindings.len())?;
-        let mut parameters = HashMap::with_capacity(bindings.len());
+        let mut parameters = HashMap::with_capacity_and_hasher(
+            bindings.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for &(id, argument) in bindings {
             let declaration = store.parameter(id).ok_or(Error::InvalidIdentity)?;
             match (declaration.kind, argument) {
@@ -82,9 +85,9 @@ impl Instantiation {
         }
         Ok(Self {
             parameters,
-            opaques: HashMap::new(),
-            completed: HashMap::new(),
-            shifted: HashMap::new(),
+            opaques: HashMap::default(),
+            completed: HashMap::default(),
+            shifted: HashMap::default(),
             shifted_projections: false,
         })
     }

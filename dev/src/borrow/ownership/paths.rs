@@ -2,13 +2,13 @@
 mod arrays;
 pub use arrays::Segment;
 mod views;
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{
         Action, Body, LocalId, LocalKind, Place, ProjectionKind, Rvalue, Selection, ValueId,
     },
     types::{Kind, Store, TypeId},
 };
-use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PathId(pub u32);
@@ -96,7 +96,7 @@ impl PlaceInfo {
     }
 }
 pub struct Paths {
-    mutable_statics: Option<std::sync::Arc<std::collections::HashSet<crate::body::ir::DefId>>>,
+    mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<crate::body::ir::DefId>>>,
     partitions: Option<Box<arrays::Partitions>>,
     pub entries: Vec<Path>,
     pub bits: u32,
@@ -117,15 +117,15 @@ impl Paths {
             entries: Vec::new(),
             bits: 0,
             projections: Vec::new(),
-            temporaries: HashMap::new(),
-            views: HashMap::new(),
+            temporaries: HashMap::default(),
+            views: HashMap::default(),
             guard_places: Vec::new(),
         };
         for (index, local) in body.locals.iter().enumerate() {
             let id = LocalId(u32::try_from(index).map_err(|_| "too many move locals")?);
             paths.insert(Root::Local(id), None, None, local.ty)?;
         }
-        let mut fields = HashMap::new();
+        let mut fields = HashMap::default();
         let mut arrays = arrays::Arrays::default();
         for projection in &body.projections {
             let info = paths.project(body, types, projection, &mut fields, &mut arrays)?;

@@ -52,6 +52,7 @@ use super::{
     model::{AdjustmentKind, Declarations, Function, Operation, RegionEquality},
     scalar,
 };
+use crate::support::hash::HashSet;
 use crate::{
     lex::token::Punctuation as Op,
     literal::{Value, value::FloatType},
@@ -67,7 +68,6 @@ use crate::{
         infer::{Constructor, Context, Domain, TermId},
     },
 };
-use std::collections::HashSet;
 
 /// Check function bodies and remaining initializers using completed declaration facts.
 ///
@@ -230,11 +230,7 @@ pub(super) struct State {
     result: TypeId,
     result_term: Option<TermId>,
     opaque_terms: Vec<(crate::types::opaque::OpaqueId, TermId)>,
-    #[expect(
-        clippy::box_collection,
-        reason = "keep every ordinary and parked body state compact; only defining callable opaque results allocate this index"
-    )]
-    opaque_callables: Option<Box<std::collections::HashMap<TermId, TypeId>>>,
+    opaque_callables: Option<Box<crate::support::hash::HashMap<TermId, TypeId>>>,
     in_function: bool,
     safety: safety::Context,
     infer: Context,
@@ -258,23 +254,23 @@ pub(super) struct State {
     negated: HashSet<NodeId>,
     adjustments: Vec<PendingAdjustment>,
     reference_adjustments:
-        std::collections::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
-    unsizing_adjustments: std::collections::HashMap<usize, unsizing::Pending>,
-    pointer_adjustments: std::collections::HashMap<usize, pointers::Pending>,
-    callable_adjustments: std::collections::HashMap<usize, TermId>,
+        crate::support::hash::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
+    unsizing_adjustments: crate::support::hash::HashMap<usize, unsizing::Pending>,
+    pointer_adjustments: crate::support::hash::HashMap<usize, pointers::Pending>,
+    callable_adjustments: crate::support::hash::HashMap<usize, TermId>,
     pointer_casts: Vec<NodeId>,
     reference_expected: HashSet<NodeId>,
     address_dereferences: HashSet<NodeId>,
     raw_address_places: HashSet<NodeId>,
     union_write_places: HashSet<NodeId>,
     language_places: Option<Box<language_hooks::Places>>,
-    unsizing_contexts: std::collections::HashMap<NodeId, TermId>,
+    unsizing_contexts: crate::support::hash::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
-    break_roots: std::collections::HashMap<NodeId, usize>,
-    discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
+    break_roots: crate::support::hash::HashMap<NodeId, usize>,
+    discarded_adjustments: crate::support::hash::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
-    pending_indexes: std::collections::HashMap<NodeId, TermId>,
+    pending_indexes: crate::support::hash::HashMap<NodeId, TermId>,
     call_types: Box<calls::CallTypes>,
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
@@ -365,25 +361,25 @@ impl<'a> Checker<'a> {
                 work: scratch.work,
                 children: Vec::new(),
                 checks: scratch.checks,
-                negated: HashSet::new(),
+                negated: HashSet::default(),
                 adjustments: Vec::new(),
-                reference_adjustments: std::collections::HashMap::new(),
-                unsizing_adjustments: std::collections::HashMap::new(),
-                pointer_adjustments: std::collections::HashMap::new(),
-                callable_adjustments: std::collections::HashMap::new(),
+                reference_adjustments: crate::support::hash::HashMap::default(),
+                unsizing_adjustments: crate::support::hash::HashMap::default(),
+                pointer_adjustments: crate::support::hash::HashMap::default(),
+                callable_adjustments: crate::support::hash::HashMap::default(),
                 pointer_casts: Vec::new(),
-                reference_expected: HashSet::new(),
-                address_dereferences: HashSet::new(),
-                raw_address_places: HashSet::new(),
-                union_write_places: HashSet::new(),
+                reference_expected: HashSet::default(),
+                address_dereferences: HashSet::default(),
+                raw_address_places: HashSet::default(),
+                union_write_places: HashSet::default(),
                 language_places: None,
-                unsizing_contexts: std::collections::HashMap::new(),
+                unsizing_contexts: crate::support::hash::HashMap::default(),
                 reference_work: Vec::new(),
                 reference_steps: 0,
-                break_roots: std::collections::HashMap::new(),
-                discarded_adjustments: std::collections::HashMap::new(),
+                break_roots: crate::support::hash::HashMap::default(),
+                discarded_adjustments: crate::support::hash::HashMap::default(),
                 calls: Vec::new(),
-                pending_indexes: std::collections::HashMap::new(),
+                pending_indexes: crate::support::hash::HashMap::default(),
                 call_types: scratch.call_types.unwrap_or_default(),
                 parameter_copies: None,
                 parameter_shapes: None,
@@ -404,8 +400,8 @@ impl<'a> Checker<'a> {
                 trait_goals: None,
                 type_children: Vec::new(),
                 annotation_checks: Vec::new(),
-                annotation_children: HashSet::new(),
-                type_annotations: HashSet::new(),
+                annotation_children: HashSet::default(),
+                type_annotations: HashSet::default(),
                 frames: Vec::new(),
                 pending_label: None,
                 assignments: Vec::new(),
@@ -951,7 +947,7 @@ impl Checker<'_> {
         body: NodeId,
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
-        let mut well_formed = HashSet::new();
+        let mut well_formed = HashSet::default();
         let mut nominal_types = bounds::Requirements::default();
         // A pointer conversion's immediate reborrow introduces a dereferenced
         // storage place even when the source expression is only a reference.

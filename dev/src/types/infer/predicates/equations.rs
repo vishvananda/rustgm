@@ -2,8 +2,8 @@
 use super::{
     Argument, Canonical, CanonicalArgument, Context, Error, Predicate, Requirement, Store,
 };
+use crate::support::hash::HashSet;
 use crate::types::parameters::predicates::Bound;
-use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 enum Relation {
@@ -104,7 +104,7 @@ impl Context {
         }
         // A successful root pair remains equal under compatible later equations.
         // Share evidence only within this relation and its enclosing binder scope.
-        let mut proved = (a.arguments.len() > 1).then(HashSet::new);
+        let mut proved = (a.arguments.len() > 1).then(HashSet::default);
         let mut relate = |context: &mut Self, left, right| {
             if let Some(proved) = &mut proved {
                 let pair = (context.root(left)?, context.root(right)?);
@@ -220,7 +220,7 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(usize::from(subject.is_some()) + count)?;
-        let mut proved = (count > 1).then(HashSet::new);
+        let mut proved = (count > 1).then(HashSet::default);
         let mut equate = |context: &mut Self, store: &mut Store, term, ty| {
             if let Some(proved) = &mut proved
                 && !proved.insert((context.root(term)?, ty))

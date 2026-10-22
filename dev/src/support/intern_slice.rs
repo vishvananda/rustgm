@@ -1,8 +1,6 @@
 //! Canonical typed slices in flat storage. Collisions compare the original IDs.
-use std::{
-    collections::{HashMap, hash_map::DefaultHasher},
-    hash::{Hash, Hasher},
-};
+use crate::support::hash::{FxHasher, HashMap};
+use std::hash::{Hash, Hasher};
 
 struct Entry {
     start: u32,
@@ -17,7 +15,7 @@ pub(crate) struct Slices<T> {
 }
 
 fn fingerprint<T: Hash>(values: &[T]) -> u64 {
-    let mut hasher = DefaultHasher::new();
+    let mut hasher = FxHasher::default();
     values.hash(&mut hasher);
     hasher.finish()
 }
@@ -31,7 +29,7 @@ impl<T: Hash> Default for Slices<T> {
                 end: 0,
                 next: None,
             }],
-            index: HashMap::from([(fingerprint::<T>(&[]), 0)]),
+            index: HashMap::from_iter([(fingerprint::<T>(&[]), 0)]),
         }
     }
 }

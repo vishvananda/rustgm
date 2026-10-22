@@ -1,7 +1,7 @@
 //! Canonical public bindings reuse declared owners, never resolver arena IDs.
 use super::{CrateIdentity, ExternalDef, ExternalKind, Reader, Writer};
 use crate::support::crates::{MAX_FUNCTIONS, PublicBinding, PublicModule, PublicNames};
-use std::collections::HashMap;
+use crate::support::hash::HashMap;
 
 pub(super) fn encode(
     out: &mut Writer,

@@ -6,7 +6,8 @@ use super::{
     names::NameId,
     package::Error,
 };
-use std::collections::{HashMap, HashSet, VecDeque};
+use crate::support::hash::{HashMap, HashSet};
+use std::collections::VecDeque;
 type Key = (NameId, Namespace);
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum TextualSource {
@@ -39,8 +40,8 @@ impl Work {
         Self {
             queue: (0..count).collect(),
             queued: vec![true; count],
-            waiting: HashMap::new(),
-            globs: HashMap::new(),
+            waiting: HashMap::default(),
+            globs: HashMap::default(),
             sources: vec![None; count],
             resolved: vec![false; count],
             changes: facts.scopes.iter().map(|s| s.order.clone()).collect(),
@@ -60,8 +61,8 @@ impl Work {
                     })
                 })
                 .collect(),
-            candidates: HashMap::new(),
-            provided: (0..count).map(|_| HashSet::new()).collect(),
+            candidates: HashMap::default(),
+            provided: (0..count).map(|_| HashSet::default()).collect(),
             textual: facts
                 .textual_imports
                 .iter()
@@ -85,7 +86,7 @@ impl Work {
             self.resolved.push(false);
             self.cursors.push(0);
             self.errors.push(None);
-            self.provided.push(HashSet::new());
+            self.provided.push(HashSet::default());
         }
     }
     /// Publish a direct declaration already installed by the shared item indexer.

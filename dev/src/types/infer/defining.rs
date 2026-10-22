@@ -1,7 +1,7 @@
 //! Defining equations retain complete opaque capture identities and private roots.
 use super::{Constructor, Context, Domain, Error, Store, TermId, TypeId, Value};
+use crate::support::hash::HashMap;
 use crate::types::{Kind, opaque::OpaqueId};
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Definitions {

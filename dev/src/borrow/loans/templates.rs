@@ -1,5 +1,6 @@
 //! Generic bodies share ordinary proofs with scoped moves and abstract cleanup.
 use super::Analysis;
+use crate::support::hash::HashMap;
 use crate::{
     body::templates::Templates,
     borrow::{
@@ -15,7 +16,6 @@ use crate::{
         outlives::LiveRegions,
     },
 };
-use std::collections::HashMap;
 
 /// Prove moves, initialization, abstract destruction and loans in every template.
 /// Provenance and promotion must already be checked on these retained bodies.
@@ -41,7 +41,10 @@ pub fn verify<S: std::hash::BuildHasher>(
             "template cleanup contracts have different body coverage",
         ));
     }
-    let mut index = HashMap::with_capacity(contracts.bodies.len());
+    let mut index = HashMap::with_capacity_and_hasher(
+        contracts.bodies.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for contract in &contracts.bodies {
         if index.insert(contract.key, contract).is_some() {
             return Err(error("duplicate template cleanup contract"));
@@ -73,7 +76,7 @@ pub fn verify<S: std::hash::BuildHasher>(
 
 /// Reusable ownership, cleanup and loan work for one demanded checked CFG.
 pub(crate) struct Verifier {
-    custom: std::collections::HashSet<crate::types::ItemId>,
+    custom: crate::support::hash::HashSet<crate::types::ItemId>,
     needed: NeedsDrop,
     drops: Regions,
     components: LiveRegions,
@@ -199,7 +202,10 @@ pub fn check(
             message: "template loan facts have different body coverage".into(),
         });
     }
-    let mut index = HashMap::with_capacity(contracts.bodies.len());
+    let mut index = HashMap::with_capacity_and_hasher(
+        contracts.bodies.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for contract in &contracts.bodies {
         if index.insert(contract.key, contract).is_some() {
             return Err(Error {

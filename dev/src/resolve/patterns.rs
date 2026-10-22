@@ -8,8 +8,8 @@ use super::{
     unit::NodeKey,
 };
 use crate::expand::stream::ContextId;
+use crate::support::hash::{HashMap, HashSet};
 use crate::syntax::ast::{Kind, NodeId, PatternFlavor};
-use std::collections::{HashMap, HashSet};
 #[derive(Clone, Copy)]
 struct Local {
     name: NameId,
@@ -28,7 +28,7 @@ impl Resolver<'_> {
         let mut bindings = Vec::new();
         let mut aliases = Vec::new();
         self.pattern(c, node, &mut bindings, &mut aliases)?;
-        let mut representatives = (!aliases.is_empty()).then(HashMap::new);
+        let mut representatives = (!aliases.is_empty()).then(HashMap::default);
         for local in bindings {
             if !seen.insert(self.pattern_identity(c, local)?) {
                 return Err(self.error(
@@ -175,7 +175,7 @@ impl Resolver<'_> {
                     let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
                     let mut branch = Vec::new();
                     self.pattern(c, child, &mut branch, aliases)?;
-                    let mut names = HashMap::new();
+                    let mut names = HashMap::default();
                     for local in &branch {
                         if names
                             .insert(self.pattern_identity(c, *local)?, *local)

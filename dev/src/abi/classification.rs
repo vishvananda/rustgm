@@ -4,11 +4,12 @@ mod composites;
 #[path = "../../tests/invariants/composite_classes.rs"]
 mod tests;
 use super::layout::{Layouts, Shape};
+use crate::support::hash::HashMap;
 use crate::types::{
     self, Kind, Store, TypeId,
     aggregate::{Definitions, Representation},
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Class {
     Integer,

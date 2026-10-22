@@ -5,8 +5,8 @@ use super::{
     Value,
     values::{ImageFragment, WordTarget},
 };
+use crate::support::hash::HashMap;
 use crate::types::TypeId;
-use std::collections::HashMap;
 
 pub(super) const MAX_IMAGE: usize = 65_536;
 const MAX_RETAINED: usize = 64 * 1024 * 1024;
