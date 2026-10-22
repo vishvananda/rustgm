@@ -1,5 +1,7 @@
 //! Independently declared capabilities of the pinned external `LowIR` backend.
 use std::{path::Path, process::Command};
+#[path = "intrinsic_backend/capabilities.rs"]
+mod capabilities;
 #[path = "harness/elf_code.rs"]
 mod elf_code;
 
@@ -49,21 +51,7 @@ fn scalar_volatile_and_u32_atomic_capabilities() -> Result<(), Box<dyn std::erro
         assert_eq!(run.status.code(), Some(42), "{name}");
         assert!(run.stdout.is_empty() && run.stderr.is_empty(), "{name}");
         if name == "atomic-u32" {
-            let mut text = String::new();
-            for (index, segment) in elf_code::extract(&std::fs::read(&executable)?)?
-                .iter()
-                .enumerate()
-            {
-                let path = executable.with_extension(format!("code-{index}.bin"));
-                std::fs::write(&path, &segment.bytes)?;
-                let disassembly = Command::new("objdump")
-                    .args(["-D", "-b", "binary", "-m", "i386:x86-64"])
-                    .arg(format!("--adjust-vma={}", segment.address))
-                    .arg(path)
-                    .output()?;
-                assert!(disassembly.status.success());
-                text.push_str(&String::from_utf8(disassembly.stdout)?);
-            }
+            let text = capabilities::disassemble(&executable)?;
             for operation in ["xchg", "lock cmpxchg", "lock xadd"] {
                 assert!(text.contains(operation), "missing {operation}");
             }

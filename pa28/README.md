@@ -17,6 +17,12 @@ add-and-fetch. Run the ignored `intrinsic_backend` maintainer test with the
 configured backend and GNU objdump to execute these controls and inspect the
 atomic machine instructions. This establishes backend capabilities only.
 
+The permanent [atomic backend matrix](tests/backend/atomics/README.md) extends
+that evidence to 8/16/64-bit signed/unsigned storage with a U32 control, pointer
+and valid boolean words, and thread/signal fences. It preserves separate
+independent Rust outcomes and validator-only invalid-order probes. It supplies
+no additional Rust frontend bindings and makes no concurrency-correctness claim.
+
 The initial frontend checkpoint implements canonical `core::ptr` and `std::ptr`
 `read_volatile` and `write_volatile` for primitive scalars and thin raw-pointer,
 reference and function-pointer values. Imports and reified unsafe function

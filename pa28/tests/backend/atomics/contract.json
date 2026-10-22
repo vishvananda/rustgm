@@ -1,0 +1,944 @@
+{
+  "schema": 1,
+  "compiler_head": "13df7b2a40191662b07a348aef64374333f38611",
+  "rustc_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "backend_commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+  "backend_lock": {
+    "schema": 1,
+    "repository": "https://github.com/vishvananda/cppgm-extended",
+    "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+    "target": "x86_64-linux",
+    "sha256": {
+      "lowir": "2acc7cefeecc3752c4a15da4ddb1e65c9cb2b88e0032a23d1eca7ff36a005882",
+      "lowir2native": "57f2c1156168eac7e653a4a193f27f124b635413e07de29940daf34a0b831fec"
+    },
+    "optional": {
+      "object": {
+        "commit": "3438f5aea24d8fcc9a0113316f7e27c890cd5ac6",
+        "target": "x86_64-linux",
+        "object_format": "elf64-x86-64",
+        "capabilities": [
+          "lowir-to-object"
+        ],
+        "sha256": {
+          "cppgm++": "ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc"
+        }
+      }
+    }
+  },
+  "sources": [
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "dev/src/lowir_model.h",
+      "sha256": "3f016731ef4f3eb3e5bdea0135d2fd1120a1e28d2713f33b33fa3e11a31b7181"
+    },
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "dev/src/lowir/instruction.h",
+      "sha256": "3e3ff107cd8de20131bf003912dea499fc61847b541b9b39d54073119851a79d"
+    },
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "dev/src/lowir/text_parser_body.cpp",
+      "sha256": "280579230fcb26264a3fdd3f37b36d4c04cd036537f040073f23ad963cce59ae"
+    },
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "dev/src/lowir/validator.cpp",
+      "sha256": "1abeccc20183b373fce3d92f728b64578853fc3c47e1cf2e00f704e8432cb4e3"
+    },
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "dev/src/native/select/emit_memory.cpp",
+      "sha256": "6697e184470b57f052c1b8d502f5be327aee33271290831b76d3da30b9cdeed4"
+    },
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "dev/src/lower/intrinsic_lowering.cpp",
+      "sha256": "3b4034e0ddd730bdb44b31b40a8ca24eb68284fa728f1f5f3f506cabc5e2f598"
+    },
+    {
+      "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+      "path": "pa8/lowir.md",
+      "sha256": "075eca252917d5fd35d64e63775107096bafe1b9e95390df3437f9c7b44fe7ff"
+    }
+  ],
+  "cases": [
+    {
+      "name": "scalar-i8",
+      "lowir": "pa28/tests/backend/atomics/scalar-i8.lowir",
+      "lowir_sha256": "517633dd8f13c02466adfb31185553b8cf19d12e9182fe4a618576bc20b050ab",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "i8",
+      "rust_type": "i8",
+      "bits": 8,
+      "signed": true,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 131,
+        "cas_desired_bits": 254,
+        "first_add_updated": 3,
+        "second_add_updated": 123,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-i8.rs",
+      "rust_sha256": "6414c48bf07ef544c406f1daca4a8a4fe612d6a98a0bd66fa1988dccfc5eed5c",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 8,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-u8",
+      "lowir": "pa28/tests/backend/atomics/scalar-u8.lowir",
+      "lowir_sha256": "22e8d17510988aeaebabb0ba5b5dbfdbdd0bce50325dffe77a939b0bce0278b2",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "u8",
+      "rust_type": "u8",
+      "bits": 8,
+      "signed": false,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 131,
+        "cas_desired_bits": 254,
+        "first_add_updated": 3,
+        "second_add_updated": 123,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-u8.rs",
+      "rust_sha256": "2696b8057ec877c14ec39a7a8387cf281bd6b03c95e6b7d0d4f21b73eb2c50e8",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 8,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-i16",
+      "lowir": "pa28/tests/backend/atomics/scalar-i16.lowir",
+      "lowir_sha256": "b66be0dc55e5728823d99e355d843d5fac370fc6dcb7d21f6ed3706dc0de96d6",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "i16",
+      "rust_type": "i16",
+      "bits": 16,
+      "signed": true,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 32771,
+        "cas_desired_bits": 65534,
+        "first_add_updated": 3,
+        "second_add_updated": 32763,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-i16.rs",
+      "rust_sha256": "0f1475c6f4a65bad6bbba1e15c7545c38bf225182bea8d8d6dd3cd3f3d21f835",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 16,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-u16",
+      "lowir": "pa28/tests/backend/atomics/scalar-u16.lowir",
+      "lowir_sha256": "4a6ba16424d1d134d56edc5983b94043e5990e255b8303fb9dc2696dbb7a61b7",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "u16",
+      "rust_type": "u16",
+      "bits": 16,
+      "signed": false,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 32771,
+        "cas_desired_bits": 65534,
+        "first_add_updated": 3,
+        "second_add_updated": 32763,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-u16.rs",
+      "rust_sha256": "20c105bcef777153c099fe4c3e28e32e6fd01d073c2c1fa66577dc8c30ccce7c",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 16,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-i32",
+      "lowir": "pa28/tests/backend/atomics/scalar-i32.lowir",
+      "lowir_sha256": "aea767ce7cfdcf1ec568e31b07cfa7bf56fb30d6b8ac99054dccd8d5aa86bcbd",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "i32",
+      "rust_type": "i32",
+      "bits": 32,
+      "signed": true,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 2147483651,
+        "cas_desired_bits": 4294967294,
+        "first_add_updated": 3,
+        "second_add_updated": 2147483643,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-i32.rs",
+      "rust_sha256": "57e0dac47c169a86978bf5e66a77cff544a2bc19c2b95649ed32c34838232dd5",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 32,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-u32",
+      "lowir": "pa28/tests/backend/atomics/scalar-u32.lowir",
+      "lowir_sha256": "14238c555d2c3553296a95f6dec590bca4e0a97d7170198379560b5d0ebfd002",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "u32",
+      "rust_type": "u32",
+      "bits": 32,
+      "signed": false,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 2147483651,
+        "cas_desired_bits": 4294967294,
+        "first_add_updated": 3,
+        "second_add_updated": 2147483643,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-u32.rs",
+      "rust_sha256": "9dac1a8ba4c11935606dcbdc38ae80c65b626ece42c16379f5237eebb7e9cf86",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 32,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-i64",
+      "lowir": "pa28/tests/backend/atomics/scalar-i64.lowir",
+      "lowir_sha256": "25b92688be78509a84643e1a0c94558a57e414d453e22ecb985ed4578a55887f",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "i64",
+      "rust_type": "i64",
+      "bits": 64,
+      "signed": true,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 9223372036854775811,
+        "cas_desired_bits": 18446744073709551614,
+        "first_add_updated": 3,
+        "second_add_updated": 9223372036854775803,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-i64.rs",
+      "rust_sha256": "f723d774a6a8c23d830e6c07fb9589d6088dcfd363d9dbc64128d0cbc8e90c63",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 64,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "scalar-u64",
+      "lowir": "pa28/tests/backend/atomics/scalar-u64.lowir",
+      "lowir_sha256": "25b92688be78509a84643e1a0c94558a57e414d453e22ecb985ed4578a55887f",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "scalar",
+      "lowir_type": "i64",
+      "rust_type": "u64",
+      "bits": 64,
+      "signed": false,
+      "rmw_orders": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "load_orders": [
+        0,
+        2,
+        5
+      ],
+      "store_orders": [
+        0,
+        3,
+        5
+      ],
+      "expected_operations": {
+        "atomic_compare_exchange": 10,
+        "atomic_add_fetch": 10,
+        "atomic_exchange": 5,
+        "atomic_store": 5,
+        "atomic_load": 15
+      },
+      "observations": {
+        "initial_bits": 9223372036854775811,
+        "cas_desired_bits": 18446744073709551614,
+        "first_add_updated": 3,
+        "second_add_updated": 9223372036854775803,
+        "success_expected_unchanged": true,
+        "failure_expected_updated": true
+      },
+      "rust": "pa28/tests/backend/atomics/scalar-u64.rs",
+      "rust_sha256": "86ddec140d7c62273a718429d38a823cb93bc4cd94f750f0dd0921dfe9e03580",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 64,
+        "lock_xadd": 10,
+        "lock_cmpxchg": 10,
+        "memory_xchg": 6,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "historical-u32",
+      "lowir": "pa28/tests/backend/atomic-u32.lowir",
+      "lowir_sha256": "091477683fcf5a3c6d3c3cf1a18ea76d577398ab95dbfb5402027e4cd4e372c8",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "control",
+      "original": "pa28/tests/backend/atomic-u32.lowir",
+      "rust": "pa28/tests/backend/atomics/historical-u32.rs",
+      "rust_sha256": "b0b2ad9d0a6363aed75594a291961343d66ef7b7af70c7d99af66d97078ac620",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 32,
+        "lock_xadd": 1,
+        "lock_cmpxchg": 2,
+        "memory_xchg": 2,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "pointer-word",
+      "lowir": "pa28/tests/backend/atomics/pointer-word-literals.lowir",
+      "lowir_sha256": "f1af105e725e192b374c2ccc8ac32215ad5d71487986e92da7167260551429b2",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "pointer",
+      "lowir_type": "ptr",
+      "bits": 64,
+      "delta": "i64 8 byte delta; matched by AtomicPtr<u64>::fetch_byte_add(8) and independently qualified fetch_ptr_add(1)",
+      "expected_operations": {
+        "atomic_store": 2,
+        "atomic_load": 3,
+        "atomic_exchange": 1,
+        "atomic_compare_exchange": 2,
+        "atomic_add_fetch": 1
+      },
+      "rust": "pa28/tests/backend/atomics/pointer-byte-word.rs",
+      "rust_sha256": "3bd2fc7cd838bd8df5f2589dad59e58ad51523e8dbd3dd695b6a68b827f1b941",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 64,
+        "lock_xadd": 1,
+        "lock_cmpxchg": 2,
+        "memory_xchg": 2,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "bool-word",
+      "lowir": "pa28/tests/backend/atomics/bool-word.lowir",
+      "lowir_sha256": "a4f055a35bfc4e7650d6989935e60be7f08da79ed2de88e70c53ed3925de02dc",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "bool-storage",
+      "lowir_type": "u8",
+      "expected_operations": {
+        "atomic_store": 1,
+        "atomic_load": 2,
+        "atomic_exchange": 1,
+        "atomic_compare_exchange": 2
+      },
+      "rust": "pa28/tests/backend/atomics/bool-word.rs",
+      "rust_sha256": "8375e330f0b9632ad3858a842f930af8f7d528ef4b421cd977465387e369eec2",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 8,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 2,
+        "memory_xchg": 2,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "thread-acquire",
+      "lowir": "pa28/tests/backend/atomics/thread-acquire.lowir",
+      "lowir_sha256": "a1778b566d253c3d317b8e6956a44c4ec637e6f00add45497b1e700d33a519c0",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "thread",
+      "order": 2,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_thread_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/thread-acquire.rs",
+      "rust_sha256": "859b376c7f5edb4b89b4f4848f2d4ec0226945478a0311bdeb0ba5d7677e1dd8",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "thread-release",
+      "lowir": "pa28/tests/backend/atomics/thread-release.lowir",
+      "lowir_sha256": "e59cab45a2a2371ce5e34287767f62a572576d047faa3d682187a2d4f99b2f24",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "thread",
+      "order": 3,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_thread_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/thread-release.rs",
+      "rust_sha256": "c2a6c10a56026cd4f09d0dbfd52ea5cde8165623be91b37a43567db900417993",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "thread-acqrel",
+      "lowir": "pa28/tests/backend/atomics/thread-acqrel.lowir",
+      "lowir_sha256": "dc577864218b917ed067f6a0997d09066aa967f970ad5d9d4598d92b5898ef1b",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "thread",
+      "order": 4,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_thread_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/thread-acqrel.rs",
+      "rust_sha256": "5ae04ae21a542886bd0b14a47113997414b382c55e254b7d5d83520776c5d729",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "thread-seqcst",
+      "lowir": "pa28/tests/backend/atomics/thread-seqcst.lowir",
+      "lowir_sha256": "16c7b8afbaee212c7654e9e48ee8a970284613faa76ed40ab042c7257a61aa55",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "thread",
+      "order": 5,
+      "expected_mfence": 1,
+      "expected_operations": {
+        "atomic_thread_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/thread-seqcst.rs",
+      "rust_sha256": "3996bd02d29e489d1e53406988cba4a9fd3fc942e5e17d34a2fc22407cd4a301",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 1
+      }
+    },
+    {
+      "name": "signal-acquire",
+      "lowir": "pa28/tests/backend/atomics/signal-acquire.lowir",
+      "lowir_sha256": "941ed04b2be43e337d17627ac1a51ec8cd6827ff13ef47ab43532b14fcda7423",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "signal",
+      "order": 2,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_signal_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/signal-acquire.rs",
+      "rust_sha256": "f6b4087767ebb62951b8eed589bfaa4f934090a2e66b655a4491208cc11ed16e",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "signal-release",
+      "lowir": "pa28/tests/backend/atomics/signal-release.lowir",
+      "lowir_sha256": "c99533f8e34138f24d8b344dbd935c906113df0bc24579b9d02593527deee93a",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "signal",
+      "order": 3,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_signal_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/signal-release.rs",
+      "rust_sha256": "0050d029d7e2552b2ebaf8e7976c93da55a84ef00497adde6459bd4352bb4189",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "signal-acqrel",
+      "lowir": "pa28/tests/backend/atomics/signal-acqrel.lowir",
+      "lowir_sha256": "bb43e169e6f36b39c8f9588b8d5378026bf961270559bf59dbfb4e2b175e5ea9",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "signal",
+      "order": 4,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_signal_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/signal-acqrel.rs",
+      "rust_sha256": "c3cc570f3adaa6d8fc20d69000eab0313f119c5167c925a3f5946a3abfd6e5b7",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "signal-seqcst",
+      "lowir": "pa28/tests/backend/atomics/signal-seqcst.lowir",
+      "lowir_sha256": "46f45d8ddb2982b5f350b615eb3d537e880ca352eab37fbdaa12ccb595590aa8",
+      "validator_expected": 0,
+      "native_valid": true,
+      "native_expected": 42,
+      "category": "fence",
+      "fence": "signal",
+      "order": 5,
+      "expected_mfence": 0,
+      "expected_operations": {
+        "atomic_signal_fence": 1,
+        "atomic_store": 1,
+        "atomic_load": 1
+      },
+      "rust": "pa28/tests/backend/atomics/signal-seqcst.rs",
+      "rust_sha256": "2d33054a3ed77b55751362abea488863e118f1f3b4dccf34d7a8d49162bf22f8",
+      "rustc_expected": 0,
+      "rustc_native_expected": 42,
+      "machine": {
+        "bits": 0,
+        "lock_xadd": 0,
+        "lock_cmpxchg": 0,
+        "memory_xchg": 0,
+        "mfence": 0
+      }
+    },
+    {
+      "name": "invalid-load-release",
+      "lowir": "pa28/tests/backend/atomics/invalid-load-release.lowir",
+      "lowir_sha256": "24c98d2baf949df27029ff2bd4221f9f4970b5b9611a80ea323a73792c4ad4e5",
+      "validator_expected": 0,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "Rust-invalid-order",
+      "rustc_expected": 1,
+      "rustc_native_expected": null,
+      "rust": "pa28/tests/backend/atomics/invalid-load-release.rs",
+      "rust_sha256": "99b723e3bf4f9980c5279fdf9180cd88c9894f5248d3f6a9d778c0590790a1ae",
+      "rustc_diagnostic": "invalid_atomic_ordering"
+    },
+    {
+      "name": "invalid-store-acquire",
+      "lowir": "pa28/tests/backend/atomics/invalid-store-acquire.lowir",
+      "lowir_sha256": "36785eca7b77a11927831fd0061df8185789e291b20652b9190cc5934a964c76",
+      "validator_expected": 0,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "Rust-invalid-order",
+      "rustc_expected": 1,
+      "rustc_native_expected": null,
+      "rust": "pa28/tests/backend/atomics/invalid-store-acquire.rs",
+      "rust_sha256": "d56ec5537de952c31de8b830fa8e1826e29dea7d59f6d466e514ca99745a59d7",
+      "rustc_diagnostic": "invalid_atomic_ordering"
+    },
+    {
+      "name": "invalid-cas-failure-release",
+      "lowir": "pa28/tests/backend/atomics/invalid-cas-failure-release.lowir",
+      "lowir_sha256": "0cd04ca1ab0797c84e6dfdfdb04fd21d5458dac36aa90fa5953a27786b697d4a",
+      "validator_expected": 0,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "Rust-invalid-order",
+      "rustc_expected": 1,
+      "rustc_native_expected": null,
+      "rust": "pa28/tests/backend/atomics/invalid-cas-failure-release.rs",
+      "rust_sha256": "0f3321d426a7742016bb0b1f0fc32076816c8b3e481eeca7a00aee3937919136",
+      "rustc_diagnostic": "invalid_atomic_ordering"
+    },
+    {
+      "name": "invalid-thread-relaxed",
+      "lowir": "pa28/tests/backend/atomics/invalid-thread-relaxed.lowir",
+      "lowir_sha256": "e0860ca6f7cca0ffa2c6e82682a17e78ff5b3df79824515305b3235c6f6adae6",
+      "validator_expected": 0,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "Rust-invalid-order",
+      "rustc_expected": 1,
+      "rustc_native_expected": null,
+      "rust": "pa28/tests/backend/atomics/invalid-thread-relaxed.rs",
+      "rust_sha256": "d495bf37748e72feffd5aca86e68754d69fdbcea6180cd52b7df5159afbad4e5",
+      "rustc_diagnostic": "invalid_atomic_ordering"
+    },
+    {
+      "name": "invalid-signal-relaxed",
+      "lowir": "pa28/tests/backend/atomics/invalid-signal-relaxed.lowir",
+      "lowir_sha256": "9050cbffded915b2640bedd5e64d63db265629641096cad9a6dfbfa0cd1cf16a",
+      "validator_expected": 0,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "Rust-invalid-order",
+      "rustc_expected": 1,
+      "rustc_native_expected": null,
+      "rust": "pa28/tests/backend/atomics/invalid-signal-relaxed.rs",
+      "rust_sha256": "cadb59ea72f039de3f011e35b9e36e4d8691d8cefcb23a2a162a8257a2571a9f",
+      "rustc_diagnostic": "invalid_atomic_ordering"
+    },
+    {
+      "name": "range-fence-six",
+      "lowir": "pa28/tests/backend/atomics/range-fence-six.lowir",
+      "lowir_sha256": "da9d5333899cca27e82970e61d24ee0d93419c79430a9b10bd147322f97f5831",
+      "validator_expected": 1,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "backend-invalid-range",
+      "validator_diagnostic": "invalid memory order"
+    },
+    {
+      "name": "range-fence-negative",
+      "lowir": "pa28/tests/backend/atomics/range-fence-negative.lowir",
+      "lowir_sha256": "7763c3f5a3d7794fd18308220e481110e4c969f3a78987b54ecdd38e39ca4d0b",
+      "validator_expected": 1,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "backend-invalid-range",
+      "validator_diagnostic": "invalid memory order"
+    },
+    {
+      "name": "range-cas-failure-six",
+      "lowir": "pa28/tests/backend/atomics/range-cas-failure-six.lowir",
+      "lowir_sha256": "02674351256dfa08b643b44a83e3cf348aea660a646b5f37b3180f94421cc2fd",
+      "validator_expected": 1,
+      "native_valid": false,
+      "native_expected": null,
+      "category": "backend-invalid-range",
+      "validator_diagnostic": "invalid memory order"
+    }
+  ],
+  "limits": "One deterministic guarded batch, no compiler rebuild, no backend/source registry edits, no concurrency or performance claim. Invalid contracts validate only and never execute.",
+  "declared_before_execution": true,
+  "additional_independent": [
+    {
+      "name": "pointer-elements",
+      "rust": "pa28/tests/backend/atomics/pointer-element-word.rs",
+      "rust_sha256": "d14533086bd39d77a402bdd5fffd95cf1a975550cc75d9b745b8c5527b1cd0a9",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_native_expected": 42,
+      "equivalent_backend_case": "pointer-word"
+    }
+  ],
+  "kind": "external-backend-capabilities",
+  "abi": {
+    "source": "pa28/tests/backend/atomics/abi-observations.rs",
+    "sha256": "b19849babc762b55ac98af92815376e265a6d44d206022e70453cfb53545cdd5",
+    "rustc_expected": 0,
+    "native_expected": 0,
+    "stdout_expected": "i8 1 1 1 1\nu8 1 1 1 1\ni16 2 2 2 2\nu16 2 2 2 2\ni32 4 4 4 4\nu32 4 4 4 4\ni64 8 8 8 8\nu64 8 8 8 8\nisize 8 8 8 8\nusize 8 8 8 8\nbool 1 1 1 1\nptr 8 8 8 8\n",
+    "stderr_expected": "",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort"
+  },
+  "attribution": "Original RustGM maintainer inputs; frozen CPPGM vocabulary, see README.md and repository NOTICE. No upstream source copied.",
+  "coverage": "Backend encoding, deterministic uncontended native arithmetic and independent pinned-Rust source outcomes. No RustGM frontend binding or concurrency claim."
+}

@@ -1,0 +1,35 @@
+function @main() -> i64 [role=entry] {
+  slot $value : u8
+  slot $expected : u8
+  block ^entry:
+    %p = addr $value
+    %e = addr $expected
+    atomic_store u8 1, %p, 5
+    %first = atomic_load u8 %p, 2
+    %c0 = cmp eq u8 %first, 1
+    %old = atomic_exchange u8 %p, 0, 4
+    %c1 = cmp eq u8 %old, 1
+    store u8 0, $expected
+    %s = atomic_compare_exchange u8 %p, %e, 1, 5, 5
+    %c2 = cmp eq i64 %s, 1
+    %es = load u8 $expected
+    %c3 = cmp eq u8 %es, 0
+    store u8 0, $expected
+    %f = atomic_compare_exchange u8 %p, %e, 0, 0, 0
+    %c4 = cmp eq i64 %f, 0
+    %ef = load u8 $expected
+    %c5 = cmp eq u8 %ef, 1
+    %final = atomic_load u8 %p, 0
+    %c6 = cmp eq u8 %final, 1
+    %a1 = binary and i64 %c0, %c1
+    %a2 = binary and i64 %a1, %c2
+    %a3 = binary and i64 %a2, %c3
+    %a4 = binary and i64 %a3, %c4
+    %a5 = binary and i64 %a4, %c5
+    %a6 = binary and i64 %a5, %c6
+    branch %a6, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}

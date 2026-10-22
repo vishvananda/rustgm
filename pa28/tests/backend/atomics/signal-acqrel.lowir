@@ -1,0 +1,14 @@
+function @main() -> i64 [role=entry] {
+  slot $value : i64
+  block ^entry:
+    %p = addr $value
+    atomic_store i64 19, %p, 0
+    atomic_signal_fence 4
+    %read = atomic_load i64 %p, 0
+    %ok = cmp eq i64 %read, 19
+    branch %ok, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}

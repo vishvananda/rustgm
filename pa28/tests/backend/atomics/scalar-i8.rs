@@ -1,0 +1,3 @@
+use std::sync::atomic::{AtomicI8,Ordering::*};
+fn run()->bool{let a=AtomicI8::new(0);let orders=[Relaxed,Acquire,Release,AcqRel,SeqCst];for (n,order) in orders.into_iter().enumerate(){let h:i8=-125;let m:i8=-2;let d:i8=-8;a.store(h,[Relaxed,Release,SeqCst][n%3]);if a.load([Relaxed,Acquire,SeqCst][n%3])!=h{return false}if a.compare_exchange(h,m,order,Relaxed)!=Ok(h){return false}if a.compare_exchange(0,17,order,Relaxed)!=Err(m){return false}if a.load(Relaxed)!=m{return false}let old=a.fetch_add(5,order);if old!=m||old.wrapping_add(5)!=3{return false}if a.swap(h,order)!=3{return false}let old=a.fetch_add(d,order);if old!=h||old.wrapping_add(d)!=123||a.load(SeqCst)!=123{return false}}true}
+fn main(){std::process::exit(if run(){42}else{1})}

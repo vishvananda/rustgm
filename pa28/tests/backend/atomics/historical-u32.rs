@@ -1,0 +1,1 @@
+use std::sync::atomic::{AtomicU32,Ordering::*};fn main(){let a=AtomicU32::new(0);a.store(7,SeqCst);let ok=a.load(Acquire)==7&&a.compare_exchange(7,9,AcqRel,Acquire)==Ok(7)&&a.compare_exchange(0,13,Relaxed,Relaxed)==Err(9)&&a.swap(10,SeqCst)==9&&a.fetch_add(2,SeqCst).wrapping_add(2)==12;std::process::exit(if ok{42}else{1})}

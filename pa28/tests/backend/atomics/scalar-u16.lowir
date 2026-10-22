@@ -1,0 +1,188 @@
+function @main() -> i64 [role=entry] {
+  slot $value : u16
+  slot $expected : u16
+  block ^r0:
+    %r0p = addr $value
+    %r0e = addr $expected
+    atomic_store u16 32771, %r0p, 0
+    %r0first = atomic_load u16 %r0p, 0
+    %r0c0 = cmp eq u16 %r0first, 32771
+    store u16 32771, $expected
+    %r0s = atomic_compare_exchange u16 %r0p, %r0e, 65534, 0, 0
+    %r0c1 = cmp eq i64 %r0s, 1
+    %r0es = load u16 $expected
+    %r0c2 = cmp eq u16 %r0es, 32771
+    store u16 0, $expected
+    %r0f = atomic_compare_exchange u16 %r0p, %r0e, 17, 0, 0
+    %r0c3 = cmp eq i64 %r0f, 0
+    %r0ef = load u16 $expected
+    %r0c4 = cmp eq u16 %r0ef, 65534
+    %r0afterfail = atomic_load u16 %r0p, 0
+    %r0c5 = cmp eq u16 %r0afterfail, 65534
+    %r0new = atomic_add_fetch u16 %r0p, 5, 0
+    %r0c6 = cmp eq u16 %r0new, 3
+    %r0old = atomic_exchange u16 %r0p, 32771, 0
+    %r0c7 = cmp eq u16 %r0old, 3
+    %r0cross = atomic_add_fetch u16 %r0p, 65528, 0
+    %r0c8 = cmp eq u16 %r0cross, 32763
+    %r0final = atomic_load u16 %r0p, 5
+    %r0c9 = cmp eq u16 %r0final, 32763
+    %r0a1 = binary and i64 %r0c0, %r0c1
+    %r0a2 = binary and i64 %r0a1, %r0c2
+    %r0a3 = binary and i64 %r0a2, %r0c3
+    %r0a4 = binary and i64 %r0a3, %r0c4
+    %r0a5 = binary and i64 %r0a4, %r0c5
+    %r0a6 = binary and i64 %r0a5, %r0c6
+    %r0a7 = binary and i64 %r0a6, %r0c7
+    %r0a8 = binary and i64 %r0a7, %r0c8
+    %r0a9 = binary and i64 %r0a8, %r0c9
+    branch %r0a9, ^r1, ^fail
+  block ^r1:
+    %r1p = addr $value
+    %r1e = addr $expected
+    atomic_store u16 32771, %r1p, 3
+    %r1first = atomic_load u16 %r1p, 2
+    %r1c0 = cmp eq u16 %r1first, 32771
+    store u16 32771, $expected
+    %r1s = atomic_compare_exchange u16 %r1p, %r1e, 65534, 2, 0
+    %r1c1 = cmp eq i64 %r1s, 1
+    %r1es = load u16 $expected
+    %r1c2 = cmp eq u16 %r1es, 32771
+    store u16 0, $expected
+    %r1f = atomic_compare_exchange u16 %r1p, %r1e, 17, 2, 0
+    %r1c3 = cmp eq i64 %r1f, 0
+    %r1ef = load u16 $expected
+    %r1c4 = cmp eq u16 %r1ef, 65534
+    %r1afterfail = atomic_load u16 %r1p, 0
+    %r1c5 = cmp eq u16 %r1afterfail, 65534
+    %r1new = atomic_add_fetch u16 %r1p, 5, 2
+    %r1c6 = cmp eq u16 %r1new, 3
+    %r1old = atomic_exchange u16 %r1p, 32771, 2
+    %r1c7 = cmp eq u16 %r1old, 3
+    %r1cross = atomic_add_fetch u16 %r1p, 65528, 2
+    %r1c8 = cmp eq u16 %r1cross, 32763
+    %r1final = atomic_load u16 %r1p, 5
+    %r1c9 = cmp eq u16 %r1final, 32763
+    %r1a1 = binary and i64 %r1c0, %r1c1
+    %r1a2 = binary and i64 %r1a1, %r1c2
+    %r1a3 = binary and i64 %r1a2, %r1c3
+    %r1a4 = binary and i64 %r1a3, %r1c4
+    %r1a5 = binary and i64 %r1a4, %r1c5
+    %r1a6 = binary and i64 %r1a5, %r1c6
+    %r1a7 = binary and i64 %r1a6, %r1c7
+    %r1a8 = binary and i64 %r1a7, %r1c8
+    %r1a9 = binary and i64 %r1a8, %r1c9
+    branch %r1a9, ^r2, ^fail
+  block ^r2:
+    %r2p = addr $value
+    %r2e = addr $expected
+    atomic_store u16 32771, %r2p, 5
+    %r2first = atomic_load u16 %r2p, 5
+    %r2c0 = cmp eq u16 %r2first, 32771
+    store u16 32771, $expected
+    %r2s = atomic_compare_exchange u16 %r2p, %r2e, 65534, 3, 0
+    %r2c1 = cmp eq i64 %r2s, 1
+    %r2es = load u16 $expected
+    %r2c2 = cmp eq u16 %r2es, 32771
+    store u16 0, $expected
+    %r2f = atomic_compare_exchange u16 %r2p, %r2e, 17, 3, 0
+    %r2c3 = cmp eq i64 %r2f, 0
+    %r2ef = load u16 $expected
+    %r2c4 = cmp eq u16 %r2ef, 65534
+    %r2afterfail = atomic_load u16 %r2p, 0
+    %r2c5 = cmp eq u16 %r2afterfail, 65534
+    %r2new = atomic_add_fetch u16 %r2p, 5, 3
+    %r2c6 = cmp eq u16 %r2new, 3
+    %r2old = atomic_exchange u16 %r2p, 32771, 3
+    %r2c7 = cmp eq u16 %r2old, 3
+    %r2cross = atomic_add_fetch u16 %r2p, 65528, 3
+    %r2c8 = cmp eq u16 %r2cross, 32763
+    %r2final = atomic_load u16 %r2p, 5
+    %r2c9 = cmp eq u16 %r2final, 32763
+    %r2a1 = binary and i64 %r2c0, %r2c1
+    %r2a2 = binary and i64 %r2a1, %r2c2
+    %r2a3 = binary and i64 %r2a2, %r2c3
+    %r2a4 = binary and i64 %r2a3, %r2c4
+    %r2a5 = binary and i64 %r2a4, %r2c5
+    %r2a6 = binary and i64 %r2a5, %r2c6
+    %r2a7 = binary and i64 %r2a6, %r2c7
+    %r2a8 = binary and i64 %r2a7, %r2c8
+    %r2a9 = binary and i64 %r2a8, %r2c9
+    branch %r2a9, ^r3, ^fail
+  block ^r3:
+    %r3p = addr $value
+    %r3e = addr $expected
+    atomic_store u16 32771, %r3p, 0
+    %r3first = atomic_load u16 %r3p, 0
+    %r3c0 = cmp eq u16 %r3first, 32771
+    store u16 32771, $expected
+    %r3s = atomic_compare_exchange u16 %r3p, %r3e, 65534, 4, 0
+    %r3c1 = cmp eq i64 %r3s, 1
+    %r3es = load u16 $expected
+    %r3c2 = cmp eq u16 %r3es, 32771
+    store u16 0, $expected
+    %r3f = atomic_compare_exchange u16 %r3p, %r3e, 17, 4, 0
+    %r3c3 = cmp eq i64 %r3f, 0
+    %r3ef = load u16 $expected
+    %r3c4 = cmp eq u16 %r3ef, 65534
+    %r3afterfail = atomic_load u16 %r3p, 0
+    %r3c5 = cmp eq u16 %r3afterfail, 65534
+    %r3new = atomic_add_fetch u16 %r3p, 5, 4
+    %r3c6 = cmp eq u16 %r3new, 3
+    %r3old = atomic_exchange u16 %r3p, 32771, 4
+    %r3c7 = cmp eq u16 %r3old, 3
+    %r3cross = atomic_add_fetch u16 %r3p, 65528, 4
+    %r3c8 = cmp eq u16 %r3cross, 32763
+    %r3final = atomic_load u16 %r3p, 5
+    %r3c9 = cmp eq u16 %r3final, 32763
+    %r3a1 = binary and i64 %r3c0, %r3c1
+    %r3a2 = binary and i64 %r3a1, %r3c2
+    %r3a3 = binary and i64 %r3a2, %r3c3
+    %r3a4 = binary and i64 %r3a3, %r3c4
+    %r3a5 = binary and i64 %r3a4, %r3c5
+    %r3a6 = binary and i64 %r3a5, %r3c6
+    %r3a7 = binary and i64 %r3a6, %r3c7
+    %r3a8 = binary and i64 %r3a7, %r3c8
+    %r3a9 = binary and i64 %r3a8, %r3c9
+    branch %r3a9, ^r4, ^fail
+  block ^r4:
+    %r4p = addr $value
+    %r4e = addr $expected
+    atomic_store u16 32771, %r4p, 3
+    %r4first = atomic_load u16 %r4p, 2
+    %r4c0 = cmp eq u16 %r4first, 32771
+    store u16 32771, $expected
+    %r4s = atomic_compare_exchange u16 %r4p, %r4e, 65534, 5, 0
+    %r4c1 = cmp eq i64 %r4s, 1
+    %r4es = load u16 $expected
+    %r4c2 = cmp eq u16 %r4es, 32771
+    store u16 0, $expected
+    %r4f = atomic_compare_exchange u16 %r4p, %r4e, 17, 5, 0
+    %r4c3 = cmp eq i64 %r4f, 0
+    %r4ef = load u16 $expected
+    %r4c4 = cmp eq u16 %r4ef, 65534
+    %r4afterfail = atomic_load u16 %r4p, 0
+    %r4c5 = cmp eq u16 %r4afterfail, 65534
+    %r4new = atomic_add_fetch u16 %r4p, 5, 5
+    %r4c6 = cmp eq u16 %r4new, 3
+    %r4old = atomic_exchange u16 %r4p, 32771, 5
+    %r4c7 = cmp eq u16 %r4old, 3
+    %r4cross = atomic_add_fetch u16 %r4p, 65528, 5
+    %r4c8 = cmp eq u16 %r4cross, 32763
+    %r4final = atomic_load u16 %r4p, 5
+    %r4c9 = cmp eq u16 %r4final, 32763
+    %r4a1 = binary and i64 %r4c0, %r4c1
+    %r4a2 = binary and i64 %r4a1, %r4c2
+    %r4a3 = binary and i64 %r4a2, %r4c3
+    %r4a4 = binary and i64 %r4a3, %r4c4
+    %r4a5 = binary and i64 %r4a4, %r4c5
+    %r4a6 = binary and i64 %r4a5, %r4c6
+    %r4a7 = binary and i64 %r4a6, %r4c7
+    %r4a8 = binary and i64 %r4a7, %r4c8
+    %r4a9 = binary and i64 %r4a8, %r4c9
+    branch %r4a9, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}
