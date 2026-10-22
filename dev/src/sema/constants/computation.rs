@@ -1,6 +1,7 @@
 //! A source value keeps its actual caller proof owner without a materialized permit.
 mod catalog;
 mod namespaces;
+mod observed_arguments;
 mod prepared_callers;
 mod queries;
 pub(crate) use namespaces::{

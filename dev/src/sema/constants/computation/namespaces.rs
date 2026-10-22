@@ -9,12 +9,15 @@ struct Entry {
 }
 pub(super) struct Namespaces {
     entries: HashMap<CallerKey, Entry>,
+    pub(super) observations:
+        HashMap<crate::sema::inline_constants::Context, super::observed_arguments::Observed>,
     pub(super) bytes: usize,
 }
 impl Namespaces {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             entries: HashMap::new(),
+            observations: HashMap::new(),
             bytes: size_of::<Self>(),
         }
     }
@@ -89,6 +92,7 @@ fn take(
         .checked_add(1)
         .and_then(|n| u32::try_from(n).ok())
         .ok_or("source namespace identity space exhausted")?;
+    super::observed_arguments::prepare(facts, key.enclosing, scratch)?;
     // `owned` comes from the exact original Contract, whose local proof IDs
     // may collide numerically with another body's diagnostic arena. Rename
     // those locals before inserting external actuals; never interpret the
@@ -110,8 +114,7 @@ fn take(
         .saturating_sub(metadata)
         .saturating_sub(scratch);
     let mut transport = OwnedTransport::new_budgeted(owned, &[], key.universals, first, bytes)?;
-    let actuals = actual_regions(facts, key.enclosing)?;
-    transport.check_actuals(&actuals)?;
+    transport.check_actuals(super::observed_arguments::regions(facts, key.enclosing)?)?;
     let (bytes, visits) = transport.retained_bytes();
     facts.body_work.canonical_steps = facts
         .body_work
@@ -263,41 +266,6 @@ pub(crate) fn published(facts: &Declarations, source: NodeKey) -> bool {
         .source_computations
         .as_deref()
         .is_some_and(|c| c.0.original(source).is_ok())
-}
-
-fn actual_regions(
-    facts: &mut Declarations,
-    enclosing: CallerInstance,
-) -> Result<Vec<crate::types::RegionId>, &'static str> {
-    let mut fold = crate::types::substitute::Bound::observe_regions();
-    let enclosing = if let CallerInstance::Inline(instance) = enclosing {
-        match instance.enclosing() {
-            crate::sema::inline_constants::Context::Callable(instance) => {
-                CallerInstance::Callable(instance)
-            }
-            crate::sema::inline_constants::Context::Initializer(instance) => {
-                CallerInstance::Initializer(instance)
-            }
-        }
-    } else {
-        enclosing
-    };
-    match enclosing {
-        CallerInstance::Callable(instance) => {
-            fold.apply(&mut facts.types, instance.ty())?;
-        }
-        CallerInstance::Initializer(instance) => {
-            fold.apply_arguments(&mut facts.types, instance.arguments)?;
-        }
-        CallerInstance::Original | CallerInstance::Inline(_) => {
-            return Err("source namespace requires an exact instance");
-        }
-    }
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(fold.steps);
-    Ok(fold
-        .observed_regions()
-        .filter(|r| *r != crate::types::RegionId::STATIC && r.bound_parts().is_none())
-        .collect())
 }
 
 fn validate_context(

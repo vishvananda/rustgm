@@ -9,6 +9,7 @@ mod items;
 pub use export::ExportSource;
 pub(crate) mod lookup;
 mod normalize;
+mod observed;
 mod restored;
 mod rewrite;
 pub use normalize::{Alias, Normalizer, Request, Resolution, Step};
@@ -132,8 +133,8 @@ impl Bound {
         ty: TypeId,
         depth: u16,
     ) -> Result<TypeId, &'static str> {
-        if let Some(budget) = self.restore_budget()? {
-            return self.apply_restored_inside(store, ty, depth, budget);
+        if let Some(budget) = self.region_budget()? {
+            return self.apply_budgeted_regions_inside(store, ty, depth, budget);
         }
         let key = (ty, self.cache_depth(depth));
         if let Some(result) = self.result(store, key)? {
@@ -171,7 +172,7 @@ impl Bound {
             .list(parameters)
             .ok_or("missing signature parameters")?
             .len();
-        let scratch = self.reserve_restore_scratch(bounded::growth::<TypeId>(count))?;
+        let scratch = self.reserve_region_scratch(bounded::growth::<TypeId>(count))?;
         let result = (|| {
             let mut children = Vec::with_capacity(count);
             for index in 0..count {
@@ -190,7 +191,7 @@ impl Bound {
                 convention,
             })
         })();
-        self.release_restore_scratch(scratch)?;
+        self.release_region_scratch(scratch)?;
         result
     }
 
@@ -369,7 +370,8 @@ impl Bound {
         region: RegionId,
         depth: u16,
     ) -> Result<RegionId, &'static str> {
-        self.restore_work(1)?;
+        self.region_work(1)?;
+        self.prepare_observation(region, depth)?;
         if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
         }
@@ -472,7 +474,7 @@ impl Bound {
 
     fn account_arguments(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);
-        if let Some(budget) = self.restore_budget()? {
+        if let Some(budget) = self.region_budget()? {
             budget.check_steps(self.steps)?;
         }
         if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {

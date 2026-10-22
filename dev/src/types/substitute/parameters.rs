@@ -143,7 +143,7 @@ impl Bound {
             .ok_or("invalid substituted arguments")?;
         let length = source.len();
         self.account_arguments(length)?;
-        let scratch = self.reserve_restore_scratch(super::bounded::growth::<Argument>(length))?;
+        let scratch = self.reserve_region_scratch(super::bounded::growth::<Argument>(length))?;
         let mut arguments: Vec<_> = source.collect();
         let result = (|| {
             for argument in &mut arguments {
@@ -151,7 +151,7 @@ impl Bound {
             }
             store.intern_arguments(&arguments)
         })();
-        self.release_restore_scratch(scratch)?;
+        self.release_region_scratch(scratch)?;
         result
     }
     pub(crate) fn apply_argument_inside(
@@ -160,7 +160,7 @@ impl Bound {
         argument: Argument,
         depth: u16,
     ) -> Result<Argument, &'static str> {
-        self.restore_work(1)?;
+        self.region_work(1)?;
         Ok(match argument {
             Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
             Argument::Type(ty) => Argument::Type(self.apply_inside(store, ty, depth)?),

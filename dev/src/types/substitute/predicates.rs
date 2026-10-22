@@ -128,7 +128,7 @@ impl Bound {
         depth: u16,
     ) -> Result<ApplicationId, &'static str> {
         let depth = self.cache_depth(depth);
-        self.restore_work(1)?;
+        self.region_work(1)?;
         if let Some(result) = self
             .applications
             .as_ref()
@@ -151,7 +151,7 @@ impl Bound {
             },
             |a| a.planned_insert(depth),
         );
-        let scratch = self.reserve_restore_scratch(
+        let scratch = self.reserve_region_scratch(
             super::bounded::growth::<crate::types::arguments::Argument>(length)
                 .saturating_add(cache),
         )?;
@@ -170,7 +170,7 @@ impl Bound {
                 .insert(id, depth, result);
             Ok(result)
         })();
-        self.release_restore_scratch(scratch)?;
+        self.release_region_scratch(scratch)?;
         result
     }
 }

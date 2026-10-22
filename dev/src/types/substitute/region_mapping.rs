@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 pub(super) enum Mode {
     Observe,
+    ObserveBudget(Box<super::restored::Owner>),
     Scopes(Vec<std::ops::Range<u32>>),
     Close(Box<super::equation_closure::Closing>),
     Export(Box<super::export::Export>),
@@ -95,7 +96,7 @@ impl Mapping {
         };
         let replacement = if let Some(&replacement) = self.replacements.get(&key) {
             replacement
-        } else if matches!(self.mode, Mode::Observe) {
+        } else if matches!(self.mode, Mode::Observe | Mode::ObserveBudget(_)) {
             self.replacements.insert(key, key);
             key
         } else if let Mode::Export(export) = &mut self.mode {
@@ -144,7 +145,9 @@ impl Bound {
     }
     pub(crate) fn observed_regions(&self) -> impl Iterator<Item = RegionId> + '_ {
         let replacements = match &self.action {
-            Action::Regions(mapping) if matches!(mapping.mode, Mode::Observe) => {
+            Action::Regions(mapping)
+                if matches!(mapping.mode, Mode::Observe | Mode::ObserveBudget(_)) =>
+            {
                 Some(&mapping.replacements)
             }
             _ => None,
@@ -278,6 +281,7 @@ impl Bound {
                 Mode::Open { next, .. } => Some(next),
                 Mode::Export(ref export) => Some(export.next),
                 Mode::Observe
+                | Mode::ObserveBudget(_)
                 | Mode::Restore { .. }
                 | Mode::Rebase { .. }
                 | Mode::Close(_)
@@ -308,7 +312,8 @@ impl Mapping {
         match &self.mode {
             Mode::Restore {
                 retained: Retained::Budget(owner),
-            } => total.boxed(owner.as_ref()),
+            }
+            | Mode::ObserveBudget(owner) => total.boxed(owner.as_ref()),
             Mode::Scopes(values)
             | Mode::Restore {
                 retained: Retained::Stream(values),

@@ -7,8 +7,8 @@ use super::{
 use crate::types::RegionId;
 use std::collections::HashMap;
 pub(super) struct Owner {
-    budget: Budget,
-    external: usize,
+    pub(super) budget: Budget,
+    pub(super) external: usize,
 }
 impl Bound {
     pub(crate) const fn restore_owner_overhead() -> usize {
@@ -30,55 +30,57 @@ impl Bound {
                 external: 0,
             })),
         };
-        fold.restore_budget()?
+        fold.region_budget()?
             .ok_or("missing restore budget")?
-            .check_bytes(fold.restore_retained_bytes()?)?;
+            .check_bytes(fold.region_retained_bytes()?)?;
         Ok(fold)
     }
-    pub(super) fn restore_budget(&self) -> Result<Option<Budget>, &'static str> {
-        let Some(owner) = self.restore_owner() else {
+    pub(super) fn region_budget(&self) -> Result<Option<Budget>, &'static str> {
+        let Some(owner) = self.region_owner() else {
             return Ok(None);
         };
         if self.parameters.is_some() || !self.arguments.is_empty() {
-            return Err("bounded restore map cannot bind parameters or arguments");
+            return Err("bounded region map cannot bind parameters or arguments");
         }
         Ok(Some(owner.budget))
     }
-    fn restore_owner(&self) -> Option<&Owner> {
+    fn region_owner(&self) -> Option<&Owner> {
         if let Action::Regions(mapping) = &self.action
             && let Mode::Restore {
                 retained: Retained::Budget(owner),
-            } = &mapping.mode
+            }
+            | Mode::ObserveBudget(owner) = &mapping.mode
         {
             Some(owner)
         } else {
             None
         }
     }
-    fn restore_owner_mut(&mut self) -> Option<&mut Owner> {
+    fn region_owner_mut(&mut self) -> Option<&mut Owner> {
         if let Action::Regions(mapping) = &mut self.action
             && let Mode::Restore {
                 retained: Retained::Budget(owner),
-            } = &mut mapping.mode
+            }
+            | Mode::ObserveBudget(owner) = &mut mapping.mode
         {
             Some(owner)
         } else {
             None
         }
     }
-    pub(super) fn restore_work(&mut self, count: usize) -> Result<(), &'static str> {
-        if let Some(budget) = self.restore_budget()? {
+    pub(super) fn region_work(&mut self, count: usize) -> Result<(), &'static str> {
+        if let Some(budget) = self.region_budget()? {
             self.steps = self.steps.saturating_add(count);
             budget.check_steps(self.steps)?;
         }
         Ok(())
     }
-    pub(super) fn restore_retained_bytes(&self) -> Result<usize, &'static str> {
+    pub(super) fn region_retained_bytes(&self) -> Result<usize, &'static str> {
         use crate::support::retained::{map, sum, vector};
         let owner = self
-            .restore_owner()
+            .region_owner()
             .ok_or("folder has no fixed restore budget")?;
-        self.restore_budget()?;
+        self.region_budget()?;
         let Action::Regions(mapping) = &self.action else {
             return Err("missing fixed restore map");
         };
@@ -99,15 +101,15 @@ impl Bound {
             }),
         ]))
     }
-    pub(super) fn apply_restored_inside(
+    pub(super) fn apply_budgeted_regions_inside(
         &mut self,
         store: &mut Store,
         ty: TypeId,
         depth: u16,
         budget: Budget,
     ) -> Result<TypeId, &'static str> {
-        self.restore_work(1)?;
-        let retained = self.restore_retained_bytes()?;
+        self.region_work(1)?;
+        let retained = self.region_retained_bytes()?;
         budget.check_bytes(retained)?;
         let key = (ty, self.cache_depth(depth));
         if let Some(value) = self.result(store, key)? {
@@ -129,14 +131,14 @@ impl Bound {
         result
     }
     /// Stack-local vectors/cache insertion reservations remain visible during nested folds.
-    pub(super) fn reserve_restore_scratch(&mut self, bytes: usize) -> Result<usize, &'static str> {
-        let Some(budget) = self.restore_budget()? else {
+    pub(super) fn reserve_region_scratch(&mut self, bytes: usize) -> Result<usize, &'static str> {
+        let Some(budget) = self.region_budget()? else {
             return Ok(0);
         };
-        self.restore_work(1)?;
-        budget.check_bytes(self.restore_retained_bytes()?.saturating_add(bytes))?;
+        self.region_work(1)?;
+        budget.check_bytes(self.region_retained_bytes()?.saturating_add(bytes))?;
         let owner = self
-            .restore_owner_mut()
+            .region_owner_mut()
             .ok_or("restore budget owner changed")?;
         owner.external = owner
             .external
@@ -144,10 +146,10 @@ impl Bound {
             .ok_or("restore scratch overflow")?;
         Ok(bytes)
     }
-    pub(super) fn release_restore_scratch(&mut self, bytes: usize) -> Result<(), &'static str> {
+    pub(super) fn release_region_scratch(&mut self, bytes: usize) -> Result<(), &'static str> {
         if bytes != 0 {
             let owner = self
-                .restore_owner_mut()
+                .region_owner_mut()
                 .ok_or("restore budget owner changed")?;
             owner.external = owner
                 .external
@@ -157,26 +159,35 @@ impl Bound {
         Ok(())
     }
     pub(crate) fn validate_restore_owner(&self) -> Result<(), &'static str> {
+        if !matches!(&self.action, Action::Regions(mapping) if matches!(mapping.mode,
+            Mode::Restore { retained: Retained::Budget(_) }))
+        {
+            return Err("folder lost its fixed restore owner");
+        }
+        self.validate_region_budget()
+    }
+    pub(super) fn validate_region_budget(&self) -> Result<(), &'static str> {
         let owner = self
-            .restore_owner()
+            .region_owner()
             .ok_or("folder lost its fixed restore owner")?;
         if owner.external != 0 {
             return Err("restore scratch escaped its operation");
         }
         let budget = self
-            .restore_budget()?
+            .region_budget()?
             .ok_or("folder lost its fixed restore owner")?;
         budget.check_steps(self.steps)?;
-        budget.check_bytes(self.restore_retained_bytes()?)
+        budget.check_bytes(self.region_retained_bytes()?)
     }
     pub(crate) fn tighten_restore_bytes(&mut self, bytes: usize) -> Result<(), &'static str> {
+        self.validate_restore_owner()?;
         let owner = self
-            .restore_owner_mut()
+            .region_owner_mut()
             .ok_or("folder lost its fixed restore owner")?;
         owner.budget = owner.budget.tightened(bytes);
-        self.restore_budget()?
+        self.region_budget()?
             .ok_or("missing restore budget")?
-            .check_bytes(self.restore_retained_bytes()?)
+            .check_bytes(self.region_retained_bytes()?)
     }
 }
 #[cfg(test)]

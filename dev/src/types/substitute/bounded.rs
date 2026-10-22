@@ -191,8 +191,8 @@ impl Bound {
         result
     }
     pub(super) fn budget_retained_bytes(&self) -> Result<usize, &'static str> {
-        if self.restore_budget()?.is_some() {
-            self.restore_retained_bytes()
+        if self.region_budget()?.is_some() {
+            self.region_retained_bytes()
         } else {
             self.shape_retained_bytes()
         }

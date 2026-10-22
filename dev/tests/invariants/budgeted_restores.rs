@@ -71,7 +71,7 @@ fn restore_failures_consume_work_and_warm_cache_keeps_its_budget() -> Result<(),
     assert!(folder(0, 100).is_err());
     let mut fold = folder(1 << 20, 12)?;
     let result = fold.apply(&mut store, ty)?;
-    let bytes = fold.restore_retained_bytes()?;
+    let bytes = fold.region_retained_bytes()?;
     let mut failed = false;
     for _ in 0..16 {
         if let Ok(value) = fold.apply(&mut store, ty) {
@@ -85,7 +85,7 @@ fn restore_failures_consume_work_and_warm_cache_keeps_its_budget() -> Result<(),
     let steps = fold.steps;
     assert!(fold.apply(&mut store, ty).is_err());
     assert!(fold.steps > steps);
-    assert_eq!(fold.restore_retained_bytes()?, bytes);
+    assert_eq!(fold.region_retained_bytes()?, bytes);
     assert!(fold.work.is_empty());
     Ok(())
 }
@@ -103,13 +103,13 @@ fn signature_scratch_fails_before_allocation_and_is_restored_on_error() -> Resul
         convention: crate::types::callable::Convention::RUST,
     })?;
     let mut fold = folder(1 << 20, 10000)?;
-    let bytes = fold.restore_retained_bytes()?;
+    let bytes = fold.region_retained_bytes()?;
     fold.tighten_restore_bytes(bytes)?;
     assert!(fold.signature(&mut store, signature, 0).is_err());
-    assert_eq!(fold.restore_retained_bytes()?, bytes);
+    assert_eq!(fold.region_retained_bytes()?, bytes);
     let mut fold = folder(1 << 20, 10000)?;
     assert!(fold.signature(&mut store, signature, 0).is_err());
-    assert_eq!(fold.restore_owner().ok_or("owner lost")?.external, 0);
+    assert_eq!(fold.region_owner().ok_or("owner lost")?.external, 0);
     let good = reference(&mut store, RegionId(1))?;
     assert!(fold.apply(&mut store, good).is_ok());
     fold.arguments.push(RegionId::STATIC);
@@ -189,22 +189,22 @@ fn predicate_and_argument_scratch_keep_the_same_persistent_owner() -> Result<(),
         (RegionId::bound(0, 0)?, RegionId::bound(0, 1)?),
     ]));
     assert_eq!(result, ordinary.clause(&mut store, clause)?);
-    let bytes = fold.restore_retained_bytes()?;
+    let bytes = fold.region_retained_bytes()?;
     let steps = fold.steps;
     assert_eq!(fold.clause(&mut store, clause)?, result);
     assert!(fold.steps > steps);
-    assert_eq!(fold.restore_retained_bytes()?, bytes);
-    assert_eq!(fold.restore_owner().ok_or("owner lost")?.external, 0);
+    assert_eq!(fold.region_retained_bytes()?, bytes);
+    assert_eq!(fold.region_owner().ok_or("owner lost")?.external, 0);
     let mut tiny = folder(1 << 20, 10000)?;
-    let before = tiny.restore_retained_bytes()?;
+    let before = tiny.region_retained_bytes()?;
     tiny.tighten_restore_bytes(before)?;
     assert!(tiny.clause(&mut store, clause).is_err());
     assert!(tiny.applications.is_none());
-    assert_eq!(tiny.restore_retained_bytes()?, before);
+    assert_eq!(tiny.region_retained_bytes()?, before);
     let mut tiny = folder(1 << 20, 10000)?;
-    let before = tiny.restore_retained_bytes()?;
+    let before = tiny.region_retained_bytes()?;
     tiny.tighten_restore_bytes(before)?;
     assert!(tiny.apply_arguments(&mut store, args).is_err());
-    assert_eq!(tiny.restore_retained_bytes()?, before);
+    assert_eq!(tiny.region_retained_bytes()?, before);
     Ok(())
 }

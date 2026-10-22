@@ -483,3 +483,67 @@ conditional nested output contracts retain explicit followups. Existing strict
 original/result, structural equality, borrowed backing, caller-bound and ordinary
 materialized checks remain in place. PA29 transport and allocation/relocation
 families are separately owned; no metadata or assignment activation changes here.
+
+## Shared enclosing-instance observation
+
+The observer boundary recorded above is addressed by a separate checkpoint.
+New caller namespaces reuse one immutable complete free-region row per exact
+`Callable(Instance)` or `Initializer(Instance)`. Inline contexts reduce to their
+retained enclosing Context; semantic source is absent only from this observation
+key. Each source/full-caller namespace still independently validates its original
+publication, caller identity, owned ranges, actual-ID disjointness and fixed
+transport. No cached row is a proof, witness, retained interval or execution permit.
+The row remains inside its declaration-owned catalog, so numerically identical
+IDs from a different Store/catalog cannot reuse it.
+
+A private budgeted Observe mode shares Bound's existing drain and allocation
+preflights with Restore. Its mode validator is separate; an observer cannot
+validate as a fixed restore owner, and Restore cannot validate as an observer.
+Parameter/argument environment mutation rejects. Ordinary observation and restore
+semantics stay unchanged, with Bound/Mapping still 208/80 bytes. No new ordinary
+folder field, ordinary collection allocation, Code field or reference count is
+introduced. The source-only Namespaces owner gains an initially empty map.
+
+The temporary observer preflights pending work, completed caches, observed-map
+insertion, signature/argument/application scratch and its result vector while
+those allocations coexist. The caller's already-live owned-segment scratch is
+deducted during observation and before row publication. Success and error paths
+retain consumed observer work. Only a completed successful row is published;
+failed or partial observations cannot satisfy a later request. Immutable row
+capacity and map growth share the existing global 64 MiB source-context budget,
+with at most one million rows. Each observer retains the one-million-step bound.
+Repeated complete-row lookup occurs before any argument-graph traversal; the
+receiving source still checks its own actual-ID disjointness.
+
+Private controls independently vary graph width and context count over
+8/32/128. The observation graph work is 23/47/143 steps at those widths,
+independent of context count, with one charged lookup for each reuse. The test
+row retains 484 logical bytes, including its catalog metadata. Distinct full
+instances observe independently; identical numeric instance IDs in separate
+catalogs do not share a row. Overlap, absent rows, partial failure, foreign
+catalog, map/output/signature budget, nested binder, warm cache and mutation
+controls pass. This bounds the observation component; it is not a linear-work
+claim for all specialization, trait search or body proof.
+
+Qualification passes four observer, two shared-row, four existing Restore, two
+existing bounded-shape and seven source-witness functions. Nine unchanged
+width-by-context source inputs independently compile as Rust 1.98 objects and
+pass types/constants/LowIR. All 12 regular selected-initializer tests, eight
+explicitly ignored native groups, strict all-target/all-feature release Clippy,
+and the architecture/file audit (1,603 files, zero findings) pass. All 8,255
+worker-base PA1–24 text comparisons remain unchanged; the PA24 archive is the
+same immutable `66455db6` export recorded above. Common ordinary512 and constcall64
+output hashes remain equal. Performance measurement and current-public 8,360-case
+integration remain root-owned.
+
+Evidence is `obj/parallel/pa25-observation-cache/closing`, including the exact
+objects/view receipts, work/storage output, full text logs and final pin.
+The default-feature debug pin SHA-256 is
+`eb57303c00bc6f30a3b7557c4f528bd375bd6bf9cd6e76087f386e0fd61f23da`;
+the 923-file production map is
+`097be117e0ed5aada58ee32e35af0ad8a5487a5010f64161e7f7926843466fb7`.
+`first` preserves the failed stale private-test accessor hypothesis; `second`
+qualified the initial implementation before the final live-scratch and output
+budget controls. No new PA25 family, generated oracle or assignment activation
+is included in this cache checkpoint. The projected-pattern, open-type-argument
+and conditional-output followups above remain required.
