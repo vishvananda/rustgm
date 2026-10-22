@@ -1,0 +1,225 @@
+//! Owned range copies preserve initialized symbolic fragments without scalarizing bytes.
+use crate::{checked_sources as checked, native_references as native};
+use std::path::Path;
+const CASES: &[(&str, &str, i32, i32, bool)] = &[
+    (
+        "whole-rest",
+        "pa27/tests/spec/fragment-ranges/whole-rest.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "prefix-suffix",
+        "pa27/tests/spec/fragment-ranges/prefix-suffix.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "nested-prefix",
+        "pa27/tests/spec/fragment-ranges/nested-prefix.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "const-return",
+        "pa27/tests/spec/fragment-ranges/const-return.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "empty-rest",
+        "pa27/tests/spec/fragment-ranges/empty-rest.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "published-rest",
+        "pa27/tests/spec/fragment-ranges/published-rest.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "selected-rest-byte",
+        "pa27/tests/spec/fragment-ranges/selected-rest-byte.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "mixed-rest",
+        "pa27/tests/spec/fragment-ranges/mixed-rest.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "overwrite-rest",
+        "pa27/tests/spec/fragment-ranges/overwrite-rest.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "dangling-rest",
+        "pa27/tests/spec/fragment-ranges/dangling-rest.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "numeric-rest",
+        "pa27/tests/spec/fragment-ranges/numeric-rest.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "numeric-ref-rest",
+        "pa27/tests/spec/fragment-ranges/numeric-ref-rest.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "nested-rest-transport",
+        "pa27/tests/spec/fragment-ranges/nested-rest-transport.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "ordinary-rest",
+        "pa27/tests/spec/fragment-ranges/ordinary-rest.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "uninitialized-rest",
+        "pa27/tests/spec/fragment-ranges/uninitialized-rest.rs",
+        0,
+        1,
+        false,
+    ),
+    (
+        "interior-window",
+        "pa27/tests/spec/fragment-ranges/interior-window.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "split-both-ends",
+        "pa27/tests/spec/fragment-ranges/split-both-ends.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "range-stores",
+        "pa27/tests/spec/fragment-ranges/range-stores.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "no-union-image-write",
+        "pa28/tests/spec/fragment-ranges/no-union-image-write.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "function-rest",
+        "pa27/tests/spec/fragment-ranges/function-rest.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "slice-word-rests",
+        "pa27/tests/spec/fragment-ranges/slice-word-rests.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "vtable-word-rests",
+        "pa27/tests/spec/fragment-ranges/vtable-word-rests.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "shared-derived-rest-store",
+        "pa27/tests/spec/fragment-ranges/shared-derived-rest-store.rs",
+        1,
+        1,
+        false,
+    ),
+    (
+        "writable-rest-separate-shared",
+        "pa27/tests/spec/fragment-ranges/writable-rest-separate-shared.rs",
+        0,
+        0,
+        true,
+    ),
+    (
+        "runtime-range-roundtrip",
+        "pa27/tests/spec/fragment-ranges/runtime-range-roundtrip.rs",
+        0,
+        0,
+        true,
+    ),
+];
+#[test]
+fn owned_fragment_range_source_contracts() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let out = root.join(format!(
+        "obj/parallel/pa27/fragment-ranges/source-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&out)?;
+    for &(name, path, rust, front, _) in CASES {
+        checked::check_views_with_rustc_args(
+            &root.join(path),
+            &out,
+            name,
+            rust,
+            &[
+                ("--emit-types", front),
+                ("--emit-lowir", front),
+                ("--emit-constants", front),
+            ],
+            "",
+            &["--cap-lints=allow"],
+        )?;
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires pinned rustc and CPPGM backend"]
+fn owned_fragment_range_native_values() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let mut owned = Vec::new();
+    for &(name, path, _, _, valid) in CASES {
+        if valid {
+            owned.push((name, std::fs::read_to_string(root.join(path))?));
+        }
+    }
+    let cases: Vec<_> = owned
+        .iter()
+        .map(|(name, text)| (*name, text.as_str(), false))
+        .collect();
+    native::check_literal_cases("parallel/pa27/fragment-ranges/native", &cases)
+}

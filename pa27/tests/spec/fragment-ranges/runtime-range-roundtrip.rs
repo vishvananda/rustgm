@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(C)]struct Pair{lo:[u8;4],hi:[u8;4]}union U{p:*const u32,b:[u8;8],parts:Pair}static X:u32=37;fn roundtrip(p:*const u32)->u32{unsafe{let b=U{p}.b;let [lo @ ..,_,_,_,_]=b;let [_,_,_,_,hi @ ..]=b;*U{parts:Pair{lo,hi}}.p}}fn main(){check(roundtrip(&raw const X)==37);}

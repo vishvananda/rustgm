@@ -118,10 +118,20 @@ impl Machine<'_, '_> {
         value: Constant,
     ) -> Result<bool, Failure> {
         if self.byte_root(path.root).is_none() {
-            if !Reader::new(self.evaluator.facts()).has_image_families() || path.fields.is_empty() {
+            if !Reader::new(self.evaluator.facts()).has_image_storage()
+                || (path.fields.is_empty() && path.range()?.is_none())
+            {
                 return Ok(false);
             }
-            if !self.writes_inside_image(path.root, &path.fields)? {
+            let incoming_image = path.range()?.is_some()
+                && matches!(
+                    Reader::new(self.evaluator.facts()).view(value)?,
+                    crate::sema::values::View::Image { .. }
+                )
+                && Reader::new(self.evaluator.facts())
+                    .array_image(value)?
+                    .is_some();
+            if !incoming_image && !self.writes_inside_image(path.root, &path.fields)? {
                 return Ok(false);
             }
             self.convert_byte_root(path.root)?;
@@ -173,7 +183,16 @@ impl Machine<'_, '_> {
             }
             frozen = Some(self.stored_field(value, index)?);
         }
-        Ok(false)
+        let value = frozen.or_else(|| match self.memory.cells[cell] {
+            super::super::Cell::Frozen(value) => Some(value),
+            _ => None,
+        });
+        value.map_or(Ok(false), |value| {
+            Ok(matches!(
+                Reader::new(self.evaluator.facts()).view(value)?,
+                crate::sema::values::View::Image { .. }
+            ))
+        })
     }
     pub(super) fn write_byte_value(
         &mut self,
@@ -234,6 +253,11 @@ impl Machine<'_, '_> {
             crate::sema::values::View::Bytes(text) => {
                 Reader::new(self.evaluator.facts()).bytes(text)?.len() as u64
             }
+            crate::sema::values::View::Image { .. } => Reader::new(self.evaluator.facts())
+                .array_image(value)?
+                .ok_or("byte range assignment requires an array image")?
+                .bytes
+                .len() as u64,
             _ => return Err("byte range assignment requires sequence value".into()),
         };
         if value_length != range.length
@@ -261,7 +285,19 @@ impl Machine<'_, '_> {
             .checked_add(buffer.retained_slots())
             .ok_or("byte range retention overflow")?;
         let result = (|| {
-            if let crate::sema::values::View::Repeat {
+            if matches!(
+                Reader::new(self.evaluator.facts()).view(value)?,
+                crate::sema::values::View::Image { .. }
+            ) {
+                self.charge(1)?;
+                let selected =
+                    self.evaluator
+                        .byte_array_range_type(ty, range.from, range.length)?;
+                if Reader::new(self.evaluator.facts()).image(value)?.ty != selected {
+                    return Err("byte range image differs from its checked element type".into());
+                }
+                self.encode_bytes(&mut buffer, 0, selected, value)?;
+            } else if let crate::sema::values::View::Repeat {
                 value: fill,
                 length,
             } = Reader::new(self.evaluator.facts()).view(value)?

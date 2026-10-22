@@ -370,6 +370,24 @@ impl Machine<'_, '_> {
         if let Some(value) = self.resumed_byte_read(key)? {
             return Ok(value);
         }
+        if purpose == ReadPurpose::Value
+            && element == TypeId::primitive(crate::types::Primitive::U8)
+            && self.source_has_fragments(source, offset, range.length)?
+        {
+            self.charge(1)?;
+            let selected = self
+                .evaluator
+                .byte_array_range_type(ty, range.from, range.length)?;
+            let start = usize::try_from(offset).map_err(|_| "byte range exceeds host size")?;
+            let end = offset
+                .checked_add(range.length)
+                .and_then(|n| usize::try_from(n).ok())
+                .filter(|&end| end <= self.byte_data(source).map_or(0, |data| data.bytes.len()))
+                .ok_or("byte range extent overflow")?;
+            // The selected array type and full source bounds remain independently checked.
+            let value = self.decode_byte_image(source, start, end, selected)?;
+            return Ok(Read::Value(value));
+        }
         let count = if stride == 0 && range.length != 0 {
             1
         } else {

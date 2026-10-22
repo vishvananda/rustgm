@@ -141,8 +141,10 @@ Canonical const/mut `.add` now preserves checked offset identity and access rest
 Initialized whole `[u8; N]` snapshots retain symbolic fragments through copies and
 const calls, without manufacturing numeric pointer bytes. Final byte-array
 publication rejects all provenance; typed scalar and reference demands still
-validate selected bytes. Fragment-bearing rest/range values, numeric pointer
-reconstruction and unsupported backing families remain required work. Shared-
+validate selected bytes. Owned U8 array-rest/range values preserve selected
+fragments and original word coordinates. Range stores commit one selected
+backing update. General raw/unsized ranges, numeric pointer reconstruction and
+unsupported backing families remain required work. Shared-
 derived interior-mutable writes remain unsupported. Unsafe permission grants none
 of these missing constant capabilities. Foreign and mutable static contents remain
 forbidden in this development profile.

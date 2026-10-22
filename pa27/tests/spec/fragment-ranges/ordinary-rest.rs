@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}const N:u8={let b=[7u8;16];let [_,_,tail @ ..,_]=b;tail[0]};fn main(){check(N==7);}

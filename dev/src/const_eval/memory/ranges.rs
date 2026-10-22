@@ -123,19 +123,16 @@ impl Machine<'_, '_> {
             self.check_byte_length(root, path)?;
             return Ok(());
         }
+        let mut ty = Reader::new(self.evaluator.facts()).location(root)?.ty;
         let mut cell = mut_cell;
         for (position, &index) in path.iter().enumerate() {
             self.charge(1)?;
             match &self.memory.cells[cell] {
                 Cell::Frozen(value) => {
-                    let mut value = *value;
-                    self.charge(path.len() - position)?;
-                    for &index in &path[position..] {
-                        value = self.stored_field(value, index)?;
-                    }
-                    return Ok(());
+                    return self.check_frozen_length(*value, ty, &path[position..]);
                 }
-                Cell::Fields { values, .. } => {
+                Cell::Fields { values, variant } => {
+                    ty = Reader::new(self.evaluator.facts()).stored_child(ty, *variant, index)?;
                     cell = *values
                         .get(
                             usize::try_from(index)
@@ -149,6 +146,34 @@ impl Machine<'_, '_> {
         }
         if matches!(self.memory.cells[cell], Cell::Empty) {
             return Err("constant length reads uninitialized storage".into());
+        }
+        Ok(())
+    }
+    pub(in crate::const_eval::memory) fn check_frozen_length(
+        &mut self,
+        mut value: Constant,
+        mut ty: crate::types::TypeId,
+        path: &[u64],
+    ) -> Result<(), Failure> {
+        for (position, &index) in path.iter().enumerate() {
+            self.charge(1)?;
+            let reader = Reader::new(self.evaluator.facts());
+            if matches!(reader.view(value)?, crate::sema::values::View::Image { .. }) {
+                if reader.image(value)?.ty != ty {
+                    return Err("constant length image differs from its physical owner".into());
+                }
+                self.storage_offset(ty, &path[position..])?;
+                return Ok(());
+            }
+            ty = reader.stored_child(
+                ty,
+                match reader.view(value)? {
+                    crate::sema::values::View::Product { variant, .. } => variant,
+                    _ => None,
+                },
+                index,
+            )?;
+            value = self.stored_field(value, index)?;
         }
         Ok(())
     }

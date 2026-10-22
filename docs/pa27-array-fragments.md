@@ -112,3 +112,8 @@ changes. No references were regenerated. The final production fingerprint is
 the pinned candidate SHA-256 is
 `b0f43ca9d0d731c8be6b2d2aced29767ceeab086a3c7cf3bafb4bc50cc7e9bd1`.
 The exact text replay receipt is `obj/parallel/pa27/array-fragments/text-first`.
+
+The subsequent owned-range checkpoint supersedes the fragment-bearing U8
+array-rest/range value boundary above. It preserves the original byte-array
+fixtures and scalar/reference/publication validity gates; see
+`pa27-fragment-ranges.md`. General raw/unsized ranges remain required work.

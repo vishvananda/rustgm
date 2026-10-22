@@ -1,0 +1,228 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "cef289cd",
+  "cases": [
+    {
+      "name": "whole-rest",
+      "path": "pa27/tests/spec/fragment-ranges/whole-rest.rs",
+      "sha256": "10066d3d0ed3263c299a26f0e87d7715971c9ed194073543b1cbba7722b0ca0d",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "prefix-suffix",
+      "path": "pa27/tests/spec/fragment-ranges/prefix-suffix.rs",
+      "sha256": "c415969d69b71a0345d40e65fb928e2fb2eb1f567cff29ac0fe64cbb2eb3fd22",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "nested-prefix",
+      "path": "pa27/tests/spec/fragment-ranges/nested-prefix.rs",
+      "sha256": "56dbd3fc1e201e7e79d73a7d0aaccb1855450143c651d891790de804ba93b2ea",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1,
+      "original_native_hypothesis": true,
+      "classification": "Disproved initial positive: final scalar bindings demand symbolic pointer bytes."
+    },
+    {
+      "name": "const-return",
+      "path": "pa27/tests/spec/fragment-ranges/const-return.rs",
+      "sha256": "dca1296005831d94f30dbb4bb8db86f934e93f2779987f1658ec13bb859002d9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "empty-rest",
+      "path": "pa27/tests/spec/fragment-ranges/empty-rest.rs",
+      "sha256": "b72f03d33a8e07ead45015f5f301453267290c8ca128ed08d97a9c02e7b96553",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "published-rest",
+      "path": "pa27/tests/spec/fragment-ranges/published-rest.rs",
+      "sha256": "632013b34af4ed698db11614efa5d3220b5e8daf3f79fdfe76d7bb05c0317f9a",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "selected-rest-byte",
+      "path": "pa27/tests/spec/fragment-ranges/selected-rest-byte.rs",
+      "sha256": "f18f48851d722cf6b5216cadc4ab980bf59cf102cd893fc498a8a6a4117c6572",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "mixed-rest",
+      "path": "pa27/tests/spec/fragment-ranges/mixed-rest.rs",
+      "sha256": "64c03a38268a2470e80f22539cf51aa22f4ad047c646986f8f5952a396717e06",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "overwrite-rest",
+      "path": "pa27/tests/spec/fragment-ranges/overwrite-rest.rs",
+      "sha256": "e295644159f85c20e0bb3b5f7a40481cbf54edc2d402225aedb20cd00823c655",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "dangling-rest",
+      "path": "pa27/tests/spec/fragment-ranges/dangling-rest.rs",
+      "sha256": "adf34c8ab9446c4f68f2f0f8cc45ac64a5f6f2c114bf8c9ac1fa2e0be91dbd12",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "numeric-rest",
+      "path": "pa27/tests/spec/fragment-ranges/numeric-rest.rs",
+      "sha256": "a246d8559ef2b8ea02b489b61f2a3f6ea0f36b1d4dd720270a67e2aa000305b8",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "numeric-ref-rest",
+      "path": "pa27/tests/spec/fragment-ranges/numeric-ref-rest.rs",
+      "sha256": "f508efe6a8d8791d287354c138a2a69027da22c05972d1a8b5c46d00dade32a5",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "nested-rest-transport",
+      "path": "pa27/tests/spec/fragment-ranges/nested-rest-transport.rs",
+      "sha256": "3d5f7c3807354de0ffdf320b358e85b84403e4bb323efcc2aad7bf816cec1a16",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "ordinary-rest",
+      "path": "pa27/tests/spec/fragment-ranges/ordinary-rest.rs",
+      "sha256": "a0135790e81c2dfa3fe17b67d3214e0b4be8ea423a36189e3921bd4df6092551",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "uninitialized-rest",
+      "path": "pa27/tests/spec/fragment-ranges/uninitialized-rest.rs",
+      "sha256": "7d0c4144da98b9c6d70f652555205dd500a44cbd47761a560efa631fc40a0a8c",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": 1,
+      "classification": "Transient CTFE oracle difference; normative typed validity retained, no native claim."
+    },
+    {
+      "name": "interior-window",
+      "path": "pa27/tests/spec/fragment-ranges/interior-window.rs",
+      "sha256": "808360fb5db255c607e983cd939ac4d806d1741205015ca96fc89b30ac3d2bc9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "split-both-ends",
+      "path": "pa27/tests/spec/fragment-ranges/split-both-ends.rs",
+      "sha256": "f2a98c266e974b7b5ec30a20d1e67ee57518a8d762b794eefc960871c6f765d6",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "range-stores",
+      "path": "pa27/tests/spec/fragment-ranges/range-stores.rs",
+      "sha256": "86bcf8ca119474d82e67a417edccadb60e1ca238029a8044c85f08d047ee85fe",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "function-rest",
+      "path": "pa27/tests/spec/fragment-ranges/function-rest.rs",
+      "sha256": "58ef57fbc8286a8fe44d8274f2dd1ecfa033eb5e75abbbacd80a595f0df66246",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "slice-word-rests",
+      "path": "pa27/tests/spec/fragment-ranges/slice-word-rests.rs",
+      "sha256": "a21005c6d16427e8b317c2359f6da1ac6e87d6f96c822dc8e6a199ca64bc8f07",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "vtable-word-rests",
+      "path": "pa27/tests/spec/fragment-ranges/vtable-word-rests.rs",
+      "sha256": "9c53496dd2bc16c06b96eb5919b73f161986daa31b9acb814b70805900210d73",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "shared-derived-rest-store",
+      "path": "pa27/tests/spec/fragment-ranges/shared-derived-rest-store.rs",
+      "sha256": "d9d1838199fd23e64cd0c43466c8d6263e4ebf409ea9f02d98d7be6682553f58",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "writable-rest-separate-shared",
+      "path": "pa27/tests/spec/fragment-ranges/writable-rest-separate-shared.rs",
+      "sha256": "ac6c5814b2e3b64672239124a4d2321c32a32a3f5c7084eead280e10ac24efac",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "runtime-range-roundtrip",
+      "path": "pa27/tests/spec/fragment-ranges/runtime-range-roundtrip.rs",
+      "sha256": "3ac194c6beccf5c4525ad68850b3785c9068edcae035bb2aca2888376e683e2c",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    }
+  ]
+}

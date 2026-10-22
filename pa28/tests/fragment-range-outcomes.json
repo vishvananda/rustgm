@@ -1,0 +1,18 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "cef289cd",
+  "cases": [
+    {
+      "name": "no-union-image-write",
+      "path": "pa28/tests/spec/fragment-ranges/no-union-image-write.rs",
+      "sha256": "935c3e0a3e9ac5ab9c24d89af1636db2fae12b31fd3fe332cc3f4f4de8e3a513",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(C)]struct Payload{p:*const u32,b:[u8;8]}union U{p:Payload,b:[u8;16]}static X:u32=37;const N:u8=unsafe{let b=U{p:Payload{p:&raw const X,b:[7;8]}}.b;let [_,_,_,_,_,_,_,_,tail @ ..]=b;tail[0]};fn main(){check(N==7);}

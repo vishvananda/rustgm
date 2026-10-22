@@ -39,11 +39,11 @@ impl<'a> ImageView<'a> {
     }
 }
 impl<'a> Reader<'a> {
-    pub(crate) fn has_image_families(self) -> bool {
+    pub(crate) fn has_image_storage(self) -> bool {
         self.facts
             .constant_images
             .as_ref()
-            .is_some_and(|arena| !arena.families.is_empty())
+            .is_some_and(|arena| arena.has_values())
     }
     pub(crate) fn scalar_union(self, ty: TypeId) -> Result<bool, &'static str> {
         self.facts

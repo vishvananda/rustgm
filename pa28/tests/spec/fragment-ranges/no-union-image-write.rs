@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(C)]struct Payload{p:*const u32,b:[u8;8]}static X:u32=37;const N:u8=unsafe{let v=Payload{p:&raw const X,b:[7;8]};let mut b=core::ptr::read(&raw const v as *const[u8;16]);b[8]=9;b[8]};fn main(){check(N==9);}

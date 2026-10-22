@@ -80,6 +80,29 @@ impl<'a> Reader<'a> {
     }
 }
 impl Evaluator<'_> {
+    /// Select only a canonical storage type; this grants no access or conversion proof.
+    pub(crate) fn byte_array_range_type(
+        &mut self,
+        owner: TypeId,
+        from: u64,
+        length: u64,
+    ) -> Result<TypeId, Failure> {
+        let facts = &mut *self.queries.typing.facts;
+        let Some(Kind::Array {
+            element,
+            length: bound,
+        }) = facts.types.kind(owner)
+        else {
+            return Err("constant byte range requires its exact array owner".into());
+        };
+        if element != TypeId::primitive(Primitive::U8) {
+            return Err("constant symbolic range requires u8 array storage".into());
+        }
+        if from.checked_add(length).is_none_or(|end| end > bound) {
+            return Err("constant byte range is out of bounds".into());
+        }
+        Ok(facts.types.intern(Kind::Array { element, length })?)
+    }
     pub(crate) fn byte_array_snapshot(
         &mut self,
         ty: TypeId,

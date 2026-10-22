@@ -1,4 +1,5 @@
 //! Immutable scalar union storage has initialized bytes and no active member.
+mod ranges;
 pub(super) mod scalars;
 use super::{
     Value,
@@ -30,6 +31,9 @@ pub(in crate::sema) struct Images {
     retained: usize,
 }
 impl Images {
+    pub(super) fn has_values(&self) -> bool {
+        !self.nodes.is_empty()
+    }
     #[cfg(test)]
     pub(in crate::sema::constants) fn retained_for_test(&self) -> usize {
         self.retained

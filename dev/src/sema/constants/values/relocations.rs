@@ -17,6 +17,33 @@ pub struct ImageFragment {
     pub length: u8,
     pub target: WordTarget,
 }
+impl ImageFragment {
+    /// Clip storage coverage without changing symbolic identity or word coordinates.
+    pub(crate) fn clipped(self, start: u64, end: u64) -> Result<Self, &'static str> {
+        let from = start.max(self.offset);
+        let to = end.min(
+            self.offset
+                .checked_add(u64::from(self.length))
+                .ok_or("symbolic fragment extent overflow")?,
+        );
+        if from >= to {
+            return Err("symbolic fragment has no selected coverage");
+        }
+        let skipped =
+            u8::try_from(from - self.offset).map_err(|_| "symbolic fragment source overflow")?;
+        Ok(Self {
+            offset: from
+                .checked_sub(start)
+                .ok_or("symbolic fragment precedes selection")?,
+            source_offset: self
+                .source_offset
+                .checked_add(skipped)
+                .ok_or("symbolic fragment source overflow")?,
+            length: u8::try_from(to - from).map_err(|_| "symbolic fragment length overflow")?,
+            target: self.target,
+        })
+    }
+}
 
 #[derive(Clone, Copy)]
 pub(crate) enum MetadataShape {

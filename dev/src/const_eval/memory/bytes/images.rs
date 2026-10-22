@@ -40,18 +40,11 @@ impl Machine<'_, '_> {
                 .map_err(|_| "symbolic image snapshot allocation failed")?;
             for index in first..stop {
                 let fragment = Reader::new(self.evaluator.facts()).image(value)?.fragments[index];
-                let from = start.max(fragment.offset);
-                let to = end.min(fragment.offset + u64::from(fragment.length));
-                let skipped = u8::try_from(from - fragment.offset)
-                    .map_err(|_| "symbolic image source offset overflow")?;
+                let fragment = fragment.clipped(start, end)?;
                 fragments.push(Fragment {
-                    offset: from - start,
-                    source_offset: fragment
-                        .source_offset
-                        .checked_add(skipped)
-                        .ok_or("symbolic image source offset overflow")?,
-                    length: u8::try_from(to - from)
-                        .map_err(|_| "symbolic image fragment length overflow")?,
+                    offset: fragment.offset,
+                    source_offset: fragment.source_offset,
+                    length: fragment.length,
                     word: self.intern_word(fragment.target)?,
                 });
             }

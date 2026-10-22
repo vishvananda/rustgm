@@ -1,4 +1,6 @@
 //! Image contents require typed provenance and charge before scalar decoding.
+#[path = "range_contents.rs"]
+mod range_contents;
 use super::*;
 use crate::resolve::unit::FileId;
 use crate::sema::values::{Constant, Evaluator, Reader};

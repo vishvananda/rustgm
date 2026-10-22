@@ -20,9 +20,10 @@ Open implementation or profile contracts remain:
 
 - Initialized whole `[u8; N]` snapshots now retain ordered symbolic fragments
   through copies and const calls; selected numeric bytes and final publication
-  remain separate validity gates. Fragment-bearing rest/range value snapshots
-  and unused-reference eager validation remain required followups. See
-  `pa27-array-fragments.md`. Canonical const/mut pointer
+  remain separate validity gates. Owned U8 array-rest/range snapshots now preserve
+  clipped fragments and batched selected stores; general raw/unsized ranges and
+  unused-reference eager validation remain required followups. See
+  `pa27-array-fragments.md` and `pa27-fragment-ranges.md`. Canonical const/mut pointer
   `.add` now uses checked byte offsets without granting access permission. Logical field
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every

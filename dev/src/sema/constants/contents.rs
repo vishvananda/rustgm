@@ -3,6 +3,7 @@ use super::references::{Access, Id, ProjectionView};
 use super::{Error, NodeKey, Queries, Query, State, Value, Work as Pending};
 use crate::sema::model::Scalar;
 use std::collections::HashSet;
+mod ranges;
 
 #[derive(Clone, Copy)]
 pub(super) enum Work {
@@ -140,11 +141,7 @@ impl Queries<'_> {
             } => {
                 self.budget()?;
                 let value = self.value(Query::Contents(key, base))?;
-                let facts = &mut *self.typing.facts;
-                let value = facts
-                    .constant_products
-                    .range(value, from, length, &facts.texts)
-                    .map_err(|e| self.error(Query::Contents(key, id), e))?;
+                let value = self.range_contents(key, id, base, from, length, value)?;
                 (key, id, value)
             }
         };
