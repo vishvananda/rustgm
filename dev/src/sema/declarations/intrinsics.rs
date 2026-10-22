@@ -81,8 +81,25 @@ impl Checker<'_> {
                 pointee: subject,
             },
         )?;
-        let inputs = [pointer, subject];
-        let count = if kind.writes_pointer() { 2 } else { 1 };
+        let mut inputs = [
+            pointer,
+            subject,
+            TypeId::primitive(crate::types::Primitive::Usize),
+        ];
+        let count = if kind.is_counted_memory() {
+            inputs[1] = self.intern(
+                origin,
+                Type::Pointer {
+                    mutable: true,
+                    pointee: subject,
+                },
+            )?;
+            3
+        } else if kind.writes_pointer() {
+            2
+        } else {
+            1
+        };
         let parameters = self
             .facts
             .types
@@ -93,7 +110,7 @@ impl Checker<'_> {
             Type::Function {
                 bound_regions: 0,
                 parameters,
-                result: if kind.writes_pointer() {
+                result: if kind.writes_pointer() || kind.is_counted_memory() {
                     TypeId::UNIT
                 } else {
                     subject

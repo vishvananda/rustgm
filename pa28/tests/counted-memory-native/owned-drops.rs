@@ -1,0 +1,1 @@
+static mut DROPS:u32=0;struct V(u32);impl Drop for V{fn drop(&mut self){unsafe{DROPS=DROPS+self.0;}}}fn main(){{let mut a=V(7);let mut b=V(11);unsafe{core::ptr::copy_nonoverlapping(&raw const a,&raw mut b,1);core::ptr::write(&raw mut a,V(13));}check(unsafe{DROPS}==0);check(a.0==13);check(b.0==7);}check(unsafe{DROPS}==20);}

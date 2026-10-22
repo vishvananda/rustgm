@@ -1,5 +1,6 @@
 //! Bounded constant execution consumes selected typed CFGs, never source syntax.
 pub(crate) mod code;
+mod counted;
 mod memory;
 mod raw_reads;
 mod readiness;

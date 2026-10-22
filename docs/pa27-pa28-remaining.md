@@ -26,8 +26,12 @@ Open implementation or profile contracts remain:
   but crossing an UnsafeCell-like boundary needs its own typed permission model.
   Runtime `invalid_reference_casting` policy is a separate outstanding frontend
   obligation; CTFE rejection does not qualify that lint.
-- Numeric/non-null ZST pointer profiles and Rust-positive unused-reference forms
+- Numeric/null/ZST pointer profiles and Rust-positive unused-reference forms
   outside the current eager initialization/liveness/alignment profile.
+  The default `invalid_null_arguments` source lint is independently required;
+  an unsupported CTFE numeric address does not establish that lint. Pinned-Rust
+  count-zero and zero-size CTFE acceptance is recorded separately from runtime
+  validity, without numeric/null native claims.
 - Mutable, foreign and cyclic static reference formation, and mutable-static
   initializer contents reads. Reference validity and by-value access eligibility
   remain separate; successful immutable-static retry is already supported.
@@ -59,7 +63,12 @@ reinterpretation. Its outcome contract lives in
 Open operation families remain:
 
 - Counted copies, overlapping moves and byte fills, with explicit byte/count
-  overflow, overlap, initialization and provenance rules.
+  overflow, overlap, initialization and provenance rules. The in-development
+  `copy_nonoverlapping` checkpoint supplies bounded typed initialized-value
+  snapshots over canonical scalar/object or contiguous array storage. Arbitrary
+  uninitialized or invalid byte transport remains required work. Zero effective
+  bytes use address-only validation without reading contents or granting write
+  authority; ordinary nonzero memory access retains its existing checks.
 - Numeric, bit and cast intrinsic families, including width/sign behavior and
   u128 controls beyond ordinary language arithmetic.
 - Additional atomic widths/types, fences, accessors and update/control methods.
@@ -70,8 +79,10 @@ Open operation families remain:
   concurrency qualification. Backend capability inputs alone establish no
   frontend contract.
 
-The next substantial operation family after unaligned transfers is counted
-memory, subject to an agreed typed storage/count interface. Full release,
-immutable performance measurement, active manifests/oracles and publication
-remain integrator-owned. Focused logical work bounds are not wall-time or RSS
+The counted-copy development checkpoint qualifies exact typed symbolic spans,
+snapshots and existing runtime transfer loops; its review is
+`docs/pa28-counted-memory.md`. Overlapping moves, fills and arbitrary byte
+transport remain substantial required follow-ups. Full release, immutable
+performance measurement, active manifests/oracles and publication remain
+integrator-owned. Focused logical work bounds are not wall-time or RSS
 neutrality claims.

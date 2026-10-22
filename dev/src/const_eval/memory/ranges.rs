@@ -181,7 +181,7 @@ impl Machine<'_, '_> {
             }
         }
     }
-    pub(super) fn write_range(
+    pub(in crate::const_eval) fn write_range(
         &mut self,
         root: LocationId,
         path: &[u64],

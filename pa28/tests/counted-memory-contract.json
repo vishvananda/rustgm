@@ -1,0 +1,615 @@
+{
+  "stage": "qualified-development-checkpoint",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "scope": "Canonical copy_nonoverlapping with bounded typed symbolic snapshots, whole scalar union Images and existing scalar/CopyObject runtime loops; required byte-transport/numeric/lint gaps remain explicit.",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/counted-memory/scalar-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "6407b8df5f9f116a2c3a6c604df764f51e5f365035788278d6c7effee2d1d121",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/shared-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "2444be36a71019b8f8e93cadbd34fdabd2be6a4a02409b37e33f468510ea9660",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/shared-one.rs",
+      "rustc_expected": 1,
+      "sha256": "dce2fcd10b4576742c7276397475bf9b0b8d5d65aa54ed70be6d6bef8fa44d19",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant copy_nonoverlapping regions overlap"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/partial-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "3074adcab52ec70c309c141a8a649ad542ec1989101bd88f3ca94a93c200362b",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/overlap-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "0258424fcf00a3a9a0a180b15d2d3269153a27042b810bf63c4d63d7e9e4fe51",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/null-source-zero.rs",
+      "rustc_expected": 1,
+      "sha256": "568d2ba644a21e9e636991e7e67517cbc5cc37b8e0d227ffa64617cc5a4d8e5f",
+      "note": "Original default invalid_null_arguments lint rejection; not a CTFE memory-validity rejection.",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/null-destination-zero.rs",
+      "rustc_expected": 1,
+      "sha256": "0d570fd32551f268b5edac6512d66e5b25e0c7bf8039c1d16db5c782a62db0ca",
+      "note": "Original default invalid_null_arguments lint rejection; not a CTFE memory-validity rejection.",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/numeric-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "f91ca075acadc66e8744f4d6fa5a102407862bd70f70b448f2abdbce1002d117",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/misaligned-zero.rs",
+      "rustc_expected": 1,
+      "sha256": "5192e96cbf058f6f665523146d2646e9a9457e135de747822257eccad6ba49f2",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/packed-source-zero.rs",
+      "rustc_expected": 1,
+      "sha256": "bc1e54bcf2a3016ca86fc8504b2b4b8b686906ad88144457dc1cead0d46452ec",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted pointer is unaligned"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/packed-destination-zero.rs",
+      "rustc_expected": 1,
+      "sha256": "bf8c3b25ec6b577b99a0c5659f13acbb08bbed3d165072c0c03f4ef3eb649382",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted pointer is unaligned"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-large.rs",
+      "rustc_expected": 0,
+      "sha256": "d7cef0dbd67ede5f88fbcabc6543d86613a6eb72127fc622f2186981857208e0",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-shared.rs",
+      "rustc_expected": 0,
+      "sha256": "ca849101c4186e1d273cdd99f9d5fac72b344cfc6ff08db2b9be6df21271b577",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-numeric.rs",
+      "rustc_expected": 0,
+      "sha256": "4964ce8ff07fd08aee1f3704ba84c09f3814065731f397b0199a9ccfbd51542a",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-misaligned.rs",
+      "rustc_expected": 1,
+      "sha256": "a681cc0824e9c58936d51aba860132e8fc43a30fcf8e0f907848f4129ecab3fd",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-null.rs",
+      "rustc_expected": 0,
+      "sha256": "7059fac7a27e5dfbd48f25dea91009cf03245be8c448b5bfc4f8395f5b2febb9",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/atomic-static-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "eca81eba83220f4e5b18d1d0388c8435b72c9bf10ec0ce76785ccf4fa35cc1ab",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/atomic-static-one.rs",
+      "rustc_expected": 1,
+      "sha256": "3d69076e8ae3018539276f8aded3504b90a29dab02e192b33716a7dbb7a19ce6",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant execution cannot read interior-mutable static storage"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/mutable-static-source-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "38ec5ebfe02c3f789d8e041c53f72992e6e5143d73482754e0f9358ea7031c40",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/mutable-static-destination-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "c6322e81587ab5927627635f9a9451955271b98fc693bfdbf13ecb64abb43164",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/expired-zero.rs",
+      "rustc_expected": 0,
+      "sha256": "7b5a1703f3b7033995d77e0ddd82f09dce877b946906be140b2b78f6385ab36a",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-expired.rs",
+      "rustc_expected": 0,
+      "sha256": "3e4f0d090050dbbfa2bdc77a179aa37ad37a8c480218a7dc2f77432c6ee42753",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/null-source-zero-allow.rs",
+      "rustc_expected": 0,
+      "sha256": "42e04f3fc0ce9bdb91abec768378b3a9194c345b07e48aea1077110957126fd8",
+      "note": "Separately predeclared scoped-allow counterpart isolates default lint from no-access const execution.",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/null-destination-zero-allow.rs",
+      "rustc_expected": 0,
+      "sha256": "71ed3e9364023a726c9cf31f6080a966487e7fcecbb0ed42feb15e97c424fead",
+      "note": "Separately predeclared scoped-allow counterpart isolates default lint from no-access const execution.",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/scalar-three.rs",
+      "rustc_expected": 0,
+      "sha256": "bf913040bbb163f19fe1571d9b56fc9d3574ad878fb6a47c2089ff12cfc8dc52",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/same-root-disjoint.rs",
+      "rustc_expected": 0,
+      "sha256": "2c06d854c442481073d1c70e2ff4fc427d1b3d0a149292c957e91207a67279f3",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/same-root-overlap.rs",
+      "rustc_expected": 1,
+      "sha256": "b2ae240b35413cb77f2e465b935a27c06410754c43ff0959ae70576aa53a50e5",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant copy_nonoverlapping regions overlap"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/source-bounds.rs",
+      "rustc_expected": 1,
+      "sha256": "698d93fe63c615823ee6be28818844334d5f287e662e9258229a04c4c606a304",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted transfer exceeds"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/destination-bounds.rs",
+      "rustc_expected": 1,
+      "sha256": "0547015abb877da7918e6f3440767c79208a7d6efb7b7380a4199481ca0f0352",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted transfer exceeds"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/byte-count-overflow.rs",
+      "rustc_expected": 1,
+      "sha256": "045b87cbb7ca961a5add58fa7699075fad75e92354bb78326ce7b11b3065d6a4",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant copy byte count exceeds allocation size"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/noncopy.rs",
+      "rustc_expected": 0,
+      "sha256": "e8378c35a7f0c58b4e78e3a596b7bc9ac543bd9e2c68776bc8072e24afca2ac5",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/array-elements.rs",
+      "rustc_expected": 0,
+      "sha256": "01a5c9df0fca87134e96423ecb4a5d379f6ca782fe133b02c1dc15d6e9e84dc8",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/reference-elements.rs",
+      "rustc_expected": 0,
+      "sha256": "ef24dd46f8e9b9c6782c3a7ce2c0c3252a729462eb35af565ec37146afaea124",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/generic.rs",
+      "rustc_expected": 0,
+      "sha256": "75a72fc9edab56138cb5fea9e60ca6397c2935e6aa4d8878cd8b11b7c8881045",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/std-alias.rs",
+      "rustc_expected": 0,
+      "sha256": "0afbb2a34b42bfa2a2917ee9718f0be371bcf870741ebad8927ba9aa1ad44ae3",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/unsafe-required.rs",
+      "rustc_expected": 1,
+      "sha256": "a2d69a1a950bef474174a47d0b25fffd3f62b872d277c3fed33cd5ef93de5dae",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "call to unsafe function requires an unsafe context"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/reified-const.rs",
+      "rustc_expected": 1,
+      "sha256": "9f83cbae6a9655c6b66449b3cea6ddb6ac4e009e9d45f909e400f37e4fe5d368",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "non-const calls are not allowed in constant initializers"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/partial-field-profile.rs",
+      "rustc_expected": 0,
+      "sha256": "eeb1f8423f258cba7b2bad93892d3adcf07b2b25e04d4c1b2c789f2a0ac71d8f",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted union-field byte transport is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/whole-image.rs",
+      "rustc_expected": 0,
+      "sha256": "fa8d1fb71d7ebc1bd3d58bbc0b70c71359f89c11e289119cae0ae547e7f2fd6e",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/whole-image-uninitialized.rs",
+      "rustc_expected": 1,
+      "sha256": "e67879d63d8d10e460144629bb26ce46032ae96a8736fffb256a7ec602401e0e",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/expired-one.rs",
+      "rustc_expected": 1,
+      "sha256": "7b8f2316df0c10ac886dc82a29225f919f2113019041041628ce48fb1ba5e61e",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/shared-distinct-one.rs",
+      "rustc_expected": 1,
+      "sha256": "b09fca9c03707184a481bbe6bb4ba61d12bf67f1d3e7042e9630ad4bc53df835",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/static-one.rs",
+      "rustc_expected": 0,
+      "sha256": "7a248cf5d5d34b6a46d88946db8ee5f1db7ba7fc4d747118489645c6f0b298d9",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/mutable-static-one.rs",
+      "rustc_expected": 1,
+      "sha256": "2261033f05d121088c762962702a5fd795ef124ea1ce56b4aaa2ef2753fc4776",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant execution cannot read mutable static storage"
+    },
+    {
+      "path": "pa28/tests/spec/counted-memory/atomic-static-initializer.rs",
+      "rustc_expected": 0,
+      "sha256": "ad7b47f7e9e0b0bf17e4a6666e2de44b4b26d3698cba5f7ae37f83af8d47392c",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/counted-memory-native/backend-loop.rs",
+      "sha256": "c47e2bdb190a0b6c1cd1b2968dcd0bc2c512947a2cd47df994bb45dec35be725",
+      "prefix": "native_references::CHECK",
+      "expected": 0,
+      "note": "Uses existing ptr read/write in a generic count loop; independently checks frozen CopyObject and loop behavior before the counted intrinsic exists."
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/scalars.rs",
+      "sha256": "a888f51da018a92aa3fe5e7e8ddb7827dfd19ea2ced7e3ea153b77f02ff49016",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/disjoint.rs",
+      "sha256": "9edcfb654fbc48db5b9b05a2d2b844cad4d9ca61b8055ce25ada3d47650f2b72",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/generic.rs",
+      "sha256": "3d21d51a2ec876695fb39f6716c0bf8695ac41e88035ba03655ad09feb106f07",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/reified.rs",
+      "sha256": "aaea22c70d6d1da7af0fdb86cc5e9c5f2afb5f87ae59f0c663e4834b6b3ac139",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/argument-once.rs",
+      "sha256": "75d1dab0c00689f403abc623ab67d94d52288ec4d4dfbaa5a68c9e550fdf8603",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/reference-elements.rs",
+      "sha256": "94a00571488d053d021146de0d0bee4d7340be68c1884f43c511796513a5add7",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/rest-destination.rs",
+      "sha256": "f3e598dea3057b761b788f7f709bb79005af918159f550209e9b908c4de18447",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/owned-drops.rs",
+      "sha256": "e8a482d7d23a3e31a3a30cce54ea864c922829525910a693707cf4968b71b183",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/zst-large.rs",
+      "sha256": "1cd6d31617cdf19c9748ec3fc8d0e773e38cf1bddf2689d69fdd7081dee6fca4",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/counted-memory-native/shared-zero.rs",
+      "sha256": "858f710c3758e03f27f009bbeac7f8c4c2ceec3c0b35a14f53bf0c377e312180",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    }
+  ],
+  "hypothesis_disagreements": [
+    {
+      "path": "pa28/tests/spec/counted-memory/zst-null.rs",
+      "sha256": "7059fac7a27e5dfbd48f25dea91009cf03245be8c448b5bfc4f8395f5b2febb9",
+      "initial_expected": 1,
+      "observed": 0,
+      "note": "Pinned Rust accepts null ZST effective-size-zero call; no native claim. Initial failed prediction retained in first/independent.json."
+    }
+  ],
+  "contract_sources": [
+    {
+      "url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs#L432-L543",
+      "role": "Pinned untyped copy, alignment and zero-effective-size safety contract."
+    },
+    {
+      "url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ub_checks.rs#L105-L120",
+      "role": "Pinned precondition helper distinguishes effective zero size for null check."
+    }
+  ],
+  "profile_boundaries": {
+    "negative_numeric_diagnostic_boundaries": [
+      "null-source-zero",
+      "null-destination-zero",
+      "misaligned-zero",
+      "zst-misaligned"
+    ],
+    "numeric_pointer_and_null_lint_routes": [
+      "numeric-zero",
+      "zst-numeric",
+      "zst-null",
+      "null-source-zero-allow",
+      "null-destination-zero-allow"
+    ],
+    "untyped_partial_field_transport": [
+      "partial-field-profile"
+    ],
+    "required_remaining": "Arbitrary initialized/invalid/uninitialized byte transport, general reinterpretation/offset provenance, numeric pointers and invalid_null_arguments lint are required follow-up work, not exclusions from PA27/28 completion."
+  }
+}

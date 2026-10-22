@@ -39,6 +39,17 @@ impl Machine<'_, '_> {
         else {
             return Err("pointer memory operation requires a typed raw pointer".into());
         };
+        if intrinsic.is_counted_memory() {
+            if mutable
+                || inputs.len() != 3
+                || result != TypeId::UNIT
+                || inputs[2] != TypeId::primitive(crate::types::Primitive::Usize)
+                || !matches!(facts.types.kind(inputs[1]), Some(Kind::Pointer { mutable: true, pointee: target }) if target == pointee)
+            {
+                return Err("counted pointer memory operation signature mismatch".into());
+            }
+            return Ok(pointee);
+        }
         let writing = intrinsic.writes_pointer();
         if mutable != writing
             || inputs.len() != if writing { 2 } else { 1 }
@@ -63,6 +74,9 @@ impl Machine<'_, '_> {
         }
         let ty = self.memory_pointee(intrinsic, instance)?;
         self.charge(1)?;
+        if intrinsic.is_counted_memory() {
+            return self.copy_nonoverlapping(ty, arguments);
+        }
         let writing = intrinsic.writes_pointer();
         if arguments.len() != if writing { 2 } else { 1 } {
             return Err("pointer memory operation argument count mismatch".into());

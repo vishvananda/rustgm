@@ -61,6 +61,25 @@ use conservative alignment one over the existing ABI snapshots. The declared
 `tests/unaligned-memory-contract.json`; general reinterpretation and the retained
 numeric/ZST pointer profiles remain separate boundaries.
 
+The bounded counted-copy slice adds canonical unsafe const
+`copy_nonoverlapping<T: Sized>(*const T, *mut T, usize) -> ()`, without a Copy
+bound. Runtime loops use existing scalar transfers or completed CopyObject
+spans; zero-size operations have no transfer loop. CTFE proves exact symbolic
+scalar/object or contiguous-array spans once, snapshots the selected source
+before stores and rejects physical overlap. Scalar union Images retain their
+initialization masks. No overwritten value is dropped and no source move is
+invented. Unsafe callers retain the ordinary ownership obligations.
+
+Zero effective bytes use an explicit address-only path: alignment and retained
+symbolic ancestry stay checked while contents, liveness and write permission
+are not accessed. This does not grant permission for a later nonzero operation.
+`tests/counted-memory-contract.json` distinguishes 45 declared object/three-view
+outcomes and 11 native comparisons from the required remaining byte-transport,
+numeric/null provenance and `invalid_null_arguments` source-lint contracts.
+Arbitrary uninitialized/invalid byte copying, general offset/reinterpretation
+and overlapping moves/fills remain open work. See
+`docs/pa28-counted-memory.md` for qualification and retained failed hypotheses.
+
 Typed initializer owners determine static-read eligibility. Const functions
 inherit the caller's evaluation context; named, associated and inline constants
 establish constant context, including a whole-initializer inline block. Nonzero

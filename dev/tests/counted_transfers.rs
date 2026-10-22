@@ -1,0 +1,226 @@
+//! Counted copies preserve span proofs, snapshots and explicit byte-profile boundaries.
+#[path = "harness/checked_sources.rs"]
+mod checked;
+#[path = "harness/native_references.rs"]
+mod native;
+#[path = "helpers/qualify.rs"]
+mod rustc;
+#[path = "helpers/resolve.rs"]
+mod source;
+#[path = "counted_transfers/work.rs"]
+mod work;
+use std::path::Path;
+const CASES: &[(&str, i32, i32, &str)] = &[
+    ("scalar-zero", 0, 0, ""),
+    ("shared-zero", 0, 0, ""),
+    (
+        "shared-one",
+        1,
+        1,
+        "constant copy_nonoverlapping regions overlap",
+    ),
+    ("partial-zero", 0, 0, ""),
+    ("overlap-zero", 0, 0, ""),
+    (
+        "null-source-zero",
+        1,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "null-destination-zero",
+        1,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "numeric-zero",
+        0,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "misaligned-zero",
+        1,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "packed-source-zero",
+        1,
+        1,
+        "constant counted pointer is unaligned",
+    ),
+    (
+        "packed-destination-zero",
+        1,
+        1,
+        "constant counted pointer is unaligned",
+    ),
+    ("zst-large", 0, 0, ""),
+    ("zst-shared", 0, 0, ""),
+    (
+        "zst-numeric",
+        0,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "zst-misaligned",
+        1,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "zst-null",
+        0,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    ("atomic-static-zero", 0, 0, ""),
+    (
+        "atomic-static-one",
+        1,
+        1,
+        "constant execution cannot read interior-mutable static storage",
+    ),
+    ("mutable-static-source-zero", 0, 0, ""),
+    ("mutable-static-destination-zero", 0, 0, ""),
+    ("expired-zero", 0, 0, ""),
+    ("zst-expired", 0, 0, ""),
+    (
+        "null-source-zero-allow",
+        0,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    (
+        "null-destination-zero-allow",
+        0,
+        1,
+        "constant counted numeric pointer access is not implemented",
+    ),
+    ("scalar-three", 0, 0, ""),
+    ("same-root-disjoint", 0, 0, ""),
+    (
+        "same-root-overlap",
+        1,
+        1,
+        "constant copy_nonoverlapping regions overlap",
+    ),
+    ("source-bounds", 1, 1, "constant counted transfer exceeds"),
+    (
+        "destination-bounds",
+        1,
+        1,
+        "constant counted transfer exceeds",
+    ),
+    (
+        "byte-count-overflow",
+        1,
+        1,
+        "constant copy byte count exceeds allocation size",
+    ),
+    ("noncopy", 0, 0, ""),
+    ("array-elements", 0, 0, ""),
+    ("reference-elements", 0, 0, ""),
+    ("generic", 0, 0, ""),
+    ("std-alias", 0, 0, ""),
+    (
+        "unsafe-required",
+        1,
+        1,
+        "call to unsafe function requires an unsafe context",
+    ),
+    (
+        "reified-const",
+        1,
+        1,
+        "non-const calls are not allowed in constant initializers",
+    ),
+    (
+        "partial-field-profile",
+        0,
+        1,
+        "constant counted union-field byte transport is not implemented",
+    ),
+    ("whole-image", 0, 0, ""),
+    (
+        "whole-image-uninitialized",
+        1,
+        1,
+        "constant union scalar read uses uninitialized bytes",
+    ),
+    (
+        "expired-one",
+        1,
+        1,
+        "constant pointer refers to expired storage",
+    ),
+    (
+        "shared-distinct-one",
+        1,
+        1,
+        "constant raw pointer write is derived from a shared reference",
+    ),
+    ("static-one", 0, 0, ""),
+    (
+        "mutable-static-one",
+        1,
+        1,
+        "constant execution cannot read mutable static storage",
+    ),
+    ("atomic-static-initializer", 0, 0, ""),
+];
+#[test]
+fn counted_memory_matches_predeclared_language_and_profile_outcomes()
+-> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let out = root.join(format!(
+        "obj/parallel/pa28/counted-memory/source-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&out)?;
+    for &(name, rust, frontend, reason) in CASES {
+        checked::check(
+            &root.join(format!("pa28/tests/spec/counted-memory/{name}.rs")),
+            &out,
+            name,
+            (rust, frontend, reason),
+        )?;
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires pinned rustc and CPPGM backend"]
+fn counted_memory_executes_owned_and_reified_transfers() -> Result<(), Box<dyn std::error::Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let inputs = [
+        "backend-loop",
+        "scalars",
+        "disjoint",
+        "generic",
+        "reified",
+        "argument-once",
+        "reference-elements",
+        "rest-destination",
+        "owned-drops",
+        "zst-large",
+        "shared-zero",
+    ]
+    .into_iter()
+    .map(|name| {
+        std::fs::read_to_string(root.join(format!("pa28/tests/counted-memory-native/{name}.rs")))
+            .map(|source| (name, source))
+    })
+    .collect::<Result<Vec<_>, _>>()?;
+    let cases = inputs
+        .iter()
+        .map(|(name, source)| (*name, source.as_str(), false))
+        .collect::<Vec<_>>();
+    native::check_cases("parallel/pa28/counted-memory/native", &cases)
+}

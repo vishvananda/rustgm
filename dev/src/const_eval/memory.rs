@@ -1,5 +1,6 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
 mod image_paths;
+mod loads;
 mod ranges;
 mod sequences;
 use super::{Constant, Failure, Frame, Machine};
@@ -9,6 +10,11 @@ use crate::{
     types::TypeId,
 };
 pub(super) use ranges::{Range, StoragePath};
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Liveness {
+    Required,
+    AddressOnly,
+}
 use std::collections::{HashMap, HashSet};
 
 enum Cell {
@@ -97,6 +103,24 @@ impl Machine<'_, '_> {
         Ok(())
     }
     pub(super) fn path(&mut self, address: Constant) -> Result<StoragePath, Failure> {
+        self.path_checked::<false, false>(address, 0)
+    }
+    pub(super) fn path_for(
+        &mut self,
+        address: Constant,
+        liveness: Liveness,
+        retained: usize,
+    ) -> Result<StoragePath, Failure> {
+        match liveness {
+            Liveness::Required => self.path_checked::<false, true>(address, retained),
+            Liveness::AddressOnly => self.path_checked::<true, true>(address, retained),
+        }
+    }
+    fn path_checked<const ADDRESS_ONLY: bool, const RETAINED: bool>(
+        &mut self,
+        address: Constant,
+        retained: usize,
+    ) -> Result<StoragePath, Failure> {
         let mut location = address.location().ok_or(Failure::Fault(
             "constant pointer has no allocation provenance",
         ))?;
@@ -104,7 +128,10 @@ impl Machine<'_, '_> {
         let mut range = None;
         loop {
             self.charge(1)?;
-            if self.memory.expired.contains(&location) {
+            if RETAINED {
+                self.reserve_cells(retained.saturating_add(path.len()).saturating_add(1))?;
+            }
+            if !ADDRESS_ONLY && self.memory.expired.contains(&location) {
                 return Err(Failure::Fault("constant pointer refers to expired storage"));
             }
             let place = Reader::new(self.evaluator.facts()).location(location)?;
@@ -255,38 +282,8 @@ impl Machine<'_, '_> {
         }
         let target = self.storage_target(place)?;
         let path = &path[..target.path_len(path.len())?];
-        let value = if self.memory.roots.contains_key(&root) {
-            if let Some(range) = range {
-                self.read_range(root, path, range)?
-            } else {
-                self.read_cell(root, path)?
-            }
-        } else {
-            let location = Reader::new(self.evaluator.facts()).location(root)?;
-            let mut value = if let Origin::Static(id) = location.origin {
-                self.check_static_read(id)?;
-                self.check_static_value_read(location.ty, place.ty, purpose)?;
-                let Some(value) = Reader::new(self.evaluator.facts()).definition(id) else {
-                    self.waiting = Some(super::Requirement::InitializerBody(id));
-                    return Ok(None);
-                };
-                value
-            } else {
-                location
-                    .value
-                    .ok_or("constant allocation has no completed contents")?
-            };
-            for &index in path {
-                self.charge(1)?;
-                value = self.evaluator.field(value, index)?;
-            }
-            if let Some(range) = range {
-                self.charge(1)?;
-                self.evaluator
-                    .sequence_range(value, range.from, range.length)?
-            } else {
-                value
-            }
+        let Some(value) = self.read_storage(root, path, range, place.ty, purpose)? else {
+            return Ok(None);
         };
         if let Some(union) = target.field() {
             let (value, work) = self.evaluator.union_read(

@@ -1,5 +1,6 @@
 //! Typed scalar operations and reified shims use the existing volatile vocabulary.
 mod atomic;
+mod counted;
 mod memory;
 use super::context::{Context, Representation};
 use crate::{
@@ -57,6 +58,17 @@ impl Context<'_> {
         else {
             return Err("volatile intrinsic requires a raw pointer");
         };
+        if intrinsic.is_counted_memory() {
+            if mutable
+                || parameters.len() != 3
+                || result != TypeId::UNIT
+                || parameters[2] != TypeId::primitive(crate::types::Primitive::Usize)
+                || !matches!(self.types.kind(parameters[1]), Some(Kind::Pointer { mutable: true, pointee: target }) if target == pointee)
+            {
+                return Err("counted pointer memory operation signature mismatch");
+            }
+            return self.memory_type(pointee);
+        }
         let writing = intrinsic.writes_pointer();
         if mutable != writing
             || parameters.len() != if writing { 2 } else { 1 }
@@ -102,7 +114,9 @@ impl Context<'_> {
             return Err("intrinsic shim requires a function item");
         };
         let signature = self.signature(signature)?;
-        let body = if intrinsic.is_memory() {
+        let body = if intrinsic.is_counted_memory() {
+            Self::counted_memory_body(representation)?
+        } else if intrinsic.is_memory() {
             Self::memory_body(intrinsic, representation)?
         } else if intrinsic.is_volatile() {
             let Representation::Scalar(ty) = representation else {

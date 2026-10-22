@@ -1,0 +1,1 @@
+const N:u32={let a=[2u32,3,5];let mut b=[0u32;3];unsafe{core::ptr::copy_nonoverlapping(&raw const a[0],&raw mut b[0],3);}b[0]+b[1]+b[2]};fn main(){check(N==10);let a=[11u32,13,17];let mut b=[19u32;3];unsafe{core::ptr::copy_nonoverlapping(&raw const a[0],&raw mut b[0],2);}check(b[0]==11);check(b[1]==13);check(b[2]==19);check(a[2]==17);}

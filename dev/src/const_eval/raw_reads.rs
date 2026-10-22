@@ -77,7 +77,11 @@ impl Machine<'_, '_> {
         self.charge(work)?;
         Ok(layout)
     }
-    fn storage_offset(&mut self, mut ty: TypeId, path: &[u64]) -> Result<(TypeId, u64), Failure> {
+    pub(super) fn storage_offset(
+        &mut self,
+        mut ty: TypeId,
+        path: &[u64],
+    ) -> Result<(TypeId, u64), Failure> {
         let mut offset = 0u64;
         for &index in path {
             self.charge(1)?;
@@ -229,12 +233,29 @@ impl Machine<'_, '_> {
             .raw
             .ok_or("constant raw write lacks its access anchor")?;
         let (root, path) = self.path(place.address)?.fields_only()?;
+        self.check_raw_write_authority(place.address, root)?;
+        self.check_raw_access(
+            Resolved {
+                ty: place.union.map_or(place.ty, |union| union.owner),
+                union: None,
+                ..place
+            },
+            access,
+            root,
+            &path,
+            true,
+        )
+    }
+    pub(super) fn check_raw_write_authority(
+        &mut self,
+        address: crate::sema::values::Constant,
+        root: LocationId,
+    ) -> Result<(), Failure> {
         let location = Reader::new(self.evaluator.facts()).location(root)?;
         if matches!(location.origin, crate::sema::values::Origin::Static(_)) {
             return Err("constant execution cannot write static storage".into());
         }
-        if place.address.write_permission() != Some(crate::sema::values::WritePermission::Writable)
-        {
+        if address.write_permission() != Some(crate::sema::values::WritePermission::Writable) {
             let (answer, work) = {
                 let facts = self.evaluator.facts();
                 let mut query =
@@ -256,17 +277,7 @@ impl Machine<'_, '_> {
             }
             .into());
         }
-        self.check_raw_access(
-            Resolved {
-                ty: place.union.map_or(place.ty, |union| union.owner),
-                union: None,
-                ..place
-            },
-            access,
-            root,
-            &path,
-            true,
-        )
+        Ok(())
     }
     fn check_raw_access(
         &mut self,

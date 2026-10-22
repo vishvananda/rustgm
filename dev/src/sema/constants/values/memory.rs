@@ -31,6 +31,24 @@ impl Constant {
         }
         self
     }
+    /// Follow only this pointer's retained ordinary projection ancestry.
+    /// The incoming write restriction belongs to the value, not the allocation.
+    pub(crate) fn projection_parent(
+        self,
+        reader: super::Reader<'_>,
+    ) -> Result<(Self, u64), &'static str> {
+        let Value::Reference(mut pointer) = self.0 else {
+            return Err("constant projection parent requires a pointer value");
+        };
+        let super::Origin::Projection { base, index } =
+            reader.location(LocationId(pointer.place))?.origin
+        else {
+            return Err("constant pointer has no ordinary projection parent");
+        };
+        pointer.place = base.0;
+        pointer.metadata = None;
+        Ok((Self(Value::Reference(pointer)), index))
+    }
     #[must_use]
     pub const fn pointer(location: LocationId) -> Self {
         Self(Value::Reference(Pointer::new(location.0)))

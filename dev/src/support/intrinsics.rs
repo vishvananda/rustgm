@@ -20,6 +20,7 @@ pub enum Intrinsic {
     AtomicFetchMax,
     ReadUnaligned,
     WriteUnaligned,
+    CopyNonoverlapping,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -37,7 +38,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 19] = [
+    pub const ALL: [Self; 20] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -57,6 +58,7 @@ impl Intrinsic {
         Self::AtomicFetchMax,
         Self::ReadUnaligned,
         Self::WriteUnaligned,
+        Self::CopyNonoverlapping,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -80,6 +82,7 @@ impl Intrinsic {
             Self::AtomicFetchMax => 16,
             Self::ReadUnaligned => 17,
             Self::WriteUnaligned => 18,
+            Self::CopyNonoverlapping => 19,
         }
     }
     #[must_use]
@@ -104,6 +107,7 @@ impl Intrinsic {
             Self::AtomicFetchMax => "fetch_max",
             Self::ReadUnaligned => "read_unaligned",
             Self::WriteUnaligned => "write_unaligned",
+            Self::CopyNonoverlapping => "copy_nonoverlapping",
         }
     }
     #[must_use]
@@ -114,8 +118,16 @@ impl Intrinsic {
     pub const fn is_memory(self) -> bool {
         matches!(
             self,
-            Self::Read | Self::Write | Self::ReadUnaligned | Self::WriteUnaligned
+            Self::Read
+                | Self::Write
+                | Self::ReadUnaligned
+                | Self::WriteUnaligned
+                | Self::CopyNonoverlapping
         )
+    }
+    #[must_use]
+    pub const fn is_counted_memory(self) -> bool {
+        matches!(self, Self::CopyNonoverlapping)
     }
     #[must_use]
     pub const fn is_unaligned(self) -> bool {
@@ -172,7 +184,8 @@ impl Intrinsic {
             | Self::Read
             | Self::Write
             | Self::ReadUnaligned
-            | Self::WriteUnaligned => false,
+            | Self::WriteUnaligned
+            | Self::CopyNonoverlapping => false,
         }
     }
     #[must_use]

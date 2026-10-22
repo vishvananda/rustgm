@@ -5,7 +5,7 @@ use crate::{
     types::{Kind, aggregate},
 };
 #[derive(Clone, Copy)]
-pub(super) enum StorageTarget {
+pub(in crate::const_eval) enum StorageTarget {
     Product,
     UnionScalar { field: UnionField, projected: bool },
 }
@@ -25,7 +25,7 @@ impl StorageTarget {
             Ok(total)
         }
     }
-    pub(super) const fn field(self) -> Option<UnionField> {
+    pub(in crate::const_eval) const fn field(self) -> Option<UnionField> {
         match self {
             Self::Product => None,
             Self::UnionScalar { field, .. } => Some(field),
@@ -33,7 +33,10 @@ impl StorageTarget {
     }
 }
 impl Machine<'_, '_> {
-    pub(super) fn storage_target(&self, place: Resolved) -> Result<StorageTarget, Failure> {
+    pub(in crate::const_eval) fn storage_target(
+        &self,
+        place: Resolved,
+    ) -> Result<StorageTarget, Failure> {
         if let Some(field) = place.union {
             return Ok(StorageTarget::UnionScalar {
                 field,
