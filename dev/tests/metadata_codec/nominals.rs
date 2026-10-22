@@ -216,6 +216,48 @@ fn shared_graph_roots_do_not_let_legacy_profiles_emit_unreachable_types()
 }
 
 #[test]
+fn private_record_layouts_do_not_grant_public_type_contracts()
+-> Result<(), Box<dyn std::error::Error>> {
+    for root in [0, 1] {
+        let mut nodes = vec![TypeNode::Record(RecordRef(0))];
+        if root == 1 {
+            nodes.push(reference(Lifetime::Static, 0));
+        }
+        let byte = u16::try_from(nodes.len())?;
+        nodes.push(TypeNode::Scalar(Scalar::U8));
+        let graph = TypeGraph::new(nodes)?;
+        let records = Nominals::new(
+            graph.clone(),
+            vec![record("Hidden", false, &[("byte", byte, true)])?],
+        )?;
+        let result = Interface::with_nominals(
+            owner()?,
+            vec![],
+            vec![function("f", &graph, 0, root, root)?],
+            vec![],
+            records,
+        );
+        assert!(result.is_err_and(|error| error.contains("unexported nominal")));
+    }
+    for visible in [false, true] {
+        let graph = TypeGraph::new(vec![
+            TypeNode::Scalar(Scalar::U8),
+            TypeNode::Record(RecordRef(0)),
+        ])?;
+        let records = Nominals::new(
+            graph,
+            vec![
+                record("Hidden", false, &[("byte", 0, true)])?,
+                record("Public", true, &[("hidden", 1, visible)])?,
+            ],
+        )?;
+        let result = Interface::with_nominals(owner()?, vec![], vec![], vec![], records);
+        assert_eq!(result.is_ok(), !visible);
+    }
+    Ok(())
+}
+
+#[test]
 fn record_names_cannot_replace_module_prefixes_but_keep_separate_value_namespaces()
 -> Result<(), Box<dyn std::error::Error>> {
     let graph = TypeGraph::new(vec![TypeNode::Scalar(Scalar::U8)])?;

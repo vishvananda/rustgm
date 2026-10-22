@@ -1,0 +1,85 @@
+{
+  "status": "planned; declared before independent qualification; no oracles",
+  "cases": [
+    {
+      "path": "tests/spec/closed-record-boundaries/copy-clone.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "bf0bc4b2f3e864f7a21a98df3989bf6b0a9f58e241541ea8834d286cb62f4e84"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/drop.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "1faec7d9ad0929e36a092bc549d963d0cf4e26e7609924e4f37fefaa8cbaaf30"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/repr-c.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "efa6dba154b692a66fe63c8938f8130133b32c27c68fa478a608c6fc9aaee39a"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/repr-align.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "59c540cd6439838bc627dc4c58ac0ce32b116c3d88cbe233076465a3a2c06330"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/non-exhaustive.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "dd9011a26d8e742932c1f3cefb2449a9a21aea92d321c1e41dd581c51400802b"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/lifetime-generic.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "ce11a5ddd84e0fb2ae650667f7264fac1616646df8781b63e600e3a6599c9b28"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/mutable-field.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "e5a06499c6d388d33488e9bc4d1460f7307c45d83cf7935303dbe65d8ffb4310"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/inherent-method.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "0a659eaa707b501cc1452aa98a5b40146e1b864cc49e5c91f9e1d9dac03c3f0a"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/private-field-type.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "af1eb1fa3977a81c8b571812f78b19a00abdab30379305a5c6e2d03a4cf9b5db"
+    },
+    {
+      "path": "tests/spec/closed-record-boundaries/private-result-type.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 1,
+      "reason": "Valid Rust; required later metadata contract remains unsupported in the closed-record profile.",
+      "source_sha256": "a2da746eef10d3b2bd27bd6500de14acc6f79c712ec30f74e8805951d188432e"
+    }
+  ]
+}

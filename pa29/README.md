@@ -38,14 +38,26 @@ Profile two additionally transports scalar/reference function signatures with
 explicit late-bound lifetime slots, nested shared/mutable references and static
 output references. It retains ordinary unsafe permission and call/borrow checks;
 it exports no function bodies or const-call permission. Private checked generic
-instances remain local to each crate. Exposed nominals, early lifetime bounds,
+instances remain local to each crate. Profiles zero through two reject exposed
+nominals. Early lifetime bounds,
 type/const-generic or const/async functions, target-feature contracts, other ABIs,
 public reexports and empty public modules diagnose profile boundaries. Generic
-body exports, aggregate/reference values and allocation graphs, and the full
+body exports, aggregate/reference constant values and allocation graphs, and the full
 assignment contract remain unfinished. See `docs/pa29-scalar-metadata.md`,
 `docs/pa29-import-remapping.md`,
 `docs/pa29-scalar-linking.md`, `docs/pa29-scalar-values.md` and
 `docs/pa29-borrowed-signatures.md`. The assignment remains planned.
+
+Profile three additionally transports closed nongeneric named records with the
+default Rust representation. Supported fields contain scalars, other closed
+records or static shared references. Public declarations and private reachable
+layouts share one artifact type graph. Imports preserve nominal identity,
+field visibility, ordinary sizedness, moves, patterns and layout without
+inventing source nodes or constructor bodies. Private layout transport grants
+no public type access. Unsupported representation, generic, derive, trait,
+method and destruction contracts remain explicit profile errors. See
+`docs/pa29-closed-records.md` for the independent source/native qualification
+and remaining assignment work.
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error

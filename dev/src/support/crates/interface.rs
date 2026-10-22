@@ -1,7 +1,7 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, Signature, TypeNode,
+    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, Record, Signature, TypeNode,
 };
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
@@ -231,6 +231,10 @@ impl Interface {
     #[must_use]
     pub const fn nominals(&self) -> Option<&Nominals> {
         self.nominals.as_ref()
+    }
+    #[must_use]
+    pub fn records(&self) -> &[Record] {
+        self.nominals.as_ref().map_or(&[], Nominals::records)
     }
     pub(super) const fn budget(&self) -> (usize, usize) {
         (self.atoms, self.names)

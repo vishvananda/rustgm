@@ -1,0 +1,172 @@
+{
+  "status": "planned; source outcomes declared before frontend qualification; no text oracles",
+  "profile": "Rust 1.98.0 edition 2024 linux x86-64 panic abort overflow checks",
+  "crate_name": "records",
+  "cases": [
+    {
+      "path": "tests/spec/closed-records/first.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "source_sha256": "7774584928f439b834297f6dd2f08360b17850ff9bc4dff19559662b91cb58a2",
+      "origin_sha256": "7774584928f439b834297f6dd2f08360b17850ff9bc4dff19559662b91cb58a2"
+    },
+    {
+      "path": "tests/spec/closed-records/second.rs",
+      "kind": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "source_sha256": "7774584928f439b834297f6dd2f08360b17850ff9bc4dff19559662b91cb58a2",
+      "origin_sha256": "7774584928f439b834297f6dd2f08360b17850ff9bc4dff19559662b91cb58a2"
+    },
+    {
+      "path": "tests/spec/closed-records/pass-construct.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "28761b354ac93df14d4d73dc137087b9f04d789095c380c471190e6a219c85c9",
+      "derived_from_sha256": "5d2cfd6138a3d4de675d301b95df40ea7f4c0d0e23cadc196c1b0bc3d44c78be",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-distinct-libraries.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "cd6a960b237b7bb5c00b74db8e5106ba0360c5f0f34cfabc4e60d094d7b341cc",
+      "derived_from_sha256": "130e20837fe6c975d5550b683527ab42944e31eb016643e89219ff7ab5d0f839",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-nested.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "18318a79a17d3b9a8916503a206a0ee6cdab6d832d5635a899e0eb12b27a23ec",
+      "derived_from_sha256": "d53348feca1d9886a0401974e53fa7ed7792bf4d05dec130499da2dc54ef3a0d",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-pattern.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "fae36437fb8b66f71e78caf7702d6c7d6b665dde6eb5a6f7228f68ca6c1e2c6d",
+      "derived_from_sha256": "85f907d07e68c2dd8c300be4fb9688b760c0127d66ac42755082e45656b00ae6",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-private-value.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "bf34f704c80d702d41805f7e6c88e971e2668cee48bfdeea128a70a57816b17a",
+      "derived_from_sha256": "c7b82a0390a33400e5133d214e023919c59f149a15f9b612580282583628ddaf",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-private-wildcard.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "e0dff65b88c2088a78098eb8a402213129b23d795d8fb8594997ce0cfa70fc69",
+      "derived_from_sha256": "e3d437471a71e8d451df0f04a08e85f075f64405dff6a92c5716a3801e09c2ab",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-return.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "458dcdfac470701369ccf54db583d91d8f82eccab5d7ca5e2d400f13913a5514",
+      "derived_from_sha256": "ceda3a1414285bb71082dcde6515e336b3235b72328049ef96756502eff25467",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-static-field.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "631cbd090f59a005f73bef7b806e55da526fdd47b101faf59499e96845458ca6",
+      "derived_from_sha256": "ac90442389b7dd33c65a440ec1b69f1838ca385300e172da87a8d2034a4704c7",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/reject-distinct-nominal.rs",
+      "kind": "program",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "85364fabd08b27eec7ef2ae880aa0dc86260425f356ef9cab6a3a1ea3bf716e4",
+      "derived_from_sha256": "3bf9e949a9e1694760c87b7618a05ff5e32ca3ee8633db9f50a08160a7d07015",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/reject-moved-nested.rs",
+      "kind": "program",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "7274a8712acd48b0de7a07300f0da161fc5689725ffc833e15d425935215c355",
+      "derived_from_sha256": "1e2f0d6d6765061da74efe813fbb1bd505fb21e43208a23c065f967f2e9fd767",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/reject-moved-record.rs",
+      "kind": "program",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "c5f717214753f842229461d3720d54eaa919841b1875911133d629f3428bee81",
+      "derived_from_sha256": "50538365c19290dfe725605b1f0a2e3e2ee0994336654a207f96d26192f0ed60",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/reject-private-construct.rs",
+      "kind": "program",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "9efd324cca77eae283c96d6d3024b41c731fc82bb1c107177ded7c023213198c",
+      "derived_from_sha256": "773a339f85839c0f99cb85fbe0305bb5821484c4a2b7bed23ff70484d92e1371",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/reject-private-field.rs",
+      "kind": "program",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "d3aea3b9e92ecd3c0ff7abb77ad5188210d96bb80a4fffd8193fcfa49f43c655",
+      "derived_from_sha256": "190204e2c62495a0850706732c058ca8d4c072717a02b45e17a25c28d99a75f2",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/reject-private-pattern.rs",
+      "kind": "program",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "source_sha256": "a45969848422a2cfede73f510d88033d48a291f7fc05d18fb70487d150e06373",
+      "derived_from_sha256": "5bdb443b8ccdb56baa34c06c91e1e1567df55f694993acefc64c801d185c73ba",
+      "derivation": "Rename external aliases to one/two and replace assert macro with a checked arithmetic failure helper where used; independent qualification required for these bytes."
+    },
+    {
+      "path": "tests/spec/closed-records/pass-local-wrapper.rs",
+      "kind": "program",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "source_sha256": "522ca2d7022ee63fef71fb914fa6d882b5e5e3ef806ae7111375e4fe77f2680a",
+      "purpose": "Local aggregate fields consume imported nominal sizedness through ordinary completed rules."
+    }
+  ]
+}

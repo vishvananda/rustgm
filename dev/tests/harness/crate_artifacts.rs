@@ -37,6 +37,9 @@ pub fn build_values(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
 pub fn build_borrowed(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
     build_sources(tag, "borrowed-interfaces", "borrowed")
 }
+pub fn build_records(tag: &str) -> Result<Build, Box<dyn std::error::Error>> {
+    build_sources(tag, "closed-records", "records")
+}
 fn build_sources(
     tag: &str,
     family: &'static str,
@@ -127,11 +130,8 @@ impl Build {
         }
         Ok(())
     }
-    pub fn execute(&self, name: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let independent = self.folder.join(format!("{name}.rustc"));
-        let mut command = rustc();
+    fn client_inputs(&self, name: &str, command: &mut Command) {
         command
-            .arg("--crate-name=client")
             .arg(self.fixture(name))
             .arg("-L")
             .arg(format!("dependency={}", self.folder.display()))
@@ -144,9 +144,54 @@ impl Build {
             .arg(format!(
                 "two={}",
                 self.folder.join("libsecond.rlib").display()
-            ))
+            ));
+    }
+    pub fn qualify_client(
+        &self,
+        name: &str,
+        code: Option<&str>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let mut command = Command::new("rustc");
+        command.args([
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-name=client",
+            "--emit=obj",
+            "-C",
+            "panic=abort",
+            "-C",
+            "overflow-checks=yes",
+        ]);
+        self.client_inputs(name, &mut command);
+        let output = command
             .arg("-o")
-            .arg(&independent);
+            .arg(self.folder.join(format!("{name}.o")))
+            .output()?;
+        std::fs::write(
+            self.folder.join(format!("{name}.rustc.stderr")),
+            &output.stderr,
+        )?;
+        assert_eq!(
+            output.status.code(),
+            Some(i32::from(code.is_some())),
+            "{name}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        if let Some(code) = code {
+            assert!(
+                String::from_utf8_lossy(&output.stderr).contains(code),
+                "{name}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+        Ok(())
+    }
+    pub fn execute(&self, name: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let independent = self.folder.join(format!("{name}.rustc"));
+        let mut command = rustc();
+        command.arg("--crate-name=client");
+        self.client_inputs(name, &mut command);
+        command.arg("-o").arg(&independent);
         checked(&format!("{name}.rustc-build"), &self.folder, &mut command)?;
         let lowir = self.folder.join(format!("{name}.lowir"));
         let output = checked(

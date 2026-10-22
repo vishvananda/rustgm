@@ -3,6 +3,12 @@ use super::{Checker, DefId, DefKind, Error, ItemId, ItemKind, NodeKey, State, Ty
 use crate::{resolve::unit::FileId, sema::representation};
 
 impl Checker<'_> {
+    pub(in super::super) fn external_record(&self, item: ItemId) -> bool {
+        self.facts
+            .crates
+            .as_deref()
+            .is_some_and(|linkage| linkage.imported_record(DefId(item.0)))
+    }
     pub(in super::super) fn reserve_nominals(&mut self) -> Result<(), Error> {
         let representations = representation::analyze(self.report)?;
         for index in 0..self.report.resolution.definitions.len() {
@@ -19,6 +25,13 @@ impl Checker<'_> {
                 })?))
                 .is_some()
             {
+                continue;
+            }
+            let item = ItemId(
+                u32::try_from(index)
+                    .map_err(|_| Error::at(FileId(0), 0, "too many nominal definitions"))?,
+            );
+            if self.external_record(item) {
                 continue;
             }
             let key = definition
@@ -85,6 +98,9 @@ impl Checker<'_> {
         item: ItemId,
         finish: bool,
     ) -> Result<(), Error> {
+        if self.external_record(item) {
+            return Ok(());
+        }
         let index = self.nominals.index[&item];
         let entry = &self.nominals.entries[index];
         let (key, state) = (entry.key, entry.contract);

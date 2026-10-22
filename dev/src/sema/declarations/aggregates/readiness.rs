@@ -131,6 +131,15 @@ impl Checker<'_> {
         self.work.push(Work::ValueShape(ty));
     }
     pub(in super::super) fn constant_value_shape(&mut self, ty: TypeId) -> Result<(), Error> {
+        if let Some(Type::Adt(item, _)) = self.facts.types.kind(ty)
+            && self.external_record(item)
+        {
+            // The artifact's complete closed graph was validated and remapped before
+            // checking any local declaration. No source field/default work exists.
+            self.nominals.shapes.insert(ty);
+            self.nominals.contracts.insert(ty, State::Complete);
+            return Ok(());
+        }
         if self.nominals.shapes.contains(&ty) {
             return Ok(());
         }

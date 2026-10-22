@@ -45,38 +45,6 @@ fn borrowed_interfaces_preserve_output_slots_and_reject_invalid_clients()
             _ => "non-const",
         };
         assert!(diagnostic.contains(reason), "{name}: {diagnostic}");
-        let independent = Command::new("rustc")
-            .args([
-                "+1.98.0",
-                "--edition=2024",
-                "--crate-name=client",
-                "--emit=obj",
-                "-C",
-                "panic=abort",
-                "-C",
-                "overflow-checks=yes",
-            ])
-            .arg(build.fixture(name))
-            .arg("-L")
-            .arg(format!("dependency={}", build.folder.display()))
-            .arg("--extern")
-            .arg(format!(
-                "one={}",
-                build.folder.join("libfirst.rlib").display()
-            ))
-            .arg("--extern")
-            .arg(format!(
-                "two={}",
-                build.folder.join("libsecond.rlib").display()
-            ))
-            .arg("-o")
-            .arg(build.folder.join(format!("{name}.o")))
-            .output()?;
-        std::fs::write(
-            build.folder.join(format!("{name}.rustc.stderr")),
-            &independent.stderr,
-        )?;
-        assert_eq!(independent.status.code(), Some(1), "{name}");
         let code = match name {
             "dangling" | "wrong-output-slot" => "E0515",
             "shared-to-mut" => "E0308",
@@ -84,10 +52,7 @@ fn borrowed_interfaces_preserve_output_slots_and_reject_invalid_clients()
             "exclusive-result" => "E0499",
             _ => "E0015",
         };
-        assert!(
-            String::from_utf8_lossy(&independent.stderr).contains(code),
-            "{name}"
-        );
+        build.qualify_client(name, Some(code))?;
     }
     Ok(())
 }

@@ -5,7 +5,10 @@ use super::{
     package::{Error, ModuleId},
     unit::FileId,
 };
-use crate::support::crates::{Constant, Dependencies, ExternalDef, ExternalKind, Function};
+use crate::support::crates::{
+    Constant, Dependencies, ExternalDef, ExternalKind, Function, Interface,
+    Namespace as WireNamespace, Record,
+};
 use std::{collections::HashMap, sync::Arc};
 
 pub struct Imported {
@@ -13,6 +16,7 @@ pub struct Imported {
     definitions: HashMap<ExternalDef, DefId>,
     functions: Vec<(DefId, usize, usize)>,
     constants: Vec<(DefId, usize, usize)>,
+    records: Vec<(DefId, usize, usize)>,
 }
 impl Imported {
     #[must_use]
@@ -33,6 +37,14 @@ impl Imported {
                 )
             })
     }
+    pub fn records(&self) -> impl Iterator<Item = (DefId, &Record)> {
+        self.records.iter().map(|&(definition, artifact, record)| {
+            (
+                definition,
+                &self.dependencies.artifacts()[artifact].records()[record],
+            )
+        })
+    }
     pub fn constants(&self) -> impl Iterator<Item = (DefId, &Constant)> {
         self.constants
             .iter()
@@ -50,13 +62,15 @@ fn error(message: &'static str) -> Error {
 impl Resolver<'_> {
     pub(super) fn import_crates(&mut self, dependencies: Arc<Dependencies>) -> Result<(), Error> {
         let external = self.new_scope(None, ModuleId(0), true)?;
+        let artifacts = Arc::clone(&dependencies);
         let mut imported = Imported {
             dependencies,
             definitions: HashMap::new(),
             functions: Vec::new(),
             constants: Vec::new(),
+            records: Vec::new(),
         };
-        for (artifact_index, artifact) in imported.dependencies.artifacts().iter().enumerate() {
+        for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
             let scope = self.new_scope(None, ModuleId(0), true)?;
             let name = self
                 .package
@@ -85,6 +99,10 @@ impl Resolver<'_> {
                 .map_err(error)?,
                 root,
             );
+            if artifact.nominals().is_some() {
+                self.import_nominal_items(scope, artifact, artifact_index, &mut imported)?;
+                continue;
+            }
             for (function_index, function) in artifact.functions().iter().enumerate() {
                 let definition = self.import_item(
                     scope,
@@ -135,6 +153,81 @@ impl Resolver<'_> {
         self.facts.crates = Some(Box::new(imported));
         Ok(())
     }
+    fn import_nominal_items(
+        &mut self,
+        scope: ScopeId,
+        artifact: &Interface,
+        artifact_index: usize,
+        imported: &mut Imported,
+    ) -> Result<(), Error> {
+        let mut entries: Vec<_> =
+            artifact
+                .functions()
+                .iter()
+                .enumerate()
+                .map(|(index, entry)| (entry.definition(), DefKind::Function, index, true))
+                .chain(
+                    artifact
+                        .constants()
+                        .iter()
+                        .enumerate()
+                        .map(|(index, entry)| (entry.definition(), DefKind::Const, index, true)),
+                )
+                .chain(artifact.records().iter().enumerate().map(|(index, entry)| {
+                    (entry.definition(), DefKind::Struct, index, entry.public())
+                }))
+                .collect();
+        entries.sort_unstable_by_key(|&(identity, ..)| identity);
+        for (identity, kind, index, public) in entries {
+            let definition = if public {
+                self.import_item(scope, identity, kind, &mut imported.definitions)?
+            } else {
+                self.import_hidden_record(scope, identity, &mut imported.definitions)?
+            };
+            match kind {
+                DefKind::Function => {
+                    imported.functions.push((definition, artifact_index, index));
+                }
+                DefKind::Const => {
+                    imported.constants.push((definition, artifact_index, index));
+                }
+                DefKind::Struct => {
+                    imported.records.push((definition, artifact_index, index));
+                }
+                _ => return Err(error("invalid nominal artifact declaration")),
+            }
+        }
+        Ok(())
+    }
+    fn import_hidden_record(
+        &mut self,
+        scope: ScopeId,
+        external: &ExternalDef,
+        definitions: &mut HashMap<ExternalDef, DefId>,
+    ) -> Result<DefId, Error> {
+        let spelling = external
+            .path()
+            .last()
+            .ok_or_else(|| error("missing hidden record name"))?;
+        let name = self.package.names.intern(spelling).map_err(error)?;
+        let id = DefId(
+            u32::try_from(self.facts.definitions.len())
+                .map_err(|_| error("too many imported definitions"))?,
+        );
+        self.facts.definitions.push(Definition {
+            name,
+            namespace: Namespace::Type,
+            kind: DefKind::Struct,
+            scope,
+            node: None,
+            access: Access::ExternalPrivate,
+            members: None,
+        });
+        if definitions.insert(external.clone(), id).is_some() {
+            return Err(error("duplicate hidden record identity"));
+        }
+        Ok(id)
+    }
     fn import_item(
         &mut self,
         mut scope: ScopeId,
@@ -147,7 +240,10 @@ impl Resolver<'_> {
             let name = self.package.names.intern(component).map_err(error)?;
             let last = index + 1 == path.len();
             let namespace = if last {
-                Namespace::Value
+                match external.namespace() {
+                    WireNamespace::Type => Namespace::Type,
+                    WireNamespace::Value => Namespace::Value,
+                }
             } else {
                 Namespace::Type
             };

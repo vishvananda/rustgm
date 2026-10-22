@@ -1,20 +1,28 @@
 //! Typed signature graphs use one indexed remap per import, never source reconstruction.
 use super::{Declarations, Error, error, scalar};
 use crate::{
-    support::crates::{Lifetime, Signature, TypeGraph, TypeNode, TypeRef},
-    types::{Kind, RegionId, TypeId, callable::Convention},
+    support::crates::{Lifetime, RecordRef, Signature, TypeGraph, TypeNode, TypeRef},
+    types::{GenericArgs, ItemId, Kind, RegionId, TypeId, callable::Convention},
 };
 use std::collections::HashMap;
 
 pub(super) fn import(facts: &mut Declarations, signature: &Signature) -> Result<TypeId, Error> {
-    let mut types = Vec::with_capacity(signature.types().nodes().len());
-    for node in signature.types().nodes() {
+    let types = import_graph(facts, signature.types(), &[])?;
+    import_roots(facts, signature, &types)
+}
+pub(super) fn import_graph(
+    facts: &mut Declarations,
+    graph: &TypeGraph,
+    records: &[TypeId],
+) -> Result<Vec<TypeId>, Error> {
+    let mut types = Vec::with_capacity(graph.nodes().len());
+    for node in graph.nodes() {
         facts.crates.get_or_insert_default().import_work.type_nodes += 1;
         let ty = match *node {
             TypeNode::Scalar(value) => scalar(value),
-            TypeNode::Record(_) => {
-                return Err(error("nominal metadata import requires shared remapping"));
-            }
+            TypeNode::Record(record) => *records
+                .get(usize::from(record.0))
+                .ok_or_else(|| error("missing imported nominal identity"))?,
             TypeNode::Reference {
                 region,
                 mutable,
@@ -39,6 +47,13 @@ pub(super) fn import(facts: &mut Declarations, signature: &Signature) -> Result<
         };
         types.push(ty);
     }
+    Ok(types)
+}
+pub(super) fn import_roots(
+    facts: &mut Declarations,
+    signature: &Signature,
+    types: &[TypeId],
+) -> Result<TypeId, Error> {
     let get = |id: TypeRef| {
         types
             .get(usize::from(id.0))
@@ -69,12 +84,17 @@ pub(super) fn import(facts: &mut Declarations, signature: &Signature) -> Result<
 }
 
 #[derive(Default)]
-struct Export {
-    nodes: Vec<TypeNode>,
+pub(super) struct Export {
+    pub(super) nodes: Vec<TypeNode>,
     remap: HashMap<TypeId, TypeRef>,
 }
 impl Export {
-    fn root(&mut self, facts: &Declarations, root: TypeId) -> Result<TypeRef, Error> {
+    pub(super) fn root(
+        &mut self,
+        facts: &Declarations,
+        root: TypeId,
+        records: &HashMap<ItemId, RecordRef>,
+    ) -> Result<TypeRef, Error> {
         let mut work = vec![(root, false)];
         while let Some((ty, finish)) = work.pop() {
             if self.remap.contains_key(&ty) {
@@ -110,6 +130,12 @@ impl Export {
                         .get(&referent)
                         .ok_or_else(|| error("missing exported referent"))?,
                 }
+            } else if let Some(Kind::Adt(item, GenericArgs::EMPTY)) = facts.types.kind(ty) {
+                TypeNode::Record(
+                    *records
+                        .get(&item)
+                        .ok_or_else(|| error("exposed nominal is outside the metadata profile"))?,
+                )
             } else {
                 TypeNode::Scalar(super::export::scalar(facts, ty)?)
             };
@@ -125,7 +151,30 @@ impl Export {
             .ok_or_else(|| error("missing exported type root"))
     }
 }
-pub(super) fn export(facts: &Declarations, signature: TypeId) -> Result<Signature, Error> {
+pub(super) struct SignatureRoots {
+    slots: u16,
+    parameters: Vec<TypeRef>,
+    result: TypeRef,
+    unsafe_: bool,
+}
+impl SignatureRoots {
+    pub(super) fn finish(self, graph: TypeGraph) -> Result<Signature, Error> {
+        Signature::with_shared_types(
+            graph,
+            self.slots,
+            self.parameters,
+            self.result,
+            self.unsafe_,
+        )
+        .map_err(error)
+    }
+}
+pub(super) fn export_roots(
+    facts: &Declarations,
+    signature: TypeId,
+    graph: &mut Export,
+    records: &HashMap<ItemId, RecordRef>,
+) -> Result<SignatureRoots, Error> {
     let Some(Kind::Function {
         bound_regions,
         parameters,
@@ -138,21 +187,31 @@ pub(super) fn export(facts: &Declarations, signature: TypeId) -> Result<Signatur
             "export calling convention is outside the metadata profile",
         ));
     };
-    let mut graph = Export::default();
     let parameters = facts
         .types
         .list(parameters)
         .ok_or_else(|| error("missing export parameters"))?
         .iter()
-        .map(|&ty| graph.root(facts, ty))
+        .map(|&ty| graph.root(facts, ty, records))
         .collect::<Result<Vec<_>, _>>()?;
-    let result = graph.root(facts, result)?;
-    Signature::with_types(
-        graph.nodes,
-        u16::try_from(bound_regions).map_err(|_| error("too many exported lifetime slots"))?,
+    let result = graph.root(facts, result, records)?;
+    Ok(SignatureRoots {
+        slots: u16::try_from(bound_regions)
+            .map_err(|_| error("too many exported lifetime slots"))?,
         parameters,
         result,
         unsafe_,
+    })
+}
+pub(super) fn export(facts: &Declarations, signature: TypeId) -> Result<Signature, Error> {
+    let mut graph = Export::default();
+    let roots = export_roots(facts, signature, &mut graph, &HashMap::new())?;
+    Signature::with_types(
+        graph.nodes,
+        roots.slots,
+        roots.parameters,
+        roots.result,
+        roots.unsafe_,
     )
     .map_err(error)
 }

@@ -5,7 +5,14 @@ use std::sync::Arc;
 
 impl Checker<'_> {
     pub(super) fn complete_nominal_sizes(&mut self) -> Result<(), Error> {
-        if self.nominals.entries.is_empty() {
+        if self.nominals.entries.is_empty()
+            && self
+                .report
+                .resolution
+                .crates
+                .as_ref()
+                .is_none_or(|imported| imported.records().next().is_none())
+        {
             return Ok(());
         }
         for index in 0..self.nominals.entries.len() {

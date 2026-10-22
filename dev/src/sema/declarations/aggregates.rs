@@ -65,6 +65,9 @@ impl Checker<'_> {
         self.constructors()
     }
     pub(super) fn nominal_fields(&mut self, item: ItemId, finish: bool) -> Result<(), Error> {
+        if self.external_record(item) {
+            return Ok(());
+        }
         let index = self.nominals.index[&item];
         let entry = &self.nominals.entries[index];
         let (key, kind, repr, state) = (entry.key, entry.kind, entry.repr, entry.state);

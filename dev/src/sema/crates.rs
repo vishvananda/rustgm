@@ -1,5 +1,6 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 mod export;
+mod imported_records;
 mod imported_values;
 mod type_transport;
 use super::{foreign, model::Declarations};
@@ -21,6 +22,7 @@ pub struct Linkage {
     prefix: Option<String>,
     symbols: HashMap<DefId, String>,
     imported_constants: HashSet<DefId>,
+    imported_records: HashSet<DefId>,
     import_work: ImportWork,
 }
 /// Exact signature graph and root visits during one source-free import pass.
@@ -29,11 +31,16 @@ pub struct ImportWork {
     pub signatures: usize,
     pub type_nodes: usize,
     pub roots: usize,
+    pub records: usize,
+    pub fields: usize,
 }
 impl Linkage {
     #[must_use]
     pub const fn import_work(&self) -> ImportWork {
         self.import_work
+    }
+    pub(crate) fn imported_record(&self, definition: DefId) -> bool {
+        self.imported_records.contains(&definition)
     }
     /// Install one explicit local identity without changing imported contracts.
     /// # Errors
@@ -72,8 +79,9 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
     };
+    let records = imported_records::prepare(imported, facts)?;
     for (definition, function) in imported.functions() {
-        let signature = type_transport::import(facts, function.signature())?;
+        let signature = records.signature(facts, function)?;
         let ty = facts
             .types
             .intern(Type::FunctionItem {

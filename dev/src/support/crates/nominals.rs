@@ -124,7 +124,7 @@ impl Nominals {
             }
             for field in record.fields() {
                 if field_types.get(usize::from(field.ty.0)) != Some(&true) {
-                    return Err("metadata record field requires a static shared type root");
+                    return Err("metadata record field is outside the static shared profile");
                 }
             }
         }
@@ -246,6 +246,31 @@ impl Nominals {
                 TypeNode::Record(record) => Some(usize::from(record.0)),
                 TypeNode::Reference { referent, .. } => leaves[usize::from(referent.0)],
             });
+        }
+        // This profile has no private-module or private-type API visibility
+        // transport. Private declarations may occur only behind private fields.
+        let public_root = |root: TypeRef| {
+            leaves[usize::from(root.0)].is_none_or(|record| self.records[record].public)
+        };
+        if functions.iter().any(|function| {
+            !public_root(function.signature().result())
+                || function
+                    .signature()
+                    .parameters()
+                    .iter()
+                    .any(|&root| !public_root(root))
+        }) || self
+            .records
+            .iter()
+            .filter(|record| record.public)
+            .any(|record| {
+                record
+                    .fields
+                    .iter()
+                    .any(|field| field.public && !public_root(field.ty))
+            })
+        {
+            return Err("unexported nominal in a public metadata contract is outside the profile");
         }
         let mut seen = vec![false; self.records.len()];
         let mut work: Vec<_> = self

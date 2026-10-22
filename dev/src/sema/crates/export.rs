@@ -1,5 +1,6 @@
-//! Public scalar exports consume resolved bindings and completed signature facts.
+//! Library exports consume resolved bindings and completed signature/member facts.
 mod named_values;
+mod records;
 use super::error;
 use crate::{
     resolve::{
@@ -9,10 +10,7 @@ use crate::{
     },
     sema::{foreign, model::Declarations},
     support::{
-        crates::{
-            CrateIdentity, ExternalDef, ExternalKind, Function, Interface, Scalar, Signature,
-            Symbol,
-        },
+        crates::{CrateIdentity, ExternalDef, ExternalKind, Interface, Scalar, Symbol},
         linkage::{Linkage as Kind, Naming},
     },
     syntax::{
@@ -26,7 +24,7 @@ pub struct Exports {
     pub interface: Interface,
     pub roots: Vec<DefId>,
 }
-/// Publish the initial scalar profile after ordinary semantic checking.
+/// Publish a supported metadata profile after ordinary semantic checking.
 /// The caller must complete body proofs/lowering before writing the artifact.
 /// # Errors
 /// Diagnoses unsupported exposed declarations instead of silently omitting them.
@@ -46,6 +44,7 @@ pub fn export(
     let mut functions = Vec::new();
     let mut constants = Vec::new();
     let mut roots = Vec::new();
+    let mut records = Vec::new();
     let mut work = vec![(report.resolution.module_scopes[0], Vec::<String>::new())];
     let mut visits = 0usize;
     while let Some((scope, path)) = work.pop() {
@@ -83,6 +82,7 @@ pub fn export(
                 DefKind::Const => {
                     constants.push(named_values::export(facts, definition, &identity, child)?);
                 }
+                DefKind::Struct => records.push(definition),
                 _ => {
                     return Err(error(
                         "exposed declaration is outside the scalar metadata profile",
@@ -106,8 +106,16 @@ pub fn export(
             identities.dedup();
             identities
         });
-    let interface = Interface::with_constants(identity.clone(), dependencies, functions, constants)
-        .map_err(error)?;
+    functions.sort_unstable_by(|left, right| left.definition.cmp(&right.definition));
+    let interface = records::finish(
+        report,
+        facts,
+        identity.clone(),
+        dependencies,
+        functions,
+        constants,
+        &records,
+    )?;
     let linkage = facts.crates.get_or_insert_default();
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);
@@ -124,13 +132,18 @@ fn public_members(report: &Report, scope: ScopeId) -> Vec<Binding> {
         })
         .collect()
 }
+struct PreparedFunction {
+    definition: ExternalDef,
+    signature: TypeId,
+    symbol: Symbol,
+}
 fn function(
     report: &Report,
     facts: &mut Declarations,
     definition: DefId,
     identity: &CrateIdentity,
     path: Vec<String>,
-) -> Result<Function, Error> {
+) -> Result<PreparedFunction, Error> {
     let callable = callable(report, facts, definition)?;
     let signature = callable.signature;
     let registry = facts.foreign.get_or_insert_default();
@@ -165,11 +178,14 @@ fn function(
         .get_or_insert_default()
         .symbols
         .insert(definition, external.rust_symbol());
-    Function::new(external, callable.wire, symbol).map_err(error)
+    Ok(PreparedFunction {
+        definition: external,
+        signature,
+        symbol,
+    })
 }
 struct Callable {
     signature: TypeId,
-    wire: Signature,
     safety: Safety,
 }
 fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<Callable, Error> {
@@ -235,10 +251,8 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
     let Some(Type::FunctionItem { signature, .. }) = facts.types.kind(ty) else {
         return Err(error("missing export callable"));
     };
-    let signature_wire = super::type_transport::export(facts, signature)?;
     Ok(Callable {
         signature,
-        wire: signature_wire,
         safety: flags.safety,
     })
 }
