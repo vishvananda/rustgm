@@ -2085,7 +2085,7 @@ impl Checker<'_> {
         }
         if !constructor && let Some(expected) = expected {
             let result = self.child(node, term, parameters as usize)?;
-            if self.head(node, result)?.is_none()
+            if self.contextual_head(node, result)?.is_none()
                 && matches!(
                     self.contextual_head(node, expected)?,
                     Some(Constructor::Function { .. })

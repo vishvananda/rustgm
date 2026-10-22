@@ -285,3 +285,6 @@ fn fresh_item_signatures_follow_each_type_argument_once() -> Result<(), String> 
 
 #[path = "call_inference/returned.rs"]
 mod returned;
+
+#[path = "call_inference/hint_heads.rs"]
+mod hint_heads;

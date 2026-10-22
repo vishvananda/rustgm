@@ -188,15 +188,15 @@ impl Checker<'_> {
         let expected = self.child(call, signature, parameter as usize)?;
         let actual = self.term(argument)?;
         if matches!(
-            self.head(argument, actual)?,
+            self.contextual_head(argument, actual)?,
             Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
-        ) && self.head(argument, expected)?.is_none()
+        ) && self.state.infer.head(&self.facts.types, expected) == Ok(None)
             && let Some(dependency) = self.refine_call_inputs(call, expected)?
         {
             return Ok(Some(dependency));
         }
         let exclusive = matches!(
-            self.head(call, expected)?,
+            self.contextual_head(call, expected)?,
             Some(Constructor::Reference { mutable: true, .. })
         );
         let mark = self.state.adjustments.len();
