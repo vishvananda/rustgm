@@ -587,5 +587,5 @@ pub struct Program {
     pub region_equalities: Vec<RegionEquality>,
     pub coercions: Vec<crate::sema::model::Coercion>,
     pub outlives: Vec<crate::sema::model::Outlives>,
-    pub body_regions: Vec<crate::sema::body_regions::AllocatedRegion>,
+    pub body_regions: Vec<crate::sema::numbered_regions::AllocatedRegion>,
 }

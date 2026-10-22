@@ -307,16 +307,7 @@ fn unresolved_bodies_cannot_supply_callable_proof_results() -> TestResult {
 /// Compile `source` through demanded instances, either sharing each template's
 /// substitution-invariant facts or re-proving them for every instance.
 fn shared_lowir(source: &str, reprove: bool) -> TestResult<(Vec<u8>, usize, usize)> {
-    let mut report = resolve::expansion::analyze(
-        InputFile {
-            identity: "lib.rs".into(),
-            path: "lib.rs".into(),
-            source: SourceFile::new(source.as_bytes().to_vec())?,
-        },
-        &mut NoFiles,
-        &crate::expand::config::Config::default(),
-    )
-    .and_then(resolve::analyze_expanded)?;
+    let mut report = crate::test_source::resolve(source, true)?;
     let mut facts =
         sema::declarations::analyze(&report).and_then(|f| sema::bodies::analyze(&report, f))?;
     let entry = sema::entry::select(&mut report, &facts)?;

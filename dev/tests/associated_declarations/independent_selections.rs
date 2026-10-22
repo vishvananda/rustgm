@@ -25,7 +25,14 @@ const CASES: &[(&str, &str, bool)] = &[
     (
         // An earlier, wider body must not move the caller's own region numbering.
         "equal-caller-after-wide-body",
-        "fn wide(){let _r0=&0u8;let _r1=&1u8;let _r2=&2u8;let _r3=&3u8;let _r4=&4u8;let _r5=&5u8;let _r6=&6u8;let _r7=&7u8;let _r8=&8u8;let _r9=&9u8;let _r10=&10u8;let _r11=&11u8;let _r12=&12u8;let _r13=&13u8;let _r14=&14u8;let _r15=&15u8;let _r16=&16u8;let _r17=&17u8;let _r18=&18u8;let _r19=&19u8;let _r20=&20u8;let _r21=&21u8;let _r22=&22u8;let _r23=&23u8;let _r24=&24u8;let _r25=&25u8;let _r26=&26u8;let _r27=&27u8;let _r28=&28u8;let _r29=&29u8;let _r30=&30u8;let _r31=&31u8;let _r32=&32u8;let _r33=&33u8;let _r34=&34u8;let _r35=&35u8;let _r36=&36u8;let _r37=&37u8;let _r38=&38u8;let _r39=&39u8;}trait A<'a,'b>{const C:usize;}struct S;impl<'a:'b,'b>A<'a,'b>for S{const C:usize=3;}fn value<'a>(_:&'a u8)->usize{<S as A<'a,'a>>::C}fn main(){wide();let x=1;check(value(&x)==3);}",
+        concat!(
+            "fn wide(){let _r0=&0u8;let _r1=&1u8;let _r2=&2u8;let _r3=&3u8;let _r4=&4u8;let _r5=&5u8;let _r6=&6u8;let _r7=&7u8;let _r8=&8u8;let _r9=&9u8;",
+            "let _r10=&10u8;let _r11=&11u8;let _r12=&12u8;let _r13=&13u8;let _r14=&14u8;let _r15=&15u8;let _r16=&16u8;let _r17=&17u8;let _r18=&18u8;let _r19=&19u8;",
+            "let _r20=&20u8;let _r21=&21u8;let _r22=&22u8;let _r23=&23u8;let _r24=&24u8;let _r25=&25u8;let _r26=&26u8;let _r27=&27u8;let _r28=&28u8;let _r29=&29u8;",
+            "let _r30=&30u8;let _r31=&31u8;let _r32=&32u8;let _r33=&33u8;let _r34=&34u8;let _r35=&35u8;let _r36=&36u8;let _r37=&37u8;let _r38=&38u8;let _r39=&39u8;",
+            "}trait A<'a,'b>{const C:usize;}struct S;impl<'a:'b,'b>A<'a,'b>for S{const C:usize=3;",
+            "}fn value<'a>(_:&'a u8)->usize{<S as A<'a,'a>>::C}fn main(){wide();let x=1;check(value(&x)==3);}",
+        ),
         false,
     ),
     (

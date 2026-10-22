@@ -197,7 +197,7 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
 /// # Errors
 /// Propagates output errors.
 pub fn body_regions(
-    regions: &[super::body_regions::AllocatedRegion],
+    regions: &[super::numbered_regions::AllocatedRegion],
     out: &mut impl Write,
 ) -> io::Result<()> {
     for allocated in regions {

@@ -60,7 +60,7 @@ fn address_cache_layout_and_mode_invalidation_remain_bounded() {
         size_of::<Old>(),
         size_of::<Current>()
     );
-    assert_eq!(size_of::<Frame>(), 312);
+    assert_eq!(size_of::<Frame>(), 248);
     assert_eq!(size_of::<Key>(), 8);
     assert_eq!(
         size_of::<(Key, Resolved)>(),

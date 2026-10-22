@@ -263,7 +263,7 @@ struct Walker<'a> {
     types: &'a Declarations,
     source: NodeKey,
     /// The owner file's configured syntax, resolved once per body.
-    syntax: &'a crate::expand::crate_syntax::ConfiguredSyntax<crate::literal::storage::StoredValue>,
+    unit: &'a crate::resolve::unit::Unit,
     facts: Facts,
 }
 fn analyze(
@@ -293,7 +293,7 @@ fn analyze_at(
     let mut walker = Walker {
         types,
         source,
-        syntax: &report.package.unit(source.file).configured,
+        unit: report.package.unit(source.file),
         facts: Facts::with_scratch(root.node, scratch),
     };
     let context = Context {
@@ -341,13 +341,13 @@ fn analyze_at(
 }
 impl Walker<'_> {
     fn child(&self, index: u32) -> NodeId {
-        self.syntax.ast.edges[index as usize]
+        self.unit.configured.ast.edges[index as usize]
     }
     fn kind(&self, node: NodeId) -> Syntax {
-        self.syntax.ast.node(node).kind
+        self.unit.configured.ast.node(node).kind
     }
     fn error(&self, node: NodeId, message: &'static str) -> Error {
-        let offset = self.syntax.ast.node(node).span.start;
+        let offset = self.unit.configured.ast.node(node).span.start;
         Error::at(self.source.file, offset, message)
     }
     fn push(&mut self, work: Work) -> Result<(), Error> {
@@ -368,7 +368,7 @@ impl Walker<'_> {
         Ok(())
     }
     fn active(&self, node: NodeId) -> bool {
-        self.syntax.active[node.get() as usize]
+        self.unit.configured.active[node.get() as usize]
     }
     fn record(&mut self, node: NodeId, context: Context) -> Result<(), Error> {
         let info = Node {

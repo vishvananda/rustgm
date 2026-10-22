@@ -386,7 +386,7 @@ struct Builder<'a> {
     report: &'a Report,
     facts: &'a Declarations,
     /// The owner file's configured syntax and typed node facts, resolved once.
-    syntax: &'a crate::expand::crate_syntax::ConfiguredSyntax<crate::literal::storage::StoredValue>,
+    unit: &'a crate::resolve::unit::Unit,
     node_facts: &'a [NodeFacts],
     scratch: &'a mut Scratch,
     body: Body,
@@ -450,7 +450,7 @@ impl<'a> Builder<'a> {
             drop_query,
             report,
             facts,
-            syntax: &report.package.unit(file).configured,
+            unit: report.package.unit(file),
             node_facts: facts.nodes.get(file.0 as usize).map_or(&[], Vec::as_slice),
             scratch,
             body,
@@ -475,7 +475,7 @@ impl<'a> Builder<'a> {
     fn error(&self, node: NodeId, message: impl Into<String>) -> Error {
         Error::at(
             self.body.source.file,
-            self.syntax.ast.node(node).span.start,
+            self.unit.configured.ast.node(node).span.start,
             message,
         )
     }
@@ -486,10 +486,10 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "body identity space exhausted"))
     }
     fn kind(&self, node: NodeId) -> Kind {
-        self.syntax.ast.node(node).kind
+        self.unit.configured.ast.node(node).kind
     }
     fn active(&self, node: NodeId) -> bool {
-        self.syntax.active[node.get() as usize]
+        self.unit.configured.active[node.get() as usize]
     }
     fn fact(&self, node: NodeId) -> Result<&NodeFacts, Error> {
         if let Some(root) = self.inline_root(node) {
@@ -713,7 +713,7 @@ impl<'a> Builder<'a> {
                 ..
             }
         ));
-        let nodes = self.syntax.ast.list(list);
+        let nodes = self.unit.configured.ast.list(list);
         for &node in nodes {
             if !self.active(node) {
                 continue;
@@ -1031,7 +1031,7 @@ impl<'a> Builder<'a> {
         Ok(())
     }
     fn children(&mut self, list: List) {
-        let children = self.syntax.ast.list(list);
+        let children = self.unit.configured.ast.list(list);
         self.scratch
             .work
             .extend(children.iter().rev().copied().map(Work::Enter));
