@@ -113,8 +113,10 @@ impl Paths {
                     .definitions
                     .insert(id, introduction);
             }
-            self.work
-                .declared((definition.scope, definition.name, definition.namespace));
+            self.work.declared(
+                &resolver.facts.scopes,
+                (definition.scope, definition.name, definition.namespace),
+            );
         }
         Ok(body.scope)
     }
@@ -129,7 +131,11 @@ impl Paths {
             .state
             .bind(package)
             .new_scope(Some(parent), module, false)?;
-        self.state.facts.node_scopes.insert((module, node), scope);
+        let file = package.modules[module.0 as usize].file;
+        self.state
+            .facts
+            .node_scopes
+            .insert(module, file, node, scope);
         self.work.extend(&self.state.facts);
         Ok(scope)
     }
@@ -282,8 +288,10 @@ impl Paths {
         resolver.import(context, node, &[], false, access)?;
         self.work.extend(resolver.facts);
         for definition in &resolver.facts.definitions[first_definition..] {
-            self.work
-                .declared((definition.scope, definition.name, definition.namespace));
+            self.work.declared(
+                &resolver.facts.scopes,
+                (definition.scope, definition.name, definition.namespace),
+            );
         }
         let library_builtin = resolver.facts.imports[first..].iter().any(|import| {
             import
@@ -364,7 +372,9 @@ impl Paths {
         self.state.bind(package).drive_imports(&mut self.work)?;
         let mut ready = Vec::new();
         for key in self.work.events.drain(..) {
-            if let Some(calls) = self.waiting.remove(&key) {
+            if !self.waiting.is_empty()
+                && let Some(calls) = self.waiting.remove(&key)
+            {
                 let mut calls: Vec<_> = calls.into_iter().collect();
                 calls.sort_unstable();
                 ready.extend(calls);
@@ -491,7 +501,8 @@ impl Paths {
         self.macro_targets
             .insert(target, MacroTarget::Builtin(Builtin::OptionEnv));
         self.work.extend(resolver.facts);
-        self.work.declared((scope, name, Namespace::Macro));
+        self.work
+            .declared(&resolver.facts.scopes, (scope, name, Namespace::Macro));
         Ok(())
     }
     pub fn take_error(&mut self) -> Option<Error> {

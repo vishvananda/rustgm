@@ -13,6 +13,102 @@ use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
 };
+/// Kinds whose `push_children` arm appends nothing. Declaration walks have no
+/// effect at these nodes, so they are not queued at all.
+pub(crate) const fn is_leaf(kind: &Kind) -> bool {
+    matches!(
+        kind,
+        Kind::CrateRoot(_)
+            | Kind::Receiver { .. }
+            | Kind::DeferredLiteral(_)
+            | Kind::Literal(_)
+            | Kind::Name(_)
+            | Kind::EmptyStatement
+            | Kind::Continue(_)
+            | Kind::Wildcard
+            | Kind::RestPattern
+            | Kind::InferType
+            | Kind::NeverType
+            | Kind::Variadic
+    )
+}
+/// Borrow a node's kind without copying the node record.
+fn kind_of<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> &Kind {
+    &ast.nodes[node.0 as usize].kind
+}
+/// Small expression, pattern and type subtrees built only from leaves, such as
+/// `a::b`, `x + f(y)`, `x: u64` or `u64`, contain no declaration, scope or
+/// expansion site; declaration walks skip them whole. Each arm inspects exactly
+/// the children `push_children` appends, to a fixed depth so repeated checks by
+/// ancestors stay constant per node.
+pub(crate) fn is_inert<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> bool {
+    match kind_of(ast, node) {
+        Kind::Type { elements: list, .. } | Kind::Tuple(list) | Kind::Array(list) => {
+            all_plain(ast, *list)
+        }
+        Kind::Pattern { path, elements, .. } => {
+            path.is_none_or(|path| plain(ast, path)) && all_plain(ast, *elements)
+        }
+        Kind::Binding {
+            subpattern: value, ..
+        }
+        | Kind::Return(value) => value.is_none_or(|value| plain(ast, value)),
+        Kind::Parameter { pattern, ty } => {
+            plain(ast, *pattern) && ty.is_none_or(|ty| plain_type(ast, ty))
+        }
+        Kind::Unary { operand: value, .. } | Kind::Field { value, .. } | Kind::Group(value) => {
+            plain(ast, *value)
+        }
+        Kind::Binary { left, right, .. }
+        | Kind::Cast {
+            value: left,
+            ty: right,
+        }
+        | Kind::Index {
+            value: left,
+            index: right,
+        } => plain(ast, *left) && plain_type(ast, *right),
+        Kind::Call {
+            callee: value,
+            arguments,
+        }
+        | Kind::MethodCall {
+            receiver: value,
+            arguments,
+            ..
+        } => plain(ast, *value) && all_plain(ast, *arguments),
+        kind => plain_kind(ast, kind),
+    }
+}
+/// A leaf, a path of leaf segments or a binding without a subpattern.
+fn plain<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> bool {
+    plain_kind(ast, kind_of(ast, node))
+}
+fn plain_kind<L>(ast: &crate::syntax::ast::Syntax<L>, kind: &Kind) -> bool {
+    match kind {
+        Kind::Path { segments, .. } => ast
+            .list(*segments)
+            .iter()
+            .all(|segment| is_leaf(kind_of(ast, *segment))),
+        Kind::Binding {
+            subpattern: None, ..
+        } => true,
+        kind => is_leaf(kind),
+    }
+}
+/// A plain node or a type whose elements are all plain, such as `u64`.
+fn plain_type<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> bool {
+    match kind_of(ast, node) {
+        Kind::Type { elements, .. } => all_plain(ast, *elements),
+        kind => plain_kind(ast, kind),
+    }
+}
+fn all_plain<L>(ast: &crate::syntax::ast::Syntax<L>, list: List) -> bool {
+    ast.list(list).iter().all(|child| plain(ast, *child))
+}
+#[cfg(test)]
+#[path = "../../tests/invariants/declaration_walks.rs"]
+mod tests;
 #[derive(Clone, Copy)]
 pub(crate) struct Context {
     pub module: ModuleId,
@@ -39,6 +135,9 @@ pub(crate) struct State {
     scratch: Vec<NodeId>,
     pending: Vec<(Context, NodeId)>,
     visits: Vec<(Context, NodeId, Namespace)>,
+    paths: Vec<Vec<NameId>>,
+    patterns: Vec<super::patterns::PatternFrame>,
+    builtin_names: Vec<u8>,
 }
 impl State {
     pub fn bind<'a>(&'a mut self, package: &'a mut Package) -> Resolver<'a> {
@@ -49,6 +148,9 @@ impl State {
             scratch: &mut self.scratch,
             pending: &mut self.pending,
             visits: &mut self.visits,
+            paths: &mut self.paths,
+            patterns: &mut self.patterns,
+            builtin_names: &mut self.builtin_names,
         }
     }
 }
@@ -59,6 +161,12 @@ pub(crate) struct Resolver<'a> {
     pub scratch: &'a mut Vec<NodeId>,
     pub pending: &'a mut Vec<(Context, NodeId)>,
     pub visits: &'a mut Vec<(Context, NodeId, Namespace)>,
+    /// Reusable path-name buffers; nested references borrow distinct entries.
+    pub paths: &'a mut Vec<Vec<NameId>>,
+    /// Reusable pattern-binding frames, likewise borrowed per nesting level.
+    pub patterns: &'a mut Vec<super::patterns::PatternFrame>,
+    /// Per-name cache: 0 unknown, 1 ordinary, 2 may select language metadata.
+    pub builtin_names: &'a mut Vec<u8>,
 }
 impl Resolver<'_> {
     pub fn collect(&mut self) -> Result<(), Error> {
@@ -175,45 +283,46 @@ impl Resolver<'_> {
         }
         let scope = &mut self.facts.scopes[definition.scope.0 as usize];
         let key = (definition.name, definition.namespace);
-        if scope
-            .bindings
-            .get(&key)
-            .is_some_and(|binding| !matches!(binding.origin, Origin::Glob(_)))
-            && !shadow
-        {
-            let node = definition.node;
-            return Err(Error::at(
-                node.map_or(FileId(0), |n| n.file),
-                node.map_or(0, |n| {
-                    self.package
-                        .unit(n.file)
-                        .configured
-                        .ast
-                        .node(n.node)
-                        .span
-                        .start
-                }),
-                format!(
-                    "duplicate {} name `{}`",
-                    definition.namespace.name(),
-                    self.package.names.get(definition.name)
-                ),
-            ));
+        let binding = Binding {
+            target: id,
+            access: definition.access,
+            origin: Origin::Direct,
+            ambiguous: false,
+        };
+        // One probe decides duplication, first-declaration order and the binding.
+        match scope.bindings.entry(key) {
+            std::collections::hash_map::Entry::Occupied(mut entry) => {
+                if shadow || matches!(entry.get().origin, Origin::Glob(_)) {
+                    entry.insert(binding);
+                    self.facts.definitions.push(definition);
+                    return Ok(id);
+                }
+            }
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(binding);
+                scope.order.push(key);
+                self.facts.definitions.push(definition);
+                return Ok(id);
+            }
         }
-        if !scope.bindings.contains_key(&key) {
-            scope.order.push(key);
-        }
-        scope.bindings.insert(
-            key,
-            Binding {
-                target: id,
-                access: definition.access,
-                origin: Origin::Direct,
-                ambiguous: false,
-            },
-        );
-        self.facts.definitions.push(definition);
-        Ok(id)
+        let node = definition.node;
+        Err(Error::at(
+            node.map_or(FileId(0), |n| n.file),
+            node.map_or(0, |n| {
+                self.package
+                    .unit(n.file)
+                    .configured
+                    .ast
+                    .node(n.node)
+                    .span
+                    .start
+            }),
+            format!(
+                "duplicate {} name `{}`",
+                definition.namespace.name(),
+                self.package.names.get(definition.name)
+            ),
+        ))
     }
     fn module(&mut self, module: ModuleId, scope: ScopeId) {
         let context = self.context(module, scope);
@@ -251,7 +360,7 @@ impl Resolver<'_> {
         } = self.kind(c, node)
         {
             let scope = self.node_scope(c, node, false)?;
-            self.facts.node_scopes.insert((c.module, node), scope);
+            self.facts.node_scopes.insert(c.module, c.file, node, scope);
             let condition_context = Context { scope, ..c };
             if let Some(otherwise) = otherwise {
                 self.pending.push((c, otherwise));
@@ -275,7 +384,9 @@ impl Resolver<'_> {
                 c.scope = self.node_scope(c, node, false)?;
                 self.facts.scopes[c.scope.0 as usize].label_barrier =
                     matches!(self.kind(c, node), Kind::Closure { .. });
-                self.facts.node_scopes.insert((c.module, node), c.scope);
+                self.facts
+                    .node_scopes
+                    .insert(c.module, c.file, node, c.scope);
             }
             Kind::Generic(index) => {
                 let generic = self.package.unit(c.file).configured.ast.generics[index as usize];
@@ -306,18 +417,21 @@ impl Resolver<'_> {
             }
             _ => {}
         }
+        self.push_pending(c, node);
+        Ok(())
+    }
+    /// Queue a node's non-leaf children in source order for the LIFO worklist.
+    fn push_pending(&mut self, c: Context, node: NodeId) {
+        let ast = &self.package.unit(c.file).configured.ast;
         let mark = self.scratch.len();
-        self.package
-            .unit(c.file)
-            .configured
-            .ast
-            .push_children(node, self.scratch);
-        let end = self.scratch.len();
-        for index in (mark..end).rev() {
-            self.pending.push((c, self.scratch[index]));
+        ast.push_children(node, self.scratch);
+        for index in (mark..self.scratch.len()).rev() {
+            let child = self.scratch[index];
+            if !is_inert(ast, child) {
+                self.pending.push((c, child));
+            }
         }
         self.scratch.truncate(mark);
-        Ok(())
     }
     fn item(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
@@ -325,7 +439,9 @@ impl Resolver<'_> {
         if let Some(hygiene) = self.hygiene {
             if matches!(item.kind, ItemKind::MacroRules { .. }) {
                 hygiene.scope(c.module, node, c.scope);
-                self.facts.node_scopes.insert((c.module, node), c.scope);
+                self.facts
+                    .node_scopes
+                    .insert(c.module, c.file, node, c.scope);
                 return Ok(());
             }
             if matches!(item.kind, ItemKind::Use(_)) {
@@ -372,17 +488,7 @@ impl Resolver<'_> {
             self.declare_item(c, node, item, access)?
         };
         self.reserve_anonymous_parameters(body_context, node, item)?;
-        let mark = self.scratch.len();
-        self.package
-            .unit(c.file)
-            .configured
-            .ast
-            .push_children(node, self.scratch);
-        let end = self.scratch.len();
-        for index in (mark..end).rev() {
-            self.pending.push((body_context, self.scratch[index]));
-        }
-        self.scratch.truncate(mark);
+        self.push_pending(body_context, node);
         Ok(())
     }
     /// Register an ordinary item and its member namespaces without walking its
@@ -429,7 +535,7 @@ impl Resolver<'_> {
             self.facts.scopes[body.0 as usize].trait_access =
                 matches!(item.kind, ItemKind::Trait { .. }).then_some(access);
         }
-        self.facts.node_scopes.insert((c.module, node), body);
+        self.facts.node_scopes.insert(c.module, c.file, node, body);
         let member = matches!(
             item.kind,
             ItemKind::Struct { .. }
@@ -660,6 +766,16 @@ impl Resolver<'_> {
     }
     pub fn path_names(&mut self, c: Context, node: NodeId) -> Result<(bool, Vec<NameId>), Error> {
         self.package.path_names(c.file, node)
+    }
+    /// Read a path into a pooled buffer; return it with `recycle_path`.
+    pub fn pooled_path(&mut self, c: Context, node: NodeId) -> Result<(bool, Vec<NameId>), Error> {
+        let mut names = self.paths.pop().unwrap_or_default();
+        names.clear();
+        let absolute = self.package.path_names_into(c.file, node, &mut names)?;
+        Ok((absolute, names))
+    }
+    pub fn recycle_path(&mut self, names: Vec<NameId>) {
+        self.paths.push(names);
     }
     pub fn import(
         &mut self,

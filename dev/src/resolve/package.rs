@@ -88,6 +88,14 @@ impl std::error::Error for Error {}
 impl Package {
     pub(crate) fn origin(&self, file: FileId, offset: u32) -> Option<Origin> {
         let origins = &self.unit(file).origins;
+        // Generated text is appended after the original source, so offsets
+        // before the first generated span belong to no expansion.
+        if origins
+            .first()
+            .is_none_or(|origin| offset < origin.generated.start)
+        {
+            return None;
+        }
         let index = origins.partition_point(|origin| {
             origin.generated.end <= offset && origin.generated.start != offset
         });
@@ -126,6 +134,20 @@ impl Package {
         file: super::unit::FileId,
         node: NodeId,
     ) -> Result<(bool, Vec<NameId>), Error> {
+        let mut names = Vec::new();
+        let absolute = self.path_names_into(file, node, &mut names)?;
+        Ok((absolute, names))
+    }
+
+    /// Append a path's canonical names to caller-owned scratch storage.
+    /// # Errors
+    /// Rejects malformed path facts, unsupported crate identities and name overflow.
+    pub fn path_names_into(
+        &mut self,
+        file: super::unit::FileId,
+        node: NodeId,
+        names: &mut Vec<NameId>,
+    ) -> Result<bool, Error> {
         match self.unit(file).configured.ast.node(node).kind {
             Kind::CrateRoot(0) => {
                 let name = self.names.intern("crate").map_err(|e| {
@@ -135,22 +157,26 @@ impl Package {
                         e,
                     )
                 })?;
-                Ok((false, vec![name]))
+                names.push(name);
+                Ok(false)
             }
             Kind::CrateRoot(_) => Err(Error::at(
                 file,
                 self.unit(file).configured.ast.node(node).span.start,
                 "external defining crate requires metadata",
             )),
-            Kind::Name(span) => Ok((false, vec![self.name(file, span)?])),
-            Kind::Applied { base, .. } => self.path_names(file, base),
+            Kind::Name(span) => {
+                names.push(self.name(file, span)?);
+                Ok(false)
+            }
+            Kind::Applied { base, .. } => self.path_names_into(file, base, names),
             Kind::Path { absolute, segments } => {
-                let mut names = Vec::with_capacity((segments.end - segments.start) as usize);
+                names.reserve((segments.end - segments.start) as usize);
                 for offset in segments.start..segments.end {
                     let id = self.unit(file).configured.ast.edges[offset as usize];
-                    names.extend(self.path_names(file, id)?.1);
+                    self.path_names_into(file, id, names)?;
                 }
-                Ok((absolute, names))
+                Ok(absolute)
             }
             _ => Err(Error::at(
                 file,

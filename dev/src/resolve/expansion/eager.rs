@@ -95,13 +95,13 @@ impl<S: Sources> Engine<'_, S> {
         });
         self.work.push(Work::Restore(self.head));
         self.head = scope;
-        self.work.push(Work::Visit(Visit {
+        self.push_visit(Visit {
             node: root,
             depth: visit.depth + 1,
             introduction: context,
             eager: Some(index),
             ..visit
-        }));
+        })?;
         self.scan()?;
         if self.calls[index]
             .eager
@@ -170,12 +170,12 @@ impl<S: Sources> Engine<'_, S> {
             restore: self.head,
         });
         self.head = scope;
-        self.work.push(Work::Visit(Visit {
+        self.push_visit(Visit {
             depth: visit.depth + 1,
             introduction: context,
             include,
             ..visit
-        }));
+        })?;
         self.scan()?;
         self.completed(index)
     }

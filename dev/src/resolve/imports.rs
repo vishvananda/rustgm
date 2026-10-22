@@ -22,7 +22,12 @@ pub(crate) struct Work {
     globs: HashMap<ScopeId, Vec<usize>>,
     sources: Vec<Option<ScopeId>>,
     resolved: Vec<bool>,
+    /// Per-scope change journals, materialized on first use (`journaled`).
     changes: Vec<Vec<Key>>,
+    journaled: Vec<bool>,
+    /// Each scope's order length when this state was created. A journal and its
+    /// recorded keys start from that prefix, so creation stays linear in scopes.
+    snapshot: Vec<u32>,
     cursors: Vec<usize>,
     errors: Vec<Option<Error>>,
     recorded: HashSet<BindingKey>,
@@ -44,23 +49,16 @@ impl Work {
             globs: HashMap::default(),
             sources: vec![None; count],
             resolved: vec![false; count],
-            changes: facts.scopes.iter().map(|s| s.order.clone()).collect(),
-            cursors: vec![0; count],
-            errors: (0..count).map(|_| None).collect(),
-            recorded: facts
+            changes: facts.scopes.iter().map(|_| Vec::new()).collect(),
+            journaled: vec![false; facts.scopes.len()],
+            snapshot: facts
                 .scopes
                 .iter()
-                .enumerate()
-                .flat_map(|(index, scope)| {
-                    scope.order.iter().map(move |key| {
-                        (
-                            ScopeId(u32::try_from(index).unwrap_or(u32::MAX)),
-                            key.0,
-                            key.1,
-                        )
-                    })
-                })
+                .map(|scope| u32::try_from(scope.order.len()).unwrap_or(u32::MAX))
                 .collect(),
+            cursors: vec![0; count],
+            errors: (0..count).map(|_| None).collect(),
+            recorded: HashSet::default(),
             candidates: HashMap::default(),
             provided: (0..count).map(|_| HashSet::default()).collect(),
             textual: facts
@@ -79,6 +77,7 @@ impl Work {
     }
     pub fn extend(&mut self, facts: &super::model::Resolution) {
         self.changes.resize_with(facts.scopes.len(), Vec::new);
+        self.journaled.resize(facts.scopes.len(), false);
         for index in self.resolved.len()..facts.imports.len() {
             self.queue.push_back(index);
             self.queued.push(true);
@@ -91,10 +90,24 @@ impl Work {
     }
     /// Publish a direct declaration already installed by the shared item indexer.
     /// Its scope order was recorded by `define`; only dependency journals remain.
-    pub fn declared(&mut self, key: BindingKey) {
+    pub fn declared(&mut self, scopes: &[super::model::Scope], key: BindingKey) {
+        self.journal(scopes, key.0);
         self.recorded.insert(key);
         self.changes[key.0.0 as usize].push((key.1, key.2));
         self.changed(key);
+    }
+    /// Materialize a scope's journal and recorded keys from its creation-time prefix.
+    fn journal(&mut self, scopes: &[super::model::Scope], scope: ScopeId) {
+        let index = scope.0 as usize;
+        if self.journaled[index] {
+            return;
+        }
+        self.journaled[index] = true;
+        let prefix = self.snapshot.get(index).map_or(0, |len| *len as usize);
+        let order = &scopes[index].order[..prefix];
+        self.changes[index].splice(0..0, order.iter().copied());
+        self.recorded
+            .extend(order.iter().map(|key| (scope, key.0, key.1)));
     }
     pub fn set_textual(&mut self, index: usize, binding: TextualSource) {
         let previous = self
@@ -161,14 +174,18 @@ impl Work {
         if self.observe {
             self.events.push(key);
         }
-        if let Some(waiters) = self.waiting.remove(&key) {
+        if !self.waiting.is_empty()
+            && let Some(waiters) = self.waiting.remove(&key)
+        {
             let mut waiters: Vec<_> = waiters.into_iter().collect();
             waiters.sort_unstable();
             for index in waiters {
                 self.wake(index);
             }
         }
-        if let Some(globs) = self.globs.get(&key.0).cloned() {
+        if !self.globs.is_empty()
+            && let Some(globs) = self.globs.get(&key.0).cloned()
+        {
             for index in globs {
                 self.wake(index);
             }
@@ -277,7 +294,10 @@ impl Resolver<'_> {
             if self.facts.definitions.len() != before {
                 work.extend(self.facts);
                 for definition in &self.facts.definitions[before..] {
-                    work.declared((definition.scope, definition.name, definition.namespace));
+                    work.declared(
+                        &self.facts.scopes,
+                        (definition.scope, definition.name, definition.namespace),
+                    );
                 }
             }
         }
@@ -455,6 +475,7 @@ impl Resolver<'_> {
         }
         work.resolved[index] = true;
         let module = self.facts.scopes[import.scope.0 as usize].module;
+        work.journal(&self.facts.scopes, source);
         let end = work.changes[source.0 as usize].len();
         for offset in work.cursors[index]..end {
             let key = work.changes[source.0 as usize][offset];
@@ -548,6 +569,7 @@ impl Resolver<'_> {
         Some(result)
     }
     pub fn publish(&mut self, key: BindingKey, binding: Option<Binding>, work: &mut Work) {
+        work.journal(&self.facts.scopes, key.0);
         let frame = &mut self.facts.scopes[key.0.0 as usize];
         let name = (key.1, key.2);
         let previous = frame.bindings.get(&name).copied();

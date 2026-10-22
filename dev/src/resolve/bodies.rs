@@ -6,7 +6,6 @@ use super::{
     package::{Error, ModuleId},
     unit::NodeKey,
 };
-use crate::support::hash::HashSet;
 use crate::support::library_types::LibraryType;
 use crate::syntax::{
     ast::{Kind, List, NodeId, TypeFlavor},
@@ -103,11 +102,11 @@ impl Resolver<'_> {
                 self.optional(c, ty, Namespace::Type)?;
                 self.optional(c, value, Namespace::Value)?;
                 self.optional(c, otherwise, Namespace::Value)?;
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())
+                self.bind_pattern(c, pattern, DefKind::Local)
             }
             Kind::LetCondition { pattern, value } => {
                 self.visit(c, value, Namespace::Value)?;
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())
+                self.bind_pattern(c, pattern, DefKind::Local)
             }
             Kind::For {
                 pattern,
@@ -118,7 +117,7 @@ impl Resolver<'_> {
                     .builtin_traits
                     .note_collection(c.module, NodeKey { file: c.file, node });
                 self.visit(c, iterator, Namespace::Value)?;
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())?;
+                self.bind_pattern(c, pattern, DefKind::Local)?;
                 self.visit(c, body, Namespace::Value)
             }
             Kind::Arm {
@@ -126,7 +125,7 @@ impl Resolver<'_> {
                 guard,
                 value,
             } => {
-                self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::default())?;
+                self.bind_pattern(c, pattern, DefKind::Local)?;
                 self.optional(c, guard, Namespace::Value)?;
                 self.visit(c, value, Namespace::Value)
             }
@@ -142,11 +141,9 @@ impl Resolver<'_> {
             }
             Kind::Parameter { pattern, ty } => {
                 self.optional(c, ty, Namespace::Type)?;
-                self.bind_pattern(c, pattern, DefKind::Parameter, &mut HashSet::default())
+                self.bind_pattern(c, pattern, DefKind::Parameter)
             }
-            Kind::Receiver { .. } => {
-                self.bind_pattern(c, node, DefKind::Parameter, &mut HashSet::default())
-            }
+            Kind::Receiver { .. } => self.bind_pattern(c, node, DefKind::Parameter),
             Kind::Cast { value, ty } => {
                 self.visit(c, value, Namespace::Value)?;
                 self.visit(c, ty, Namespace::Type)
@@ -173,23 +170,24 @@ impl Resolver<'_> {
                 method,
                 arguments,
             } => {
-                let (_, names) = self.path_names(c, method)?;
-                let [name] = names.as_slice() else {
+                let (_, names) = self.pooled_path(c, method)?;
+                let &[name] = names.as_slice() else {
                     return Err(self.error(c, node, "method requires one name segment"));
                 };
+                self.recycle_path(names);
                 if let Some(method) =
-                    crate::support::comparisons::Method::from_name(self.package.names.get(*name))
+                    crate::support::comparisons::Method::from_name(self.package.names.get(name))
                 {
                     self.prepare_comparison_method(c, node, method)?;
                 }
-                self.prepare_slice_method(c, node, *name)?;
-                self.note_clone_name(c, node, *name);
+                self.prepare_slice_method(c, node, name)?;
+                self.note_clone_name(c, node, name);
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
                     super::model::MethodCall {
                         scope: c.scope,
                         receiver,
-                        name: *name,
+                        name,
                         method: Some(method),
                         arguments,
                     },
@@ -342,9 +340,7 @@ impl Resolver<'_> {
             Kind::Binding { .. }
             | Kind::Pattern { .. }
             | Kind::StructPattern { .. }
-            | Kind::ReferencePattern { .. } => {
-                self.bind_pattern(c, node, DefKind::Local, &mut HashSet::default())
-            }
+            | Kind::ReferencePattern { .. } => self.bind_pattern(c, node, DefKind::Local),
             _ => {
                 let mark = self.scratch.len();
                 self.package
@@ -362,23 +358,7 @@ impl Resolver<'_> {
         }
     }
     fn parameters(&mut self, c: Context, parameters: List) -> Result<(), Error> {
-        let mut seen = HashSet::default();
-        for offset in parameters.start..parameters.end {
-            let mut node = self.package.unit(c.file).configured.ast.edges[offset as usize];
-            if !self.active(c, node) {
-                continue;
-            }
-            while let Kind::Attributed { value, .. } = self.kind(c, node) {
-                node = value;
-            }
-            if let Kind::Parameter { pattern, ty } = self.kind(c, node) {
-                self.optional(c, ty, Namespace::Type)?;
-                self.bind_pattern(c, pattern, DefKind::Parameter, &mut seen)?;
-            } else {
-                self.visit(c, node, Namespace::Value)?;
-            }
-        }
-        Ok(())
+        self.bind_patterns(c, parameters)
     }
     fn item_body(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
@@ -460,9 +440,81 @@ impl Resolver<'_> {
         {
             return self.lifetime(c, node, span);
         }
-        let (absolute, path) = self.path_names(c, node)?;
+        let (absolute, path) = self.pooled_path(c, node)?;
+        let mut builtin = false;
+        for &name in &path {
+            builtin |= self.builtin_name(name);
+        }
+        // Builtin preparation only reacts to the spellings `builtin_name` recognizes.
+        if builtin {
+            self.prepare_builtin_reference(c, node, absolute, ns, &path)?;
+        }
+        // A relative ordinary single-segment type path is found exactly when its
+        // lexical lookup is, so that lookup is not repeated before the full one.
+        let lexical = ns == Namespace::Type
+            && path.len() == 1
+            && !absolute
+            && !matches!(self.package.names.get(path[0]), "crate" | "self" | "super");
+        let mut found = if lexical {
+            Some(self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?)
+        } else {
+            None
+        };
+        if ns == Namespace::Type && path.len() == 1 {
+            // Syntactically ambiguous const generic arguments are typed after lookup.
+            let missing = match &found {
+                Some(found) => matches!(found, Lookup::Missing),
+                None => matches!(self.lexical(c.scope, path[0], ns), Lookup::Missing),
+            };
+            if missing
+                && let Lookup::Found(binding) = self.lexical(c.scope, path[0], Namespace::Value)
+                && (self.facts.definitions[binding.target.0 as usize].kind == DefKind::Generic
+                    || (const_argument
+                        && self.facts.definitions[binding.target.0 as usize].kind
+                            == DefKind::Const))
+            {
+                ns = Namespace::Value;
+                found = None;
+            }
+        }
+        let found = match found {
+            Some(found) => found,
+            None => self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?,
+        };
+        let target = self.target(c, node, &found, ns)?;
+        if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
+            self.associated_path(c, node, start, &path, ns, owner)?;
+        }
+        self.recycle_path(path);
+        self.facts.references.push(Reference {
+            scope: c.scope,
+            node: NodeKey { file: c.file, node },
+            namespace: ns,
+            target,
+        });
+        // Paths of plain name segments carry no generic arguments.
+        let ast = &self.package.unit(c.file).configured.ast;
+        if let Kind::Path { segments, .. } = ast.node(node).kind
+            && ast
+                .list(segments)
+                .iter()
+                .all(|segment| matches!(ast.node(*segment).kind, Kind::Name(_)))
+        {
+            return Ok(());
+        }
+        self.path_arguments(c, node)
+    }
+    /// Demand language metadata that a reference path may name.
+    fn prepare_builtin_reference(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        absolute: bool,
+        ns: Namespace,
+        path: &[crate::support::names::NameId],
+    ) -> Result<(), Error> {
         if ns == Namespace::Value {
-            self.prepare_clone_path(c, node, absolute, &path)?;
+            self.prepare_clone_path(c, node, absolute, path)?;
         }
         if ns == Namespace::Value
             && path.len() > 1
@@ -499,32 +551,9 @@ impl Resolver<'_> {
                         )
                 })
         {
-            self.prepare_builtin_path(c, node, absolute, ns, &path)?;
+            self.prepare_builtin_path(c, node, absolute, ns, path)?;
         }
-        if ns == Namespace::Type && path.len() == 1 {
-            // Syntactically ambiguous const generic arguments are typed after lookup.
-            if let Lookup::Missing = self.lexical(c.scope, path[0], ns)
-                && let Lookup::Found(binding) = self.lexical(c.scope, path[0], Namespace::Value)
-                && (self.facts.definitions[binding.target.0 as usize].kind == DefKind::Generic
-                    || (const_argument
-                        && self.facts.definitions[binding.target.0 as usize].kind
-                            == DefKind::Const))
-            {
-                ns = Namespace::Value;
-            }
-        }
-        let found = self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?;
-        let target = self.target(c, node, &found, ns)?;
-        if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
-            self.associated_path(c, node, start, &path, ns, owner)?;
-        }
-        self.facts.references.push(Reference {
-            scope: c.scope,
-            node: NodeKey { file: c.file, node },
-            namespace: ns,
-            target,
-        });
-        self.path_arguments(c, node)
+        Ok(())
     }
     fn associated_path(
         &mut self,

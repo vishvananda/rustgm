@@ -107,6 +107,22 @@ impl Resolver<'_> {
         }
     }
 
+    /// Whether this name's spelling is compared by builtin path preparation.
+    pub(super) fn builtin_name(&mut self, name: NameId) -> bool {
+        let index = name.0 as usize;
+        match self.builtin_names.get(index) {
+            Some(1) => return false,
+            Some(2) => return true,
+            _ => {}
+        }
+        let relevant = builtin_spelling(self.package.names.get(name));
+        if index >= self.builtin_names.len() {
+            let len = self.package.names.len().max(index + 1);
+            self.builtin_names.resize(len, 0);
+        }
+        self.builtin_names[index] = if relevant { 2 } else { 1 };
+        relevant
+    }
     pub(super) fn prepare_builtin_path(
         &mut self,
         c: Context,
@@ -115,6 +131,14 @@ impl Resolver<'_> {
         namespace: Namespace,
         path: &[NameId],
     ) -> Result<(), Error> {
+        // Every step below keys on a spelling recognized by `builtin_spelling`.
+        let mut relevant = false;
+        for &name in path {
+            relevant |= self.builtin_name(name);
+        }
+        if !relevant {
+            return Ok(());
+        }
         if path
             .last()
             .is_some_and(|name| matches!(self.package.names.get(*name), "next" | "into_iter"))
@@ -316,4 +340,64 @@ impl Resolver<'_> {
             .get(&(name, Namespace::Type))
             .map(|binding| (scope, *binding))
     }
+}
+
+/// Spellings that can select demand-created language metadata in
+/// `prepare_builtin_path` and its trait, library and intrinsic helpers. A path
+/// naming none of them leaves every preparation step a no-op. Keep this a
+/// superset of those comparisons when adding language items.
+fn builtin_spelling(spelling: &str) -> bool {
+    use crate::support::{
+        call_traits::CallTrait, comparisons::Comparison, comparisons::Method,
+        intrinsics::Intrinsic, iteration::Trait as IterationTrait, language_hooks::Hook,
+        library_types::LibraryType, marker_traits::AutoTrait,
+    };
+    matches!(
+        spelling,
+        "len"
+            | "Drop"
+            | "core"
+            | "std"
+            | "Copy"
+            | "Clone"
+            | "Sized"
+            | "Send"
+            | "Sync"
+            | "Unpin"
+            | "UnwindSafe"
+            | "RefUnwindSafe"
+            | "marker"
+            | "clone"
+            | "panic"
+            | "Some"
+            | "None"
+            | "Ok"
+            | "Err"
+            | "Less"
+            | "Equal"
+            | "Greater"
+            | "Ordering"
+            | "cmp"
+            | "sync"
+            | "ptr"
+            | "read_volatile"
+            | "write_volatile"
+            | "write_bytes"
+            | "add"
+            | "primitive"
+            | "iter"
+    ) || Method::from_name(spelling).is_some()
+        || Comparison::ALL.iter().any(|kind| kind.name() == spelling)
+        || Hook::ALL.iter().any(|kind| kind.name() == spelling)
+        || CallTrait::ALL.iter().any(|kind| kind.name() == spelling)
+        || IterationTrait::ALL
+            .iter()
+            .any(|kind| kind.name() == spelling || kind.method().name() == spelling)
+        || AutoTrait::ALL.iter().any(|kind| kind.name() == spelling)
+        || Intrinsic::ALL.iter().any(|kind| kind.name() == spelling)
+        || LibraryType::ALL.iter().any(|kind| {
+            kind.name() == spelling
+                || kind.module() == spelling
+                || kind.variants().iter().any(|(name, _)| *name == spelling)
+        })
 }

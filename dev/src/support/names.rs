@@ -11,11 +11,34 @@ struct Entry {
     end: u32,
     hash: u64,
 }
+/// Open-addressed slot: high hash bits beside `NameId + 1`; zero is vacant.
+/// Probes reject most mismatches without touching the entry or byte arenas.
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+struct Slot(u64);
+impl Slot {
+    const fn new(hash: u64, id: u32) -> Self {
+        Self((hash & TAG_MASK) | (id as u64 + 1))
+    }
+    const fn id(self) -> Option<NameId> {
+        match (self.0 & !TAG_MASK).checked_sub(1) {
+            #[expect(
+                clippy::cast_possible_truncation,
+                reason = "the low half stores a 32-bit identity plus one"
+            )]
+            Some(id) => Some(NameId(id as u32)),
+            None => None,
+        }
+    }
+    const fn tag(self) -> u64 {
+        self.0 & TAG_MASK
+    }
+}
+const TAG_MASK: u64 = 0xffff_ffff_0000_0000;
 #[derive(Default)]
 pub struct Names {
     bytes: String,
     entries: Vec<Entry>,
-    slots: Vec<Option<NameId>>,
+    slots: Vec<Slot>,
     hash: BuildFxHasher,
     scratch: String,
 }
@@ -43,21 +66,33 @@ impl Names {
     }
     fn canonical(&mut self, spelling: &str) -> Result<NameId, &'static str> {
         if self.slots.is_empty() {
-            self.slots.resize(16, None);
+            self.slots.resize(16, Slot::default());
         }
         let hash = self.hash.hash_one(spelling);
+        let tag = hash & TAG_MASK;
+        let mask = self.slots.len() - 1;
         let mut slot = bucket(hash, self.slots.len());
-        while let Some(id) = self.slots[slot] {
-            if self.entries[id.0 as usize].hash == hash && self.get(id) == spelling {
+        while let Some(id) = self.slots[slot].id() {
+            if self.slots[slot].tag() == tag
+                && let Some(entry) = self.entries.get(id.0 as usize)
+                && self
+                    .bytes
+                    .as_bytes()
+                    .get(entry.start as usize..entry.end as usize)
+                    == Some(spelling.as_bytes())
+            {
                 return Ok(id);
             }
-            slot = (slot + 1) & (self.slots.len() - 1);
+            slot = (slot + 1) & mask;
         }
         if self.entries.len() >= self.slots.len() / 2 {
             self.grow();
             slot = self.vacant(hash);
         }
-        let id = NameId(u32::try_from(self.entries.len()).map_err(|_| "too many names")?);
+        let index = u32::try_from(self.entries.len())
+            .ok()
+            .filter(|index| *index < u32::MAX)
+            .ok_or("too many names")?;
         let start = u32::try_from(self.bytes.len()).map_err(|_| "name arena exceeds 32 bits")?;
         let end = self
             .bytes
@@ -67,20 +102,21 @@ impl Names {
             .ok_or("name arena exceeds 32 bits")?;
         self.bytes.push_str(spelling);
         self.entries.push(Entry { start, end, hash });
-        self.slots[slot] = Some(id);
-        Ok(id)
+        self.slots[slot] = Slot::new(hash, index);
+        Ok(NameId(index))
     }
     fn grow(&mut self) {
-        self.slots = vec![None; self.slots.len() * 2];
+        self.slots = vec![Slot::default(); self.slots.len() * 2];
         for index in 0..self.entries.len() {
-            let slot = self.vacant(self.entries[index].hash);
+            let hash = self.entries[index].hash;
+            let slot = self.vacant(hash);
             // Every entry was checked before insertion.
-            self.slots[slot] = Some(NameId(u32::try_from(index).unwrap_or(u32::MAX)));
+            self.slots[slot] = Slot::new(hash, u32::try_from(index).unwrap_or(u32::MAX - 1));
         }
     }
     fn vacant(&self, hash: u64) -> usize {
         let mut slot = bucket(hash, self.slots.len());
-        while self.slots[slot].is_some() {
+        while self.slots[slot].id().is_some() {
             slot = (slot + 1) & (self.slots.len() - 1);
         }
         slot
@@ -104,6 +140,14 @@ impl Names {
     }
 }
 fn bucket(hash: u64, capacity: usize) -> usize {
-    // Mask before conversion so 32-bit hosts select the same low hash bits.
-    usize::try_from(hash & u64::try_from(capacity - 1).unwrap_or(u64::MAX)).unwrap_or(0)
+    // Multiplicative hashes mix every input byte into their high bits, while
+    // the low bits only see low input bits: spellings sharing a prefix and a
+    // constant byte position (`item_10`..`item_99`) would form one long probe
+    // cluster. Select the slot from the top bits; the power-of-two capacity
+    // keeps the index below 32 bits on every host.
+    let bits = capacity.trailing_zeros();
+    if bits == 0 {
+        return 0;
+    }
+    usize::try_from(hash >> (64 - bits)).unwrap_or(0)
 }

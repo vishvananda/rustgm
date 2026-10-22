@@ -76,7 +76,7 @@ pub struct Report {
     pub resolution: Resolution,
     pub(crate) names_resolved: bool,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 struct Visit {
     module: ModuleId,
     node: NodeId,
@@ -89,8 +89,15 @@ struct Visit {
     include: Option<FileId>,
     foreign: Option<NodeKey>,
 }
+/// Worklist entries stay small: siblings share one stored traversal frame.
 enum Work {
-    Visit(Visit),
+    /// Visit `node` with the traversal state stored in `frames[frame]`.
+    Visit {
+        node: NodeId,
+        frame: u32,
+    },
+    /// Release frames above this mark; every visit sharing them has finished.
+    Frames(u32),
     Restore(Scope),
     Finish {
         output: Option<Scope>,
@@ -142,6 +149,7 @@ struct Engine<'a, S> {
     paths: paths::Paths,
     workspace: Workspace,
     work: Vec<Work>,
+    frames: Vec<Visit>,
     children: Vec<NodeId>,
     recursion_limit: usize,
     builtin_definitions: Vec<Option<usize>>,
@@ -200,7 +208,14 @@ pub fn analyze_with_crates(
         ready: VecDeque::new(),
         paths,
         workspace: Workspace::default(),
-        work: vec![Work::Visit(Visit {
+        work: Vec::new(),
+        frames: Vec::new(),
+        children: Vec::new(),
+        recursion_limit,
+        builtin_definitions: vec![None; Builtin::ALL.len()],
+    };
+    let result = engine
+        .push_visit(Visit {
             module: ModuleId(0),
             node: root,
             owner: None,
@@ -211,12 +226,9 @@ pub fn analyze_with_crates(
             eager: None,
             include: None,
             foreign: None,
-        })],
-        children: Vec::new(),
-        recursion_limit,
-        builtin_definitions: vec![None; Builtin::ALL.len()],
-    };
-    engine.run().map_err(|error| engine.diagnostic(error))?;
+        })
+        .and_then(|()| engine.run());
+    result.map_err(|error| engine.diagnostic(error))?;
     Ok(Report {
         package: engine.loader.package,
         definitions: engine.definitions,
@@ -266,15 +278,37 @@ impl<S: Sources> Engine<'_, S> {
             self.ready.push_back(index);
         }
     }
+    /// Queue a traversal root in its own frame.
+    fn push_visit(&mut self, visit: Visit) -> Result<(), Error> {
+        let frame = self.frame_mark()?;
+        self.work.push(Work::Frames(frame));
+        self.frames.push(visit);
+        self.work.push(Work::Visit {
+            node: visit.node,
+            frame,
+        });
+        Ok(())
+    }
+    fn frame_mark(&self) -> Result<u32, Error> {
+        u32::try_from(self.frames.len())
+            .map_err(|_| Error::at(FileId(0), 0, "expansion traversal frames exceed 32 bits"))
+    }
     fn scan(&mut self) -> Result<(), Error> {
         while let Some(work) = self.work.pop() {
             match work {
-                Work::Visit(visit) => self.visit(visit).map_err(|mut error| {
-                    if error.introduction.0 == 0 {
-                        error.introduction = visit.introduction;
-                    }
-                    error
-                })?,
+                Work::Visit { node, frame } => {
+                    let visit = Visit {
+                        node,
+                        ..self.frames[frame as usize]
+                    };
+                    self.visit(visit, frame).map_err(|mut error| {
+                        if error.introduction.0 == 0 {
+                            error.introduction = visit.introduction;
+                        }
+                        error
+                    })?;
+                }
+                Work::Frames(mark) => self.frames.truncate(mark as usize),
                 Work::Restore(head) => self.head = head,
                 Work::Finish { output, restore } => {
                     if let Some(output) = output {
@@ -464,11 +498,11 @@ impl<S: Sources> Engine<'_, S> {
             restore: self.head,
         });
         self.head = scope;
-        self.work.push(Work::Visit(Visit {
+        self.push_visit(Visit {
             depth: visit.depth + 1,
             introduction,
             ..visit
-        }));
+        })?;
         self.scan()?;
         self.completed(index)
     }
@@ -477,7 +511,7 @@ impl<S: Sources> Engine<'_, S> {
         clippy::too_many_lines,
         reason = "one typed-node visit coordinates declaration, module and expansion scope transitions"
     )]
-    fn visit(&mut self, mut visit: Visit) -> Result<(), Error> {
+    fn visit(&mut self, mut visit: Visit, frame: u32) -> Result<(), Error> {
         let module = &self.loader.package.modules[visit.module.0 as usize];
         let file = module.file;
         let unit = self.loader.package.unit(file);
@@ -579,19 +613,36 @@ impl<S: Sources> Engine<'_, S> {
             .configured
             .ast
             .push_children(visit.node, &mut self.children);
-        let owner = if matches!(kind, Kind::Attributed { .. }) {
-            Some(visit.node)
-        } else {
-            None
+        // Leaves have no declarations, expansions or descendants to visit.
+        let ast = &self.loader.package.unit(file).configured.ast;
+        self.children
+            .retain(|node| !super::index::is_inert(ast, *node));
+        if self.children.is_empty() {
+            return Ok(());
+        }
+        let child = Visit {
+            owner: matches!(kind, Kind::Attributed { .. }).then_some(visit.node),
+            in_block: visit.in_block || matches!(kind, Kind::Block { .. }),
+            ..visit
         };
-        self.work.extend(self.children.iter().rev().map(|node| {
-            Work::Visit(Visit {
+        let parent = self.frames[frame as usize];
+        let inherited = Visit {
+            node: parent.node,
+            ..child
+        } == parent;
+        let shared = if inherited {
+            frame
+        } else {
+            let mark = self.frame_mark()?;
+            self.work.push(Work::Frames(mark));
+            self.frames.push(child);
+            mark
+        };
+        self.work
+            .extend(self.children.iter().rev().map(|node| Work::Visit {
                 node: *node,
-                owner,
-                in_block: visit.in_block || matches!(kind, Kind::Block { .. }),
-                ..visit
-            })
-        }));
+                frame: shared,
+            }));
         Ok(())
     }
     fn module(&mut self, visit: Visit, file: FileId, visibility: Visibility) -> Result<(), Error> {
@@ -618,7 +669,7 @@ impl<S: Sources> Engine<'_, S> {
         if !self.flags(file, visit.owner)?.macro_use {
             self.work.push(Work::Restore(self.head));
         }
-        self.work.push(Work::Visit(Visit {
+        self.push_visit(Visit {
             module: child,
             node: self.loader.package.modules[child.0 as usize].root,
             owner: None,
@@ -627,8 +678,7 @@ impl<S: Sources> Engine<'_, S> {
             foreign: None,
             path_scope,
             ..visit
-        }));
-        Ok(())
+        })
     }
     fn define(
         &mut self,

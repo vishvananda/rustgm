@@ -307,7 +307,7 @@ impl Resolver<'_> {
                     .get(&(name, ns))
                     .copied()
                     .map(|binding| (scope, binding))
-            } else if self.hygiene.is_some() {
+            } else if self.hygiene.is_some() && matches!(ns, Namespace::Value | Namespace::Label) {
                 let offset = super::hygiene::name_offset(
                     self.package,
                     super::unit::NodeKey { file: c.file, node },
