@@ -96,7 +96,7 @@ fn completed_discriminants_match_independent_native_values()
 }
 fn qualify(name: &str, text: &str, accepted: bool) -> Result<String, Box<dyn std::error::Error>> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
-        "../obj/pa25-discriminant-outcomes/{}",
+        "../obj/parallel/pa25-discriminant-outcomes/{}",
         std::process::id()
     ));
     std::fs::create_dir_all(&folder)?;

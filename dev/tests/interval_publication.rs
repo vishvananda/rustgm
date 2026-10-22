@@ -92,7 +92,7 @@ fn object_outcome(
     accepted: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
-        "../obj/pa25-pattern-outcomes/{}",
+        "../obj/parallel/pa25-pattern-outcomes/{}",
         std::process::id()
     ));
     std::fs::create_dir_all(&folder)?;

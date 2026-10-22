@@ -153,7 +153,7 @@ const REJECTED: &[&str] = &[
 ];
 fn folder(name: &str) -> Result<PathBuf, std::io::Error> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../obj/pa13-work")
+        .join("../obj/parallel/pa13-patterns")
         .join(name)
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&path)?;
