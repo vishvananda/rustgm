@@ -97,3 +97,34 @@ and reexport work is useful foundation; it does not supply these remaining contr
 Root owns the current metadata implementation and global roadmap. This list is a
 handoff dependency interface for the forthcoming generic-body lane; it introduces
 no new shared schema, bypass or exemption for the remaining PA25 language work.
+
+## Conditional original-component proof diagnostic
+
+The private `body::build::templates::inline_component_tests` matrix assembles the
+exact completed original inline, immediate closure and enclosing function for
+unchanged `inline-query-context/closure.rs` and `paid-lifetime.rs`. Existing typed
+construction, original anonymous dispatch, promotion and the normal template
+region/ownership/loan verifier prove both complete components. Omitting either
+parent rejects at the checked-parent boundary; redirecting the unchanged child's
+bridge slots to its grandparent rejects invalid lifetime identity. Removing the
+outer paid lifetime relation rejects as Rust does. These tests publish no Code or
+execution Permit and neither clear nor replace the real output Link.
+
+Evidence is retained under `obj/parallel/pa25-generic-pattern/conditional-followup`
+and `conditional-component-first`; the three independent Rust object outcomes
+are accept/accept/reject. The first closing audit caught the seventh `inline_*`
+filename and is retained in `conditional-component-close`; the private file was
+renamed to `conditional_parents.rs` without changing the test module identity.
+
+This establishes the original component proof, not source-to-native support.
+The next consumer is the provider's `Engine::anonymous_template`, which currently
+checks the child alone. Actual anonymous instance output specialization and
+caller namespace transport still reject conditional outputs. They must consume
+an exact checked parent/component and preserve all obligations, sibling/owner
+identity, escape and ordinary original/instance proofs; this test does not grant
+permission to bypass those gates.
+
+The renamed final tail `conditional-component-final/` passed both exact private
+tests, strict all-target/all-feature release Clippy and the 1,631-file audit with
+zero findings. The unpaid assertion requires the actual lifetime rejection,
+not an implementation boundary. No production behavior changed in this followup.

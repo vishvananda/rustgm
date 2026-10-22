@@ -366,3 +366,7 @@ fn environment(
             .map_err(|e| Declarations::error(report, source, e))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/conditional_parents.rs"]
+mod inline_component_tests;
