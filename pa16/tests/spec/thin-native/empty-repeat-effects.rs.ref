@@ -57,15 +57,11 @@ function @rg.15(%p0 : ptr) -> u8 {
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load i64 %t0
-    %t2 = convert zext i128 i64 %t1
-    %t3 = convert zext i128 i64 1
-    %t4 = binary add i128 %t2, %t3
-    %t5 = convert trunc i64 i128 %t4
-    %t6 = convert zext i128 i64 %t5
-    %t7 = cmp ne i128 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add i64 %t1, 1
+    %t3 = cmp ult i64 %t2, %t1
+    branch %t3, ^b1, ^b2
   block ^b2:
-    store i64 %t5, %t0
+    store i64 %t2, %t0
     return u8 7
   block ^b1:
     call void @abort()

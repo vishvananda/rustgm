@@ -11,15 +11,14 @@ function @rg.13(%p0 : i8, %p1 : i8) -> i8 {
     store i8 %p1, $s1
     %t0 = load i8 $s0
     %t1 = load i8 $s1
-    %t2 = convert sext i16 i8 %t0
-    %t3 = convert sext i16 i8 %t1
-    %t4 = binary add i16 %t2, %t3
-    %t5 = convert trunc i8 i16 %t4
-    %t6 = convert sext i16 i8 %t5
-    %t7 = cmp ne i16 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add i8 %t0, %t1
+    %t3 = binary xor i8 %t0, %t2
+    %t4 = binary xor i8 %t2, %t1
+    %t5 = binary and i8 %t3, %t4
+    %t6 = cmp lt i8 %t5, 0
+    branch %t6, ^b1, ^b2
   block ^b2:
-    return i8 %t5
+    return i8 %t2
   block ^b1:
     call void @abort()
     unreachable

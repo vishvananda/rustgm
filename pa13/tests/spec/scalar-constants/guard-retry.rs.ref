@@ -17,30 +17,29 @@ function @rg.18() -> void {
     jump ^b2
   block ^b2:
     %t2 = load i32 $s0
-    %t3 = convert sext i64 i32 %t2
-    %t4 = convert sext i64 i32 1
-    %t5 = binary add i64 %t3, %t4
-    %t6 = convert trunc i32 i64 %t5
-    %t7 = convert sext i64 i32 %t6
-    %t8 = cmp ne i64 %t5, %t7
-    branch %t8, ^b24, ^b25
+    %t3 = binary add i32 %t2, 1
+    %t4 = binary xor i32 %t2, %t3
+    %t5 = binary xor i32 %t3, 1
+    %t6 = binary and i32 %t4, %t5
+    %t7 = cmp lt i32 %t6, 0
+    branch %t7, ^b24, ^b25
   block ^b25:
-    store i32 %t6, $s0
+    store i32 %t3, $s0
     branch 0, ^b19, ^b21
   block ^b21:
     jump ^b20
   block ^b20:
     jump ^b5
   block ^b5:
-    %t9 = load u32 $s1
-    %t10 = cmp eq u32 %t9, 0
-    %t11 = convert trunc i1 i64 %t10
-    branch %t11, ^b8, ^b11
+    %t8 = load u32 $s1
+    %t9 = cmp eq u32 %t8, 0
+    %t10 = convert trunc i1 i64 %t9
+    branch %t10, ^b8, ^b11
   block ^b11:
-    %t12 = load u32 $s1
-    %t13 = cmp eq u32 %t12, 1
-    %t14 = convert trunc i1 i64 %t13
-    branch %t14, ^b12, ^b15
+    %t11 = load u32 $s1
+    %t12 = cmp eq u32 %t11, 1
+    %t13 = convert trunc i1 i64 %t12
+    branch %t13, ^b12, ^b15
   block ^b15:
     jump ^b16
   block ^b16:
@@ -58,12 +57,12 @@ function @rg.18() -> void {
   block ^b8:
     jump ^b10
   block ^b10:
-    %t15 = cmp uge u8 7, 0
-    %t16 = convert trunc i1 i64 %t15
-    %t17 = cmp ule u8 7, 9
-    %t18 = convert trunc i1 i64 %t17
-    %t19 = binary and i1 %t16, %t18
-    branch %t19, ^b13, ^b14
+    %t14 = cmp uge u8 7, 0
+    %t15 = convert trunc i1 i64 %t14
+    %t16 = cmp ule u8 7, 9
+    %t17 = convert trunc i1 i64 %t16
+    %t18 = binary and i1 %t15, %t17
+    branch %t18, ^b13, ^b14
   block ^b14:
     jump ^b17
   block ^b17:
@@ -75,10 +74,10 @@ function @rg.18() -> void {
   block ^b19:
     jump ^b1
   block ^b1:
-    %t20 = load i32 $s0
-    %t21 = cmp eq i32 %t20, 3
-    %t22 = convert trunc i1 i64 %t21
-    call void @rg.13(%t22)
+    %t19 = load i32 $s0
+    %t20 = cmp eq i32 %t19, 3
+    %t21 = convert trunc i1 i64 %t20
+    call void @rg.13(%t21)
     return void
   block ^b23:
     unreachable

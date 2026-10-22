@@ -95,15 +95,11 @@ function @rg.closure.0(%p0 : ptr, %p1 : u8) -> u8 {
     %t1 = load ptr %t0
     %t2 = load u8 $s1
     %t3 = load u8 %t1
-    %t4 = convert zext i16 u8 %t2
-    %t5 = convert zext i16 u8 %t3
-    %t6 = binary add i16 %t4, %t5
-    %t7 = convert trunc u8 i16 %t6
-    %t8 = convert zext i16 u8 %t7
-    %t9 = cmp ne i16 %t6, %t8
-    branch %t9, ^b1, ^b2
+    %t4 = binary add u8 %t2, %t3
+    %t5 = cmp ult u8 %t4, %t2
+    branch %t5, ^b1, ^b2
   block ^b2:
-    return u8 %t7
+    return u8 %t4
   block ^b1:
     call void @abort()
     unreachable

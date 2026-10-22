@@ -78,37 +78,29 @@ function @rg.17(%p0 : ptr) -> u8 {
     %t9 = addr $s4
     copyobj 1x1 %t8, %t9
     %t10 = load u8 $s4
-    %t11 = convert zext i16 u8 %t10
-    %t12 = convert zext i16 u8 2
-    %t13 = binary add i16 %t11, %t12
-    %t14 = convert trunc u8 i16 %t13
-    %t15 = convert zext i16 u8 %t14
-    %t16 = cmp ne i16 %t13, %t15
-    branch %t16, ^b13, ^b14
+    %t11 = binary add u8 %t10, 2
+    %t12 = cmp ult u8 %t11, %t10
+    branch %t12, ^b13, ^b14
   block ^b14:
-    store u8 %t14, $s1
+    store u8 %t11, $s1
     jump ^b1
   block ^b7:
-    %t17 = addr $s0
-    %t18 = addr $s6
-    copyobj 1x1 %t17, %t18
-    %t19 = addr $s6
-    %t20 = addr $s3
-    copyobj 1x1 %t19, %t20
-    %t21 = load u8 $s3
-    %t22 = convert zext i16 u8 %t21
-    %t23 = convert zext i16 u8 1
-    %t24 = binary add i16 %t22, %t23
-    %t25 = convert trunc u8 i16 %t24
-    %t26 = convert zext i16 u8 %t25
-    %t27 = cmp ne i16 %t24, %t26
-    branch %t27, ^b13, ^b15
+    %t13 = addr $s0
+    %t14 = addr $s6
+    copyobj 1x1 %t13, %t14
+    %t15 = addr $s6
+    %t16 = addr $s3
+    copyobj 1x1 %t15, %t16
+    %t17 = load u8 $s3
+    %t18 = binary add u8 %t17, 1
+    %t19 = cmp ult u8 %t18, %t17
+    branch %t19, ^b13, ^b15
   block ^b15:
-    store u8 %t25, $s1
+    store u8 %t18, $s1
     jump ^b1
   block ^b1:
-    %t28 = load u8 $s1
-    return u8 %t28
+    %t20 = load u8 $s1
+    return u8 %t20
   block ^b11:
     unreachable
   block ^b12:

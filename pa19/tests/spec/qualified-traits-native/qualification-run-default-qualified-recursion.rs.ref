@@ -23,23 +23,19 @@ function @rg.17.i3(%p0 : u8, %p1 : u8) -> u8 {
   block ^b2:
     %t3 = load u8 $s0
     %t4 = load u8 $s1
-    %t5 = convert zext i16 u8 %t4
-    %t6 = convert zext i16 u8 1
-    %t7 = binary sub i16 %t5, %t6
-    %t8 = convert trunc u8 i16 %t7
-    %t9 = convert zext i16 u8 %t8
-    %t10 = cmp ne i16 %t7, %t9
-    branch %t10, ^b4, ^b5
+    %t5 = binary sub u8 %t4, 1
+    %t6 = cmp ult u8 %t4, 1
+    branch %t6, ^b4, ^b5
   block ^b5:
-    %t11 = call u8 @rg.17.i3(%t3, %t8)
-    store u8 %t11, $s2
+    %t7 = call u8 @rg.17.i3(%t3, %t5)
+    store u8 %t7, $s2
     jump ^b3
   block ^b1:
     store u8 7, $s2
     jump ^b3
   block ^b3:
-    %t12 = load u8 $s2
-    return u8 %t12
+    %t8 = load u8 $s2
+    return u8 %t8
   block ^b4:
     call void @abort()
     unreachable

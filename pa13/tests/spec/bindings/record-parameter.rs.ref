@@ -51,15 +51,11 @@ function @rg.18(%p0 : ptr) -> i64 {
     copyobj 8x8 %t5, %t6
     %t7 = load i64 $s1
     %t8 = load i64 $s2
-    %t9 = convert zext i128 i64 %t7
-    %t10 = convert zext i128 i64 %t8
-    %t11 = binary add i128 %t9, %t10
-    %t12 = convert trunc i64 i128 %t11
-    %t13 = convert zext i128 i64 %t12
-    %t14 = cmp ne i128 %t11, %t13
-    branch %t14, ^b1, ^b2
+    %t9 = binary add i64 %t7, %t8
+    %t10 = cmp ult i64 %t9, %t7
+    branch %t10, ^b1, ^b2
   block ^b2:
-    return i64 %t12
+    return i64 %t9
   block ^b1:
     call void @abort()
     unreachable

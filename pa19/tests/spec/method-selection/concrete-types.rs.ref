@@ -36,15 +36,11 @@ function @rg.18(%p0 : ptr) -> u16 {
     copyobj 1x1 %p0, %t0
     %t1 = load u8 $s0
     %t2 = convert zext u16 u8 %t1
-    %t3 = convert zext i32 u16 %t2
-    %t4 = convert zext i32 u16 1
-    %t5 = binary add i32 %t3, %t4
-    %t6 = convert trunc u16 i32 %t5
-    %t7 = convert zext i32 u16 %t6
-    %t8 = cmp ne i32 %t5, %t7
-    branch %t8, ^b1, ^b2
+    %t3 = binary add u16 %t2, 1
+    %t4 = cmp ult u16 %t3, %t2
+    branch %t4, ^b1, ^b2
   block ^b2:
-    return u16 %t6
+    return u16 %t3
   block ^b1:
     call void @abort()
     unreachable
@@ -81,15 +77,11 @@ function @rg.20(%p0 : ptr) -> u16 {
     %t0 = addr $s0
     copyobj 2x2 %p0, %t0
     %t1 = load u16 $s0
-    %t2 = convert zext i32 u16 %t1
-    %t3 = convert zext i32 u16 2
-    %t4 = binary add i32 %t2, %t3
-    %t5 = convert trunc u16 i32 %t4
-    %t6 = convert zext i32 u16 %t5
-    %t7 = cmp ne i32 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add u16 %t1, 2
+    %t3 = cmp ult u16 %t2, %t1
+    branch %t3, ^b1, ^b2
   block ^b2:
-    return u16 %t5
+    return u16 %t2
   block ^b1:
     call void @abort()
     unreachable

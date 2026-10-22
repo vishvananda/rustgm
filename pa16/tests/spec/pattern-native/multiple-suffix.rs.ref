@@ -121,26 +121,18 @@ function @rg.15(%p0 : ptr) -> void {
   block ^b1:
     %t23 = load ptr $s1
     %t24 = load u8 %t23
-    %t25 = convert zext i16 u8 %t24
-    %t26 = convert zext i16 u8 1
-    %t27 = binary add i16 %t25, %t26
-    %t28 = convert trunc u8 i16 %t27
-    %t29 = convert zext i16 u8 %t28
-    %t30 = cmp ne i16 %t27, %t29
-    branch %t30, ^b8, ^b9
+    %t25 = binary add u8 %t24, 1
+    %t26 = cmp ult u8 %t25, %t24
+    branch %t26, ^b8, ^b9
   block ^b9:
-    store u8 %t28, %t23
-    %t31 = load ptr $s2
-    %t32 = load u8 %t31
-    %t33 = convert zext i16 u8 %t32
-    %t34 = convert zext i16 u8 2
-    %t35 = binary add i16 %t33, %t34
-    %t36 = convert trunc u8 i16 %t35
-    %t37 = convert zext i16 u8 %t36
-    %t38 = cmp ne i16 %t35, %t37
-    branch %t38, ^b8, ^b10
+    store u8 %t25, %t23
+    %t27 = load ptr $s2
+    %t28 = load u8 %t27
+    %t29 = binary add u8 %t28, 2
+    %t30 = cmp ult u8 %t29, %t28
+    branch %t30, ^b8, ^b10
   block ^b10:
-    store u8 %t36, %t31
+    store u8 %t29, %t27
     jump ^b3
   block ^b3:
     return void

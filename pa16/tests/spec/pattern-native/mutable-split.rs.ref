@@ -152,45 +152,33 @@ function @rg.15(%p0 : ptr) -> void {
   block ^b1:
     %t25 = load ptr $s1
     %t26 = load u8 %t25
-    %t27 = convert zext i16 u8 %t26
-    %t28 = convert zext i16 u8 1
-    %t29 = binary add i16 %t27, %t28
-    %t30 = convert trunc u8 i16 %t29
-    %t31 = convert zext i16 u8 %t30
-    %t32 = cmp ne i16 %t29, %t31
-    branch %t32, ^b9, ^b10
+    %t27 = binary add u8 %t26, 1
+    %t28 = cmp ult u8 %t27, %t26
+    branch %t28, ^b9, ^b10
   block ^b10:
-    store u8 %t30, %t25
-    %t33 = load ptr $s2
-    %t34 = addr $s2
-    %t35 = index u8 %t34, 8
-    %t36 = load i64 %t35
-    %t37 = cmp uge i64 0, %t36
-    branch %t37, ^b9, ^b11
+    store u8 %t27, %t25
+    %t29 = load ptr $s2
+    %t30 = addr $s2
+    %t31 = index u8 %t30, 8
+    %t32 = load i64 %t31
+    %t33 = cmp uge i64 0, %t32
+    branch %t33, ^b9, ^b11
   block ^b11:
-    %t38 = binary mul i64 0, 1
-    %t39 = index u8 %t33, %t38
-    %t40 = load u8 %t39
-    %t41 = convert zext i16 u8 %t40
-    %t42 = convert zext i16 u8 2
-    %t43 = binary add i16 %t41, %t42
-    %t44 = convert trunc u8 i16 %t43
-    %t45 = convert zext i16 u8 %t44
-    %t46 = cmp ne i16 %t43, %t45
-    branch %t46, ^b9, ^b12
+    %t34 = binary mul i64 0, 1
+    %t35 = index u8 %t29, %t34
+    %t36 = load u8 %t35
+    %t37 = binary add u8 %t36, 2
+    %t38 = cmp ult u8 %t37, %t36
+    branch %t38, ^b9, ^b12
   block ^b12:
-    store u8 %t44, %t39
-    %t47 = load ptr $s3
-    %t48 = load u8 %t47
-    %t49 = convert zext i16 u8 %t48
-    %t50 = convert zext i16 u8 3
-    %t51 = binary add i16 %t49, %t50
-    %t52 = convert trunc u8 i16 %t51
-    %t53 = convert zext i16 u8 %t52
-    %t54 = cmp ne i16 %t51, %t53
-    branch %t54, ^b9, ^b13
+    store u8 %t37, %t35
+    %t39 = load ptr $s3
+    %t40 = load u8 %t39
+    %t41 = binary add u8 %t40, 3
+    %t42 = cmp ult u8 %t41, %t40
+    branch %t42, ^b9, ^b13
   block ^b13:
-    store u8 %t52, %t47
+    store u8 %t41, %t39
     jump ^b3
   block ^b3:
     return void

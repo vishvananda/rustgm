@@ -49,21 +49,17 @@ function @rg.15(%p0 : ptr) -> ptr {
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load u8 %t0
-    %t2 = convert zext i16 u8 %t1
-    %t3 = convert zext i16 u8 1
-    %t4 = binary add i16 %t2, %t3
-    %t5 = convert trunc u8 i16 %t4
-    %t6 = convert zext i16 u8 %t5
-    %t7 = cmp ne i16 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add u8 %t1, 1
+    %t3 = cmp ult u8 %t2, %t1
+    branch %t3, ^b1, ^b2
   block ^b2:
-    store u8 %t5, %t0
+    store u8 %t2, %t0
     store u8 3, $s1
-    %t8 = addr $s1
-    %t9 = index u8 %t8, 1
-    store u8 5, %t9
-    %t10 = addr @rg.data.0
-    return ptr %t10
+    %t4 = addr $s1
+    %t5 = index u8 %t4, 1
+    store u8 5, %t5
+    %t6 = addr @rg.data.0
+    return ptr %t6
   block ^b1:
     call void @abort()
     unreachable

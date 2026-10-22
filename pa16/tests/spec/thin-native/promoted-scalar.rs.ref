@@ -15,16 +15,12 @@ function @rg.16() -> void {
 }
 function @rg.15() -> ptr {
   block ^b0:
-    %t0 = convert zext i128 i64 40
-    %t1 = convert zext i128 i64 2
-    %t2 = binary add i128 %t0, %t1
-    %t3 = convert trunc i64 i128 %t2
-    %t4 = convert zext i128 i64 %t3
-    %t5 = cmp ne i128 %t2, %t4
-    branch %t5, ^b1, ^b2
+    %t0 = binary add i64 40, 2
+    %t1 = cmp ult i64 %t0, 40
+    branch %t1, ^b1, ^b2
   block ^b2:
-    %t6 = addr @rg.data.0
-    return ptr %t6
+    %t2 = addr @rg.data.0
+    return ptr %t2
   block ^b1:
     call void @abort()
     unreachable

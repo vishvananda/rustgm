@@ -66,27 +66,23 @@ function @rg.16(%p0 : ptr) -> i64 {
     %t12 = load i64 $s4
     %t13 = load u8 $s3
     %t14 = convert zext i64 u8 %t13
-    %t15 = convert zext i128 i64 %t12
-    %t16 = convert zext i128 i64 %t14
-    %t17 = binary add i128 %t15, %t16
-    %t18 = convert trunc i64 i128 %t17
-    %t19 = convert zext i128 i64 %t18
-    %t20 = cmp ne i128 %t17, %t19
-    branch %t20, ^b10, ^b11
+    %t15 = binary add i64 %t12, %t14
+    %t16 = cmp ult i64 %t15, %t12
+    branch %t16, ^b10, ^b11
   block ^b11:
-    store i64 %t18, $s1
+    store i64 %t15, $s1
     jump ^b1
   block ^b2:
-    %t21 = addr $s0
-    %t22 = index u8 %t21, 8
-    %t23 = load i64 %t22
-    store i64 %t23, $s2
-    %t24 = load i64 $s2
-    store i64 %t24, $s1
+    %t17 = addr $s0
+    %t18 = index u8 %t17, 8
+    %t19 = load i64 %t18
+    store i64 %t19, $s2
+    %t20 = load i64 $s2
+    store i64 %t20, $s1
     jump ^b1
   block ^b1:
-    %t25 = load i64 $s1
-    return i64 %t25
+    %t21 = load i64 $s1
+    return i64 %t21
   block ^b7:
     unreachable
   block ^b9:

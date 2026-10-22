@@ -116,15 +116,11 @@ function @rg.20(%p0 : ptr) -> i64 {
     %t28 = load u8 $s2
     %t29 = convert zext i64 u8 %t28
     %t30 = load i64 $s3
-    %t31 = convert zext i128 i64 %t29
-    %t32 = convert zext i128 i64 %t30
-    %t33 = binary add i128 %t31, %t32
-    %t34 = convert trunc i64 i128 %t33
-    %t35 = convert zext i128 i64 %t34
-    %t36 = cmp ne i128 %t33, %t35
-    branch %t36, ^b13, ^b14
+    %t31 = binary add i64 %t29, %t30
+    %t32 = cmp ult i64 %t31, %t29
+    branch %t32, ^b13, ^b14
   block ^b14:
-    return i64 %t34
+    return i64 %t31
   block ^b13:
     call void @abort()
     unreachable

@@ -28,20 +28,19 @@ function @rg.18() -> void {
     jump ^b2
   block ^b2:
     %t9 = load i32 $s1
-    %t10 = convert sext i64 i32 %t9
-    %t11 = convert sext i64 i32 1
-    %t12 = binary add i64 %t10, %t11
-    %t13 = convert trunc i32 i64 %t12
-    %t14 = convert sext i64 i32 %t13
-    %t15 = cmp ne i64 %t12, %t14
-    branch %t15, ^b6, ^b7
+    %t10 = binary add i32 %t9, 1
+    %t11 = binary xor i32 %t9, %t10
+    %t12 = binary xor i32 %t10, 1
+    %t13 = binary and i32 %t11, %t12
+    %t14 = cmp lt i32 %t13, 0
+    branch %t14, ^b6, ^b7
   block ^b7:
-    store i32 %t13, $s1
+    store i32 %t10, $s1
+    %t15 = addr $s3
+    call void @rg.16(%t15, 0)
     %t16 = addr $s3
-    call void @rg.16(%t16, 0)
-    %t17 = addr $s3
-    %t18 = addr $s0
-    copyobj 1x1 %t17, %t18
+    %t17 = addr $s0
+    copyobj 1x1 %t16, %t17
     jump ^b1
   block ^b6:
     call void @abort()

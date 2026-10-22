@@ -35,21 +35,17 @@ function @rg.15() -> u8 {
     jump ^b8
   block ^b8:
     %t10 = load u8 $s0
-    %t11 = convert zext i16 u8 %t10
-    %t12 = convert zext i16 u8 1
-    %t13 = binary sub i16 %t11, %t12
-    %t14 = convert trunc u8 i16 %t13
-    %t15 = convert zext i16 u8 %t14
-    %t16 = cmp ne i16 %t13, %t15
-    branch %t16, ^b9, ^b10
+    %t11 = binary sub u8 %t10, 1
+    %t12 = cmp ult u8 %t10, 1
+    branch %t12, ^b9, ^b10
   block ^b10:
-    store u8 %t14, $s0
+    store u8 %t11, $s0
     jump ^b1
   block ^b6:
     jump ^b3
   block ^b3:
-    %t17 = load u8 $s0
-    return u8 %t17
+    %t13 = load u8 $s0
+    return u8 %t13
   block ^b9:
     call void @abort()
     unreachable

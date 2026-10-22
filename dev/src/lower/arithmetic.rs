@@ -169,6 +169,11 @@ impl Arithmetic<'_> {
         left: Value,
         right: Value,
     ) -> Result<Value, &'static str> {
+        // Same-width sum/difference checks need two operations; widening needs
+        // five and makes 64-bit operands 128-bit. Products keep one wide multiply.
+        if matches!(op, Binary::Add | Binary::Sub) {
+            return self.wide(op, signed, left, right);
+        }
         let wide = match left.ty.bits() {
             8 => Type::I16,
             16 => Type::I32,

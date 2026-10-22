@@ -176,54 +176,46 @@ function @rg.15(%p0 : ptr) -> u8 {
     %t36 = load u8 %t35
     %t37 = load ptr $s6
     %t38 = load u8 %t37
-    %t39 = convert zext i16 u8 %t36
-    %t40 = convert zext i16 u8 %t38
-    %t41 = binary add i16 %t39, %t40
-    %t42 = convert trunc u8 i16 %t41
-    %t43 = convert zext i16 u8 %t42
-    %t44 = cmp ne i16 %t41, %t43
-    branch %t44, ^b20, ^b21
+    %t39 = binary add u8 %t36, %t38
+    %t40 = cmp ult u8 %t39, %t36
+    branch %t40, ^b20, ^b21
   block ^b21:
-    store u8 %t42, $s1
+    store u8 %t39, $s1
     jump ^b1
   block ^b12:
     jump ^b13
   block ^b13:
-    %t45 = index u8 %t13, 1
+    %t41 = index u8 %t13, 1
     jump ^b10
   block ^b10:
-    %t46 = load ptr $s0
-    %t47 = addr $s0
-    %t48 = index u8 %t47, 8
-    %t49 = load i64 %t48
-    store ptr %t46, $s3
-    %t50 = index u8 %t46, 1
-    store ptr %t50, $s4
-    %t51 = load ptr $s3
-    %t52 = load u8 %t51
-    %t53 = load ptr $s4
-    %t54 = load u8 %t53
-    %t55 = convert zext i16 u8 %t52
-    %t56 = convert zext i16 u8 %t54
-    %t57 = binary add i16 %t55, %t56
-    %t58 = convert trunc u8 i16 %t57
-    %t59 = convert zext i16 u8 %t58
-    %t60 = cmp ne i16 %t57, %t59
-    branch %t60, ^b20, ^b22
+    %t42 = load ptr $s0
+    %t43 = addr $s0
+    %t44 = index u8 %t43, 8
+    %t45 = load i64 %t44
+    store ptr %t42, $s3
+    %t46 = index u8 %t42, 1
+    store ptr %t46, $s4
+    %t47 = load ptr $s3
+    %t48 = load u8 %t47
+    %t49 = load ptr $s4
+    %t50 = load u8 %t49
+    %t51 = binary add u8 %t48, %t50
+    %t52 = cmp ult u8 %t51, %t48
+    branch %t52, ^b20, ^b22
   block ^b22:
-    store u8 %t58, $s1
+    store u8 %t51, $s1
     jump ^b1
   block ^b8:
     jump ^b6
   block ^b6:
-    %t61 = load ptr $s0
-    %t62 = addr $s0
-    %t63 = index u8 %t62, 8
-    %t64 = load i64 %t63
-    store ptr %t61, $s2
-    %t65 = load ptr $s2
-    %t66 = load u8 %t65
-    store u8 %t66, $s1
+    %t53 = load ptr $s0
+    %t54 = addr $s0
+    %t55 = index u8 %t54, 8
+    %t56 = load i64 %t55
+    store ptr %t53, $s2
+    %t57 = load ptr $s2
+    %t58 = load u8 %t57
+    store u8 %t58, $s1
     jump ^b1
   block ^b4:
     jump ^b2
@@ -231,8 +223,8 @@ function @rg.15(%p0 : ptr) -> u8 {
     store u8 0, $s1
     jump ^b1
   block ^b1:
-    %t67 = load u8 $s1
-    return u8 %t67
+    %t59 = load u8 $s1
+    return u8 %t59
   block ^b20:
     call void @abort()
     unreachable

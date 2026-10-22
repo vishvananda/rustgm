@@ -13,48 +13,40 @@ function @rg.15() -> i64 {
   block ^b0:
     store i64 0, $s0
     %t0 = load i64 $s0
-    %t1 = convert zext i128 i64 %t0
-    %t2 = convert zext i128 i64 100
-    %t3 = binary add i128 %t1, %t2
-    %t4 = convert trunc i64 i128 %t3
-    %t5 = convert zext i128 i64 %t4
-    %t6 = cmp ne i128 %t3, %t5
-    branch %t6, ^b20, ^b21
+    %t1 = binary add i64 %t0, 100
+    %t2 = cmp ult i64 %t1, %t0
+    branch %t2, ^b20, ^b21
   block ^b21:
-    store i64 %t4, $s0
+    store i64 %t1, $s0
     store u32 0, $s2
     jump ^b4
   block ^b4:
     store u32 2, $s2
     jump ^b6
   block ^b6:
-    %t7 = cmp eq u8 1, 1
-    %t8 = convert trunc i1 i64 %t7
-    branch %t8, ^b9, ^b10
+    %t3 = cmp eq u8 1, 1
+    %t4 = convert trunc i1 i64 %t3
+    branch %t4, ^b9, ^b10
   block ^b9:
     store u32 0, $s2
     jump ^b2
   block ^b2:
-    %t9 = load i64 $s0
-    %t10 = convert zext i128 i64 %t9
-    %t11 = convert zext i128 i64 1
-    %t12 = binary add i128 %t10, %t11
-    %t13 = convert trunc i64 i128 %t12
-    %t14 = convert zext i128 i64 %t13
-    %t15 = cmp ne i128 %t12, %t14
-    branch %t15, ^b20, ^b22
+    %t5 = load i64 $s0
+    %t6 = binary add i64 %t5, 1
+    %t7 = cmp ult i64 %t6, %t5
+    branch %t7, ^b20, ^b22
   block ^b22:
-    store i64 %t13, $s0
+    store i64 %t6, $s0
     branch 0, ^b15, ^b17
   block ^b17:
     jump ^b16
   block ^b16:
     jump ^b5
   block ^b5:
-    %t16 = load u32 $s2
-    %t17 = cmp eq u32 %t16, 0
-    %t18 = convert trunc i1 i64 %t17
-    branch %t18, ^b8, ^b11
+    %t8 = load u32 $s2
+    %t9 = cmp eq u32 %t8, 0
+    %t10 = convert trunc i1 i64 %t9
+    branch %t10, ^b8, ^b11
   block ^b11:
     jump ^b12
   block ^b12:
@@ -66,8 +58,8 @@ function @rg.15() -> i64 {
   block ^b14:
     jump ^b18
   block ^b18:
-    %t19 = load i64 $s0
-    store i64 %t19, $s1
+    %t11 = load i64 $s0
+    store i64 %t11, $s1
     jump ^b1
   block ^b8:
     jump ^b10
@@ -80,8 +72,8 @@ function @rg.15() -> i64 {
     store i64 99, $s1
     jump ^b1
   block ^b1:
-    %t20 = load i64 $s1
-    return i64 %t20
+    %t12 = load i64 $s1
+    return i64 %t12
   block ^b19:
     unreachable
   block ^b20:

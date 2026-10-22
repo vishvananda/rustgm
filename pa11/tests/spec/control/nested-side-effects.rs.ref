@@ -18,40 +18,32 @@ function @rg.15() -> i64 {
     jump ^b6
   block ^b4:
     %t0 = load i64 $s0
-    %t1 = convert zext i128 i64 %t0
-    %t2 = convert zext i128 i64 1
-    %t3 = binary add i128 %t1, %t2
-    %t4 = convert trunc i64 i128 %t3
-    %t5 = convert zext i128 i64 %t4
-    %t6 = cmp ne i128 %t3, %t5
-    branch %t6, ^b7, ^b8
+    %t1 = binary add i64 %t0, 1
+    %t2 = cmp ult i64 %t1, %t0
+    branch %t2, ^b7, ^b8
   block ^b8:
-    store i64 %t4, $s0
+    store i64 %t1, $s0
     store i1 0, $s2
     jump ^b6
   block ^b6:
-    %t7 = load i1 $s2
-    branch %t7, ^b1, ^b2
+    %t3 = load i1 $s2
+    branch %t3, ^b1, ^b2
   block ^b2:
-    %t8 = load i64 $s0
-    %t9 = convert zext i128 i64 %t8
-    %t10 = convert zext i128 i64 2
-    %t11 = binary add i128 %t9, %t10
-    %t12 = convert trunc i64 i128 %t11
-    %t13 = convert zext i128 i64 %t12
-    %t14 = cmp ne i128 %t11, %t13
-    branch %t14, ^b7, ^b9
+    %t4 = load i64 $s0
+    %t5 = binary add i64 %t4, 2
+    %t6 = cmp ult i64 %t5, %t4
+    branch %t6, ^b7, ^b9
   block ^b9:
-    store i64 %t12, $s0
+    store i64 %t5, $s0
     store i1 1, $s1
     jump ^b3
   block ^b1:
-    store i1 %t7, $s1
+    store i1 %t3, $s1
     jump ^b3
   block ^b3:
-    %t15 = load i1 $s1
-    %t16 = load i64 $s0
-    return i64 %t16
+    %t7 = load i1 $s1
+    %t8 = load i64 $s0
+    return i64 %t8
   block ^b7:
     call void @abort()
     unreachable

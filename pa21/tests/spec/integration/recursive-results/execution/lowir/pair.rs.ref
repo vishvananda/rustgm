@@ -34,35 +34,31 @@ function @rg.22.i5(%p0 : ptr, %p1 : u8) -> void {
     branch %t2, ^b1, ^b2
   block ^b2:
     %t3 = load u8 $s0
-    %t4 = convert zext i16 u8 %t3
-    %t5 = convert zext i16 u8 1
-    %t6 = binary sub i16 %t4, %t5
-    %t7 = convert trunc u8 i16 %t6
-    %t8 = convert zext i16 u8 %t7
-    %t9 = cmp ne i16 %t6, %t8
-    branch %t9, ^b4, ^b5
+    %t4 = binary sub u8 %t3, 1
+    %t5 = cmp ult u8 %t3, 1
+    branch %t5, ^b4, ^b5
   block ^b5:
-    %t10 = addr $s2
-    call void @rg.22.i5(%t10, %t7)
-    %t11 = addr $s2
-    %t12 = addr $s1
-    copyobj 2x1 %t11, %t12
+    %t6 = addr $s2
+    call void @rg.22.i5(%t6, %t4)
+    %t7 = addr $s2
+    %t8 = addr $s1
+    copyobj 2x1 %t7, %t8
     jump ^b3
   block ^b1:
     store u8 127, $s3
-    %t13 = addr $s3
-    %t14 = index u8 %t13, 1
-    store u8 131, %t14
-    %t15 = addr $s3
-    %t16 = addr $s1
-    copyobj 2x1 %t15, %t16
+    %t9 = addr $s3
+    %t10 = index u8 %t9, 1
+    store u8 131, %t10
+    %t11 = addr $s3
+    %t12 = addr $s1
+    copyobj 2x1 %t11, %t12
     jump ^b3
   block ^b3:
-    %t17 = addr $s1
-    %t18 = addr $s4
-    copyobj 2x1 %t17, %t18
-    %t19 = addr $s4
-    copyobj 2x1 %t19, %p0
+    %t13 = addr $s1
+    %t14 = addr $s4
+    copyobj 2x1 %t13, %t14
+    %t15 = addr $s4
+    copyobj 2x1 %t15, %p0
     return void
   block ^b4:
     call void @abort()

@@ -49,39 +49,31 @@ function @rg.19(%p0 : ptr) -> u8 {
     %t4 = call u8 @rg.18(%t3)
     store u8 %t4, $s1
     %t5 = load u8 $s1
-    %t6 = convert zext i16 u8 %t5
-    %t7 = convert zext i16 u8 1
-    %t8 = binary add i16 %t6, %t7
-    %t9 = convert trunc u8 i16 %t8
-    %t10 = convert zext i16 u8 %t9
-    %t11 = cmp ne i16 %t8, %t10
-    branch %t11, ^b1, ^b2
+    %t6 = binary add u8 %t5, 1
+    %t7 = cmp ult u8 %t6, %t5
+    branch %t7, ^b1, ^b2
   block ^b2:
-    %t12 = addr $s3
-    call void @rg.16(%t12, %t9)
-    %t13 = addr $s3
-    %t14 = addr $s0
-    copyobj 1x1 %t13, %t14
+    %t8 = addr $s3
+    call void @rg.16(%t8, %t6)
+    %t9 = addr $s3
+    %t10 = addr $s0
+    copyobj 1x1 %t9, %t10
+    %t11 = addr $s0
+    %t12 = addr $s4
+    copyobj 1x1 %t11, %t12
+    %t13 = addr $s4
+    %t14 = call u8 @rg.18(%t13)
     %t15 = addr $s0
-    %t16 = addr $s4
-    copyobj 1x1 %t15, %t16
-    %t17 = addr $s4
-    %t18 = call u8 @rg.18(%t17)
-    %t19 = addr $s0
-    %t20 = index u8 %t19, 1
-    %t21 = addr $s5
-    copyobj 1x1 %t20, %t21
-    %t22 = addr $s5
-    %t23 = call u8 @rg.18(%t22)
-    %t24 = convert zext i16 u8 %t18
-    %t25 = convert zext i16 u8 %t23
-    %t26 = binary add i16 %t24, %t25
-    %t27 = convert trunc u8 i16 %t26
-    %t28 = convert zext i16 u8 %t27
-    %t29 = cmp ne i16 %t26, %t28
-    branch %t29, ^b1, ^b3
+    %t16 = index u8 %t15, 1
+    %t17 = addr $s5
+    copyobj 1x1 %t16, %t17
+    %t18 = addr $s5
+    %t19 = call u8 @rg.18(%t18)
+    %t20 = binary add u8 %t14, %t19
+    %t21 = cmp ult u8 %t20, %t14
+    branch %t21, ^b1, ^b3
   block ^b3:
-    return u8 %t27
+    return u8 %t20
   block ^b1:
     call void @abort()
     unreachable

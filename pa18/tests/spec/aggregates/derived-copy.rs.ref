@@ -17,17 +17,13 @@ function @rg.17() -> void {
     copyobj 1x1 %t5, %t6
     %t7 = load u8 $s0
     %t8 = load u8 $s1
-    %t9 = convert zext i16 u8 %t7
-    %t10 = convert zext i16 u8 %t8
-    %t11 = binary add i16 %t9, %t10
-    %t12 = convert trunc u8 i16 %t11
-    %t13 = convert zext i16 u8 %t12
-    %t14 = cmp ne i16 %t11, %t13
-    branch %t14, ^b1, ^b2
+    %t9 = binary add u8 %t7, %t8
+    %t10 = cmp ult u8 %t9, %t7
+    branch %t10, ^b1, ^b2
   block ^b2:
-    %t15 = cmp eq u8 %t12, 18
-    %t16 = convert trunc i1 i64 %t15
-    call void @rg.13(%t16)
+    %t11 = cmp eq u8 %t9, 18
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
     return void
   block ^b1:
     call void @abort()

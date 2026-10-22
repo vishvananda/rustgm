@@ -26,25 +26,21 @@ function @rg.15() -> i64 {
     jump ^b2
   block ^b2:
     %t2 = load i64 $s0
-    %t3 = convert zext i128 i64 %t2
-    %t4 = convert zext i128 i64 1
-    %t5 = binary add i128 %t3, %t4
-    %t6 = convert trunc i64 i128 %t5
-    %t7 = convert zext i128 i64 %t6
-    %t8 = cmp ne i128 %t5, %t7
-    branch %t8, ^b20, ^b21
+    %t3 = binary add i64 %t2, 1
+    %t4 = cmp ult i64 %t3, %t2
+    branch %t4, ^b20, ^b21
   block ^b21:
-    store i64 %t6, $s0
+    store i64 %t3, $s0
     branch 0, ^b15, ^b17
   block ^b17:
     jump ^b16
   block ^b16:
     jump ^b5
   block ^b5:
-    %t9 = load u32 $s2
-    %t10 = cmp eq u32 %t9, 0
-    %t11 = convert trunc i1 i64 %t10
-    branch %t11, ^b8, ^b11
+    %t5 = load u32 $s2
+    %t6 = cmp eq u32 %t5, 0
+    %t7 = convert trunc i1 i64 %t6
+    branch %t7, ^b8, ^b11
   block ^b11:
     jump ^b12
   block ^b12:
@@ -56,8 +52,8 @@ function @rg.15() -> i64 {
   block ^b14:
     jump ^b18
   block ^b18:
-    %t12 = load i64 $s0
-    store i64 %t12, $s1
+    %t8 = load i64 $s0
+    store i64 %t8, $s1
     jump ^b1
   block ^b8:
     jump ^b10
@@ -70,8 +66,8 @@ function @rg.15() -> i64 {
     store i64 99, $s1
     jump ^b1
   block ^b1:
-    %t13 = load i64 $s1
-    return i64 %t13
+    %t9 = load i64 $s1
+    return i64 %t9
   block ^b19:
     unreachable
   block ^b20:

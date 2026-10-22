@@ -56,25 +56,21 @@ function @rg.18(%p0 : f64) -> u8 {
     jump ^b2
   block ^b2:
     %t3 = load u8 $s1
-    %t4 = convert zext i16 u8 %t3
-    %t5 = convert zext i16 u8 1
-    %t6 = binary add i16 %t4, %t5
-    %t7 = convert trunc u8 i16 %t6
-    %t8 = convert zext i16 u8 %t7
-    %t9 = cmp ne i16 %t6, %t8
-    branch %t9, ^b20, ^b21
+    %t4 = binary add u8 %t3, 1
+    %t5 = cmp ult u8 %t4, %t3
+    branch %t5, ^b20, ^b21
   block ^b21:
-    store u8 %t7, $s1
+    store u8 %t4, $s1
     branch 0, ^b15, ^b17
   block ^b17:
     jump ^b16
   block ^b16:
     jump ^b5
   block ^b5:
-    %t10 = load u32 $s2
-    %t11 = cmp eq u32 %t10, 0
-    %t12 = convert trunc i1 i64 %t11
-    branch %t12, ^b8, ^b11
+    %t6 = load u32 $s2
+    %t7 = cmp eq u32 %t6, 0
+    %t8 = convert trunc i1 i64 %t7
+    branch %t8, ^b8, ^b11
   block ^b11:
     jump ^b12
   block ^b12:
@@ -82,10 +78,10 @@ function @rg.18(%p0 : f64) -> u8 {
   block ^b8:
     jump ^b10
   block ^b10:
-    %t13 = load f64 $s0
-    %t14 = cmp eq f64 %t13, 0.00000000000000000e0
-    %t15 = convert trunc i1 i64 %t14
-    branch %t15, ^b13, ^b7
+    %t9 = load f64 $s0
+    %t10 = cmp eq f64 %t9, 0.00000000000000000e0
+    %t11 = convert trunc i1 i64 %t10
+    branch %t11, ^b13, ^b7
   block ^b7:
     jump ^b3
   block ^b3:
@@ -100,8 +96,8 @@ function @rg.18(%p0 : f64) -> u8 {
   block ^b15:
     jump ^b1
   block ^b1:
-    %t16 = load u8 $s1
-    return u8 %t16
+    %t12 = load u8 $s1
+    return u8 %t12
   block ^b19:
     unreachable
   block ^b20:

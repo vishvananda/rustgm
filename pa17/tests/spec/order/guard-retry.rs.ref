@@ -43,32 +43,31 @@ function @rg.18() -> void {
     jump ^b19
   block ^b19:
     %t11 = load i32 $s0
-    %t12 = convert sext i64 i32 %t11
-    %t13 = convert sext i64 i32 1
-    %t14 = binary add i64 %t12, %t13
-    %t15 = convert trunc i32 i64 %t14
-    %t16 = convert sext i64 i32 %t15
-    %t17 = cmp ne i64 %t14, %t16
-    branch %t17, ^b25, ^b26
+    %t12 = binary add i32 %t11, 1
+    %t13 = binary xor i32 %t11, %t12
+    %t14 = binary xor i32 %t12, 1
+    %t15 = binary and i32 %t13, %t14
+    %t16 = cmp lt i32 %t15, 0
+    branch %t16, ^b25, ^b26
   block ^b26:
-    store i32 %t15, $s0
-    %t18 = load i32 $s0
-    %t19 = cmp eq i32 %t18, 2
-    %t20 = convert trunc i1 i64 %t19
-    branch %t20, ^b17, ^b22
+    store i32 %t12, $s0
+    %t17 = load i32 $s0
+    %t18 = cmp eq i32 %t17, 2
+    %t19 = convert trunc i1 i64 %t18
+    branch %t19, ^b17, ^b22
   block ^b22:
-    %t21 = addr $s3
-    call void @rg.drop.0(%t21)
+    %t20 = addr $s3
+    call void @rg.drop.0(%t20)
     jump ^b18
   block ^b18:
     jump ^b5
   block ^b5:
     jump ^b7
   block ^b7:
-    %t22 = load u32 $s1
-    %t23 = cmp eq u32 %t22, 0
-    %t24 = convert trunc i1 i64 %t23
-    branch %t24, ^b10, ^b13
+    %t21 = load u32 $s1
+    %t22 = cmp eq u32 %t21, 0
+    %t23 = convert trunc i1 i64 %t22
+    branch %t23, ^b10, ^b13
   block ^b13:
     jump ^b14
   block ^b14:
@@ -76,12 +75,12 @@ function @rg.18() -> void {
   block ^b10:
     jump ^b12
   block ^b12:
-    %t25 = cmp ge i32 7, 5
-    %t26 = convert trunc i1 i64 %t25
-    %t27 = cmp le i32 7, 15
-    %t28 = convert trunc i1 i64 %t27
-    %t29 = binary and i1 %t26, %t28
-    branch %t29, ^b15, ^b9
+    %t24 = cmp ge i32 7, 5
+    %t25 = convert trunc i1 i64 %t24
+    %t26 = cmp le i32 7, 15
+    %t27 = convert trunc i1 i64 %t26
+    %t28 = binary and i1 %t25, %t27
+    branch %t28, ^b15, ^b9
   block ^b9:
     jump ^b3
   block ^b3:
@@ -97,8 +96,8 @@ function @rg.18() -> void {
   block ^b17:
     store i32 7, $s4
     call void @rg.13(8)
-    %t30 = addr $s3
-    call void @rg.drop.0(%t30)
+    %t29 = addr $s3
+    call void @rg.drop.0(%t29)
     jump ^b1
   block ^b1:
     return void

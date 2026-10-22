@@ -70,30 +70,22 @@ function @rg.closure.0(%p0 : ptr) -> void {
     %t3 = binary mul i64 0, 1
     %t4 = index u8 %t1, %t3
     %t5 = load u8 %t4
-    %t6 = convert zext i16 u8 %t5
-    %t7 = convert zext i16 u8 1
-    %t8 = binary add i16 %t6, %t7
-    %t9 = convert trunc u8 i16 %t8
-    %t10 = convert zext i16 u8 %t9
-    %t11 = cmp ne i16 %t8, %t10
-    branch %t11, ^b1, ^b3
+    %t6 = binary add u8 %t5, 1
+    %t7 = cmp ult u8 %t6, %t5
+    branch %t7, ^b1, ^b3
   block ^b3:
-    store u8 %t9, %t4
-    %t12 = cmp uge i64 1, 2
-    branch %t12, ^b1, ^b4
+    store u8 %t6, %t4
+    %t8 = cmp uge i64 1, 2
+    branch %t8, ^b1, ^b4
   block ^b4:
-    %t13 = binary mul i64 1, 1
-    %t14 = index u8 %t1, %t13
-    %t15 = load u8 %t14
-    %t16 = convert zext i16 u8 %t15
-    %t17 = convert zext i16 u8 2
-    %t18 = binary add i16 %t16, %t17
-    %t19 = convert trunc u8 i16 %t18
-    %t20 = convert zext i16 u8 %t19
-    %t21 = cmp ne i16 %t18, %t20
-    branch %t21, ^b1, ^b5
+    %t9 = binary mul i64 1, 1
+    %t10 = index u8 %t1, %t9
+    %t11 = load u8 %t10
+    %t12 = binary add u8 %t11, 2
+    %t13 = cmp ult u8 %t12, %t11
+    branch %t13, ^b1, ^b5
   block ^b5:
-    store u8 %t19, %t14
+    store u8 %t12, %t10
     return void
   block ^b1:
     call void @abort()

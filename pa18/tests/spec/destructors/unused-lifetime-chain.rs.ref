@@ -93,15 +93,11 @@ function @rg.18.i4(%p0 : ptr) -> void {
     %t4 = load ptr $s0
     %t5 = load ptr %t4
     %t6 = load u8 %t5
-    %t7 = convert zext i16 u8 %t6
-    %t8 = convert zext i16 u8 %t3
-    %t9 = binary add i16 %t7, %t8
-    %t10 = convert trunc u8 i16 %t9
-    %t11 = convert zext i16 u8 %t10
-    %t12 = cmp ne i16 %t9, %t11
-    branch %t12, ^b1, ^b2
+    %t7 = binary add u8 %t6, %t3
+    %t8 = cmp ult u8 %t7, %t6
+    branch %t8, ^b1, ^b2
   block ^b2:
-    store u8 %t10, %t5
+    store u8 %t7, %t5
     return void
   block ^b1:
     call void @abort()

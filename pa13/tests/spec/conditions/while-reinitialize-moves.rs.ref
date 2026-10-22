@@ -54,51 +54,43 @@ function @rg.22() -> u8 {
   block ^b2:
     %t15 = load u8 $s2
     %t16 = load u8 $s1
-    %t17 = convert zext i16 u8 %t16
-    %t18 = convert zext i16 u8 %t15
-    %t19 = binary add i16 %t17, %t18
-    %t20 = convert trunc u8 i16 %t19
-    %t21 = convert zext i16 u8 %t20
-    %t22 = cmp ne i16 %t19, %t21
-    branch %t22, ^b10, ^b11
+    %t17 = binary add u8 %t16, %t15
+    %t18 = cmp ult u8 %t17, %t16
+    branch %t18, ^b10, ^b11
   block ^b11:
-    store u8 %t20, $s1
-    %t23 = load u8 $s2
-    %t24 = cmp ugt u8 %t23, 1
-    %t25 = convert trunc i1 i64 %t24
-    branch %t25, ^b7, ^b8
+    store u8 %t17, $s1
+    %t19 = load u8 $s2
+    %t20 = cmp ugt u8 %t19, 1
+    %t21 = convert trunc i1 i64 %t20
+    branch %t21, ^b7, ^b8
   block ^b8:
     store i64 1, $s7
-    %t26 = addr $s7
-    %t27 = addr $s3
-    copyobj 16x8 %t26, %t27
+    %t22 = addr $s7
+    %t23 = addr $s3
+    copyobj 16x8 %t22, %t23
     jump ^b9
   block ^b7:
-    %t28 = load u8 $s2
-    %t29 = convert zext i16 u8 %t28
-    %t30 = convert zext i16 u8 1
-    %t31 = binary sub i16 %t29, %t30
-    %t32 = convert trunc u8 i16 %t31
-    %t33 = convert zext i16 u8 %t32
-    %t34 = cmp ne i16 %t31, %t33
-    branch %t34, ^b10, ^b12
+    %t24 = load u8 $s2
+    %t25 = binary sub u8 %t24, 1
+    %t26 = cmp ult u8 %t24, 1
+    branch %t26, ^b10, ^b12
   block ^b12:
-    %t35 = addr $s8
-    call void @rg.16(%t35, %t32)
-    %t36 = addr $s9
-    %t37 = addr $s8
-    call void @rg.19(%t36, %t37)
-    %t38 = addr $s9
-    %t39 = addr $s3
-    copyobj 16x8 %t38, %t39
+    %t27 = addr $s8
+    call void @rg.16(%t27, %t25)
+    %t28 = addr $s9
+    %t29 = addr $s8
+    call void @rg.19(%t28, %t29)
+    %t30 = addr $s9
+    %t31 = addr $s3
+    copyobj 16x8 %t30, %t31
     jump ^b9
   block ^b9:
-    %t40 = addr $s3
-    %t41 = addr $s10
-    copyobj 16x8 %t40, %t41
-    %t42 = addr $s10
-    %t43 = addr $s0
-    copyobj 16x8 %t42, %t43
+    %t32 = addr $s3
+    %t33 = addr $s10
+    copyobj 16x8 %t32, %t33
+    %t34 = addr $s10
+    %t35 = addr $s0
+    copyobj 16x8 %t34, %t35
     jump ^b1
   block ^b10:
     call void @abort()

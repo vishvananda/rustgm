@@ -148,15 +148,11 @@ function @rg.15(%p0 : ptr) -> u8 {
     %t34 = load u8 %t33
     %t35 = load ptr $s3
     %t36 = load u8 %t35
-    %t37 = convert zext i16 u8 %t34
-    %t38 = convert zext i16 u8 %t36
-    %t39 = binary add i16 %t37, %t38
-    %t40 = convert trunc u8 i16 %t39
-    %t41 = convert zext i16 u8 %t40
-    %t42 = cmp ne i16 %t39, %t41
-    branch %t42, ^b13, ^b14
+    %t37 = binary add u8 %t34, %t36
+    %t38 = cmp ult u8 %t37, %t34
+    branch %t38, ^b13, ^b14
   block ^b14:
-    return u8 %t40
+    return u8 %t37
   block ^b13:
     call void @abort()
     unreachable

@@ -139,26 +139,18 @@ function @rg.18.i4(%p0 : ptr) -> void {
     branch %t6, ^b1, ^b2
   block ^b2:
     %t7 = convert trunc u8 i64 2
-    %t8 = convert zext i16 u8 %t4
-    %t9 = convert zext i16 u8 %t7
-    %t10 = binary add i16 %t8, %t9
-    %t11 = convert trunc u8 i16 %t10
-    %t12 = convert zext i16 u8 %t11
-    %t13 = cmp ne i16 %t10, %t12
-    branch %t13, ^b1, ^b3
+    %t8 = binary add u8 %t4, %t7
+    %t9 = cmp ult u8 %t8, %t4
+    branch %t9, ^b1, ^b3
   block ^b3:
-    %t14 = load ptr $s0
-    %t15 = load ptr %t14
-    %t16 = load u8 %t15
-    %t17 = convert zext i16 u8 %t16
-    %t18 = convert zext i16 u8 %t11
-    %t19 = binary add i16 %t17, %t18
-    %t20 = convert trunc u8 i16 %t19
-    %t21 = convert zext i16 u8 %t20
-    %t22 = cmp ne i16 %t19, %t21
-    branch %t22, ^b1, ^b4
+    %t10 = load ptr $s0
+    %t11 = load ptr %t10
+    %t12 = load u8 %t11
+    %t13 = binary add u8 %t12, %t8
+    %t14 = cmp ult u8 %t13, %t12
+    branch %t14, ^b1, ^b4
   block ^b4:
-    store u8 %t20, %t15
+    store u8 %t13, %t11
     return void
   block ^b1:
     call void @abort()

@@ -57,25 +57,17 @@ function @rg.21(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> u8 {
     %t2 = load u8 %t1
     %t3 = load ptr $s1
     %t4 = load u8 %t3
-    %t5 = convert zext i16 u8 %t2
-    %t6 = convert zext i16 u8 %t4
-    %t7 = binary add i16 %t5, %t6
-    %t8 = convert trunc u8 i16 %t7
-    %t9 = convert zext i16 u8 %t8
-    %t10 = cmp ne i16 %t7, %t9
-    branch %t10, ^b1, ^b2
+    %t5 = binary add u8 %t2, %t4
+    %t6 = cmp ult u8 %t5, %t2
+    branch %t6, ^b1, ^b2
   block ^b2:
-    %t11 = load ptr $s2
-    %t12 = load u8 %t11
-    %t13 = convert zext i16 u8 %t8
-    %t14 = convert zext i16 u8 %t12
-    %t15 = binary add i16 %t13, %t14
-    %t16 = convert trunc u8 i16 %t15
-    %t17 = convert zext i16 u8 %t16
-    %t18 = cmp ne i16 %t15, %t17
-    branch %t18, ^b1, ^b3
+    %t7 = load ptr $s2
+    %t8 = load u8 %t7
+    %t9 = binary add u8 %t5, %t8
+    %t10 = cmp ult u8 %t9, %t5
+    branch %t10, ^b1, ^b3
   block ^b3:
-    return u8 %t16
+    return u8 %t9
   block ^b1:
     call void @abort()
     unreachable

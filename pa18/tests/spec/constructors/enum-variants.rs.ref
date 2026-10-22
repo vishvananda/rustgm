@@ -47,29 +47,25 @@ function @rg.22() -> void {
     store u16 %t16, $s4
     %t17 = load u16 $s3
     %t18 = load u16 $s4
-    %t19 = convert zext i32 u16 %t17
-    %t20 = convert zext i32 u16 %t18
-    %t21 = binary add i32 %t19, %t20
-    %t22 = convert trunc u16 i32 %t21
-    %t23 = convert zext i32 u16 %t22
-    %t24 = cmp ne i32 %t21, %t23
-    branch %t24, ^b18, ^b19
+    %t19 = binary add u16 %t17, %t18
+    %t20 = cmp ult u16 %t19, %t17
+    branch %t20, ^b18, ^b19
   block ^b19:
-    %t25 = cmp eq u16 %t22, 700
-    %t26 = convert trunc i1 i64 %t25
-    store i1 %t26, $s2
+    %t21 = cmp eq u16 %t19, 700
+    %t22 = convert trunc i1 i64 %t21
+    store i1 %t22, $s2
     jump ^b1
   block ^b1:
-    %t27 = load i1 $s2
-    call void @rg.13(%t27)
-    %t28 = addr $s9
-    call void @rg.17.i4(%t28, 7)
-    %t29 = addr $s9
-    %t30 = addr $s5
-    copyobj 16x8 %t29, %t30
-    %t31 = load i64 $s5
-    %t32 = cmp eq i64 %t31, 0
-    branch %t32, ^b13, ^b12
+    %t23 = load i1 $s2
+    call void @rg.13(%t23)
+    %t24 = addr $s9
+    call void @rg.17.i4(%t24, 7)
+    %t25 = addr $s9
+    %t26 = addr $s5
+    copyobj 16x8 %t25, %t26
+    %t27 = load i64 $s5
+    %t28 = cmp eq i64 %t27, 0
+    branch %t28, ^b13, ^b12
   block ^b12:
     jump ^b14
   block ^b14:
@@ -78,22 +74,22 @@ function @rg.22() -> void {
     store i1 0, $s6
     jump ^b10
   block ^b13:
-    %t33 = addr $s5
-    %t34 = index u8 %t33, 8
+    %t29 = addr $s5
+    %t30 = index u8 %t29, 8
     jump ^b11
   block ^b11:
-    %t35 = addr $s5
-    %t36 = index u8 %t35, 8
-    %t37 = load u8 %t36
-    store u8 %t37, $s7
-    %t38 = load u8 $s7
-    %t39 = cmp eq u8 %t38, 7
-    %t40 = convert trunc i1 i64 %t39
-    store i1 %t40, $s6
+    %t31 = addr $s5
+    %t32 = index u8 %t31, 8
+    %t33 = load u8 %t32
+    store u8 %t33, $s7
+    %t34 = load u8 $s7
+    %t35 = cmp eq u8 %t34, 7
+    %t36 = convert trunc i1 i64 %t35
+    store i1 %t36, $s6
     jump ^b10
   block ^b10:
-    %t41 = load i1 $s6
-    call void @rg.13(%t41)
+    %t37 = load i1 $s6
+    call void @rg.13(%t37)
     return void
   block ^b8:
     unreachable

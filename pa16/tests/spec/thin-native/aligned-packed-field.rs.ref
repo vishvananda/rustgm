@@ -42,15 +42,11 @@ function @rg.16(%p0 : ptr) -> void {
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load u16 %t0
-    %t2 = convert zext i32 u16 %t1
-    %t3 = convert zext i32 u16 1
-    %t4 = binary add i32 %t2, %t3
-    %t5 = convert trunc u16 i32 %t4
-    %t6 = convert zext i32 u16 %t5
-    %t7 = cmp ne i32 %t4, %t6
-    branch %t7, ^b1, ^b2
+    %t2 = binary add u16 %t1, 1
+    %t3 = cmp ult u16 %t2, %t1
+    branch %t3, ^b1, ^b2
   block ^b2:
-    store u16 %t5, %t0
+    store u16 %t2, %t0
     return void
   block ^b1:
     call void @abort()

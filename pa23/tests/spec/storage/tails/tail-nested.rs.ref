@@ -106,36 +106,28 @@ function @rg.22(%p0 : ptr) -> u16 {
     %t26 = load ptr %t25
     %t27 = load u8 %t23
     %t28 = convert zext u16 u8 %t27
-    %t29 = convert zext i32 u16 %t22
-    %t30 = convert zext i32 u16 %t28
-    %t31 = binary add i32 %t29, %t30
-    %t32 = convert trunc u16 i32 %t31
-    %t33 = convert zext i32 u16 %t32
-    %t34 = cmp ne i32 %t31, %t33
-    branch %t34, ^b1, ^b2
+    %t29 = binary add u16 %t22, %t28
+    %t30 = cmp ult u16 %t29, %t22
+    branch %t30, ^b1, ^b2
   block ^b2:
-    %t35 = load ptr $s0
-    %t36 = addr $s0
-    %t37 = index u8 %t36, 8
-    %t38 = load ptr %t37
-    %t39 = index u8 %t38, 16
-    %t40 = load i64 %t39
-    %t41 = binary sub i64 %t40, 1
-    %t42 = binary add i64 1, %t41
-    %t43 = unary bitnot i64 %t41
-    %t44 = binary and i64 %t42, %t43
-    %t45 = index u8 %t35, %t44
-    %t46 = load u8 %t45
-    %t47 = convert zext u16 u8 %t46
-    %t48 = convert zext i32 u16 %t32
-    %t49 = convert zext i32 u16 %t47
-    %t50 = binary add i32 %t48, %t49
-    %t51 = convert trunc u16 i32 %t50
-    %t52 = convert zext i32 u16 %t51
-    %t53 = cmp ne i32 %t50, %t52
-    branch %t53, ^b1, ^b3
+    %t31 = load ptr $s0
+    %t32 = addr $s0
+    %t33 = index u8 %t32, 8
+    %t34 = load ptr %t33
+    %t35 = index u8 %t34, 16
+    %t36 = load i64 %t35
+    %t37 = binary sub i64 %t36, 1
+    %t38 = binary add i64 1, %t37
+    %t39 = unary bitnot i64 %t37
+    %t40 = binary and i64 %t38, %t39
+    %t41 = index u8 %t31, %t40
+    %t42 = load u8 %t41
+    %t43 = convert zext u16 u8 %t42
+    %t44 = binary add u16 %t29, %t43
+    %t45 = cmp ult u16 %t44, %t29
+    branch %t45, ^b1, ^b3
   block ^b3:
-    return u16 %t51
+    return u16 %t44
   block ^b1:
     call void @abort()
     unreachable

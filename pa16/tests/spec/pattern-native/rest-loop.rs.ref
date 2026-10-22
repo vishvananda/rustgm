@@ -101,21 +101,17 @@ function @rg.15(%p0 : ptr) -> i64 {
     %t21 = load u8 %t20
     %t22 = convert zext i64 u8 %t21
     %t23 = load i64 $s1
-    %t24 = convert zext i128 i64 %t23
-    %t25 = convert zext i128 i64 %t22
-    %t26 = binary add i128 %t24, %t25
-    %t27 = convert trunc i64 i128 %t26
-    %t28 = convert zext i128 i64 %t27
-    %t29 = cmp ne i128 %t26, %t28
-    branch %t29, ^b8, ^b9
+    %t24 = binary add i64 %t23, %t22
+    %t25 = cmp ult i64 %t24, %t23
+    branch %t25, ^b8, ^b9
   block ^b9:
-    store i64 %t27, $s1
-    %t30 = addr $s3
-    %t31 = addr $s5
-    copyobj 16x8 %t30, %t31
-    %t32 = addr $s5
-    %t33 = addr $s0
-    copyobj 16x8 %t32, %t33
+    store i64 %t24, $s1
+    %t26 = addr $s3
+    %t27 = addr $s5
+    copyobj 16x8 %t26, %t27
+    %t28 = addr $s5
+    %t29 = addr $s0
+    copyobj 16x8 %t28, %t29
     jump ^b1
   block ^b8:
     call void @abort()

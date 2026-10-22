@@ -51,15 +51,11 @@ function @rg.24(%p0 : ptr) -> u8 {
     store ptr %t4, %t6
     %t7 = addr $s1
     %t8 = call u8 @rg.virtual.0.0(%t7)
-    %t9 = convert zext i16 u8 %t8
-    %t10 = convert zext i16 u8 2
-    %t11 = binary add i16 %t9, %t10
-    %t12 = convert trunc u8 i16 %t11
-    %t13 = convert zext i16 u8 %t12
-    %t14 = cmp ne i16 %t11, %t13
-    branch %t14, ^b1, ^b2
+    %t9 = binary add u8 %t8, 2
+    %t10 = cmp ult u8 %t9, %t8
+    branch %t10, ^b1, ^b2
   block ^b2:
-    return u8 %t12
+    return u8 %t9
   block ^b1:
     call void @abort()
     unreachable

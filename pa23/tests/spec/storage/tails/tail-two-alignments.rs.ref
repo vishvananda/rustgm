@@ -124,15 +124,11 @@ function @rg.24(%p0 : ptr) -> u16 {
     %t19 = load ptr %t18
     %t20 = load u8 %t16
     %t21 = convert zext u16 u8 %t20
-    %t22 = convert zext i32 u16 %t15
-    %t23 = convert zext i32 u16 %t21
-    %t24 = binary add i32 %t22, %t23
-    %t25 = convert trunc u16 i32 %t24
-    %t26 = convert zext i32 u16 %t25
-    %t27 = cmp ne i32 %t24, %t26
-    branch %t27, ^b1, ^b2
+    %t22 = binary add u16 %t15, %t21
+    %t23 = cmp ult u16 %t22, %t15
+    branch %t23, ^b1, ^b2
   block ^b2:
-    return u16 %t25
+    return u16 %t22
   block ^b1:
     call void @abort()
     unreachable

@@ -37,15 +37,11 @@ function @rg.15(%p0 : i64) -> i64 {
   block ^b0:
     store i64 %p0, $s0
     %t0 = load i64 $s0
-    %t1 = convert zext i128 i64 %t0
-    %t2 = convert zext i128 i64 1
-    %t3 = binary add i128 %t1, %t2
-    %t4 = convert trunc i64 i128 %t3
-    %t5 = convert zext i128 i64 %t4
-    %t6 = cmp ne i128 %t3, %t5
-    branch %t6, ^b1, ^b2
+    %t1 = binary add i64 %t0, 1
+    %t2 = cmp ult i64 %t1, %t0
+    branch %t2, ^b1, ^b2
   block ^b2:
-    return i64 %t4
+    return i64 %t1
   block ^b1:
     call void @abort()
     unreachable
@@ -55,15 +51,11 @@ function @rg.16(%p0 : i64) -> i64 {
   block ^b0:
     store i64 %p0, $s0
     %t0 = load i64 $s0
-    %t1 = convert zext i128 i64 %t0
-    %t2 = convert zext i128 i64 20
-    %t3 = binary add i128 %t1, %t2
-    %t4 = convert trunc i64 i128 %t3
-    %t5 = convert zext i128 i64 %t4
-    %t6 = cmp ne i128 %t3, %t5
-    branch %t6, ^b1, ^b2
+    %t1 = binary add i64 %t0, 20
+    %t2 = cmp ult i64 %t1, %t0
+    branch %t2, ^b1, ^b2
   block ^b2:
-    return i64 %t4
+    return i64 %t1
   block ^b1:
     call void @abort()
     unreachable

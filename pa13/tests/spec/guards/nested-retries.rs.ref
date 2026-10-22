@@ -58,25 +58,24 @@ function @rg.15() -> void {
     jump ^b29
   block ^b29:
     %t12 = load i32 $s3
-    %t13 = convert sext i64 i32 %t12
-    %t14 = convert sext i64 i32 1
-    %t15 = binary add i64 %t13, %t14
-    %t16 = convert trunc i32 i64 %t15
-    %t17 = convert sext i64 i32 %t16
-    %t18 = cmp ne i64 %t15, %t17
-    branch %t18, ^b54, ^b55
+    %t13 = binary add i32 %t12, 1
+    %t14 = binary xor i32 %t12, %t13
+    %t15 = binary xor i32 %t13, 1
+    %t16 = binary and i32 %t14, %t15
+    %t17 = cmp lt i32 %t16, 0
+    branch %t17, ^b54, ^b55
   block ^b55:
-    store i32 %t16, $s3
+    store i32 %t13, $s3
     branch 0, ^b42, ^b44
   block ^b44:
     jump ^b43
   block ^b43:
     jump ^b32
   block ^b32:
-    %t19 = load u32 $s4
-    %t20 = cmp eq u32 %t19, 2
-    %t21 = convert trunc i1 i64 %t20
-    branch %t21, ^b35, ^b38
+    %t18 = load u32 $s4
+    %t19 = cmp eq u32 %t18, 2
+    %t20 = convert trunc i1 i64 %t19
+    branch %t20, ^b35, ^b38
   block ^b38:
     jump ^b39
   block ^b39:
@@ -99,35 +98,34 @@ function @rg.15() -> void {
   block ^b42:
     jump ^b28
   block ^b28:
-    %t22 = load i32 $s0
-    %t23 = convert sext i64 i32 %t22
-    %t24 = convert sext i64 i32 10
-    %t25 = binary mul i64 %t23, %t24
-    %t26 = convert trunc i32 i64 %t25
-    %t27 = convert sext i64 i32 %t26
-    %t28 = cmp ne i64 %t25, %t27
-    branch %t28, ^b54, ^b56
+    %t21 = load i32 $s0
+    %t22 = convert sext i64 i32 %t21
+    %t23 = convert sext i64 i32 10
+    %t24 = binary mul i64 %t22, %t23
+    %t25 = convert trunc i32 i64 %t24
+    %t26 = convert sext i64 i32 %t25
+    %t27 = cmp ne i64 %t24, %t26
+    branch %t27, ^b54, ^b56
   block ^b56:
-    %t29 = load i32 $s3
-    %t30 = convert sext i64 i32 %t26
-    %t31 = convert sext i64 i32 %t29
-    %t32 = binary add i64 %t30, %t31
-    %t33 = convert trunc i32 i64 %t32
-    %t34 = convert sext i64 i32 %t33
-    %t35 = cmp ne i64 %t32, %t34
-    branch %t35, ^b54, ^b57
+    %t28 = load i32 $s3
+    %t29 = binary add i32 %t25, %t28
+    %t30 = binary xor i32 %t25, %t29
+    %t31 = binary xor i32 %t29, %t28
+    %t32 = binary and i32 %t30, %t31
+    %t33 = cmp lt i32 %t32, 0
+    branch %t33, ^b54, ^b57
   block ^b57:
-    store i32 %t33, $s0
+    store i32 %t29, $s0
     branch 0, ^b26, ^b47
   block ^b47:
     jump ^b27
   block ^b27:
     jump ^b5
   block ^b5:
-    %t36 = load u32 $s1
-    %t37 = cmp eq u32 %t36, 0
-    %t38 = convert trunc i1 i64 %t37
-    branch %t38, ^b8, ^b11
+    %t34 = load u32 $s1
+    %t35 = cmp eq u32 %t34, 0
+    %t36 = convert trunc i1 i64 %t35
+    branch %t36, ^b8, ^b11
   block ^b11:
     jump ^b16
   block ^b16:
@@ -160,27 +158,27 @@ function @rg.15() -> void {
     store u32 1, $s1
     jump ^b2
   block ^b26:
-    %t39 = load u32 $s1
-    %t40 = cmp eq u32 %t39, 0
-    %t41 = convert trunc i1 i64 %t40
-    branch %t41, ^b49, ^b50
+    %t37 = load u32 $s1
+    %t38 = cmp eq u32 %t37, 0
+    %t39 = convert trunc i1 i64 %t38
+    branch %t39, ^b49, ^b50
   block ^b50:
-    %t42 = addr $s6
-    %t43 = index u8 %t42, 1
-    %t44 = load u8 %t43
-    store u8 %t44, $s5
+    %t40 = addr $s6
+    %t41 = index u8 %t40, 1
+    %t42 = load u8 %t41
+    store u8 %t42, $s5
     jump ^b48
   block ^b49:
-    %t45 = load u8 $s6
-    store u8 %t45, $s5
+    %t43 = load u8 $s6
+    store u8 %t43, $s5
     jump ^b48
   block ^b48:
     jump ^b1
   block ^b1:
-    %t46 = load i32 $s0
-    %t47 = cmp eq i32 %t46, 21
-    %t48 = convert trunc i1 i64 %t47
-    call void @rg.13(%t48)
+    %t44 = load i32 $s0
+    %t45 = cmp eq i32 %t44, 21
+    %t46 = convert trunc i1 i64 %t45
+    call void @rg.13(%t46)
     return void
   block ^b46:
     unreachable
