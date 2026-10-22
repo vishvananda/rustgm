@@ -9,7 +9,6 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = re.compile(
-    r'(?P<cfg>#\[cfg\(feature = "object-interop-tests"\)\]\s*)?'
     r'#\[path = "(?P<path>\.\./\.\./[a-z0-9_/]+\.rs)"\]\s*'
     r'(?P<visibility>pub\(crate\) )?mod (?P<name>[a-z][a-z0-9_]*);')
 
@@ -46,11 +45,10 @@ def discover(root=ROOT):
             if relative != f"../../{suite}.rs":
                 helper = path.parent / relative
                 if (not re.fullmatch(r"\.\./\.\./(?:helpers|harness|support)/" + suite + r"\.rs", relative)
-                        or not helper.is_file() or module["visibility"] is None
-                        or (module["cfg"] is not None and suite != "host_objects")):
+                        or not helper.is_file() or module["visibility"] is None):
                     raise ValueError(f"invalid shared helper module: {suite}")
                 continue
-            if module["cfg"] is not None or module["visibility"] is not None:
+            if module["visibility"] is not None:
                 raise ValueError(f"conditional or public suite registration: {suite}")
             if suite in suites:
                 raise ValueError(f"duplicate maintainer suite: {suite}")

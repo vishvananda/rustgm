@@ -1,6 +1,5 @@
 //! Foreign ownership survives expansion and produces genuine runtime declarations.
 use crate::foreign_frontend as frontend;
-#[cfg(feature = "object-interop-tests")]
 use crate::host_objects as objects;
 use frontend::checked;
 use std::{
@@ -176,7 +175,6 @@ fn demanded_imports_have_declarations_without_bodies() -> Result<(), Box<dyn std
     Ok(())
 }
 #[test]
-#[cfg(feature = "object-interop-tests")]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn imports_and_callbacks_link_with_independent_c() -> Result<(), Box<dyn std::error::Error>> {
     let cases: Vec<_> = CASES

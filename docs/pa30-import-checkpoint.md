@@ -33,8 +33,7 @@ planned. Configure the reviewed optional profile as described in
 `pa30-object-bridge.md`, then run through the storage/resource guard:
 
 ```sh
-cargo test --manifest-path dev/Cargo.toml --features object-interop-tests \
-  --test foreign_declarations -- --include-ignored --nocapture
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run foreign_declarations --ignored
 ```
 
 Compiler functionality is unconditional. Selecting this test without the pinned

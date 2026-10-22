@@ -9,7 +9,6 @@ mod foreign_declarations;
 pub(crate) mod foreign_frontend;
 #[path = "../../foreign_linkage.rs"]
 mod foreign_linkage;
-#[cfg(feature = "object-interop-tests")]
 #[path = "../../harness/host_objects.rs"]
 pub(crate) mod host_objects;
 #[path = "../../library_nominals.rs"]

@@ -34,8 +34,8 @@ scope; foreign statics and aggregate/variadic C interfaces remain unfinished.
 The explicit optional object profile is still required for C interoperability:
 
 ```sh
-cargo test --manifest-path dev/Cargo.toml --features object-interop-tests \
-  --test foreign_linkage --test foreign_declarations -- --include-ignored --nocapture
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run foreign_linkage --ignored
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run foreign_declarations --ignored
 ```
 
 Selecting this test without its configured immutable backend is a hard error.

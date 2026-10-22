@@ -11,7 +11,6 @@ mod cfg_execution;
 mod constructor_bodies;
 #[path = "../../harness/foreign_frontend.rs"]
 pub(crate) mod foreign_frontend;
-#[cfg(feature = "object-interop-tests")]
 #[path = "../../harness/host_objects.rs"]
 pub(crate) mod host_objects;
 #[path = "../../instance_bodies.rs"]

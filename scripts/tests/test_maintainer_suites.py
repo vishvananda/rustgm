@@ -40,6 +40,23 @@ class MaintainerSuitesTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "unregistered or missing"):
                     discover(root)
 
+    def test_native_helpers_are_registered_without_feature_gates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory)
+            helper = root / "dev/tests/harness/host_objects.rs"
+            helper.parent.mkdir()
+            helper.write_text("// Native helper, compiled without running external tools.\n")
+            group = root / "dev/tests/suites/types/mod.rs"
+            original = group.read_text()
+            registration = ('#[path = "../../harness/host_objects.rs"]\n'
+                            'pub(crate) mod host_objects;\n')
+            group.write_text(original + registration)
+            self.assertEqual(discover(root), {"example": "suite_types"})
+            group.write_text(original + '#[cfg(feature = "object-interop-tests")]\n'
+                             + registration)
+            with self.assertRaisesRegex(ValueError, "conditional suite registration"):
+                discover(root)
+
     def test_duplicate_and_conditional_registration_fail(self):
         for prefix in ('#[cfg(feature = "hidden")]\n', '#[path = "../../example.rs"]\nmod example;\n'):
             with self.subTest(prefix=prefix), tempfile.TemporaryDirectory() as directory:

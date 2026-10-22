@@ -1,6 +1,5 @@
 //! C objects retain canonical classes across imports, exports and callbacks.
 use crate::foreign_frontend as frontend;
-#[cfg(feature = "object-interop-tests")]
 use crate::host_objects as objects;
 use std::path::Path;
 #[test]
@@ -47,7 +46,6 @@ fn aggregate_profile_has_explicit_language_and_implementation_boundaries()
     Ok(())
 }
 #[test]
-#[cfg(feature = "object-interop-tests")]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn aggregate_calls_match_independent_rust_and_c() -> Result<(), Box<dyn std::error::Error>> {
     objects::check_cases(
@@ -108,7 +106,6 @@ fn classification_reuses_exact_plans_without_rewalking_fields()
 }
 
 #[test]
-#[cfg(feature = "object-interop-tests")]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn indirect_object_calls_preserve_selected_classes_and_pointer_fields()
 -> Result<(), Box<dyn std::error::Error>> {

@@ -40,11 +40,10 @@ local/foreign alias identity; an otherwise unused generic callback export; and
 a constant address of foreign storage. Aggregate storage uses the existing
 layout; this does not implement aggregate function argument/result ABI classes.
 
-The feature-enabled native command is required when selecting these controls:
+Select the ignored native controls through the guarded suite runner:
 
 ```sh
-cargo test --manifest-path dev/Cargo.toml --features object-interop-tests \
-  --test external_storage -- --include-ignored --nocapture
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run external_storage --ignored
 ```
 
 The optional pinned object profile must be configured; absence is a hard error.

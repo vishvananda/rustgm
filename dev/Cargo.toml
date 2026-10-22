@@ -18,9 +18,6 @@ path = "bin/rustgm.rs"
 unicode-ident = "=1.0.24"
 unicode-normalization = "=0.1.25"
 
-[features]
-object-interop-tests = []
-
 [lints.rust]
 unsafe_code = "forbid"
 unused_must_use = "deny"

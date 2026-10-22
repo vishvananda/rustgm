@@ -25,7 +25,6 @@ mod extremum_atomics;
 mod finite_storage;
 #[path = "../../harness/foreign_frontend.rs"]
 pub(crate) mod foreign_frontend;
-#[cfg(feature = "object-interop-tests")]
 #[path = "../../harness/host_objects.rs"]
 pub(crate) mod host_objects;
 #[path = "../../image_storage.rs"]

@@ -1,6 +1,5 @@
 //! Exact linkage retains language identities, root bodies and spelling boundaries.
 use crate::foreign_frontend as frontend;
-#[cfg(feature = "object-interop-tests")]
 use crate::host_objects as objects;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, bool, bool)] = &[
@@ -115,7 +114,6 @@ fn exact_metadata_matches_selected_attribute_precedence() -> Result<(), Box<dyn 
     Ok(())
 }
 #[test]
-#[cfg(feature = "object-interop-tests")]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn exact_exports_and_import_aliases_link_with_c() -> Result<(), Box<dyn std::error::Error>> {
     objects::check_cases(

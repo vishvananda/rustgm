@@ -19,13 +19,21 @@ python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run const
 python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run lexer --release --case lifetime_and_character_boundaries
 ```
 
-Add `--ignored` to run a suite's backend controls and `--all-features` to enable
-the optional interoperability checks. The runner enumerates the actual binary,
+Add `--ignored` to run a suite's backend and interoperability controls.
+The runner enumerates the actual binary,
 selects the exact outer module and executes its full test names with `--exact`.
 Unknown cases and empty selections fail. `--list` shows that selected inventory.
 Cargo's ordinary filters match substrings, so a bare `loans::` filter can also
 select `template_loans::`; use the runner for suite selection. Apply the ordinary
 resource/storage wrapper to direct Cargo commands.
+
+Object interoperability tests are always registered and retain their explicit
+`#[ignore]` markers. Select them with `--ignored`, like the other native tests;
+their pinned object backend and host C compiler remain required when executed.
+The former empty `object-interop-tests` Cargo feature is removed. Default and
+`--all-features` now compile the same production configuration, avoiding a second
+frontend build merely to select native tests. No test body or ignore marker is
+changed, and an unavailable native dependency still fails an explicit native run.
 
 Use focused checks while implementing a coherent feature, then qualify the
 complete checkpoint before pushing compiler changes. Several related consumer

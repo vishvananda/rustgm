@@ -1,6 +1,5 @@
 //! Foreign storage retains canonical identity, safety and real declaration state.
 use crate::foreign_frontend as frontend;
-#[cfg(feature = "object-interop-tests")]
 use crate::host_objects as objects;
 use std::{
     path::{Path, PathBuf},
@@ -151,7 +150,6 @@ fn imported_shared_storage_uses_its_owned_mutation_contract()
     Ok(())
 }
 #[test]
-#[cfg(feature = "object-interop-tests")]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn foreign_globals_and_initializer_callbacks_interoperate_with_c()
 -> Result<(), Box<dyn std::error::Error>> {

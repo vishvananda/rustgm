@@ -43,8 +43,8 @@ lock are unchanged.
 Run the source checks normally and select native interoperability explicitly:
 
 ```sh
-python3 scripts/storage.py run -- cargo test --manifest-path dev/Cargo.toml --test aggregate_calling
-python3 scripts/storage.py run -- cargo test --manifest-path dev/Cargo.toml --features object-interop-tests --test aggregate_calling -- --include-ignored
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run aggregate_calling
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run aggregate_calling --ignored
 ```
 
 This is not PA30 completion or activation. Rust-layout, packed, empty, union,
