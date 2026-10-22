@@ -84,46 +84,7 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<bool, Error> {
-        let parts = if let Some(path) = self.report.resolution.qualified_paths.get(&key) {
-            if path.namespace != Namespace::Value || path.trait_path.is_some() {
-                return Ok(false);
-            }
-            match path.suffix.as_slice() {
-                [(suffix, name)] => Some((
-                    NodeKey {
-                        node: path.ty,
-                        ..key
-                    },
-                    NodeKey {
-                        node: *suffix,
-                        ..key
-                    },
-                    *name,
-                )),
-                _ => None,
-            }
-        } else if let Some(path) = self.report.resolution.associated_paths.get(&key) {
-            if path.namespace != Namespace::Value {
-                return Ok(false);
-            }
-            match path.suffix.as_slice() {
-                [(suffix, name)] => Some((
-                    NodeKey {
-                        node: path.prefix,
-                        ..key
-                    },
-                    NodeKey {
-                        node: *suffix,
-                        ..key
-                    },
-                    *name,
-                )),
-                _ => None,
-            }
-        } else {
-            None
-        };
-        let Some((prefix, suffix, name)) = parts else {
+        let Some((prefix, suffix, name)) = self.library_method_path(key) else {
             return Ok(false);
         };
         let pointer_name =
@@ -131,7 +92,7 @@ impl Checker<'_> {
         let definition = self.slice_definition(name);
         if !pointer_name && definition.is_none() {
             return Ok(false);
-        };
+        }
         let ty = self.facts.node(prefix).and_then(|fact| {
             fact.ty.or_else(|| match fact.reference {
                 Some(Target::Definition(id)) => self.facts.definitions[id.0 as usize],
@@ -198,5 +159,37 @@ impl Checker<'_> {
         self.work.push(Work::MethodArguments(key, suffix));
         self.schedule_item_arguments(suffix, definition, context, steps, limit, scan)?;
         Ok(true)
+    }
+    fn library_method_path(
+        &self,
+        key: NodeKey,
+    ) -> Option<(NodeKey, NodeKey, crate::resolve::names::NameId)> {
+        let (prefix, suffix) = if let Some(path) = self.report.resolution.qualified_paths.get(&key)
+        {
+            if path.namespace != Namespace::Value || path.trait_path.is_some() {
+                return None;
+            }
+            (path.ty, path.suffix.as_slice())
+        } else {
+            let path = self.report.resolution.associated_paths.get(&key)?;
+            if path.namespace != Namespace::Value {
+                return None;
+            }
+            (path.prefix, path.suffix.as_slice())
+        };
+        let [(suffix, name)] = suffix else {
+            return None;
+        };
+        Some((
+            NodeKey {
+                node: prefix,
+                ..key
+            },
+            NodeKey {
+                node: *suffix,
+                ..key
+            },
+            *name,
+        ))
     }
 }

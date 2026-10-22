@@ -71,31 +71,7 @@ pub(in crate::sema) fn choose(
         _ => Vec::new(),
     };
     let has_traits = facts.methods.trait_names.contains(&site.name);
-    let library = report
-        .resolution
-        .library_types
-        .slice_length()
-        .filter(|l| report.resolution.definitions[l.definition.0 as usize].name == site.name)
-        .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
-        .map(|l| l.definition)
-        .or_else(|| {
-            report
-                .resolution
-                .builtin_traits
-                .collections()
-                .map(|c| {
-                    c.declarations[crate::support::iteration::Collection::SliceMethod as usize]
-                })
-                .filter(|c| report.resolution.definitions[c.method.0 as usize].name == site.name)
-                .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
-                .map(|c| c.method)
-        })
-        .or_else(|| match head {
-            Some(Constructor::Pointer { mutable }) => {
-                super::pointers::named(report, site.name, mutable)
-            }
-            _ => None,
-        });
+    let library = library_method(report, head, site.name);
     if inherent.is_empty() && !has_traits && library.is_none() {
         return Err(error(
             if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
@@ -156,6 +132,35 @@ pub(in crate::sema) fn choose(
     } else {
         "no applicable inherent method for this receiver"
     }))
+}
+fn library_method(
+    report: &Report,
+    head: Option<Constructor>,
+    name: crate::resolve::names::NameId,
+) -> Option<DefId> {
+    report
+        .resolution
+        .library_types
+        .slice_length()
+        .filter(|l| report.resolution.definitions[l.definition.0 as usize].name == name)
+        .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
+        .map(|l| l.definition)
+        .or_else(|| {
+            report
+                .resolution
+                .builtin_traits
+                .collections()
+                .map(|c| {
+                    c.declarations[crate::support::iteration::Collection::SliceMethod as usize]
+                })
+                .filter(|c| report.resolution.definitions[c.method.0 as usize].name == name)
+                .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
+                .map(|c| c.method)
+        })
+        .or_else(|| match head {
+            Some(Constructor::Pointer { mutable }) => super::pointers::named(report, name, mutable),
+            _ => None,
+        })
 }
 impl Search<'_> {
     fn at(

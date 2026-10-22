@@ -248,53 +248,8 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         if definition.kind != DefKind::SelfType {
             continue;
         }
-        if report
-            .resolution
-            .library_types
-            .slice_length()
-            .is_some_and(|length| length.owner.0 as usize == index)
-            || [
-                crate::support::intrinsics::Intrinsic::ConstPointerAdd,
-                crate::support::intrinsics::Intrinsic::MutPointerAdd,
-            ]
-            .into_iter()
-            .any(|kind| {
-                report
-                    .resolution
-                    .intrinsics
-                    .get(kind)
-                    .is_some_and(|d| d.owner.is_some_and(|owner| owner.0 as usize == index))
-            })
-        {
-            // This canonical slice impl is described by library metadata, not AST ownership.
-            continue;
-        }
-        if report
-            .resolution
-            .builtin_traits
-            .iteration()
-            .is_some_and(|iteration| {
-                iteration
-                    .blankets
-                    .iter()
-                    .any(|declaration| declaration.definition.0 as usize == index)
-            })
-        {
-            // Exact library impl owners retain their own typed schemas and contracts.
-            continue;
-        }
-        if report
-            .resolution
-            .builtin_traits
-            .collections()
-            .is_some_and(|collections| {
-                collections
-                    .declarations
-                    .iter()
-                    .any(|d| d.definition.0 as usize == index)
-            })
-        {
-            // Actual canonical collection owners have typed, source-free schemas.
+        if library_owner(report, index) {
+            // Exact canonical owners retain typed schemas instead of source AST ownership.
             continue;
         }
         let source = definition
@@ -350,6 +305,45 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         result.owner_members[owner.0 as usize].push(id);
     }
     Ok(result)
+}
+fn library_owner(report: &Report, index: usize) -> bool {
+    report
+        .resolution
+        .library_types
+        .slice_length()
+        .is_some_and(|length| length.owner.0 as usize == index)
+        || [
+            crate::support::intrinsics::Intrinsic::ConstPointerAdd,
+            crate::support::intrinsics::Intrinsic::MutPointerAdd,
+        ]
+        .into_iter()
+        .any(|kind| {
+            report
+                .resolution
+                .intrinsics
+                .get(kind)
+                .is_some_and(|d| d.owner.is_some_and(|owner| owner.0 as usize == index))
+        })
+        || report
+            .resolution
+            .builtin_traits
+            .iteration()
+            .is_some_and(|iteration| {
+                iteration
+                    .blankets
+                    .iter()
+                    .any(|d| d.definition.0 as usize == index)
+            })
+        || report
+            .resolution
+            .builtin_traits
+            .collections()
+            .is_some_and(|collections| {
+                collections
+                    .declarations
+                    .iter()
+                    .any(|d| d.definition.0 as usize == index)
+            })
 }
 fn identity(report: &Report, source: NodeKey, index: usize) -> Result<DefId, Error> {
     u32::try_from(index).map(DefId).map_err(|_| {
