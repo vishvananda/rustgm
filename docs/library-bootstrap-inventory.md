@@ -28,7 +28,7 @@ literal-name search alone does not establish a source rejection or its phase.
 | --- | --- |
 | Internal language features | The [core root](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/lib.rs) and [alloc root](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/alloc/src/lib.rs) request const traits, specialization, negative/auto traits, internal attributes and other unstable features. Classify active requirements; accepting the attribute syntax does not implement their semantics. |
 | Sized and layout properties | [Marker declarations](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs) distinguish Sized, MetaSized and PointeeSized. [Memory properties](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/mod.rs) use SizedTypeProperties and compiler-provided associated constants for size/alignment. Reusing one ordinary Sized identity or only old intrinsic wrappers would miss the actual protocol. |
-| Intrinsic declarations | [Core intrinsics](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs) attach compiler meaning to typed declarations, including bodyless forms. Preserve exact identity/signature, safety, const permissions and fallback rules. rustc_comptime adds a separate compile-time-only permission, distinct from const fn and runtime-only calls. const_eval_select selects checked function items; [UB checks](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ub_checks.rs) depend on that distinction. |
+| Intrinsic declarations | [Core intrinsics](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs) attach compiler meaning to typed declarations, including bodyless forms. Preserve exact identity/signature, safety, const permissions and fallback rules. rustc_comptime adds a separate compile-time-only permission, distinct from const fn and runtime-only calls. const_eval_select requires source callable contracts and context-specific callback selection; [UB checks](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ub_checks.rs) depend on that distinction. |
 | Validity and niches | [UnsafeCell](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/cell.rs), [MaybeUninit](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/maybe_uninit.rs), [NonNull](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/non_null.rs) and [niche types](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/num/niche_types.rs) require source identity, initialization and validity semantics. This pin uses pattern types for valid-range storage; a raw-pointer stand-in loses guarantees. |
 | Pointer metadata | [Pointee and DynMetadata](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/metadata.rs) require typed metadata extraction/raw-parts construction, with separate data identity and access permissions. |
 | Generic atomics | [Atomic declarations and aliases](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/sync/atomic.rs) use Atomic<T: AtomicPrimitive>, associated Storage, target alignment and internal const ordering parameters. AtomicBool/AtomicPtr/integer names are aliases; adding unrelated hardcoded nominal names would diverge from source. [Arc](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/alloc/src/sync.rs) needs Atomic<usize> and fences. |
@@ -83,10 +83,41 @@ this inventory; full std/platform and transitive crate analysis remain separate.
    completed layout/destruction facts and selected associated constants. Use
    original pinned excerpts with generic, const, runtime and alias controls.
    This proposed slice needs no new backend opcode; it is not yet implemented.
-3. Add const_eval_select/UB-check and ordinary pointer/memory paths, then actual
+3. Bind real Tuple, FnOnce and its Output member, including rust-call and the
+   selected const FnOnce obligations, before enabling const_eval_select. The
+   callback's known function-item shape cannot replace these source contracts.
+4. Add const_eval_select/UB-check and ordinary pointer/memory paths, then actual
    UnsafeCell/MaybeUninit/NonNull and generic Atomic<T> contracts. Probe remaining
    backend widths independently. Generic crate-body transport proceeds in parallel.
 
-These priorities retain all PA27/PA28 requirements, including the original
-valid-but-unsupported default-tag/multi-variant enum cases. Option niche progress
-does not establish general enum layout or successful core/alloc/std compilation.
+These priorities retain all PA27/PA28 requirements. The later
+[combined checkpoint](real-crate-prerequisites-checkpoint.md) qualifies the
+retained direct-tag enum byte-storage family; that checkpoint and Option niche
+support do not establish complete enum layout or a core/alloc/std build.
+
+## Callable-selection followup
+
+Independent probes of the pinned compiler refined the const_eval_select plan.
+The source declaration requires ARG:Tuple, G:FnOnce<ARG,Output=RET> and
+F:const FnOnce<ARG,Output=RET>. Register the actual tuple_trait, fn_once and
+fn_once_output declarations and prove these contracts through ordinary selection.
+Keep source-provider trust policy separate from Rust language validity.
+
+The 26 frozen hypotheses produced 14 object acceptances, ten source rejections
+and two compiler ICEs, with 13 native executions. Dynamic runtime function
+pointers with two targets execute successfully; const-only uses with an unused
+runtime pointer or noncapturing closure also succeed. These observations conflict
+with a blanket function-items-only interpretation of the pinned prose. A runtime
+closure case and a malformed attributed signature ICE instead of producing
+language rejections. Preserve both discrepancies; neither an ICE nor an unsupported
+RustGM profile belongs in the language-negative oracle set.
+
+Implementation must retain evaluation of all operands, ownership/destruction,
+tuple argument order and the selected callback's ordinary proof and const
+permissions. Test that only the selected callback executes. The observations
+do not establish general closure support or stable guarantees for undocumented
+internal behavior. They are independent oracle evidence, not RustGM support.
+Receipts, original hypotheses, sources, diagnostics and both ICE reports are in
+the memory/intrinsic worker's `obj/parallel/pa28/const-eval-select/`; its
+`contract.md` SHA-256 is
+`ca4866eb7286eedcfaa19eadb20bc7586b212802810df24941703510edb61679`.

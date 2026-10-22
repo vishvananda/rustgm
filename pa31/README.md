@@ -27,6 +27,13 @@ synthetic fallback. Ordinary Option/Result/Iterator methods belong to upstream
 core. PA26 retains ownership of desugaring, derives and formatting semantics;
 this assignment connects them to declarations loaded from source.
 
+Bind Tuple, FnOnce and its associated Output declaration before admitting
+intrinsics whose signatures depend on them. Preserve rust-call tuple spreading
+and ordinary versus const-callability obligations. Qualify const_eval_select
+with source, ownership and native controls; accepted runtime function pointers
+and upstream compiler ICEs must not be mislabeled as language rejections. See
+the [pinned callable evidence](../docs/library-bootstrap-inventory.md#callable-selection-followup).
+
 Establish the minimal panic-abort entry/runtime boundary and no_core declaration
 packages. Keep general unwinding at PA39. Host/build configuration lives outside
 the frontend library; no environment reads enter semantic hot paths.

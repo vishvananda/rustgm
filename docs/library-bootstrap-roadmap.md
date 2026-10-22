@@ -98,8 +98,13 @@ library builds. Their actual blockers determine the order of remaining work.
    source reproducer and independent outcome. Use that evidence to order PA25
    constant-evaluation, PA26 language-hook and PA27/PA28 validity/intrinsic work.
    Start the binding path with source intrinsic declarations and
-   `size_of`/`align_of`/`needs_drop` through `SizedTypeProperties`; then qualify
-   `const_eval_select`, pointer/memory bodies and generic atomic declarations.
+   `size_of`/`align_of`/`needs_drop` through `SizedTypeProperties`. Register real
+   Tuple/FnOnce/Output identities, rust-call and const-callability obligations
+   before qualifying `const_eval_select`; callback shapes alone are insufficient.
+   Follow with pointer/memory bodies and generic atomic declarations. The
+   [callable-selection probes](library-bootstrap-inventory.md#callable-selection-followup)
+   retain accepted runtime pointers and compiler ICEs separately from source
+   rejections; do not encode an unqualified function-items-only restriction.
 4. Compile core end to end, then alloc. Start the PA34 build/edition work in
    parallel so it does not become a serial prerequisite after the libraries work.
 5. Build and run PA35's real crate graph, then PA36's std graph. Procedural derives
