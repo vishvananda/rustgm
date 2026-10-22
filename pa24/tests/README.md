@@ -1,60 +1,44 @@
 # PA24 fixture ownership
 
-Planned: no graded fixtures or generated reference outputs yet.
+PA24 remains planned. The complete reviewed inventory contains 467 source files:
+323 accepted and 144 rejected. Its generated manifest and text oracles are staged
+for release qualification; they are not installed as an active grading suite.
 
-Required families: capture precision; Fn/FnMut/FnOnce; moved captures; closure coercions.
+The accepted native classifications comprise 311 runtime comparisons, two
+code-generation-only controls for intentionally unused bodies, and ten entry-free
+library object controls. Object generation does not establish runtime behavior.
+Negative tests must reach their intended capture, permission, type or lifetime
+rule rather than an unrelated unsupported-feature diagnostic.
 
-`capture-outcomes.json` retains the 32 initial source controls and their declared
-language outcomes. The source bytes come from the original independently
-qualified PA24 plan. They cover captures, call permissions, field precision,
-loans, destruction, returned and nested closures, and pointer coercions. This is
-a draft outcome manifest, not an activated grading suite or a claim that the
-maintainer implements every positive case. In particular, rejection through an
-unsupported-capture diagnostic does not prove a negative borrow/call rule.
+The inventory covers these families:
 
-Put required regressions here, in the earliest assignment owning all their
-features. Keep draft inputs in their outcome manifests. At assignment release,
-register every required input in `manifest.json`; no undiscovered fixtures.
+- Anonymous identity, contextual inference, generic inputs and nested closures.
+- Shared, mutable, unique and moved captures; field precision, prefix merging,
+  wildcard/rest patterns, discriminants and shared-reference truncation.
+- Environment Copy/Clone/auto-trait obligations, partial moves and destruction.
+- Fn/FnMut/FnOnce selection, generic and nested reference receivers, call
+  permissions and noncapturing function-pointer conversion.
+- Borrowed callable objects, projected and quantified inputs, distinct signature
+  slots, captured input conditions and returned references.
+- Original and demanded body proof, unused nested closures and library body
+  failures before metadata export selection.
 
-`object-input-outcomes.json` declares inherited callable-object inference controls
-including quantified input/output and pending generic target arguments. See
-[the implementation contract](../../docs/pa24-object-input-inference.md) for the
-ordinary required-goal protocol, cache identity, independent/native evidence and
-remaining scope. It does not activate a grading suite or generated references.
+The owning [handout](../README.md) defines the required behavior and ABI.
+The [release review](../../docs/pa24-release-review.md) maps those requirements to
+fixture families and records independent qualification, the reviewed diagnostic
+correction and remaining gates. It is the consolidated inventory; an early
+32-case capture plan is not the assignment's complete scope.
 
-`quantified-dispatch-outcomes.json` declares 22 additional captured callable
-controls, with 16 native positives and six language rejections. The existing
-`captured-dispatch/quantified-capture.rs` now accepts and executes; its prior
-unsupported observation remains documented. A nonclosure caller-lifetime
-regression belongs to PA23, and no PA24 text oracles are generated yet.
+Existing `*-hypotheses.json`, `*-outcomes.json` and other draft outcome files
+retain independently declared expectations and source hashes for their respective
+implementation checkpoints. Their historical unsupported observations are not
+current language expectations. In particular, the input-only lifetime bridge
+now accepts `formation-truncation/reference-result.rs`, while
+`output-interfaces/escape-outer.rs` must fail its ordinary lifetime proof.
 
-`capture-copy-outcomes.json` covers unresolved reference pointees and the opposing
-move/call-kind/lifetime rules. The typed outer-shape contract and qualified
-source/native evidence are in
-[reference capture classification](../../docs/pa24-reference-copy-inputs.md).
-
-Reference-Self captured objects are predeclared in
-`reference-objects-hypotheses.json`; qualified hashes and results are recorded in
-`reference-objects-outcomes.json`. Their exact frozen bytes live in
-`spec/reference-objects/`; ten positive programs exercise shared/mutable nested
-references, generic and quantified calls, outer results and unused FnOnce views.
-Four opposing permission/loan/escape inputs retain rejection. This draft has no
-released manifest or generated oracle. See
-[the implementation review](../../docs/pa24-reference-objects.md).
-
-`signature-slot-outcomes.json` covers independent public frames and opposing
-outer/local lifetime ownership. The exact registration, import and scoped equality
-contract is in [signature ownership](../../docs/pa24-signature-slot-ownership.md).
-No generated references or assignment activation accompanies these draft cases.
-
-`pending-object-outcomes.json` retains unresolved early type/const targets, actual
-object lifetime inputs, unused public binders and opposing type/escape controls.
-Declaration clauses create required goals; no pending caller terms enter a cache.
-
-`capture-input-hypotheses.json` and `capture-input-outcomes.json` qualify
-input-only lifetime bridges for explicit reference results. The original
-`formation-truncation/reference-result.rs` bytes now pass checked/native
-execution; the older failure receipt remains historical. Additional opposing
-and nested controls live in `spec/capture-inputs/`. Source/native inventory
-commands and proof-seal details are in
-[the input-only bridge review](../../docs/pa24-input-only-bridges.md).
+Required regressions belong here when PA24 is the earliest assignment owning all
+their features. Preserve upstream bytes and attribution. At release, every input
+must appear in `manifest.json` with its explicit source/native classification;
+generated `.ref`, `.ref.stderr`, `.ref.exit_status` and `reference.json` files ship
+together. Never hand-edit the generated answers or add a synthetic main to an
+entry-free source merely to make a test executable.

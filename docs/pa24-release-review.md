@@ -67,8 +67,15 @@ remain unchanged. The library driver now performs the original body proof before
 export selection, using the same retained templates and proof pass. Both CLI and
 typed API regressions require the actual lifetime failure, and metadata must not
 be published. A valid public opaque result still retains its separately owned
-PA29 transport boundary. The staged oracle for this case must be regenerated and
-reviewed against the corrected compiler before activation.
+PA29 transport boundary.
+
+The corrected compiler independently requalified all 467 source outcomes and
+their native classifications before generating `release-oracles-v2/`. Review
+found exactly one changed sidecar, this case's diagnostic: the metadata-profile
+error at byte zero becomes `required lifetime does not outlive its target` at
+byte 47. Source bytes, declared outcomes and the other sidecars are unchanged.
+Generation and a subsequent byte comparison both passed. These reviewed
+sidecars remain staged; they have not activated PA24.
 
 The correction's default-feature binary SHA-256 is
 `ece395550188b349a3d9dae9b98b03616d7b362334c5179d8bbd7d6c5872e80a`.
@@ -82,15 +89,33 @@ formatting, strict all-target/all-feature release Clippy, file/architecture and
 layout audits, and all 7,787 PA1–PA23 text outcomes passing. The corrected compiler
 still requires the next combined full publication qualification.
 
+The combined compiler at `0b89bf31` also includes the checked owned Ord helpers,
+canonical Ordering comparisons and scoped unaligned transfers. Its focused
+qualification at `obj/parallel/pa24-pa28-integration-v1/` passed formatting,
+strict all-target/all-feature release Clippy, file/architecture and layout
+audits, 90 private/affected tests including native controls, every PA1–PA23 text
+case and all 467 corrected staged PA24 oracles. This establishes integration
+compatibility; it does not substitute for the full publication suite.
+
+The earlier frozen compiler's full release Cargo run exposed three stale test
+expectations: an unqualified Ordering spelling was assumed unique, compressed
+immutable reads reduced an exact allocation count, and a slice-indexing control
+still expected its former unsupported result. Test-only commit `6e88cdb6`
+preserves the qualified type-identity checks, retains an allocation ceiling with
+an unrelated-type independence check, and adds a native value check for the
+accepted slice case. Production sources are unchanged from `1b93560f`. The
+repaired full release Cargo run passed 2,316 tests; its native and independent
+release checks are tracked separately in `test-repair-v2/` under the frozen
+sequence qualification. This result does not qualify the later combined compiler.
+
 ## Remaining release gates
 
 - Complete the frozen combined release Cargo and native maintainer suites and
   all earlier independent suites. Formatting, strict all-target/all-feature
   Clippy, architecture/layout/harness audits, upstream/backend checks and all
   PA1–PA23 text comparisons passed preflight on the frozen snapshot.
-- Recheck the PA24 library programs and changed rejection using the qualified
-  library proof-order correction before installing any oracle. Carry its
-  compiler-source identity into the next coherent publication checkpoint.
+- Carry the corrected library proof and reviewed v2 oracle source identity into
+  the next full combined publication checkpoint before installing the oracles.
 - Finish the broad frozen-binary performance comparison, including ordinary
   controls, distinct/repeated captures, projected and quantified objects, and
   receiver-depth growth. The existing receiver-depth superlinear observation
