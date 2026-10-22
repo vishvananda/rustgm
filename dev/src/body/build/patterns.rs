@@ -101,6 +101,9 @@ impl Builder<'_> {
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
         let kind = pattern.kind;
+        if matches!(kind, Kind::Wildcard) {
+            return Ok(());
+        }
         let place = if let Some(base) = base {
             Some(self.selected_place(id, base, selection)?)
         } else {

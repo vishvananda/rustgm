@@ -359,6 +359,10 @@ impl Builder<'_> {
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
         let kind = pattern.kind;
+        if matches!(kind, Kind::Wildcard) {
+            self.terminate(node, Terminator::Jump(yes));
+            return Ok(());
+        }
         let place = self.selected_place(id, base, selection)?;
         match kind {
             Kind::Wildcard
@@ -620,6 +624,9 @@ impl Builder<'_> {
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
         let kind = pattern.kind;
+        if matches!(kind, Kind::Wildcard) {
+            return Ok(());
+        }
         let place = self.selected_place(id, base, selection)?;
         match kind {
             Kind::Binding { subpattern, .. } => {

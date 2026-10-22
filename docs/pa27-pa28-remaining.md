@@ -21,7 +21,7 @@ Open implementation or profile contracts remain:
 - General pointer offsets, byte reinterpretation and provenance reconstruction.
   Exact-type symbolic locations and canonical scalar union projections do not
   supply arbitrary byte-addressed memory.
-- General enum/opaque/closure and string backing, broader raw-slice indexing and
+- General enum/opaque/closure and string backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
@@ -50,6 +50,12 @@ inventory, one reviewed phase/diagnostic contract and the planned manifest/text
 publication. Existing accepted packed-reference source controls do not waive
 alignment, and rejected reinterpretation profiles are not semantic validity
 proofs. The integrator owns that release work.
+
+Raw-slice element indexing now selects a sized exact typed element from original
+array/rest backing and checks logical metadata separately from physical bounds.
+Metadata-only length patterns do not read contents. Complete reference duties,
+general raw range reconstruction and DST record-tail metadata remain separate;
+see `pa27-raw-slice-review.md` for retained oracle disagreements and exact scope.
 
 ## PA28
 

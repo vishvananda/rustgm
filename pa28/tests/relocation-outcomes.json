@@ -107,20 +107,22 @@
       "path": "pa28/tests/spec/relocation-transport/slice-split.rs",
       "sha256": "e759e9b885c0be7e2016a17ea9a77f0c9414e28d28d24909c6d876083529040d",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "constant raw whole-range access is not implemented",
-      "boundary": true,
-      "independent_manifest": "declared-v2.json"
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json",
+      "superseded_boundary": "Raw-slice indexing checkpoint: unchanged original source now independently accepted."
     },
     {
       "name": "slice-mixed-length",
       "path": "pa28/tests/spec/relocation-transport/slice-mixed-length.rs",
       "sha256": "509f6fe196d4dbd58713d2f54cae372cf067e8e407545436a12671d18b638a56",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "constant raw whole-range access is not implemented",
-      "boundary": true,
-      "independent_manifest": "declared-v2.json"
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json",
+      "superseded_boundary": "Raw-slice indexing checkpoint: unchanged original source now independently accepted."
     },
     {
       "name": "slice-mixed-length-bounds",
@@ -187,10 +189,11 @@
       "path": "pa28/tests/spec/relocation-transport/slice-modified-metadata.rs",
       "sha256": "23fe32167c3d4ccb6d22d1cdb39695799f7270398453a2865e245d3aab75d5bd",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "constant raw whole-range access is not implemented",
-      "boundary": true,
-      "independent_manifest": "declared-v2.json"
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-v2.json",
+      "superseded_boundary": "Raw-slice indexing checkpoint: unchanged original source now independently accepted."
     },
     {
       "name": "complete-slice-image",
@@ -287,10 +290,11 @@
       "path": "pa28/tests/spec/relocation-transport/ordinary-raw-slice-index.rs",
       "sha256": "8953124afe38846ae088b510e1b024e62f0e8684abfee66ad960f7896b6ee2cc",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "raw pointer type reinterpretation in constant execution is not implemented",
-      "boundary": true,
-      "independent_manifest": "declared-aliases.json"
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-aliases.json",
+      "superseded_boundary": "Raw-slice indexing checkpoint: unchanged original source now independently accepted."
     },
     {
       "name": "thin-duplicate-field-views-encoding-reversed",

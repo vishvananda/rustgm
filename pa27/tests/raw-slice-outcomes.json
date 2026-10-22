@@ -1,0 +1,617 @@
+{
+  "stage": "planned",
+  "profile": "exact symbolic raw slice selection; metadata and selected access have distinct duties",
+  "source_cases": [
+    {
+      "name": "ordinary-read",
+      "path": "pa27/tests/spec/raw-slice-index/ordinary-read.rs",
+      "sha256": "04f63ea703ef839661d6a487eee6a80e9e39eb3c4e2d1bc7db5c8f3416e19ce6",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "ordinary-write",
+      "path": "pa27/tests/spec/raw-slice-index/ordinary-write.rs",
+      "sha256": "af8445544ad0c6850428114e3251c39373d7591d9c3b1d4e43ca510ab8960d8c",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "subrange-write",
+      "path": "pa27/tests/spec/raw-slice-index/subrange-write.rs",
+      "sha256": "a1917ffa7da0c6d63cf2533c5f04723f8f077675c19914de17ebd1638398e36c",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "shared-derived-write",
+      "path": "pa27/tests/spec/raw-slice-index/shared-derived-write.rs",
+      "sha256": "c37a7ac0ce381632f9eb09372ba86bc1b0a55e77d187cc496f37cbd3704d5a6f",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "empty-index",
+      "path": "pa27/tests/spec/raw-slice-index/empty-index.rs",
+      "sha256": "df517780221af0ad3137ee90add0767220037277909b14b9be05dbb8bd780cd1",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant index is out of bounds",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "metadata-end-index",
+      "path": "pa27/tests/spec/raw-slice-index/metadata-end-index.rs",
+      "sha256": "4147ec05eaa1045de75b1903bb1d4ba4945d48a68e791646c1a3b89df0174138",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant index is out of bounds",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "expired-read",
+      "path": "pa27/tests/spec/raw-slice-index/expired-read.rs",
+      "sha256": "845b0dea3e0a86ac1082cbb54962d6e3914191d001e45253c4e96265f2a482ef",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "shared-element-reference",
+      "path": "pa27/tests/spec/raw-slice-index/shared-element-reference.rs",
+      "sha256": "b86add60d94b2b571438fd13b3791037ba99d5a60cc90027be6d047bb7e69dc4",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "mutable-element-reference",
+      "path": "pa27/tests/spec/raw-slice-index/mutable-element-reference.rs",
+      "sha256": "3ac4ce4d2e16d12826bba91679ad9ade43b666a547aae079e977e50dd8a5737d",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "zst-index",
+      "path": "pa27/tests/spec/raw-slice-index/zst-index.rs",
+      "sha256": "ac2294a9fd8edfeeceb8a0c06cfebb8aa0ead2c2b2d4cf22ef301d1e37f6f539",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "suffix-pattern",
+      "path": "pa27/tests/spec/raw-slice-index/suffix-pattern.rs",
+      "sha256": "3caa008ab54f2d0a44e11185c4b464afd1d3191403ff01557be0baca5545de76",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "empty-pattern",
+      "path": "pa27/tests/spec/raw-slice-index/empty-pattern.rs",
+      "sha256": "5a73d03f52652042cd94c8c32764fe9e3e5fc3bc1db9141349955c54d4610701",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "packed-element-field",
+      "path": "pa27/tests/spec/raw-slice-index/packed-element-field.rs",
+      "sha256": "05e633f1a3b41f8114547bfb6c82618e256d138914391ce05bdf222077269762",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "packed-data-read",
+      "path": "pa27/tests/spec/raw-slice-index/packed-data-read.rs",
+      "sha256": "9592b788b8bbbb930e088b6c43a3bafd8f2279656867d8f325917a78881081a0",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer read is unaligned",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "byte-literal",
+      "path": "pa27/tests/spec/raw-slice-index/byte-literal.rs",
+      "sha256": "d64f47934bc0b0361fb729a4a19b38a736046757fc608a8226ffe427492d3409",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "literal-write",
+      "path": "pa27/tests/spec/raw-slice-index/literal-write.rs",
+      "sha256": "c378c48e822fb7ae35a3bd63fde92fe2732e4b7b58793e34fca49b42b6b67fbf",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "oversized-metadata-selected-in-backing",
+      "path": "pa27/tests/spec/raw-slice-index/oversized-metadata-selected-in-backing.rs",
+      "sha256": "ab05dc70a35c72534fad3b51d2239a49747d1127b9621abec570970f908eb7e1",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "oversized-metadata-selected-outside-backing",
+      "path": "pa27/tests/spec/raw-slice-index/oversized-metadata-selected-outside-backing.rs",
+      "sha256": "a1eb93e4d137264741237f1d785941e1a463a236690483c8ceb00ff90915d541",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw slice element is outside backing bounds",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "generic-dynamic-index",
+      "path": "pa27/tests/spec/raw-slice-index/generic-dynamic-index.rs",
+      "sha256": "36ecaed1a95a1bf3310c5f1fd1e558ab30100813b1f0851f0596b6b7ce64fd61",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "expired-length-pattern",
+      "path": "pa27/tests/spec/raw-slice-index/expired-length-pattern.rs",
+      "sha256": "4fed84fac02a53fef06ed045402a22af29030069b543f311baf48358f14694e5",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "expired-element-address-zero",
+      "path": "pa27/tests/spec/raw-slice-index/expired-element-address-zero.rs",
+      "sha256": "557ab0fb89742ea2f82acc8b7ba01a720e9a408f64d9a1ee1767854b1f24988d",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "uninitialized-length-pattern",
+      "path": "pa27/tests/spec/raw-slice-index/uninitialized-length-pattern.rs",
+      "sha256": "bbb3e14d75d08bebaf586b4491a8a722a2311e037b2347d00567c9ddffd09cae",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "borrowed place may be uninitialized or moved",
+      "boundary": false,
+      "independent_manifest": "declared-second.json",
+      "note": "Original expected acceptance was disproved by E0381 at raw-address formation; this is source initialization, not byte-mask validity."
+    },
+    {
+      "name": "uninitialized-selected-read",
+      "path": "pa27/tests/spec/raw-slice-index/uninitialized-selected-read.rs",
+      "sha256": "9b7acf6fd72490e11d0dbc79479a5f4d976a3206488dbac3d7f8c0a5c61fe54f",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "borrowed place may be uninitialized or moved",
+      "boundary": false,
+      "independent_manifest": "declared-second.json",
+      "note": "Source E0381 rejects raw-address formation; not a byte-mask validity proof."
+    },
+    {
+      "name": "oversized-length-pattern",
+      "path": "pa27/tests/spec/raw-slice-index/oversized-length-pattern.rs",
+      "sha256": "fc53b83ca5015ca6950e2a3b0bbb673aaec20b1927654e13c79c5e0887aa1969",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "packed-length-pattern",
+      "path": "pa27/tests/spec/raw-slice-index/packed-length-pattern.rs",
+      "sha256": "424dd22d855008e72f46e680f1939832b37fb1fb90b6d87b3ca0b34bd922d7cd",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "expired-element-address-nonzero",
+      "path": "pa27/tests/spec/raw-slice-index/expired-element-address-nonzero.rs",
+      "sha256": "5a2b6cb1ec53eee1294d221b22891a9b8649192dadfb6f5517ac4c8c74c436e0",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "boundary": false,
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "expired-zst-element-address",
+      "path": "pa27/tests/spec/raw-slice-index/expired-zst-element-address.rs",
+      "sha256": "3d734547bb486449a7b6c87a3cdda43686cc4367795f4e07035f2973233b628d",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "expired-element-address-outside-metadata",
+      "path": "pa27/tests/spec/raw-slice-index/expired-element-address-outside-metadata.rs",
+      "sha256": "96bb7854f2cd4c2fc5279f1b994e4df022b688f8293825a56ce6468b4a652f37",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant index is out of bounds",
+      "boundary": false,
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "expired-binding-required",
+      "path": "pa27/tests/spec/raw-slice-index/expired-binding-required.rs",
+      "sha256": "529551e5b5146ffdf56d8267b7721a6e39cf9576f62997bf4f8a51ea4c7cb96e",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "boundary": false,
+      "independent_manifest": "declared-fourth.json"
+    },
+    {
+      "name": "expired-literal-required",
+      "path": "pa27/tests/spec/raw-slice-index/expired-literal-required.rs",
+      "sha256": "0196954f4ff83121a4edfb1d315c682f7fc2437e54b7c152fd71e0542ebec852",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant pointer refers to expired storage",
+      "boundary": false,
+      "independent_manifest": "declared-fourth.json"
+    },
+    {
+      "name": "oversized-binding-required",
+      "path": "pa27/tests/spec/raw-slice-index/oversized-binding-required.rs",
+      "sha256": "a298e4f0d8fc19bde6faf649eda6b826dddda5a5a43ad1c62225a2e1110c40a0",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw slice element is outside backing bounds",
+      "boundary": false,
+      "independent_manifest": "declared-fourth.json"
+    },
+    {
+      "name": "oversized-literal-required",
+      "path": "pa27/tests/spec/raw-slice-index/oversized-literal-required.rs",
+      "sha256": "9cb86374eda15ca066f611bfd71fd48c1806036a996a044c1cf1b7a61d6caec3",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant raw slice element is outside backing bounds",
+      "boundary": false,
+      "independent_manifest": "declared-fourth.json"
+    },
+    {
+      "name": "reference-metadata-full-range-required",
+      "path": "pa27/tests/spec/raw-slice-index/reference-metadata-full-range-required.rs",
+      "sha256": "8ed754f6027f4cc2956ec3a1ecbc7cae935488d0f713b1eb083de1c4f7b017d9",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant range is out of bounds",
+      "boundary": true,
+      "independent_manifest": "declared-fourth.json",
+      "note": "Original rejection hypothesis was disproved: transient oversized reference followed only by in-backing selection accepts pinned CTFE. No native-valid claim; compiler retains complete reference duties."
+    },
+    {
+      "name": "reference-metadata-published",
+      "path": "pa27/tests/spec/raw-slice-index/reference-metadata-published.rs",
+      "sha256": "32304b5fc8b769600df385047275bcaacfaac7507b28ca0cb3cee7ac739768be",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant range is out of bounds",
+      "boundary": false,
+      "independent_manifest": "declared-fifth.json"
+    }
+  ],
+  "native_cases": [
+    {
+      "name": "retained-ordinary-raw-slice-index",
+      "path": "pa27/tests/raw-slice-native/retained-ordinary-raw-slice-index.rs",
+      "sha256": "75fb11bff0b7cf4b29e3fe6e4c43580570e54be38f8c03a1fbf9481a4f5514ca",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "ordinary-read",
+      "path": "pa27/tests/raw-slice-native/ordinary-read.rs",
+      "sha256": "08a06d3eef881efd8fa4e06ca5d081c955deb3da1a2d3cccf21330912f58ba06",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "ordinary-write",
+      "path": "pa27/tests/raw-slice-native/ordinary-write.rs",
+      "sha256": "06568f6ac01c46c104c7557e59fffa644f8a609d3f8af8355b77ace2fb09e93d",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "subrange-write",
+      "path": "pa27/tests/raw-slice-native/subrange-write.rs",
+      "sha256": "a1bcaf941a7a2335c55d42be808c34a7b3c5fd81a0b9fe3edb16d47e77521d01",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "shared-element-reference",
+      "path": "pa27/tests/raw-slice-native/shared-element-reference.rs",
+      "sha256": "fd552614cd9eb7f1c4def0e5b0a033149cca662980bbcfbd96fd562ee5891646",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "mutable-element-reference",
+      "path": "pa27/tests/raw-slice-native/mutable-element-reference.rs",
+      "sha256": "822e32092ac14a7ca9f2cf44bdb82171291581f9912ea38e3684d3afa9ee6dac",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "suffix-pattern",
+      "path": "pa27/tests/raw-slice-native/suffix-pattern.rs",
+      "sha256": "251037186a12929548c853cd0cb2dbf5de698b7aaf75903c0aed374c475ea245",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "empty-pattern",
+      "path": "pa27/tests/raw-slice-native/empty-pattern.rs",
+      "sha256": "507225fc5c485157872965ae77fe8b13406b167233e221f05d15201ead9fccf2",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "packed-element-field",
+      "path": "pa27/tests/raw-slice-native/packed-element-field.rs",
+      "sha256": "1dbd179192c0f4313f0139ad08e1becccefd1ff41682019e2721eb5d9a1fe131",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "byte-literal",
+      "path": "pa27/tests/raw-slice-native/byte-literal.rs",
+      "sha256": "fad484d031cf04aa0555a9704de8255579a3d9ba70fef1f632f2f9c867af9282",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "oversized-metadata-selected-in-backing",
+      "path": "pa27/tests/raw-slice-native/oversized-metadata-selected-in-backing.rs",
+      "sha256": "c2c525b82be226faaec9a4b4ba8731a3263412c8a0f70e7401f01c7ffea262ac",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "generic-dynamic-index",
+      "path": "pa27/tests/raw-slice-native/generic-dynamic-index.rs",
+      "sha256": "cf5496523fe4fb7b5d78c1b6e9e8c07f4659ff6d79146251f57fbbb1cdde6258",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "wildcard-scrutinee-once",
+      "path": "pa27/tests/raw-slice-native/wildcard-scrutinee-once.rs",
+      "sha256": "4ebacb9b1bb0576acec578a7b2e44ab7a9105f7a2b20b97d274c2e3e08bce6f8",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    }
+  ]
+}

@@ -51,6 +51,11 @@ impl Machine<'_, '_> {
         &mut self,
         place: Resolved,
     ) -> Result<u64, Failure> {
+        if self.is_raw_slice(place) {
+            // The pointer value was already read. Its metadata does not read
+            // the pointee, form a reference or perform address arithmetic.
+            return self.raw_slice_metadata(place).map(|(_, length)| length);
+        }
         let path = self.path(place.address)?;
         // Metadata does not read bytes or demand a static initializer. Local storage
         // must nevertheless have an initialized container at the selected path.

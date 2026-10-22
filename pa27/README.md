@@ -135,6 +135,15 @@ Byte reinterpretation and shared-derived interior-mutable writes remain explicit
 unsupported boundaries. Unsafe permission grants none of these missing constant
 capabilities. Foreign and mutable static contents remain forbidden.
 
+Raw slice indexing selects an exact sized element from original array/rest
+storage. Logical metadata bounds and the selected physical backing bounds remain
+separate; oversized raw metadata does not grant access beyond that backing.
+Reads, stores and reconstructed references retain their ordinary liveness,
+initialization, alignment, static and per-pointer authority checks. Raw length
+observes metadata only. Exact wildcard patterns do not select unused elements;
+bindings, literals and other refutable children retain their accesses. These
+controls do not implement whole unsized raw values or general range reconstruction.
+
 Packed by-value copies, primitive compound assignment and raw address formation
 remain distinct from creating a field reference. The qualified let-reference
 and match-reference controls reject in the executable pipeline. Earlier type

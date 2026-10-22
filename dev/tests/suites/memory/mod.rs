@@ -61,6 +61,8 @@ mod provenance_reads;
 mod provenance_writes;
 #[path = "../../helpers/qualify.rs"]
 pub(crate) mod qualify;
+#[path = "../../raw_slice_indexing.rs"]
+mod raw_slice_indexing;
 #[path = "../../reachable_storage.rs"]
 mod reachable_storage;
 #[path = "../../harness/reconstruction_work.rs"]

@@ -3,6 +3,7 @@ mod bytes;
 mod image_paths;
 mod loads;
 mod ranges;
+mod raw_slices;
 mod sequences;
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
@@ -532,9 +533,9 @@ impl Machine<'_, '_> {
                 }));
             }
             ProjectionKind::ConstantIndex(index) => {
-                self.project_raw_type(address)?;
-                self.evaluator
-                    .projection(address.address, index, projection.ty)?
+                return self
+                    .indexed_element(address, index, projection.ty)
+                    .map(Some);
             }
             ProjectionKind::Index { index, length } => {
                 let index = super::values::integer(Self::value(frame, index)?)?;
@@ -551,9 +552,9 @@ impl Machine<'_, '_> {
             }
             ProjectionKind::SliceIndex { .. } | ProjectionKind::FromEnd { .. } => {
                 let index = self.sequence_index(frame, address, projection.kind)?;
-                self.project_raw_type(address)?;
-                self.evaluator
-                    .projection(address.address, index, projection.ty)?
+                return self
+                    .indexed_element(address, index, projection.ty)
+                    .map(Some);
             }
             ProjectionKind::Subslice { .. } | ProjectionKind::Subarray { .. } => {
                 self.project_raw_type(address)?;

@@ -158,7 +158,12 @@ impl Machine<'_, '_> {
                         let length = u64::try_from(crate::const_eval::values::integer(length)?)
                             .map_err(|_| "slice metadata exceeds usize")?;
                         (
-                            self.reconstruct_slice_word(address, pointee, length)?,
+                            self.reconstruct_slice_word(
+                                address,
+                                pointee,
+                                length,
+                                reference.is_some(),
+                            )?,
                             pointee,
                         )
                     }
@@ -218,6 +223,7 @@ impl Machine<'_, '_> {
         address: crate::sema::values::WordAddress,
         pointee: TypeId,
         length: u64,
+        reference: bool,
     ) -> Result<Constant, Failure> {
         let Some(crate::types::Kind::Slice(element)) = self.evaluator.facts().types.kind(pointee)
         else {
@@ -232,12 +238,19 @@ impl Machine<'_, '_> {
         }) = self.evaluator.facts().types.kind(root)
             && address.offset() == 0
             && Reader::new(self.evaluator.facts()).same_storage_type(actual, element)
-            && length <= bound
+            && (!reference || length <= bound)
         {
             let base = self.reconstruct_word(address, root)?;
-            return self.evaluator.subsequence(base, 0, length, pointee);
+            return if reference {
+                self.evaluator.subsequence(base, 0, length, pointee)
+            } else {
+                base.unsize(length)
+            };
         }
         let selected = self.reconstruct_word(address, element)?;
+        if !reference {
+            return selected.unsize(length);
+        }
         let (parent, from) = selected.projection_parent(Reader::new(self.evaluator.facts()))?;
         self.evaluator.subsequence(parent, from, length, pointee)
     }

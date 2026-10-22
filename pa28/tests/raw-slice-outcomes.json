@@ -1,0 +1,194 @@
+{
+  "stage": "planned",
+  "profile": "exact symbolic raw slice selection; metadata and selected access have distinct duties",
+  "source_cases": [
+    {
+      "name": "retained-slice-split",
+      "path": "pa28/tests/spec/relocation-transport/slice-split.rs",
+      "sha256": "e759e9b885c0be7e2016a17ea9a77f0c9414e28d28d24909c6d876083529040d",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "retained-slice-mixed-length",
+      "path": "pa28/tests/spec/relocation-transport/slice-mixed-length.rs",
+      "sha256": "509f6fe196d4dbd58713d2f54cae372cf067e8e407545436a12671d18b638a56",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "retained-slice-modified-metadata",
+      "path": "pa28/tests/spec/relocation-transport/slice-modified-metadata.rs",
+      "sha256": "23fe32167c3d4ccb6d22d1cdb39695799f7270398453a2865e245d3aab75d5bd",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "retained-ordinary-raw-slice-index",
+      "path": "pa28/tests/spec/relocation-transport/ordinary-raw-slice-index.rs",
+      "sha256": "8953124afe38846ae088b510e1b024e62f0e8684abfee66ad960f7896b6ee2cc",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "retained-slice-mixed-length-bounds",
+      "path": "pa28/tests/spec/relocation-transport/slice-mixed-length-bounds.rs",
+      "sha256": "fd790b81e38f485c96bf9b877ecc343c754b74f597d238e3396a42f301f8d3af",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant index is out of bounds",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "invalid-unselected",
+      "path": "pa28/tests/spec/raw-slice-index/invalid-unselected.rs",
+      "sha256": "3be26dd5935279f08fe85b74d564a642282224f62ebd47a8b6c964f187daeb59",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "invalid-selected",
+      "path": "pa28/tests/spec/raw-slice-index/invalid-selected.rs",
+      "sha256": "9ee7c396ac44c182c4827f951ff93d26734d38c775ce47d88368aded00b37da3",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "reason": "constant union scalar read has invalid bool representation",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "packed-data-address-unaligned-read",
+      "path": "pa28/tests/spec/raw-slice-index/packed-data-address-unaligned-read.rs",
+      "sha256": "9e80953090905b5b8933162be4a8e0907aca0143d1bdd8bf643d465a6b1aa43c",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-first.json"
+    },
+    {
+      "name": "reference-word-roundtrip",
+      "path": "pa28/tests/spec/raw-slice-index/reference-word-roundtrip.rs",
+      "sha256": "552065d73bff7741e138acb40662f54433284011da261e40846763318228e5fe",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "boundary": false,
+      "independent_manifest": "declared-fourth.json"
+    }
+  ],
+  "native_cases": [
+    {
+      "name": "retained-slice-split",
+      "path": "pa28/tests/raw-slice-native/retained-slice-split.rs",
+      "sha256": "ffcae1ca16cf87adc8e8932e7a317cbe151a9d4aa770db6d075ce606cce4a2dd",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "retained-slice-mixed-length",
+      "path": "pa28/tests/raw-slice-native/retained-slice-mixed-length.rs",
+      "sha256": "a819af3a6ff29ccb7c1f98f5ea0173679004c60c56d610e388953e46594eb251",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "retained-slice-modified-metadata",
+      "path": "pa28/tests/raw-slice-native/retained-slice-modified-metadata.rs",
+      "sha256": "8d48c61dfc2a1efc4c3b344d99a5abdb5ceeff47f5aa967397b34e85a150776f",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "invalid-unselected",
+      "path": "pa28/tests/raw-slice-native/invalid-unselected.rs",
+      "sha256": "fd196ba8ef90f0b6c2a1f25f39c22259490c8c030a1b0bc7c8000c7a8343d16a",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "packed-data-address-unaligned-read",
+      "path": "pa28/tests/raw-slice-native/packed-data-address-unaligned-read.rs",
+      "sha256": "665ae8bcb483386808c0e58c233c9b6c54f0dc4fb9959fd9b88b30dc78032418",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    },
+    {
+      "name": "reference-word-roundtrip",
+      "path": "pa28/tests/raw-slice-native/reference-word-roundtrip.rs",
+      "sha256": "3e4327cd8d1d7fed1ff3c3e384ba79638cfe9c2e28ea94215c98ca8e643184ce",
+      "rustc_expected": 0,
+      "native_expected": 0,
+      "stdout": "",
+      "stderr": "",
+      "independent_manifest": "declared-native.json"
+    }
+  ]
+}
