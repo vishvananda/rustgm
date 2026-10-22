@@ -25,7 +25,7 @@ impl super::model::Declarations {
         report: &crate::resolve::expansion::Report,
         mut key: crate::resolve::unit::NodeKey,
     ) -> Option<ConstId> {
-        use crate::syntax::ast::{BlockFlavor, Kind, TypeFlavor};
+        use crate::syntax::ast::{BlockFlavor, Kind};
         let mut block = false;
         loop {
             let ast = &report.package.unit(key.file).configured.ast;
@@ -37,16 +37,6 @@ impl super::model::Declarations {
                 } if statements.start == statements.end && !block => {
                     block = true;
                     key.node = node;
-                }
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => {
-                    let nodes = ast.list(elements);
-                    if nodes.len() != 1 {
-                        return None;
-                    }
-                    key.node = nodes[0];
                 }
                 _ => break,
             }

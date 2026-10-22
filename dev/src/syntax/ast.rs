@@ -93,9 +93,9 @@ pub enum PatternFlavor {
     Or,
 }
 
+/// Compound type shapes. A path type is stored as its path node alone.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TypeFlavor {
-    Path,
     Tuple,
     Slice,
     Array,
@@ -393,10 +393,42 @@ impl<L> Default for Syntax<L> {
     }
 }
 
+/// A path's written segments. A relative path of one plain name is stored as
+/// that `Name` node alone, so its single segment is the path node itself.
+#[derive(Clone, Copy, Debug)]
+pub enum Segments<'a> {
+    List(&'a [NodeId]),
+    One([NodeId; 1]),
+}
+
+impl std::ops::Deref for Segments<'_> {
+    type Target = [NodeId];
+    fn deref(&self) -> &[NodeId] {
+        match self {
+            Self::List(list) => list,
+            Self::One(one) => one,
+        }
+    }
+}
+
 impl<L> Syntax<L> {
     #[must_use]
     pub fn list(&self, range: List) -> &[NodeId] {
         &self.edges[range.start as usize..range.end as usize]
+    }
+    /// Whether a path is absolute and its segments, for a written `Path` or a
+    /// compact one-name path; `None` for every other node kind. A `Name` in a
+    /// lifetime or shorthand-field position is not a path: callers decide by
+    /// syntactic position.
+    #[must_use]
+    pub fn path_segments(&self, id: NodeId) -> Option<(bool, Segments<'_>)> {
+        match self.nodes[id.get() as usize].kind {
+            Kind::Path { absolute, segments } => {
+                Some((absolute, Segments::List(self.list(segments))))
+            }
+            Kind::Name(_) => Some((false, Segments::One([id]))),
+            _ => None,
+        }
     }
     #[must_use]
     pub fn node(&self, id: NodeId) -> Node {

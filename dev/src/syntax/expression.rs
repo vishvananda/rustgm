@@ -482,10 +482,15 @@ impl<'source> Parser<'source, '_> {
                     end: token.end,
                 }),
             )?;
-            self.scratch.push(segment);
             if !self.eat(P::ColonColon)? {
+                if !absolute && self.scratch.len() == mark {
+                    // A relative path of one plain name is that name alone.
+                    return Ok(segment);
+                }
+                self.scratch.push(segment);
                 break;
             }
+            self.scratch.push(segment);
         }
         let segments = self.list(mark)?;
         self.node(start, Kind::Path { absolute, segments })

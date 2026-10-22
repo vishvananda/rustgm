@@ -222,19 +222,21 @@ impl Checker<'_> {
                 }
                 Ok(PatternKind::Or(Alternatives { start, end }))
             }
-            Kind::Path { .. } | Kind::Qualified { .. }
+            // One-name paths are their own node, so a single-name primitive constant
+            // (for example through an import) arrives as `Name`.
+            Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
                 if super::super::primitive_constants::selected(self.facts, self.key(node))
                     .map_err(|e| self.error(node, e))?
                     .is_some() =>
             {
                 self.scalar_pattern(node, term)
             }
-            Kind::Binding { .. } | Kind::Path { .. } | Kind::Qualified { .. }
+            Kind::Binding { .. } | Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
                 if self.pattern_constant(node).is_some() =>
             {
                 self.constant_pattern(node, term, id, constant)
             }
-            Kind::Binding { .. } | Kind::Path { .. } => {
+            Kind::Binding { .. } | Kind::Name(_) | Kind::Path { .. } => {
                 let variant = self.pattern_constructor(node, node, term)?;
                 if self.facts.members.variants[variant.0 as usize].shape != Shape::Unit {
                     return Err(
@@ -302,6 +304,7 @@ impl Checker<'_> {
                     ..
                 }
                 | Kind::StructPattern { .. }
+                | Kind::Name(_)
                 | Kind::Path { .. }
         ) || matches!(self.kind(node), Kind::Binding { .. })
             && self

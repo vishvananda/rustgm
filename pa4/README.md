@@ -92,8 +92,10 @@ node is printed as `node ID START END TAG FIELDS`. IDs are zero-based arena
 indices. Spans are half-open normalized source byte offsets. Every child ID
 precedes its parent; lists use `[0,1,2]`, an empty list `[]`, and missing optional
 children `-`. Booleans use `true`/`false`. Names and labels use PA1's quoted byte
-escaping. Construction includes path/name atoms used while forming bindings;
-the `root` record identifies the reachable expression.
+escaping. A relative path of one plain name is its `name` node alone, and a
+path type is its path node; neither has a wrapper node. An identifier pattern
+replaces the name it was parsed from, so every node is reachable from the `root`
+record, which identifies the expression.
 
 | Tag | Fields after the tag |
 | --- | --- |
@@ -140,7 +142,7 @@ the `root` record identifies the reachable expression.
 Unary names are `negate`, `not`, `deref`, `borrow`, `borrow-mut`, `raw-const`,
 `raw-mut`, `try`, `await`. Block flavors are `Plain`, `Unsafe`, `Const`, `Async`,
 `AsyncMove`. Pattern flavors are `Tuple`, `Slice`, `Variant`, `Or`. Type flavors
-are `Path`, `Tuple`, `Slice`, `Array`, `Ref`, `RefMut`, `PointerConst`, `PointerMut`.
+are `Tuple`, `Slice`, `Array`, `Ref`, `RefMut`, `PointerConst`, `PointerMut`.
 Reference type children contain an optional lifetime name followed by the type.
 An array type's second child is its length expression.
 

@@ -257,17 +257,6 @@ impl Checker<'_> {
             }
             key.node = match self.kind(key) {
                 Kind::Group(node) if parentheses => node,
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => *self
-                    .report
-                    .package
-                    .unit(key.file)
-                    .configured
-                    .ast
-                    .list(elements)
-                    .first()?,
                 _ => return None,
             };
         }
@@ -367,18 +356,6 @@ impl Checker<'_> {
             }
             key.node = match self.kind(key) {
                 Kind::Group(node) => node,
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => *self
-                    .report
-                    .package
-                    .unit(key.file)
-                    .configured
-                    .ast
-                    .list(elements)
-                    .first()
-                    .ok_or_else(|| self.error(key, "empty trait bound"))?,
                 _ => return Err(self.error(key, "bound requires a resolved trait")),
             };
         }

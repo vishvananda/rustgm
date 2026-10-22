@@ -6,7 +6,7 @@ use crate::{
         unit::NodeKey,
     },
     sema::{constants, generics::captures::Captures, model::Declarations},
-    syntax::ast::{Kind, TypeFlavor},
+    syntax::ast::Kind,
     types::{
         TypeId,
         arguments::{ConstId, Constant},
@@ -84,15 +84,7 @@ pub(super) fn written(
 ) -> super::generics::DeferredArgument {
     use super::generics::DeferredArgument;
     use crate::resolve::model::{Namespace, Target};
-    let mut source = key;
-    if let Kind::Type {
-        flavor: TypeFlavor::Path,
-        elements,
-    } = Declarations::kind(report, source)
-        && let [node] = report.package.unit(key.file).configured.ast.list(elements)
-    {
-        source.node = *node;
-    }
+    let source = key;
     if matches!(Declarations::kind(report, source), Kind::InferType) {
         return DeferredArgument::Infer;
     }
@@ -157,7 +149,7 @@ impl Constants<'_> {
     /// Preserve standalone symbolic parameters; otherwise qualify the anonymous input once.
     pub(super) fn input(
         &mut self,
-        mut key: NodeKey,
+        key: NodeKey,
         ty: TypeId,
         module: Option<ModuleId>,
     ) -> Result<Input, Error> {
@@ -170,21 +162,6 @@ impl Constants<'_> {
                 ));
             }
             return Ok(Input::Parameter(id));
-        }
-        if let Kind::Type {
-            flavor: TypeFlavor::Path,
-            elements,
-        } = Declarations::kind(self.report, key)
-            && let Some(node) = self
-                .report
-                .package
-                .unit(key.file)
-                .configured
-                .ast
-                .list(elements)
-                .first()
-        {
-            key.node = *node;
         }
         let module = module.ok_or_else(|| {
             Declarations::error(self.report, key, "missing const argument module")

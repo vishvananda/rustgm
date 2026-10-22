@@ -2,7 +2,7 @@
 use super::{
     Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error, keyword,
 };
-use crate::syntax::{ast::TypeFlavor, item::GenericFlavor};
+use crate::syntax::item::GenericFlavor;
 
 use super::fragment::FragmentKind as F;
 
@@ -60,13 +60,11 @@ impl Parser<'_, '_> {
             return Ok(node);
         }
         if type_position && let Some(node) = self.interpolated(&[F::Type])? {
-            if let Kind::Type {
-                flavor: TypeFlavor::Path,
-                elements,
-            } = self.ast.node(node).kind
-                && let [path] = self.ast.list(elements)
-            {
-                return Ok(*path);
+            if matches!(
+                self.ast.node(node).kind,
+                Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. }
+            ) {
+                return Ok(node);
             }
             return Err(error(
                 self.ast.node(node).span.start,
@@ -141,6 +139,10 @@ impl Parser<'_, '_> {
             }
             if next != Some(TokenKind::Punctuation(P::ColonColon)) {
                 if self.scratch.len() == mark {
+                    // A relative path of one plain name is that name alone.
+                    if !absolute && matches!(self.ast.node(segment).kind, Kind::Name(_)) {
+                        return Ok(segment);
+                    }
                     let segments = self.single(segment)?;
                     return self.node(start, Kind::Path { absolute, segments });
                 }
@@ -260,14 +262,8 @@ impl Parser<'_, '_> {
         if self.eat(P::Bang)? {
             return self.macro_capture(path, crate::syntax::ast::MacroContext::Type);
         }
-        let elements = self.single(path)?;
-        self.node(
-            start,
-            Kind::Type {
-                flavor: TypeFlavor::Path,
-                elements,
-            },
-        )
+        // A path type is its path node; no wrapper records the type position.
+        Ok(path)
     }
 
     pub(super) fn generics(&mut self) -> Result<List, LexError> {

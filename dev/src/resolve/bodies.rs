@@ -242,10 +242,11 @@ impl Resolver<'_> {
                     self.prepare_slice_method(c, node, name)?;
                     self.note_clone_name(c, node, name);
                 }
-                let Kind::Path { segments, .. } = self.kind(c, path) else {
+                let Some((_, segments)) =
+                    self.package.unit(c.file).configured.ast.path_segments(path)
+                else {
                     return Err(self.error(c, node, "qualified suffix requires parsed segments"));
                 };
-                let segments = self.package.unit(c.file).configured.ast.list(segments);
                 self.facts.qualified_paths.insert(
                     NodeKey { file: c.file, node },
                     super::model::QualifiedPath {
@@ -496,9 +497,8 @@ impl Resolver<'_> {
         });
         // Paths of plain name segments carry no generic arguments.
         let ast = &self.package.unit(c.file).configured.ast;
-        if let Kind::Path { segments, .. } = ast.node(node).kind
-            && ast
-                .list(segments)
+        if let Some((_, segments)) = ast.path_segments(node)
+            && segments
                 .iter()
                 .all(|segment| matches!(ast.node(*segment).kind, Kind::Name(_)))
         {
@@ -566,10 +566,10 @@ impl Resolver<'_> {
         namespace: Namespace,
         owner: DefId,
     ) -> Result<(), Error> {
-        let Kind::Path { segments, .. } = self.kind(c, node) else {
+        let Some((_, segments)) = self.package.unit(c.file).configured.ast.path_segments(node)
+        else {
             return Err(self.error(c, node, "associated path requires parsed segments"));
         };
-        let segments = self.package.unit(c.file).configured.ast.list(segments);
         let prefix = start
             .checked_sub(1)
             .and_then(|i| segments.get(i))
@@ -646,10 +646,6 @@ impl Resolver<'_> {
         let mut arguments = None;
         loop {
             let children = match self.kind(c, target) {
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => elements,
                 Kind::Path {
                     absolute: false,
                     segments,
@@ -705,24 +701,8 @@ impl Resolver<'_> {
     fn generic_arguments(&mut self, c: Context, arguments: List) -> Result<(), Error> {
         for offset in arguments.start..arguments.end {
             let node = self.package.unit(c.file).configured.ast.edges[offset as usize];
-            let path = if let Kind::Type {
-                flavor: TypeFlavor::Path,
-                elements,
-            } = self.kind(c, node)
-            {
-                self.package
-                    .unit(c.file)
-                    .configured
-                    .ast
-                    .list(elements)
-                    .first()
-                    .copied()
-                    .unwrap_or(node)
-            } else {
-                node
-            };
-            if matches!(self.kind(c, path), Kind::Path { .. } | Kind::Name(_)) {
-                self.argument_reference(c, path, Namespace::Type, true)?;
+            if matches!(self.kind(c, node), Kind::Path { .. } | Kind::Name(_)) {
+                self.argument_reference(c, node, Namespace::Type, true)?;
             } else {
                 let ns = if matches!(
                     self.kind(c, node),

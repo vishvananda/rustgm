@@ -63,7 +63,7 @@ fn associated_contracts_and_default_overrides_have_hand_checked_rows() -> TestRe
     ] {
         assert!(text.lines().any(|line| line == row), "{row}: {text}");
     }
-    assert!(text.ends_with("type-members=3 constant-members=2 result-contracts=1 result-bounds=2 impl-constants=2 constant-uses=2 constant-dispatches=2 normalized-nodes=4 normalized-definitions=0\n"));
+    assert!(text.ends_with("type-members=3 constant-members=2 result-contracts=1 result-bounds=2 impl-constants=2 constant-uses=2 constant-dispatches=2 normalized-nodes=2 normalized-definitions=0\n"));
     Ok(())
 }
 
@@ -76,7 +76,7 @@ fn mixed_arguments_and_early_dispatch_keep_complete_selected_identities() -> Tes
         rustc::qualify(name, source, true)?;
         let text = inspect(source)?;
         if source == MIXED {
-            assert!(text.lines().any(|line|line=="constant-use source=0:114 definition=18 arguments=[region:static,type:19,type:11,const:16:0x00000000000000000000000000000003]"));
+            assert!(text.lines().any(|line|line=="constant-use source=0:72 definition=18 arguments=[region:static,type:19,type:11,const:16:0x00000000000000000000000000000003]"));
             assert!(
                 text.lines()
                     .any(|line| line == "normalized-definition def=23 original=29 result=31")

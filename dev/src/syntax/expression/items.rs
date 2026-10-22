@@ -743,10 +743,10 @@ impl Parser<'_, '_> {
     fn opaque_use_path(&mut self) -> Result<(NodeId, bool), LexError> {
         let path = self.rich_path(true)?;
         let node = self.ast.node(path);
-        let Kind::Path { segments, .. } = node.kind else {
+        let Some((_, segments)) = self.ast.path_segments(path) else {
             return Err(error(node.span.start, "use requires a simple path"));
         };
-        if self.ast.list(segments).iter().any(|node| {
+        if segments.iter().any(|node| {
             !matches!(
                 self.ast.node(*node).kind,
                 Kind::Name(_) | Kind::CrateRoot(_)
@@ -782,8 +782,20 @@ impl Parser<'_, '_> {
                     break;
                 }
             }
-            let segments = self.list(mark)?;
-            prefix = Some(self.node(start, Kind::Path { absolute, segments })?);
+            prefix = Some(
+                if !absolute
+                    && self.scratch.len() == mark + 1
+                    && matches!(self.ast.node(self.scratch[mark]).kind, Kind::Name(_))
+                {
+                    // A relative path of one plain name is that name alone.
+                    let name = self.scratch[mark];
+                    self.scratch.truncate(mark);
+                    name
+                } else {
+                    let segments = self.list(mark)?;
+                    self.node(start, Kind::Path { absolute, segments })?
+                },
+            );
         }
         if absolute && prefix.is_none() {
             prefix = Some(self.node(

@@ -288,6 +288,8 @@ impl Checker<'_> {
             .spelling(span)
             .map_err(|e| self.error(node, e.message))?;
         match name {
+            // A one-name type path is also a `Name`; only a quoted spelling is a lifetime.
+            _ if !name.starts_with('\'') => Err(self.error(node, "expected lifetime argument")),
             "'static" => Ok(RegionId::STATIC),
             "'_" => self.body_region(node, BodyRegionOrigin::ItemArgument),
             _ => {

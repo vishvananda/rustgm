@@ -177,10 +177,6 @@ impl<'a> Heads<'a> {
         let ast = &self.report.package.unit(key.file).configured.ast;
         let node = match ast.node(key.node).kind {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => Some(node),
-            Kind::Type {
-                flavor: TypeFlavor::Path,
-                elements,
-            } => ast.list(elements).first().copied(),
             _ => None,
         };
         if let Some(node) = node {
@@ -223,7 +219,6 @@ impl<'a> Heads<'a> {
     fn syntax_shape(kind: Kind) -> Option<Rigid> {
         Some(match kind {
             Kind::Type { flavor, .. } => match flavor {
-                TypeFlavor::Path => return None,
                 TypeFlavor::Tuple => Rigid::Tuple,
                 TypeFlavor::Slice => Rigid::Slice,
                 TypeFlavor::Array => Rigid::Array,

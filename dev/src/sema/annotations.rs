@@ -207,13 +207,6 @@ impl Scratch {
                     self.children.push(term(host, NodeKey { node, ..key })?);
                 }
                 match flavor {
-                    TypeFlavor::Path => {
-                        return self
-                            .children
-                            .first()
-                            .copied()
-                            .ok_or_else(|| error(host, key, "missing type path"));
-                    }
                     TypeFlavor::Tuple => Constructor::Tuple,
                     TypeFlavor::Slice => Constructor::Slice,
                     TypeFlavor::Array => Constructor::Array(array_length(host, key, children)?),

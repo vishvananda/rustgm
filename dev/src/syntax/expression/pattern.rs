@@ -163,26 +163,17 @@ impl Parser<'_, '_> {
             }
             return Ok(path);
         }
-        let simple = match self.ast.node(path).kind {
-            Kind::Path {
-                absolute: false,
-                segments,
-            } if self.ast.list(segments).len() == 1 => {
-                let segment = self.ast.node(self.ast.list(segments)[0]);
-                if matches!(segment.kind, Kind::Name(_)) {
-                    Some(segment.span)
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-        let Some(name) = simple else {
+        let Kind::Name(name) = self.ast.node(path).kind else {
             if by_ref || mutable {
                 return Err(error(start, "binding modifier requires an identifier"));
             }
             return Ok(path);
         };
+        // The one-name path was the newest node and has no other owner: the
+        // binding replaces it instead of leaving it unreachable.
+        if path.get() as usize + 1 == self.ast.nodes.len() {
+            self.ast.nodes.pop();
+        }
         let subpattern = if self.eat(P::At)? {
             Some(self.pattern(false)?)
         } else {
@@ -251,6 +242,7 @@ impl Parser<'_, '_> {
                     self.ast.node(bound).kind,
                     Kind::Literal(_)
                         | Kind::DeferredLiteral(_)
+                        | Kind::Name(_)
                         | Kind::Path { .. }
                         | Kind::Qualified { .. }
                         | Kind::Unary {
@@ -510,9 +502,8 @@ impl Parser<'_, '_> {
             self.expect(P::CloseBracket)?;
             flavor
         } else {
-            let path = self.path()?;
-            self.scratch.push(path);
-            TypeFlavor::Path
+            // A path type is its path node; no wrapper records the type position.
+            return self.path();
         };
         let elements = self.list(mark)?;
         self.node(start, Kind::Type { flavor, elements })

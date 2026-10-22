@@ -37,7 +37,7 @@ impl Checker<'_> {
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             return Ok(());
         }
-        if matches!(self.kind(key), Kind::Path { .. })
+        if matches!(self.kind(key), Kind::Name(_) | Kind::Path { .. })
             && let Some(owner) = self.generic_use_owner(key)
         {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;

@@ -603,7 +603,7 @@ impl Checker<'_> {
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             self.drain(steps, limit)?;
         }
-        if matches!(kind, Kind::Path { .. })
+        if matches!(kind, Kind::Name(_) | Kind::Path { .. })
             && let Some(owner) = self.generic_use_owner(key)
         {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
@@ -1416,6 +1416,10 @@ impl Checker<'_> {
                 .unit(key.file)
                 .spelling(span)
                 .map_err(|e| self.error(lifetime, e.message))?;
+            // A one-name type path is also a `Name`; only a quoted spelling is a lifetime.
+            if !name.starts_with('\'') {
+                return Err(self.error(lifetime, "invalid lifetime syntax"));
+            }
             if name == "'static" {
                 return Ok(RegionId::STATIC);
             }
@@ -1520,7 +1524,6 @@ impl Checker<'_> {
             node,
         })?;
         let kind = match flavor {
-            TypeFlavor::Path => return Ok(element),
             TypeFlavor::Slice => Type::Slice(element),
             TypeFlavor::PointerConst | TypeFlavor::PointerMut => Type::Pointer {
                 mutable: flavor == TypeFlavor::PointerMut,

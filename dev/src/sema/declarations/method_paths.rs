@@ -200,22 +200,6 @@ impl Checker<'_> {
                 return Some(item);
             }
             key.node = match self.kind(key) {
-                Kind::Type {
-                    flavor: crate::syntax::ast::TypeFlavor::Path,
-                    elements,
-                } => {
-                    let [node] = self
-                        .report
-                        .package
-                        .unit(key.file)
-                        .configured
-                        .ast
-                        .list(elements)
-                    else {
-                        return None;
-                    };
-                    *node
-                }
                 Kind::Group(node) | Kind::Attributed { value: node, .. } => node,
                 _ => return None,
             };

@@ -375,7 +375,10 @@ impl Resolver<'_> {
                     self.pattern(c, child, bindings, aliases)?;
                 }
             }
-            Kind::Path { .. } | Kind::Qualified { .. } => self.visit(c, node, Namespace::Value)?,
+            // A one-name path pattern only arises from an opaque path fragment.
+            Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. } => {
+                self.visit(c, node, Namespace::Value)?;
+            }
             Kind::PatternRange { start, end, .. } => {
                 for bound in [start, end].into_iter().flatten() {
                     if let Kind::Binding { name: span, .. } = self.kind(c, bound) {

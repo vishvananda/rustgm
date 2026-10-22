@@ -203,18 +203,6 @@ impl Checker<'_> {
             }
             key.node = match self.kind(key) {
                 crate::syntax::ast::Kind::Group(node) => node,
-                crate::syntax::ast::Kind::Type {
-                    flavor: crate::syntax::ast::TypeFlavor::Path,
-                    elements,
-                } => *self
-                    .report
-                    .package
-                    .unit(key.file)
-                    .configured
-                    .ast
-                    .list(elements)
-                    .first()
-                    .ok_or_else(|| self.error(key, "empty trait implementation path"))?,
                 _ => return Err(self.error(key, "implementation requires a resolved trait path")),
             };
         }
