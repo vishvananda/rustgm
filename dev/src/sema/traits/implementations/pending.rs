@@ -1,5 +1,6 @@
 //! Pending headers are scheduling dependencies, never implementation evidence.
 mod collections;
+mod progression_heads;
 use super::{DefId, Head, Identity, Subject};
 use crate::types::infer::{Context, Error};
 use std::collections::{HashMap, HashSet};

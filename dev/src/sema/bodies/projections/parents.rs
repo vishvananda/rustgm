@@ -42,16 +42,68 @@ impl Checker<'_> {
         Ok(Completion::Waiting(query, false))
     }
 
-    /// A parent proof may determine inputs, but never discharges member formation.
-    /// The original projection remains registered until its whole normal form finishes.
-    pub(super) fn advance_projection_parent(
-        &mut self,
-        query: &mut Query,
-        resolved: bool,
-    ) -> Result<Option<selection::Dependency>, Error> {
-        if matches!(query.parent.as_deref(), Some(Parent::Proven))
-            || (resolved && query.parent.is_none())
+    pub(super) fn range_parent_readiness(&mut self, query: &Query) -> Result<bool, Error> {
+        if self.report.resolution.builtin_traits.ranges().is_none()
+            || self
+                .facts
+                .iteration
+                .as_deref()
+                .and_then(|r| r.ranges.as_deref())
+                .is_some_and(|r| r.complete)
         {
+            return Ok(false);
+        }
+        let input = match query.task {
+            Task::Normalize { input, .. } | Task::Symbolic { input, .. } => input,
+            Task::Contract(_) => return Ok(false),
+        };
+        let application = self
+            .state
+            .infer
+            .projection_application(&self.facts.types, input)
+            .map_err(|e| self.error(query.node, e))?;
+        let canonical = self
+            .facts
+            .iteration
+            .as_deref()
+            .ok_or_else(|| self.error(query.node, "missing iteration contracts"))?
+            .canonical;
+        if !application
+            .predicate
+            .trait_arguments()
+            .is_some_and(|(item, _)| {
+                canonical
+                    .declarations
+                    .iter()
+                    .any(|d| d.definition.0 == item.0)
+            })
+        {
+            return Ok(false);
+        }
+        crate::sema::iteration::range_originals::requested_owner(
+            self.report,
+            &self.facts.types,
+            &mut self.state.infer,
+            application.predicate.subject(),
+        )
+        .map(|owner| owner.is_some())
+        .map_err(|e| self.error(query.node, e))
+    }
+
+    fn parent_application(
+        &mut self,
+        query: &Query,
+        resolved: bool,
+    ) -> Result<Option<crate::types::infer::projections::Application>, Error> {
+        let proven = matches!(query.parent.as_deref(), Some(Parent::Proven));
+        let latent_ranges = self.report.resolution.builtin_traits.ranges().is_some()
+            && !self
+                .facts
+                .iteration
+                .as_deref()
+                .and_then(|r| r.ranges.as_deref())
+                .is_some_and(|r| r.complete);
+        if !latent_ranges && (proven || (resolved && query.parent.is_none())) {
             return Ok(None);
         }
         let input = match query.task {
@@ -64,6 +116,46 @@ impl Checker<'_> {
             .infer
             .projection_application(&self.facts.types, input)
             .map_err(|e| self.error(node, e))?;
+        if (proven || (resolved && query.parent.is_none()))
+            && self
+                .facts
+                .generics
+                .implementations
+                .as_ref()
+                .map(|registry| {
+                    registry.selection_goal_ready(
+                        &self.facts.types,
+                        &mut self.state.infer,
+                        &application.predicate,
+                    )
+                })
+                .transpose()
+                .map_err(|e| self.error(node, e))?
+                .unwrap_or(true)
+        {
+            return Ok(None);
+        }
+        Ok(Some(application))
+    }
+
+    /// A parent proof may determine inputs, but never discharges member formation.
+    /// The original projection remains registered until its whole normal form finishes.
+    pub(super) fn advance_projection_parent(
+        &mut self,
+        query: &mut Query,
+        resolved: bool,
+    ) -> Result<Option<selection::Dependency>, Error> {
+        let Some(application) = self.parent_application(query, resolved)? else {
+            return Ok(None);
+        };
+        let proven = matches!(query.parent.as_deref(), Some(Parent::Proven));
+        let node = query.node;
+        if proven {
+            // Input refinement can reveal a latent matching canonical header
+            // after an earlier parent proof. Keep that proof, but recheck the
+            // current complete goal through the retained readiness protocol.
+            query.parent = None;
+        }
         let mut reservation = Reservation::default();
         let mut refined = false;
         let first = self.trait_region_start(node)?;

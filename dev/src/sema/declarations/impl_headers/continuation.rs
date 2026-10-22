@@ -141,6 +141,10 @@ impl Checker<'_> {
             self.activate_iterator_clone(id)?;
             return Ok(true);
         }
+        if super::super::iteration::range_contracts::owns(self.report, id) {
+            self.activate_range(id)?;
+            return Ok(true);
+        }
         if super::super::iteration::collections::owns(self.report, id) {
             self.activate_collection(id)?;
             return Ok(true);

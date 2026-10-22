@@ -32,7 +32,8 @@ impl Resolver<'_> {
         }
         self.reserve_operator_comparisons()?;
         self.reserve_iteration()?;
-        self.reserve_cloning()
+        self.reserve_cloning()?;
+        self.reserve_ranges()
     }
     pub fn visit_list(&mut self, c: Context, list: List, ns: Namespace) -> Result<(), Error> {
         for offset in list.start..list.end {
@@ -108,6 +109,17 @@ impl Resolver<'_> {
             Kind::LetCondition { pattern, value } => {
                 self.visit(c, value, Namespace::Value)?;
                 self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())
+            }
+            Kind::Range {
+                inclusive: false,
+                start: Some(start),
+                end: Some(end),
+            } => {
+                self.facts
+                    .builtin_traits
+                    .note_range(c.module, NodeKey { file: c.file, node });
+                self.visit(c, start, Namespace::Value)?;
+                self.visit(c, end, Namespace::Value)
             }
             Kind::For {
                 pattern,

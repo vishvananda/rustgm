@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}mod core{pub mod ops{pub struct Range{pub start:u8,pub end:u8}}}fn main(){let _=core::ops::Range{start:7,end:9};let mut n=0u8;for x in 1u8..3u8{n+=x;}check(n==3);}

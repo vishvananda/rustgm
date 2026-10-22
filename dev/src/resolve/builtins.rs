@@ -18,7 +18,7 @@ pub use library::{LibraryTypes, Nominal as LibraryNominal, SliceLength};
 pub use traits::{
     BuiltinTrait, Callable, CloneImplementation, Cloning, CollectionDeclaration, Collections,
     ComparisonMembers, Equality, Iteration, IterationBlanket, IterationDeclaration, Language,
-    LanguageOutput, MutableCollections, Traits,
+    LanguageOutput, MutableCollections, RangeImplementation, Ranges, Traits,
 };
 
 impl Resolver<'_> {

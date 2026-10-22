@@ -9,10 +9,11 @@ use crate::{
     },
 };
 pub(super) struct Heads {
-    iterator: ItemId,
-    entries: Vec<(DefId, Collection)>,
-    mutable_iterator: Option<ItemId>,
-    cloning: Option<DefId>,
+    pub(super) iterator: Option<ItemId>,
+    pub(super) entries: Vec<(DefId, Collection)>,
+    pub(super) mutable_iterator: Option<ItemId>,
+    pub(super) cloning: Option<DefId>,
+    pub(super) ranges: Option<Box<super::progression_heads::Heads>>,
 }
 #[derive(Clone, Copy)]
 enum Shape {
@@ -27,7 +28,15 @@ impl Pending {
     pub(in super::super) fn collection_owner(&self, owner: DefId) -> bool {
         self.owners.contains_key(&owner)
             && self.collections.as_deref().is_some_and(|rules| {
-                rules.entries.iter().any(|(id, _)| *id == owner) || rules.cloning == Some(owner)
+                rules.entries.iter().any(|(id, _)| *id == owner)
+                    || rules.cloning == Some(owner)
+                    || rules.ranges.as_deref().is_some_and(|r| {
+                        r.owners.contains(&owner)
+                            && self
+                                .owners
+                                .get(&owner)
+                                .is_some_and(|(_, head)| *head == Some(Head::Nominal(r.nominal)))
+                    })
             })
     }
     pub(in super::super) fn only_collections(&self) -> bool {
@@ -125,7 +134,8 @@ impl Pending {
             None
         };
         self.collections = Some(Box::new(Heads {
-            iterator: ItemId(canonical.iterator.0),
+            iterator: Some(ItemId(canonical.iterator.0)),
+            ranges: None,
             entries,
             mutable_iterator: canonical.mutable.as_deref().map(|m| ItemId(m.iterator.0)),
             cloning,
@@ -192,7 +202,11 @@ impl Pending {
                 let actual = if let Some(shape) = shape {
                     shape
                 } else {
-                    let actual = classify(context, rules.iterator, rules.mutable_iterator)?;
+                    let actual = classify(
+                        context,
+                        rules.iterator.ok_or(Error::InvalidIdentity)?,
+                        rules.mutable_iterator,
+                    )?;
                     shape = Some(actual);
                     actual
                 };

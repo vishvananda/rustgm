@@ -88,6 +88,7 @@ pub(crate) fn append(
     }
     super::collection_factories::append(report, facts, templates, contracts)?;
     super::clone_factories::append(report, facts, templates, contracts)?;
+    super::range_factories::append(report, facts, templates, contracts)?;
     Ok(())
 }
 fn build(

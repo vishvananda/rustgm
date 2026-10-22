@@ -1,14 +1,9 @@
 //! Library nominal schemas publish ordinary fields, parameters and constructors directly.
+mod fields;
 use super::{Checker, DefId, Error, ItemId, State, Type};
 use crate::{
-    resolve::{
-        model::{Access, LibraryNominal},
-        unit::NodeKey,
-    },
-    sema::{
-        generics::Parameter,
-        members::{Field, Name},
-    },
+    resolve::{model::LibraryNominal, unit::NodeKey},
+    sema::generics::Parameter,
     support::library_types::{LibraryField, LibraryParameter, LibraryTag, LibraryType},
     syntax::item::Shape,
     types::{
@@ -265,7 +260,10 @@ impl super::comparisons::LibraryContracts<'_> {
         let properties = crate::types::copy::Properties {
             copy: !matches!(
                 declaration.kind,
-                LibraryType::AtomicU32 | LibraryType::SliceIter | LibraryType::SliceIterMut
+                LibraryType::AtomicU32
+                    | LibraryType::SliceIter
+                    | LibraryType::SliceIterMut
+                    | LibraryType::Range
             ),
             clone_: !matches!(
                 declaration.kind,
@@ -301,8 +299,19 @@ impl super::comparisons::LibraryContracts<'_> {
         let variant = declaration.variants[ordinal];
         let ordinal = u32::try_from(ordinal)
             .map_err(|_| self.error(declaration.origin, "too many library variants"))?;
-        let fields = self.library_field(declaration, types, variant.field)?;
-        let field_types = fields.into_iter().collect::<Vec<_>>();
+        let field_types = if variant.field == Some(LibraryField::RangeBounds) {
+            if declaration.kind != LibraryType::Range {
+                return Err(self.error(declaration.origin, "range fields require canonical Range"));
+            }
+            let [Argument::Type(element)] = types else {
+                return Err(self.error(declaration.origin, "invalid Range field schema"));
+            };
+            vec![*element, *element]
+        } else {
+            self.library_field(declaration, types, variant.field)?
+                .into_iter()
+                .collect::<Vec<_>>()
+        };
         let fields = self.library_member_fields(declaration, &field_types)?;
         let shape = if declaration.kind.is_struct() {
             Shape::Record
@@ -376,81 +385,6 @@ impl super::comparisons::LibraryContracts<'_> {
             self.facts.definitions[definition.0 as usize] = Some(ty);
         }
         Ok((result, constructors))
-    }
-    fn library_member_fields(
-        &mut self,
-        declaration: &LibraryNominal,
-        field_types: &[TypeId],
-    ) -> Result<Vec<Field>, Error> {
-        let name = if declaration.kind.is_struct() {
-            self.facts
-                .members
-                .names
-                .intern("value")
-                .map(Name::Named)
-                .map_err(|e| self.error(declaration.origin, e))?
-        } else {
-            Name::Index(0)
-        };
-        let fields = field_types
-            .iter()
-            .copied()
-            .map(|ty| Field {
-                origin: crate::sema::members::Origin::Library(declaration.origin),
-                name,
-                ty,
-                access: if declaration.kind.is_struct() {
-                    Access::ExternalPrivate
-                } else {
-                    Access::Public
-                },
-            })
-            .collect::<Vec<_>>();
-        Ok(fields)
-    }
-    fn library_field(
-        &mut self,
-        declaration: &LibraryNominal,
-        types: &[Argument],
-        field: Option<LibraryField>,
-    ) -> Result<Option<TypeId>, Error> {
-        field
-            .map(|field| match field {
-                LibraryField::U32 => Ok(TypeId::primitive(crate::types::Primitive::U32)),
-                LibraryField::Parameter(index) => match types.get(index as usize) {
-                    Some(Argument::Type(ty)) => Ok(*ty),
-                    _ => Err(self.error(declaration.origin, "invalid library field parameter")),
-                },
-                LibraryField::SharedSlice | LibraryField::MutableSlice => {
-                    let [Argument::Lifetime(region), Argument::Type(element)] = types else {
-                        return Err(
-                            self.error(declaration.origin, "invalid shared slice field schema")
-                        );
-                    };
-                    if declaration.kind
-                        != if field == LibraryField::MutableSlice {
-                            LibraryType::SliceIterMut
-                        } else {
-                            LibraryType::SliceIter
-                        }
-                    {
-                        return Err(self.error(
-                            declaration.origin,
-                            "shared slice field requires canonical Iter",
-                        ));
-                    }
-                    let slice = self.intern(declaration.origin, Type::Slice(*element))?;
-                    self.intern(
-                        declaration.origin,
-                        Type::Reference {
-                            mutable: field == LibraryField::MutableSlice,
-                            region: *region,
-                            referent: slice,
-                        },
-                    )
-                }
-            })
-            .transpose()
     }
     fn library_constructor(
         &mut self,

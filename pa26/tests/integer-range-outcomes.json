@@ -1,0 +1,951 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-exclusive.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b2ed1ff1844c9611e08518598b000c82872188de06224fa310bf714b7b0e8465",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-exclusive.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-reversed.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "eecf56ba89855e05178e68fcb1784acd339f445648d5dd6503e007c03199d137",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-reversed.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/named-range.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b970b10e50b189e15d8f78f9f56b57ad3ff02d38cb2259573487aa5565c792b1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/named-range.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-float-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "ad3b9116f6e78b6200a84a9d8555324422b4e3fbc68606e14caac7847092dd0e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-float-reject.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-to-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "8bd21a4c67d45ff00da1f862aa86fcdcb6c097b0bc1512284595e3ee3486cfce",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-to-reject.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-full-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "1dabf12424912fbcad6b8b74cf687005f11ab01dc169084a15fc44ebcda6833c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-full-reject.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/source-lookalike-range.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "ec815dc7771235c1c0426a568fc4be501e1138c6887ada07c6160785ab525be7",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/source-lookalike-range.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-inclusive-max.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "40532cb14a9bf70b47088742472df0d10fd2bf79b62bac462f7cfa5affa87adc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-inclusive-max.rs",
+      "required_gap": "Pinned Rust positive; required range family or executable Clone contract remains unimplemented.",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-from-break.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "503e9265c525734144ff5b3adb111648a27dfa6d6d2f072b429a9c3272a8c298",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-from-break.rs",
+      "required_gap": "Pinned Rust positive; required range family or executable Clone contract remains unimplemented.",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-char.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "5e93e20317050b79b99b6451f2788c24d44782b7e87449ae6e9acf6dcc70eb30",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/range-char.rs",
+      "required_gap": "Pinned Rust positive; required range family or executable Clone contract remains unimplemented.",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-u8.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "82207ee88c6215254580e79767534bdec5836cad1cbf4690a6ce7c213183da49",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-u8.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-u16.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "bef4f7b3f92a054285579d196e5c22b65d77fcec81660699c96a9bfceea8a419",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-u16.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-u32.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4094aacbdf964a427d5b8f34045533a6bc0978f8ac0d2940e85d40e52b0fea0d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-u32.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-u64.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b50c9203cec1549889ac4c6b5d8b4e4419e0f96e9dfdd8f6545bde82e2057c0f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-u64.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-u128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "8e4b6967ab50d9f039d2f1b2479195dd03531a8af2a68042f6a732687e54c1b2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-u128.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-usize.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "89dbb8141ca9e5008dc06a50d8603b3e9eec9a7e830d3b6e1b0df43c2896e456",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-usize.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-i8.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "10106c3ced2bdac76c2a4485c89a0976076ea405b22738f6cc43f35686840e20",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-i8.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-i16.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "2bb5c0dde441d965c05b4658854e3d869ba89c387919ac039ba16ff4e2485d3f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-i16.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-i32.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "cda8f287073a6b579456100b0d99ff32574266b9f7a2d074780fe7b6225fe04e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-i32.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-i64.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "7765bb29dd9f98bf24d8d508263dd62fa91829625134e2a4b00d3a10bf3943c2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-i64.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-i128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "197ac50438535da73b7271d5ac655d4ca10f4fbd53f0eac94ca53facda752e83",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-i128.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/integer-isize.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "e3780d3e95b803211e2b3313d897f5e958af8eed17ec968b60bcd573de7f4e37",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/integer-isize.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/default-inference.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4247d8c13310955531abd4ad36e6171a294eca87450e010f78f750809fc18df6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/default-inference.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/exclusive-max.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "c7a5c22eeab2914093cce6580105d852eeac20793452d59e3b04535a584968fc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/exclusive-max.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/qualified-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a61ec3b76f4d45c7f67c92bf66c95686f1799d6df136e1a256412270b800d38c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/qualified-next.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/reified-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "e59b43de259c7192b5f8bcce4db919ff509ec360ea56bd8b9bf61047f23198bf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/reified-next.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/alias-fields.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "64ed0800dc9918d6ccade2dfc02094068983afb568931ecac3c4531ccc1b1795",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/alias-fields.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/generic-iterator.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "9edc2a2bc688d9d295983d0c7f2492ef48388809a46e7fd6ab1fa13964311793",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/generic-iterator.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/mutable-blanket.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "3b9008557b08c0d894d64ae29eea42b5179f0ac9321ec6cc589b8441736e8e65",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/mutable-blanket.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/break-continue.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "c638b66b9ce8244d0a756bb25c8806fca671bd0f335cad8fe6c9ae6bbc49aeb8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/break-continue.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/formation-once.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "54b7bc176850aa2601054215ead614892ab74b187eacf54e07fa6ebb1455b80d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/formation-once.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/copy-range.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "2397775918066d831e86e7d1a0525f219bf92cde1df32823c4282494e91132a9",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/copy-range.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/source-shadow-syntax.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "f50acd232c1c3890cea7fa5427a0776ea9ad6550938c9a10884ca967baefd2fe",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/source-shadow-syntax.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/source-range-iterator.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "930cf88dfe4ba691275ad6ee8b705fab3f8faf20ec152e541985c3cafb093554",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/source-range-iterator.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/empty.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "606e8bf9c7182798d3f431586f5e47d61175ecb3242be5747291e08d8526f409",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/empty.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/mismatched-endpoint.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "e0e5715d24674d03fb7c54ab5264a11b5fb0cb3d63378ef41e0cbca0ece7eea6",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/mismatched-endpoint.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/nominal-no-step.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "b2377effa7a797c6aa3fc6baf3953a8fce563c60459c51be74b9140c525321f9",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/nominal-no-step.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/generic-no-step.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "398643b967fdc60407d6caf5551e029c9ee6deb4c67578edb0dfd2b1547e37f0",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/generic-no-step.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/shared-range-not-iterator.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "ba9245f7757f4ac423037f2d2044e2bab9459356d25ee1ddca8ccaf9a77ea77f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/shared-range-not-iterator.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/source-range-canonical-impl-conflict.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "5bf44aee90ee6951ff31ecb26df44a09768c57d96b284c9cfc1babac9d7c627b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v1/source-range-canonical-impl-conflict.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-clone-required.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "e4efea6e040194fc8f09600046ddd6910683c656a70e4341d96306e974fdb0cd",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v2/range-clone-required.rs",
+      "required_gap": "Pinned Rust positive; required range family or executable Clone contract remains unimplemented.",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-bool-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "928e149ca9de404d5090284764d04e1c117dc23eec5787da212ba1161a29cf4c",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v2/range-bool-reject.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/range-char-half-open-required.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4f5c85b549e9aa74b12c58bdb7916f54241469348d5090fde3eef0c12717d33c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v2/range-char-half-open-required.rs",
+      "required_gap": "Pinned Rust positive; required range family or executable Clone contract remains unimplemented.",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/body-selects-u8.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "2153b131211d1c1747550a46c060537d0a2a89c2c38eb099984e4c0bd71ae6cf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/body-selects-u8.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/body-selects-index.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "999aaff44d14efbbaca267fffa239bab0f56786ccf2c39ae202c7d9a5b006cf4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/body-selects-index.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/bound-selects-usize.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b0f3be7728c4f5eec0b35211ec47bd688c3abb9509f23eba197271143dd3f108",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/bound-selects-usize.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/no-prelude-loop.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "eec8d74960425d9f449d070d560ace39722b18d61027bf8597bd5cea9e6e8d0c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/no-prelude-loop.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/named-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "3eab566f447ddd41b28fec3ece039f412d71f65f158816c8805bc9231fe9c8c0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/named-alias.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/method-ambiguity.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "37c9e6447403615f90cb56abc8915aef76e18beb28fff01e11d921eacca29c96",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/method-ambiguity.rs"
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/source-primitive-name-shadow.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "97950ae2fc8d9d6eb9c8087286be3986a3cfc14c1da87365216c09d77c4af453",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/source-primitive-name-shadow.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/constant-range.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "605bd26c821cad3854c2ec60efc959469e23507509093f0e0c6a27306ed2789c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/constant-range.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/integer-ranges/const-next-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "cde8093235e4dd238b545033d3bf715b49a7e6edf1732dbfb312408831c0d1c6",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "features": [
+        "pa26.iteration"
+      ],
+      "qualification_origin": "obj/parallel/pa26/integer-ranges/declared-v3/const-next-reject.rs"
+    }
+  ]
+}

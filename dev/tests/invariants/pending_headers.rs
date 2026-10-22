@@ -343,3 +343,52 @@ fn collection_registry(
     registry.finish_validation()?;
     Ok(registry)
 }
+
+#[test]
+fn canonical_range_heads_are_exact_cold_and_do_not_widen_pending_records()
+-> Result<(), Box<dyn std::error::Error>> {
+    let report = crate::test_source::resolve("fn main(){let r=1u8..4u8;let _=r.start;}", true)?;
+    let canonical = report.resolution.builtin_traits.ranges().ok_or("ranges")?;
+    let iteration = report
+        .resolution
+        .builtin_traits
+        .iteration()
+        .ok_or("iteration")?;
+    let trait_ = iteration
+        .get(crate::support::iteration::Trait::Iterator)
+        .definition;
+    let nominal = ItemId(canonical.nominal.0);
+    let rows = canonical.implementations.map(|d| Header {
+        owner: d.definition,
+        item: ItemId(trait_.0).into(),
+        head: Some(Head::Nominal(nominal)),
+    });
+    let mut pending = Pending::new(rows.to_vec())?;
+    pending.install_ranges(&report)?;
+    assert!(pending.only_collections());
+    let heads = pending.collections.as_deref().ok_or("heads")?;
+    assert!(heads.iterator.is_none() && heads.entries.is_empty());
+    assert_eq!(
+        heads.ranges.as_deref().ok_or("range heads")?.owners.len(),
+        12
+    );
+    assert!(pending.install_ranges(&report).is_err());
+    let mut wrong = rows;
+    wrong[0].head = Some(Head::Primitive(Primitive::U8));
+    let mut wrong = Pending::new(wrong.to_vec())?;
+    assert!(wrong.install_ranges(&report).is_err());
+    assert!(wrong.collections.is_none());
+    let lookalike = crate::test_source::resolve("struct Range;fn main(){let _=Range;}", true)?;
+    assert!(
+        Pending::new(Vec::new())?
+            .install_ranges(&lookalike)
+            .is_err()
+    );
+    eprintln!(
+        "range pending sizes owner={} heads={} range_heads={}",
+        size_of::<Pending>(),
+        size_of::<super::collections::Heads>(),
+        size_of::<super::progression_heads::Heads>()
+    );
+    Ok(())
+}

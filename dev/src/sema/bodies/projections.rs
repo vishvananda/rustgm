@@ -2,6 +2,7 @@
 mod contracts;
 pub(super) mod evidence;
 mod inputs;
+mod known;
 mod normalization;
 mod parents;
 mod selection;
@@ -159,42 +160,6 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         Ok(term)
     }
-    pub(super) fn normalize_known_projection(
-        &mut self,
-        node: NodeId,
-        ty: TypeId,
-    ) -> Result<TypeId, Error> {
-        // A canonical declaration type already has determined inputs. Keep its
-        // written body lifetimes while proving its complete nested binder tree;
-        // replacing the whole type with caller aliases would change its return contract.
-        let first = u32::try_from(self.facts.body_regions.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
-        let mut proof = Obligations::new(first);
-        // Call arguments already use free aliases for caller universals. Their
-        // environment must use the same representation, without duplicate
-        // original/aliased assumptions. Written body types keep their binders.
-        let environment = self.resolved_projection_environment(node, ty)?;
-        let (ty, steps) = crate::sema::projections::normalize(
-            self.facts,
-            environment.as_ref(),
-            &mut proof,
-            ScopeId::ROOT,
-            ty,
-            self.availability,
-        )
-        .map_err(|e| self.error(node, e))?;
-        self.state
-            .infer
-            .account_work(steps)
-            .map_err(|e| self.error(node, e))?;
-        proof
-            .retain_body(self.facts, self.state.body, self.key(node))
-            .map_err(|e| self.error(node, e))?;
-        Ok(ty)
-    }
-
     pub(super) fn defer_contract(
         &mut self,
         node: NodeId,
@@ -342,14 +307,29 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn advance_projections(&mut self, body: NodeId) -> Result<bool, Error> {
-        match self.poll_projections(body)? {
-            Advance::Ready(progress) => Ok(progress),
-            Advance::Definition(dependency) => {
-                self.require_complete_body(Some(dependency))?;
-                Ok(false)
+        loop {
+            match self.poll_projections(body)? {
+                Advance::Ready(progress) => return Ok(progress),
+                Advance::Definition(dependency) => {
+                    if let super::Requirement::ImplHeader(owner) = dependency.requirement
+                        && crate::sema::declarations::iteration::range_contracts::prepare_dependency(
+                            self.report,
+                            self.facts,
+                            crate::sema::traits::selection::Dependency::Header(owner),
+                            self.availability,
+                        )
+                        .map_err(|e| self.error(dependency.source.node, e))?
+                    {
+                        self.state.infer.account_work(1).map_err(|e| self.error(body, e))?;
+                        continue;
+                    }
+                    self.require_complete_body(Some(dependency))?;
+                    return Ok(false);
+                }
             }
         }
     }
+
     pub(super) fn poll_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
         if !self.state.projections.active() && !self.state.notifications.waiting() {
             return Ok(Advance::Ready(false));
@@ -492,7 +472,7 @@ impl Checker<'_> {
             inputs::Readiness::Resolved => true,
         };
         self.prepare_universals(node)?;
-        if query.parent.is_some()
+        if (query.parent.is_some() || self.range_parent_readiness(&query)?)
             && let Some(owner) = self.advance_projection_parent(&mut query, resolved)?
         {
             return Ok(Completion::Dependency(
@@ -700,14 +680,23 @@ impl Checker<'_> {
                 .get_or_insert_with(Default::default)
                 .as_mut()
         });
-        let (result, steps) = crate::sema::projections::normalize_reusing(
+        let report = self.report;
+        let availability = self.availability;
+        let (result, steps) = crate::sema::projections::normalize_reusing_ready(
             self.facts,
             environment.as_ref(),
             proof,
             scope,
             ty,
             self.availability,
-            completed,
+            (completed, &mut |facts, dependency| {
+                crate::sema::declarations::iteration::range_contracts::prepare_dependency(
+                    report,
+                    facts,
+                    dependency,
+                    availability,
+                )
+            }),
         )
         .map_err(|e| self.error(node, e))?;
         self.state

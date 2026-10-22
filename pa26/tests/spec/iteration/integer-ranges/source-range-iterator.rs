@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct Range(u8);impl Iterator for Range{type Item=u8;fn next(&mut self)->Option<u8>{if self.0==0{None}else{self.0-=1u8;Some(self.0)}}}fn main(){let mut n=0u8;for x in Range(3){n+=x;}check(n==3);}

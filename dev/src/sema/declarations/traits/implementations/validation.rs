@@ -68,6 +68,7 @@ impl Checker<'_> {
         for (owner, source, predicate) in headers {
             if self.validate_iteration_blanket(owner)?
                 || self.validate_collection_impl(owner)?
+                || self.validate_range_impl(owner)?
                 || self.validate_iterator_clone(owner)?
             {
                 continue;
@@ -101,7 +102,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?;
         }
         self.finish_constant_contracts()?;
-        super::super::super::iteration::collections::finish_prepared(self.report, &mut self.facts)?;
+        self.finish_iteration_contracts()?;
         self.facts
             .generics
             .implementations
@@ -115,6 +116,16 @@ impl Checker<'_> {
             })?
             .finish_validation()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
+    }
+
+    fn finish_iteration_contracts(&mut self) -> Result<(), Error> {
+        super::super::super::iteration::collections::finish_prepared(self.report, &mut self.facts)?;
+        super::super::super::iteration::range_contracts::complete(
+            self.report,
+            &mut self.facts,
+            true,
+        )?;
+        Ok(())
     }
 
     fn validate_reference_coherence(

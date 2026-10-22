@@ -281,6 +281,30 @@ impl Builder<'_> {
             },
         )
     }
+    pub(super) fn range_value(
+        &mut self,
+        node: NodeId,
+        start: NodeId,
+        end: NodeId,
+    ) -> Result<ValueId, Error> {
+        let Some(Operation::Construct { variant }) = self.fact(node)?.operation else {
+            return Err(self.error(node, "missing canonical Range construction"));
+        };
+        let first = self.index(node, self.body.arguments.len())?;
+        self.body.arguments.push(self.value(start)?);
+        self.body.arguments.push(self.value(end)?);
+        self.evaluate(
+            node,
+            self.ty(node)?,
+            Rvalue::Aggregate {
+                variant: Some(variant),
+                fields: ValueList {
+                    start: first,
+                    end: first + 2,
+                },
+            },
+        )
+    }
     pub(super) fn repeat(&mut self, node: NodeId, value: NodeId) -> Result<ValueId, Error> {
         let ty = self.ty(node)?;
         let Some(Type::Array { .. } | Type::ArrayTerm { .. }) = self.facts.types.kind(ty) else {

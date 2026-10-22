@@ -140,6 +140,14 @@ impl Walker<'_> {
                 }
             }
             Syntax::Repeat { value, .. } => self.push(Work::Expression(value, context))?,
+            Syntax::Range { start, end, .. } => {
+                if let Some(end) = end {
+                    self.push(Work::Expression(end, context))?;
+                }
+                if let Some(start) = start {
+                    self.push(Work::Expression(start, context))?;
+                }
+            }
             Syntax::Tuple(elements) | Syntax::Array(elements) => {
                 self.expressions(elements, context)?;
             }

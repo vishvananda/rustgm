@@ -78,11 +78,13 @@ impl Resolver<'_> {
         let comparison = matches!(last, "Ordering" | "cmp" | "Less" | "Equal" | "Greater")
             && self.nominal_library_path(c, node, absolute, path, LibraryType::ComparisonOrdering);
         let kind = LibraryType::ALL.into_iter().find(|kind| {
-            if matches!(*kind, LibraryType::SliceIter | LibraryType::SliceIterMut)
-                && (!path
-                    .iter()
-                    .any(|name| self.package.names.get(*name) == kind.name())
-                    || !self.nominal_library_path(c, node, absolute, path, *kind))
+            if matches!(
+                *kind,
+                LibraryType::SliceIter | LibraryType::SliceIterMut | LibraryType::Range
+            ) && (!path
+                .iter()
+                .any(|name| self.package.names.get(*name) == kind.name())
+                || !self.nominal_library_path(c, node, absolute, path, *kind))
             {
                 return false;
             }
@@ -95,15 +97,21 @@ impl Resolver<'_> {
             }
 
             kind.name() == last
-                || !matches!(*kind, LibraryType::SliceIter | LibraryType::SliceIterMut)
-                    && kind.module() == last
+                || !matches!(
+                    *kind,
+                    LibraryType::SliceIter | LibraryType::SliceIterMut | LibraryType::Range
+                ) && kind.module() == last
                 || kind.in_prelude() && kind.variants().iter().any(|(name, _)| *name == last)
                 || path
                     .iter()
                     .any(|name| self.package.names.get(*name) == kind.name())
         });
         if let Some(kind) = kind {
-            if matches!(kind, LibraryType::SliceIter | LibraryType::SliceIterMut) {
+            if kind == LibraryType::Range {
+                self.facts
+                    .builtin_traits
+                    .note_range(c.module, NodeKey { file: c.file, node });
+            } else if matches!(kind, LibraryType::SliceIter | LibraryType::SliceIterMut) {
                 self.facts.builtin_traits.name_slice_iterator(
                     c.module,
                     NodeKey { file: c.file, node },
@@ -150,6 +158,7 @@ impl Resolver<'_> {
                 .modules()
                 .last()
                 .is_some_and(|part| scope == self.facts.library_types.modules[part.index()])
+                || kind == LibraryType::Range && scope == self.facts.builtin_traits.ops
                 || self.package.names.get(path[index]) == kind.module()
                     && scope == self.facts.builtin_traits.library)
     }
@@ -167,7 +176,14 @@ impl Resolver<'_> {
             .builtin_traits
             .library
             .ok_or_else(|| self.error(c, node, "missing library module"))?;
-        let mut module = library;
+        let mut module = if kind == LibraryType::Range {
+            self.facts
+                .builtin_traits
+                .ops
+                .ok_or_else(|| self.error(c, node, "missing canonical range module"))?
+        } else {
+            library
+        };
         for &part in kind.modules() {
             module = self.library_module(c, node, module, part)?;
         }
@@ -258,8 +274,10 @@ impl Resolver<'_> {
     ) -> Result<Vec<Variant>, Error> {
         let mut variants = Vec::new();
         for &(name, field) in kind.variants() {
-            let constructor = if matches!(kind, LibraryType::SliceIter | LibraryType::SliceIterMut)
-            {
+            let constructor = if matches!(
+                kind,
+                LibraryType::SliceIter | LibraryType::SliceIterMut | LibraryType::Range
+            ) {
                 None
             } else {
                 Some(self.library_value(

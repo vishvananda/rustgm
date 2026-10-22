@@ -40,6 +40,7 @@ pub(super) use readiness::{Dependency, Requirement};
 mod addresses;
 mod pointer_casts;
 mod pointers;
+mod range_values;
 mod references;
 mod safety;
 mod selected_arguments;
@@ -735,6 +736,20 @@ impl Checker<'_> {
                     self.availability,
                     super::traits::implementations::Availability::Validated
                 ) && let Some(owner) = owner
+                    && super::declarations::iteration::range_contracts::owns(self.report, owner)
+                {
+                    super::declarations::iteration::range_contracts::prepare(
+                        self.report,
+                        self.facts,
+                        owner,
+                        true,
+                    )?;
+                    continue;
+                }
+                if matches!(
+                    self.availability,
+                    super::traits::implementations::Availability::Validated
+                ) && let Some(owner) = owner
                     && super::declarations::cloning::owns(self.report, owner)
                 {
                     super::declarations::cloning::prepare(self.report, self.facts, owner, true)?;
@@ -1224,6 +1239,13 @@ impl Checker<'_> {
                 }
                 return self.enter_address(node, operand, expected);
             }
+            Kind::Range {
+                inclusive: false,
+                start: Some(start),
+                end: Some(end),
+            } => {
+                return self.enter_range(node, start, end, expected);
+            }
             Kind::Tuple(elements) | Kind::Array(elements) => {
                 return self.enter_elements(node, elements, expected);
             }
@@ -1397,7 +1419,12 @@ impl Checker<'_> {
                 }
                 self.term(value)
             }
-            Kind::Closure { .. } => self.term(node),
+            Kind::Closure { .. }
+            | Kind::Range {
+                inclusive: false,
+                start: Some(_),
+                end: Some(_),
+            } => self.term(node),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),
             Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {

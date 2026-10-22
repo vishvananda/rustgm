@@ -48,6 +48,22 @@ impl Checker<'_> {
             return Err(self.error(node, "invalid iteration readiness continuation"));
         };
         let subject = self.term(iterator)?;
+        if !self
+            .facts
+            .iteration
+            .as_deref()
+            .and_then(|r| r.ranges.as_deref())
+            .is_some_and(|r| r.complete)
+            && let Some(owner) = crate::sema::iteration::range_originals::requested_owner(
+                self.report,
+                &self.facts.types,
+                &mut self.state.infer,
+                subject,
+            )
+            .map_err(|e| self.error(node, e.to_string()))?
+        {
+            return Ok(Some(super::Requirement::ImplHeader(owner)));
+        }
         let owner = crate::sema::iteration::collections::requested_owner(
             self.report,
             &self.facts.types,
@@ -94,7 +110,23 @@ impl Checker<'_> {
         let iterator_type = self.child(node, into_iter.signature, 1)?;
         let next = self.iteration_call(node, canonical.get(Trait::Iterator), iterator_type)?;
         let option = self.child(node, next.signature, 1)?;
-        let item = self.child(node, option, 0)?;
+        let projected_item = self.child(node, option, 0)?;
+        let assumptions = self.trait_assumptions(node)?;
+        let item = if let Some(element) = crate::sema::traits::selection::range_element(
+            self.facts,
+            &mut self.state.infer,
+            subject,
+            assumptions.as_deref(),
+        )
+        .map_err(|e| self.error(node, e))?
+        {
+            // This equality is still retained beside the original complete
+            // projection and both call obligations. It grants no selected body.
+            self.shape_equation(node, projected_item, element)?;
+            element
+        } else {
+            projected_item
+        };
         self.state
             .call_types
             .iteration

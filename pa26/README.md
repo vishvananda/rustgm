@@ -350,3 +350,19 @@ record source/native, identity, split-loan and cold-demand controls. Concrete
 derived/reference Clone targets, owned collection and range iteration, further
 iterator methods, question-mark, additional derives and formatting remain
 required; PA26 stays planned.
+
+## Maintainer half-open integer range checkpoint
+
+Canonical `core::ops::Range<T>` now has ordinary public endpoint fields and
+checked half-open integer iteration for all twelve integer primitives.
+Qualified, reified, generic and ordinary loop calls retain their complete
+selected proofs; record-only construction leaves integer method bodies cold.
+Range is not Copy. Conditional Clone marker evidence is not executable cloning.
+The source/native matrix and five retained Rust-positive Range gaps are recorded
+in `docs/pa26-integer-ranges.md`; owned arrays remain required separately.
+
+These canonical declarations and factories are bootstrap library contracts.
+The next source-declared binding work must allow pinned upstream core to supply
+the actual traits, impls and bodies. PA26 still owns its compiler hooks and
+remaining iteration/derive/question-mark/formatting behavior. No assignment
+release or source-sysroot completeness is claimed by this checkpoint.

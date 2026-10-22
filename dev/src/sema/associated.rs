@@ -343,6 +343,11 @@ fn library_owner(report: &Report, index: usize) -> bool {
                     .declarations()
                     .any(|d| d.definition.0 as usize == index)
             })
+        || report.resolution.builtin_traits.ranges().is_some_and(|r| {
+            r.implementations
+                .iter()
+                .any(|d| d.definition.0 as usize == index)
+        })
         || report
             .resolution
             .builtin_traits

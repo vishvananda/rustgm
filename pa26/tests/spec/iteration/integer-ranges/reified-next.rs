@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn main(){let f:for<'a> fn(&'a mut core::ops::Range<u32>)->Option<u32>=<core::ops::Range<u32> as Iterator>::next;let mut r=7u32..8u32;match f(&mut r){Some(x)=>check(x==7),None=>check(false)}match f(&mut r){None=>{},Some(_)=>check(false)}}

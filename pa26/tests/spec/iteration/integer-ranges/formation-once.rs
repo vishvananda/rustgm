@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn bound(n:&mut u8,v:u8)->u8{*n+=1u8;v}fn main(){let mut count=0u8;let mut sum=0u8;for x in bound(&mut count,1)..bound(&mut count,4){sum+=x;}check(sum==6&&count==2);}

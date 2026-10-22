@@ -129,6 +129,26 @@ impl Checker<'_> {
                 }
             }
         }
+        if let (Some(iteration), Some(ranges)) = (
+            self.report.resolution.builtin_traits.iteration(),
+            self.report.resolution.builtin_traits.ranges(),
+        ) {
+            for declaration in ranges.implementations {
+                headers.push(PendingHeader {
+                    owner: declaration.definition,
+                    item: crate::types::ItemId(
+                        iteration
+                            .get(crate::support::iteration::Trait::Iterator)
+                            .definition
+                            .0,
+                    )
+                    .into(),
+                    head: Some(crate::sema::traits::heads::Head::Nominal(
+                        crate::types::ItemId(ranges.nominal.0),
+                    )),
+                });
+            }
+        }
         if let (Some(cloning), Some(collections)) = (
             self.report.resolution.builtin_traits.cloning(),
             self.report.resolution.builtin_traits.collections(),

@@ -3,6 +3,7 @@ mod blanket_methods;
 mod blankets;
 pub(in crate::sema) mod collections;
 mod conformance;
+pub(in crate::sema) mod range_contracts;
 use super::{Checker, DefId, Error, ItemId, State, Type};
 use crate::{
     resolve::model::{BuiltinIteration, BuiltinIterationDeclaration},

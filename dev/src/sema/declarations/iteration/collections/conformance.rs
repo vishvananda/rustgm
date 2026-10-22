@@ -196,13 +196,6 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
                 .trait_()
                 .ok_or_else(|| self.error(source, "collection impl has no trait"))?,
         );
-        let environment = self.facts.generics.environments.get(&owner).cloned();
-        let mut proof =
-            Proof::for_declaration(environment, u32::from(declaration.lifetime.is_some()), 1);
-        let requirements = super::super::super::traits::impl_contract_obligations(
-            self.facts, predicate, &mut proof,
-        )
-        .map_err(|e| self.error(source, e))?;
         let mut types = vec![(
             expected.item,
             declaration
@@ -212,16 +205,40 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
         if let (Some(expected), Some(actual)) = (expected.into_iter, declaration.into_iter) {
             types.push((expected, actual));
         }
-        self.collection_associated(source, predicate, &types, &mut proof)?;
-        self.library_impl_lifetimes(
+        self.check_library_iteration_impl(
+            source,
             owner,
             u32::from(declaration.lifetime.is_some()),
+            predicate,
+            &types,
+            (expected.method, declaration.method),
+        )
+    }
+    pub(in crate::sema::declarations) fn check_library_iteration_impl(
+        &mut self,
+        source: crate::resolve::unit::NodeKey,
+        owner: DefId,
+        captures: u32,
+        predicate: Predicate,
+        types: &[(DefId, DefId)],
+        methods: (DefId, DefId),
+    ) -> Result<(), Error> {
+        let environment = self.facts.generics.environments.get(&owner).cloned();
+        let mut proof = Proof::for_declaration(environment, captures, 1);
+        let requirements = super::super::super::traits::impl_contract_obligations(
+            self.facts, predicate, &mut proof,
+        )
+        .map_err(|e| self.error(source, e))?;
+        self.collection_associated(source, predicate, types, &mut proof)?;
+        self.library_impl_lifetimes(
+            owner,
+            captures,
             source,
             predicate,
             &requirements,
             &mut proof,
         )?;
-        let definitions = conformance::Definitions::new(self.facts, predicate, &types)
+        let definitions = conformance::Definitions::new(self.facts, predicate, types)
             .map_err(|e| self.error(source, e))?;
         let function = |id| {
             self.facts
@@ -230,31 +247,24 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
                 .find(|f| f.definition == id)
                 .copied()
         };
-        let actual = function(declaration.method)
-            .ok_or_else(|| self.error(source, "missing collection impl method"))?;
-        let expected = function(expected.method)
-            .ok_or_else(|| self.error(source, "missing collection trait method"))?;
+        let expected = function(methods.0)
+            .ok_or_else(|| self.error(source, "missing library iteration trait method"))?;
+        let actual = function(methods.1)
+            .ok_or_else(|| self.error(source, "missing library iteration impl method"))?;
         conformance::check(self.facts, owner, predicate, expected, actual, &definitions)
             .map_err(|e| self.error(source, e))?;
         self.facts
             .generics
             .implementations
             .as_mut()
-            .ok_or_else(|| {
-                Error::at(
-                    source.file,
-                    0,
-                    "missing collection implementation inventory",
-                )
-            })?
+            .ok_or_else(|| Error::at(source.file, 0, "missing library implementation inventory"))?
             .complete(
                 owner,
                 vec![(expected.definition, Some(actual.definition))],
-                types,
+                types.to_vec(),
                 Vec::new(),
             )
-            .map_err(|e| self.error(source, e))?;
-        Ok(())
+            .map_err(|e| self.error(source, e))
     }
     fn collection_associated(
         &mut self,

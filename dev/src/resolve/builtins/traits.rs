@@ -5,6 +5,7 @@ mod collections;
 mod comparisons;
 mod iteration;
 mod language;
+mod progressions;
 use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
 use crate::support::language_hooks::Hook;
 use crate::{
@@ -20,6 +21,7 @@ pub use collections::{CollectionDeclaration, Collections, MutableCollections};
 pub use comparisons::{Equality, Members as ComparisonMembers};
 pub use iteration::{Blanket as IterationBlanket, Declaration as IterationDeclaration, Iteration};
 pub use language::{Language, Output as LanguageOutput};
+pub use progressions::{RangeImplementation, Ranges};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BuiltinTrait {

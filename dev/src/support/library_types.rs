@@ -21,6 +21,7 @@ pub enum LibraryType {
     ComparisonOrdering,
     SliceIter,
     SliceIterMut,
+    Range,
 }
 #[derive(Clone, Copy)]
 pub enum LibraryParameter {
@@ -41,6 +42,7 @@ pub enum LibraryField {
     U32,
     SharedSlice,
     MutableSlice,
+    RangeBounds,
 }
 #[derive(Clone, Copy)]
 pub enum LibraryTag {
@@ -77,7 +79,7 @@ impl LibraryModule {
     }
 }
 impl LibraryType {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 9] = [
         Self::Option,
         Self::Result,
         Self::ManuallyDrop,
@@ -86,6 +88,7 @@ impl LibraryType {
         Self::ComparisonOrdering,
         Self::SliceIter,
         Self::SliceIterMut,
+        Self::Range,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -97,6 +100,7 @@ impl LibraryType {
             Self::Ordering | Self::ComparisonOrdering => "Ordering",
             Self::SliceIter => "Iter",
             Self::SliceIterMut => "IterMut",
+            Self::Range => "Range",
         }
     }
     /// Recognizes descriptor names for lazy preparation; lookup still proves identity.
@@ -110,6 +114,7 @@ impl LibraryType {
             "Ordering" => Some(Self::Ordering),
             "Iter" => Some(Self::SliceIter),
             "IterMut" => Some(Self::SliceIterMut),
+            "Range" => Some(Self::Range),
             _ => None,
         }
     }
@@ -122,6 +127,7 @@ impl LibraryType {
             Self::AtomicU32 | Self::Ordering => "atomic",
             Self::ComparisonOrdering => "cmp",
             Self::SliceIter | Self::SliceIterMut => "slice",
+            Self::Range => "ops",
         }
     }
     #[must_use]
@@ -133,6 +139,7 @@ impl LibraryType {
             Self::AtomicU32 | Self::Ordering => &[LibraryModule::Sync, LibraryModule::Atomic],
             Self::ComparisonOrdering => &[LibraryModule::Comparison],
             Self::SliceIter | Self::SliceIterMut => &[LibraryModule::Slice],
+            Self::Range => &[],
         }
     }
     #[must_use]
@@ -161,7 +168,11 @@ impl LibraryType {
     pub const fn is_struct(self) -> bool {
         matches!(
             self,
-            Self::ManuallyDrop | Self::AtomicU32 | Self::SliceIter | Self::SliceIterMut
+            Self::ManuallyDrop
+                | Self::AtomicU32
+                | Self::SliceIter
+                | Self::SliceIterMut
+                | Self::Range
         )
     }
     #[must_use]
@@ -171,7 +182,7 @@ impl LibraryType {
     #[must_use]
     pub const fn parameters(self) -> &'static [LibraryParameter] {
         match self {
-            Self::Option => &[LibraryParameter::Type {
+            Self::Option | Self::Range => &[LibraryParameter::Type {
                 name: "T",
                 sized: true,
             }],
@@ -211,6 +222,7 @@ impl LibraryType {
             Self::AtomicU32 => &[("new", Some(LibraryField::U32))],
             Self::SliceIter => &[("Iter", Some(LibraryField::SharedSlice))],
             Self::SliceIterMut => &[("IterMut", Some(LibraryField::MutableSlice))],
+            Self::Range => &[("Range", Some(LibraryField::RangeBounds))],
             Self::ComparisonOrdering => &[("Less", None), ("Equal", None), ("Greater", None)],
             Self::Ordering => &[
                 ("Relaxed", None),

@@ -2,7 +2,9 @@
 mod header_inputs;
 mod instantiation;
 mod known_premises;
+mod range_inputs;
 mod readiness;
+pub(in crate::sema) use range_inputs::range_element;
 mod result_templates;
 mod search;
 use super::assumptions::{Assumptions, ScopedEvidence, ScopedSelection as Assumed};

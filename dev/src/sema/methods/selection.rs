@@ -116,6 +116,35 @@ pub(super) fn trait_groups(
         .methods
         .trait_visibility_steps
         .saturating_add(index.steps().saturating_sub(before));
+    if let Some(canonical) = report.resolution.builtin_traits.iteration()
+        && groups
+            .iter()
+            .flatten()
+            .any(|member| canonical.declarations.iter().any(|d| d.method == *member))
+        && !facts
+            .iteration
+            .as_deref()
+            .and_then(|r| r.ranges.as_deref())
+            .is_some_and(|r| r.complete)
+        && let Some(owner) = crate::sema::iteration::range_originals::requested_owner(
+            report,
+            &facts.types,
+            source,
+            prefix,
+        )
+        .map_err(inference)?
+    {
+        crate::sema::declarations::iteration::range_contracts::prepare(
+            report,
+            facts,
+            owner,
+            matches!(
+                caller.availability,
+                crate::sema::traits::implementations::Availability::Validated
+            ),
+        )
+        .map_err(|_| "canonical range iteration preparation failed")?;
+    }
     Ok(groups)
 }
 

@@ -261,7 +261,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
     assert_eq!(size_of::<Declarations>(), 8568);
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.
-    assert_eq!(size_of::<crate::sema::iteration::Registry>(), 312);
+    // Range adds one more lazy pointer to this demand-only owner.
+    assert_eq!(size_of::<crate::sema::iteration::Registry>(), 320);
     assert_eq!(size_of::<body::ir::Value>(), 24);
     assert_eq!(size_of::<crate::sema::iteration::Call>(), 8);
     assert_eq!(size_of::<crate::sema::iteration::ForPlan>(), 36);
@@ -272,3 +273,6 @@ mod cloning;
 
 #[path = "mutable_iterator_contracts.rs"]
 mod mutable_collections;
+
+#[path = "progression_contracts.rs"]
+mod progression;

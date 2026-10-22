@@ -385,6 +385,7 @@ impl Checker<'_> {
             .is_some()
             || self.lazy_library_method(id)
             || iteration::collections::owns(self.report, id)
+            || iteration::range_contracts::owns(self.report, id)
             || cloning::owns(self.report, id)
             || self
                 .report
@@ -664,12 +665,24 @@ impl Checker<'_> {
         self.work
             .push(Work::Node(NodeKey { file, node }, false, context));
     }
-    fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
+    fn activate_iteration_definition(&mut self, id: DefId) -> Result<bool, Error> {
         if cloning::owns(self.report, id) {
-            return self.activate_iterator_clone(id);
+            self.activate_iterator_clone(id)?;
+            return Ok(true);
+        }
+        if iteration::range_contracts::owns(self.report, id) {
+            self.activate_range(id)?;
+            return Ok(true);
         }
         if iteration::collections::owns(self.report, id) {
-            return self.activate_collection(id);
+            self.activate_collection(id)?;
+            return Ok(true);
+        }
+        Ok(false)
+    }
+    fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
+        if self.activate_iteration_definition(id)? {
+            return Ok(());
         }
         if self.states[id.0 as usize] == State::Complete {
             return Ok(());

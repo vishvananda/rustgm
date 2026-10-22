@@ -1292,6 +1292,14 @@ impl<'a> Builder<'a> {
                         }
                     }
                     Kind::Tuple(elements) | Kind::Array(elements) => self.children(elements),
+                    Kind::Range { start, end, .. } => {
+                        if let Some(end) = end {
+                            self.scratch.work.push(Work::Enter(end));
+                        }
+                        if let Some(start) = start {
+                            self.scratch.work.push(Work::Enter(start));
+                        }
+                    }
                     Kind::LibraryValue { value, .. } => {
                         self.scratch.work.extend(value.map(Work::Enter));
                     }
@@ -1526,6 +1534,11 @@ impl<'a> Builder<'a> {
             Kind::LibraryValue { value, .. } => self.library_value(node, value)?,
             Kind::Array(elements) => self.aggregate_elements(node, elements)?,
             Kind::Repeat { value, .. } => self.repeat(node, value)?,
+            Kind::Range {
+                inclusive: false,
+                start: Some(start),
+                end: Some(end),
+            } => self.range_value(node, start, end)?,
             Kind::Struct { fields, base, .. } => self.construct(node, fields, base)?,
             Kind::FieldInit { value, .. } => self.value(value)?,
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {

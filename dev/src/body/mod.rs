@@ -16,6 +16,7 @@ pub(crate) mod length_methods;
 pub(crate) mod primitive_methods;
 pub mod promote;
 pub(crate) mod provided;
+mod range_factories;
 pub mod regions;
 pub use crate::sema::scopes;
 pub mod storage;

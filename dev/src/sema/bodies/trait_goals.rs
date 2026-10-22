@@ -17,11 +17,13 @@ impl Checker<'_> {
         node: NodeId,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<(), Error> {
+        let ready = self.canonical_requirement_ready(node, predicate)?;
         if self
             .state
             .canonical_requirements
             .as_ref()
             .is_some_and(|pending| pending.waiting())
+            || !ready
             || predicate
                 .contains_opaques(&self.facts.types)
                 .map_err(|e| self.error(node, e))?
@@ -110,6 +112,30 @@ impl Checker<'_> {
                 }
             }));
         Ok(())
+    }
+
+    fn canonical_requirement_ready(
+        &mut self,
+        node: NodeId,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<bool, Error> {
+        Ok(self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .map(|registry| {
+                registry.selection_predicate_ready(
+                    &self.facts.types,
+                    self.state
+                        .canonical_trait_inference
+                        .get_or_insert_with(Default::default),
+                    predicate,
+                )
+            })
+            .transpose()
+            .map_err(|e| self.error(node, e))?
+            .unwrap_or(true))
     }
 
     pub(super) fn trait_region_start(&self, node: NodeId) -> Result<u32, Error> {

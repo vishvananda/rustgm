@@ -88,13 +88,22 @@ impl Implementations {
         &mut self,
         report: &crate::resolve::expansion::Report,
     ) -> Result<(), &'static str> {
-        if report.resolution.builtin_traits.collections().is_none() {
+        if report.resolution.builtin_traits.collections().is_none()
+            && report.resolution.builtin_traits.ranges().is_none()
+        {
             return Ok(());
         }
-        self.pending
+        let pending = self
+            .pending
             .as_deref_mut()
-            .ok_or("collection heads require reserved inventory")?
-            .install_collections(report)
+            .ok_or("library heads require reserved inventory")?;
+        if report.resolution.builtin_traits.collections().is_some() {
+            pending.install_collections(report)?;
+        }
+        if report.resolution.builtin_traits.ranges().is_some() {
+            pending.install_ranges(report)?;
+        }
+        Ok(())
     }
     pub(in crate::sema) fn headers_validated(&self) -> bool {
         self.headers == Headers::Validated

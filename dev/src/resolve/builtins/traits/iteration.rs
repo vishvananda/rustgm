@@ -49,6 +49,8 @@ pub(super) struct Registry {
     collection_origin: Option<(ModuleId, NodeKey)>,
     named_iterator: bool,
     named_mutable_iterator: bool,
+    pub(super) range_origin: Option<(ModuleId, NodeKey)>,
+    pub(super) ranges: Option<Box<super::progressions::Ranges>>,
 }
 impl Traits {
     pub(in crate::resolve) fn note_iteration(&mut self, module: ModuleId, source: NodeKey) {

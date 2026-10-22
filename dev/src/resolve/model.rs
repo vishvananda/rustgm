@@ -7,8 +7,9 @@ pub use super::builtins::{
     Intrinsics, Iteration as BuiltinIteration, IterationBlanket as BuiltinIterationBlanket,
     IterationDeclaration as BuiltinIterationDeclaration, Language as BuiltinLanguage,
     LanguageOutput as BuiltinLanguageOutput, LibraryNominal, LibraryTypes,
-    MutableCollections as BuiltinMutableCollections, SliceLength as LibrarySliceLength,
-    Traits as BuiltinTraits,
+    MutableCollections as BuiltinMutableCollections,
+    RangeImplementation as BuiltinRangeImplementation, Ranges as BuiltinRanges,
+    SliceLength as LibrarySliceLength, Traits as BuiltinTraits,
 };
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
 use crate::syntax::ast::NodeId;

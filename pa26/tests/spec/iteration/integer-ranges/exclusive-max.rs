@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn main(){let mut i=(u8::MAX-1u8)..u8::MAX;match i.next(){Some(x)=>check(x==254),None=>check(false)}match i.next(){None=>{},Some(_)=>check(false)}let mut j=(i128::MAX-1i128)..i128::MAX;match j.next(){Some(x)=>check(x==i128::MAX-1i128),None=>check(false)}match j.next(){None=>{},Some(_)=>check(false)}}

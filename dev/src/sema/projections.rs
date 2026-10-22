@@ -66,8 +66,35 @@ pub(super) fn normalize_reusing(
     ambient: ScopeId,
     ty: TypeId,
     availability: Availability,
-    mut completed: Option<&mut Completed>,
+    completed: Option<&mut Completed>,
 ) -> Result<(TypeId, usize), &'static str> {
+    normalize_reusing_ready(
+        facts,
+        environment,
+        proof,
+        ambient,
+        ty,
+        availability,
+        (completed, &mut |_, _| Ok(false)),
+    )
+}
+
+pub(super) fn normalize_reusing_ready(
+    facts: &mut Declarations,
+    environment: Option<&Arc<Environment>>,
+    proof: &mut Obligations,
+    ambient: ScopeId,
+    ty: TypeId,
+    availability: Availability,
+    readiness: (
+        Option<&mut Completed>,
+        &mut impl FnMut(
+            &mut Declarations,
+            super::traits::selection::Dependency,
+        ) -> Result<bool, &'static str>,
+    ),
+) -> Result<(TypeId, usize), &'static str> {
+    let (mut completed, prepare) = readiness;
     let mut session = Session::new(
         environment.cloned(),
         proof,
@@ -78,7 +105,7 @@ pub(super) fn normalize_reusing(
     if let Some(completed) = completed.as_deref_mut() {
         session.cursor.exchange_completed(completed);
     }
-    let result = session.normalize(facts, ty);
+    let result = session.normalize_ready(facts, ty, prepare);
     if let Some(completed) = completed {
         session.cursor.exchange_completed(completed);
     }
@@ -117,12 +144,40 @@ where
         facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<(TypeId, usize), &'static str> {
+        self.normalize_ready(facts, ty, &mut |_, _| Ok(false))
+    }
+
+    fn normalize_ready(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        prepare: &mut impl FnMut(
+            &mut Declarations,
+            super::traits::selection::Dependency,
+        ) -> Result<bool, &'static str>,
+    ) -> Result<(TypeId, usize), &'static str> {
         self.cursor.start(facts, ty)?;
-        match self.cursor.advance(facts, self.proof, &mut self.local)? {
-            Progress::Complete { ty, steps } => Ok((ty, steps)),
-            Progress::Definition(_) => Err("missing completed associated type definition"),
-            Progress::Dependency(_) => {
-                Err("projection selection requires a prepared implementation header")
+        let mut waits = 0;
+        loop {
+            match self.cursor.advance(facts, self.proof, &mut self.local)? {
+                Progress::Complete { ty, steps } => return Ok((ty, steps + waits)),
+                Progress::Definition(_) => {
+                    return Err("missing completed associated type definition");
+                }
+                Progress::Dependency(dependency) => {
+                    if !prepare(facts, dependency)? {
+                        return Err(
+                            "projection selection requires a prepared implementation header",
+                        );
+                    }
+                    let first = u32::try_from(facts.body_regions.len())
+                        .ok()
+                        .and_then(|n| n.checked_add(1))
+                        .ok_or("projection readiness region space exhausted")?
+                        .max(self.cursor.allocation_end(self.proof));
+                    self.cursor.resume_at(self.proof, first)?;
+                    waits += 1;
+                }
             }
         }
     }

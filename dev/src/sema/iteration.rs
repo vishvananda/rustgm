@@ -8,6 +8,7 @@ use crate::{
 };
 use std::collections::HashMap;
 pub(crate) mod collections;
+pub(crate) mod range_originals;
 
 #[derive(Clone, Copy)]
 pub(crate) struct Call {
@@ -36,6 +37,7 @@ pub(crate) struct Registry {
     pub originals: [Option<Original>; 2],
     pub plans: HashMap<NodeKey, ForPlan>,
     pub collections: Option<Box<collections::Registry>>,
+    pub ranges: Option<Box<range_originals::Registry>>,
 }
 impl Registry {
     pub fn new(canonical: BuiltinIteration) -> Self {
@@ -44,6 +46,7 @@ impl Registry {
             originals: [None; 2],
             plans: HashMap::new(),
             collections: None,
+            ranges: None,
         }
     }
     pub fn original(&self, definition: DefId) -> Option<Original> {
@@ -71,6 +74,17 @@ impl Registry {
         item: crate::types::ItemId,
     ) -> Result<Option<DefId>, &'static str> {
         use crate::support::iteration::{Blanket, Trait};
+        if let Some(ranges) = self.ranges.as_deref()
+            && let Some(original) = ranges
+                .originals
+                .iter()
+                .find(|o| o.declaration.definition == owner)
+        {
+            if item == crate::types::ItemId(self.canonical.get(Trait::Iterator).item.0) {
+                return Ok(Some(original.declaration.item));
+            }
+            return Err("integer range does not own the requested associated declaration");
+        }
         if let Some(collections) = self.collections.as_deref()
             && let Some(definition) = collections.associated(self.canonical, owner, item)?
         {
