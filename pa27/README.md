@@ -217,3 +217,11 @@ enum values retain their existing product/variant identity, and padding remains
 independently uninitialized. The draft `tests/enum-byte-outcomes.json` and
 `docs/pa27-enum-bytes.md` record this bounded profile; payload, default-layout and
 wider-tag enum storage remain required work.
+
+
+The wider-tag followup supports explicit fieldless integer representations
+through u128/i128 and usize/isize using retained tag widths and full discriminant
+bits. All tag bytes must be initialized and free of numeric-read provenance at
+typed demand. The draft `tests/wide-enum-byte-outcomes.json` and
+`docs/pa27-wide-enum-bytes.md` record the independently qualified profile.
+Payload and default-layout backing remain required.

@@ -28,7 +28,7 @@ Open implementation or profile contracts remain:
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every
   storage family. See `pa27-byte-access-review.md` for the qualified controls.
-- Payload/default/wider-tag enum, opaque/closure and string backing, whole raw-slice values and
+- Payload/default-layout enum, opaque/closure and string backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
@@ -90,7 +90,7 @@ Open operation families remain:
   through exclusive byte backing. The `write_bytes` slice adds one checked
   destination span, one provenance interval edit and batched byte/mask fill.
   Typed reads still enforce validity and complete immutable publication rejects
-  partial words. Unsupported payload/default/wider-tag enum, opaque/closure/string backing and the broader
+  partial words. Unsupported payload/default-layout enum, opaque/closure/string backing and the broader
   provenance families above remain required work. See
   `docs/pa28-byte-transport.md`, `docs/pa28-relocation-design.md` and
   `docs/pa28-byte-fill.md` for exact boundaries and oracle differences.
@@ -118,10 +118,17 @@ integrator-owned. Focused logical work bounds are not wall-time or RSS
 neutrality claims.
 
 
-Explicit repr(u8/i8) fieldless enums now use the existing byte backing with a
+Explicit integer-repr fieldless enums now use the existing byte backing with a
 lazy full-TypeId tag index. Typed reads map signed/sparse physical bits to exact
 canonical VariantIds and check current initialization/provenance; raw copies
 transport invalid or uninitialized tags without decoding them. Existing ordinary
 Product values and all public value/provenance schemas are unchanged. Payload,
-default-representation and wider-tag enum families remain required followups.
+default-representation enum families remain required followups.
 See `pa27-enum-bytes.md` and the PA27/PA28 `enum-byte-outcomes.json` drafts.
+
+
+The wider-tag slice extends explicit fieldless enum byte backing to every
+integer representation, including signed/unsigned 128-bit and target-sized tags.
+Full physical discriminant bits remain distinct from canonical VariantIds.
+Payload and default-layout enum storage remain required; see
+`pa27-wide-enum-bytes.md` for exact outcomes and measured index retention.

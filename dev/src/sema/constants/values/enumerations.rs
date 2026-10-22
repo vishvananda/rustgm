@@ -3,7 +3,7 @@ use super::{Reader, StoredShape};
 use crate::{
     abi::layout::{Layout, Shape, Tag, Variant},
     sema::members::VariantId,
-    types::{ItemId, Kind, Primitive, TypeId, aggregate::Definition},
+    types::{ItemId, Kind, TypeId, aggregate::Definition},
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/enum_storage_facts.rs"]
@@ -19,9 +19,13 @@ impl<'a> Reader<'a> {
         definition: &Definition,
         layout: &Layout,
     ) -> Result<StoredShape<'a>, &'static str> {
-        let Some(expected @ (Primitive::U8 | Primitive::I8)) = definition.repr.tag else {
+        let Some(expected) = definition.repr.tag else {
             return Ok(StoredShape::Unsupported);
         };
+        let (_, bits) = expected
+            .integer()
+            .ok_or("stored enum tag must be an integer")?;
+        let width = u64::from(bits / 8);
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
             return Err("stored enum lacks its retained physical tag");
         };
@@ -30,7 +34,7 @@ impl<'a> Reader<'a> {
         }
         if tag
             .offset
-            .checked_add(1)
+            .checked_add(width)
             .is_none_or(|end| end > layout.size)
         {
             return Err("stored enum tag exceeds its physical bounds");
@@ -40,7 +44,7 @@ impl<'a> Reader<'a> {
     /// Borrow completed physical variants without assigning byte tags to ordinals.
     pub(crate) fn enum_variants(self, ty: TypeId) -> Result<StoredEnumeration<'a>, &'static str> {
         let StoredShape::Enumeration { tag } = self.storage_shape(ty)? else {
-            return Err("constant enum byte storage requires an explicit u8 or i8 tag");
+            return Err("constant enum byte storage requires an explicit integer tag");
         };
         let Some(Kind::Adt(owner, _)) = self.facts.types.kind(ty) else {
             return Err("stored enum lacks a nominal owner");
@@ -63,7 +67,7 @@ impl<'a> Reader<'a> {
         })
     }
     /// The family cache checks all variants once; encoding still checks its actual ID.
-    pub(crate) fn enum_variant_bits(self, ty: TypeId, id: VariantId) -> Result<u8, &'static str> {
+    pub(crate) fn enum_variant_bits(self, ty: TypeId, id: VariantId) -> Result<u128, &'static str> {
         let stored = self.enum_variants(ty)?;
         let member = self
             .facts
@@ -91,6 +95,16 @@ impl<'a> Reader<'a> {
             return Err("constant enum byte storage with payload fields is not implemented");
         }
         // Negative semantic discriminants retain target-width two's-complement bits.
-        u8::try_from(variant.discriminant & 255).map_err(|_| "invalid stored enum tag width")
+        let (_, bits) = stored
+            .tag
+            .ty
+            .integer()
+            .ok_or("stored enum tag must be an integer")?;
+        let mask = if bits == 128 {
+            u128::MAX
+        } else {
+            (1_u128 << bits) - 1
+        };
+        Ok(variant.discriminant & mask)
     }
 }

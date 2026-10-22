@@ -1,0 +1,324 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "1f6a5e09",
+  "cases": [
+    {
+      "name": "u16-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/u16-read.rs",
+      "sha256": "e1cb14cead2e52023345a041249bdfa0a68ae6a47dd8a28188cc790fb0ac277a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u16-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/u16-write.rs",
+      "sha256": "c2a5fbc17240daba121fb583d8fd7655b5b11e8cfeebf28fd7c1309838431dbf",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u16-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/u16-invalid.rs",
+      "sha256": "4a1fc1f8a3fa20508cd9e059a470510934f77272e6d9bb061d4772043d437bcb",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "u32-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/u32-read.rs",
+      "sha256": "a5ca3c364b627b60290e7a30ce4a817e7c4f7c0aaeb149ea78a41e8d114ddb44",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u32-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/u32-write.rs",
+      "sha256": "60ab594d2c18ba784c9b0610ef4c17ff557223f641fc2e7e18673af4bba85c67",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u32-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/u32-invalid.rs",
+      "sha256": "9575a815ddd52e97dffb84de87a52bd0f08525c175abb3861c4d4452ad35eb17",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "u64-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/u64-read.rs",
+      "sha256": "6c51322b51810dc63050dc78cb33fcfb2b183937ec56cd7a6e483c7ea600afaa",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u64-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/u64-write.rs",
+      "sha256": "693577fc44e7a7dafb0054455065e1dbca1c844e88a4370e5015ff333dbcbca5",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u64-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/u64-invalid.rs",
+      "sha256": "78b94ced3597388b5551d6dc5343813d7623002380360d059e014873554d5395",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "u128-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/u128-read.rs",
+      "sha256": "88fe2741780ba5719979ef9ec76abfe9da356b1739001405f88eb678ffc6c0ff",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u128-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/u128-write.rs",
+      "sha256": "69b39167eac1d33e7f1c93e1cd18751f78f818bb0f588c82bc481815e3640e92",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u128-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/u128-invalid.rs",
+      "sha256": "1336c2a39bd0050e80244d5df88eb1c01f6f46897a8dbbdf280c77a5b597c928",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "usize-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/usize-read.rs",
+      "sha256": "997b3d4cf859fd75071f3bde1006c682056f7e65dc33d1127e1b97ef76266476",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "usize-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/usize-write.rs",
+      "sha256": "0b495802374f88fcda7ac6c538d46f1dd8e9db9f5f4d2b25854ee4880be05341",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "usize-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/usize-invalid.rs",
+      "sha256": "0571fd0f3259b46f212425b750cc87c1bb5a392fba04b5cc316412c13ee66118",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "i16-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/i16-read.rs",
+      "sha256": "20f8e155bcbd1eabcb437c24a04030d8ef4237165783bf1e1a0fbcc7fda2d39f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i16-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/i16-write.rs",
+      "sha256": "ba8d7416e44e67652c9983ed2e9ff846bb4e630bc4e1d7918babacd8ee1f7699",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i16-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/i16-invalid.rs",
+      "sha256": "3eb6cb499104079195159f2bf77f67dc0980483029a950ca8d1aa99c862cb838",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "i32-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/i32-read.rs",
+      "sha256": "465ab99c587c10cd9fa1d804e29e3cffeadfa556383d42a9551cf6d7be77953f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i32-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/i32-write.rs",
+      "sha256": "b4f13176e0dfcaf0b22541c1405c2436985d75fd06f06d3a8e904ef26183186f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i32-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/i32-invalid.rs",
+      "sha256": "ccbd62559c412c47391c3586be8e1cd0914b8bb7e6e000d361e830084600b948",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "i64-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/i64-read.rs",
+      "sha256": "8be09d8fe13f785ffb6833a507c41af02c7f0778aaf7bcf7b6b1879abca0e0d2",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i64-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/i64-write.rs",
+      "sha256": "b86bb7d2e65481be4b859e6e278629ebf3a53fdcc607cec4bd4e4060051e1a12",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i64-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/i64-invalid.rs",
+      "sha256": "39a1bd340a43e3cb1fd0f0bd8c5000cb8dd555b3371f97c70e3dfa7de239f81a",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "i128-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/i128-read.rs",
+      "sha256": "cbb9046e0a62a5858e349c5956782b27262ed070e665eee880e18278a7c83bdf",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i128-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/i128-write.rs",
+      "sha256": "33ec9faf22bf478423210c319084a3ed6dd42e54d79cf1d329b23c83def9c488",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "i128-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/i128-invalid.rs",
+      "sha256": "5d3581daf3e892072bc141de093be192953f49e1a235c692e7567bfc1d7b48dd",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "isize-read",
+      "path": "pa27/tests/spec/wide-enum-bytes/isize-read.rs",
+      "sha256": "23965053efca17c87578144acd7c1be9750442a9c4526793ae6ed8fe76bc5942",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "isize-write",
+      "path": "pa27/tests/spec/wide-enum-bytes/isize-write.rs",
+      "sha256": "1e4056ea00831823cf3411f441c7ac91c65ed00ffccbfaee0e251e8a60035a25",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "isize-invalid",
+      "path": "pa27/tests/spec/wide-enum-bytes/isize-invalid.rs",
+      "sha256": "14d86f73683b937614b10402380dad0e38667109a2be05e01e28df1412b290cb",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "u128-same-low-word",
+      "path": "pa27/tests/spec/wide-enum-bytes/u128-same-low-word.rs",
+      "sha256": "6f7d27f852a881bf8c3a16e6973b9a0368cdcdbfe48fd7bb55e965c230f37190",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u16-little-endian",
+      "path": "pa27/tests/spec/wide-enum-bytes/u16-little-endian.rs",
+      "sha256": "8b24def5bd2c112a710803054b6927b393ca9c2c682f3044b44689ad9fe98542",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u16-partial-initialization",
+      "path": "pa27/tests/spec/wide-enum-bytes/u16-partial-initialization.rs",
+      "sha256": "f7046df902247e994e07e3e08ba74b03a6f4cb5577fcfed5301d490a8707c81c",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "u128-partial-initialization",
+      "path": "pa27/tests/spec/wide-enum-bytes/u128-partial-initialization.rs",
+      "sha256": "43e3589ffef063c607dbc11862a62a52950b6a1da46f6be6204b269e0044c595",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "u16-padding",
+      "path": "pa27/tests/spec/wide-enum-bytes/u16-padding.rs",
+      "sha256": "ae54784154c1a1a364622101d5478fe376ca5f3cd3a635bd680471030abbdc8b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    }
+  ]
+}

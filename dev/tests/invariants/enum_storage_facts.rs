@@ -1,6 +1,6 @@
 //! Retained enum layouts must agree with exact declaration identities.
 use super::*;
-use crate::{sema::values::Evaluator, test_source};
+use crate::{sema::values::Evaluator, test_source, types::Primitive};
 #[test]
 fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Result<(), String> {
     let report = test_source::resolve("#[repr(u8)]enum E{A=1,B=7}", true)?;
@@ -53,12 +53,19 @@ fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Resu
         assert!(Reader::enumeration_shape(&definition, &wrong).is_err());
     }
     let mut unsupported = definition;
-    for tag in [None, Some(Primitive::U16), Some(Primitive::I32)] {
-        unsupported.repr.tag = tag;
-        assert!(matches!(
-            Reader::enumeration_shape(&unsupported, &layout)?,
-            StoredShape::Unsupported
-        ));
+    unsupported.repr.tag = None;
+    assert!(matches!(
+        Reader::enumeration_shape(&unsupported, &layout)?,
+        StoredShape::Unsupported
+    ));
+    for tag in [
+        Primitive::Bool,
+        Primitive::Char,
+        Primitive::U16,
+        Primitive::I32,
+    ] {
+        unsupported.repr.tag = Some(tag);
+        assert!(Reader::enumeration_shape(&unsupported, &layout).is_err());
     }
     let first = facts.members.variants(item)[0];
     facts.members.variants[first.0 as usize].owner = ItemId(u32::MAX);

@@ -1,0 +1,27 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "1f6a5e09",
+  "cases": [
+    {
+      "name": "u16-copy-repair",
+      "path": "pa28/tests/spec/wide-enum-bytes/u16-copy-repair.rs",
+      "sha256": "f292566ba21828cea7989b54bba04a4579d3d93054b9eca61df6b84e44ca117e",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u16-copy-invalid",
+      "path": "pa28/tests/spec/wide-enum-bytes/u16-copy-invalid.rs",
+      "sha256": "723ab2aeb89d2a44e47ec30cd99cc7480c7e0d1e8a2e11088143774175e2e6a8",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    }
+  ]
+}

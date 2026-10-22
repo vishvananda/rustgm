@@ -119,3 +119,6 @@ mod unsafe_statics;
 mod unsafe_unions;
 #[path = "../../volatile_intrinsics.rs"]
 mod volatile_intrinsics;
+
+#[path = "../../wide_enum_bytes.rs"]
+mod wide_enum_bytes;

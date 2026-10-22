@@ -7,6 +7,8 @@ use crate::{
     types::{GenericArgs, Kind},
 };
 use std::fmt::Write;
+#[path = "wide_enum_storage.rs"]
+mod wide;
 fn with_enums(
     width: usize,
     noise: usize,
@@ -17,7 +19,14 @@ fn with_enums(
         write!(&mut source, "V{ordinal}={},", ordinal * 2).map_err(|e| e.to_string())?;
     }
     source.push_str("}#[repr(i8)]enum F{A=-1,B=7}");
-    let report = test_source::resolve(&source, true)?;
+    with_enum_source(&source, noise, check)
+}
+fn with_enum_source(
+    source: &str,
+    noise: usize,
+    check: impl FnOnce(&mut Machine<'_, '_>, &[(TypeId, Vec<VariantId>)]) -> Result<(), Failure>,
+) -> Result<(), String> {
+    let report = test_source::resolve(source, true)?;
     let mut facts = crate::pipeline::analyze_source(&report)
         .map_err(|e| e.to_string())?
         .facts;
@@ -195,12 +204,9 @@ fn enum_index_keys_retain_complete_closed_const_arguments() -> Result<(), String
     Ok(())
 }
 #[test]
-fn enum_payload_default_and_wider_tags_remain_distinct_unsupported_families() -> Result<(), String>
-{
-    let report = test_source::resolve(
-        "enum DefaultTag{A,B}#[repr(u16)]enum Wide{A=1,B=7}#[repr(u8)]enum Payload{A(u8),B}",
-        true,
-    )?;
+fn enum_payload_and_default_tags_remain_distinct_unsupported_families() -> Result<(), String> {
+    let report =
+        test_source::resolve("enum DefaultTag{A,B}#[repr(u8)]enum Payload{A(u8),B}", true)?;
     let mut facts = crate::pipeline::analyze_source(&report)
         .map_err(|e| e.to_string())?
         .facts;

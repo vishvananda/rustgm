@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(u16)]enum E{A=1,B=4660}union U{e:E,b:u8}const BAD:E=unsafe{U{b:1}.e};fn main(){}

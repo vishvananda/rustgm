@@ -6,7 +6,7 @@ use std::collections::HashMap;
 #[path = "../../../../tests/invariants/enum_bytes.rs"]
 mod tests;
 struct Index {
-    tags: Vec<(u8, VariantId)>,
+    tags: Vec<(u128, VariantId)>,
 }
 #[derive(Default)]
 pub(super) struct Enumerations {
@@ -59,7 +59,7 @@ impl Machine<'_, '_> {
             },
         );
         let reserved = count
-            .saturating_mul(size_of::<(u8, VariantId)>())
+            .saturating_mul(size_of::<(u128, VariantId)>())
             .saturating_add(growth)
             .div_ceil(size_of::<Constant>());
         self.reserve_cells(reserved)?;
@@ -99,7 +99,7 @@ impl Machine<'_, '_> {
         }
         let retained = tags
             .capacity()
-            .saturating_mul(size_of::<(u8, VariantId)>())
+            .saturating_mul(size_of::<(u128, VariantId)>())
             .div_ceil(size_of::<Constant>());
         let cache = self
             .memory
@@ -137,17 +137,27 @@ impl Machine<'_, '_> {
         let reader = Reader::new(self.evaluator.facts());
         let tag = reader.enum_variants(ty)?.tag;
         let bits = reader.enum_variant_bits(ty, id)?;
+        let width = usize::from(
+            tag.ty
+                .integer()
+                .ok_or("stored enum tag must be an integer")?
+                .1
+                / 8,
+        );
         let offset = offset
             .checked_add(tag.offset)
             .ok_or("enum tag byte offset overflow")?;
         let start = usize::try_from(offset).map_err(|_| "enum tag offset exceeds host size")?;
-        if start >= backing.bytes.len() {
-            return Err("enum tag encoding exceeds backing bounds".into());
+        let end = start
+            .checked_add(width)
+            .filter(|&end| end <= backing.bytes.len())
+            .ok_or("enum tag encoding exceeds backing bounds")?;
+        self.charge(width)?;
+        self.buffer_fragments(backing, offset, width as u64, &[])?;
+        backing.bytes[start..end].copy_from_slice(&bits.to_le_bytes()[..width]);
+        for index in start..end {
+            backing.set_initialized(index, true);
         }
-        self.charge(1)?;
-        self.buffer_fragments(backing, offset, 1, &[])?;
-        backing.bytes[start] = bits;
-        backing.set_initialized(start, true);
         Ok(())
     }
     pub(super) fn decode_byte_enum(
@@ -160,12 +170,19 @@ impl Machine<'_, '_> {
             return Err("constant enum byte storage with payload fields is not implemented".into());
         }
         let tag = Reader::new(self.evaluator.facts()).enum_variants(ty)?.tag;
+        let width = usize::from(
+            tag.ty
+                .integer()
+                .ok_or("stored enum tag must be an integer")?
+                .1
+                / 8,
+        );
         let start = offset
             .checked_add(tag.offset)
             .and_then(|n| usize::try_from(n).ok())
             .ok_or("enum tag read offset overflow")?;
         let end = start
-            .checked_add(1)
+            .checked_add(width)
             .ok_or("enum tag read extent overflow")?;
         let crate::sema::model::Scalar::Integer(bits) = self
             .decode_byte_scalar(source, start, end, TypeId::primitive(tag.ty))?
@@ -173,7 +190,6 @@ impl Machine<'_, '_> {
         else {
             return Err("stored enum tag is not an integer".into());
         };
-        let bits = u8::try_from(bits).map_err(|_| "invalid physical enum tag width")?;
         let index = self
             .memory
             .bytes
