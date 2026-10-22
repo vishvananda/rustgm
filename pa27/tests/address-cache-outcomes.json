@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "profile": "Rust 1.98.0 / x86_64 / 2024",
+  "purpose": "Cache implementation regression controls; unsafe layout example tied to explicit repr(u8) target ABI, no repr(Rust) byte equality claim",
+  "cases": [
+    {
+      "name": "alternating-enum-demands",
+      "sha256": "e7b2842eb94f7de9c5559c3bc45b4fe11a1e33338aaffe8018e48fb775c1390f",
+      "rustc_expected": 0,
+      "candidate_expected": 0,
+      "native_valid": true,
+      "expected": 45,
+      "contract": "Ordinary enum value and address demands alternate without erasing variant selection",
+      "reason": "",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/alternating-enum-demands.rs",
+      "path": "pa27/tests/spec/address-cache/alternating-enum-demands.rs"
+    },
+    {
+      "name": "tag-and-field-mutation",
+      "sha256": "a9c4ab619b1545b8629f7c17252d9465754d3740a5a42b830c5d16633f66bec7",
+      "rustc_expected": 0,
+      "candidate_expected": 0,
+      "native_valid": true,
+      "expected": 37,
+      "contract": "Explicit repr(u8) target ABI A field remains at offset4 across B tag/field writes; typed selected B validity remains fresh",
+      "reason": "",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/tag-and-field-mutation.rs",
+      "path": "pa27/tests/spec/address-cache/tag-and-field-mutation.rs"
+    },
+    {
+      "name": "warm-record-byte-transition",
+      "sha256": "173661ce88178e38fabfedb8da1c28e0f3d745e6ed47b7bafec5144cce6c0a5e",
+      "rustc_expected": 0,
+      "candidate_expected": 0,
+      "native_valid": true,
+      "expected": 97,
+      "contract": "Ordinary typed fields stay usable after root conversion to byte backing",
+      "reason": "",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/warm-record-byte-transition.rs",
+      "path": "pa27/tests/spec/address-cache/warm-record-byte-transition.rs"
+    },
+    {
+      "name": "changed-index-input",
+      "sha256": "d6a3db47bf0483bd355c3c32d518ee5e1250175e4788bff9e12d0d62bf4ea038",
+      "rustc_expected": 0,
+      "candidate_expected": 0,
+      "native_valid": true,
+      "expected": 46,
+      "contract": "Repeated projection instruction observes changed checked index inputs",
+      "reason": "",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/changed-index-input.rs",
+      "path": "pa27/tests/spec/address-cache/changed-index-input.rs"
+    },
+    {
+      "name": "changed-dereference-input",
+      "sha256": "02b5ba898fe2d03604362155f69fe1e9f97a175e7feaa867debe82b0587c2eb6",
+      "rustc_expected": 0,
+      "candidate_expected": 0,
+      "native_valid": true,
+      "expected": 21,
+      "contract": "Repeated raw dereference and child projection observe changed pointer storage",
+      "reason": "",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/changed-dereference-input.rs",
+      "path": "pa27/tests/spec/address-cache/changed-dereference-input.rs"
+    },
+    {
+      "name": "expired-cached-pointer",
+      "sha256": "9cbf3803df483bb6a54f7d4ecd2c17d4ab54de483b068240c0de220411dd1826",
+      "rustc_expected": 1,
+      "candidate_expected": 1,
+      "native_valid": false,
+      "expected": 37,
+      "contract": "Cached address cannot authorize expired referent read",
+      "reason": "storage",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/expired-cached-pointer.rs",
+      "path": "pa27/tests/spec/address-cache/expired-cached-pointer.rs"
+    },
+    {
+      "name": "restricted-cached-pointer",
+      "sha256": "7c8de366b70b3a1b72f195037412bc62016c8074885f30db02aacd95d8ad6753",
+      "rustc_expected": 1,
+      "candidate_expected": 1,
+      "native_valid": false,
+      "expected": 43,
+      "contract": "Final mut pointer type and a warm ordinary path cannot upgrade shared-derived authority",
+      "reason": "shared",
+      "original_path": "obj/parallel/pa27/address-cache-reuse/control-inputs/restricted-cached-pointer.rs",
+      "path": "pa27/tests/spec/address-cache/restricted-cached-pointer.rs"
+    }
+  ]
+}

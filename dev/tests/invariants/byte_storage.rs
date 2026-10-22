@@ -1,6 +1,8 @@
 //! One backing preserves aliases, masks and per-pointer authority after conversion.
 #[path = "array_fragments.rs"]
 mod array_fragments;
+#[path = "cached_places.rs"]
+mod cached_places;
 #[path = "captured_memory.rs"]
 mod captures;
 #[path = "fragment_ranges.rs"]

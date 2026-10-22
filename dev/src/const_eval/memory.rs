@@ -435,8 +435,7 @@ impl Machine<'_, '_> {
     ) -> Result<Option<Resolved>, Failure> {
         self.place_for::<true>(frame, root)
     }
-    /// Address formation cannot reuse a cached logical enum-field selection.
-    /// Both modes share the checked iterative walk; only values populate its cache.
+    /// Ordinary ancestry is shared; enum paths retain their consumer identity.
     fn place_for<const ADDRESS: bool>(
         &mut self,
         frame: &mut Frame,
@@ -445,6 +444,8 @@ impl Machine<'_, '_> {
         let body = self.bodies[frame.body].clone();
         let mut current = root;
         let mut pending = Vec::new();
+        let mode = super::place_cache::Mode::selected(ADDRESS);
+        let mut common = true;
         let mut address = loop {
             self.charge(1)?;
             match current {
@@ -486,7 +487,8 @@ impl Machine<'_, '_> {
                     };
                 }
                 Place::Projection(id) => {
-                    if !ADDRESS && let Some(&address) = frame.projections.get(&id) {
+                    if let Some((address, shared)) = frame.projected(id, mode) {
+                        common = shared;
                         break address;
                     }
                     let projection = body
@@ -499,13 +501,15 @@ impl Machine<'_, '_> {
             }
         };
         while let Some((id, projection)) = pending.pop() {
+            let parent = address;
             let Some(result) = self.project::<ADDRESS>(frame, address, projection)? else {
                 return Ok(None);
             };
             address = result;
-            if !ADDRESS {
-                frame.projections.insert(id, address);
+            if common {
+                common = self.common_projection(parent, projection.kind);
             }
+            frame.remember_projection(id, mode, common, address);
         }
         Ok(Some(address))
     }

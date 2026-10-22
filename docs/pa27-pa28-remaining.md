@@ -163,9 +163,10 @@ rustc's implementation-selected byte layout or general closure backing. See
 `pa27-default-tag-enum-bytes.md`. Wider/other scalar niches and NonZero/NonNull
 remain required rather than being excluded from completion.
 Default-std compatibility additionally needs AtomicBool and signed/unsigned/
-target-sized atomic families; memchr/zmij SIMD/target-feature/inline-assembly
-requirements belong to later PA28/PA37 compatibility work. The current U32 and
-Option checkpoints do not claim those capabilities.
+target-sized atomic families. SIMD, target-feature and inline-assembly contracts
+actually required by selected core/crate sources must work at PA32/PA35;
+the broader target closure belongs to PA41. The current U32 and Option
+checkpoints do not claim those capabilities.
 
 Retained closure environments now use their exact completed capture tuple layout
 and the existing iterative Product codec. Owned/shared/mutable captures preserve

@@ -3,6 +3,7 @@ pub(crate) mod code;
 mod counted;
 mod memory;
 mod offsets;
+mod place_cache;
 mod raw_reads;
 mod readiness;
 mod returns;
@@ -62,7 +63,7 @@ struct Frame {
     locals: Vec<Option<Constant>>,
     values: Vec<Option<Constant>>,
     temporaries: HashMap<ValueId, Constant>,
-    projections: HashMap<crate::body::ir::ProjectionId, memory::Resolved>,
+    projections: HashMap<place_cache::Key, memory::Resolved>,
     raw_views: HashMap<crate::body::ir::LocalId, memory::RawAccess>,
     union_views: HashMap<crate::body::ir::LocalId, memory::UnionField>,
     allocations: Vec<crate::sema::values::LocationId>,
@@ -485,11 +486,11 @@ impl<'a, 'b> Machine<'a, 'b> {
                 }
             }
             Action::Project(id) => {
-                frame.projections.remove(&id);
+                frame.forget_projection(id);
                 self.place(frame, crate::body::ir::Place::Projection(id))?;
             }
             Action::Select { projection, .. } => {
-                frame.projections.remove(&projection);
+                frame.forget_projection(projection);
                 self.place(frame, crate::body::ir::Place::Projection(projection))?;
             }
             Action::BindView { view, place } => {
