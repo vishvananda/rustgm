@@ -236,3 +236,81 @@ the 909-file production source map is
 Closing resource receipt `d198de70c10242ffa22dd923d791e24b` ended zero with
 21,365,092,352 retained bytes. No limits were changed, no new performance
 observations were selected, and no generated reference was edited.
+
+## Projected pattern uses and selected aliases
+
+An associated constant's trait-declaration type can still be a projection when
+the pattern is first constrained. `associated_constant` already registers its
+normalization query and proof owner. Pattern unification now uses the existing
+deferred `Relation::Shape` equation while that projection work is active,
+preserving the original direct shape-only path otherwise. No lifetime equality
+is added merely because two reference patterns have the same shape.
+
+The initial probe preserved a second boundary after this phase correction:
+selected implementation arguments belonged to the parked Dispatcher's newer
+proof interval, whereas the PreparedScope folder knew only the original body
+aliases. Guarded GDB evidence shows the concrete example: original alias 1 is
+related to Bound(0,0); Dispatcher interval [12,14) retains debts 12=Bound(0,0) and
+1=13. The exact selected argument is alias 13. It must not be treated as an
+unpublished original alias or replaced by static.
+
+The resumed Dispatcher now retains identity anchors only for nonstatic free
+lifetime IDs occurring in the exact selected Instance and owned by its actual
+Obligations intervals. The same prepared folder then transports selected and
+result roots. An anchor keeps an existing ID unchanged and adds no equality,
+outlives relation or execution authority. It cannot replace an indexed original
+source equation or a different cached source mapping. Unselected aliases,
+foreign reservation gaps, missing source equalities and arbitrary result-only
+aliases keep their prior failures. The exact parked ownership/reservation path,
+source-instance validation, witness revalidation and final original/instance
+proofs are unchanged; all caller selection debts remain mandatory.
+
+Capacity growth is conservatively preflighted before any anchor batch. Argument
+visits and anchor operations are charged, while the existing source folder
+facade accounts actual retained map capacity. There is no new persistent field,
+separate equality graph, global scan or repeated traversal of a cumulative proof.
+Ordinary concrete requests do not enter this source-only path.
+
+Six declared full-object Rust hypotheses cover reference, tuple and paid
+normalization-result uses, opposing referent/mutability mismatches and an unpaid
+implementation lifetime bound. The selected implementation initializers in these
+cases already have canonical result types; they reuse the open-result coercion
+interface and its complete original/instance proof. No projected normalization
+record or result-only alias permission is introduced. The unpaid bound keeps
+deferred type inspection and must reject checked constants/LowIR at its actual
+lifetime proof.
+
+Genuinely projected selected initializer results still need normalization debt
+transport and exact typed escape validation. Nested/non-pattern caller contexts
+and open type/const argument contexts remain required work. Passing projection
+shape inference alone, or these already canonical selected implementations, does
+not establish those families as complete.
+
+Qualification passes all 15 selected-initializer functions: nine regular
+source/inventory functions and six explicitly ignored native groups, executing
+31 paired native programs (three new). Nine private functions cover exact
+selected-alias ownership, foreign gaps/unselected result aliases, original source
+mapping preservation and capacity preflight, plus the existing original-range,
+witness/suspension, result-interface and contract-debt checks. Strict release
+all-target/all-feature Clippy, file/architecture audit (1,580 files, no findings),
+registered suite selection, layout/upstream and all 8,255 PA1–24 text comparisons
+pass unchanged. The first closing attempt used a nonexistent default constructor
+in the new private test setup; its compile failure is retained. The corrected
+setup uses the normal report-backed Declarations constructor.
+
+Target/Request/Catalog/Code and the source witness retain their prior measured
+layouts. No new retained field or ordinary concrete-request allocation is added.
+The existing lazy source map holds the selected identity anchors. Work remains
+charged per argument/anchor visit and existing ownership lookup; no linear bound
+is asserted for the entire compiler or trait selection. Common ordinary512 and
+constcall64 inspection hashes remain equal; timing and RSS are root-owned.
+
+Evidence is `obj/parallel/pa25-projected-patterns/`, including immutable hypotheses,
+full-object outcomes, the initial/later errors, guarded GDB logs and final-second
+qualification. The default-feature debug pin has SHA-256
+`c0b79982a34cefdb99beaddf400ea96b6b63efdc6b2ad06cae3b362828702096`;
+the 909-file production map is
+`d02505100e275f9b2c018c7b21b9acc365ba646a4acb0074224eb320956ac130`.
+Receipt `0ff7430b43f94b7db2336d92b0c3f1f5` ended zero with
+21,760,176,128 retained bytes under unchanged limits. No generated oracle or
+assignment activation changed.

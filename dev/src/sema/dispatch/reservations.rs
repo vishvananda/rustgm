@@ -5,6 +5,27 @@ use crate::{
     sema::{model::Declarations, traits::obligations::Reservation},
 };
 impl Dispatcher {
+    pub(in crate::sema) fn retain_source_aliases(
+        &mut self,
+        facts: &Declarations,
+        selected: crate::sema::values::Instance,
+        regions: &mut crate::types::substitute::Bound,
+    ) -> Result<(), String> {
+        for argument in facts
+            .types
+            .arguments(selected.arguments)
+            .ok_or("missing source arguments")?
+        {
+            self.context.account_work(1).map_err(|e| e.to_string())?;
+            if let crate::types::arguments::Argument::Lifetime(region) = argument
+                && region != crate::types::RegionId::STATIC
+                && self.obligations.owns_region(region)
+            {
+                regions.retain_projection_anchor(region)?;
+            }
+        }
+        Ok(())
+    }
     pub(in crate::sema) fn source_instance(
         &mut self,
         facts: &mut Declarations,
@@ -57,3 +78,7 @@ impl Dispatcher {
         self.obligations.resume_at(reservation.resume(facts)?)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/kept_aliases.rs"]
+mod tests;

@@ -145,7 +145,15 @@ impl Queries<'_> {
     ) -> Result<(SourceComputation, TypeId), Error> {
         SourceComputation::schema(self.typing.facts, selected, original, result)
             .map_err(|e| self.error(Query::Node(original), e))?;
-        self.with_parked_caller(|dispatcher, facts, scope, reservation, regions| {
+        let aliases = self
+            .typing
+            .facts
+            .types
+            .arguments(selected.arguments)
+            .ok_or_else(|| self.error(Query::Node(original), "missing source arguments"))?
+            .len();
+        self.with_parked_caller(aliases, |dispatcher, facts, scope, reservation, regions| {
+            dispatcher.retain_source_aliases(facts, selected, regions)?;
             let selected = selected.substitute(&mut facts.types, regions)?;
             let result = regions.apply(&mut facts.types, result)?;
             let selected = dispatcher.source_instance(facts, selected)?;

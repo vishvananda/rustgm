@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "reference",
+      "source_sha256": "da962b41142e268cc1f76d36b08e23ee5ad366efad6b276f583f63e897b8c3ea",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/reference.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "product",
+      "source_sha256": "1ad00224c6739098bf939e0ad0394deec9c51c6cf755e775541f3266187a1315",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/product.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "paid-normalization",
+      "source_sha256": "619d122acf16f0811297380463f7e8ba4ac438ca5d997cb5bfb8198b6475d143",
+      "diagnostic": "",
+      "path": "tests/spec/projected-initializer-patterns/paid-normalization.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      }
+    },
+    {
+      "name": "unpaid-normalization",
+      "source_sha256": "246798564e45979a097494c5a14a1e958a51c3d7cb92ecfbed02c9ea8f75bc26",
+      "diagnostic": "lifetime",
+      "path": "tests/spec/projected-initializer-patterns/unpaid-normalization.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      }
+    },
+    {
+      "name": "wrong-referent",
+      "source_sha256": "9ca47e726f7622f2b2db691623a073a2fb09a7620d381e41db8b3f3976fa5b12",
+      "diagnostic": "incompatible types",
+      "path": "tests/spec/projected-initializer-patterns/wrong-referent.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      }
+    },
+    {
+      "name": "wrong-mutability",
+      "source_sha256": "0d6d365b826dd1803dcf47e1be53b06c4460fb70b2e66f223329378db9d5fac8",
+      "diagnostic": "incompatible types",
+      "path": "tests/spec/projected-initializer-patterns/wrong-mutability.rs",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      }
+    }
+  ]
+}

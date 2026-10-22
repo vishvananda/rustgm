@@ -129,6 +129,54 @@ impl Closing {
 }
 
 impl Bound {
+    /// Bound capacity before retaining exact aliases owned by a separate live proof.
+    pub(crate) fn projection_anchor_growth(
+        &self,
+        additional: usize,
+    ) -> Result<usize, &'static str> {
+        let Action::Regions(mapping) = &self.action else {
+            return Err("missing projection closure");
+        };
+        if !matches!(mapping.mode, Mode::Close(_)) {
+            return Err("invalid projection closure mode");
+        }
+        let entries = mapping.replacements.len().saturating_add(additional);
+        Ok(if entries <= mapping.replacements.capacity() {
+            0
+        } else {
+            crate::support::retained::new_map::<RegionId, RegionId>(entries)
+                .saturating_sub(crate::support::retained::map(&mapping.replacements))
+        })
+    }
+    /// Keep an already-owned selected alias unchanged, without an equality or bound.
+    /// The caller must establish its exact live proof ownership before this call.
+    pub(crate) fn retain_projection_anchor(
+        &mut self,
+        region: RegionId,
+    ) -> Result<(), &'static str> {
+        self.steps = self.steps.saturating_add(1);
+        if self.steps > super::WORK_LIMIT {
+            return Err("projection anchor work budget exceeded");
+        }
+        let Action::Regions(mapping) = &mut self.action else {
+            return Err("missing projection closure");
+        };
+        let Mode::Close(closing) = &mapping.mode else {
+            return Err("invalid projection closure mode");
+        };
+        if region == RegionId::STATIC
+            || region.bound_parts().is_some()
+            || closing.equations.indices.contains_key(&region)
+            || mapping
+                .replacements
+                .get(&region)
+                .is_some_and(|&prior| prior != region)
+        {
+            return Err("selected alias cannot replace an original source mapping");
+        }
+        mapping.replacements.insert(region, region);
+        Ok(())
+    }
     /// Conservative owner charge before building a closed source equality fold.
     pub(crate) fn projection_closure_preflight(equations: usize, slots: usize) -> usize {
         let vertices = equations.saturating_mul(2).saturating_add(slots);

@@ -4,6 +4,7 @@ use crate::sema::{dispatch::Dispatcher, model::Declarations, traits::obligations
 impl Queries<'_> {
     pub(super) fn with_parked_caller<T>(
         &mut self,
+        aliases: usize,
         use_caller: impl FnOnce(
             &mut Dispatcher,
             &mut Declarations,
@@ -15,6 +16,17 @@ impl Queries<'_> {
         self.check_pattern_storage(0).map_err(|e| e.to_string())?;
         let (child, parent, scope) = self.parked_caller()?;
         let canonical = self.begin_source_regions(parent)?;
+        let growth = self
+            .pattern_frames
+            .as_mut()
+            .ok_or("missing source caller frames")?
+            .frame(parent)?
+            .source_regions
+            .as_ref()
+            .ok_or("missing source caller aliases")?
+            .projection_anchor_growth(aliases)?;
+        self.check_pattern_storage(growth)
+            .map_err(|e| e.to_string())?;
         let frames = self
             .pattern_frames
             .as_mut()

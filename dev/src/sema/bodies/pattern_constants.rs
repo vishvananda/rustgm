@@ -53,6 +53,14 @@ impl Checker<'_> {
         left: crate::types::infer::TermId,
         right: crate::types::infer::TermId,
     ) -> Result<(), Error> {
+        if self.state.projections.active() {
+            return self.deferred_equation(
+                node,
+                left,
+                right,
+                crate::types::infer::deferred::Relation::Shape,
+            );
+        }
         self.state
             .infer
             .equate_pattern(&self.facts.types, left, right)

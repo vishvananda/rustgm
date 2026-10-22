@@ -242,3 +242,6 @@ fn source_completed_inventory_defers_unmaterialized_results()
     );
     Ok(())
 }
+
+#[path = "selected_initializers/forms.rs"]
+mod forms;
