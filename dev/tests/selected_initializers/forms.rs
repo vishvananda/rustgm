@@ -11,11 +11,22 @@ const ACCEPTED: &[&str] = &[
     "nested-reference",
     "nested-tuple",
     "constant-function",
+    "selected-reference",
+    "selected-paid",
+    "selected-forward-pattern",
+    "selected-early-pattern",
+    "selected-nested-pattern",
+    "literal-reference",
+    "named-scalar-value",
 ];
 fn fixture(name: &str) -> PathBuf {
+    let (assignment, cluster) = match name {
+        "literal-reference" => ("pa16", "named-pattern-rules"),
+        "named-scalar-value" => ("pa13", "named-pattern-rules"),
+        _ => ("pa25", "projected-initializer-patterns"),
+    };
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../pa25/tests/spec/projected-initializer-patterns")
-        .join(format!("{name}.rs"))
+        .join(format!("../{assignment}/tests/spec/{cluster}/{name}.rs"))
 }
 #[test]
 fn projected_patterns_keep_shape_and_normalization_debts() -> TestResult {
@@ -43,7 +54,26 @@ fn projected_patterns_keep_shape_and_normalization_debts() -> TestResult {
             (1, [0, 1, 1], diagnostic),
         )?;
     }
-    for name in ["wrong-referent", "wrong-mutability"] {
+    super::checked_sources::check_modes(
+        &fixture("selected-unpaid"),
+        &evidence,
+        "selected-unpaid",
+        (1, [0, 1, 1], "required lifetime"),
+    )?;
+    // PA13 explicitly follows the Reference's non-reference constant rule,
+    // while pinned rustc requires an explicit reference pattern.
+    super::checked_sources::check(
+        &fixture("selected-scalar"),
+        &evidence,
+        "selected-scalar",
+        (1, 0, ""),
+    )?;
+    for name in [
+        "wrong-referent",
+        "wrong-mutability",
+        "selected-wrong-referent",
+        "selected-wrong-mutability",
+    ] {
         super::checked_sources::check(
             &fixture(name),
             &evidence,

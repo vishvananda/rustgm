@@ -4310,6 +4310,23 @@
         "outcome": "pass"
       },
       "maintainer_origin": "dev/tests/nested_evaluation/output.rs"
+    },
+    {
+      "path": "tests/spec/named-pattern-rules/literal-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ],
   "additional_modes": [

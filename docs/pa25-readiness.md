@@ -58,11 +58,11 @@ debts. They do not close the following required families:
   demanded direct, nested and sibling inline cases now execute through the sealed
   source initializer context and checked anonymous result interface described below.
   Inline children requiring a conditional parent output remain required followup.
-- Projected named-pattern operands. The original selected reference and paid
-  relation controls still fail shape inference before value execution. Selected
-  tuple/record controls now pass their actual projected operand and a separately
-  normalized requested result through the same checked seal. The remaining
-  reference-shape controls are required work, not language rejections.
+- Projected named-pattern operands now classify their selected reference type
+  before applying pattern ergonomics. Direct, paid, nested and declaration-time
+  const-function controls pass source/native qualification; unpaid callers reach
+  their actual lifetime proof. The two earlier owning fixture oracle additions
+  below remain a publication prerequisite, rather than missing implementation.
 - Selected type arguments containing open caller lifetimes. Their exact owning
   caller proof must supply authority without relaxing the ordinary concrete path.
 - Source-associated uses inside conditional nested-output contracts. The original
@@ -368,3 +368,72 @@ qualified host), with map/row retention charged only on source publication.
 The parent folder bounds scratch at 64 MiB and visits at one million, including
 failed traversals. Full witness validation is preserved; no sealed reuse cache or
 ordinary-path proof shortcut was introduced. PA25 remains planned.
+
+
+### Selected reference pattern classification
+
+Pattern ergonomics previously inspected only the associated constant's raw
+canonical declaration. An inherent constant declared as `T::Out` could therefore
+peel a reference scrutinee before its selected output normalized to a reference.
+The projected path now constructs its existing associated inference term once,
+asks the existing projection machinery for its head, and passes that same term
+into constant-pattern typing. Its original selection, normalization debts,
+structural equality, value readiness and caller proof remain mandatory. The
+ordinary nonprojected path is unchanged. No retained field, allocation owner,
+execution permission or general inference equality rule is added.
+
+The owning language rule is the pinned Reference
+`doc/rust-reference/src/patterns.md:294`, section
+`patterns.ident.binding.non-reference`: const patterns *of reference types* are
+excluded from non-reference patterns. The adjacent automatic-dereference rules
+therefore differ from pinned rustc's behavior for non-reference named constants.
+Published `pa13/README.md:113` and the six `autoderef-*-implicit` manifest entries
+explicitly retain this discrepancy: course acceptance is zero while Rust 1.98
+rejects. Those six outcomes are preserved. The new projected scalar control
+likewise declares course acceptance and pinned-Rust rejection separately; it is
+not a same-source parity or native Rust claim.
+
+The first shortcut incorrectly disabled dereferencing for every named constant.
+Although its focused Rust controls passed, it broke those six published PA13
+cases. That failed implementation and text evidence are retained in
+`reference-pattern-closing/` and `reference-pattern-qualified/`; no oracle or
+published expectation was changed. A later compile-only attempt also retained
+an accidental extra helper parameter before the corrected projected-only path.
+
+`reference-pattern-resolved-tail/` passes strict all-target/all-feature release
+Clippy, architecture/file audit (1,615 files, zero findings), the expanded
+24-source pattern matrix, seven existing constant-pattern tests, nine existing
+reference-pattern tests and all 15 Rust-positive native programs. The source
+matrix retains 15 Rust-positive cases, eight rejecting cases and the one explicit
+Reference/rustc discrepancy. The new paid/unpaid caller pair reaches actual value
+execution or the required lifetime rejection, respectively. A const root before
+its trait, impl and callee declarations, a const-function caller, nested patterns,
+and opposing referent/mutability cases are included. Original selected-reference,
+paid and unpaid bytes are unchanged. Harness registration and all 89 Python
+harness tests pass; upstream verification passes separately.
+
+Two simple controls belong to earlier assignments. Their exact authored bytes
+are retained under `pa13/tests/spec/named-pattern-rules/named-scalar-value.rs`
+and `pa16/tests/spec/named-pattern-rules/literal-reference.rs`, with explicit
+accepted LowIR/native entries in their owning manifests. No references were
+generated. Consequently layout currently fails at the declared PA13 manifest
+receipt change, and PA13/PA16 oracle generation/review plus receipt refresh remain
+an explicit integrator prerequisite. This checkpoint does not claim layout or
+complete harness success after those additions.
+
+The cheap regression comparison uses an immutable git archive of the worker's
+existing fixtures at `005bec4f`, avoiding fabricated references for the two new
+entries. `reference-pattern-resolved-qualified/fixture-provenance.json` records
+that archive and `identity.json` pins candidate SHA-256
+`f1d4744b56ade4012a1da28a14e055b86b61a994114ff1309813852759f55fad` plus the
+928-file production map. All 8,255 existing worker-base text cases preserve the
+preceding output hashes: 8,248 exact and only the same seven inherited PA20
+review pairs. All six deliberate PA13 discrepancies are byte-identical. Both
+ordinary512 and constcall64 remain exact. The text command exits 1 for the
+existing central review set. New oracles, the newer public case count, combined
+full release and performance qualification remain integrator-owned.
+
+The next required caller-family implementation is open type arguments containing
+caller lifetimes. The current gate remains strict; recursive typed observation
+must establish actual caller ownership without granting proof. Conditional
+nested-output contexts also remain required. PA25 is still planned.

@@ -237,6 +237,178 @@
         "--emit-constants": 1,
         "--emit-lowir": 1
       }
+    },
+    {
+      "name": "selected-reference",
+      "path": "tests/spec/projected-initializer-patterns/selected-reference.rs",
+      "source_sha256": "ec473fef1ab7facb1de325dd26d3b68a9d6fdaab4b32d77f672507623515e640",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Declared unchanged outcome before reference pattern adjustment; current compiler boundary retained separately."
+    },
+    {
+      "name": "selected-paid",
+      "path": "tests/spec/projected-initializer-patterns/selected-paid.rs",
+      "source_sha256": "0bea6a09f6212962f4eeb60673dc3da14de9ff1f4d980803b6279eae94eaa2ce",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Declared unchanged outcome before reference pattern adjustment; current compiler boundary retained separately."
+    },
+    {
+      "name": "selected-unpaid",
+      "path": "tests/spec/projected-initializer-patterns/selected-unpaid.rs",
+      "source_sha256": "15c26158c9dd442d63b93efee5ff9805158c8ce70c13adbc297cbacfab62d774",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "lifetime",
+      "note": "Independent Rust rejection preserved; types inventory succeeds, demanded constants/LowIR reject at required lifetime proof."
+    },
+    {
+      "name": "selected-scalar",
+      "path": "tests/spec/projected-initializer-patterns/selected-scalar.rs",
+      "source_sha256": "ea206e2d9b2b0ec92abd0ce4f25e46766d82ac29468608baa9bc5999a6f7f143",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true,
+        "reason": "Inherited PA13 Reference/rustc non-reference named-constant discrepancy; course accepts after projected scalar typing."
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Course follows Reference non-reference constant automatic dereference, unlike pinned Rust E0271; preserves explicit PA13 discrepancy."
+    },
+    {
+      "name": "selected-wrong-referent",
+      "path": "tests/spec/projected-initializer-patterns/selected-wrong-referent.rs",
+      "source_sha256": "75332166c59cf33792e3f0ff2ebe8eb606c6e2d09a2e23df02ac58be32f8cda3",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "type",
+      "note": "Declared unchanged outcome before reference pattern adjustment; current compiler boundary retained separately."
+    },
+    {
+      "name": "selected-wrong-mutability",
+      "path": "tests/spec/projected-initializer-patterns/selected-wrong-mutability.rs",
+      "source_sha256": "62ab953d0aec8f168963330b3499d763bd658bad26a5cd0a524ac2a8121071d5",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": false,
+      "modes": {
+        "--emit-types": 1,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "diagnostic": "type",
+      "note": "Declared unchanged outcome before reference pattern adjustment; current compiler boundary retained separately."
+    },
+    {
+      "name": "selected-forward-pattern",
+      "path": "tests/spec/projected-initializer-patterns/selected-forward-pattern.rs",
+      "source_sha256": "76f6a03ae6126fbf18dd9c2b79eb47c1a77cd161e75d37e743458118146c7f02",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Declared unchanged outcome before reference pattern adjustment; current compiler boundary retained separately."
+    },
+    {
+      "name": "selected-nested-pattern",
+      "path": "tests/spec/projected-initializer-patterns/selected-nested-pattern.rs",
+      "source_sha256": "a142aa922c25c0817c3beab8687ed749ae5f323a1e30cc1d550bc7db08270413",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Declared unchanged outcome before reference pattern adjustment; current compiler boundary retained separately."
+    },
+    {
+      "name": "selected-early-pattern",
+      "path": "tests/spec/projected-initializer-patterns/selected-early-pattern.rs",
+      "source_sha256": "77cdadedeced5b7862fade7ea0e5af3149a905a70767cd5ea872b5ea6c8def9c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "note": "Const root precedes trait, impl and callee declarations; exact projected constant type must be ready before ergonomics."
     }
   ]
 }

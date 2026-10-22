@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "status": "draft independently qualified controls; oracle publication pending",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "literal-reference",
+      "path": "tests/spec/named-pattern-rules/literal-reference.rs",
+      "source_sha256": "07f3e5856b6c0016224cfdc58445040016bd61bc2175f5277de19793abfcc7e4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Independent named-constant versus literal match ergonomics control; no type/result authority shortcut."
+    }
+  ]
+}

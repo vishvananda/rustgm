@@ -125,6 +125,7 @@ impl Checker<'_> {
         node: NodeId,
         term: crate::types::infer::TermId,
         id: PatternId,
+        prepared: Option<crate::types::infer::TermId>,
     ) -> Result<crate::sema::patterns::Kind, Error> {
         let definition = self
             .pattern_constant(node)
@@ -138,7 +139,11 @@ impl Checker<'_> {
         }) {
             return self.scalar_pattern(node, term);
         }
-        let value = self.pattern_constant_term(node, definition)?;
+        let value = if let Some(value) = prepared {
+            value
+        } else {
+            self.pattern_constant_term(node, definition)?
+        };
         self.equate_pattern(node, term, value)?;
         self.save(node, value);
         self.request_pattern_constant(node, definition, Some(id));

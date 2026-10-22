@@ -135,8 +135,9 @@ impl Checker<'_> {
             }
             self.save(node, term);
             let mark = self.state.pattern_work.len();
-            let (id, term, mode) = self.pattern_adjust(node, term, id, mode, &mut steps)?;
-            let kind = self.pattern_kind(node, term, id, mode, rest)?;
+            let (id, term, mode, constant) =
+                self.pattern_adjust(node, term, id, mode, &mut steps)?;
+            let kind = self.pattern_kind(node, term, id, mode, rest, constant)?;
             self.state.pattern_work[mark..].reverse();
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
@@ -149,6 +150,7 @@ impl Checker<'_> {
         id: PatternId,
         mode: Mode,
         rest: bool,
+        constant: Option<TermId>,
     ) -> Result<PatternKind, Error> {
         match self.kind(node) {
             Kind::Literal(index) if self.is_text_literal(node, index)? => {
@@ -230,7 +232,7 @@ impl Checker<'_> {
             Kind::Binding { .. } | Kind::Path { .. } | Kind::Qualified { .. }
                 if self.pattern_constant(node).is_some() =>
             {
-                self.constant_pattern(node, term, id)
+                self.constant_pattern(node, term, id, constant)
             }
             Kind::Binding { .. } | Kind::Path { .. } => {
                 let variant = self.pattern_constructor(node, node, term)?;
@@ -286,7 +288,7 @@ impl Checker<'_> {
         mut id: PatternId,
         mut mode: Mode,
         steps: &mut usize,
-    ) -> Result<(PatternId, TermId, Mode), Error> {
+    ) -> Result<(PatternId, TermId, Mode, Option<TermId>), Error> {
         let structural = matches!(
             self.kind(node),
             Kind::Literal(_)
@@ -306,15 +308,23 @@ impl Checker<'_> {
                 .facts
                 .node(self.key(node))
                 .is_some_and(|fact| fact.binding.is_none());
-        let reference_constant = self
-            .pattern_constant(node)
-            .and_then(|definition| self.facts.definitions[definition.0 as usize])
-            .is_some_and(|ty| {
+        let mut constant = None;
+        let reference_constant = if let Some(definition) = self.pattern_constant(node) {
+            let ty = self.facts.definitions[definition.0 as usize]
+                .ok_or_else(|| self.error(node, "missing constant pattern type"))?;
+            if self.facts.types.contains_projections(ty) == Some(true) {
+                let value = self.pattern_constant_term(node, definition)?;
+                constant = Some(value);
+                matches!(self.head(node, value)?, Some(Constructor::Reference { .. }))
+            } else {
                 matches!(
                     self.facts.types.kind(ty),
                     Some(crate::types::Kind::Reference { .. })
                 )
-            });
+            }
+        } else {
+            false
+        };
         let text_literal = if let Kind::Literal(index) = self.kind(node) {
             self.is_text_literal(node, index)?
         } else {
@@ -344,7 +354,7 @@ impl Checker<'_> {
                 id = child;
             }
         }
-        Ok((id, term, mode))
+        Ok((id, term, mode, constant))
     }
     fn pattern_binding(
         &mut self,

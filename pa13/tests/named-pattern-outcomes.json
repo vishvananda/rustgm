@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "status": "draft independently qualified controls; oracle publication pending",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "named-scalar-value",
+      "path": "tests/spec/named-pattern-rules/named-scalar-value.rs",
+      "source_sha256": "ac0eb3d4469411533e210d85975460988014dd60be7e56ae3d29c31203efb673",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "native": true,
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "diagnostic": "",
+      "note": "Independent named-constant versus literal match ergonomics control; no type/result authority shortcut."
+    }
+  ]
+}
