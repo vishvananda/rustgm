@@ -7,6 +7,9 @@ typed static element addresses. It preserves the upstream core→alloc→std
 implementation priority in [the bootstrap plan](library-bootstrap-roadmap.md).
 PA1–PA24 remain active. PA25–PA30 remain planned and incomplete.
 
+The subsequent [real-crate prerequisites checkpoint](real-crate-prerequisites-checkpoint.md)
+measures the caller-alias frontier improvement and records the remaining costs.
+
 ## Functional qualification
 
 The tested compiler source commit is

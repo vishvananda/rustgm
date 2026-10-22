@@ -81,8 +81,8 @@ and private fields remain inaccessible. Function and static aliases keep their
 original symbols and addresses. Earlier payload profiles keep their exact bytes
 when an explicit namespace is unnecessary. Source and native qualification is in
 `tests/public-name-outcomes.json`; `scripts/check_public_names.py` runs its original
-sources and checks repeated publication and dependency order. This checkpoint
-still requires combined release qualification. Generic bodies and the other
+sources and checks repeated publication and dependency order. The combined
+checkpoint is qualified in `docs/iteration-storage-checkpoint.md`. Generic bodies and the other
 unfinished metadata contracts remain required. See `docs/pa29-public-names.md`.
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain

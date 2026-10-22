@@ -23,10 +23,12 @@ retains unsafe capture replay, so changes to shared body enums must be coordinat
 before editing them. The integrator owns combined qualification, reviewed text
 oracles, assignment activation and public pushes to main.
 
-The integrator also develops PA29's closed named-record metadata family in the
-isolated `rustgm-pa29-work` checkout while Worker A completes PA25 caller
-transport. Worker A's later PA29 work must coordinate with that checkpoint;
-generic bodies and broader crate contracts remain required. Worker B may prepare
+The integrator's closed record, array and stored-value metadata checkpoints are
+integrated on main. The isolated `rustgm-pa29-work` checkout remains available
+for the next generic transport work, coordinated with Worker A's PA25 caller
+transport. Generic body transport is still unimplemented; its
+[owner/contract proposal](pa29-generic-transport-proposal.md) defines the shared
+prerequisite and does not grant execution permission. Worker B may prepare
 and independently qualify PA30 source fixtures while a coherent PA26 checkpoint
 awaits integration. This preparation uses the same resource limits and does not
 activate either assignment or change the backend contract.

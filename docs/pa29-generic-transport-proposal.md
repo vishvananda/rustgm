@@ -170,6 +170,28 @@ syntax. Existing local text views must stay byte-exact unless independently
 reviewed behavior changes. This migration is one coherent prerequisite; simply
 making source optional at the last error formatter is insufficient.
 
+### Original components and executable ownership
+
+An original parent can be required as proof context even when ordinary template
+partitioning excludes it as a runtime specialization candidate. Retain its real
+BodyKey, origin, child-parent links and paired Contract without reclassifying it
+as an executable generic template. The imported component and the runtime
+template index serve different purposes.
+
+Derive these roles from validated declarations and body kinds; an artifact role
+bit cannot grant executable authority. Original proof success cannot pay a
+specialized caller's debt. Reprove the complete imported original component with
+its exact contracts, then require the actual instance's ordinary proof before
+execution. Source-local caller handles and serialized Checked/Permit tokens
+remain forbidden.
+
+Validate duplicate identities and every parent edge before transactional
+publication. Equal shapes or diagnostic locations cannot reconcile two owners.
+Cache completed components by their real identities so repeated child ports do
+not rescan or reprove every ancestor. Proof-context-only rows must remain absent
+from executable-template lookup. This is an import design constraint; generic
+body transport remains unimplemented.
+
 ## Export, import and demanded execution
 
 1. Export only from an exact, immutable original template/Contract that passed
