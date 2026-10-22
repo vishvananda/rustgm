@@ -1,0 +1,1 @@
+union F{n:u32,f:f32}union D{n:u64,f:f64}fn main(){let a=F{n:0x7f800001};let mut b=F{n:0};let c=D{n:0x7ff0000000000001};let mut d=D{n:0};unsafe{core::ptr::copy_nonoverlapping(&raw const a.f,&raw mut b.f,1);core::ptr::copy_nonoverlapping(&raw const c.f,&raw mut d.f,1);check(b.n==0x7f800001&&d.n==0x7ff0000000000001);}}

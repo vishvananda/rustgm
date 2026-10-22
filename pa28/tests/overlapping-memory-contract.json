@@ -1,0 +1,789 @@
+{
+  "stage": "qualified-development-checkpoint",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "scope": "Canonical ptr::copy typed snapshots and existing-vocabulary directional byte loop; arbitrary invalid/uninitialized transport remains required.",
+  "parent_counted_checkpoint": "3b1c0b24",
+  "cases": [
+    {
+      "path": "pa28/tests/spec/overlapping-memory/scalar-zero.rs",
+      "sha256": "fd6a31194c685d8f801d98d2a288ec0543239167bcab1134cbb88229649b03a6",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/shared-zero.rs",
+      "sha256": "f088078be594ffcddf55410b2625fc9e0ef0946f696ff438abf9744c4e71aa4b",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/shared-one.rs",
+      "sha256": "524001113ac0169937eb044c495fce83aec95b95ecfd19cce2401b1697ed52db",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/partial-zero.rs",
+      "sha256": "aa043c9d5f347904d84622fd5d73eda9937a4c0944717d5936a059d52dbb3fbb",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/overlap-zero.rs",
+      "sha256": "930e1f96559c713e2ffcebb0f5b95c75712164110c2686bf6ed2f7c2ac9b7c88",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/null-source-zero.rs",
+      "sha256": "e26166131876bd94638f817834b7b9bb3c031f098336f84c58d36b457864ede7",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/null-destination-zero.rs",
+      "sha256": "e04736a61c7a1116419bd39de439d51b572c5aad51685c2c18374f0377f7e686",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/numeric-zero.rs",
+      "sha256": "50943a79925e4ca753b93f7309cec18d7ff1d034f3917f02b1944f530574a06f",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/misaligned-zero.rs",
+      "sha256": "ba5e6cb11722fef99c30ffb40cf68782e9ece9f556cb1c36c5375f7652bce425",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/packed-source-zero.rs",
+      "sha256": "feda5b2b14434aa4e49e7c2027b29b7380b16523e4ca8d56b6d45b254d4294a1",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted pointer is unaligned"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/packed-destination-zero.rs",
+      "sha256": "8f522873bea67535cc872b377eb62cc245525458181c2f5faa457719660f82e8",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted pointer is unaligned"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/zst-large.rs",
+      "sha256": "66804a3843a872a2de687c72cdb9b8fbd7324709f982b4aaf8c01a986bc99d2f",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/zst-shared.rs",
+      "sha256": "b73adc91ea49c2b444f23c789353e596c3fc0b6e45c2dd974e0380fc77446f71",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/zst-numeric.rs",
+      "sha256": "0f46609b38d55c6df9122d4174a94258b112dd630c6c9f509c04e446996c4478",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/zst-misaligned.rs",
+      "sha256": "bd4862cbada9474bb95737c8e91f0ec58fe12b1b36a166707f290b60cf37a643",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/zst-null.rs",
+      "sha256": "f7f66098ebdf1f2ef428cb6bb0bd15b37dd0fb042469a779b25a3f2292c3770f",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/atomic-static-zero.rs",
+      "sha256": "0a330af98d2230174438cc17ed558051572602515012677fd6ecd8b971aea4f4",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/atomic-static-one.rs",
+      "sha256": "26fd9d23a3aef8f162a137002108d59dcacfa73ec1542c79ed60aec2f556b930",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant execution cannot read interior-mutable static storage"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/mutable-static-source-zero.rs",
+      "sha256": "611f4c0f01d4a845933fccb391c27129c0a0d9957a50fdb5c3d67d9569cecf02",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/mutable-static-destination-zero.rs",
+      "sha256": "5dd72aca1993309df881422e21e421c4dcef581550d27cf3427e2fcb8efb1325",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/expired-zero.rs",
+      "sha256": "ba9220921f3ea125724312af9ffc9d35acf047039f29028cd7d2bc931690d4f0",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/zst-expired.rs",
+      "sha256": "774b2236d2a7bdee05b04283b083ea55b7f3fa10e2bfb21aa9034bb809b4bd0d",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/null-source-zero-allow.rs",
+      "sha256": "fe36b9da938488344384d26746807d6b77d5ac4f54fbd9d2f8d9fb1c38e841dd",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/null-destination-zero-allow.rs",
+      "sha256": "50d22c2e1ad607367656ea3569e834fb28c788819acc3317cde8d96f92bc0b22",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/scalar-three.rs",
+      "sha256": "a384a8f988c1e3ab31d0b97d86409fac0133bb70fe950aed6ddfe56acd10876d",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/same-root-disjoint.rs",
+      "sha256": "2dbbe7ee4059090eeaefa7f92ec51cd688dc02df3680b230d6e60cd1e18c9de2",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/same-root-overlap.rs",
+      "sha256": "f05bbadaf4891bde852a8eae1c4da959ea71654716402c28b0a6668e013ac2c5",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/source-bounds.rs",
+      "sha256": "f2140185f1049dd2f29c1be1d3589f68e98014c78ae58c18aedec1862f24a0f0",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted transfer exceeds"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/destination-bounds.rs",
+      "sha256": "70f4453b72dea4b65a893b2d980467e76504f02cd15a26f774526416fdb4011d",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted transfer exceeds"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/byte-count-overflow.rs",
+      "sha256": "128ac04fd7bb6c3e6fc261cad05a634145ed126c5936f5b276312c7d48069433",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant copy byte count exceeds allocation size"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/noncopy.rs",
+      "sha256": "2e339d40c01291448f0680d53d7b734eb27e4422836f76701665ac7a04e54963",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/array-elements.rs",
+      "sha256": "5922592514f8f389e05afd49f494a7c46fc6dc2016fbfe12fcb77545717bc132",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/reference-elements.rs",
+      "sha256": "c04cd9b5033d3e5aaaf6a67243e3fd179952041f1a85ce602249c4829f22d2cd",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/generic.rs",
+      "sha256": "06bc1446fa36ff562c508076dce0bc71f2dbcd0aee0ed3110b0378d22b8f5233",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/std-alias.rs",
+      "sha256": "d5eaf6222a0f3861b2fcb3713ac3de2e79b220e85f42c05ea3b3dfaaea61a8c7",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/unsafe-required.rs",
+      "sha256": "8b0f92562059794d628b02f658135789d977ca2cade1aeb685e718a6809b0775",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "call to unsafe function requires an unsafe context"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/reified-const.rs",
+      "sha256": "734af989c3c09aa45a3aaf7b33deface85d9ed411ee0de7fdad5656f69158c5f",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "non-const calls are not allowed in constant initializers"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/partial-field-profile.rs",
+      "sha256": "35ed797296cc5e2bea6f0995a932958ed9f196db6dd1a1f1f9d777a120b67c8f",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted union-field byte transport is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/whole-image.rs",
+      "sha256": "dbe1bd197ea724ff123445c71e3c2029afe11d8cf4052a328b48bd0ee0999411",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/whole-image-uninitialized.rs",
+      "sha256": "efbca7f83b3d1fe4b2fe5229ee5a4e7cd8728e80bd6fe2cafa8e96eed7402386",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant union scalar read uses uninitialized bytes"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/expired-one.rs",
+      "sha256": "177680d045d789e610ed0ee64bc055780a90057063f444701552b893126f8a11",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant pointer refers to expired storage"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/shared-distinct-one.rs",
+      "sha256": "e8c3b7680fac4c3e1e36b962e929d0637ec115fcb1503fb388cb0d8dfbfdfc15",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant raw pointer write is derived from a shared reference"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/static-one.rs",
+      "sha256": "20585c429a353c54bebc489d8097ea271052fcca3c96f627f60a346435c53fe1",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/mutable-static-one.rs",
+      "sha256": "41a7fc5fef4221edd444142e802dc4d1884af8fb3eb73b4901d45194262c7eaf",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant execution cannot read mutable static storage"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/atomic-static-initializer.rs",
+      "sha256": "87f0d4c2cb17b5ab9b410a9acec0932597a75146b0239540fee4677a0703edd6",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/overlap-left.rs",
+      "sha256": "4dab573ed53e6e0758bdc8b355d1e7905b8a1b303c3bed2ec19fcb090a20df58",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/overlap-right.rs",
+      "sha256": "fd986fb84b0f11d39670467e91d6dc543ca072c361313c4a6e6ad604416e3667",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/identical.rs",
+      "sha256": "931c0ca2f97a9105053d836eee383cff44c85828c2873c1e3f12410232498b88",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/aggregate-overlap.rs",
+      "sha256": "5d0f53a0195645ddfd6e4d128dce50a84099a91e6f0e275368b0f646ec82ff81",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/nested-rest-overlap.rs",
+      "sha256": "62f566ddba39e4c7df982efe0e92709e1a93d8b03a1e87442e149601bc4de2a0",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/intra-object-profile.rs",
+      "sha256": "b6c1f4e1d3d46721b4226c0f6ea26d9969ddd75bc03d280e1019a875e1a01a32",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted pointer reinterpretation is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/invalid-byte-profile.rs",
+      "sha256": "58e745d0a48094cc88634f11f66c4702cd3007d90e019a59dee8c7abe347dcf3",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted union-field byte transport is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/invalid-byte-demand.rs",
+      "sha256": "ca318f6c27b4302e4fb7e9b303d56d2cb915e9cdce18eedc45130b0e1ac2993d",
+      "rustc_expected": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "frontend_reason": "constant counted union-field byte transport is not implemented"
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/local-copy-shadow.rs",
+      "sha256": "f8f6407ba1cfd48f05f7e947ec1a4c7a86f31bd17fbedfa71bd2b3fe4d25f624",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    },
+    {
+      "path": "pa28/tests/spec/overlapping-memory/local-core-shadow.rs",
+      "sha256": "53b105c5ba81fe8fcfb190bb3c5b3484f14720a01955045ee343d04644ad0c87",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "frontend_reason": ""
+    }
+  ],
+  "native": [
+    {
+      "path": "pa28/tests/overlapping-memory-native/backend-loop.rs",
+      "sha256": "c47e2bdb190a0b6c1cd1b2968dcd0bc2c512947a2cd47df994bb45dec35be725",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/scalars.rs",
+      "sha256": "c90130bf3acfb5f3ee349b2c950bc226bcc1b855c9d0f1179c0325c1652d038b",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/disjoint.rs",
+      "sha256": "8bffb4c2546a3823910b7ed4446f50f6697f065819a61e12dc0fefddd633ca72",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/generic.rs",
+      "sha256": "a9d3ccdb5a6a94e224498f92c2d9993714d9f291d3126a45c453d873c9fcb746",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/reified.rs",
+      "sha256": "414a5ecb13af87c53bbe6441741ac43c5e5f51c9a1fc51262316fca429e796a5",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/argument-once.rs",
+      "sha256": "14f936b79118bd9647650994b937b2e7afca3f16cf54b70abe317051d9a28f5b",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/reference-elements.rs",
+      "sha256": "5bb5b2ed01754462a1d603d6099b9a9f7c0f37af5abb6321b1c91fd9e647d87c",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/rest-destination.rs",
+      "sha256": "814c02b0e0819275175ac44e443008180d5619cfe0ec935fbc05604792d79c05",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/owned-drops.rs",
+      "sha256": "6693aceee28bfbe85b69d7f95e2ec29de8e6b071c6e024bf08b6ae662c77a985",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/zst-large.rs",
+      "sha256": "30a6f05ab9a7958ed85c7d00568330a8990fc2497a4dc26bc24667f73db4e803",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/shared-zero.rs",
+      "sha256": "bd0537f3108e48619a53d30d62cc167575226dccb85daaaf06df1cd661c4b159",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/overlap-left.rs",
+      "sha256": "eea35ca90ceb1cc9c3cb6558c7cc75ebf90d13e9bf990959cf9fed64a23ad2b1",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/overlap-right.rs",
+      "sha256": "667c346d9ef2c27f3085d1c97f97cdd745553a20295129a487929a5ee7f2804a",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/identical.rs",
+      "sha256": "e5cd9fc30ad3a6b9b505e0a6a087e068a364c95f22581eccef1e1cc79b4a3ce1",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/intra-object-left.rs",
+      "sha256": "dc4370a2bc1d90053c5c69b94b9e01472ade8e563d4f399a9efd120211bea916",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/intra-object-right.rs",
+      "sha256": "d4d48e3f88ca110446d47f197b433017a8af27d0d4152ede81fb45db3c7c4aaa",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/overlap-owned-drops.rs",
+      "sha256": "00a651db469182afc3efb4a1bf225317fa8c1a29856257eca9b4feb3630a32a3",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/rest-overlap.rs",
+      "sha256": "562ba46bc658e3e2d32801f2d7e63fdc981eb26d2e4aeef395dc8e131e8d424d",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/invalid-bool-byte.rs",
+      "sha256": "6d63f17f0d2fe971fdc8e081881e16c7c8fa92f20515fce31e2d80e32eb8931f",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/invalid-char-byte.rs",
+      "sha256": "1f3f8f7baddf0ffc463acee7dfdc03a18e47f85749e5ce683ab9595f0da2ab33",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/nonoverlap-invalid-bool-control.rs",
+      "sha256": "a5cc6e128357684d6a963c101dc6199245030b59c87ff39028d9ef53b4143611",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/nonoverlap-nan-bits-control.rs",
+      "sha256": "88af087fd760863ee39a37b6dc08378a5273f5a179b6980b9652b0894ea26dac",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    },
+    {
+      "path": "pa28/tests/overlapping-memory-native/nonoverlap-reference-bits-control.rs",
+      "sha256": "4f3e7f5ecf5b5dbab2715bbb87a3ac146e1815002c099b858052f575ce3cdd15",
+      "prefix": "native_references::CHECK",
+      "expected": 0
+    }
+  ],
+  "backend": [
+    {
+      "path": "pa28/tests/backend/overlapping-memory/left.lowir",
+      "sha256": "c304af6b4ae7e409f86703900b41b0152e2e6f0b67e3989b126974e551225480",
+      "expected": 42
+    },
+    {
+      "path": "pa28/tests/backend/overlapping-memory/right.lowir",
+      "sha256": "2d6a02d53cfe520fceb92ff4a01163a7ebf41b794224abb9db8a2df3912136ec",
+      "expected": 42
+    },
+    {
+      "path": "pa28/tests/backend/overlapping-memory/identical.lowir",
+      "sha256": "ab9586e62f6fe1c5cb3536a91d601d28fbc29b06fb69910d6d86f0a9f00b6af6",
+      "expected": 42
+    },
+    {
+      "path": "pa28/tests/backend/overlapping-memory/disjoint.lowir",
+      "sha256": "85c37fe805ff174ef3d87aac00757764cf79d56affe6b692b0ff87a0a97524a5",
+      "expected": 42
+    },
+    {
+      "path": "pa28/tests/backend/overlapping-memory/zero.lowir",
+      "sha256": "8d803f9db233092d942b2345b9f2a7562e0890ad2cb5156b561abacf7afe0de9",
+      "expected": 42
+    },
+    {
+      "path": "pa28/tests/backend/overlapping-memory/zst-max.lowir",
+      "sha256": "91f69b6917d1b7fb2bb3ff94a2e35f402edce41c2965c26ab693fc069a6f8010",
+      "expected": 42
+    }
+  ],
+  "contract_source": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs",
+  "limits": "No numeric/null native or overflow-violating runtime probes; overflow is independently checked in CTFE. Backend controls establish no frontend coverage."
+}

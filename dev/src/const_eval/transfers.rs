@@ -75,7 +75,7 @@ impl Machine<'_, '_> {
         let ty = self.memory_pointee(intrinsic, instance)?;
         self.charge(1)?;
         if intrinsic.is_counted_memory() {
-            return self.copy_nonoverlapping(ty, arguments);
+            return self.counted_copy(intrinsic, ty, arguments);
         }
         let writing = intrinsic.writes_pointer();
         if arguments.len() != if writing { 2 } else { 1 } {

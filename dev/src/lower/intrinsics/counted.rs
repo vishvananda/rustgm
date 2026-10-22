@@ -9,9 +9,20 @@ use crate::{
         program::{Function, Operand, Terminator, Value},
         vocabulary::{Binary, Predicate, Type},
     },
+    support::intrinsics::Intrinsic,
 };
 impl Context<'_> {
     pub(super) fn counted_memory_body(
+        intrinsic: Intrinsic,
+        representation: Representation,
+    ) -> Result<Function, &'static str> {
+        match intrinsic {
+            Intrinsic::Copy => Self::overlapping_memory_body(representation),
+            Intrinsic::CopyNonoverlapping => Self::nonoverlapping_memory_body(representation),
+            _ => Err("invalid counted-copy shim identity"),
+        }
+    }
+    fn nonoverlapping_memory_body(
         representation: Representation,
     ) -> Result<Function, &'static str> {
         let mut builder = Builder::default();

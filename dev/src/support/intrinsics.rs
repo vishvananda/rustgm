@@ -21,6 +21,7 @@ pub enum Intrinsic {
     ReadUnaligned,
     WriteUnaligned,
     CopyNonoverlapping,
+    Copy,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -38,7 +39,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 20] = [
+    pub const ALL: [Self; 21] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -59,6 +60,7 @@ impl Intrinsic {
         Self::ReadUnaligned,
         Self::WriteUnaligned,
         Self::CopyNonoverlapping,
+        Self::Copy,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -83,6 +85,7 @@ impl Intrinsic {
             Self::ReadUnaligned => 17,
             Self::WriteUnaligned => 18,
             Self::CopyNonoverlapping => 19,
+            Self::Copy => 20,
         }
     }
     #[must_use]
@@ -108,6 +111,7 @@ impl Intrinsic {
             Self::ReadUnaligned => "read_unaligned",
             Self::WriteUnaligned => "write_unaligned",
             Self::CopyNonoverlapping => "copy_nonoverlapping",
+            Self::Copy => "copy",
         }
     }
     #[must_use]
@@ -123,11 +127,12 @@ impl Intrinsic {
                 | Self::ReadUnaligned
                 | Self::WriteUnaligned
                 | Self::CopyNonoverlapping
+                | Self::Copy
         )
     }
     #[must_use]
     pub const fn is_counted_memory(self) -> bool {
-        matches!(self, Self::CopyNonoverlapping)
+        matches!(self, Self::CopyNonoverlapping | Self::Copy)
     }
     #[must_use]
     pub const fn is_unaligned(self) -> bool {
@@ -185,7 +190,8 @@ impl Intrinsic {
             | Self::Write
             | Self::ReadUnaligned
             | Self::WriteUnaligned
-            | Self::CopyNonoverlapping => false,
+            | Self::CopyNonoverlapping
+            | Self::Copy => false,
         }
     }
     #[must_use]

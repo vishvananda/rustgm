@@ -2,6 +2,7 @@
 mod atomic;
 mod counted;
 mod memory;
+mod overlapping;
 use super::context::{Context, Representation};
 use crate::{
     lowir::{
@@ -115,7 +116,7 @@ impl Context<'_> {
         };
         let signature = self.signature(signature)?;
         let body = if intrinsic.is_counted_memory() {
-            Self::counted_memory_body(representation)?
+            Self::counted_memory_body(intrinsic, representation)?
         } else if intrinsic.is_memory() {
             Self::memory_body(intrinsic, representation)?
         } else if intrinsic.is_volatile() {

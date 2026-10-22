@@ -1,0 +1,1 @@
+unsafe fn f<T>(a:*const T,b:*mut T,n:usize){unsafe{core::ptr::copy(a,b,n);}}struct P{a:u32,b:u64}fn main(){let a=[P{a:2,b:3},P{a:5,b:7}];let mut b=[P{a:11,b:13},P{a:17,b:19}];unsafe{f(&raw const a[0],&raw mut b[0],2);}check(b[0].b==3);check(b[1].a==5);check(a[1].b==7);}

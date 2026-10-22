@@ -1,0 +1,1 @@
+fn count(x:&mut u32)->usize{*x=*x+1;2}fn main(){let a=[2u8,3,5];let mut b=[0u8;3];let mut n=0u32;unsafe{core::ptr::copy(&raw const a[0],&raw mut b[0],count(&mut n));}check(n==1);check(b[1]==3);check(b[2]==0);}

@@ -1,0 +1,1 @@
+use core::sync::atomic::AtomicU32;static A:AtomicU32=AtomicU32::new(7);static B:AtomicU32={let mut b=AtomicU32::new(0);unsafe{core::ptr::copy(&raw const A,&raw mut b,1);}b};fn main(){let _=&B;}

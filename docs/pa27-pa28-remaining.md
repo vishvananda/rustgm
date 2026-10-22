@@ -1,7 +1,7 @@
 # PA27/PA28 remaining release contracts
 
 This reconciles the planned handouts with the accepted development slices after
-`9829fd38`. Earlier checkpoint reviews retain their original boundaries and
+`9829fd38` and the counted/overlapping memory checkpoints. Earlier checkpoint reviews retain their original boundaries and
 measurements; later slices supersede those explicitly rather than rewriting the
 historical observations. Neither assignment is activated by this inventory.
 
@@ -62,13 +62,15 @@ reinterpretation. Its outcome contract lives in
 
 Open operation families remain:
 
-- Counted copies, overlapping moves and byte fills, with explicit byte/count
-  overflow, overlap, initialization and provenance rules. The in-development
-  `copy_nonoverlapping` checkpoint supplies bounded typed initialized-value
-  snapshots over canonical scalar/object or contiguous array storage. Arbitrary
-  uninitialized or invalid byte transport remains required work. Zero effective
-  bytes use address-only validation without reading contents or granting write
-  authority; ordinary nonzero memory access retains its existing checks.
+- Byte fills and arbitrary uninitialized or invalid byte constant transport,
+  with explicit byte/count overflow, initialization and provenance rules. The
+  `copy_nonoverlapping` and overlap-safe `copy` checkpoints supply bounded typed
+  initialized-value snapshots over canonical scalar/object or contiguous array
+  storage. Runtime `copy` uses direction-selected byte loops, preserving raw
+  scalar bits without typed interpretation. Zero effective bytes use address-only
+  validation without reading contents or granting write authority; ordinary
+  nonzero memory access retains its existing checks. These typed constant profiles
+  do not complete the untyped memory contract.
 - Numeric, bit and cast intrinsic families, including width/sign behavior and
   u128 controls beyond ordinary language arithmetic.
 - Additional atomic widths/types, fences, accessors and update/control methods.
@@ -81,8 +83,9 @@ Open operation families remain:
 
 The counted-copy development checkpoint qualifies exact typed symbolic spans,
 snapshots and existing runtime transfer loops; its review is
-`docs/pa28-counted-memory.md`. Overlapping moves, fills and arbitrary byte
-transport remain substantial required follow-ups. Full release, immutable
+`docs/pa28-counted-memory.md`. The overlapping-copy checkpoint is reviewed in
+`docs/pa28-overlapping-memory.md`. Fills and arbitrary byte constant transport
+remain substantial required follow-ups. Full release, immutable
 performance measurement, active manifests/oracles and publication remain
 integrator-owned. Focused logical work bounds are not wall-time or RSS
 neutrality claims.

@@ -1,0 +1,1 @@
+static mut D:u32=0;struct V(u32);impl Drop for V{fn drop(&mut self){unsafe{D=D+self.0;}}}fn main(){{let mut a=[V(2),V(3),V(5),V(7)];unsafe{core::ptr::copy(&raw const a[0],&raw mut a[1],3);core::ptr::write(&raw mut a[0],V(11));}check(unsafe{D}==0);check(a[0].0==11&&a[1].0==2&&a[2].0==3&&a[3].0==5);}check(unsafe{D}==21);}

@@ -1,0 +1,77 @@
+function @main() -> i64 [role=entry] {
+  slot $data : obj<16x4>
+  block ^entry:
+    %p = addr $data
+    %p0 = index u8 %p, 0
+    store u32 3, %p0
+    %p1 = index u8 %p, 4
+    store u32 7, %p1
+    %p2 = index u8 %p, 8
+    store u32 11, %p2
+    %p3 = index u8 %p, 12
+    store u32 13, %p3
+    %source = index u8 %p, 0
+    %destination = index u8 %p, 0
+    call void @move(%source, %destination, 8)
+    %v0 = load u32 %p0
+    %ok0 = cmp eq u32 %v0, 3
+    %v1 = load u32 %p1
+    %ok1 = cmp eq u32 %v1, 7
+    %v2 = load u32 %p2
+    %ok2 = cmp eq u32 %v2, 11
+    %v3 = load u32 %p3
+    %ok3 = cmp eq u32 %v3, 13
+    %a = binary and i64 %ok0, %ok1
+    %b = binary and i64 %ok2, %ok3
+    %ok = binary and i64 %a, %b
+    branch %ok, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}
+function @move(%src : ptr, %dst : ptr, %bytes : i64) -> void {
+  slot $cursor : i64
+  block ^entry:
+    %empty = cmp eq i64 %bytes, 0
+    branch %empty, ^done, ^choose
+  block ^choose:
+    %back = cmp ugt ptr %dst, %src
+    branch %back, ^back_init, ^front_init
+  block ^front_init:
+    store i64 0, $cursor
+    jump ^front_test
+  block ^front_test:
+    %front = load i64 $cursor
+    %front_more = cmp ult i64 %front, %bytes
+    branch %front_more, ^front_body, ^done
+  block ^front_body:
+    %front_src = index u8 %src, %front
+    %front_dst = index u8 %dst, %front
+    %front_value = load u8 %front_src
+    store u8 %front_value, %front_dst
+    %front_next = binary add i64 %front, 1
+    store i64 %front_next, $cursor
+    jump ^front_test
+  block ^back_init:
+    store i64 %bytes, $cursor
+    jump ^back_test
+  block ^back_test:
+    %remaining = load i64 $cursor
+    %back_more = cmp ne i64 %remaining, 0
+    branch %back_more, ^back_body, ^done
+  block ^back_body:
+    %back_index = binary sub i64 %remaining, 1
+    %back_src = index u8 %src, %back_index
+    %back_dst = index u8 %dst, %back_index
+    %back_value = load u8 %back_src
+    store u8 %back_value, %back_dst
+    store i64 %back_index, $cursor
+    jump ^back_test
+  block ^done:
+    return void
+}
+function @zero(%src : ptr, %dst : ptr, %count : i64) -> void {
+  block ^entry:
+    return void
+}

@@ -7,7 +7,10 @@ use super::{
     Constant, Failure, Machine,
     memory::{Range, RawAccess, RawAlignment, Resolved},
 };
-use crate::{sema::values::LocationId, types::TypeId};
+use crate::{sema::values::LocationId, support::intrinsics::Intrinsic, types::TypeId};
+#[cfg(test)]
+#[path = "../../tests/invariants/overlapping_memory.rs"]
+mod overlapping_tests;
 struct TransferSpan {
     address: Constant,
     ty: TypeId,
@@ -35,11 +38,15 @@ impl TransferSpan {
     }
 }
 impl Machine<'_, '_> {
-    pub(super) fn copy_nonoverlapping(
+    pub(super) fn counted_copy(
         &mut self,
+        intrinsic: Intrinsic,
         ty: TypeId,
         arguments: &[Constant],
     ) -> Result<Option<Constant>, Failure> {
+        if !intrinsic.is_counted_memory() {
+            return Err("constant counted copy has an invalid intrinsic identity".into());
+        }
         let [source, destination, count] = arguments else {
             return Err("counted memory operation argument count mismatch".into());
         };
@@ -68,19 +75,21 @@ impl Machine<'_, '_> {
         self.slots = previous
             .checked_add(retained)
             .ok_or("constant counted span retention overflow")?;
-        let result = self.copy_spans(&source, &destination);
+        let result = self.copy_spans(intrinsic, &source, &destination);
         self.slots = previous;
         result
     }
     fn copy_spans(
         &mut self,
+        intrinsic: Intrinsic,
         source: &TransferSpan,
         destination: &TransferSpan,
     ) -> Result<Option<Constant>, Failure> {
         if source.bytes == 0 {
             return Ok(Some(self.evaluator.fields(&[], None)?));
         }
-        if source.root == destination.root
+        if intrinsic == Intrinsic::CopyNonoverlapping
+            && source.root == destination.root
             && source.offset < destination.offset + destination.bytes
             && destination.offset < source.offset + source.bytes
         {

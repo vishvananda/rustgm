@@ -181,6 +181,15 @@ negative controls check retries on both sides of the high bit and at equality.
 See `tests/atomic-extrema-contract.json` and `docs/pa28-atomic-extrema.md`.
 Additional atomic widths and intrinsic families remain separate work.
 
+The canonical `ptr::copy` slice adds overlap-safe runtime byte loops and
+constant typed snapshots, retaining the real Sized-only unsafe const signature.
+Both directions and identical pointers preserve source snapshots; overwritten
+values are not dropped. `copy_nonoverlapping` still rejects constant overlap.
+Runtime controls include invalid scalar bits transported without interpretation,
+while arbitrary invalid/uninitialized-byte constant transport remains required
+work. See `tests/overlapping-memory-contract.json` and
+`docs/pa28-overlapping-memory.md` for the exact profile and qualification.
+
 The current implementation and release gaps are reconciled in
 `docs/pa27-pa28-remaining.md`; historical checkpoint reviews preserve their
 original observations and explicitly superseded boundaries.

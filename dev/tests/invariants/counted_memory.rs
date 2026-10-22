@@ -1,5 +1,5 @@
 //! Address-only copy validation must not grant ordinary memory-access authority.
-use super::{Constant, Failure, Machine};
+use super::{Constant, Failure, Intrinsic, Machine};
 use crate::{
     sema::{
         self,
@@ -74,14 +74,22 @@ fn counted_zero_access_does_not_weaken_ordinary_expired_reads_or_writes() -> Res
     let one = Constant::scalar(Scalar::Integer(1));
     assert!(
         machine
-            .copy_nonoverlapping(ty, &[source, destination.restrict_shared(), zero])
+            .counted_copy(
+                Intrinsic::CopyNonoverlapping,
+                ty,
+                &[source, destination.restrict_shared(), zero]
+            )
             .map_err(Failure::message)?
             .is_some()
     );
     assert_eq!(machine.slots, 0);
     assert_eq!(
         machine
-            .copy_nonoverlapping(ty, &[source, destination, one])
+            .counted_copy(
+                Intrinsic::CopyNonoverlapping,
+                ty,
+                &[source, destination, one]
+            )
             .err()
             .map(Failure::message),
         Some("constant pointer refers to expired storage")
@@ -111,7 +119,11 @@ fn counted_zero_access_does_not_weaken_ordinary_expired_reads_or_writes() -> Res
         .map_err(Failure::message)?;
     assert_eq!(
         machine
-            .copy_nonoverlapping(ty, &[live_source, live_destination.restrict_shared(), one])
+            .counted_copy(
+                Intrinsic::CopyNonoverlapping,
+                ty,
+                &[live_source, live_destination.restrict_shared(), one]
+            )
             .err()
             .map(Failure::message),
         Some("constant raw pointer write is derived from a shared reference")
@@ -120,7 +132,11 @@ fn counted_zero_access_does_not_weaken_ordinary_expired_reads_or_writes() -> Res
     machine.limits.slots = machine.memory.retained_cells();
     assert_eq!(
         machine
-            .copy_nonoverlapping(ty, &[source, destination, zero])
+            .counted_copy(
+                Intrinsic::CopyNonoverlapping,
+                ty,
+                &[source, destination, zero]
+            )
             .err()
             .map(Failure::message),
         Some("constant execution storage limit exceeded")
@@ -159,7 +175,8 @@ fn counted_small_snapshot_does_not_expand_a_large_compressed_source() -> Result<
             .map_err(Failure::message)?;
         let before = machine.work();
         machine
-            .copy_nonoverlapping(
+            .counted_copy(
+                Intrinsic::CopyNonoverlapping,
                 ty,
                 &[source, destination, Constant::scalar(Scalar::Integer(1))],
             )
@@ -199,6 +216,13 @@ fn counted_small_snapshot_does_not_expand_a_large_compressed_source() -> Result<
 }
 #[test]
 fn counted_span_work_keeps_count_independent_of_ancestry_and_layout_width() -> Result<(), String> {
+    counted_work_grid(Intrinsic::CopyNonoverlapping)
+}
+#[test]
+fn overlapping_span_work_reuses_the_same_bounded_storage_proofs() -> Result<(), String> {
+    counted_work_grid(Intrinsic::Copy)
+}
+fn counted_work_grid(intrinsic: Intrinsic) -> Result<(), String> {
     let mut count_deltas = None;
     for depth in [8, 32, 128] {
         for width in [1, 32, 128] {
@@ -206,10 +230,12 @@ fn counted_span_work_keeps_count_independent_of_ancestry_and_layout_width() -> R
             for noise in [0, 1024] {
                 let mut rows = Vec::new();
                 for count in [8, 32, 128] {
-                    let work = counted_work(depth, width, count, noise)?;
+                    let work = counted_work(depth, width, count, noise, intrinsic)?;
                     println!(
-                        "counted depth={depth} width={width} count={count} noise={noise} steps={} slots={}",
-                        work.0, work.1
+                        "{} depth={depth} width={width} count={count} noise={noise} steps={} slots={}",
+                        intrinsic.name(),
+                        work.0,
+                        work.1
                     );
                     rows.push(work);
                 }
@@ -237,6 +263,7 @@ fn counted_work(
     width: usize,
     count: u64,
     noise: u64,
+    intrinsic: Intrinsic,
 ) -> Result<(usize, usize), String> {
     let report = test_source::resolve("", true)?;
     let mut facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
@@ -294,7 +321,8 @@ fn counted_work(
         .map_err(Failure::message)?;
     let before = machine.work();
     machine
-        .copy_nonoverlapping(
+        .counted_copy(
+            intrinsic,
             element,
             &[
                 source,

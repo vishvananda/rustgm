@@ -13,7 +13,7 @@ fn counted_copy_shim_has_unsigned_guard_and_one_typed_body_transfer() -> Result<
             align: 8,
         }),
     ] {
-        let body = Context::counted_memory_body(representation)?;
+        let body = Context::counted_memory_body(Intrinsic::CopyNonoverlapping, representation)?;
         assert_eq!(body.blocks.len(), 4);
         assert_eq!(body.slots.len(), 1);
         let (header, condition, yes, no) = body
@@ -81,7 +81,10 @@ fn counted_copy_shim_has_unsigned_guard_and_one_typed_body_transfer() -> Result<
 }
 #[test]
 fn counted_zst_shim_is_effect_free_after_caller_operand_evaluation() -> Result<(), &'static str> {
-    let body = Context::counted_memory_body(Representation::Scalar(Type::Void))?;
+    let body = Context::counted_memory_body(
+        Intrinsic::CopyNonoverlapping,
+        Representation::Scalar(Type::Void),
+    )?;
     assert!(body.instructions.is_empty());
     assert!(body.slots.is_empty());
     assert_eq!(body.blocks.len(), 1);
