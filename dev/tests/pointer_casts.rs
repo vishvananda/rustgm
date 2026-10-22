@@ -235,3 +235,6 @@ fn pointer_casts_execute_with_explicit_metadata() -> Result<(), Box<dyn std::err
         ],
     )
 }
+
+#[path = "pointer_casts/coercion_casts.rs"]
+mod reference_unsizing;

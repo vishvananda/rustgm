@@ -1,6 +1,10 @@
 //! Explicit casts may reinterpret raw pointees but cannot invent pointer metadata.
 use super::{Checker, Constructor, Error, Kind, NodeId, TermId, Type, TypeId};
-use crate::{abi::metadata::Metadata, sema::model::Cast, types::infer::Solved};
+use crate::{
+    abi::metadata::Metadata,
+    sema::model::{AdjustmentKind, Cast},
+    types::infer::Solved,
+};
 
 impl Checker<'_> {
     pub(super) fn hint_pointer_cast(
@@ -35,6 +39,22 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let from = self.head(node, source)?;
         let to = self.head(node, target)?;
+        if matches!(from, Some(Constructor::Reference { .. }))
+            && matches!(to, Some(Constructor::Reference { .. }))
+        {
+            let referent = self.child(node, source, 0)?;
+            let pointee = self.child(node, target, 0)?;
+            if matches!(
+                self.head(node, referent)?,
+                Some(
+                    Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_)
+                )
+            ) && self.head(node, pointee)? == Some(Constructor::Slice)
+            {
+                // A coercion cast keeps the ordinary reborrow and unsizing proof.
+                return self.coerce(value, target);
+            }
+        }
         if matches!(from, Some(Constructor::Pointer { .. }))
             || matches!(to, Some(Constructor::Pointer { .. }))
         {
@@ -123,12 +143,20 @@ impl Checker<'_> {
         value: NodeId,
         target: NodeId,
     ) -> Result<Option<Cast>, Error> {
+        let original = self
+            .facts
+            .node(self.key(value))
+            .and_then(|fact| fact.ty)
+            .ok_or_else(|| self.error(node, "missing unadjusted cast operand type"))?;
         let source = self
             .facts
             .node(self.key(value))
             .and_then(|f| f.adjustment)
-            .map_or(self.ty(value)?, |adjustment| adjustment.target);
+            .map_or(original, |adjustment| adjustment.target);
         let target = self.ty(target)?;
+        if source == target && self.array_slice_reference_cast(value, target)? {
+            return Ok(Some(Cast::Pointer));
+        }
         let (from, to) = (self.facts.types.kind(source), self.facts.types.kind(target));
         let kind = match (from, to) {
             (
@@ -187,4 +215,65 @@ impl Checker<'_> {
         }
         Ok(Some(kind))
     }
+    fn array_slice_reference_cast(
+        &mut self,
+        mut value: NodeId,
+        target: TypeId,
+    ) -> Result<bool, Error> {
+        while let Kind::Group(child) | Kind::Attributed { value: child, .. } = self.kind(value) {
+            self.state.reference_steps += 1;
+            if self.state.reference_steps > 1_000_000 {
+                return Err(self.error(value, "reference cast wrapper work budget exceeded"));
+            }
+            value = child;
+        }
+        Ok(selected_slice_cast(self.facts, self.key(value), target))
+    }
 }
+fn selected_slice_cast(
+    facts: &crate::sema::model::Declarations,
+    source: crate::resolve::unit::NodeKey,
+    target: TypeId,
+) -> bool {
+    let Some(fact) = facts.node(source) else {
+        return false;
+    };
+    let Some(adjustment) = fact.adjustment else {
+        return false;
+    };
+    if adjustment.target != target
+        || !matches!(
+            adjustment.kind,
+            AdjustmentKind::ArrayToSlice | AdjustmentKind::Unsize | AdjustmentKind::Reborrow
+        )
+    {
+        return false;
+    }
+    let (
+        Some(Type::Reference {
+            referent: from,
+            mutable: from_mutable,
+            ..
+        }),
+        Some(Type::Reference {
+            referent: to,
+            mutable: to_mutable,
+            ..
+        }),
+    ) = (
+        fact.ty.and_then(|ty| facts.types.kind(ty)),
+        facts.types.kind(target),
+    )
+    else {
+        return false;
+    };
+    (!to_mutable || from_mutable)
+        && matches!(
+            facts.types.kind(from),
+            Some(Type::Array { .. } | Type::ArrayTerm { .. })
+        )
+        && matches!(facts.types.kind(to), Some(Type::Slice(_)))
+}
+#[cfg(test)]
+#[path = "../../../tests/invariants/unsizing_casts.rs"]
+mod tests;

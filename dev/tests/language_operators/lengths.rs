@@ -51,6 +51,8 @@ const CASES: &[(&str, bool, bool)] = &[
     ("generic-array-mutable-shortening", true, true),
     ("byte-pattern-metadata", true, true),
     ("empty-byte-pattern", true, true),
+    ("byte-array-cast-pattern", true, true),
+    ("empty-byte-array-cast-pattern", true, true),
 ];
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("../pa26/tests/spec/slice-length/{name}.rs"))

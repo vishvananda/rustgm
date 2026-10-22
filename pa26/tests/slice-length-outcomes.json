@@ -740,6 +740,38 @@
       },
       "native": true,
       "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/byte-array-cast-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts",
+        "pa26.slice-length"
+      ],
+      "source_sha256": "5aca1a492ca0c89aa9df5409167b0bc562125b1143831451e21495c1174e8b85",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/slice-length/empty-byte-array-cast-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts",
+        "pa26.slice-length"
+      ],
+      "source_sha256": "276195644e661ac307221cff91a700cd988cb58019c7afb20ee66e19a33387a8",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
     }
   ]
 }

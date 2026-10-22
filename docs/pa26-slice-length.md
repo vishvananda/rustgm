@@ -126,3 +126,12 @@ with ordinary typed slice parameters. That substitution does not close the
 original cast requirement; its future implementation should consume the
 existing checked unsizing relation and metadata rather than inventing another
 cast engine.
+
+The subsequent [PA22 coercion-cast checkpoint](pa22-reference-unsizing-casts.md)
+closes this recorded gap through the existing typed coercion. The unchanged
+original bytes now live in the positive byte-array-cast-pattern and
+empty-byte-array-cast-pattern fixtures. Both pass independent source/native
+checks; the combined length matrix is now 51 source cases and 32 native
+programs. The original failed observations and exact hashes above remain
+historical evidence, while the three earlier reference-comparison gaps remain
+required work.
