@@ -715,6 +715,16 @@ impl<'a> Constraints<'a> {
         self.graph.solve()
     }
 
+    /// Check caller alias goals without exporting propagated pairs or a proof token.
+    /// Projection duties are completed before choosing the graph's proof-only path.
+    pub(crate) fn check_aliases(mut self) -> Result<usize, Error> {
+        self.verify_projections()?;
+        let preparation = self.steps;
+        self.graph
+            .check_aliases()
+            .map(|steps| steps.saturating_add(preparation))
+    }
+
     /// Conditions implied by an independently justified declaration premise.
     /// This does not prove the input graph and cannot authorize a new goal.
     pub(crate) fn outer_conditions(self) -> Result<Vec<(RegionId, RegionId)>, Error> {

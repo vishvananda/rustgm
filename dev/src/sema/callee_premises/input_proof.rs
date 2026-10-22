@@ -163,8 +163,8 @@ impl Inputs<'_> {
                     .map_err(|_| "invalid source caller alias equation")?;
                 equations.extend_counted([(left, right)], work)?;
             }
-            if let Ok(solution) = constraints.solve() {
-                *work = work.saturating_add(solution.steps);
+            if let Ok(steps) = constraints.check_aliases() {
+                *work = work.saturating_add(steps);
                 Ok(())
             } else {
                 // The consuming solver exposes exact successful work only.

@@ -1,4 +1,5 @@
 //! Bounded outlives propagation; universal assumptions never become obligations.
+mod alias_checks;
 mod components;
 mod members;
 mod output;
