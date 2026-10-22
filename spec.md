@@ -3280,8 +3280,9 @@ independently and together, including cold, warm and invalidated states where
 applicable. Record compact record sizes and bounded work/storage counts as well
 as end-to-end measurements. Do not accept a faster common case as evidence that
 a quadratic path has been removed. A representation-only change preserves
-language outcomes; separately qualify semantic repairs such as arithmetic-width
-overflow checks before regenerating affected inspection references.
+language outcomes. Separately qualify lowering rewrites such as arithmetic-width
+overflow checks at their execution boundaries before regenerating affected
+inspection references.
 
 Telemetry observes work already being done: bytes/tokens, retained token bytes,
 allocations or arena high water, solver goals, retries, region edges, demanded

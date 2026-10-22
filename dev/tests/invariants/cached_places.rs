@@ -14,7 +14,8 @@ use crate::{
     test_source,
     types::{Primitive, TypeId},
 };
-use std::{collections::HashMap, fmt::Write};
+use crate::support::hash::HashMap;
+use std::fmt::Write;
 
 fn scalar(value: u128) -> Constant {
     Constant::scalar(Scalar::Integer(value))
@@ -30,10 +31,10 @@ fn empty_frame() -> Frame {
         return_to: None,
         locals: Vec::new(),
         values: Vec::new(),
-        temporaries: HashMap::new(),
-        projections: HashMap::new(),
-        raw_views: HashMap::new(),
-        union_views: HashMap::new(),
+        temporaries: HashMap::default(),
+        projections: HashMap::default(),
+        raw_views: HashMap::default(),
+        union_views: HashMap::default(),
         allocations: Vec::new(),
     }
 }

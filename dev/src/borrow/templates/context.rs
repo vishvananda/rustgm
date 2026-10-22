@@ -136,7 +136,10 @@ fn context_inputs<'a>(
             return Err(error("duplicate original context owner or source"));
         }
     }
-    let mut inputs = HashMap::with_capacity(contracts.bodies.len());
+    let mut inputs = HashMap::with_capacity_and_hasher(
+        contracts.bodies.len(),
+        crate::support::hash::BuildFxHasher::default(),
+    );
     for contract in &contracts.bodies {
         if inputs.insert(contract.key, contract).is_some() {
             return Err(error("duplicate original context input contract"));

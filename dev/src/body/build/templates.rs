@@ -233,7 +233,10 @@ impl Prepared {
         &mut self,
         templates: Vec<Template>,
     ) -> Result<(), &'static str> {
-        let mut keys = crate::support::hash::HashSet::with_capacity(templates.len());
+        let mut keys = crate::support::hash::HashSet::with_capacity_and_hasher(
+            templates.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
         for template in &templates {
             let body = &template.body;
             let present = match body.owner {

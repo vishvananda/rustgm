@@ -83,7 +83,7 @@ pub(in crate::resolve) fn prepare(
 
 fn features(unit: &Unit) -> Result<Features, Error> {
     let mut result = Features::default();
-    let Some(index) = unit.owner_indices[unit.configured.ast.root.0 as usize] else {
+    let Some(index) = unit.owner_indices[unit.configured.ast.root.get() as usize] else {
         return Ok(result);
     };
     let owner = &unit.configured.owners[index.get() as usize - 1];
