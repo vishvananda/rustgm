@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+extern crate first;fn main(){check(first::IMM==7);check(first::EXACT==13);check(first::REAL==3.5);check(first::FLAG);check(first::LETTER=='x');check(first::WIDE==340282366920938463463374607431768211453u128);check(first::private_value()==19);}

@@ -1,6 +1,7 @@
 //! Library exports consume resolved bindings and completed signature/member facts.
 mod named_values;
 mod records;
+mod static_exports;
 use super::error;
 use crate::{
     resolve::{
@@ -45,6 +46,7 @@ pub fn export(
     let mut constants = Vec::new();
     let mut roots = Vec::new();
     let mut records = Vec::new();
+    let mut statics = Vec::new();
     let mut work = vec![(report.resolution.module_scopes[0], Vec::<String>::new())];
     let mut visits = 0usize;
     while let Some((scope, path)) = work.pop() {
@@ -83,6 +85,7 @@ pub fn export(
                     constants.push(named_values::export(facts, definition, &identity, child)?);
                 }
                 DefKind::Struct => records.push(definition),
+                DefKind::Static => statics.push(definition),
                 _ => {
                     return Err(error(
                         "exposed declaration is outside the scalar metadata profile",
@@ -107,14 +110,18 @@ pub fn export(
             identities
         });
     functions.sort_unstable_by(|left, right| left.definition.cmp(&right.definition));
+    let storage = static_exports::prepare(report, facts, &identity, &statics)?;
     let interface = records::finish(
         report,
         facts,
         identity.clone(),
         dependencies,
-        functions,
-        constants,
-        &records,
+        Prepared {
+            functions,
+            constants,
+            records,
+            storage,
+        },
     )?;
     let linkage = facts.crates.get_or_insert_default();
     linkage.set_identity(identity).map_err(error)?;
@@ -136,6 +143,12 @@ struct PreparedFunction {
     definition: ExternalDef,
     signature: TypeId,
     symbol: Symbol,
+}
+struct Prepared {
+    functions: Vec<PreparedFunction>,
+    constants: Vec<crate::support::crates::Constant>,
+    records: Vec<DefId>,
+    storage: static_exports::Prepared,
 }
 fn function(
     report: &Report,

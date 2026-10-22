@@ -1,0 +1,1 @@
+extern crate first;fn main(){let _=first::PRIVATE;}

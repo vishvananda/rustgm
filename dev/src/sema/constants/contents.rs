@@ -64,6 +64,16 @@ impl Queries<'_> {
             self.work.push(Pending::Contents(work));
             self.work.push(Pending::Enter(Query::Contents(key, base)));
         } else if let Access::Static(definition) = place.access {
+            if self
+                .typing
+                .facts
+                .foreign
+                .as_deref()
+                .is_some_and(|registry| registry.imports_global(definition))
+            {
+                let value = self.imported_static_contents(query, definition)?;
+                return self.complete_query(query, value);
+            }
             let index = self
                 .typing
                 .facts
@@ -74,6 +84,37 @@ impl Queries<'_> {
             return Err(self.error(query, "constant allocation lacks initialized contents"));
         }
         Ok(())
+    }
+    pub(super) fn imported_static_contents(
+        &self,
+        query: Query,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<Value, Error> {
+        match self
+            .typing
+            .facts
+            .crates
+            .as_deref()
+            .and_then(|linkage| linkage.imported_storage(definition))
+        {
+            Some(false) => self
+                .typing
+                .facts
+                .constant_values
+                .get(&definition)
+                .copied()
+                .ok_or_else(|| {
+                    self.error(query, "imported static is missing its completed contents")
+                }),
+            Some(true) => Err(self.error(
+                query,
+                "constant evaluation cannot read mutable static storage",
+            )),
+            None => Err(self.error(
+                query,
+                "foreign static value is unavailable during constant evaluation",
+            )),
+        }
     }
     pub(super) fn finish_contents(&mut self, work: Work) -> Result<(), Error> {
         let (key, id, value) = match work {

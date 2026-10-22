@@ -1,6 +1,7 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 mod export;
 mod imported_records;
+mod imported_storage;
 mod imported_values;
 mod type_transport;
 use super::{foreign, model::Declarations};
@@ -23,6 +24,7 @@ pub struct Linkage {
     symbols: HashMap<DefId, String>,
     imported_constants: HashSet<DefId>,
     imported_records: HashSet<DefId>,
+    imported_storage: HashMap<DefId, bool>,
     import_work: ImportWork,
 }
 /// Exact signature graph and root visits during one source-free import pass.
@@ -35,6 +37,11 @@ pub struct ImportWork {
     pub fields: usize,
 }
 impl Linkage {
+    /// Imported Rust storage has completed contents; foreign declarations do not.
+    #[must_use]
+    pub fn imported_storage(&self, definition: DefId) -> Option<bool> {
+        self.imported_storage.get(&definition).copied()
+    }
     #[must_use]
     pub const fn import_work(&self) -> ImportWork {
         self.import_work
@@ -118,7 +125,8 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
             )
             .map_err(error)?;
     }
-    imported_values::seed(report, facts)
+    imported_values::seed(report, facts)?;
+    imported_storage::seed(report, facts, &records)
 }
 pub(super) const fn scalar(value: Scalar) -> TypeId {
     TypeId::primitive(match value {

@@ -3,6 +3,7 @@ mod nominals;
 mod reader;
 mod scalars;
 mod signatures;
+mod stored_globals;
 mod writer;
 use super::{
     Abi, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, MAX_BYTES,
@@ -21,6 +22,7 @@ const PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES: u8 = 1;
 const PROFILE_BORROWED_RUST_FUNCTIONS_AND_VALUES: u8 = 2;
 const PROFILE_NAMED_RECORDS: u8 = 3;
 const PROFILE_FOREIGN_FUNCTIONS: u8 = 4;
+const PROFILE_STATIC_STORAGE: u8 = 5;
 const PROFILE: [u8; 3] = [
     TARGET_LINUX_X86_64,
     LANGUAGE_RUST_1_98_EDITION_2024,
@@ -46,7 +48,10 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
                 .functions()
                 .iter()
                 .any(|function| !function.signature().is_scalar()));
-    out.u8(if foreign {
+    let stored = interface.storage();
+    out.u8(if stored.is_some() {
+        PROFILE_STATIC_STORAGE
+    } else if foreign {
         PROFILE_FOREIGN_FUNCTIONS
     } else if shared.is_some() {
         PROFILE_NAMED_RECORDS
@@ -57,7 +62,7 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     } else {
         PROFILE_SCALAR_RUST_FUNCTIONS_AND_VALUES
     })?;
-    if foreign {
+    if foreign && stored.is_none() {
         out.u8(u8::from(shared.is_some()))?;
     }
     out.identity(interface.identity())?;
@@ -74,6 +79,9 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     }
     if shared.is_some() || typed || !interface.constants().is_empty() {
         scalars::encode(&mut out, interface.constants())?;
+    }
+    if let Some(storage) = stored {
+        stored_globals::encode(&mut out, storage)?;
     }
     Ok(out.finish())
 }
@@ -114,10 +122,11 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         return Err("metadata magic or schema mismatch");
     }
     let profile = input.bytes(3)?;
-    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_FOREIGN_FUNCTIONS {
+    if profile[..2] != PROFILE[..2] || profile[2] > PROFILE_STATIC_STORAGE {
         return Err("metadata target, language or profile mismatch");
     }
     let foreign = profile[2] == PROFILE_FOREIGN_FUNCTIONS;
+    let stored = profile[2] == PROFILE_STATIC_STORAGE;
     let shared = if foreign {
         match input.u8()? {
             0 => false,
@@ -125,19 +134,17 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
             _ => return Err("unknown metadata graph ownership"),
         }
     } else {
-        profile[2] == PROFILE_NAMED_RECORDS
+        profile[2] == PROFILE_NAMED_RECORDS || stored
     };
     let identity = input.identity()?;
-    let count = input.count(MAX_DEPENDENCIES, 10)?;
-    let mut dependencies = Vec::with_capacity(count);
-    for _ in 0..count {
-        dependencies.push(input.identity()?);
-    }
-    if dependencies.windows(2).any(|pair| pair[0] >= pair[1]) {
-        return Err("metadata dependencies are not canonical");
-    }
+    let dependencies = decode_dependencies(&mut input)?;
     let nominal = if shared {
-        Some(nominals::decode(&mut input, &identity, dependencies.len())?)
+        Some(nominals::decode(
+            &mut input,
+            &identity,
+            dependencies.len(),
+            stored,
+        )?)
     } else {
         None
     };
@@ -151,7 +158,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
             dependencies.len(),
             typed,
             nominal.as_ref().map(super::Nominals::types),
-            foreign,
+            foreign || stored,
         )?);
     }
     if functions
@@ -184,15 +191,40 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
             typed || nominal.is_some(),
         )?
     };
+    let storage = if stored {
+        Some(stored_globals::decode(&mut input, &identity)?)
+    } else {
+        None
+    };
     if !input.done() {
         return Err("trailing metadata bytes");
     }
-    match nominal {
-        Some(records) => {
+    match (nominal, storage) {
+        (Some(records), Some(storage)) => Interface::with_storage(
+            identity,
+            dependencies,
+            functions,
+            constants,
+            records,
+            storage,
+        ),
+        (Some(records), None) => {
             Interface::with_nominals(identity, dependencies, functions, constants, records)
         }
-        None => Interface::with_constants(identity, dependencies, functions, constants),
+        (None, None) => Interface::with_constants(identity, dependencies, functions, constants),
+        (None, Some(_)) => Err("static metadata requires a shared type graph"),
     }
+}
+fn decode_dependencies(input: &mut Reader<'_>) -> Result<Vec<CrateIdentity>, &'static str> {
+    let count = input.count(MAX_DEPENDENCIES, 10)?;
+    let mut dependencies = Vec::with_capacity(count);
+    for _ in 0..count {
+        dependencies.push(input.identity()?);
+    }
+    if dependencies.windows(2).any(|pair| pair[0] >= pair[1]) {
+        return Err("metadata dependencies are not canonical");
+    }
+    Ok(dependencies)
 }
 fn decode_function(
     input: &mut Reader<'_>,

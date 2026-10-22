@@ -16,6 +16,12 @@ pub(super) struct Prepared {
     graphs: HashMap<CrateIdentity, Vec<TypeId>>,
 }
 impl Prepared {
+    pub(super) fn types(&self, owner: &CrateIdentity) -> Result<&[TypeId], Error> {
+        self.graphs
+            .get(owner)
+            .map(Vec::as_slice)
+            .ok_or_else(|| error("missing imported shared type graph"))
+    }
     pub(super) fn signature(
         &self,
         facts: &mut Declarations,

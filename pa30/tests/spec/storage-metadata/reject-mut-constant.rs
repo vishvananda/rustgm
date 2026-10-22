@@ -1,0 +1,1 @@
+extern crate first;const X:u32=unsafe{first::MUT};fn main(){let _=X;}

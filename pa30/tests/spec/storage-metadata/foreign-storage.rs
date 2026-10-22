@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+extern crate first;fn main(){check(first::SAFE==23);unsafe{check(first::FOREIGN==29);first::EXTERNAL_MUT=31;check(first::EXTERNAL_MUT==31);}}

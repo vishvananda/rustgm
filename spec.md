@@ -3123,6 +3123,23 @@ all-Rust foreign profile fail at decoding. Existing body, lifetime, ownership an
 layout checks still precede artifact publication. A calling-convention extension
 does not imply support for a new exported type, static or body contract.
 
+Named storage has its own metadata profile and reuses the shared type graph.
+Retain real external static identities, visibility, symbols and mutability;
+distinguish owned completed initializers from foreign declarations and their
+safety. Discover private backing only through completed values, without making
+private names accessible. Register imported declarations before materializing
+values so forward static addresses and self-reference cycles preserve identity.
+Typed postorder value nodes may refer to named statics by field-ordinal paths;
+byte offsets and anonymous allocation graphs require separate explicit support.
+Validate roots, targets, field types, reachability and combined quotas before
+allocating local IDs. Memoize discovery and value encoding across shared roots.
+Imported owned storage still uses its original global symbol. Completed immutable
+contents can satisfy constant reads; mutable and foreign contents retain their
+ordinary restrictions on every demand, including raw access and cached backing.
+Metadata supplies no invented syntax, initializer bodies or generic execution
+permission. Older profiles retain their exact bytes when no named storage is
+exported.
+
 ## Lowering and backend facts
 
 Lower only checked, typed facts. Give every emitted instance, drop shim, vtable,

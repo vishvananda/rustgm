@@ -7,7 +7,7 @@ use super::{
 };
 use crate::support::crates::{
     Constant, Dependencies, ExternalDef, ExternalKind, Function, Interface,
-    Namespace as WireNamespace, Record,
+    Namespace as WireNamespace, Record, Static,
 };
 use std::{collections::HashMap, sync::Arc};
 
@@ -17,6 +17,7 @@ pub struct Imported {
     functions: Vec<(DefId, usize, usize)>,
     constants: Vec<(DefId, usize, usize)>,
     records: Vec<(DefId, usize, usize)>,
+    statics: Vec<(DefId, usize, usize)>,
 }
 impl Imported {
     #[must_use]
@@ -45,6 +46,15 @@ impl Imported {
             )
         })
     }
+    pub fn statics(&self) -> impl Iterator<Item = (DefId, &Static)> {
+        self.statics
+            .iter()
+            .filter_map(|&(definition, artifact, index)| {
+                self.dependencies.artifacts()[artifact]
+                    .storage()
+                    .map(|storage| (definition, &storage.statics()[index]))
+            })
+    }
     pub fn constants(&self) -> impl Iterator<Item = (DefId, &Constant)> {
         self.constants
             .iter()
@@ -69,6 +79,7 @@ impl Resolver<'_> {
             functions: Vec::new(),
             constants: Vec::new(),
             records: Vec::new(),
+            statics: Vec::new(),
         };
         for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
             let scope = self.new_scope(None, ModuleId(0), true)?;
@@ -176,13 +187,22 @@ impl Resolver<'_> {
                 .chain(artifact.records().iter().enumerate().map(|(index, entry)| {
                     (entry.definition(), DefKind::Struct, index, entry.public())
                 }))
+                .chain(
+                    artifact
+                        .storage()
+                        .into_iter()
+                        .flat_map(|storage| storage.statics().iter().enumerate())
+                        .map(|(index, entry)| {
+                            (entry.definition(), DefKind::Static, index, entry.public())
+                        }),
+                )
                 .collect();
         entries.sort_unstable_by_key(|&(identity, ..)| identity);
         for (identity, kind, index, public) in entries {
             let definition = if public {
                 self.import_item(scope, identity, kind, &mut imported.definitions)?
             } else {
-                self.import_hidden_record(scope, identity, &mut imported.definitions)?
+                self.import_hidden_item(scope, identity, kind, &mut imported.definitions)?
             };
             match kind {
                 DefKind::Function => {
@@ -194,21 +214,25 @@ impl Resolver<'_> {
                 DefKind::Struct => {
                     imported.records.push((definition, artifact_index, index));
                 }
+                DefKind::Static => {
+                    imported.statics.push((definition, artifact_index, index));
+                }
                 _ => return Err(error("invalid nominal artifact declaration")),
             }
         }
         Ok(())
     }
-    fn import_hidden_record(
+    fn import_hidden_item(
         &mut self,
         scope: ScopeId,
         external: &ExternalDef,
+        kind: DefKind,
         definitions: &mut HashMap<ExternalDef, DefId>,
     ) -> Result<DefId, Error> {
         let spelling = external
             .path()
             .last()
-            .ok_or_else(|| error("missing hidden record name"))?;
+            .ok_or_else(|| error("missing hidden metadata name"))?;
         let name = self.package.names.intern(spelling).map_err(error)?;
         let id = DefId(
             u32::try_from(self.facts.definitions.len())
@@ -216,15 +240,18 @@ impl Resolver<'_> {
         );
         self.facts.definitions.push(Definition {
             name,
-            namespace: Namespace::Type,
-            kind: DefKind::Struct,
+            namespace: match external.namespace() {
+                WireNamespace::Type => Namespace::Type,
+                WireNamespace::Value => Namespace::Value,
+            },
+            kind,
             scope,
             node: None,
             access: Access::ExternalPrivate,
             members: None,
         });
         if definitions.insert(external.clone(), id).is_some() {
-            return Err(error("duplicate hidden record identity"));
+            return Err(error("duplicate hidden metadata identity"));
         }
         Ok(id)
     }

@@ -1,11 +1,11 @@
 //! Discover completed closed records once, then encode canonical shared roots.
 use super::super::type_transport;
-use super::{Declarations, DefId, Error, PreparedFunction, Report, error};
+use super::{Declarations, DefId, Error, Prepared, PreparedFunction, Report, error};
 use crate::{
     resolve::model::Access,
     sema::members::{Field, Name, VariantId},
     support::crates::{
-        Constant, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, Nominals, Record,
+        CrateIdentity, ExternalDef, ExternalKind, Function, Interface, Nominals, Record,
         RecordField, RecordRef, TypeGraph,
     },
     syntax::item::Shape,
@@ -25,12 +25,16 @@ pub(super) fn finish(
     facts: &Declarations,
     identity: CrateIdentity,
     dependencies: Vec<CrateIdentity>,
-    functions: Vec<PreparedFunction>,
-    constants: Vec<Constant>,
-    public: &[DefId],
+    prepared: Prepared,
 ) -> Result<Interface, Error> {
-    let mut records = discover(report, facts, &identity, &functions, public)?;
-    if records.is_empty() {
+    let Prepared {
+        functions,
+        constants,
+        records: public,
+        storage,
+    } = prepared;
+    let mut records = discover(report, facts, &identity, &functions, &public, &storage)?;
+    if records.is_empty() && storage.entries.is_empty() {
         let functions = functions
             .into_iter()
             .map(|function| {
@@ -80,6 +84,7 @@ pub(super) fn finish(
         }
         wire_records.push(Record::new(record.identity, record.public, wire_fields).map_err(error)?);
     }
+    let storage = storage.encode(facts, &mut graph, &ordinals)?;
     let graph = TypeGraph::new(graph.nodes).map_err(error)?;
     let functions = functions
         .into_iter()
@@ -93,14 +98,26 @@ pub(super) fn finish(
             .map_err(error)
         })
         .collect::<Result<_, _>>()?;
-    Interface::with_nominals(
-        identity,
-        dependencies,
-        functions,
-        constants,
-        Nominals::new(graph, wire_records).map_err(error)?,
-    )
-    .map_err(error)
+    if let Some(storage) = storage {
+        Interface::with_storage(
+            identity,
+            dependencies,
+            functions,
+            constants,
+            Nominals::for_storage(graph, wire_records).map_err(error)?,
+            storage,
+        )
+        .map_err(error)
+    } else {
+        Interface::with_nominals(
+            identity,
+            dependencies,
+            functions,
+            constants,
+            Nominals::new(graph, wire_records).map_err(error)?,
+        )
+        .map_err(error)
+    }
 }
 
 fn fields(facts: &Declarations, variant: VariantId) -> Result<&[Field], Error> {
@@ -116,12 +133,14 @@ fn discover(
     identity: &CrateIdentity,
     functions: &[PreparedFunction],
     public: &[DefId],
+    storage: &super::static_exports::Prepared,
 ) -> Result<Vec<Declaration>, Error> {
     let public_set: HashSet<_> = public.iter().copied().collect();
     let mut work: Vec<_> = functions
         .iter()
         .map(|function| function.signature)
         .collect();
+    work.extend(storage.entries.iter().map(|entry| entry.ty));
     for definition in public {
         work.push(
             facts.definitions[definition.0 as usize]
@@ -164,7 +183,7 @@ fn discover(
                 work.extend(fields(facts, variant)?.iter().map(|field| field.ty));
                 records.push(Declaration {
                     item,
-                    identity: path(report, identity, DefId(item.0))?,
+                    identity: path(report, identity, DefId(item.0), ExternalKind::Record)?,
                     public: public_set.contains(&DefId(item.0)),
                     variant,
                 });
@@ -180,10 +199,11 @@ fn discover(
     Ok(records)
 }
 
-fn path(
+pub(super) fn path(
     report: &Report,
     identity: &CrateIdentity,
     definition: DefId,
+    kind: ExternalKind,
 ) -> Result<ExternalDef, Error> {
     let entry = &report.resolution.definitions[definition.0 as usize];
     let scope = &report.resolution.scopes[entry.scope.0 as usize];
@@ -210,7 +230,7 @@ fn path(
         module = parent;
     }
     names.reverse();
-    ExternalDef::new(identity.clone(), names, ExternalKind::Record).map_err(error)
+    ExternalDef::new(identity.clone(), names, kind).map_err(error)
 }
 
 fn validate(facts: &Declarations, item: ItemId, contracts: &Contracts) -> Result<VariantId, Error> {

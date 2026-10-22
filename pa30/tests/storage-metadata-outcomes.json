@@ -1,0 +1,198 @@
+{
+  "status": "independently qualified maintainer checkpoint; planned assignment; no text references",
+  "profile": "Rust 1.98.0 edition2024 x86_64 Linux; full source objects, ordinary default lints; panic abort; explicit constant/storage and safety contracts",
+  "provider": {
+    "path": "tests/spec/storage-metadata/provider.c",
+    "sha256": "cd57bb6edf88003a586782a68811815280abb7611f965b2143903ceba8bc6496"
+  },
+  "cases": [
+    {
+      "name": "first",
+      "path": "tests/spec/storage-metadata/first.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "a50790f9e238830b16466becc0ed15a28a6d395593d603a936e6aecbe97ab265"
+    },
+    {
+      "name": "second",
+      "path": "tests/spec/storage-metadata/second.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "45b7d07282d084b583c6e77d076e71e1febeed763c4841fb1d766ef45bc313ac"
+    },
+    {
+      "name": "read-scalars",
+      "path": "tests/spec/storage-metadata/read-scalars.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "40a535075e8da2602b1d4b27ca31101b3c2b012e2a1c49822900614d05745e19"
+    },
+    {
+      "name": "mutate-transitive",
+      "path": "tests/spec/storage-metadata/mutate-transitive.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "3bedc07e83fc306dced2f29a93e07c4423b9b84abf836c983df2e8a0f9fa0c12"
+    },
+    {
+      "name": "address-identity",
+      "path": "tests/spec/storage-metadata/address-identity.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "2102406907c5a8fd20f36cb555bfcab772ce311bb3ef8392809d042e1441f459"
+    },
+    {
+      "name": "record-field",
+      "path": "tests/spec/storage-metadata/record-field.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "f668ee1c4a27295d3cb652f0ceb87cd71fcea6702f637999f4f0890dda40e6f0"
+    },
+    {
+      "name": "constant-scalars",
+      "path": "tests/spec/storage-metadata/constant-scalars.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "dc1c43b668e4f043a7fc776865cc2fff0f3ccf1a3e7e7348eb10d4119d906226"
+    },
+    {
+      "name": "constant-reference",
+      "path": "tests/spec/storage-metadata/constant-reference.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "59078698862950910049a25c0ceeb8f71aebaab5a32f8f9cd6a82cd23080e5bc"
+    },
+    {
+      "name": "foreign-storage",
+      "path": "tests/spec/storage-metadata/foreign-storage.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "72b39cf3e6f120557631b289b784a73f5cc8862f01b6b8e47c1bd6e94a18f5bb"
+    },
+    {
+      "name": "raw-mutable-address",
+      "path": "tests/spec/storage-metadata/raw-mutable-address.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "642cef518b5bed98e579cd607e0489f55896dd1b742b905ee4ed6adb4bc61e9a"
+    },
+    {
+      "name": "reject-private",
+      "path": "tests/spec/storage-metadata/reject-private.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0603"
+      ],
+      "diagnostic": "unresolved value name",
+      "source_sha256": "24c8895758662448b8e80d8aaf96d6ac29c75f1ddce8b4a7fbd148c3b800aef4"
+    },
+    {
+      "name": "reject-immutable-write",
+      "path": "tests/spec/storage-metadata/reject-immutable-write.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0594"
+      ],
+      "diagnostic": "immutable static storage",
+      "source_sha256": "5fe5b22c4ce6956d779eb4f9609195667b8585f1bb194093111d4801008f522a"
+    },
+    {
+      "name": "reject-mutable-safe",
+      "path": "tests/spec/storage-metadata/reject-mutable-safe.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0133"
+      ],
+      "diagnostic": "mutable static access requires an unsafe context",
+      "source_sha256": "02f2461cbce49b0fc063fd07111938af0be10d42240733703b10704a49e058c6"
+    },
+    {
+      "name": "reject-foreign-safe",
+      "path": "tests/spec/storage-metadata/reject-foreign-safe.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0133"
+      ],
+      "diagnostic": "foreign static access requires an unsafe context",
+      "source_sha256": "16606a2cc95bafd85fe76144f47afbfa15d3841b5a97fe791a5274cce3115bcb"
+    },
+    {
+      "name": "reject-mut-constant",
+      "path": "tests/spec/storage-metadata/reject-mut-constant.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0080"
+      ],
+      "diagnostic": "cannot read mutable static storage",
+      "source_sha256": "3817ffe79f4e5d4c3d4a9252a367ed32a99a08745b0146953f51a867d604c988"
+    },
+    {
+      "name": "reject-foreign-constant",
+      "path": "tests/spec/storage-metadata/reject-foreign-constant.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0080"
+      ],
+      "diagnostic": "foreign static value is unavailable during constant evaluation",
+      "source_sha256": "babba2fdba623ece82443869e14662ecbfaeb08dbaed740109dd7d0a49386a42"
+    }
+  ]
+}

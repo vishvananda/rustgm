@@ -7,6 +7,8 @@ mod calling_conventions;
 mod nominals;
 #[path = "metadata_codec/scalar_values.rs"]
 mod scalar_values;
+#[path = "metadata_codec/stored_interfaces.rs"]
+mod stored_interfaces;
 use rustgm::support::crates::{
     self, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, Scalar, Signature, Symbol,
 };

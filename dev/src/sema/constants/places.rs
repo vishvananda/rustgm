@@ -555,7 +555,7 @@ impl Queries<'_> {
         }
         Ok(())
     }
-    fn check_copy_read(&mut self, query: Query, ty: TypeId) -> Result<(), Error> {
+    pub(super) fn check_copy_read(&mut self, query: Query, ty: TypeId) -> Result<(), Error> {
         let facts = &mut *self.typing.facts;
         let properties = facts
             .copies

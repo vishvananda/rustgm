@@ -66,6 +66,13 @@ through three byte-for-byte. This PA30 extension grants no const or generic-body
 permission and adds no static or C aggregate transport. See
 `docs/pa30-foreign-metadata.md`.
 
+Profile five adds named storage and completed scalar/record/reference values.
+Hidden backing remains private; self-referential static addresses retain real
+global identity across object boundaries. The source and native controls in
+`tests/storage-metadata-outcomes.json` also vary shared roots at 8/32/128 sizes.
+Foreign-storage extensions belong to PA30. See
+`docs/pa30-storage-metadata.md` for validation and the remaining graph boundaries.
+
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error
 contract and example outputs before declaring this assignment active.

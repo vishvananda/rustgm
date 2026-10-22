@@ -36,6 +36,10 @@ impl Machine<'_, '_> {
             .foreign
             .as_deref()
             .is_some_and(|r| r.imports_global(id))
+            && facts
+                .crates
+                .as_deref()
+                .is_none_or(|linkage| linkage.imported_storage(id).is_none())
         {
             return Err("constant execution cannot read external static contents".into());
         }

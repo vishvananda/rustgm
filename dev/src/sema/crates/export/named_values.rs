@@ -27,7 +27,15 @@ pub(super) fn export(
     let value = reader
         .definition(definition)
         .ok_or_else(|| error("scalar constant export requires a completed value"))?;
-    let bits = match (ty, reader.view(value).map_err(error)?) {
+    Constant::new(
+        ExternalDef::new(identity.clone(), path, ExternalKind::Constant).map_err(error)?,
+        value_bits(ty, reader.view(value).map_err(error)?)?,
+    )
+    .map_err(error)
+}
+
+pub(super) fn value_bits(ty: Scalar, view: View) -> Result<ScalarValue, Error> {
+    let bits = match (ty, view) {
         (
             Scalar::Unit,
             View::Product {
@@ -60,9 +68,5 @@ pub(super) fn export(
             ));
         }
     };
-    Constant::new(
-        ExternalDef::new(identity.clone(), path, ExternalKind::Constant).map_err(error)?,
-        ScalarValue::new(ty, bits).map_err(error)?,
-    )
-    .map_err(error)
+    ScalarValue::new(ty, bits).map_err(error)
 }

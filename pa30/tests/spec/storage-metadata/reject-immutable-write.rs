@@ -1,0 +1,1 @@
+extern crate first;fn main(){first::IMM=5;}

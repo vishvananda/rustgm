@@ -1,7 +1,7 @@
 //! Artifact-owned named records retain visibility and one shared type graph.
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, Function, Lifetime, MAX_COMPONENTS,
-    MAX_NAME_BYTES, TypeGraph, TypeNode, TypeRef,
+    MAX_NAME_BYTES, Storage, TypeGraph, TypeNode, TypeRef,
 };
 use std::collections::{HashSet, VecDeque};
 
@@ -89,8 +89,17 @@ impl Nominals {
     /// # Errors
     /// Rejects noncanonical identities, invalid roots, cycles and profile bounds.
     pub fn new(types: TypeGraph, records: Vec<Record>) -> Result<Self, &'static str> {
-        if records.is_empty() || records.len() > TypeGraph::MAX_NODES {
+        if records.is_empty() {
             return Err("nominal metadata requires a bounded nonempty record table");
+        }
+        Self::for_storage(types, records)
+    }
+    /// Storage-only artifacts own a real type graph without inventing a nominal.
+    /// # Errors
+    /// Rejects malformed graphs, fields and cyclic by-value record storage.
+    pub fn for_storage(types: TypeGraph, records: Vec<Record>) -> Result<Self, &'static str> {
+        if records.len() > TypeGraph::MAX_NODES {
+            return Err("metadata record table exceeds profile budget");
         }
         if records
             .windows(2)
@@ -147,8 +156,8 @@ impl Nominals {
         owner: &CrateIdentity,
         functions: &[Function],
         constants: &[Constant],
-        mut atoms: usize,
-        mut names: usize,
+        storage: Option<&Storage>,
+        (mut atoms, mut names): (usize, usize),
     ) -> Result<(usize, usize), &'static str> {
         atoms = atoms
             .saturating_add(self.types.nodes().len())
@@ -195,20 +204,27 @@ impl Nominals {
                 .chain(std::iter::once(function.signature().result()))
         });
         self.types.canonical(
-            roots.chain(
-                self.records
-                    .iter()
-                    .flat_map(|record| record.fields.iter().map(RecordField::ty)),
-            ),
+            roots
+                .chain(
+                    self.records
+                        .iter()
+                        .flat_map(|record| record.fields.iter().map(RecordField::ty)),
+                )
+                .chain(
+                    storage
+                        .into_iter()
+                        .flat_map(|s| s.statics().iter().map(super::Static::ty)),
+                ),
         )?;
-        self.validate_reachable(functions)?;
-        self.validate_paths(functions, constants)?;
+        self.validate_reachable(functions, storage)?;
+        self.validate_paths(functions, constants, storage)?;
         Ok((atoms, names))
     }
     fn validate_paths(
         &self,
         functions: &[Function],
         constants: &[Constant],
+        storage: Option<&Storage>,
     ) -> Result<(), &'static str> {
         let records: HashSet<_> = self
             .records
@@ -227,6 +243,11 @@ impl Nominals {
                 constants
                     .iter()
                     .map(|constant| constant.definition().path()),
+            )
+            .chain(
+                storage
+                    .into_iter()
+                    .flat_map(|s| s.statics().iter().map(|entry| entry.definition().path())),
             );
         for path in paths {
             for length in 1..path.len() {
@@ -237,7 +258,11 @@ impl Nominals {
         }
         Ok(())
     }
-    fn validate_reachable(&self, functions: &[Function]) -> Result<(), &'static str> {
+    fn validate_reachable(
+        &self,
+        functions: &[Function],
+        storage: Option<&Storage>,
+    ) -> Result<(), &'static str> {
         // Resolve each type's nominal leaf once; repeated roots never rescan chains.
         let mut leaves = Vec::with_capacity(self.types.nodes().len());
         for node in self.types.nodes() {
@@ -259,6 +284,11 @@ impl Nominals {
                     .parameters()
                     .iter()
                     .any(|&root| !public_root(root))
+        }) || storage.is_some_and(|s| {
+            s.statics()
+                .iter()
+                .filter(|entry| entry.public())
+                .any(|entry| !public_root(entry.ty()))
         }) || self
             .records
             .iter()
@@ -291,6 +321,12 @@ impl Nominals {
                         .chain(std::iter::once(function.signature().result()))
                 })
                 .filter_map(|root| leaves[usize::from(root.0)]),
+        );
+        work.extend(
+            storage
+                .into_iter()
+                .flat_map(|s| s.statics().iter())
+                .filter_map(|entry| leaves.get(usize::from(entry.ty().0)).copied().flatten()),
         );
         while let Some(index) = work.pop() {
             if std::mem::replace(&mut seen[index], true) {

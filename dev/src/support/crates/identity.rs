@@ -64,6 +64,7 @@ pub enum ExternalKind {
     Function,
     Constant,
     Record,
+    Static,
 }
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ExternalDef {
@@ -108,7 +109,9 @@ impl ExternalDef {
     pub const fn namespace(&self) -> Namespace {
         match self.kind {
             ExternalKind::Module | ExternalKind::Record => Namespace::Type,
-            ExternalKind::Function | ExternalKind::Constant => Namespace::Value,
+            ExternalKind::Function | ExternalKind::Constant | ExternalKind::Static => {
+                Namespace::Value
+            }
         }
     }
     #[must_use]
@@ -119,6 +122,7 @@ impl ExternalDef {
             ExternalKind::Function => 'f',
             ExternalKind::Constant => 'c',
             ExternalKind::Record => 'r',
+            ExternalKind::Static => 's',
         });
         out.push('$');
         for name in self.path.iter() {

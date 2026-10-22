@@ -1,7 +1,7 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, Record, Signature, TypeNode,
+    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, Record, Signature, Storage, TypeNode,
 };
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
@@ -32,6 +32,16 @@ pub enum Symbol {
     Rust,
     Exact(Arc<str>),
 }
+impl Symbol {
+    pub(super) fn validate(&self) -> Result<(), &'static str> {
+        if let Self::Exact(name) = self
+            && (name.is_empty() || name.len() > 4096 || name.contains('\0'))
+        {
+            return Err("invalid exact metadata symbol");
+        }
+        Ok(())
+    }
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
     definition: ExternalDef,
@@ -50,11 +60,7 @@ impl Function {
         if definition.kind() != ExternalKind::Function {
             return Err("metadata entry is not a function");
         }
-        if let Symbol::Exact(name) = &symbol
-            && (name.is_empty() || name.len() > 4096 || name.contains('\0'))
-        {
-            return Err("invalid exact metadata symbol");
-        }
+        symbol.validate()?;
         Ok(Self {
             definition,
             signature,
@@ -85,6 +91,7 @@ pub struct Interface {
     functions: Vec<Function>,
     constants: Vec<Constant>,
     nominals: Option<Nominals>,
+    storage: Option<Storage>,
     atoms: usize,
     names: usize,
 }
@@ -128,7 +135,7 @@ impl Interface {
                     .chain(std::iter::once(function.signature.result())),
             )?;
         }
-        Self::build(identity, dependencies, functions, constants, None)
+        Self::build(identity, dependencies, functions, constants, None, None)
     }
     /// Publish shared nominal storage only after all roots and identities validate.
     /// # Errors
@@ -140,7 +147,37 @@ impl Interface {
         constants: Vec<Constant>,
         nominals: Nominals,
     ) -> Result<Self, &'static str> {
-        Self::build(identity, dependencies, functions, constants, Some(nominals))
+        if nominals.records().is_empty() {
+            return Err("nominal metadata requires a nonempty record table");
+        }
+        Self::build(
+            identity,
+            dependencies,
+            functions,
+            constants,
+            Some(nominals),
+            None,
+        )
+    }
+    /// Publish actual storage roots in the shared artifact graph.
+    /// # Errors
+    /// Rejects invalid initializers, identities, reachability and combined quotas.
+    pub fn with_storage(
+        identity: CrateIdentity,
+        dependencies: Vec<CrateIdentity>,
+        functions: Vec<Function>,
+        constants: Vec<Constant>,
+        nominals: Nominals,
+        storage: Storage,
+    ) -> Result<Self, &'static str> {
+        Self::build(
+            identity,
+            dependencies,
+            functions,
+            constants,
+            Some(nominals),
+            Some(storage),
+        )
     }
     fn build(
         identity: CrateIdentity,
@@ -148,12 +185,14 @@ impl Interface {
         mut functions: Vec<Function>,
         mut constants: Vec<Constant>,
         nominals: Option<Nominals>,
+        storage: Option<Storage>,
     ) -> Result<Self, &'static str> {
         if dependencies.len() > MAX_DEPENDENCIES
             || functions
                 .len()
                 .saturating_add(constants.len())
                 .saturating_add(nominals.as_ref().map_or(0, |n| n.records().len()))
+                .saturating_add(storage.as_ref().map_or(0, |s| s.statics().len()))
                 > MAX_FUNCTIONS
         {
             return Err("metadata table exceeds profile budget");
@@ -213,10 +252,28 @@ impl Interface {
         let (components, bytes) =
             constant_budget(&identity, &functions, &constants, components, bytes)?;
         let (components, bytes) = match &nominals {
-            Some(records) => {
-                records.validate(&identity, &functions, &constants, components, bytes)?
-            }
+            Some(records) => records.validate(
+                &identity,
+                &functions,
+                &constants,
+                storage.as_ref(),
+                (components, bytes),
+            )?,
             None => (components, bytes),
+        };
+        let (components, bytes) = if let Some(storage) = &storage {
+            let records = nominals
+                .as_ref()
+                .ok_or("static metadata requires a shared type graph")?;
+            let (atoms, names) = storage.validate(&identity, &functions, &constants, records)?;
+            let components = components.saturating_add(atoms);
+            let bytes = bytes.saturating_add(names);
+            if components > MAX_COMPONENTS || bytes > MAX_NAME_BYTES {
+                return Err("metadata contents exceed profile budget");
+            }
+            (components, bytes)
+        } else {
+            (components, bytes)
         };
         Ok(Self {
             identity,
@@ -224,6 +281,7 @@ impl Interface {
             functions,
             constants,
             nominals,
+            storage,
             atoms: components,
             names: bytes,
         })
@@ -231,6 +289,10 @@ impl Interface {
     #[must_use]
     pub const fn nominals(&self) -> Option<&Nominals> {
         self.nominals.as_ref()
+    }
+    #[must_use]
+    pub const fn storage(&self) -> Option<&Storage> {
+        self.storage.as_ref()
     }
     #[must_use]
     pub fn records(&self) -> &[Record] {

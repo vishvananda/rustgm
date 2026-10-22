@@ -25,6 +25,7 @@ pub(super) fn decode(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
     dependencies: usize,
+    storage: bool,
 ) -> Result<Nominals, &'static str> {
     let types = TypeGraph::new(signatures::decode_graph(input, true)?)?;
     let count = input.count(TypeGraph::MAX_NODES, 18)?;
@@ -49,7 +50,11 @@ pub(super) fn decode(
         }
         records.push(Record::new(definition, public, fields)?);
     }
-    Nominals::new(types, records)
+    if storage {
+        Nominals::for_storage(types, records)
+    } else {
+        Nominals::new(types, records)
+    }
 }
 fn visibility(input: &mut Reader<'_>) -> Result<bool, &'static str> {
     match input.u8()? {

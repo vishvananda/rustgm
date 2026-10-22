@@ -37,7 +37,7 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
     }
     Ok(())
 }
-fn convert(value: ScalarValue) -> Result<Value, &'static str> {
+pub(super) fn convert(value: ScalarValue) -> Result<Value, &'static str> {
     let bits = value.bits();
     Ok(match value.ty() {
         Scalar::Unit => return Err("unit constant requires its typed empty value"),

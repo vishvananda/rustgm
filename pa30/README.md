@@ -58,7 +58,11 @@ boundaries. The fixed-callable metadata checkpoint preserves C ABI separately
 from safety, linkage and lifetime slots across separately compiled crates.
 Profile four reuses the existing scalar/reference and closed-record graphs;
 `tests/foreign-metadata-outcomes.json` declares its independent source and native
-controls. See `docs/pa30-foreign-metadata.md`. Static, variadic-declaration and
+controls. See `docs/pa30-foreign-metadata.md`. The named-storage checkpoint adds
+owned/foreign static identity, safety, mutability and completed scalar/record/
+reference values through profile five. Its source and native contracts are in
+`tests/storage-metadata-outcomes.json`; see `docs/pa30-storage-metadata.md` for
+validation and the remaining storage boundaries. Variadic-declaration and
 aggregate ABI crate-metadata transport remain unfinished.
 The reviewed optional object backend
 profile is selected explicitly; its native tests are always registered and run

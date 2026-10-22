@@ -1,0 +1,97 @@
+{
+  "status": "independently qualified maintainer checkpoint; planned assignment; no text references",
+  "profile": "Rust1.98.0 edition2024 Linux x86_64; ordinary lints and full objects; hidden named field backing, shared address identity and self-reference cycles; frozen8/32/128 root-sharing scaling",
+  "qualification_revision": "V1 used standard assert! without a shipped standard-library macro. V2 adds a local source macro and the existing runtime check helper to the two native clients; all assertion expressions, library declarations and expected outcomes remain unchanged. V1 source/results are retained. Independently requalify V2 before candidate execution.",
+  "cases": [
+    {
+      "name": "hidden",
+      "path": "tests/spec/storage-metadata/hidden.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "d1fde4cdb7b347d088f519d860ab560c623c5c6058f637dd8e9ebb6a1ce9fbb9"
+    },
+    {
+      "name": "hidden-client",
+      "path": "tests/spec/storage-metadata/hidden-client.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "180da02ecd104bc1091d0db532b2de4cc9c51b4b6432ebd1dbed048b49268820"
+    },
+    {
+      "name": "hidden-private",
+      "path": "tests/spec/storage-metadata/hidden-private.rs",
+      "role": "client",
+      "rustc": 1,
+      "frontend": 1,
+      "native": false,
+      "rustc_codes": [
+        "E0603"
+      ],
+      "diagnostic": "unresolved value name",
+      "source_sha256": "c81840f871384e087c473d1c330e2a7a238bd070b20998d43552eed3570ea021"
+    },
+    {
+      "name": "cycle",
+      "path": "tests/spec/storage-metadata/cycle.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "177c9072436888012bef7463df17931cd59e9f916438cc051fc9222c9e82b147"
+    },
+    {
+      "name": "cycle-client",
+      "path": "tests/spec/storage-metadata/cycle-client.rs",
+      "role": "client",
+      "rustc": 0,
+      "frontend": 0,
+      "native": true,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "940482816fd3841688ec0b1a0623e8542af804bd351ede8e4868882388796899"
+    },
+    {
+      "name": "shared_roots_8",
+      "path": "tests/spec/storage-metadata/shared-roots-8.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "875d3abaf67d15cf6bc2d8ca7c1bd1543b0d7004c2fca92f8efc0af90b93a490"
+    },
+    {
+      "name": "shared_roots_32",
+      "path": "tests/spec/storage-metadata/shared-roots-32.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "d17acf36939d311724111874a3b046dd94ed14f0ac772593363305a50e00c332"
+    },
+    {
+      "name": "shared_roots_128",
+      "path": "tests/spec/storage-metadata/shared-roots-128.rs",
+      "role": "library",
+      "rustc": 0,
+      "frontend": 0,
+      "native": false,
+      "rustc_codes": [],
+      "diagnostic": null,
+      "source_sha256": "c60327a548a4222c1477cc6db9d327e68c9f6daaaca266bda1b310ffb59636b4"
+    }
+  ]
+}

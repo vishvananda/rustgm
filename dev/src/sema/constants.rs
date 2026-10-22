@@ -613,11 +613,12 @@ impl Queries<'_> {
                     })?;
                 self.complete_query(query, value)?;
             }
-            Expression::ForeignStatic(_) => {
-                return Err(self.error(
-                    query,
-                    "foreign static value is unavailable during constant evaluation",
-                ));
+            Expression::ForeignStatic(id) => {
+                let value = self.imported_static_contents(query, id)?;
+                let ty = self.typing.facts.definitions[id.0 as usize]
+                    .ok_or_else(|| self.error(query, "missing imported static type"))?;
+                self.check_copy_read(query, ty)?;
+                self.complete_query(query, value)?;
             }
             Expression::Instance(instance) => self.forward(query, Query::Instance(instance)),
             Expression::Unary { operand, .. }

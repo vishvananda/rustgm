@@ -277,6 +277,9 @@ impl<'a> Checker<'a> {
             for (definition, _) in imported.records() {
                 checker.states[definition.0 as usize] = State::Complete;
             }
+            for (definition, _) in imported.statics() {
+                checker.states[definition.0 as usize] = State::Complete;
+            }
         }
         Ok(checker)
     }
