@@ -137,8 +137,8 @@ User declarations with the same spelling remain distinct. These name facts
 do not prove a bound or implement a trait; later semantic assignments own that
 behavior. Other external paths still report unavailable metadata.
 
-Iteration demand also loads canonical `Iterator`, `IntoIterator` and shared
-slice/array iterator headers. Their names, scopes and definitions appear in
+Iteration demand also loads canonical `Iterator`, `IntoIterator` and shared and
+mutable slice/array iterator headers. Their names, scopes and definitions appear in
 this view in deterministic creation order; loading these headers preserves
 existing source reference identities. The name view does not prove iterator
 applicability or execute a loop. PA26 owns those library contracts.
