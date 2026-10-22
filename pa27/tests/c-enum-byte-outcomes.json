@@ -1,0 +1,180 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "aa88b3e3",
+  "cases": [
+    {
+      "name": "fieldless-u32",
+      "sha256": "cee718125c4341136eb6360c85c40a212a075ddd0b87f343166ba3900bbf8692",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/fieldless-u32.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "fieldless-i32",
+      "sha256": "21f7c858c3fea6d6f5c3416084e76ec9f8936c0feb1234087d9ab9f227f4e83f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/fieldless-i32.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "fieldless-u64",
+      "sha256": "07f2031d20bb8341e8a034cd925724a4a7e16a0bd17271fa01b9285c28acc579",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/fieldless-u64.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "fieldless-i64",
+      "sha256": "c5070830ef446033863505efb10fefde01f84eaabf89b43a21d62f24b302365e",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/fieldless-i64.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "tuple-from-bytes",
+      "sha256": "2597fe4c79bd97231d6053a44423bb6fd4bf0dbcdacf3807d054e0b36001eedc",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/tuple-from-bytes.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "inactive-invalid-bool",
+      "sha256": "6d5b99c334122d9b6744c032762d51f1fbe9af315d515c4cce270f46018788e6",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/inactive-invalid-bool.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "active-invalid-bool",
+      "sha256": "eb1cc115bf4a2244e710132f823a29ea9343e53867e02bda9b776038286bf2f7",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa27/tests/spec/c-enum-bytes/active-invalid-bool.rs",
+      "frontend_expected": 1,
+      "reason": "invalid bool representation"
+    },
+    {
+      "name": "invalid-tag",
+      "sha256": "ef71f3bc7c2afcfa6e348f85ba8d5148c259795c8a47c8d5d91047cfb6bb4f7f",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa27/tests/spec/c-enum-bytes/invalid-tag.rs",
+      "frontend_expected": 1,
+      "reason": "invalid discriminant"
+    },
+    {
+      "name": "partial-tag",
+      "sha256": "f4af0fdaad4d70b71a18403a8cbcd8556783134cd6fe5d209873a63b636024c6",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa27/tests/spec/c-enum-bytes/partial-tag.rs",
+      "frontend_expected": 1,
+      "reason": "uninitialized bytes"
+    },
+    {
+      "name": "active-uninitialized",
+      "sha256": "d1b9a489b812fc5e714691d03e46c0e8fce607bac45bc955335bab681ba88713",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa27/tests/spec/c-enum-bytes/active-uninitialized.rs",
+      "frontend_expected": 1,
+      "reason": "uninitialized bytes"
+    },
+    {
+      "name": "empty-uninitialized-inactive",
+      "sha256": "9070bcb290b27a9c2fa53e58c0a3973b99711567b6c4a4554ed021c92ba11689",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/empty-uninitialized-inactive.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "record-variant",
+      "sha256": "42ddd6267353271ea8871668e41b84fdf0d8d5aaeac1936c8c6cc5adce8a51d8",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/record-variant.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "reference-field",
+      "sha256": "f4c0ad1df22201bc8c0a82a90abac14ca4dd1dc6b2c8a5f516fbe5a1e790a6a7",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/reference-field.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "slice-field",
+      "sha256": "1c1984adb4cdf5c540188a653765d45f04166c7a3544f3f1b712d4694862ec7b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/slice-field.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "nested-array",
+      "sha256": "161e0abc183050841547acaa2d61aa35372448b072a4c143054a6c4a3010af0a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/nested-array.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "explicit-alignment",
+      "sha256": "748c187f2da0f53b968c886f1605178d9a3d1ee886b546bbe39e9f3217ebfc3a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/c-enum-bytes/explicit-alignment.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "default-layout-still-required",
+      "sha256": "f2922eaa1095252fe92781b9fc71b52bf45c1769f564389a4267e995cfc431b9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/default-enum-bytes/default-layout-still-required.rs",
+      "frontend_expected": 1,
+      "reason": "requires a supported closed byte family",
+      "required_gap": "default Rust enum backing remains required"
+    }
+  ]
+}

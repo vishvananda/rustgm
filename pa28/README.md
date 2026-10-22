@@ -296,3 +296,9 @@ facts. Canonical field pointers preserve their physical offsets across tag
 changes. `tests/payload-enum-byte-outcomes.json` and
 `docs/pa27-payload-enum-bytes.md` record the independently qualified profile.
 Default-layout/niche enum and other required backing families remain open.
+
+The C enum byte-backing slice admits repr(C) without a written integer tag by
+using retained target ABI facts. Existing tag/payload validity, physical field
+addresses and raw transport rules remain separate. The draft
+`tests/c-enum-byte-outcomes.json` keeps default/tagless Rust-positive gaps
+explicit; see `docs/pa27-c-enum-bytes.md`.

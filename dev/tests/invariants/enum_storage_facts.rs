@@ -136,3 +136,68 @@ fn payload_enum_facade_keeps_exact_fields_and_rejects_malformed_declaration_rang
     assert!(Reader::new(&facts).enum_variant_fields(ty, id).is_err());
     Ok(())
 }
+#[test]
+fn c_enum_storage_facade_rejects_non_abi_tags_and_preserves_written_repr_checks()
+-> Result<(), String> {
+    let report = test_source::resolve("#[repr(C)]enum E{A=3,B=7}", true)?;
+    let mut facts = crate::pipeline::analyze_source(&report)
+        .map_err(|e| e.to_string())?
+        .facts;
+    let owner = facts.aggregates.iter().next().ok_or("enum")?.item;
+    let ty = facts
+        .types
+        .intern(Kind::Adt(owner, crate::types::GenericArgs::EMPTY))?;
+    Evaluator::new(&report, &mut facts)
+        .storage_layout(ty, 10000)
+        .map_err(|e| e.message().to_owned())?;
+    let original = *facts.layouts.get(ty).ok_or("layout")?;
+    let definition = *facts.aggregates.get(owner).ok_or("definition")?;
+    assert!(matches!(
+        Reader::enumeration_shape(&definition, &original)?,
+        StoredShape::Enumeration {
+            tag: Tag {
+                ty: Primitive::U32,
+                ..
+            }
+        }
+    ));
+    let Shape::Aggregate { variants, .. } = original.shape else {
+        return Err("shape".into());
+    };
+    for primitive in [
+        Primitive::Bool,
+        Primitive::Char,
+        Primitive::I8,
+        Primitive::U8,
+        Primitive::I16,
+        Primitive::U16,
+        Primitive::I128,
+        Primitive::U128,
+    ] {
+        let mut layout = original;
+        layout.size = 32;
+        layout.shape = Shape::Aggregate {
+            variants,
+            tag: Some(Tag {
+                ty: primitive,
+                offset: 0,
+            }),
+        };
+        assert!(Reader::enumeration_shape(&definition, &layout).is_err());
+    }
+    let mut written = definition;
+    written.repr.tag = Some(Primitive::U8);
+    assert!(Reader::enumeration_shape(&written, &original).is_err());
+    written.repr.tag = Some(Primitive::U32);
+    assert!(matches!(
+        Reader::enumeration_shape(&written, &original)?,
+        StoredShape::Enumeration { .. }
+    ));
+    let mut rust = definition;
+    rust.repr.representation = Representation::Rust;
+    assert!(matches!(
+        Reader::enumeration_shape(&rust, &original)?,
+        StoredShape::Unsupported
+    ));
+    Ok(())
+}

@@ -140,3 +140,10 @@ field addresses retain physical offsets across tag changes. Inactive payloads
 and padding remain outside selected validity; default-layout/niche and other
 unsupported backing families above remain required. See
 `pa27-payload-enum-bytes.md` and the PA27/PA28 payload outcome drafts.
+
+
+The inferred C-tag slice also supports repr(C) without a written integer tag,
+using the exact retained target ABI tag. Default Rust, tagless and niche layouts
+remain required; the two frozen Rust-positive counterexamples retain their
+unsupported frontend outcomes explicitly in the C draft contract. See
+`pa27-c-enum-bytes.md`.

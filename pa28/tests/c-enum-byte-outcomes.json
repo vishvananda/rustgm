@@ -1,0 +1,70 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "aa88b3e3",
+  "cases": [
+    {
+      "name": "generic-closed-fields",
+      "sha256": "2d8e5a3682299c22a7788011e4f3c0e4156e1ddb5d35bc726f3ba972750882a7",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/c-enum-bytes/generic-closed-fields.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "fill-then-match",
+      "sha256": "cb21c3094ff96555f72e1bd03b30d8388cbbaf6b89c68ef90f036e220d2071ac",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/c-enum-bytes/fill-then-match.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "old-field-pointer",
+      "sha256": "281c4254ba1c106d8fbe471694039402409c4c77e7b8d995ec352dbb69920bb2",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/c-enum-bytes/old-field-pointer.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "copy-repair",
+      "sha256": "c096890e3fd4bc540650945496585ca8096b7e26eda7857428d596350af0d5a9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/c-enum-bytes/copy-repair.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "copy-invalid",
+      "sha256": "e0c31a35a3dfd0e4adc69339485961611799dd7822c539005238d6e56963541d",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa28/tests/spec/c-enum-bytes/copy-invalid.rs",
+      "frontend_expected": 1,
+      "reason": "invalid discriminant"
+    },
+    {
+      "name": "tagless-still-required",
+      "sha256": "edbbd8930bd89234e0360b639ce296f1a1d4badc89f3fdfc759adaac04585804",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/default-enum-bytes/tagless-still-required.rs",
+      "frontend_expected": 1,
+      "reason": "byte backing with pointer or enum storage is not implemented",
+      "required_gap": "tagless single-variant backing remains required"
+    }
+  ]
+}

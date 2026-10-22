@@ -1,0 +1,2 @@
+#[derive(Copy,Clone)]#[repr(C)]enum E{A{pad:u8,value:u32},B(bool)}const N:(u32,bool)=unsafe{let mut e=E::A{pad:3,value:37};let p=match &mut e{E::A{value,..}=>value as *mut u32,_=>loop{}};let tag=(&raw mut e)as *mut u32;core::ptr::write(tag,1);core::ptr::write((tag as *mut u8).add(4),1);core::ptr::write(p,41);(core::ptr::read(p),match e{E::B(v)=>v,_=>false})};fn main(){check(N.0==41&&N.1)}
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}

@@ -125,3 +125,6 @@ mod wide_enum_bytes;
 
 #[path = "../../payload_enum_bytes.rs"]
 mod payload_enum_bytes;
+
+#[path = "../../c_enum_bytes.rs"]
+mod c_enum_bytes;

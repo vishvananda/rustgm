@@ -32,7 +32,9 @@ impl Machine<'_, '_> {
                 .get(owner)
                 .is_some_and(|definition| {
                     definition.kind == crate::types::aggregate::Kind::Enum
-                        && definition.repr.tag.is_some()
+                        && (definition.repr.tag.is_some()
+                            || definition.repr.representation
+                                == crate::types::aggregate::Representation::C)
                 })
         {
             self.footprint(place.ty)?;

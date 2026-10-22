@@ -7,6 +7,8 @@ use crate::{
     types::{GenericArgs, Kind},
 };
 use std::fmt::Write;
+#[path = "c_enum_storage.rs"]
+mod c;
 #[path = "payload_enum_storage.rs"]
 mod payload;
 #[path = "wide_enum_storage.rs"]

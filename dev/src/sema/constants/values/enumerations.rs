@@ -3,7 +3,10 @@ use super::{ProjectionStorage, Reader, StoredShape, footprints::ProjectionLayout
 use crate::{
     abi::layout::{Layout, Shape, Tag, Variant},
     sema::members::{FieldId, VariantId},
-    types::{ItemId, Kind, TypeId, aggregate::Definition},
+    types::{
+        ItemId, Kind, TypeId,
+        aggregate::{Definition, Representation},
+    },
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/enum_storage_facts.rs"]
@@ -19,19 +22,32 @@ impl<'a> Reader<'a> {
         definition: &Definition,
         layout: &Layout,
     ) -> Result<StoredShape<'a>, &'static str> {
-        let Some(expected) = definition.repr.tag else {
+        let expected = definition.repr.tag;
+        if expected.is_none() && definition.repr.representation != Representation::C {
             return Ok(StoredShape::Unsupported);
-        };
-        let (_, bits) = expected
-            .integer()
-            .ok_or("stored enum tag must be an integer")?;
-        let width = u64::from(bits / 8);
+        }
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
             return Err("stored enum lacks its retained physical tag");
         };
-        if tag.ty != expected {
+        if expected.is_some_and(|expected| tag.ty != expected) {
             return Err("stored enum tag differs from its declared representation");
         }
+        if expected.is_none()
+            && !matches!(
+                tag.ty,
+                crate::types::Primitive::I32
+                    | crate::types::Primitive::U32
+                    | crate::types::Primitive::I64
+                    | crate::types::Primitive::U64
+            )
+        {
+            return Err("stored C enum lacks its target ABI integer tag");
+        }
+        let (_, bits) = tag
+            .ty
+            .integer()
+            .ok_or("stored enum tag must be an integer")?;
+        let width = u64::from(bits / 8);
         if tag
             .offset
             .checked_add(width)
@@ -44,7 +60,7 @@ impl<'a> Reader<'a> {
     /// Borrow completed physical variants without assigning byte tags to ordinals.
     pub(crate) fn enum_variants(self, ty: TypeId) -> Result<StoredEnumeration<'a>, &'static str> {
         let StoredShape::Enumeration { tag } = self.storage_shape(ty)? else {
-            return Err("constant enum byte storage requires an explicit integer tag");
+            return Err("constant enum byte storage requires a retained integer tag");
         };
         let Some(Kind::Adt(owner, _)) = self.facts.types.kind(ty) else {
             return Err("stored enum lacks a nominal owner");

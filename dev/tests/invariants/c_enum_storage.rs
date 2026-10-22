@@ -1,0 +1,74 @@
+//! Inferred C tags retain exact signed bits without accepting default Rust layouts.
+use super::*;
+use crate::types::Primitive;
+#[test]
+fn c_enum_tag_families_follow_retained_signed_and_unsigned_abi_facts() -> Result<(), String> {
+    for (variants, tag, bits) in [
+        ("A=3,B=7", Primitive::U32, 3u128),
+        ("A=-1,B=7", Primitive::I32, u128::from(u32::MAX)),
+        ("A=4294967296,B=4294967297", Primitive::U64, 1u128 << 32),
+        (
+            "A=-2147483649,B=7",
+            Primitive::I64,
+            u128::from(u64::MAX) - (1u128 << 31),
+        ),
+    ] {
+        with_enum_source(
+            &format!("#[repr(C)]enum E{{{variants}}}"),
+            0,
+            |machine, enums| {
+                let (ty, ids) = &enums[0];
+                let reader = Reader::new(machine.evaluator.facts());
+                assert_eq!(reader.enum_variants(*ty)?.tag.ty, tag);
+                assert_eq!(reader.enum_variant_bits(*ty, ids[0])?, bits);
+                let (_, id) = root(machine, *ty, ids[0])?;
+                let value = machine.decode_byte_enum(Source::Backing(id), 0, *ty)?;
+                assert!(
+                    matches!(Reader::new(machine.evaluator.facts()).view(value)?,View::Product{length:0,variant:Some(id)} if id==ids[0])
+                );
+                Ok(())
+            },
+        )?;
+    }
+    Ok(())
+}
+#[test]
+fn c_enum_warm_tag_work_is_bounded_by_width_and_logarithmic_lookup() -> Result<(), String> {
+    for (base, width) in [(0u128, 4usize), (1u128 << 32, 8usize)] {
+        for count in [8usize, 32, 128] {
+            let mut text = String::from("#[repr(C)]enum E{");
+            for n in 0..count {
+                write!(&mut text, "V{n}={},", base + 2 * n as u128).map_err(|e| e.to_string())?;
+            }
+            text.push('}');
+            let mut observations = Vec::new();
+            for noise in [0, 1024] {
+                with_enum_source(&text, noise, |machine, enums| {
+                    let (ty, ids) = &enums[0];
+                    let before = machine.work.steps;
+                    let (_, id) = root(machine, *ty, ids[count - 1])?;
+                    let cold = machine.work.steps - before;
+                    let retained = machine.memory.retained_cells();
+                    let mut rows = Vec::new();
+                    for repeats in [8usize, 32, 128] {
+                        let before = machine.work.steps;
+                        for _ in 0..repeats {
+                            machine.decode_byte_enum(Source::Backing(id), 0, *ty)?;
+                        }
+                        let steps = machine.work.steps - before;
+                        assert_eq!(steps, repeats * (count.ilog2() as usize + width + 3));
+                        assert_eq!(machine.memory.retained_cells(), retained);
+                        rows.push(steps);
+                        println!(
+                            "c-enum width={width} variants={count} noise={noise} repeats={repeats} cold={cold} warm={steps} retained={retained}"
+                        );
+                    }
+                    observations.push((cold, retained, rows));
+                    Ok(())
+                })?;
+            }
+            assert_eq!(observations[0], observations[1]);
+        }
+    }
+    Ok(())
+}
