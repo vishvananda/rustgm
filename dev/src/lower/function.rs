@@ -362,11 +362,31 @@ impl Lower<'_, '_> {
         }
     }
     fn value(&self, id: ir::ValueId) -> Result<Selected, &'static str> {
-        self.values
+        let selected = self
+            .values
             .get(id.0 as usize)
             .copied()
             .flatten()
-            .ok_or("body value does not dominate its use")
+            .ok_or("body value does not dominate its use")?;
+        if let Selected::Unit = selected {
+            let value = self
+                .body
+                .values
+                .get(id.0 as usize)
+                .ok_or("missing evaluated body value")?;
+            if matches!(
+                self.context.types.kind(value.ty),
+                Some(Kind::FunctionItem { .. })
+            ) {
+                // A call returning an item executes normally but carries no
+                // runtime bits. Its checked complete type retains the target.
+                return Ok(Selected::Item(
+                    self.body
+                        .callable_target(Instance::new(self.context.types, value.ty)?),
+                ));
+            }
+        }
+        Ok(selected)
     }
     fn primitive(&self, ty: TypeId) -> Result<Primitive, &'static str> {
         if let Some(Kind::Primitive(p)) = self.context.types.kind(ty) {

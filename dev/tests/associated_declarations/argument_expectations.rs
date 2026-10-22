@@ -316,7 +316,7 @@ fn function_inputs_match_qualified_prefix_outcomes() -> Result<(), Box<dyn std::
                 .map(|_| ())
                 .map_err(|e| e.to_string())
         })();
-        let implemented = accepted && name != "ordinary-identity";
+        let implemented = accepted;
         if result.is_ok() != implemented {
             failures.push(format!("{name}: {result:?}"));
         }
@@ -329,7 +329,7 @@ fn function_inputs_match_qualified_prefix_outcomes() -> Result<(), Box<dyn std::
 fn function_inputs_preserve_native_calls() -> Result<(), Box<dyn std::error::Error>> {
     let cases = CASES
         .iter()
-        .filter(|c| c.1 && c.0 != "ordinary-identity")
+        .filter(|c| c.1)
         .map(|&(name, _, source)| {
             Ok((
                 name,

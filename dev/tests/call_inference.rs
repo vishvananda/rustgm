@@ -282,3 +282,6 @@ fn fresh_item_signatures_follow_each_type_argument_once() -> Result<(), String> 
     );
     Ok(())
 }
+
+#[path = "call_inference/returned.rs"]
+mod returned;

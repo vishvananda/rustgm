@@ -27,3 +27,9 @@ The development-profile executable SHA-256 is 9c0c14acd62611f36e438ce2cec66ae3a2
 The source-only fixture proposal is obj/parallel/pa26/function-inputs/fixture-proposal-v1: 24 PA19, four PA21, two PA25, two PA27, one PA30 and seven implemented PA18 fixtures, plus one required open PA18 source. Each proposed manifest delta uses explicit native {kind: execute, outcome: pass} for implemented positives and omits native for negatives. No discovery or references are changed by this checkpoint. The complete original 34-case evidence remains separate from the seven additional controls.
 
 The earlier impl-owned omitted-lifetime seal is integrated separately. Its retained FunctionItem trait-input positive is now closed by this checkpoint. Required PA26 work still includes concrete str and structural tuple/array/slice comparisons, dot-call RHS inference, primitive reference/unary coverage, additional library hooks, iteration, question-mark, derives and formatting. The slice .len and explicit array-reference→slice cast checkpoints are separate completed handoffs; this work does not activate PA26.
+
+The later [returned-function-item correction](pa18-returned-function-items.md)
+closes the one retained immediate-call boundary using the exact checked zero-sized
+item type after normal evaluation/dominance validation. The original 41-case
+matrix is now fully matched against Rust, with all 23 positives executable and
+18 negatives rejected. Earlier boundary and baseline receipts remain intact.
