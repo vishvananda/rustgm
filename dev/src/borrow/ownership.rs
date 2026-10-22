@@ -453,7 +453,7 @@ impl BodyFacts {
             return Ok(());
         }
         let Some(path) = info.path else {
-            return Err("writing static storage requires unsafe checking");
+            return Err("cannot assign to immutable static storage");
         };
         let path = &self.paths.entries[path.0 as usize];
         let projected = path.parent.is_some() || info.indexed || info.union;

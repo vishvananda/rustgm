@@ -96,8 +96,12 @@ Imports reuse ordinary type interning, moves, borrow checks, layout and ABI
 classification. Array lengths never become decoder allocation counts.
 `tests/array-metadata-outcomes.json` and PA30's
 `tests/aggregate-metadata-outcomes.json` cover separate compilation and native
-execution. Stored array values, generic bodies and additional representation
-contracts remain required work; see `docs/pa29-aggregate-metadata.md`.
+execution. The stored-array extension retains ordinary products, compressed
+repeats, byte payloads and typed field/element reference paths through actual
+static identities. Its 13 source cases include seven native clients, hidden
+backing, nested arrays, repeated references and full-width zero-sized indices.
+Generic bodies and additional representation/value contracts remain required;
+see `docs/pa29-aggregate-metadata.md` and `docs/pa29-array-storage.md`.
 
 ## Tests to develop with the reference
 

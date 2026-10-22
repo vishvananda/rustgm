@@ -10,7 +10,9 @@ mod scalar_value;
 mod type_graph;
 pub use codec::{SCHEMA, decode, encode};
 pub use dependencies::{Dependencies, Dependency};
-pub use globals::{Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredValue, ValueRef};
+pub use globals::{
+    Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredProjection, StoredValue, ValueRef,
+};
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, Scalar, Symbol};
 pub use nominals::{Nominals, Record, RecordField, RecordRef, RecordRepr};

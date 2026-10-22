@@ -1,4 +1,5 @@
 //! Validate stored values against real field roots before importing any local IDs.
+mod referents;
 use super::{Storage, StorageOrigin, StoredKind, StoredValue, ValueRef};
 use crate::support::crates::{
     Constant, CrateIdentity, Function, Lifetime, MAX_COMPONENTS, MAX_NAME_BYTES, Nominals, Scalar,
@@ -79,6 +80,19 @@ impl Storage {
                 Ok(1)
             }
             StoredKind::Product(fields) => {
+                if let Some(TypeNode::Array { element, length }) = types.types().node(value.ty) {
+                    if fields.len() as u64 != length {
+                        return Err("metadata array initializer length differs");
+                    }
+                    for &child in fields {
+                        if child.0 as usize >= index || self.value(child)?.ty != element {
+                            return Err(
+                                "metadata array has a forward or differently typed element",
+                            );
+                        }
+                    }
+                    return Ok(fields.len());
+                }
                 let expected = match types.types().node(value.ty) {
                     Some(TypeNode::Record(record)) => {
                         types.records()[usize::from(record.0)].fields()
@@ -95,6 +109,30 @@ impl Storage {
                     }
                 }
                 Ok(fields.len())
+            }
+            StoredKind::Repeat(child) => {
+                let Some(TypeNode::Array { element, .. }) = types.types().node(value.ty) else {
+                    return Err("metadata repeat requires an array type");
+                };
+                if child.0 as usize >= index || self.value(*child)?.ty != element {
+                    return Err("metadata repeat has a forward or differently typed element");
+                }
+                Ok(1)
+            }
+            StoredKind::Bytes(bytes) => {
+                let Some(TypeNode::Array { element, length }) = types.types().node(value.ty) else {
+                    return Err("metadata bytes require an array type");
+                };
+                if types.types().node(element) != Some(TypeNode::Scalar(Scalar::U8))
+                    || length != bytes.len() as u64
+                {
+                    return Err("metadata byte array differs from its declared type");
+                }
+                Ok(bytes.len())
+            }
+            StoredKind::ProjectedReference { target, path } => {
+                self.validate_projection(value.ty, *target, path, types)?;
+                Ok(path.len().saturating_add(1))
             }
             StoredKind::Reference { target, fields } => {
                 let Some(TypeNode::Reference {
@@ -156,11 +194,13 @@ impl Storage {
                         continue;
                     }
                     match &self.value(id)?.kind {
-                        StoredKind::Scalar(_) => {}
+                        StoredKind::Scalar(_) | StoredKind::Bytes(_) => {}
+                        StoredKind::Repeat(element) => work.push(Work::Value(*element)),
                         StoredKind::Product(fields) => {
                             work.extend(fields.iter().copied().map(Work::Value));
                         }
-                        StoredKind::Reference { target, .. } => {
+                        StoredKind::Reference { target, .. }
+                        | StoredKind::ProjectedReference { target, .. } => {
                             work.push(Work::Static(target.0 as usize));
                         }
                     }

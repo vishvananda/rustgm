@@ -1,5 +1,12 @@
 //! Named storage retains identity, safety and contents across actual object boundaries.
 fn qualify(assignment: u8, native: bool) -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
+    qualify_manifest(assignment, "storage-metadata-outcomes.json", native)
+}
+fn qualify_manifest(
+    assignment: u8,
+    manifest: &str,
+    native: bool,
+) -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("missing repository")?;
@@ -17,9 +24,7 @@ fn qualify(assignment: u8, native: bool) -> Result<std::path::PathBuf, Box<dyn s
         .arg("--app")
         .arg(env!("CARGO_BIN_EXE_rustgm"))
         .arg("--manifest")
-        .arg(root.join(format!(
-            "pa{assignment}/tests/storage-metadata-outcomes.json"
-        )))
+        .arg(root.join(format!("pa{assignment}/tests/{manifest}")))
         .arg("--evidence-root")
         .arg(&folder);
     if native {
@@ -104,4 +109,16 @@ fn hidden_and_cyclic_storage_retain_canonical_metadata() -> Result<(), Box<dyn s
 fn hidden_and_cyclic_storage_execute_with_original_address_identity()
 -> Result<(), Box<dyn std::error::Error>> {
     qualify(29, true).map(|_| ())
+}
+
+#[test]
+fn stored_arrays_preserve_compact_recipes_and_typed_addresses()
+-> Result<(), Box<dyn std::error::Error>> {
+    qualify_manifest(29, "array-storage-outcomes.json", false).map(|_| ())
+}
+#[test]
+#[ignore = "requires configured CPPGM object backend, C compiler and pinned Rust toolchain"]
+fn stored_arrays_execute_across_actual_object_boundaries() -> Result<(), Box<dyn std::error::Error>>
+{
+    qualify_manifest(29, "array-storage-outcomes.json", true).map(|_| ())
 }

@@ -1,8 +1,9 @@
 //! Profile five transports storage identities and typed initializer graphs.
-use super::{Reader, Writer};
+mod values;
+use super::{Profile, Reader, Writer};
 use crate::support::crates::{
-    CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_FUNCTIONS, ScalarValue, Static,
-    StaticRef, Storage, StorageOrigin, StoredKind, StoredValue, Symbol, TypeRef, ValueRef,
+    CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_FUNCTIONS, Static, Storage,
+    StorageOrigin, StoredValue, Symbol, TypeRef, ValueRef,
 };
 
 pub(super) fn encode(out: &mut Writer, storage: &Storage) -> Result<(), &'static str> {
@@ -31,27 +32,7 @@ pub(super) fn encode(out: &mut Writer, storage: &Storage) -> Result<(), &'static
     out.u32(storage.values().len())?;
     for value in storage.values() {
         out.u16(value.ty.0)?;
-        match &value.kind {
-            StoredKind::Scalar(scalar) => {
-                out.bytes(&[0, scalar.ty() as u8])?;
-                out.bytes(&scalar.bits().to_le_bytes())?;
-            }
-            StoredKind::Product(fields) => {
-                out.u8(1)?;
-                out.u32(fields.len())?;
-                for field in fields {
-                    out.u32(field.0 as usize)?;
-                }
-            }
-            StoredKind::Reference { target, fields } => {
-                out.u8(2)?;
-                out.u32(target.0 as usize)?;
-                out.u32(fields.len())?;
-                for &field in fields {
-                    out.u32(field as usize)?;
-                }
-            }
-        }
+        values::encode(out, &value.kind)?;
     }
     Ok(())
 }
@@ -59,6 +40,7 @@ pub(super) fn encode(out: &mut Writer, storage: &Storage) -> Result<(), &'static
 pub(super) fn decode(
     input: &mut Reader<'_>,
     owner: &CrateIdentity,
+    profile: Profile,
 ) -> Result<Storage, &'static str> {
     let count = input.count(MAX_FUNCTIONS, 19)?;
     input.atoms(count.saturating_mul(2))?;
@@ -99,31 +81,11 @@ pub(super) fn decode(
     let mut values = Vec::with_capacity(count);
     for _ in 0..count {
         let ty = TypeRef(input.u16()?);
-        let kind = match input.u8()? {
-            0 => {
-                input.atoms(1)?;
-                StoredKind::Scalar(ScalarValue::new(input.scalar()?, input.u128()?)?)
-            }
-            1 => StoredKind::Product(ordinals(input)?.into_iter().map(ValueRef).collect()),
-            2 => {
-                input.atoms(1)?;
-                let target = StaticRef(ordinal(input)?);
-                StoredKind::Reference {
-                    target,
-                    fields: ordinals(input)?.into_boxed_slice(),
-                }
-            }
-            _ => return Err("unknown metadata stored value kind"),
-        };
+        let kind = values::decode(input, profile)?;
         values.push(StoredValue { ty, kind });
     }
     Storage::new(entries, values)
 }
 fn ordinal(input: &mut Reader<'_>) -> Result<u32, &'static str> {
     u32::try_from(input.u32()?).map_err(|_| "metadata storage ordinal exceeds 32 bits")
-}
-fn ordinals(input: &mut Reader<'_>) -> Result<Vec<u32>, &'static str> {
-    let count = input.count(MAX_COMPONENTS, 4)?;
-    input.atoms(count)?;
-    (0..count).map(|_| ordinal(input)).collect()
 }

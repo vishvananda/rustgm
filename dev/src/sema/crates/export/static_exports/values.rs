@@ -7,9 +7,10 @@ use crate::{
         values::{Constant, Origin, Reader, View},
     },
     support::crates::{
-        RecordRef, Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredValue, ValueRef,
+        RecordRef, Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredProjection,
+        StoredValue, ValueRef,
     },
-    types::{ItemId, TypeId},
+    types::{ItemId, Kind, TypeId},
 };
 use std::collections::HashMap;
 
@@ -99,6 +100,37 @@ impl Values<'_> {
                     super::super::scalar(self.facts, ty)?,
                     reader.view(value).map_err(error)?,
                 )?),
+                View::Repeat {
+                    value: child,
+                    length,
+                } => {
+                    let Some(Kind::Array {
+                        element,
+                        length: expected,
+                    }) = self.facts.types.kind(ty)
+                    else {
+                        return Err(error("metadata repeat requires an array type"));
+                    };
+                    if length != expected {
+                        return Err(error("metadata repeat differs from its array length"));
+                    }
+                    if !finish {
+                        work.push((ty, value, true));
+                        work.push((element, child, false));
+                        continue;
+                    }
+                    StoredKind::Repeat(
+                        *self
+                            .remap
+                            .get(&(element, child))
+                            .ok_or_else(|| error("missing exported repeated element"))?,
+                    )
+                }
+                View::Bytes(_) | View::ByteRange { .. } => {
+                    let bytes = reader.stored_bytes(ty, value).map_err(error)?;
+                    self.charge(bytes.len())?;
+                    StoredKind::Bytes(bytes.into())
+                }
                 View::Product { length, variant } => {
                     let length = usize::try_from(length)
                         .map_err(|_| error("metadata product length exceeds host index"))?;
@@ -159,7 +191,7 @@ impl Values<'_> {
                 "wide static reference metadata is outside the profile",
             ));
         }
-        let mut fields = Vec::new();
+        let mut path = Vec::new();
         let definition = loop {
             self.charge(1)?;
             match Reader::new(self.facts)
@@ -169,10 +201,26 @@ impl Values<'_> {
             {
                 Origin::Static(definition) => break definition,
                 Origin::Projection { base, index } => {
-                    fields.push(
-                        u32::try_from(index)
-                            .map_err(|_| error("metadata field ordinal exceeds 32 bits"))?,
-                    );
+                    let reader = Reader::new(self.facts);
+                    let parent = reader.location(base).map_err(error)?.ty;
+                    let child = reader.stored_child(parent, None, index).map_err(error)?;
+                    if child != reader.location(location).map_err(error)?.ty {
+                        return Err(error(
+                            "metadata static projection has a different stored type",
+                        ));
+                    }
+                    path.push(match self.facts.types.kind(parent) {
+                        Some(Kind::Array { .. }) => StoredProjection::Element(index),
+                        Some(Kind::Adt(_, _)) => StoredProjection::Field(
+                            u32::try_from(index)
+                                .map_err(|_| error("metadata field ordinal exceeds 32 bits"))?,
+                        ),
+                        _ => {
+                            return Err(error(
+                                "metadata static projection lacks aggregate storage",
+                            ));
+                        }
+                    });
                     location = base;
                 }
                 _ => {
@@ -182,13 +230,30 @@ impl Values<'_> {
                 }
             }
         };
-        fields.reverse();
-        Ok(StoredKind::Reference {
-            target: *self
-                .definitions
-                .get(&definition)
-                .ok_or_else(|| error("missing exported static reference target"))?,
-            fields: fields.into_boxed_slice(),
-        })
+        path.reverse();
+        let target = *self
+            .definitions
+            .get(&definition)
+            .ok_or_else(|| error("missing exported static reference target"))?;
+        if path
+            .iter()
+            .any(|p| matches!(p, StoredProjection::Element(_)))
+        {
+            Ok(StoredKind::ProjectedReference {
+                target,
+                path: path.into_boxed_slice(),
+            })
+        } else {
+            let fields = path
+                .into_iter()
+                .map(|p| match p {
+                    StoredProjection::Field(index) => Ok(index),
+                    StoredProjection::Element(_) => {
+                        Err(error("unexpected metadata element projection"))
+                    }
+                })
+                .collect::<Result<Box<[_]>, _>>()?;
+            Ok(StoredKind::Reference { target, fields })
+        }
     }
 }

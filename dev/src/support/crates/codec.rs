@@ -150,7 +150,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         )?
     };
     let storage = if stored {
-        Some(stored_globals::decode(&mut input, &identity)?)
+        Some(stored_globals::decode(&mut input, &identity, profile)?)
     } else {
         None
     };

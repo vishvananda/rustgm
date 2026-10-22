@@ -204,3 +204,5 @@ fn duplicate_foreign_or_unbounded_owned_tables_are_not_published()
     assert!(crates::decode(&duplicate).is_err());
     Ok(())
 }
+#[path = "metadata_codec/array_storage.rs"]
+mod array_storage;

@@ -6,7 +6,7 @@ use crate::{
         values::{Constant, Evaluator},
     },
     support::{
-        crates::{Scalar, StorageOrigin, StoredKind, Symbol},
+        crates::{Scalar, StorageOrigin, StoredKind, StoredProjection, Symbol},
         linkage::{Linkage, Naming},
     },
     syntax::item::Safety,
@@ -87,6 +87,21 @@ fn values(
             continue;
         };
         let types = graphs.types(artifact.identity())?;
+        let mut bytes = storage
+            .values()
+            .iter()
+            .filter_map(|v| match &v.kind {
+                StoredKind::Bytes(bytes) => Some(
+                    facts
+                        .texts
+                        .intern(bytes)
+                        .map(Constant::bytes)
+                        .map_err(error),
+                ),
+                _ => None,
+            })
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter();
         let mut values = Vec::with_capacity(storage.values().len());
         let mut evaluator = Evaluator::new(report, facts);
         for value in storage.values() {
@@ -108,7 +123,19 @@ fn values(
                         .fields(&fields, variant)
                         .map_err(|e| error(e.message()))?
                 }
-                StoredKind::Reference { target, fields } => {
+                StoredKind::Repeat(child) => {
+                    let Some(Kind::Array { length, .. }) = evaluator.facts().types.kind(ty) else {
+                        return Err(error("imported repeat lacks array storage"));
+                    };
+                    evaluator
+                        .repeat(values[child.0 as usize], length)
+                        .map_err(|e| error(e.message()))?
+                }
+                StoredKind::Bytes(_) => bytes
+                    .next()
+                    .ok_or_else(|| error("missing imported byte array"))?,
+                StoredKind::Reference { target, .. }
+                | StoredKind::ProjectedReference { target, .. } => {
                     let entry = &storage.statics()[target.0 as usize];
                     let definition = imported
                         .definition(entry.definition())
@@ -117,12 +144,12 @@ fn values(
                     let mut address = evaluator
                         .static_address(definition, ty)
                         .map_err(|e| error(e.message()))?;
-                    for &index in fields {
+                    for index in projection_indices(&value.kind) {
                         ty = crate::sema::values::Reader::new(evaluator.facts())
-                            .stored_child(ty, None, u64::from(index))
+                            .stored_child(ty, None, index)
                             .map_err(error)?;
                         address = evaluator
-                            .projection(address, u64::from(index), ty)
+                            .projection(address, index, ty)
                             .map_err(|e| error(e.message()))?;
                     }
                     address.restrict_shared()
@@ -145,7 +172,7 @@ fn variant(
     facts: &Declarations,
     ty: TypeId,
 ) -> Result<Option<crate::sema::members::VariantId>, Error> {
-    if ty == TypeId::UNIT {
+    if ty == TypeId::UNIT || matches!(facts.types.kind(ty), Some(Kind::Array { .. })) {
         return Ok(None);
     }
     let Some(Kind::Adt(ItemId(owner), _)) = facts.types.kind(ty) else {
@@ -155,4 +182,20 @@ fn variant(
         return Err(error("imported product lacks one field group"));
     };
     Ok(Some(*variant))
+}
+
+fn projection_indices(value: &StoredKind) -> impl Iterator<Item = u64> + '_ {
+    let (fields, path): (&[u32], &[StoredProjection]) = match value {
+        StoredKind::Reference { fields, .. } => (fields, &[]),
+        StoredKind::ProjectedReference { path, .. } => (&[], path),
+        _ => (&[], &[]),
+    };
+    fields
+        .iter()
+        .copied()
+        .map(u64::from)
+        .chain(path.iter().map(|p| match *p {
+            StoredProjection::Field(index) => u64::from(index),
+            StoredProjection::Element(index) => index,
+        }))
 }

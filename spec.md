@@ -3167,7 +3167,12 @@ safety. Discover private backing only through completed values, without making
 private names accessible. Register imported declarations before materializing
 values so forward static addresses and self-reference cycles preserve identity.
 Typed postorder value nodes may refer to named statics by field-ordinal paths;
-byte offsets and anonymous allocation graphs require separate explicit support.
+the aggregate envelope also retains typed array-element steps with u64 indices.
+Keep repeated array elements as one child edge and byte arrays as one bounded
+payload. Array extents describe types, never decoder allocation counts. Validate
+each field/element transition against its parent type and exact final referent;
+do not reinterpret an array index as a field ordinal. Byte offsets and anonymous
+allocation graphs require separate explicit support.
 Validate roots, targets, field types, reachability and combined quotas before
 allocating local IDs. Memoize discovery and value encoding across shared roots.
 Imported owned storage still uses its original global symbol. Completed immutable

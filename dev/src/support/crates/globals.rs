@@ -14,10 +14,22 @@ pub struct StaticRef(pub u32);
 pub enum StoredKind {
     Scalar(ScalarValue),
     Product(Box<[ValueRef]>),
+    Repeat(ValueRef),
+    Bytes(Box<[u8]>),
     Reference {
         target: StaticRef,
         fields: Box<[u32]>,
     },
+    ProjectedReference {
+        target: StaticRef,
+        path: Box<[StoredProjection]>,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum StoredProjection {
+    Field(u32),
+    Element(u64),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

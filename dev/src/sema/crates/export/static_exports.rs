@@ -93,7 +93,8 @@ pub(super) fn prepare(
                             &mut steps,
                         )?);
                     }
-                    View::Scalar(_) => {}
+                    View::Repeat { value, .. } => work.push(value),
+                    View::Scalar(_) | View::Bytes(_) | View::ByteRange { .. } => {}
                     _ => {
                         return Err(error(
                             "static initializer representation is outside the metadata profile",

@@ -1,0 +1,159 @@
+{
+  "status": "Declared original sources independently qualified before candidate observation; implementation and combined release qualification pending.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "cases": [
+    {
+      "name": "arrays",
+      "path": "tests/spec/array-storage/arrays.rs",
+      "role": "library",
+      "source_sha256": "90002755fdaef754d14dbfdb6826fabafd9c3bc19da35b2fe753a66fdbb09e0c",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": false,
+      "diagnostic": null
+    },
+    {
+      "name": "values",
+      "path": "tests/spec/array-storage/values.rs",
+      "role": "client",
+      "source_sha256": "c6c222cad2c7e4feb4dee9ffa5ae4c904f843c38092ccaf58666a26193648695",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "bytes",
+      "path": "tests/spec/array-storage/bytes.rs",
+      "role": "client",
+      "source_sha256": "3bd6eed0301b07551a785680ec82f9d3d8a7c71df58013ec3db22cec79eda46e",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "empty",
+      "path": "tests/spec/array-storage/empty.rs",
+      "role": "client",
+      "source_sha256": "9919a727bd0fe3f7c7fb1670a8dc6856c5a5f80e69fee8b2b1ea6f8571aee844",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "identity",
+      "path": "tests/spec/array-storage/identity.rs",
+      "role": "client",
+      "source_sha256": "921a8ad43f9cd851f3570de1303dd94a56b9f58090db2b4f4e489046d41cef8c",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "field",
+      "path": "tests/spec/array-storage/field.rs",
+      "role": "client",
+      "source_sha256": "9744aec14f20a0d3a60f0478b2a9a7de20c633763da055f7037416391cc585f7",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "const",
+      "path": "tests/spec/array-storage/const.rs",
+      "role": "client",
+      "source_sha256": "556d69dfab71f87b815ef55e71a4f93ca38d541356d3e9001393089b161a823e",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "local-repeat",
+      "path": "tests/spec/array-storage/local-repeat.rs",
+      "role": "client",
+      "source_sha256": "8fd832715d7b440ca696a5c594469438b9c37c43bd2c54ce7bd05759de2e9794",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "native": true,
+      "diagnostic": null
+    },
+    {
+      "name": "private",
+      "path": "tests/spec/array-storage/private.rs",
+      "role": "client",
+      "source_sha256": "377cc738502d43d3261675f16398106325c5f77688ee71fc3ff44e89c398a720",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0603"
+      ],
+      "frontend": 1,
+      "native": false,
+      "diagnostic": "unresolved value name"
+    },
+    {
+      "name": "length",
+      "path": "tests/spec/array-storage/length.rs",
+      "role": "client",
+      "source_sha256": "7642957ade90efeb8c7258999e14e29d0a3ff0a258673998b6364790f011abf7",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0308"
+      ],
+      "frontend": 1,
+      "native": false,
+      "diagnostic": "incompatible types"
+    },
+    {
+      "name": "mutate",
+      "path": "tests/spec/array-storage/mutate.rs",
+      "role": "client",
+      "source_sha256": "79805577ac6fb14fad0255b7a816eefd0ddc70ed49b1158e26a8b5397c3c748f",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0594"
+      ],
+      "frontend": 1,
+      "native": false,
+      "diagnostic": "immutable static storage"
+    },
+    {
+      "name": "move",
+      "path": "tests/spec/array-storage/move.rs",
+      "role": "client",
+      "source_sha256": "33deef0915266f047d71c7afb2458e62d5043e0de33f45e6e430ee1de52188c7",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0507"
+      ],
+      "frontend": 1,
+      "native": false,
+      "diagnostic": "non-Copy"
+    },
+    {
+      "name": "index",
+      "path": "tests/spec/array-storage/index.rs",
+      "role": "client",
+      "source_sha256": "6da5cf7dff8209356cb1b7074dd4408cff31b18588b2f84fa324fd462f2604ab",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0080"
+      ],
+      "frontend": 1,
+      "native": false,
+      "diagnostic": "out of bounds"
+    }
+  ]
+}
