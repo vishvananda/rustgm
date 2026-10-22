@@ -1,7 +1,5 @@
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::types::{Kind, Primitive, TypeId};
 use std::fmt::Write as _;
 

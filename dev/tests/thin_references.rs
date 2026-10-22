@@ -1,5 +1,4 @@
-#[path = "harness/native_references.rs"]
-mod native_references;
+use crate::native_references;
 const CASES: &[(&str, &str, bool)] = &[
     (
         "self-static",

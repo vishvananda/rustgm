@@ -1,8 +1,6 @@
 //! Ordinary unused initializers are required, while associated values remain lazy.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::resolve as source;
 use std::{path::Path, process::Command};
 
 const INVALID: &[(&str, &str)] = &[

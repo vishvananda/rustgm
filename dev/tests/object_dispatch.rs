@@ -7,12 +7,9 @@ mod containers;
 mod erased_cleanup;
 #[path = "object_dispatch/hidden_dispatch.rs"]
 mod hidden_dispatch;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 #[path = "object_dispatch/tails.rs"]
 mod tails;
 #[path = "object_dispatch/upcasts.rs"]

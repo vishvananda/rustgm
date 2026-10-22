@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{
     body::scopes::{self, Facts, Kind, Lifetime},
     resolve::{expansion::Report, unit::NodeKey},

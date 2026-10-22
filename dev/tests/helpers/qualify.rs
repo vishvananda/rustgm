@@ -19,7 +19,9 @@ pub fn qualify_at(
     source: &str,
     accepted: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    std::fs::create_dir_all(folder)?;
+    // Multiple suites share a process; libtest gives each test its own thread.
+    let folder = folder.join(format!("thread-{:?}", std::thread::current().id()));
+    std::fs::create_dir_all(&folder)?;
     let input = folder.join(format!("{name}.rs"));
     let metadata = folder.join(format!("{name}.rmeta"));
     std::fs::write(&input, source)?;

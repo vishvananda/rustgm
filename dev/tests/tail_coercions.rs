@@ -1,8 +1,7 @@
 //! Actual DST values qualify selected tail coercions independently through rustc.
 #[path = "tail_coercions/mapped_tails.rs"]
 mod mapped_tails;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "tail_coercions/persistent.rs"]
 mod persistent;
 

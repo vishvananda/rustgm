@@ -1,6 +1,5 @@
 //! Qualified raw reads preserve storage identity, physical alignment and lifetime.
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 use std::{path::PathBuf, process::Command};
 const CASES: &[(&str, bool, bool)] = &[
     ("packed-base-copy", true, true),

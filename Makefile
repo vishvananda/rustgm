@@ -34,6 +34,7 @@ audit-rust:
 	obj/audit-venv/bin/python scripts/rust_audit.py --root .
 test-harness:
 	$(PYTHON) -m unittest discover -s scripts/tests -v
+	$(PYTHON) scripts/maintainer_suites.py check
 	$(PYTHON) scripts/check_layout.py
 test-backend:
 	$(PYTHON) scripts/backend.py --test

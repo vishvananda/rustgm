@@ -1,8 +1,6 @@
 //! Declared outcomes distinguish marker bounds from storage and ordinary traits.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 
 const CASES: &[(&str, &str, bool)] = &[
     ("auto-only", "fn f(_: &(dyn Send+Sync)){}", true),

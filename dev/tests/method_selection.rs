@@ -1,10 +1,7 @@
 //! Prefix selection preserves caller rigidity, unknown aliases and ordinary lowering.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::resolve::model::{DefId, DefKind};
 use std::fmt::Write;
 const ACCEPT: &[(&str, &str, bool)] = &[

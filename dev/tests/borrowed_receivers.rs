@@ -1,10 +1,7 @@
 //! Implicit receiver places retain their selected, instantiated storage roots.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/source_cases.rs"]
-mod source_cases;
+use crate::native_references as native;
+use crate::semantic;
+use crate::source_cases;
 
 const CASES: &[(&str, bool, &str)] = &[
     (

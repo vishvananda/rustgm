@@ -1,13 +1,11 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body,
     borrow::destruction::glue::{Catalog, Shape},
     sema::members::Selection,
     types::{Kind, aggregate},
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 #[test]
 fn shared_recipes_preserve_custom_methods_and_declared_field_order()

@@ -1,8 +1,6 @@
 //! Each specialization has a fresh lifetime context even when source keys coincide.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{self, ir::Program, regions::Contracts},
     borrow,

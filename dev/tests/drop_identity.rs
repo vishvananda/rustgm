@@ -1,3 +1,6 @@
+use crate::qualify as rustc;
+use crate::semantic;
+use rustc::qualify;
 use rustgm::{
     resolve::model::{DefKind, Target},
     syntax::{
@@ -5,14 +8,8 @@ use rustgm::{
         item::ItemKind,
     },
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-use rustc::qualify;
-#[path = "support/semantic.rs"]
-mod semantic;
 
-#[path = "helpers/resolve.rs"]
-mod names;
+use crate::resolve as names;
 use names::resolve;
 
 const CASES: &[(&str, &str, bool)] = &[

@@ -1,8 +1,6 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{body, borrow::ownership::initialization};
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 #[test]
 fn custom_destructors_preserve_whole_objects_but_allow_copy_fields_and_replacement()

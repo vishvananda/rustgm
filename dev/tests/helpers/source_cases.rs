@@ -1,6 +1,5 @@
 //! Independently qualified outcomes pass through the complete command-line pipeline.
-#[path = "qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 pub use rustc::{qualify, qualify_at};
 use std::{path::Path, process::Command};
 

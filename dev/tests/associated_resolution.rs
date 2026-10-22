@@ -1,8 +1,6 @@
 //! Associated lookup consumes final namespace access and anonymous import facts.
-#[path = "helpers/resolve.rs"]
-mod names;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
+use crate::resolve as names;
 use rustgm::resolve::model::{Access, DefKind, Namespace, Origin};
 
 #[test]

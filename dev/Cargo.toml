@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.98"
 publish = false
+autotests = false
 license = "MIT OR Apache-2.0"
 
 [lib]
@@ -39,3 +40,55 @@ mem_forget = "deny"
 
 [profile.release]
 debug = 1
+
+[[test]]
+name = "suite_frontend"
+path = "tests/suites/frontend/mod.rs"
+
+[[test]]
+name = "suite_linking"
+path = "tests/suites/linking/mod.rs"
+
+[[test]]
+name = "suite_closures"
+path = "tests/suites/closures/mod.rs"
+
+[[test]]
+name = "suite_patterns"
+path = "tests/suites/patterns/mod.rs"
+
+[[test]]
+name = "suite_constants"
+path = "tests/suites/constants/mod.rs"
+
+[[test]]
+name = "suite_memory"
+path = "tests/suites/memory/mod.rs"
+
+[[test]]
+name = "suite_ownership"
+path = "tests/suites/ownership/mod.rs"
+
+[[test]]
+name = "suite_regions"
+path = "tests/suites/regions/mod.rs"
+
+[[test]]
+name = "suite_projections"
+path = "tests/suites/projections/mod.rs"
+
+[[test]]
+name = "suite_inference"
+path = "tests/suites/inference/mod.rs"
+
+[[test]]
+name = "suite_lowering"
+path = "tests/suites/lowering/mod.rs"
+
+[[test]]
+name = "suite_declarations"
+path = "tests/suites/declarations/mod.rs"
+
+[[test]]
+name = "suite_traits"
+path = "tests/suites/traits/mod.rs"

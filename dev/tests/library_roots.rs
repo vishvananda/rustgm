@@ -1,6 +1,5 @@
 //! Entry-free roots retain the ordinary template, ownership and lowering gates.
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::resolve as source;
 use rustgm::{
     lower::{self, Roots},
     lowir::program::Program,

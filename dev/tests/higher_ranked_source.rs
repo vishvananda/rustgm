@@ -7,12 +7,10 @@ mod callables;
 mod conditions;
 #[path = "higher_ranked_source/equalities.rs"]
 mod equalities;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "higher_ranked_source/results.rs"]
 mod results;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 use std::{
     io::Write,
     process::{Command, Output, Stdio},

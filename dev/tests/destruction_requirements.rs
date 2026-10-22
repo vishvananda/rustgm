@@ -1,11 +1,9 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{self, drops::Trigger, ir::Owner},
     types::{GenericArgs, ItemId, Kind, Store, aggregate, destruction::NeedsDrop},
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 #[test]
 fn closed_type_requirements_agree_with_rustc_and_cache_shared_shapes()

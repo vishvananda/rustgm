@@ -1,8 +1,6 @@
 //! Proven initialization controls whether symbolic cleanup needs a type query.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body,
     borrow::{destruction::symbolic, ownership::initialization},

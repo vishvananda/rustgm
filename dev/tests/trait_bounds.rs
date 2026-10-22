@@ -29,8 +29,7 @@ mod implicit_paths;
 mod implicit_scope;
 #[path = "trait_bounds/inference.rs"]
 mod inference;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "trait_bounds/prefix_lifetimes.rs"]
 mod prefix_lifetimes;
 #[path = "trait_bounds/qualification.rs"]
@@ -49,12 +48,10 @@ mod receiver_lookup;
 mod receiver_native;
 #[path = "trait_bounds/retained.rs"]
 mod retained;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 #[path = "trait_bounds/selection.rs"]
 mod selection;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::resolve::model::{DefId, DefKind};
 
 fn prove(source: &str) -> Result<(), Box<dyn std::error::Error>> {

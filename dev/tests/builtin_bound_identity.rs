@@ -1,7 +1,5 @@
-#[path = "helpers/resolve.rs"]
-mod names;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
+use crate::resolve as names;
 use rustgm::resolve::model::{BuiltinTrait, DefKind, Target};
 
 const CASES: &[(&str, &str, bool)] = &[

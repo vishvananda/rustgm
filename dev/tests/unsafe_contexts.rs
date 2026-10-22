@@ -1,10 +1,7 @@
 //! Unsafe permission is lexical; raw access keeps its separate typed place identity.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::semantic;
+use crate::source_cases as source;
 
 const CASES: &[(&str, bool, &str)] = &[
     ("unsafe-block-value", true, "fn f()->u8{unsafe{7}}"),

@@ -1,8 +1,6 @@
 //! Array-backed constant slice views retain bounds, aliasing and compressed values.
-#[path = "harness/checked_sources.rs"]
-mod checked_sources;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::checked_sources;
+use crate::semantic;
 use std::{path::PathBuf, process::Command};
 
 const ACCEPT: &[&str] = &[

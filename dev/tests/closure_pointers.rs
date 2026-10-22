@@ -1,14 +1,11 @@
 //! Noncapturing closures reify their checked source body through the ordinary call ABI.
 #[path = "closure_pointers/reification.rs"]
 mod constants;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "closure_pointers/owners.rs"]
 mod owners;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 const CASES: &[(&str, &str, bool)] = &[
     (
         "binding",

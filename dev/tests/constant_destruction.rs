@@ -1,8 +1,6 @@
 //! Constant eligibility distinguishes transferred results from temporary cleanup.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{resolve::model::DefId, sema::values::Evaluator};
 
 const HEADER: &str = "struct S{n:usize}impl Drop for S{fn drop(&mut self){}}";

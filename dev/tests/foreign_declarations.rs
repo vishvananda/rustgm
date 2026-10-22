@@ -1,9 +1,7 @@
 //! Foreign ownership survives expansion and produces genuine runtime declarations.
-#[path = "harness/foreign_frontend.rs"]
-mod frontend;
+use crate::foreign_frontend as frontend;
 #[cfg(feature = "object-interop-tests")]
-#[path = "harness/host_objects.rs"]
-mod objects;
+use crate::host_objects as objects;
 use frontend::checked;
 use std::{
     path::{Path, PathBuf},

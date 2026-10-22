@@ -1,8 +1,6 @@
 //! Required trait signatures and default bodies have distinct proof obligations.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     resolve::model::{DefId, DefKind},
     sema::associated::OwnerKind,

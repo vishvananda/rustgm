@@ -31,8 +31,7 @@ mod inherent_headers;
 mod lookup_readiness;
 #[path = "associated_declarations/member_lifetimes.rs"]
 mod member_lifetimes;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "associated_declarations/overrides.rs"]
 mod overrides;
 #[path = "associated_declarations/proof_streams.rs"]
@@ -43,10 +42,8 @@ mod readiness;
 mod recipe_frontiers;
 #[path = "associated_declarations/result_contracts.rs"]
 mod result_contracts;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 #[path = "associated_declarations/shorthand.rs"]
 mod shorthand;
 #[path = "associated_declarations/specialization.rs"]

@@ -1,11 +1,9 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body,
     types::{Kind, aggregate, destruction::regions::Regions},
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 #[test]
 fn drop_regions_follow_owned_fields_and_actual_nominal_arguments()

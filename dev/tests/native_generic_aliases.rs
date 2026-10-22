@@ -1,8 +1,6 @@
 //! Source generic aliases must survive ownership, region checking, lowering and execution.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::native_references as native;
+use crate::qualify as rustc;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, &str, bool)] = &[
     (

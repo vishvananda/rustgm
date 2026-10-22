@@ -1,8 +1,6 @@
 //! Sized pointer transfers use ordinary ownership and preserve raw storage authority.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::checked_sources as checked;
+use crate::native_references as native;
 use std::path::Path;
 const CASES: &[(&str, i32, [i32; 3], &str)] = &[
     ("plain-runtime", 0, [0, 0, 0], ""),

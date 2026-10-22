@@ -1,6 +1,5 @@
 //! One compact append-time initializer index serves all typed value consumers.
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::resolve as source;
 use rustgm::{pipeline, resolve::model::DefId, sema::values::Evaluator};
 #[test]
 fn initializer_index_is_shared_compact_and_counts_cached_reads() -> Result<(), String> {

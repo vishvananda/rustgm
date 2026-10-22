@@ -1,10 +1,7 @@
 //! Defining recursion preserves capture identity and independently checked hidden types.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 
 const CASES: &[(&str, &str, bool)] = &[
     ("direct", "fn f()->impl Copy{f()}fn main(){}", true),

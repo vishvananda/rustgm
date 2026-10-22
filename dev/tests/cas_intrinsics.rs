@@ -1,10 +1,8 @@
 //! Exact CAS ordering, expected-slot updates and canonical Result identity.
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "source_intrinsics/preparation.rs"]
 mod preparation;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use std::{path::PathBuf, process::Command};
 const CASES: &[(&str, i32, i32)] = &[
     ("atomic-cas-orders/compare_exchange-relaxed-relaxed", 0, 0),

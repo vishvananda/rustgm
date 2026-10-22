@@ -1,12 +1,7 @@
 //! Source equality contracts are qualified independently before full template proofs.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/template_check.rs"]
-mod templates;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::template_check as templates;
 
 const CASES: &[(&str, &str, bool)] = &[
     (

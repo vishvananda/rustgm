@@ -6,6 +6,27 @@ Default tests compare candidates with **committed text**, not a live solution.
 
 ## Development checkpoints
 
+Maintainer integration roots under `dev/tests/` are registered as modules in
+13 binaries under `dev/tests/suites/`. `make test-harness` checks that every
+root appears exactly once in an unconditional target. Add new roots to their
+owning group; do not change test bodies or ignore markers to move a suite.
+List the mapping with `python3 scripts/maintainer_suites.py list`.
+
+Focused selection retains the original suite name:
+
+```sh
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run constant_patterns --release
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run lexer --release --case lifetime_and_character_boundaries
+```
+
+Add `--ignored` to run a suite's backend controls and `--all-features` to enable
+the optional interoperability checks. The runner enumerates the actual binary,
+selects the exact outer module and executes its full test names with `--exact`.
+Unknown cases and empty selections fail. `--list` shows that selected inventory.
+Cargo's ordinary filters match substrings, so a bare `loans::` filter can also
+select `template_loans::`; use the runner for suite selection. Apply the ordinary
+resource/storage wrapper to direct Cargo commands.
+
 Use focused checks while implementing a coherent feature, then qualify the
 complete checkpoint before pushing compiler changes. Several related consumer
 edits can share one checkpoint. A change to tests or documentation does not by

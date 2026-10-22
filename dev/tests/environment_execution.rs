@@ -5,14 +5,12 @@ mod adapters;
 mod adjusted;
 #[path = "environment_execution/chains.rs"]
 mod chains;
-#[path = "harness/checked_sources.rs"]
-mod checked_sources;
+use crate::checked_sources;
 #[path = "environment_execution/contextual.rs"]
 mod contextual;
 #[path = "environment_execution/hierarchy.rs"]
 mod hierarchy;
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 #[path = "environment_execution/nested.rs"]
 mod nested;
 #[path = "environment_execution/conversion_context.rs"]
@@ -25,10 +23,8 @@ mod projected;
 mod reference_copies;
 #[path = "environment_execution/references.rs"]
 mod references;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 #[path = "environment_execution/signatures.rs"]
 mod signatures;
 #[path = "environment_execution/slot_ownership.rs"]

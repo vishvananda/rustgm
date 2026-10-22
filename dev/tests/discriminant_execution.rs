@@ -1,8 +1,6 @@
 //! Enum values resume checked const bodies without publishing provisional tags.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::resolve as source;
 use std::{path::Path, process::Command};
 
 const CASES: &[(&str, &str, bool)] = &[

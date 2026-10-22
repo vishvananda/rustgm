@@ -1,8 +1,6 @@
 //! Raw pointer conversions preserve pointee variance and erase only outer loans.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::source_cases as source;
 
 const CASES: &[(&str, bool, &str)] = &[
     ("shared-const", true, "fn f(x:&u8)->*const u8{x}"),

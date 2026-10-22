@@ -1,8 +1,6 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::types::Kind;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 // Declared outcomes were checked with pinned rustc before implementing headers.
 const CASES: &[(&str, bool, &str)] = &[

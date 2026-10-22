@@ -1,12 +1,8 @@
 //! Fetch-sub uses captured add-and-fetch results with wrapping u32 arithmetic.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::checked_sources as checked;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 use std::path::PathBuf;
 const CASES: &[(&str, i32, i32, i32, &str)] = &[
     ("sub-orders", 0, 0, 0, ""),

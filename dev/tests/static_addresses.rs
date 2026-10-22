@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{
     resolve::{expansion::Report, model::DefId},
     sema::values::{Evaluator, Origin, Reader, View},

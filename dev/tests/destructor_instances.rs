@@ -1,8 +1,6 @@
 //! Concrete destructor selection uses the retained impl-to-nominal argument permutation.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body, sema,
     types::{Kind, arguments::Argument, instance::Instance},

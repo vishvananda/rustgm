@@ -1,6 +1,5 @@
 //! Each generated impl has its own assumptions, including under recursive references.
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
 use rustgm::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::{self, Definitions, Repr, Variant},

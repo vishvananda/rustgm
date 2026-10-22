@@ -1,8 +1,6 @@
 //! Eager named values select completed associated contracts before lowering.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::resolve as source;
 use rustgm::sema::{model::Scalar, values::Reader};
 use std::{fmt::Write, path::Path, process::Command};
 

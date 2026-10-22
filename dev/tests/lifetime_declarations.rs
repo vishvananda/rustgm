@@ -1,5 +1,4 @@
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{sema::model::Operation, types::Kind};
 
 const ACCEPTED: &[(&str, &str)] = &[

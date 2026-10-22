@@ -1,8 +1,6 @@
 //! Pointer constants retain storage identity and reject CTFE address observation.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::native_references as native;
+use crate::source_cases as source;
 const CASES: &[(&str, bool, &str)] = &[
     (
         "absolute-unsize",

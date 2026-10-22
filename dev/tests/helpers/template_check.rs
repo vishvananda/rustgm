@@ -1,5 +1,5 @@
 //! Full symbolic ownership, region and cleanup checking for source regressions.
-use crate::semantic;
+use super::semantic;
 use rustgm::{
     body, borrow,
     types::{Kind, copy::Copies},

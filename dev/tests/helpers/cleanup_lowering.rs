@@ -1,6 +1,5 @@
 //! Test adapter for completed destruction proofs and typed body probes.
-#[path = "../support/semantic.rs"]
-mod semantic;
+use crate::semantic;
 use rustgm::{body, borrow, lower, lowir, sema};
 pub fn build(source: &str) -> Result<lowir::program::Program, Box<dyn std::error::Error>> {
     build_with(source, |_, _| Ok(()))

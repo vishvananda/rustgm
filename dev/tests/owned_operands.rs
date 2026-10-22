@@ -1,3 +1,5 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{
         self,
@@ -9,10 +11,6 @@ use rustgm::{
         initialization::{self, Disposition, Moment, Status},
     },
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 fn verify_points(body: &Body, facts: &initialization::Facts<'_>) -> Result<usize, &'static str> {
     let mut seen = 0;

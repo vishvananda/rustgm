@@ -1,8 +1,6 @@
 //! Early argument prerequisites and constant capture scopes are independent contracts.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body, borrow,
     types::{Kind, Primitive, TypeId},

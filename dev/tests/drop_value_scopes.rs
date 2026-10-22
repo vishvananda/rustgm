@@ -1,13 +1,11 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::body::{
     self,
     ir::{Action, Owner, Rvalue, Terminator},
     scopes::{Kind, Lifetime},
     storage::Location,
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 #[test]
 fn discarded_values_and_forwarded_results_retain_cleanup_scopes()

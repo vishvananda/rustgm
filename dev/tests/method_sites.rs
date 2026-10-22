@@ -1,8 +1,6 @@
 //! Method search keeps its lexical site without resolving the spelling as a value.
-#[path = "helpers/resolve.rs"]
-mod names;
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
+use crate::resolve as names;
 use rustgm::resolve::model::{DefKind, Target};
 
 #[test]

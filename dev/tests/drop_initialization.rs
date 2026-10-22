@@ -1,3 +1,5 @@
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     body::{
         self,
@@ -8,10 +10,6 @@ use rustgm::{
         initialization::{self, Status},
     },
 };
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
 
 fn probe(body: &Body, mark: rustgm::resolve::model::DefId) -> Result<BlockId, &'static str> {
     for (index, block) in body.blocks.iter().enumerate() {

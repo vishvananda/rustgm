@@ -1,9 +1,7 @@
 //! Declared outcomes are independently qualified before the frontend is compared.
-#[path = "helpers/qualify.rs"]
-mod rustc;
+use crate::qualify as rustc;
+use crate::semantic;
 use std::fmt::Write as _;
-#[path = "support/semantic.rs"]
-mod semantic;
 const CASES: &[(&str, bool, &str)] = &[
     (
         "default-static-reference-bound",

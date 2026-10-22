@@ -1,8 +1,6 @@
 //! Dyn compatibility rejects object uses without rejecting ordinary static traits.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use rustgm::{
     resolve::{
         expansion::Report,

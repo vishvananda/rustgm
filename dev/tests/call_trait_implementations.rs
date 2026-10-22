@@ -1,8 +1,6 @@
 //! Callable implementations retain their actual input/output equations and lifetime proof.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 const CASES: &[(&str, &str, bool)] = &[
     (
         "pointer-shared",

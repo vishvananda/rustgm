@@ -1,6 +1,5 @@
 //! Scalar union storage is a byte image, independent of selected field identity.
-#[path = "harness/native_references.rs"]
-mod native;
+use crate::native_references as native;
 use std::{path::PathBuf, process::Command};
 const CASES: &[(&str, i32, i32, i32)] = &[
     ("scalar-union/word-byte", 0, 0, 0),

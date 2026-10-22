@@ -1,8 +1,6 @@
 //! Scoped lint levels neither grant unsafe permission nor disappear at item boundaries.
-#[path = "support/semantic.rs"]
-mod semantic;
-#[path = "helpers/source_cases.rs"]
-mod source;
+use crate::semantic;
+use crate::source_cases as source;
 
 const CASES: &[(&str, bool, &str)] = &[
     (

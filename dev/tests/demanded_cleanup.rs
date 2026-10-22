@@ -1,8 +1,6 @@
 //! Cleanup demand must neither instantiate unused recipes nor bypass original proofs.
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::qualify as rustc;
+use crate::semantic;
 use std::{path::Path, process::Command};
 
 const GROWING: &str = "#![recursion_limit=\"64\"]struct D<T>(T);impl<T> Drop for D<T>{fn drop(&mut self){grow::<T>();}}fn grow<T>(){grow::<(T,T)>();}";

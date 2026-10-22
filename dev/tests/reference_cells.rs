@@ -1,10 +1,7 @@
 //! Physical reference-cell compatibility preserves semantic lifetimes and validity gates.
-#[path = "harness/checked_sources.rs"]
-mod checked;
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "harness/reconstruction_work.rs"]
-mod work;
+use crate::checked_sources as checked;
+use crate::native_references as native;
+use crate::reconstruction_work as work;
 use std::path::PathBuf;
 const CASES: &[(&str, i32, i32, &str)] = &[
     ("expired-reference-cell", 0, 0, ""),

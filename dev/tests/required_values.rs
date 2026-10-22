@@ -1,8 +1,6 @@
 //! Complete source constants exercise readiness, checked calls and native results.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/resolve.rs"]
-mod source;
+use crate::native_references as native;
+use crate::resolve as source;
 use std::{path::Path, process::Command};
 
 const POSITIVES: &[(&str, &str, bool)] = &[

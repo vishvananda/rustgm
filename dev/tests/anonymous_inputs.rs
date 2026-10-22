@@ -1,10 +1,7 @@
 //! Anonymous function inputs retain ordinary generic proofs and cannot be named in turbofish arguments.
-#[path = "harness/native_references.rs"]
-mod native;
-#[path = "helpers/qualify.rs"]
-mod rustc;
-#[path = "support/semantic.rs"]
-mod semantic;
+use crate::native_references as native;
+use crate::qualify as rustc;
+use crate::semantic;
 
 const CASES: &[(&str, &str, bool)] = &[
     (
