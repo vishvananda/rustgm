@@ -1,0 +1,306 @@
+{
+  "schema": 1,
+  "profile": "Rust1.98.0 / x86_64 / edition2024",
+  "purpose": "Exact checked opaque physical storage; no hidden-type equality, Copy or trait permission. Missing heads remain required gaps.",
+  "evidence": "obj/parallel/pa27/opaque-string-backing",
+  "cases": [
+    {
+      "name": "opaque-scalar-byte-check",
+      "sha256": "8d53a860d664a12081987f8f34ac2ced111cd77d56b13d5df214629c6e10cf31",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Opaque scalar root is byte-addressable using its defining hidden u32 layout on x86-64.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-scalar-byte-check.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-scalar-byte-check.rs",
+      "implemented": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "candidate_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "opaque-record-offset-check",
+      "sha256": "192f73c35671186df3cd9d098de675ff7a4d7229ffbac734f3cd7ca37f866c7d",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Opaque record backing retains canonical field bytes and checked byte offset.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-record-offset-check.rs",
+      "path": "pa28/tests/spec/opaque-byte-backing/opaque-record-offset-check.rs",
+      "implemented": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "candidate_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "opaque-generic-heads-check",
+      "sha256": "59bbf694d9c18e84034c0b38a1bcc792e200cbf2d6dd0e1d61ad8032ae086299",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Different full opaque applications retain different checked hidden heads.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-generic-heads-check.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-generic-heads-check.rs",
+      "implemented": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "candidate_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "opaque-union-roundtrip-check",
+      "sha256": "ac9d0a7d8d405ee15292566e69ac44e61c339b2e1eb926f147c4a0e3a06ed439",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Opaque value decodes back under exact opaque identity through union transport.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-union-roundtrip-check.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-union-roundtrip-check.rs",
+      "implemented": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "candidate_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "opaque-closure-roundtrip-check",
+      "sha256": "b1d7e1c3f0282d15463edc6719ac3c1a39f09dacd7c57834eefb3bd61a87937c",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Opaque closure transport keeps checked callable identity; zero-byte environment still checked.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-closure-roundtrip-check.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-closure-roundtrip-check.rs",
+      "implemented": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "candidate_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "opaque-invalid-bool",
+      "sha256": "753baa906215dba6f635aa813c03a8ef1c38adf88cd90724c6962025ca55a629",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "hypothesis": "Demanded invalid bool read rejects despite hidden type and completed physical layout.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-invalid-bool.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-invalid-bool.rs",
+      "implemented": true,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "candidate_expected": 1,
+      "reason": "invalid bool"
+    },
+    {
+      "name": "opaque-bounds",
+      "sha256": "00cbe6899492538b44d3483817793d9232d09db5593213d665b65ba2b7bd70af",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "hypothesis": "Opaque hidden extent does not permit one-past dereference.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-bounds.rs",
+      "path": "pa28/tests/spec/opaque-byte-backing/opaque-bounds.rs",
+      "implemented": true,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "candidate_expected": 1,
+      "reason": "bounds"
+    },
+    {
+      "name": "opaque-expired-pointer",
+      "sha256": "530e7a53b3ad31a8b6e94180b7ba761e99383dbe2a5e31ffb232df928d87ce64",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "hypothesis": "Expired hidden pointer cannot become live through physical byte decoding.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-expired-pointer.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-expired-pointer.rs",
+      "implemented": true,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "candidate_expected": 1,
+      "reason": "expired"
+    },
+    {
+      "name": "opaque-uninitialized-read",
+      "sha256": "a004ef4814fc33617b98138a57e5d7d5e222c58d21f765e1877264dc8365588a",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "hypothesis": "Reinterpreted wider type cannot invent initialized backing beyond hidden extent.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-uninitialized-read.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-uninitialized-read.rs",
+      "implemented": true,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "candidate_expected": 1,
+      "reason": "bounds"
+    },
+    {
+      "name": "opaque-reference-word-check",
+      "sha256": "29aa86d9bf7ba8809e85f1b01fd558c05eb337fa19ca08314677aa003a9993d6",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Opaque reference encoding preserves symbolic target and static referent validation.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-reference-word-check.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-reference-word-check.rs",
+      "implemented": false,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "observed_views": [
+        1,
+        1,
+        1
+      ],
+      "observed_reason": "opaque storage requires a checked defining type",
+      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+    },
+    {
+      "name": "opaque-reference-direct",
+      "sha256": "b2e3d48f4cae0ebd5c2731b7f4fc0b9f320c28cd4952c8e2f8e067163e7e5896",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Direct opaque-reference cell access uses completed local hidden head and validates actual referent.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-reference-direct.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-reference-direct.rs",
+      "implemented": false,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "observed_views": [
+        1,
+        1,
+        1
+      ],
+      "observed_reason": "opaque storage requires a checked defining type",
+      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+    },
+    {
+      "name": "opaque-shared-restriction",
+      "sha256": "c592f1381fdd92c569937ddb036f4dc71aca91dc0a0a16907fdfcb6cfb564818",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "hypothesis": "Physical hidden reference encoding must preserve shared-derived write restriction.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-shared-restriction.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-shared-restriction.rs",
+      "implemented": false,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "observed_views": [
+        1,
+        1,
+        1
+      ],
+      "observed_reason": "opaque storage requires a checked defining type",
+      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+    },
+    {
+      "name": "opaque-owned-transfer-concrete",
+      "sha256": "ea3b1f5548f19d0cd90508289a868c6fede2b13670bb4780fd3dde5461c07793",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "hypothesis": "Known repr(C) hidden D is retained under ManuallyDrop; ptr::read transfers ownership after opaque byte mutation; one runtime destructor sees11.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-owned-transfer-concrete.rs",
+      "path": "pa28/tests/spec/opaque-byte-backing/opaque-owned-transfer-concrete.rs",
+      "implemented": false,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "observed_views": [
+        1,
+        1,
+        1
+      ],
+      "observed_reason": "opaque storage requires a checked defining type",
+      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+    },
+    {
+      "name": "opaque-wide-8-repeat-8",
+      "sha256": "02646272940143fbd85c1cff056c866d392fc783b1017bc5b780736500be7d1e",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "width": 8,
+      "repeats": 8,
+      "hypothesis": "Known hidden array representation supports selected byte reads without width times repetition backing traversal.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-wide-8-repeat-8.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-wide-8-repeat-8.rs",
+      "implemented": true,
+      "candidate_expected": 0,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "name": "opaque-wide-32-repeat-32",
+      "sha256": "f82bf73ef0c662adb1e97be63a3a1ae5e79eaa03d8efc7e66a322e40afa3d7e8",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "width": 32,
+      "repeats": 32,
+      "hypothesis": "Known hidden array representation supports selected byte reads without width times repetition backing traversal.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-wide-32-repeat-32.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-wide-32-repeat-32.rs",
+      "implemented": true,
+      "candidate_expected": 0,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    },
+    {
+      "name": "opaque-wide-128-repeat-128",
+      "sha256": "a26a6a1b74c0e04afc3453165ffa948d2da5dddc467a7392da471c3144d56dd2",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "width": 128,
+      "repeats": 128,
+      "hypothesis": "Known hidden array representation supports selected byte reads without width times repetition backing traversal.",
+      "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-wide-128-repeat-128.rs",
+      "path": "pa27/tests/spec/opaque-byte-backing/opaque-wide-128-repeat-128.rs",
+      "implemented": true,
+      "candidate_expected": 0,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "reason": ""
+    }
+  ]
+}

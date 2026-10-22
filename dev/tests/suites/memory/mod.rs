@@ -139,3 +139,6 @@ mod option_storage;
 
 #[path = "../../captured_values.rs"]
 mod captured_values;
+
+#[path = "../../hidden_values.rs"]
+mod hidden_values;

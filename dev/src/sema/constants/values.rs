@@ -9,6 +9,7 @@ mod enumerations;
 mod environments;
 mod footprints;
 mod niches;
+mod physical_types;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;

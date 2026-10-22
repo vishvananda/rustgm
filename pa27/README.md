@@ -263,3 +263,12 @@ incoming pointer restrictions; nested zero-byte capture products remain checked.
 Matching bytes never select a callable body: the demanded closure type retains
 that identity. See `tests/closure-byte-outcomes.json` and
 `docs/pa27-closure-byte-storage.md` for the bounded capture-family contract.
+
+Opaque byte storage now consumes an already checked full-TypeId defining head
+and its exact retained layout. The iterative physical codec and readonly product
+inspection preserve the original source identity, ownership, permissions and
+callable authority. Shared heads reuse one validated family dependency; current
+byte validity is never cached with it. `tests/opaque-byte-outcomes.json` records
+supported scalar/aggregate/closure cases, validity negatives and required
+missing-head reference/owned cases. String words and those readiness gaps remain
+required. See `docs/pa27-opaque-byte-storage.md`.

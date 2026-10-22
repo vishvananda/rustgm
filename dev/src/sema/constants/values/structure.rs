@@ -47,6 +47,7 @@ impl<'a> Reader<'a> {
         mut ty: TypeId,
         value: Constant,
     ) -> Result<FieldTypes<'a>, &'static str> {
+        ty = self.storage_type(ty)?;
         if let Some(Kind::Closure { environment, .. }) = self.facts.types.kind(ty) {
             ty = environment;
         }

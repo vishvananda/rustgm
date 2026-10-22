@@ -7,6 +7,8 @@ mod cached_places;
 mod captures;
 #[path = "fragment_ranges.rs"]
 mod fragment_ranges;
+#[path = "hidden_memory.rs"]
+mod opaques;
 use super::{Cell, Constant, Failure, Machine, Reader, Snapshot};
 use crate::{
     const_eval::{

@@ -13,11 +13,20 @@ impl Machine<'_, '_> {
                 continue;
             }
             self.footprint(ty)?;
-            let shape = Reader::new(self.evaluator.facts()).storage_shape(ty)?;
+            let physical = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+            let shape = Reader::new(self.evaluator.facts()).storage_shape(physical)?;
             let unsupported = matches!(shape, StoredShape::Unsupported);
             let enumeration = matches!(shape, StoredShape::Enumeration { .. } | StoredShape::Niche);
-            let unsupported = unsupported || (enumeration && !self.prepare_byte_enum(ty)?);
-            let children = self.byte_children(ty)?;
+            let unsupported = unsupported || (enumeration && !self.prepare_byte_enum(physical)?);
+            let children = if physical == ty {
+                self.byte_children(physical)?
+            } else {
+                // Distinct opaque applications share only completed physical
+                // family validation, never their logical identity or authority.
+                self.charge(1)?;
+                self.reserve_cells(1)?;
+                vec![physical]
+            };
             self.reserve_cells(
                 pending
                     .len()

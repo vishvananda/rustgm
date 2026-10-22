@@ -132,6 +132,7 @@ impl Machine<'_, '_> {
         pending: &mut Vec<Encode>,
     ) -> Result<(), Failure> {
         let layout = self.footprint(ty)?;
+        let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
         let start = usize::try_from(offset).map_err(|_| "byte offset exceeds host size")?;
         let end = offset
             .checked_add(layout.size)
@@ -298,6 +299,7 @@ impl Machine<'_, '_> {
         let mut pending = vec![(cell, ty, 0u64)];
         while let Some((cell, ty, offset)) = pending.pop() {
             self.charge(1)?;
+            let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
             match &self.memory.cells[cell] {
                 super::Cell::Frozen(value) => {
                     let value = *value;
@@ -608,6 +610,7 @@ impl Machine<'_, '_> {
             self.memory.bytes.decoded += 1;
         }
         let layout = self.footprint(ty)?;
+        let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
         let start = usize::try_from(offset).map_err(|_| "byte read exceeds host size")?;
         let end = offset
             .checked_add(layout.size)
