@@ -1,0 +1,259 @@
+{
+  "status": "Corrected original wildcard-use hypothesis retained as positive; actual value-read negative separately declared before observation. Planned assignment; no text references.",
+  "profile": "Rust1.98.0 edition2024 x86_64 Linux GNU, panic abort, overflow checks enabled; C variadic signatures retain safety, fixed parameters and tail identity across separate crate builds.",
+  "provider": {
+    "path": "tests/spec/variadics/provider.c",
+    "sha256": "aaade0f32a992bf4d426279034bc900d2d255cb31de5cc39d3d3dbb9a48ed08f"
+  },
+  "cases": [
+    {
+      "name": "va_provider",
+      "path": "tests/spec/variadic-metadata/va_provider.rs",
+      "role": "library",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": false,
+      "source_sha256": "9605fd0ecab4684c55e825b86a24f5ee2ff38bdd5e2ad9bc4454415e25f215d0"
+    },
+    {
+      "name": "va_bridge",
+      "path": "tests/spec/variadic-metadata/va_bridge.rs",
+      "role": "library",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": false,
+      "source_sha256": "c32ac34da22960dc3863339f0537ce2b7dab43a97729a97a1f5db00160167caa"
+    },
+    {
+      "name": "pass_direct",
+      "path": "tests/spec/variadic-metadata/pass_direct.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "7ec3de0e382ea6a0eeb87092f165bc2bb288333feca020e4372073f3adc215a6"
+    },
+    {
+      "name": "pass_float",
+      "path": "tests/spec/variadic-metadata/pass_float.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "8e28ef2f3ffd49716e2311ef6652742324bdb5f95a39fda612ca5b902d12b79d"
+    },
+    {
+      "name": "pass_pointer",
+      "path": "tests/spec/variadic-metadata/pass_pointer.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "8bedae81c99ce9d2cbd976430f834f42382e4c3b404a3f0dc30eb0f5ff65c662"
+    },
+    {
+      "name": "pass_safe",
+      "path": "tests/spec/variadic-metadata/pass_safe.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "da33ec9709fe5b520cb188c2c654ad31c28f7e1e1ad828ffe8cfc4d5a729c9c7"
+    },
+    {
+      "name": "pass_alias",
+      "path": "tests/spec/variadic-metadata/pass_alias.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "98582e12396a224944b379c2440bb132e59045033eae13b1cd8bd0f24c9c9f08"
+    },
+    {
+      "name": "pass_aggregate",
+      "path": "tests/spec/variadic-metadata/pass_aggregate.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "b3c65c7d0684e77defb2cb82bd33396d333eda03cc14ea50b7aa478663e9ae60"
+    },
+    {
+      "name": "pass_record_tail",
+      "path": "tests/spec/variadic-metadata/pass_record_tail.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "717765153f1ce6ddbbe5ecb46a0812aa3ed6dc3bca28ad0d5773527b47b77fb4"
+    },
+    {
+      "name": "pass_callback",
+      "path": "tests/spec/variadic-metadata/pass_callback.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "36db9f7f2a9b1f0f809210a962c228a08ee28ca29d5c671361be5576b648ba3e"
+    },
+    {
+      "name": "pass_constant_pointer",
+      "path": "tests/spec/variadic-metadata/pass_constant_pointer.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "bdb42689d68a03a42c1dcc6400f86d684278f0d596fccd3c379aebff506cd1dc"
+    },
+    {
+      "name": "pass_moved_wildcard",
+      "path": "tests/spec/variadic-metadata/pass_moved_wildcard.rs",
+      "role": "client",
+      "rustc": 0,
+      "rustc_codes": [],
+      "frontend": 0,
+      "diagnostic": null,
+      "native": true,
+      "source_sha256": "82b487f77abd7a12eb8e23ef9741d8fe61b67937ba2991037d017ed0c34b203e"
+    },
+    {
+      "name": "reject_unsafe",
+      "path": "tests/spec/variadic-metadata/reject_unsafe.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0133"
+      ],
+      "frontend": 1,
+      "diagnostic": "call to unsafe function requires an unsafe context",
+      "native": false,
+      "source_sha256": "82eb72ce10c5b24a4bde41295d02643e5b825686ce2aef23f7d216058f930cfe"
+    },
+    {
+      "name": "reject_safe_pointer",
+      "path": "tests/spec/variadic-metadata/reject_safe_pointer.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0308"
+      ],
+      "frontend": 1,
+      "diagnostic": "incompatible callable convention or safety",
+      "native": false,
+      "source_sha256": "91d8e83d7e2b158c02cddbeb4f279138a1d42f4f4ca54bb64f8db59bb29b1172"
+    },
+    {
+      "name": "reject_fixed_pointer",
+      "path": "tests/spec/variadic-metadata/reject_fixed_pointer.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0308"
+      ],
+      "frontend": 1,
+      "diagnostic": "incompatible callable convention or safety",
+      "native": false,
+      "source_sha256": "5a938b26e23cd2baeb11919102e847e8912bd2b2f36d499ad6ffb693d99eb089"
+    },
+    {
+      "name": "reject_u8",
+      "path": "tests/spec/variadic-metadata/reject_u8.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0617"
+      ],
+      "frontend": 1,
+      "diagnostic": "variadic argument requires an explicit C promotion cast",
+      "native": false,
+      "source_sha256": "1b651e2cdab2f9b86957f95e5b5bde1b4be5ea7d4306d96b7f019b1608f26302"
+    },
+    {
+      "name": "reject_f32",
+      "path": "tests/spec/variadic-metadata/reject_f32.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0617"
+      ],
+      "frontend": 1,
+      "diagnostic": "variadic argument requires an explicit C promotion cast",
+      "native": false,
+      "source_sha256": "41b51619492b4c952e3c6d0a7cb4320df894d55b8b727420e16bc212eaaf7371"
+    },
+    {
+      "name": "reject_missing_fixed",
+      "path": "tests/spec/variadic-metadata/reject_missing_fixed.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0060"
+      ],
+      "frontend": 1,
+      "diagnostic": "call argument count mismatch",
+      "native": false,
+      "source_sha256": "103c6a131ffa91c63c32aebe8d9af1ca1d26df91bac9f675c125b8ef396e3194"
+    },
+    {
+      "name": "reject_moved",
+      "path": "tests/spec/variadic-metadata/reject_moved.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0382"
+      ],
+      "frontend": 1,
+      "diagnostic": "local may be uninitialized at this read",
+      "native": false,
+      "source_sha256": "f894f999ab60d785231fe6b39bcb420d12884f6c8f0b6e23fd39ea021975fa2d"
+    },
+    {
+      "name": "reject_alias",
+      "path": "tests/spec/variadic-metadata/reject_alias.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0499"
+      ],
+      "frontend": 1,
+      "diagnostic": "access conflicts with a live reference loan",
+      "native": false,
+      "source_sha256": "ebf5bb8b58f4d53ad1038ad0b5955cc5d62e1acdd732167ff7e6cf8f44f3e6dd"
+    },
+    {
+      "name": "reject_const",
+      "path": "tests/spec/variadic-metadata/reject_const.rs",
+      "role": "client",
+      "rustc": 1,
+      "rustc_codes": [
+        "E0015"
+      ],
+      "frontend": 1,
+      "diagnostic": "non-const calls are not allowed in constant initializers",
+      "native": false,
+      "source_sha256": "1b65ae62e79e1350ebb899b1e1556e92767d16dc2dd0177720d1b80a0950ebb3"
+    }
+  ]
+}

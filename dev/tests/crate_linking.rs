@@ -22,6 +22,8 @@ mod reexports;
 mod representations;
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;
+#[path = "crate_linking/variadic_transport.rs"]
+mod variadic_transport;
 use rustgm::support::crates;
 use std::process::Command;
 

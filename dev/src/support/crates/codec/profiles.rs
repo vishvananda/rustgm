@@ -4,6 +4,7 @@ use crate::support::crates::{RecordRepr, TypeGraph, TypeNode};
 
 const PUBLIC_NAMES: u8 = 6;
 const AGGREGATES: u8 = 7;
+const VARIADICS: u8 = 8;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Payload {
@@ -43,6 +44,25 @@ pub(super) struct Profile {
     pub(super) public_names: bool,
     pub(super) shared: bool,
     pub(super) aggregates: bool,
+    calling: Calling,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Calling {
+    Fixed,
+    VariadicC,
+}
+impl Calling {
+    fn for_interface(interface: &Interface) -> Self {
+        if interface
+            .functions()
+            .iter()
+            .any(|f| f.signature().variadic())
+        {
+            Self::VariadicC
+        } else {
+            Self::Fixed
+        }
+    }
 }
 impl Profile {
     pub(super) fn for_interface(interface: &Interface) -> Self {
@@ -73,9 +93,13 @@ impl Profile {
             public_names: interface.public_names().is_some(),
             shared,
             aggregates: aggregate_types(interface),
+            calling: Calling::for_interface(interface),
         }
     }
     pub(super) fn write(self, out: &mut Writer) -> Result<(), &'static str> {
+        if self.variadic() {
+            out.u8(VARIADICS)?;
+        }
         if self.aggregates {
             out.u8(AGGREGATES)?;
         }
@@ -90,6 +114,10 @@ impl Profile {
     }
     pub(super) fn read(input: &mut Reader<'_>) -> Result<Self, &'static str> {
         let mut tag = input.u8()?;
+        let variadics = tag == VARIADICS;
+        if variadics {
+            tag = input.u8()?;
+        }
         let aggregates = tag == AGGREGATES;
         if aggregates {
             tag = input.u8()?;
@@ -113,6 +141,11 @@ impl Profile {
             public_names,
             shared,
             aggregates,
+            calling: if variadics {
+                Calling::VariadicC
+            } else {
+                Calling::Fixed
+            },
         })
     }
     pub(super) fn typed(self) -> bool {
@@ -121,7 +154,13 @@ impl Profile {
     pub(super) fn foreign(self) -> bool {
         matches!(self.payload, Payload::Foreign | Payload::Storage)
     }
+    pub(super) fn variadic(self) -> bool {
+        self.calling == Calling::VariadicC
+    }
     pub(super) fn validate(self, interface: &Interface) -> Result<(), &'static str> {
+        if self.calling != Calling::for_interface(interface) {
+            return Err("variadic metadata profile requires a variadic function");
+        }
         if self.aggregates != aggregate_types(interface) {
             return Err("aggregate metadata profile requires array or representation facts");
         }

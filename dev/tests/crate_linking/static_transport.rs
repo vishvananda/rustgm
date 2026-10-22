@@ -2,7 +2,7 @@
 fn qualify(assignment: u8, native: bool) -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     qualify_manifest(assignment, "storage-metadata-outcomes.json", native)
 }
-fn qualify_manifest(
+pub(super) fn qualify_manifest(
     assignment: u8,
     manifest: &str,
     native: bool,

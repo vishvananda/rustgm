@@ -87,9 +87,12 @@ pub(super) fn import_roots(
             parameters,
             result,
             unsafe_: signature.unsafe_(),
-            convention: match signature.abi() {
-                Abi::Rust => Convention::RUST,
-                Abi::C => Convention::C,
+            convention: Convention {
+                abi: match signature.abi() {
+                    Abi::Rust => crate::types::callable::Abi::Rust,
+                    Abi::C => crate::types::callable::Abi::C,
+                },
+                variadic: signature.variadic(),
             },
         })
         .map_err(error)
@@ -182,6 +185,7 @@ pub(super) struct SignatureRoots {
     result: TypeRef,
     unsafe_: bool,
     abi: Abi,
+    variadic: bool,
 }
 impl SignatureRoots {
     pub(super) fn finish(self, graph: TypeGraph) -> Result<Signature, Error> {
@@ -192,7 +196,7 @@ impl SignatureRoots {
             self.result,
             self.unsafe_,
         )
-        .map(|signature| signature.with_abi(self.abi))
+        .and_then(|signature| signature.with_convention(self.abi, self.variadic))
         .map_err(error)
     }
 }
@@ -214,11 +218,6 @@ pub(super) fn export_roots(
             "export calling convention is outside the metadata profile",
         ));
     };
-    if convention.variadic {
-        return Err(error(
-            "variadic exports require a foreign declaration metadata contract",
-        ));
-    }
     let parameters = facts
         .types
         .list(parameters)
@@ -233,6 +232,7 @@ pub(super) fn export_roots(
         parameters,
         result,
         unsafe_,
+        variadic: convention.variadic,
         abi: match convention.abi {
             crate::types::callable::Abi::Rust => Abi::Rust,
             crate::types::callable::Abi::C => Abi::C,
@@ -249,6 +249,6 @@ pub(super) fn export(facts: &Declarations, signature: TypeId) -> Result<Signatur
         roots.result,
         roots.unsafe_,
     )
-    .map(|signature| signature.with_abi(roots.abi))
+    .and_then(|signature| signature.with_convention(roots.abi, roots.variadic))
     .map_err(error)
 }

@@ -70,7 +70,10 @@ fn encode_function(
     out.u32(0)?; // Owner ordinal zero is this crate, never a local DefId.
     out.bytes(&[1, 1, 1])?; // Value namespace, Function kind, Export linkage.
     out.u8(u8::from(function.signature().unsafe_()))?;
-    out.bytes(&[u8::from(function.signature().abi() == Abi::C), 0])?; // Nonvariadic; no const-body permission.
+    out.bytes(&[
+        u8::from(function.signature().abi() == Abi::C),
+        u8::from(function.signature().variadic()),
+    ])?; // Calling convention grants no const-body permission.
     out.path(function.definition().path())?;
     match function.symbol() {
         Symbol::Rust => out.u8(0)?,
@@ -221,9 +224,10 @@ fn decode_function(
     if flags > 1 {
         return Err("unknown metadata function flags");
     }
-    let abi = match input.bytes(2)? {
-        [0, 0] => Abi::Rust,
-        [1, 0] if profile.foreign() => Abi::C,
+    let (abi, variadic) = match input.bytes(2)? {
+        [0, 0] => (Abi::Rust, false),
+        [1, 0] if profile.foreign() => (Abi::C, false),
+        [1, 1] if profile.foreign() && profile.variadic() => (Abi::C, true),
         _ => return Err("unsupported metadata calling convention"),
     };
     let path = input.path()?;
@@ -242,7 +246,7 @@ fn decode_function(
     };
     Function::new(
         ExternalDef::new(owner.clone(), path, ExternalKind::Function)?,
-        signature.with_abi(abi),
+        signature.with_convention(abi, variadic)?,
         symbol,
     )
 }

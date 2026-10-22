@@ -3156,8 +3156,19 @@ selects signature-local or shared nominal graph ownership. Validate the selected
 graph once and reuse indexed type remapping; an ABI bit never duplicates the
 graph or grants permission to call a const or generic body.
 
-Unknown conventions, variadic bits, noncanonical ownership tags and a redundant
-all-Rust foreign profile fail at decoding. Existing body, lifetime, ownership and
+Profile eight adds an outer variadic envelope only when a published signature
+actually uses C variadics. It composes in canonical order with public-name and
+shared storage/type profiles; fixed signatures retain their exact old bytes.
+Use a typed Rust/fixed-C/variadic-C convention so Rust variadics cannot be
+constructed. Reject variadic bits outside that envelope, unknown bits, invalid
+ABI combinations and redundant envelopes before importing the graph. Publishing
+a real bodyless foreign declaration retains its checked import registry entry,
+exact external symbol and safety; it never creates a local definition or const
+execution permission. Imported calls retain ordinary promotion, argument-count,
+ownership, lifetime and loan checks. See [the variadic metadata checkpoint](docs/pa30-variadic-metadata.md).
+
+Unknown conventions, noncanonical ownership tags and a redundant all-Rust
+foreign profile fail at decoding. Existing body, lifetime, ownership and
 layout checks still precede artifact publication. A calling-convention extension
 does not imply support for a new exported type, static or body contract.
 

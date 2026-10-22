@@ -66,8 +66,11 @@ validation and the remaining storage boundaries. The profile-seven checkpoint
 now transports fixed arrays and plain C record representation across crate
 boundaries, including mixed and MEMORY-class aggregate calls and function pointers.
 `tests/aggregate-metadata-outcomes.json` includes a separate C caller; see
-`docs/pa29-aggregate-metadata.md`. Variadic-declaration transport, additional
-record representations and the other unfinished contracts remain required.
+`docs/pa29-aggregate-metadata.md`. Profile eight now transports actual foreign
+variadic declarations, aliases and compatible function pointers while retaining
+the same call checks. `tests/variadic-metadata-outcomes.json` declares 21 source
+outcomes and ten executable comparisons; see `docs/pa30-variadic-metadata.md`.
+Additional record representations and the other unfinished contracts remain required.
 The reviewed optional object backend
 profile is selected explicitly; its native tests are always registered and run
 with `--ignored` through the grouped maintainer suites. They fail if the profile

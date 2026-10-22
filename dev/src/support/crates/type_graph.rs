@@ -155,7 +155,13 @@ pub struct Signature {
     result: TypeRef,
     bound_regions: u16,
     unsafe_: bool,
-    abi: Abi,
+    convention: Convention,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Convention {
+    Rust,
+    C,
+    VariadicC,
 }
 impl Signature {
     /// Preserve the original closed scalar constructor and its wire encoding.
@@ -249,18 +255,40 @@ impl Signature {
             result,
             bound_regions,
             unsafe_,
-            abi: Abi::Rust,
+            convention: Convention::Rust,
         })
     }
     /// Select a fixed calling convention without changing the validated type graph.
     #[must_use]
     pub const fn with_abi(mut self, abi: Abi) -> Self {
-        self.abi = abi;
+        self.convention = match abi {
+            Abi::Rust => Convention::Rust,
+            Abi::C => Convention::C,
+        };
         self
+    }
+    /// Retain the calling convention independently of safety and type roots.
+    /// # Errors
+    /// Rejects a variadic Rust ABI; this profile supports only C variadics.
+    pub fn with_convention(mut self, abi: Abi, variadic: bool) -> Result<Self, &'static str> {
+        self.convention = match (abi, variadic) {
+            (Abi::Rust, false) => Convention::Rust,
+            (Abi::C, false) => Convention::C,
+            (Abi::C, true) => Convention::VariadicC,
+            (Abi::Rust, true) => return Err("variadic metadata requires the C calling convention"),
+        };
+        Ok(self)
     }
     #[must_use]
     pub const fn abi(&self) -> Abi {
-        self.abi
+        match self.convention {
+            Convention::Rust => Abi::Rust,
+            Convention::C | Convention::VariadicC => Abi::C,
+        }
+    }
+    #[must_use]
+    pub const fn variadic(&self) -> bool {
+        matches!(self.convention, Convention::VariadicC)
     }
     #[must_use]
     pub const fn types(&self) -> &TypeGraph {

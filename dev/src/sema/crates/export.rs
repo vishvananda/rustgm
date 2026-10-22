@@ -140,7 +140,7 @@ fn function(
                 signature,
                 safety: callable.safety,
                 naming,
-                linkage: Kind::Export,
+                linkage: callable.linkage,
             },
         )
         .map_err(error)?;
@@ -158,6 +158,7 @@ fn function(
 struct Callable {
     signature: TypeId,
     safety: Safety,
+    linkage: Kind,
 }
 fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<Callable, Error> {
     if facts.target_feature_functions.contains(&definition) {
@@ -174,12 +175,7 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
         return Err(error("missing export declaration"));
     };
     let item = ast.items[index as usize];
-    let ItemKind::Function {
-        flags,
-        body: Some(_),
-        ..
-    } = item.kind
-    else {
+    let ItemKind::Function { flags, body, .. } = item.kind else {
         return Err(error(
             "metadata exports require ordinary defined Rust functions",
         ));
@@ -222,9 +218,25 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
     let Some(Type::FunctionItem { signature, .. }) = facts.types.kind(ty) else {
         return Err(error("missing export callable"));
     };
+    if body.is_none() {
+        let imported = facts
+            .foreign
+            .as_deref()
+            .and_then(|registry| registry.function(definition))
+            .filter(|record| record.signature == signature && record.linkage == Kind::Import)
+            .ok_or_else(|| {
+                error("bodyless metadata functions require a checked foreign declaration")
+            })?;
+        return Ok(Callable {
+            signature,
+            safety: imported.safety,
+            linkage: Kind::Import,
+        });
+    }
     Ok(Callable {
         signature,
         safety: flags.safety,
+        linkage: Kind::Export,
     })
 }
 pub(super) fn scalar(facts: &Declarations, ty: TypeId) -> Result<Scalar, Error> {

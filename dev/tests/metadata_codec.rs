@@ -13,6 +13,8 @@ mod public_names;
 mod scalar_values;
 #[path = "metadata_codec/stored_interfaces.rs"]
 mod stored_interfaces;
+#[path = "metadata_codec/variadic_profiles.rs"]
+mod variadic_profiles;
 use rustgm::support::crates::{
     self, CrateIdentity, ExternalDef, ExternalKind, Function, Interface, Scalar, Signature, Symbol,
 };
