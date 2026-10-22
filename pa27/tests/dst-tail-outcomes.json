@@ -1,0 +1,28 @@
+{
+  "stage": "planned",
+  "profile": "Forward existing checked metadata to exact final unsized fields; no source conversion permission",
+  "inspection_modes": [
+    "--emit-types",
+    "--emit-lowir",
+    "--emit-constants",
+    "--emit-body-ir"
+  ],
+  "source_cases": [
+    {
+      "name": "packed-reference",
+      "path": "pa27/tests/spec/dst-tail-metadata/packed-reference.rs",
+      "sha256": "5da06aaa4bb5f95ab109ed5d70e230e4ae210fcac2f496be1b2f388bc9b2d4f5",
+      "rustc_expected": 1,
+      "rustc_args": [],
+      "frontend_expected": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "reason": "reference to an unaligned packed field",
+      "independent_manifest": "declared-third.json"
+    }
+  ],
+  "policy": "Frozen existing CHECK helper requires explicitly capped independent unconditional_panic lint; unchanged default-lint rejection is separately preserved."
+}

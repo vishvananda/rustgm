@@ -1,0 +1,345 @@
+{
+  "stage": "planned",
+  "profile": "Forward existing checked metadata to exact final unsized fields; no source conversion permission",
+  "inspection_modes": [
+    "--emit-types",
+    "--emit-lowir",
+    "--emit-constants",
+    "--emit-body-ir"
+  ],
+  "source_cases": [
+    {
+      "name": "early-nominal-value",
+      "path": "pa25/tests/spec/dst-tail-metadata/early-nominal-value.rs",
+      "sha256": "9a92d10728d3a4506d0083b9043f95fc0b48023d020a40e15f6f080e7e50bf59",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "late-nominal-value",
+      "path": "pa25/tests/spec/dst-tail-metadata/late-nominal-value.rs",
+      "sha256": "c4c1b1cacfe611c91b13980c02d60986fda1958a15fe2f75be67d871f75ac7ff",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "runtime-owner",
+      "path": "pa25/tests/spec/dst-tail-metadata/runtime-owner.rs",
+      "sha256": "245b1cca4c97b16c77eaeb81eac8a4ad735706f53c13dfe3a5238092749a0db4",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "direct-slice",
+      "path": "pa25/tests/spec/dst-tail-metadata/direct-slice.rs",
+      "sha256": "a11ed346c4fb1f2d98f5abbc153a0e8ad79a50524acd0d8de958e13d330561e2",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "explicit-reference",
+      "path": "pa25/tests/spec/dst-tail-metadata/explicit-reference.rs",
+      "sha256": "707caec044be953d1550c761f5b34023d7d206a969a8f4ee69be189a64911dc9",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "nested-tail",
+      "path": "pa25/tests/spec/dst-tail-metadata/nested-tail.rs",
+      "sha256": "559e6793f7dc14c6ff9db4380415dc259533cff7f316c856e1b5bfae14d999d2",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "mutable-tail",
+      "path": "pa25/tests/spec/dst-tail-metadata/mutable-tail.rs",
+      "sha256": "b83da0ec4d1b204fae1de861eb12cf8c8a99f785743c0d897e65fa9df80bb373",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "empty-tail",
+      "path": "pa25/tests/spec/dst-tail-metadata/empty-tail.rs",
+      "sha256": "84ffc8e45b57125ab8b43b4d4b168f8afcf04f75e297b28cb9b1675999fbd15d",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "published-tail",
+      "path": "pa25/tests/spec/dst-tail-metadata/published-tail.rs",
+      "sha256": "04292f4479dab5ab76f06a7e53ca1151e0c7ac0a2f9e96af119dac65601d6fc1",
+      "rustc_expected": 0,
+      "rustc_args": [
+        "--cap-lints=allow"
+      ],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "wrong-element",
+      "path": "pa25/tests/spec/dst-tail-metadata/wrong-element.rs",
+      "sha256": "b82bd00733bc4cd1fb47707f7382579063095a8cde73ce30b01e8adbadca3558",
+      "rustc_expected": 1,
+      "rustc_args": [],
+      "frontend_expected": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "shared-to-mutable",
+      "path": "pa25/tests/spec/dst-tail-metadata/shared-to-mutable.rs",
+      "sha256": "b444010173c41aec6bd7e8c5d0223020f81cf5678b31ac615342e53bfbe66fb0",
+      "rustc_expected": 1,
+      "rustc_args": [],
+      "frontend_expected": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "reason": "cannot coerce a shared reference to a mutable reference",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "local-escape",
+      "path": "pa25/tests/spec/dst-tail-metadata/local-escape.rs",
+      "sha256": "cca862e1fa3b10d9bbe988460e72bb6fde76bbe87436a86fa6a2847340fdc3c5",
+      "rustc_expected": 1,
+      "rustc_args": [],
+      "frontend_expected": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "reason": "required lifetime does not outlive its target",
+      "independent_manifest": "declared-second.json"
+    },
+    {
+      "name": "prefix-then-tail",
+      "path": "pa25/tests/spec/dst-tail-metadata/prefix-then-tail.rs",
+      "sha256": "f7036ce7e129fe03fa864493c9ae117e6f60e315f375a513ba158e4ab09029c3",
+      "rustc_expected": 0,
+      "rustc_args": [],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "prefix-only",
+      "path": "pa25/tests/spec/dst-tail-metadata/prefix-only.rs",
+      "sha256": "cce4b17a46ec780e8d1aeee5b9393d4fd06c0c550195b5090d9189f9acb7517e",
+      "rustc_expected": 0,
+      "rustc_args": [],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "tuple-holder",
+      "path": "pa25/tests/spec/dst-tail-metadata/tuple-holder.rs",
+      "sha256": "b5637ded768622f1088aba1f12da8622194bb36989eb01ea6f0fe9ed3acbb89d",
+      "rustc_expected": 0,
+      "rustc_args": [],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "unsized-tuple-coercion",
+      "path": "pa25/tests/spec/dst-tail-metadata/unsized-tuple-coercion.rs",
+      "sha256": "5dea0259609666b7ff4dc9d9d143339d8c8ead89d3869fc39c183ad501aaf07a",
+      "rustc_expected": 1,
+      "rustc_args": [],
+      "frontend_expected": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "reason": "incompatible types",
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "tail-bounds",
+      "path": "pa25/tests/spec/dst-tail-metadata/tail-bounds.rs",
+      "sha256": "af9a490971819e43855b2451392c38f858f8eefba63fac5270baa29a280d3ca0",
+      "rustc_expected": 1,
+      "rustc_args": [],
+      "frontend_expected": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "reason": "constant index is out of bounds",
+      "independent_manifest": "declared-third.json"
+    },
+    {
+      "name": "published-field-view",
+      "path": "pa25/tests/spec/dst-tail-metadata/published-field-view.rs",
+      "sha256": "2da12318bf56b0b6fff13e12aa12a074807b4ff29cf9efdb16a6efaa6522ae1f",
+      "rustc_expected": 0,
+      "rustc_args": [],
+      "frontend_expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "",
+      "independent_manifest": "declared-third.json"
+    }
+  ],
+  "policy": "Frozen existing CHECK helper requires explicitly capped independent unconditional_panic lint; unchanged default-lint rejection is separately preserved.",
+  "native_cases": [
+    {
+      "name": "published-tail-runtime",
+      "path": "pa25/tests/dst-tail-native/published-tail-runtime.rs",
+      "sha256": "fc2096095ec44863353c55b193051a09c44016610b61450ab53618064c12e477",
+      "rustc_expected": 0,
+      "native_expected": 0
+    },
+    {
+      "name": "published-field-runtime",
+      "path": "pa25/tests/dst-tail-native/published-field-runtime.rs",
+      "sha256": "e9e1e5a0d8644501f5edec34b772c2596cda56ec00f0ddce9db1d98ab27b0634",
+      "rustc_expected": 0,
+      "native_expected": 0
+    },
+    {
+      "name": "mutable-runtime",
+      "path": "pa25/tests/dst-tail-native/mutable-runtime.rs",
+      "sha256": "680904094b6c73defbeb69c217f9a269023ec34c020ff0f911b50552845be9a5",
+      "rustc_expected": 0,
+      "native_expected": 0
+    },
+    {
+      "name": "prefix-runtime",
+      "path": "pa25/tests/dst-tail-native/prefix-runtime.rs",
+      "sha256": "658a18bbd62d3002b8b66126ef3719b4ff9b0538b9d6790cc4a2b5cc2bc10075",
+      "rustc_expected": 0,
+      "native_expected": 0
+    },
+    {
+      "name": "nested-runtime",
+      "path": "pa25/tests/dst-tail-native/nested-runtime.rs",
+      "sha256": "9ddb7b0edaa1844bdd3a243ad8028dd8aa65bab73044ea03130b46042a25d157",
+      "rustc_expected": 0,
+      "native_expected": 0
+    },
+    {
+      "name": "nested-field-runtime",
+      "path": "pa25/tests/dst-tail-native/nested-field-runtime.rs",
+      "sha256": "70b32489ef9b5e2b4b11bdcad5cecc995342bdda40a3db5564f85d1ddbb59747",
+      "rustc_expected": 0,
+      "native_expected": 0
+    }
+  ]
+}

@@ -3,7 +3,7 @@ use super::super::{
     Value,
     references::{Access, Place, Pointer},
 };
-use super::{Constant, Evaluator, Failure, LocationId};
+use super::{Constant, Evaluator, Failure, LocationId, Metadata, Reader};
 use crate::{resolve::model::DefId, types::TypeId};
 
 impl Constant {
@@ -212,6 +212,148 @@ impl Evaluator<'_> {
             .facts
             .constant_values
             .insert(definition, value.0);
+    }
+}
+
+impl Reader<'_> {
+    /// Retain the immediate physical field under an already checked unsized view.
+    /// Logical bounds and conversion proofs remain separate from this storage identity.
+    pub(crate) fn tail_storage(
+        self,
+        owner: TypeId,
+        actual: TypeId,
+        index: u64,
+        target: TypeId,
+        metadata: Metadata,
+    ) -> Result<TypeId, &'static str> {
+        use crate::types::Kind;
+        let types = &self.facts.types;
+        let same_owner = match (types.kind(owner), types.kind(actual)) {
+            (Some(Kind::Adt(left, _)), Some(Kind::Adt(right, _))) => left == right,
+            (Some(Kind::Tuple(left)), Some(Kind::Tuple(right))) => {
+                types.list(left).ok_or("missing logical tail fields")?.len()
+                    == types
+                        .list(right)
+                        .ok_or("missing physical tail fields")?
+                        .len()
+            }
+            _ => false,
+        };
+        if !same_owner {
+            return Err("constant tail storage has a different physical owner");
+        }
+        let stored = self.stored_child(actual, None, index)?;
+        if stored == target {
+            return Ok(stored);
+        }
+        let compatible = match (types.kind(target), types.kind(stored), metadata) {
+            (
+                Some(Kind::Slice(selected)),
+                Some(Kind::Array { element, length }),
+                Metadata::Length(n),
+            ) => selected == element && n <= length,
+            (Some(Kind::Adt(left, _)), Some(Kind::Adt(right, _)), _) => left == right,
+            (Some(Kind::Tuple(left)), Some(Kind::Tuple(right)), _) => {
+                types.list(left).ok_or("missing logical tail fields")?.len()
+                    == types
+                        .list(right)
+                        .ok_or("missing physical tail fields")?
+                        .len()
+            }
+            (
+                Some(Kind::Dynamic { .. }),
+                _,
+                Metadata::Object {
+                    concrete,
+                    target: object,
+                },
+            ) => concrete == stored && object == target,
+            _ => false,
+        };
+        if !compatible {
+            return Err("constant tail storage differs from its selected metadata or type");
+        }
+        Ok(stored)
+    }
+    /// A completed DST's final unsized field inherits its existing metadata.
+    /// This selects a physical field; it establishes no source conversion proof.
+    pub(crate) fn projected_metadata(
+        self,
+        owner: TypeId,
+        field: crate::sema::members::Selection,
+        target: TypeId,
+        metadata: Option<Metadata>,
+    ) -> Result<Option<Metadata>, &'static str> {
+        use crate::types::Kind;
+        let types = &self.facts.types;
+        if types
+            .is_sized(owner)
+            .ok_or("missing projected owner sizedness")?
+        {
+            return if metadata.is_none() {
+                Ok(None)
+            } else {
+                Err("sized projected owner carries unsized metadata")
+            };
+        }
+        if types.contains_parameters(owner) != Some(false)
+            || types.contains_projections(owner) != Some(false)
+            || types.contains_opaques(owner) != Some(false)
+        {
+            return Err("constant tail projection requires completed concrete storage");
+        }
+        let (index, last) = match (types.kind(owner), field) {
+            (Some(Kind::Tuple(fields)), crate::sema::members::Selection::Tuple(index)) => {
+                let fields = types.list(fields).ok_or("missing projected tuple fields")?;
+                let index = usize::try_from(index).map_err(|_| "tuple field exceeds host size")?;
+                if index >= fields.len() {
+                    return Err("projected tuple field exceeds its owner");
+                }
+                (index as u64, index + 1 == fields.len())
+            }
+            (Some(Kind::Adt(item, _)), crate::sema::members::Selection::Nominal(field)) => {
+                let definition = self
+                    .facts
+                    .aggregates
+                    .get(item)
+                    .ok_or("missing completed projected nominal")?;
+                if definition.kind != crate::types::aggregate::Kind::Struct {
+                    return Err("unsized field projection requires a struct");
+                }
+                let members = &self.facts.members;
+                let variant = members
+                    .variant(field)
+                    .ok_or("missing projected field variant")?;
+                let group = members
+                    .variants
+                    .get(variant.0 as usize)
+                    .ok_or("missing projected field group")?;
+                let index = members
+                    .ordinal(field)
+                    .ok_or("missing projected field ordinal")?;
+                if group.owner != item
+                    || group.ordinal != 0
+                    || members.variants(item) != [variant]
+                    || group.start.checked_add(index) != Some(field.0)
+                    || field.0 >= group.end
+                {
+                    return Err("projected tail field has a different owner or ordinal");
+                }
+                (u64::from(index), field.0.checked_add(1) == Some(group.end))
+            }
+            _ => return Err("unsized field projection differs from its checked owner"),
+        };
+        if self.stored_child(owner, None, index)? != target {
+            return Err("projected tail field differs from its checked type");
+        }
+        match types.is_sized(target) {
+            Some(true) => Ok(None),
+            Some(false) if last => metadata
+                .map(Some)
+                .ok_or("constant unsized tail lacks metadata"),
+            Some(false) => Err("unsized projected field is not its owner's final field"),
+            None => Err("missing projected field sizedness"),
+        }
     }
 }
 

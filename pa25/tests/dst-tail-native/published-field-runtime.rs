@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct Tail<T:?Sized>{head:u32,v:T}const fn view(r:&Tail<[u8]>)->&[u8]{&r.v}const S:&[u8]=view(&Tail{head:37,v:[1u8,2]});fn examine(s:&[u8])->u8{match s{[a,b]=>*a+*b,_=>0}}fn main(){check(examine(S)==3);}

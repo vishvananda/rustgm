@@ -54,8 +54,11 @@ proofs. The integrator owns that release work.
 Raw-slice element indexing now selects a sized exact typed element from original
 array/rest backing and checks logical metadata separately from physical bounds.
 Metadata-only length patterns do not read contents. Complete reference duties,
-general raw range reconstruction and DST record-tail metadata remain separate;
-see `pa27-raw-slice-review.md` for retained oracle disagreements and exact scope.
+general raw range reconstruction remains separate. The PA25 DST field consumer
+now forwards existing checked tail metadata while preserving physical storage
+identities; see `pa25-dst-tail-metadata.md`. This does not provide whole unsized
+raw values or new unsizing conversions. See `pa27-raw-slice-review.md` for retained
+oracle disagreements and exact raw-slice scope.
 
 ## PA28
 

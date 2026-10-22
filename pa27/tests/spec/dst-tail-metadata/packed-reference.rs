@@ -1,0 +1,1 @@
+struct Tail<T:?Sized>{v:T}#[repr(C,packed)]struct P{head:u8,value:Tail<[u32;2]>}const N:u32={let p=P{head:0,value:Tail{v:[1u32,2]}};let r:&Tail<[u32]>=&p.value;match &r.v{[a,b]=>*a+*b,_=>0}};fn main(){let _=N;}

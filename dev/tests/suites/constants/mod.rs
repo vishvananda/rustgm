@@ -19,6 +19,8 @@ mod discriminant_execution;
 mod discriminant_readiness;
 #[path = "../../discriminants.rs"]
 mod discriminants;
+#[path = "../../dst_tail_metadata.rs"]
+mod dst_tail_metadata;
 #[path = "../../evaluated_inspection.rs"]
 mod evaluated_inspection;
 #[path = "../../initializer_indexing.rs"]

@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct Tail<T:?Sized>{v:T}const fn take(r:&Tail<[u8]>)->u8{match &r.v{[a,b]=>*a+*b,_=>0}}const N:u8={let r:&Tail<[u8]>=&Tail{v:[1u8,2]};let holder=(7u8,r);take(holder.1)};fn main(){check(N==3);}

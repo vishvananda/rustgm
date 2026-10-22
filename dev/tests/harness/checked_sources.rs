@@ -35,6 +35,18 @@ pub fn check_views(
     modes: &[(&str, i32)],
     reason: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    check_views_with_rustc_args(source, evidence, name, rust, modes, reason, &[])
+}
+/// Preserve a frozen test source while recording its explicit independent lint policy.
+pub fn check_views_with_rustc_args(
+    source: &Path,
+    evidence: &Path,
+    name: &str,
+    rust: i32,
+    modes: &[(&str, i32)],
+    reason: &str,
+    rustc_args: &[&str],
+) -> Result<(), Box<dyn std::error::Error>> {
     assert!(
         !modes.is_empty(),
         "source qualification requires at least one view"
@@ -51,6 +63,7 @@ pub fn check_views(
         ])
         .arg(evidence.join(format!("{name}.o")))
         .arg(source)
+        .args(rustc_args)
         .output()?;
     std::fs::write(
         evidence.join(format!("{name}.rustc.stderr")),

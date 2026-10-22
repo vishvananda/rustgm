@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct Tail<T:?Sized>{v:T}const fn mutate(r:&mut Tail<[u8]>)->u8{match &mut r.v{[a,b]=>{*b=7;*a+*b},_=>0}}const N:u8={let mut value=Tail{v:[1u8,2]};mutate(&mut value)};fn main(){check(N==8);}

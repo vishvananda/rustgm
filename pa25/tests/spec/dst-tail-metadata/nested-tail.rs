@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct Tail<T:?Sized>{v:T}struct Outer<T:?Sized>{head:u32,tail:Tail<T>}const fn nested(r:&Outer<[u8]>)->u8{match &r.tail.v{[a,b]=>*a+*b,_=>0}}const N:u8=nested(&Outer{head:7,tail:Tail{v:[1u8,2]}});fn main(){check(N==3);}

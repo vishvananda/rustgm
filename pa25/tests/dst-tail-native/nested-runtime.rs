@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct Tail<T:?Sized>{v:T}struct Outer<T:?Sized>{head:u32,inner:Tail<T>}const R:&Outer<[u8]>=&Outer{head:37,inner:Tail{v:[1u8,2]}};const fn take(r:&Outer<[u8]>)->u32{let head=r.head;let value=match &r.inner.v{[a,b]=>*a+*b,_=>0};head+value as u32}fn main(){check(take(R)==40);}

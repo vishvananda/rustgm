@@ -5,6 +5,7 @@ mod loads;
 mod ranges;
 mod raw_slices;
 mod sequences;
+mod tails;
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
     body::ir::{LocalId, Place, ProjectionKind, ValueId},
@@ -506,20 +507,7 @@ impl Machine<'_, '_> {
                         }),
                 }));
             }
-            ProjectionKind::Field(field) => {
-                let index = match field {
-                    crate::sema::members::Selection::Tuple(index) => index,
-                    crate::sema::members::Selection::Nominal(field) => self
-                        .evaluator
-                        .facts()
-                        .members
-                        .ordinal(field)
-                        .ok_or("missing constant field ordinal")?,
-                };
-                self.project_raw_type(address)?;
-                self.evaluator
-                    .projection(address.address, u64::from(index), projection.ty)?
-            }
+            ProjectionKind::Field(field) => self.field_projection(address, field, projection.ty)?,
             ProjectionKind::UnionField(field) => {
                 self.project_raw_type(address)?;
                 return Ok(Some(Resolved {

@@ -23,6 +23,9 @@ resource/error contract and independently checked example are documented in
 fixtures and generated oracles before declaring this assignment active.
 The [sequence execution checkpoint](../docs/pa25-sequences.md) records implemented
 array-backed slice operations, scaling invariants and remaining sequence gaps.
+The [DST field-metadata checkpoint](../docs/pa25-dst-tail-metadata.md) forwards
+already-checked metadata to final unsized fields while retaining canonical
+physical backing types, reference permissions and separate logical bounds.
 
 ## Tests to develop with the reference
 

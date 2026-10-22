@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct Tail<T:?Sized>{head:u32,v:T}const R:&Tail<[u8]>=&Tail{head:37,v:[1u8,2]};const fn take(r:&Tail<[u8]>)->u32{let head=r.head;let value=match &r.v{[a,b]=>*a+*b,_=>0};head+value as u32}fn main(){check(take(R)==40);}
