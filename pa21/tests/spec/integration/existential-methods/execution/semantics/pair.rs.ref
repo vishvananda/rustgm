@@ -38,13 +38,13 @@ type 35 opaque id=0 arguments=[type:11]
 type 36 tuple [35,34]
 type 37 function binders=0 parameters=[] result=36 unsafe=false
 type 38 function-item def=17 signature=30 arguments=[type:11]
-def 13 type=21 name="check" source=0:19
-def 14 type=23 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:46
-def 17 type=28 name="make" source=0:45
-def 18 type=11 name="Self" source=0:65
-def 19 type=31 name="make" source=0:64
-def 20 type=33 name="main" source=0:96
+def 13 type=21 name="check" source=0:13
+def 14 type=23 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:31
+def 17 type=28 name="make" source=0:30
+def 18 type=11 name="Self" source=0:42
+def 19 type=31 name="make" source=0:41
+def 20 type=33 name="main" source=0:63
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -62,30 +62,30 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 38 type=2 name="ok" source=0:2
-def 39 type=11 name="x" source=0:22
-def 47 type=29 name="pair" source=0:68
-associated-owner 0 kind=trait self-def=16 self=19 source=0:46 trait=15 unsafe=false name="Make"
-associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:65 unsafe=false
+def 38 type=2 name="ok" source=0:0
+def 39 type=11 name="x" source=0:14
+def 47 type=29 name="pair" source=0:43
+associated-owner 0 kind=trait self-def=16 self=19 source=0:31 trait=15 unsafe=false name="Make"
+associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:42 unsafe=false
 associated-member def=17 owner=0
 associated-member def=19 owner=1
 parameter owner=16 binding=16 argument=type:19 default=-
-predicate owner=15 source=0:46 subject=19 bound=trait:15 arguments=[]
-impl owner=18 source=0:65 subject=11 bound=trait:15 arguments=[]
+predicate owner=15 source=0:31 subject=19 bound=trait:15 arguments=[]
+impl owner=18 source=0:42 subject=11 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
-trait-path source=0:76 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:71
-implementation-use source=0:76 owner=18 arguments=[]
-opaque 0 owner=17 source=0:39 application=24 hidden=- role=trait-result storage-proof=pending
+trait-path source=0:47 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:44
+implementation-use source=0:47 owner=18 arguments=[]
+opaque 0 owner=17 source=0:25 application=24 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=0 index=0 subject=24 bound=copy
-opaque 1 owner=17 source=0:43 application=25 hidden=- role=trait-result storage-proof=pending
+opaque 1 owner=17 source=0:28 application=25 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=1 index=0 subject=25 bound=copy
 opaque-implementation owner=18 id=0 type=11 parent-regions=0 regions=[]
 opaque-implementation owner=18 id=1 type=2 parent-regions=0 regions=[]
-proof 0 body=0:95 source=0:76 pending
+proof 0 body=0:62 source=0:47 pending
 proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=1
 proof-block proof=0 index=1 scope=1 aliases=false source=0 start=1 end=1
-proof 1 body=0:95 source=0:76 pending
+proof 1 body=0:62 source=0:47 pending
 proof-scope proof=1 scope=1 parent=0 regions=0 depth=1
 proof-block proof=1 index=0 scope=0 aliases=false source=0 start=1 end=1
 proof-block proof=1 index=1 scope=1 aliases=false source=0 start=1 end=1

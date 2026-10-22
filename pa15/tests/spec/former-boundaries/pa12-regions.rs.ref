@@ -1,9 +1,9 @@
 regions-crate 1
-body 0 source=0:8
+body 0 source=0:6
   region g0 static
   region g1 local
 end-body
-body 1 source=0:7
+body 1 source=0:5
   universal b0=g2
   region g0 static
   region g1 local

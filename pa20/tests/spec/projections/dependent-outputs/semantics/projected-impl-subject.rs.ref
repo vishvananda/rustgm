@@ -35,23 +35,23 @@ type 32 function-item def=27 signature=30
 type 33 function binders=0 parameters=[] result=1 unsafe=false
 type 34 function-item def=32 signature=33
 type 35 function-item def=17 signature=30 arguments=[type:24]
-def 13 type=27 name="check" source=0:19
-def 14 type=29 name="fail" source=0:35
-def 16 type=20 name="Self" source=0:40
-def 17 type=31 name="value" source=0:39
-def 18 type=19 name="X" source=0:45
-def 19 type=19 name="X" source=0:45
-def 21 type=21 name="Self" source=0:47
-def 22 type=25 name="Out" source=0:46
-def 24 type=22 name="Self" source=0:52
-def 25 type=16 name="C" source=0:51
-def 26 type=24 name="Self" source=0:75
-def 27 type=32 name="value" source=0:74
-def 28 type=11 name="Self" source=0:93
-def 29 type=16 name="C" source=0:92
-def 30 type=12 name="Self" source=0:104
-def 31 type=11 name="Out" source=0:103
-def 32 type=34 name="main" source=0:123
+def 13 type=27 name="check" source=0:13
+def 14 type=29 name="fail" source=0:22
+def 16 type=20 name="Self" source=0:25
+def 17 type=31 name="value" source=0:24
+def 18 type=19 name="X" source=0:28
+def 19 type=19 name="X" source=0:28
+def 21 type=21 name="Self" source=0:30
+def 22 type=25 name="Out" source=0:29
+def 24 type=22 name="Self" source=0:33
+def 25 type=16 name="C" source=0:32
+def 26 type=24 name="Self" source=0:47
+def 27 type=32 name="value" source=0:46
+def 28 type=11 name="Self" source=0:56
+def 29 type=16 name="C" source=0:55
+def 30 type=12 name="Self" source=0:61
+def 31 type=11 name="Out" source=0:60
+def 32 type=34 name="main" source=0:76
 def 33 type=2 name="bool"
 def 34 type=3 name="char"
 def 35 type=4 name="str"
@@ -69,15 +69,15 @@ def 46 type=15 name="u128"
 def 47 type=16 name="usize"
 def 48 type=17 name="f32"
 def 49 type=18 name="f64"
-def 50 type=16 name="N" source=0:44
-def 51 type=2 name="ok" source=0:2
-def 52 type=11 name="x" source=0:22
-associated-owner 0 kind=trait self-def=16 self=20 source=0:40 trait=15 unsafe=false name="B"
-associated-owner 1 kind=trait self-def=21 self=21 source=0:47 trait=20 unsafe=false name="Identity"
-associated-owner 2 kind=trait self-def=24 self=22 source=0:52 trait=23 unsafe=false name="A"
-associated-owner 3 kind=trait-impl self-def=26 self=24 source=0:75 unsafe=false
-associated-owner 4 kind=trait-impl self-def=28 self=11 source=0:93 unsafe=false
-associated-owner 5 kind=trait-impl self-def=30 self=12 source=0:104 unsafe=false
+def 50 type=16 name="N" source=0:27
+def 51 type=2 name="ok" source=0:0
+def 52 type=11 name="x" source=0:14
+associated-owner 0 kind=trait self-def=16 self=20 source=0:25 trait=15 unsafe=false name="B"
+associated-owner 1 kind=trait self-def=21 self=21 source=0:30 trait=20 unsafe=false name="Identity"
+associated-owner 2 kind=trait self-def=24 self=22 source=0:33 trait=23 unsafe=false name="A"
+associated-owner 3 kind=trait-impl self-def=26 self=24 source=0:47 unsafe=false
+associated-owner 4 kind=trait-impl self-def=28 self=11 source=0:56 unsafe=false
+associated-owner 5 kind=trait-impl self-def=30 self=12 source=0:61 unsafe=false
 associated-member def=17 owner=0
 associated-member def=22 owner=1
 associated-member def=25 owner=2
@@ -88,18 +88,18 @@ parameter owner=16 binding=16 argument=type:20 default=-
 parameter owner=18 binding=50 argument=const-parameter:18:0 default=-
 parameter owner=21 binding=21 argument=type:21 default=-
 parameter owner=24 binding=24 argument=type:22 default=-
-predicate owner=15 source=0:40 subject=20 bound=trait:15 arguments=[]
-predicate owner=20 source=0:47 subject=21 bound=trait:20 arguments=[]
-predicate owner=23 source=0:52 subject=22 bound=trait:23 arguments=[]
-impl owner=30 source=0:104 subject=12 bound=trait:20 arguments=[]
+predicate owner=15 source=0:25 subject=20 bound=trait:15 arguments=[]
+predicate owner=20 source=0:30 subject=21 bound=trait:20 arguments=[]
+predicate owner=23 source=0:33 subject=22 bound=trait:23 arguments=[]
+impl owner=30 source=0:61 subject=12 bound=trait:20 arguments=[]
 impl-type owner=30 declaration=22 definition=31
-impl owner=28 source=0:93 subject=11 bound=trait:23 arguments=[]
-impl owner=26 source=0:75 subject=24 bound=trait:15 arguments=[]
+impl owner=28 source=0:56 subject=11 bound=trait:23 arguments=[]
+impl owner=26 source=0:47 subject=24 bound=trait:15 arguments=[]
 impl-method owner=26 declaration=17 selected=27 default=false
-trait-path source=0:64 method=25 trait=23 qualifier=explicit origin=ordinary subject-source=0:59
-trait-path source=0:116 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:111
-implementation-use source=0:64 owner=28 arguments=[]
-implementation-use source=0:116 owner=26 arguments=[]
+trait-path source=0:39 method=25 trait=23 qualifier=explicit origin=ordinary subject-source=0:36
+trait-path source=0:69 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:66
+implementation-use source=0:39 owner=28 arguments=[]
+implementation-use source=0:69 owner=26 arguments=[]
 associated-type def=22 type=25
 result-contract def=22 projection=25
 result-bound def=22 index=0 subject=25 bound=sized
@@ -107,8 +107,7 @@ associated-constant def=25 type=16
 associated-constant def=29 type=16
 associated-type def=31 type=11
 impl-constant owner=28 declaration=25 selected=29 default=false
-constant-use source=0:64 definition=25 arguments=[type:11]
+constant-use source=0:39 definition=25 arguments=[type:11]
 constant-dispatch declaration=25 arguments=[type:11] selected=29 arguments=[]
-normalized-node source=0:86 original=23 result=11
-normalized-node source=0:87 original=23 result=11
-eof owners=6 members=6 parameters=4 predicates=3 impls=3 calls=0 paths=2 impl-uses=2 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=2 normalized-definitions=0
+normalized-node source=0:52 original=23 result=11
+eof owners=6 members=6 parameters=4 predicates=3 impls=3 calls=0 paths=2 impl-uses=2 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=1 normalized-definitions=0

@@ -36,12 +36,12 @@ type 33 aggregate def=15 arguments=[type:26]
 type 34 function binders=0 parameters=[33,26] result=1 unsafe=false
 type 35 function-item def=18 signature=34 arguments=[type:26]
 def 14 type=21 name="Self" source=0:0
-def 15 type=20 name="S" source=0:6
-def 16 type=32 name="S" source=0:6
-def 17 type=23 name="Self" source=0:31
-def 18 type=25 name="run" source=0:30
-def 19 type=28 name="f" source=0:60
-def 20 type=30 name="main" source=0:62
+def 15 type=20 name="S" source=0:4
+def 16 type=32 name="S" source=0:4
+def 17 type=23 name="Self" source=0:19
+def 18 type=25 name="run" source=0:18
+def 19 type=28 name="f" source=0:38
+def 20 type=30 name="main" source=0:40
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -60,21 +60,21 @@ def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
 def 38 type=19 name="T" source=0:1
-def 39 type=22 name="T" source=0:10
-def 40 type=26 name="T" source=0:35
-def 41 type=23 name="self" source=0:20
-def 42 type=22 name="x" source=0:24
-def 43 type=26 name="x" source=0:38
-def 44 type=33 name="s" source=0:45
+def 39 type=22 name="T" source=0:7
+def 40 type=26 name="T" source=0:22
+def 41 type=23 name="self" source=0:12
+def 42 type=22 name="x" source=0:14
+def 43 type=26 name="x" source=0:23
+def 44 type=33 name="s" source=0:26
 associated-owner 0 kind=trait self-def=14 self=21 source=0:0 trait=13 unsafe=false name="A"
-associated-owner 1 kind=inherent self-def=17 self=23 source=0:31 unsafe=false
+associated-owner 1 kind=inherent self-def=17 self=23 source=0:19 unsafe=false
 associated-member def=18 owner=1 receiver=23 references=0
 parameter owner=14 binding=14 argument=type:21 default=-
 parameter owner=15 binding=38 argument=type:19 default=-
 parameter owner=17 binding=39 argument=type:22 default=-
 parameter owner=19 binding=40 argument=type:26 default=-
 predicate owner=13 source=0:0 subject=21 bound=trait:13 arguments=[]
-predicate owner=17 source=0:9 subject=22 bound=trait:13 arguments=[]
-predicate owner=19 source=0:34 subject=26 bound=trait:13 arguments=[]
-method-call source=0:58 method=18 callable=35 dereferences=0 borrow=- receiver=33 origin=inherent
+predicate owner=17 source=0:6 subject=22 bound=trait:13 arguments=[]
+predicate owner=19 source=0:21 subject=26 bound=trait:13 arguments=[]
+method-call source=0:36 method=18 callable=35 dereferences=0 borrow=- receiver=33 origin=inherent
 eof owners=2 members=1 parameters=4 predicates=3 impls=0 calls=1 paths=0 impl-uses=0

@@ -25,20 +25,20 @@ type 22 function binders=1 parameters=[21] result=1 unsafe=false
 type 23 function-item def=14 signature=22
 type 24 array element=6 length=2
 type 25 reference mutable=false region=region:1 referent=24
-root 0:24 pattern=0
-root 0:27 pattern=1
-pattern 0 source=0:24 input=21 deref mutable=false implicit=false pattern=2
-pattern 1 source=0:27 input=21 wildcard
-pattern 2 source=0:24 input=19 slice minimum=2 exact=true fields=0:2
-pattern 3 source=0:24 input=6 range=0
-pattern 4 source=0:24 input=6 range=1
+root 0:15 pattern=0
+root 0:18 pattern=1
+pattern 0 source=0:15 input=21 deref mutable=false implicit=false pattern=2
+pattern 1 source=0:18 input=21 wildcard
+pattern 2 source=0:15 input=19 slice minimum=2 exact=true fields=0:2
+pattern 3 source=0:15 input=6 range=0
+pattern 4 source=0:15 input=6 range=1
 field 0 index=0 pattern=3
 field 1 index=1 pattern=4
 range 0 ranks=32766:32766
 range 1 ranks=32775:32775
-match 0 source=0:30 input=0:21 arms=0:2 exhaustive=true uninhabited=false work=1381
-arm 0 source=0:26 pattern=0 guard=- useful=true value=0:25
-arm 1 source=0:29 pattern=1 guard=- useful=true value=0:28
-region-var region:1 body=0:9 source=0:9 origin=expression-borrow pending
-region-coercion body=0:9 source=0:9 actual=25 expected=20 kind=array-to-slice pending
+match 0 source=0:21 input=0:14 arms=0:2 exhaustive=true uninhabited=false work=1381
+arm 0 source=0:17 pattern=0 guard=- useful=true value=0:16
+arm 1 source=0:20 pattern=1 guard=- useful=true value=0:19
+region-var region:1 body=0:7 source=0:7 origin=expression-borrow pending
+region-coercion body=0:7 source=0:7 actual=25 expected=20 kind=array-to-slice pending
 eof roots=2 patterns=5 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=1381 region-vars=1 region-equalities=0 conditions=0 chains=0

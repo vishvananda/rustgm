@@ -30,13 +30,13 @@ type 27 function binders=0 parameters=[26] result=1 unsafe=false
 type 28 function-item def=17 signature=27
 type 29 function binders=0 parameters=[] result=1 unsafe=false
 type 30 function-item def=21 signature=29
-def 13 type=23 name="check" source=0:19
-def 14 type=25 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:53
-def 17 type=28 name="f" source=0:52
-def 19 type=20 name="Self" source=0:55
-def 20 type=21 name="Out" source=0:54
-def 21 type=30 name="main" source=0:57
+def 13 type=23 name="check" source=0:13
+def 14 type=25 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:34
+def 17 type=28 name="f" source=0:33
+def 19 type=20 name="Self" source=0:36
+def 20 type=21 name="Out" source=0:35
+def 21 type=30 name="main" source=0:38
 def 22 type=2 name="bool"
 def 23 type=3 name="char"
 def 24 type=4 name="str"
@@ -54,21 +54,20 @@ def 35 type=15 name="u128"
 def 36 type=16 name="usize"
 def 37 type=17 name="f32"
 def 38 type=18 name="f64"
-def 39 type=2 name="ok" source=0:2
-def 40 type=11 name="x" source=0:22
-def 41 type=26 name="x" source=0:38
-associated-owner 0 kind=trait self-def=16 self=19 source=0:53 trait=15 unsafe=false name="A"
-associated-owner 1 kind=trait self-def=19 self=20 source=0:55 trait=18 unsafe=false name="B"
+def 39 type=2 name="ok" source=0:0
+def 40 type=11 name="x" source=0:14
+def 41 type=26 name="x" source=0:23
+associated-owner 0 kind=trait self-def=16 self=19 source=0:34 trait=15 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=19 self=20 source=0:36 trait=18 unsafe=false name="B"
 associated-member def=17 owner=0
 associated-member def=20 owner=1
 parameter owner=16 binding=16 argument=type:19 default=-
 parameter owner=19 binding=19 argument=type:20 default=-
-predicate owner=15 source=0:53 subject=19 bound=trait:15 arguments=[]
-predicate owner=17 source=0:49 subject=19 bound=trait:18 arguments=[]
-predicate owner=18 source=0:55 subject=20 bound=trait:18 arguments=[]
+predicate owner=15 source=0:34 subject=19 bound=trait:15 arguments=[]
+predicate owner=17 source=0:30 subject=19 bound=trait:18 arguments=[]
+predicate owner=18 source=0:36 subject=20 bound=trait:18 arguments=[]
 associated-type def=20 type=21
 result-contract def=20 projection=21
 result-bound def=20 index=0 subject=21 bound=sized
-normalized-node source=0:41 original=26 result=26
-normalized-node source=0:42 original=26 result=26
-eof owners=2 members=2 parameters=2 predicates=3 impls=0 calls=0 paths=0 impl-uses=0 type-members=1 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0
+normalized-node source=0:26 original=26 result=26
+eof owners=2 members=2 parameters=2 predicates=3 impls=0 calls=0 paths=0 impl-uses=0 type-members=1 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0

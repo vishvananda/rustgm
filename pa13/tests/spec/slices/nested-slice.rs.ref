@@ -24,25 +24,25 @@ type 21 slice element=20
 type 22 reference mutable=false region=bound:0:0 referent=21
 type 23 function binders=2 parameters=[22] result=1 unsafe=false
 type 24 function-item def=13 signature=23
-root 0:13 pattern=0
-root 0:18 pattern=2
-root 0:25 pattern=6
-pattern 0 source=0:13 input=22 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:13 input=21 slice minimum=0 exact=true fields=0:0
-pattern 2 source=0:18 input=22 deref mutable=false implicit=true pattern=3
-pattern 3 source=0:18 input=21 slice minimum=1 exact=false fields=0:1
-pattern 4 source=0:16 input=20 deref mutable=false implicit=true pattern=5
-pattern 5 source=0:16 input=19 slice minimum=0 exact=true fields=1:1
-pattern 6 source=0:25 input=22 deref mutable=false implicit=true pattern=7
-pattern 7 source=0:25 input=21 slice minimum=1 exact=false fields=1:2
-pattern 8 source=0:23 input=20 deref mutable=false implicit=true pattern=9
-pattern 9 source=0:23 input=19 slice minimum=1 exact=false fields=2:3
-pattern 10 source=0:21 input=2 wildcard
+root 0:8 pattern=0
+root 0:13 pattern=2
+root 0:20 pattern=6
+pattern 0 source=0:8 input=22 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:8 input=21 slice minimum=0 exact=true fields=0:0
+pattern 2 source=0:13 input=22 deref mutable=false implicit=true pattern=3
+pattern 3 source=0:13 input=21 slice minimum=1 exact=false fields=0:1
+pattern 4 source=0:11 input=20 deref mutable=false implicit=true pattern=5
+pattern 5 source=0:11 input=19 slice minimum=0 exact=true fields=1:1
+pattern 6 source=0:20 input=22 deref mutable=false implicit=true pattern=7
+pattern 7 source=0:20 input=21 slice minimum=1 exact=false fields=1:2
+pattern 8 source=0:18 input=20 deref mutable=false implicit=true pattern=9
+pattern 9 source=0:18 input=19 slice minimum=1 exact=false fields=2:3
+pattern 10 source=0:16 input=2 wildcard
 field 0 index=0 pattern=4
 field 1 index=0 pattern=8
 field 2 index=0 pattern=10
-match 0 source=0:28 input=0:12 arms=0:3 exhaustive=true uninhabited=false work=3403
-arm 0 source=0:15 pattern=0 guard=- useful=true value=0:14
-arm 1 source=0:20 pattern=2 guard=- useful=true value=0:19
-arm 2 source=0:27 pattern=6 guard=- useful=true value=0:26
+match 0 source=0:23 input=0:7 arms=0:3 exhaustive=true uninhabited=false work=3403
+arm 0 source=0:10 pattern=0 guard=- useful=true value=0:9
+arm 1 source=0:15 pattern=2 guard=- useful=true value=0:14
+arm 2 source=0:22 pattern=6 guard=- useful=true value=0:21
 eof roots=3 patterns=11 fields=3 alternatives=0 ranges=0 matches=1 arms=3 coverage-work=3403 region-vars=0 region-equalities=0 conditions=0 chains=0

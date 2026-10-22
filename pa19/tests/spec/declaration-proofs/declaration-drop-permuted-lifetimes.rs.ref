@@ -40,12 +40,12 @@ type 37 aggregate def=16 arguments=[region:bound:1:0,region:bound:1:1,type:19,ty
 type 38 function binders=0 parameters=[35,36] result=37 unsafe=false
 type 39 function-item def=17 signature=34
 def 14 type=22 name="Self" source=0:1
-def 15 type=26 name="Self" source=0:14
-def 16 type=21 name="S" source=0:31
-def 17 type=39 name="S" source=0:31
-def 18 type=25 name="Self" source=0:68
-def 19 type=29 name="drop" source=0:67
-def 20 type=31 name="main" source=0:70
+def 15 type=26 name="Self" source=0:11
+def 16 type=21 name="S" source=0:24
+def 17 type=39 name="S" source=0:24
+def 18 type=25 name="Self" source=0:52
+def 19 type=29 name="drop" source=0:51
+def 20 type=31 name="main" source=0:54
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -64,14 +64,14 @@ def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
 def 40 type=26 name="T" source=0:5
-def 43 type=19 name="T" source=0:17
-def 44 type=20 name="U" source=0:18
-def 47 type=23 name="V" source=0:39
-def 48 type=24 name="W" source=0:45
-def 53 type=27 name="self" source=0:63
+def 43 type=19 name="T" source=0:14
+def 44 type=20 name="U" source=0:15
+def 47 type=23 name="V" source=0:32
+def 48 type=24 name="W" source=0:38
+def 53 type=27 name="self" source=0:47
 associated-owner 0 kind=trait self-def=14 self=22 source=0:1 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=15 self=26 source=0:14 unsafe=false
-associated-owner 2 kind=trait-impl self-def=18 self=25 source=0:68 unsafe=false
+associated-owner 1 kind=trait-impl self-def=15 self=26 source=0:11 unsafe=false
+associated-owner 2 kind=trait-impl self-def=18 self=25 source=0:52 unsafe=false
 associated-member def=19 owner=2 receiver=27 references=1
 parameter owner=13 binding=38 argument=region:bound:0:0 default=-
 parameter owner=14 binding=14 argument=type:22 default=-
@@ -87,13 +87,13 @@ parameter owner=18 binding=47 argument=type:23 default=-
 parameter owner=18 binding=48 argument=type:24 default=-
 predicate owner=13 source=0:1 subject=22 bound=trait:13 arguments=[region:bound:0:0]
 predicate owner=15 source=0:4 subject=26 bound=outlives:bound:0:0
-predicate owner=18 source=0:38 subject=23 bound=trait:13 arguments=[region:bound:0:0]
-predicate owner=18 source=0:44 subject=24 bound=trait:13 arguments=[region:bound:0:1]
-impl owner=15 source=0:14 subject=26 bound=trait:13 arguments=[region:bound:0:0]
-region-var region:1 body=0:66 source=0:66 origin=universal-alias pending
-region-var region:2 body=0:66 source=0:66 origin=universal-alias pending
-region-var region:3 body=0:66 source=0:66 origin=universal-alias pending
-region-equal body=0:66 left=region:1 right=bound:0:0
-region-equal body=0:66 left=region:2 right=bound:0:1
-region-equal body=0:66 left=region:3 right=bound:0:2
+predicate owner=18 source=0:31 subject=23 bound=trait:13 arguments=[region:bound:0:0]
+predicate owner=18 source=0:37 subject=24 bound=trait:13 arguments=[region:bound:0:1]
+impl owner=15 source=0:11 subject=26 bound=trait:13 arguments=[region:bound:0:0]
+region-var region:1 body=0:50 source=0:50 origin=universal-alias pending
+region-var region:2 body=0:50 source=0:50 origin=universal-alias pending
+region-var region:3 body=0:50 source=0:50 origin=universal-alias pending
+region-equal body=0:50 left=region:1 right=bound:0:0
+region-equal body=0:50 left=region:2 right=bound:0:1
+region-equal body=0:50 left=region:3 right=bound:0:2
 eof owners=3 members=1 parameters=12 predicates=4 impls=1 calls=0 paths=0 impl-uses=0

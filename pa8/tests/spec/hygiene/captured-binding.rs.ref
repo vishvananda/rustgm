@@ -1,33 +1,27 @@
 expanded-crate 1
-macro 0 name=13 module=0 context=0 introduction=0 source=0:0 rules=1 local-inner=false
-invocation 0 context=1 parent=0 macro=0 source=0:6 original=52:57 generated=62:74 rule=0 parser-calls=0
+macro 0 name=2 module=0 context=0 introduction=0 source=0:0 rules=1 local-inner=false
+invocation 0 context=1 parent=0 macro=0 source=0:3 original=52:57 generated=62:74 rule=0 parser-calls=0
 file 0
-active [0,1,2,3,6,7,8,9,10,11,12,15,16,17]
+active [0,1,3,4,5,6,7,8,9,10,11]
 node 0 0 39 item 0
 item 0 "m" private [] [] macro-rules 0
 node 1 48 51 name "i32"
-node 2 48 51 path false [1]
-node 3 48 51 type Path [2]
-node 4 52 53 name "m"
-node 5 52 53 path false [4]
-node 6 62 73 expansion [17] tail=-
-node 7 52 58 statement 6
-node 8 58 59 name "x"
-node 9 58 59 path false [8]
-node 10 51 60 block Plain [7] 9
-node 11 40 60 item 1
-item 1 "f" private [] [] function false false false false - [] 3 10
-node 12 0 60 crate [0,11]
-node 13 66 67 name "x"
-node 14 66 67 path false [13]
-node 15 66 67 binding false false "x" -
-node 16 70 71 literal 0
+node 2 52 53 name "m"
+node 3 62 73 expansion [11] tail=-
+node 4 52 58 statement 3
+node 5 58 59 name "x"
+node 6 51 60 block Plain [4] 5
+node 7 40 60 item 1
+item 1 "f" private [] [] function false false false false - [] 1 6
+node 8 0 60 crate [0,7]
+node 9 66 67 binding false false "x" -
+node 10 70 71 literal 0
 value 0 integer 70 71 infer 2
-node 17 62 73 let 15 - 16 -
-node 18 62 73 expansion [17] tail=-
+node 11 62 73 let 9 - 10 -
+node 12 62 73 expansion [11] tail=-
 capture 0 14 39 14 "{($x:ident)=>{let $x=2;}}"
 capture 1 54 57 2 "(x)"
-root 12
+root 8
 eof 74
 origin 62:65 source=0:28:31 context=1
 origin 66:67 source=0:55:56 context=inherit
@@ -36,28 +30,28 @@ origin 70:71 source=0:35:36 context=1
 origin 72:73 source=0:36:37 context=1
 end-file 0
 name 0 "crate"
-name 1 "cfg"
-name 2 "line"
-name 3 "column"
-name 4 "file"
-name 5 "module_path"
-name 6 "stringify"
-name 7 "concat"
-name 8 "compile_error"
-name 9 "env"
-name 10 "include_str"
-name 11 "include_bytes"
-name 12 "include"
-name 13 "m"
-name 14 "x"
-name 15 "let"
-name 16 "f"
-name 17 "bool"
-name 18 "char"
-name 19 "str"
-name 20 "i8"
-name 21 "i16"
-name 22 "i32"
+name 1 "i32"
+name 2 "m"
+name 3 "x"
+name 4 "cfg"
+name 5 "line"
+name 6 "column"
+name 7 "file"
+name 8 "module_path"
+name 9 "stringify"
+name 10 "concat"
+name 11 "compile_error"
+name 12 "env"
+name 13 "include_str"
+name 14 "include_bytes"
+name 15 "include"
+name 16 "let"
+name 17 "f"
+name 18 "bool"
+name 19 "char"
+name 20 "str"
+name 21 "i8"
+name 22 "i16"
 name 23 "i64"
 name 24 "i128"
 name 25 "isize"
@@ -74,26 +68,26 @@ scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
 scope 2 module=0 barrier=false parent=1
 def 0 type module name=0 scope=0 access=public members=0
-def 1 macro builtin-macro name=1 scope=0 access=public
-def 2 macro builtin-macro name=2 scope=0 access=public
-def 3 macro builtin-macro name=3 scope=0 access=public
-def 4 macro builtin-macro name=4 scope=0 access=public
-def 5 macro builtin-macro name=5 scope=0 access=public
-def 6 macro builtin-macro name=6 scope=0 access=public
-def 7 macro builtin-macro name=7 scope=0 access=public
-def 8 macro builtin-macro name=8 scope=0 access=public
-def 9 macro builtin-macro name=9 scope=0 access=public
-def 10 macro builtin-macro name=10 scope=0 access=public
-def 11 macro builtin-macro name=11 scope=0 access=public
-def 12 macro builtin-macro name=12 scope=0 access=public
-def 13 macro macro name=13 scope=0 access=module:0 source=0:0
-def 14 value function name=16 scope=0 access=module:0 source=0:11
-def 15 type primitive name=17 scope=0 access=public
-def 16 type primitive name=18 scope=0 access=public
-def 17 type primitive name=19 scope=0 access=public
-def 18 type primitive name=20 scope=0 access=public
-def 19 type primitive name=21 scope=0 access=public
-def 20 type primitive name=22 scope=0 access=public
+def 1 macro builtin-macro name=4 scope=0 access=public
+def 2 macro builtin-macro name=5 scope=0 access=public
+def 3 macro builtin-macro name=6 scope=0 access=public
+def 4 macro builtin-macro name=7 scope=0 access=public
+def 5 macro builtin-macro name=8 scope=0 access=public
+def 6 macro builtin-macro name=9 scope=0 access=public
+def 7 macro builtin-macro name=10 scope=0 access=public
+def 8 macro builtin-macro name=11 scope=0 access=public
+def 9 macro builtin-macro name=12 scope=0 access=public
+def 10 macro builtin-macro name=13 scope=0 access=public
+def 11 macro builtin-macro name=14 scope=0 access=public
+def 12 macro builtin-macro name=15 scope=0 access=public
+def 13 macro macro name=2 scope=0 access=module:0 source=0:0
+def 14 value function name=17 scope=0 access=module:0 source=0:7
+def 15 type primitive name=18 scope=0 access=public
+def 16 type primitive name=19 scope=0 access=public
+def 17 type primitive name=20 scope=0 access=public
+def 18 type primitive name=21 scope=0 access=public
+def 19 type primitive name=22 scope=0 access=public
+def 20 type primitive name=1 scope=0 access=public
 def 21 type primitive name=23 scope=0 access=public
 def 22 type primitive name=24 scope=0 access=public
 def 23 type primitive name=25 scope=0 access=public
@@ -105,9 +99,9 @@ def 28 type primitive name=30 scope=0 access=public
 def 29 type primitive name=31 scope=0 access=public
 def 30 type primitive name=32 scope=0 access=public
 def 31 type primitive name=33 scope=0 access=public
-def 32 value local name=14 scope=2 access=module:0 source=0:15
-binding scope=0 value name=16 def=14 Direct ambiguous=false access=module:0
-ref 0:2 scope=1 type def=20
-ref 0:9 scope=2 value def=32
+def 32 value local name=3 scope=2 access=module:0 source=0:9
+binding scope=0 value name=17 def=14 Direct ambiguous=false access=module:0
+ref 0:1 scope=1 type def=20
+ref 0:5 scope=2 value def=32
 eof files=1 modules=1 definitions=33 references=2
 end-expanded-crate files 1 modules 1 macros 1 invocations 1 captures 0 definitions 33 references 2

@@ -38,10 +38,10 @@ type 35 aggregate def=15 arguments=[type:34]
 type 36 function binders=0 parameters=[34] result=35 unsafe=false
 type 37 function-item def=16 signature=36 arguments=[type:34]
 def 14 type=21 name="Self" source=0:0
-def 15 type=20 name="Boxed" source=0:9
-def 16 type=31 name="Boxed" source=0:9
-def 17 type=27 name="f" source=0:51
-def 18 type=29 name="main" source=0:53
+def 15 type=20 name="Boxed" source=0:6
+def 16 type=31 name="Boxed" source=0:6
+def 17 type=27 name="f" source=0:36
+def 18 type=29 name="main" source=0:38
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -59,21 +59,21 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 36 type=19 name="T" source=0:4
-def 39 type=22 name="x" source=0:18
+def 36 type=19 name="T" source=0:3
+def 39 type=22 name="x" source=0:13
 associated-owner 0 kind=trait self-def=14 self=21 source=0:0 trait=13 unsafe=false name="Flag"
 parameter owner=14 binding=14 argument=type:21 default=-
 parameter owner=15 binding=36 argument=type:19 default=-
 predicate owner=13 source=0:0 subject=21 bound=trait:13 arguments=[]
-predicate owner=15 source=0:3 subject=19 bound=trait:13 arguments=[]
-predicate owner=17 source=0:32 subject=23 bound=trait:13 arguments=[]
-region-var region:1 body=0:50 source=0:50 origin=universal-alias pending
-region-var region:2 body=0:50 source=0:50 origin=universal-alias pending
-region-equal body=0:50 left=region:1 right=bound:0:0
-region-equal body=0:50 left=region:2 right=bound:0:1
-region-equal body=0:50 left=region:1 right=region:2
-region-equal body=0:50 left=region:1 right=region:2
-region-equal body=0:50 left=region:1 right=region:2
-region-coercion body=0:50 source=0:47 actual=22 expected=34 kind=same-shape pending
-region-coercion body=0:50 source=0:48 actual=35 expected=32 kind=same-shape pending
+predicate owner=15 source=0:2 subject=19 bound=trait:13 arguments=[]
+predicate owner=17 source=0:22 subject=23 bound=trait:13 arguments=[]
+region-var region:1 body=0:35 source=0:35 origin=universal-alias pending
+region-var region:2 body=0:35 source=0:35 origin=universal-alias pending
+region-equal body=0:35 left=region:1 right=bound:0:0
+region-equal body=0:35 left=region:2 right=bound:0:1
+region-equal body=0:35 left=region:1 right=region:2
+region-equal body=0:35 left=region:1 right=region:2
+region-equal body=0:35 left=region:1 right=region:2
+region-coercion body=0:35 source=0:32 actual=22 expected=34 kind=same-shape pending
+region-coercion body=0:35 source=0:33 actual=35 expected=32 kind=same-shape pending
 eof owners=1 members=0 parameters=2 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

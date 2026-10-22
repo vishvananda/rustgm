@@ -1,13 +1,12 @@
-active [0,1,2,3,4,5]
+active [0,1,2,3,4]
 node 0 0 37 item 0
 item 0 "ignore" private [] [] macro-rules 0
 node 1 38 44 name "ignore"
-node 2 38 44 path false [1]
-node 3 38 68 macro 2 1
-node 4 38 69 item 1
-item 1 - private [] [] macro-invocation 3
-node 5 0 69 crate [0,4]
+node 2 38 68 macro 1 1
+node 3 38 69 item 1
+item 1 - private [] [] macro-invocation 2
+node 4 0 69 crate [0,3]
 capture 0 20 37 11 "{($($t:tt)*)=>{}}"
 capture 1 45 68 8 "(#[cfg(bad())] 1suffix)"
-root 5
+root 4
 eof 70

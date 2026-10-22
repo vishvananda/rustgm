@@ -24,9 +24,9 @@ type 21 function binders=0 parameters=[20] result=1 unsafe=false
 type 22 function-item def=15 signature=21
 type 23 function binders=0 parameters=[] result=1 unsafe=false
 type 24 function-item def=16 signature=23
-def 14 type=19 name="Self" source=0:4
-def 15 type=22 name="f" source=0:30
-def 16 type=24 name="main" source=0:32
+def 14 type=19 name="Self" source=0:2
+def 15 type=22 name="f" source=0:20
+def 16 type=24 name="main" source=0:22
 def 17 type=2 name="bool"
 def 18 type=3 name="char"
 def 19 type=4 name="str"
@@ -44,16 +44,16 @@ def 30 type=15 name="u128"
 def 31 type=16 name="usize"
 def 32 type=17 name="f32"
 def 33 type=18 name="f64"
-def 34 type=16 name="N" source=0:3
-def 35 type=16 name="N" source=0:8
-def 36 type=20 name="S" source=0:21
-def 37 type=20 name="x" source=0:24
-associated-owner 0 kind=trait self-def=14 self=19 source=0:4 trait=13 unsafe=false name="A"
+def 34 type=16 name="N" source=0:1
+def 35 type=16 name="N" source=0:4
+def 36 type=20 name="S" source=0:15
+def 37 type=20 name="x" source=0:16
+associated-owner 0 kind=trait self-def=14 self=19 source=0:2 trait=13 unsafe=false name="A"
 parameter owner=13 binding=34 argument=const-parameter:13:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=15 binding=35 argument=const-parameter:15:0 default=-
 parameter owner=15 binding=36 argument=type:20 default=-
-predicate owner=13 source=0:4 subject=19 bound=trait:13 arguments=[const-parameter:13:0]
-predicate owner=15 source=0:15 subject=20 bound=trait:13 arguments=[const-parameter:15:0]
-predicate owner=15 source=0:20 subject=20 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
+predicate owner=13 source=0:2 subject=19 bound=trait:13 arguments=[const-parameter:13:0]
+predicate owner=15 source=0:9 subject=20 bound=trait:13 arguments=[const-parameter:15:0]
+predicate owner=15 source=0:14 subject=20 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
 eof owners=1 members=0 parameters=4 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

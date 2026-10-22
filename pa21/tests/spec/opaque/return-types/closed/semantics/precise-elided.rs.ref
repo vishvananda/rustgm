@@ -25,13 +25,12 @@ type 22 function-item def=13 signature=21
 type 23 function binders=0 parameters=[] result=1 unsafe=false
 type 24 function-item def=14 signature=23
 type 25 opaque id=0 arguments=[region:region:1]
-type 26 reference mutable=false region=region:2 referent=11
-type 27 opaque id=0 arguments=[region:region:2]
-type 28 function binders=0 parameters=[26] result=27 unsafe=false
-type 29 opaque id=0 arguments=[region:region:4]
-type 30 reference mutable=false region=region:3 referent=11
-def 13 type=22 name="make" source=0:16
-def 14 type=24 name="main" source=0:31
+type 26 reference mutable=false region=region:1 referent=11
+type 27 function binders=0 parameters=[26] result=25 unsafe=false
+type 28 opaque id=0 arguments=[region:region:3]
+type 29 reference mutable=false region=region:2 referent=11
+def 13 type=22 name="make" source=0:11
+def 14 type=24 name="main" source=0:22
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -49,16 +48,16 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 32 type=19 name="x" source=0:2
-def 40 type=11 name="v" source=0:19
-region-var region:1 body=0:15 source=0:15 origin=universal-alias pending
-region-var region:2 body=0:30 source=0:28 origin=call-argument pending
-region-var region:3 body=0:30 source=0:27 origin=expression-borrow pending
-region-var region:4 body=0:30 source=0:28 origin=inference pending
-region-equal body=0:15 left=region:1 right=bound:0:0
-region-coercion body=0:30 source=0:27 actual=30 expected=26 kind=same-shape pending
-region-coercion body=0:30 source=0:28 actual=27 expected=29 kind=same-shape pending
-opaque 0 owner=13 source=0:13 application=20 hidden=11 role=defining-result storage-proof=pending
+def 32 type=19 name="x" source=0:0
+def 40 type=11 name="v" source=0:12
+region-var region:1 body=0:10 source=0:10 origin=universal-alias pending
+region-var region:1 body=0:21 source=0:19 origin=call-argument pending
+region-var region:2 body=0:21 source=0:18 origin=expression-borrow pending
+region-var region:3 body=0:21 source=0:19 origin=inference pending
+region-equal body=0:10 left=region:1 right=bound:0:0
+region-coercion body=0:21 source=0:18 actual=29 expected=26 kind=same-shape pending
+region-coercion body=0:21 source=0:19 actual=25 expected=28 kind=same-shape pending
+opaque 0 owner=13 source=0:8 application=20 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=20 bound=copy
 opaque-body-result def=13 type=11
 eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

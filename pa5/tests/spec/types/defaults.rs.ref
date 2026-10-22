@@ -1,23 +1,16 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+active [0,1,2,3,4,5,6,7,8,9,10]
 node 0 11 13 name "u8"
-node 1 11 13 path false [0]
-node 2 11 13 type Path [1]
-node 3 9 13 generic Type "T" - [] 2
-node 4 22 27 name "usize"
-node 5 22 27 path false [4]
-node 6 22 27 type Path [5]
-node 7 28 29 literal 0
+node 1 9 13 generic Type "T" - [] 0
+node 2 22 27 name "usize"
+node 3 28 29 literal 0
 value 0 integer 28 29 infer 4
-node 8 14 29 generic Const "N" 6 [] 7
-node 9 32 33 name "T"
-node 10 32 33 path false [9]
-node 11 32 33 type Path [10]
-node 12 34 35 name "N"
-node 13 34 35 path false [12]
-node 14 31 36 type Array [11,13]
-node 15 31 36 field-definition - private 14
-node 16 0 38 item 0
-item 0 "S" private [3,8] [] struct Tuple [15]
-node 17 0 38 crate [16]
-root 17
+node 4 14 29 generic Const "N" 2 [] 3
+node 5 32 33 name "T"
+node 6 34 35 name "N"
+node 7 31 36 type Array [5,6]
+node 8 31 36 field-definition - private 7
+node 9 0 38 item 0
+item 0 "S" private [1,4] [] struct Tuple [8]
+node 10 0 38 crate [9]
+root 10
 eof 39

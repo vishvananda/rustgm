@@ -1,15 +1,10 @@
-node 0 6 7 name "x"
-node 1 6 7 path false [0]
-node 2 6 7 binding false false "x" -
-node 3 9 12 name "i32"
-node 4 9 12 path false [3]
-node 5 9 12 type Path [4]
-node 6 6 12 parameter 2 5
-node 7 14 15 name "x"
-node 8 14 15 path false [7]
-node 9 18 19 literal 0
+node 0 6 7 binding false false "x" -
+node 1 9 12 name "i32"
+node 2 6 12 parameter 0 1
+node 3 14 15 name "x"
+node 4 18 19 literal 0
 value 0 integer 18 19 infer 1
-node 10 14 19 binary + 8 9
-node 11 0 19 closure true false [6] - 10
-root 11
+node 5 14 19 binary + 3 4
+node 6 0 19 closure true false [2] - 5
+root 6
 eof 20

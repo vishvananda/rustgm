@@ -1,16 +1,14 @@
 configured 1 false
 attribute-effect 1 0 0 root cfg=false
-active [2,3,4,5,6,7,8]
+active [2,3,4,5,6]
 node 0 23 24 generic Type "X" - [] -
 node 1 9 24 attributed 0 1 0
 node 2 25 26 generic Type "T" - [] -
 node 3 28 29 name "T"
-node 4 28 29 path false [3]
-node 5 28 29 type Path [4]
-node 6 28 29 field-definition - private 5
-node 7 0 31 item 0
-item 0 "S" private [1,2] [] struct Tuple [6]
-node 8 0 31 crate [7]
+node 4 28 29 field-definition - private 3
+node 5 0 31 item 0
+item 0 "S" private [1,2] [] struct Tuple [4]
+node 6 0 31 crate [5]
 attribute-capture 0 outer 9 22 "#[cfg(false)]"
-root 8
+root 6
 eof 32

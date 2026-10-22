@@ -62,11 +62,11 @@ type 59 reference mutable=false region=region:5 referent=11
 type 60 reference mutable=false region=region:6 referent=11
 def 14 type=19 name="Self" source=0:2
 def 15 type=20 name="Out" source=0:1
-def 16 type=11 name="Self" source=0:32
-def 17 type=23 name="Out" source=0:31
-def 18 type=26 name="choose" source=0:59
-def 19 type=37 name="f" source=0:109
-def 20 type=40 name="main" source=0:148
+def 16 type=11 name="Self" source=0:23
+def 17 type=23 name="Out" source=0:22
+def 18 type=26 name="choose" source=0:41
+def 19 type=37 name="f" source=0:76
+def 20 type=40 name="main" source=0:104
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -84,48 +84,47 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 44 type=27 name="T" source=0:61
-def 47 type=22 name="a" source=0:37
-def 48 type=11 name="n" source=0:112
-def 49 type=11 name="m" source=0:117
-def 50 type=46 name="g" source=0:122
+def 44 type=27 name="T" source=0:43
+def 47 type=22 name="a" source=0:26
+def 48 type=11 name="n" source=0:77
+def 49 type=11 name="m" source=0:80
+def 50 type=46 name="g" source=0:83
 associated-owner 0 kind=trait self-def=14 self=19 source=0:2 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:32 unsafe=false
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:23 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
 parameter owner=13 binding=38 argument=region:bound:0:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=19 binding=44 argument=type:27 default=-
 predicate owner=13 source=0:2 subject=19 bound=trait:13 arguments=[region:bound:0:0]
-predicate owner=19 source=0:104 forall=0
-predicate owner=19 source=0:101 forall=1
-impl owner=16 source=0:32 subject=11 bound=trait:13 arguments=[region:bound:0:0]
+predicate owner=19 source=0:72 forall=0
+predicate owner=19 source=0:69 forall=1
+impl owner=16 source=0:23 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=16 declaration=15 definition=17
-implementation-use source=0:128 owner=16 arguments=[region:region:8]
-region-var region:1 body=0:147 source=0:128 origin=item-argument pending
-region-var region:2 body=0:147 source=0:129 origin=inference pending
-region-var region:3 body=0:147 source=0:129 origin=inference pending
-region-var region:4 body=0:147 source=0:139 origin=call-argument pending
-region-var region:5 body=0:147 source=0:135 origin=expression-borrow pending
-region-var region:6 body=0:147 source=0:138 origin=expression-borrow pending
-region-var region:7 body=0:147 source=0:128 origin=quantified-proof pending
-region-var region:8 body=0:147 source=0:128 origin=quantified-proof pending
-region-var region:9 body=0:147 source=0:128 origin=quantified-proof pending
-region-var region:10 body=0:147 source=0:128 origin=quantified-proof pending
-region-coercion body=0:108 source=0:108 actual=26 expected=23 kind=function-pointer pending
-region-coercion body=0:147 source=0:129 actual=42 expected=46 kind=same-shape pending
-region-coercion body=0:147 source=0:135 actual=59 expected=45 kind=same-shape pending
-region-coercion body=0:147 source=0:138 actual=60 expected=47 kind=same-shape pending
+implementation-use source=0:87 owner=16 arguments=[region:region:8]
+region-var region:1 body=0:103 source=0:87 origin=item-argument pending
+region-var region:2 body=0:103 source=0:88 origin=inference pending
+region-var region:3 body=0:103 source=0:88 origin=inference pending
+region-var region:4 body=0:103 source=0:95 origin=call-argument pending
+region-var region:5 body=0:103 source=0:92 origin=expression-borrow pending
+region-var region:6 body=0:103 source=0:94 origin=expression-borrow pending
+region-var region:7 body=0:103 source=0:87 origin=quantified-proof pending
+region-var region:8 body=0:103 source=0:87 origin=quantified-proof pending
+region-var region:9 body=0:103 source=0:87 origin=quantified-proof pending
+region-var region:10 body=0:103 source=0:87 origin=quantified-proof pending
+region-coercion body=0:75 source=0:75 actual=26 expected=23 kind=function-pointer pending
+region-coercion body=0:103 source=0:88 actual=42 expected=46 kind=same-shape pending
+region-coercion body=0:103 source=0:92 actual=59 expected=45 kind=same-shape pending
+region-coercion body=0:103 source=0:94 actual=60 expected=47 kind=same-shape pending
 associated-type def=15 type=20
 result-contract def=15 projection=20
 result-bound def=15 index=0 subject=20 bound=sized
 associated-type def=17 type=23
-normalized-node source=0:71 original=28 result=23
-normalized-node source=0:72 original=28 result=23
-normalized-node source=0:109 original=38 result=37
+normalized-node source=0:50 original=28 result=23
+normalized-node source=0:76 original=38 result=37
 quantifier 0 regions=1 subject=27 bound=trait:13 arguments=[region:bound:0:0]
 quantifier 1 regions=1 subject=28 bound=projection-equal:23
-proof 0 body=0:147 source=0:128 pending
+proof 0 body=0:103 source=0:87 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=0 start=7 end=9
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=7 end=9
@@ -134,7 +133,7 @@ proof-block proof=0 index=2 scope=1 aliases=false source=0 start=8 end=9
 proof-block proof=0 index=3 scope=1 aliases=false source=0 start=9 end=9
 proof-relation proof=0 block=3 kind=equal left=region:7 right=region:8
 proof-relation proof=0 block=3 kind=equal left=region:7 right=bound:0:0
-proof 1 body=0:147 source=0:128 pending
+proof 1 body=0:103 source=0:87 pending
 proof-scope proof=1 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=1 start=9 end=11
 proof-block proof=1 index=0 scope=0 aliases=false source=0 start=9 end=11
@@ -144,4 +143,4 @@ proof-block proof=1 index=3 scope=1 aliases=false source=0 start=11 end=11
 proof-relation proof=1 block=3 kind=equal left=region:10 right=region:9
 proof-relation proof=1 block=3 kind=equal left=region:9 right=region:10
 proof-relation proof=1 block=3 kind=equal left=region:9 right=bound:0:0
-eof owners=2 members=2 parameters=3 predicates=3 impls=1 calls=0 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0 quantifiers=2 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=2 proof-scopes=2 proof-blocks=8 proof-sources=0 proof-owned=2 proof-relations=5 proof-types=0
+eof owners=2 members=2 parameters=3 predicates=3 impls=1 calls=0 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0 quantifiers=2 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=2 proof-scopes=2 proof-blocks=8 proof-sources=0 proof-owned=2 proof-relations=5 proof-types=0

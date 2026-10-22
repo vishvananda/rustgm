@@ -30,12 +30,12 @@ type 27 function binders=0 parameters=[] result=1 unsafe=false
 type 28 function-item def=19 signature=27
 type 29 function-item def=15 signature=25 arguments=[type:24]
 type 30 function-item def=18 signature=22 arguments=[type:11]
-def 14 type=19 name="Self" source=0:8
-def 15 type=21 name="f" source=0:7
-def 16 type=11 name="Self" source=0:28
-def 17 type=23 name="f" source=0:27
-def 18 type=26 name="g" source=0:50
-def 19 type=28 name="main" source=0:60
+def 14 type=19 name="Self" source=0:4
+def 15 type=21 name="f" source=0:3
+def 16 type=11 name="Self" source=0:15
+def 17 type=23 name="f" source=0:14
+def 18 type=26 name="g" source=0:29
+def 19 type=28 name="main" source=0:36
 def 20 type=2 name="bool"
 def 21 type=3 name="char"
 def 22 type=4 name="str"
@@ -53,20 +53,20 @@ def 33 type=15 name="u128"
 def 34 type=16 name="usize"
 def 35 type=17 name="f32"
 def 36 type=18 name="f64"
-def 37 type=24 name="T" source=0:32
-def 39 type=11 name="self" source=0:17
-def 40 type=24 name="x" source=0:35
-def 41 type=11 name="x" source=0:53
-associated-owner 0 kind=trait self-def=14 self=19 source=0:8 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:28 unsafe=false
+def 37 type=24 name="T" source=0:18
+def 39 type=11 name="self" source=0:7
+def 40 type=24 name="x" source=0:19
+def 41 type=11 name="x" source=0:30
+associated-owner 0 kind=trait self-def=14 self=19 source=0:4 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:15 unsafe=false
 associated-member def=15 owner=0 receiver=19 references=0
 associated-member def=17 owner=1 receiver=11 references=0
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=18 binding=37 argument=type:24 default=-
-predicate owner=13 source=0:8 subject=19 bound=trait:13 arguments=[]
-predicate owner=18 source=0:31 subject=24 bound=trait:13 arguments=[]
-impl owner=16 source=0:28 subject=11 bound=trait:13 arguments=[]
+predicate owner=13 source=0:4 subject=19 bound=trait:13 arguments=[]
+predicate owner=18 source=0:17 subject=24 bound=trait:13 arguments=[]
+impl owner=16 source=0:15 subject=11 bound=trait:13 arguments=[]
 impl-method owner=16 declaration=15 selected=17 default=false
-trait-path source=0:45 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=-
-implementation-use source=0:55 owner=16 arguments=[]
+trait-path source=0:25 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=-
+implementation-use source=0:31 owner=16 arguments=[]
 eof owners=2 members=2 parameters=2 predicates=2 impls=1 calls=0 paths=1 impl-uses=1

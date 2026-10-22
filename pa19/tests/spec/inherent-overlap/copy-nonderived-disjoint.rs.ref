@@ -35,15 +35,15 @@ type 32 function binders=0 parameters=[19] result=20 unsafe=false
 type 33 function-item def=14 signature=32
 type 34 function binders=0 parameters=[21] result=22 unsafe=false
 type 35 function-item def=16 signature=34
-def 13 type=20 name="S" source=0:5
-def 14 type=33 name="S" source=0:5
-def 15 type=22 name="D" source=0:11
-def 16 type=35 name="D" source=0:11
-def 17 type=24 name="Self" source=0:25
-def 18 type=29 name="f" source=0:24
-def 19 type=27 name="Self" source=0:40
-def 20 type=30 name="f" source=0:39
-def 21 type=31 name="main" source=0:42
+def 13 type=20 name="S" source=0:3
+def 14 type=33 name="S" source=0:3
+def 15 type=22 name="D" source=0:7
+def 16 type=35 name="D" source=0:7
+def 17 type=24 name="Self" source=0:17
+def 18 type=29 name="f" source=0:16
+def 19 type=27 name="Self" source=0:28
+def 20 type=30 name="f" source=0:27
+def 21 type=31 name="main" source=0:30
 def 22 type=2 name="bool"
 def 23 type=3 name="char"
 def 24 type=4 name="str"
@@ -62,16 +62,16 @@ def 36 type=16 name="usize"
 def 37 type=17 name="f32"
 def 38 type=18 name="f64"
 def 39 type=19 name="T" source=0:0
-def 40 type=21 name="T" source=0:6
-def 41 type=23 name="T" source=0:15
-def 42 type=25 name="U" source=0:26
-associated-owner 0 kind=inherent self-def=17 self=24 source=0:25 unsafe=false
-associated-owner 1 kind=inherent self-def=19 self=27 source=0:40 unsafe=false
+def 40 type=21 name="T" source=0:4
+def 41 type=23 name="T" source=0:10
+def 42 type=25 name="U" source=0:18
+associated-owner 0 kind=inherent self-def=17 self=24 source=0:17 unsafe=false
+associated-owner 1 kind=inherent self-def=19 self=27 source=0:28 unsafe=false
 associated-member def=18 owner=0
 associated-member def=20 owner=1
 parameter owner=13 binding=39 argument=type:19 default=-
 parameter owner=15 binding=40 argument=type:21 default=-
 parameter owner=17 binding=41 argument=type:23 default=-
 parameter owner=19 binding=42 argument=type:25 default=-
-predicate owner=17 source=0:14 subject=23 bound=copy
+predicate owner=17 source=0:9 subject=23 bound=copy
 eof owners=2 members=2 parameters=4 predicates=1 impls=0 calls=0 paths=0 impl-uses=0

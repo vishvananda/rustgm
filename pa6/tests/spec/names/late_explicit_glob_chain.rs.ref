@@ -49,12 +49,12 @@ def 13 type primitive name=18 scope=0 access=public
 def 14 type primitive name=19 scope=0 access=public
 def 15 type primitive name=20 scope=0 access=public
 def 16 type primitive name=21 scope=0 access=public
-def 17 type module name=1 scope=0 access=module:0 source=0:14 members=1
-def 18 type module name=2 scope=0 access=module:0 source=0:20 members=2
-def 19 type module name=3 scope=0 access=module:0 source=0:26 members=3
-def 20 type module name=4 scope=0 access=module:0 source=0:28 members=4
-def 21 type struct name=22 scope=4 access=public source=0:27 members=5
-def 22 value constructor name=22 scope=4 access=public source=0:27
+def 17 type module name=1 scope=0 access=module:0 source=0:13 members=1
+def 18 type module name=2 scope=0 access=module:0 source=0:19 members=2
+def 19 type module name=3 scope=0 access=module:0 source=0:25 members=3
+def 20 type module name=4 scope=0 access=module:0 source=0:27 members=4
+def 21 type struct name=22 scope=4 access=public source=0:26 members=5
+def 22 value constructor name=22 scope=4 access=public source=0:26
 binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
 binding scope=0 type name=2 def=18 Direct ambiguous=false access=module:0
 binding scope=0 type name=3 def=19 Direct ambiguous=false access=module:0

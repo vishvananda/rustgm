@@ -47,13 +47,13 @@ type 44 reference mutable=false region=region:2 referent=11
 type 45 function binders=0 parameters=[39] result=39 unsafe=false
 type 46 function-item def=17 signature=45 arguments=[region:region:1,type:12]
 type 47 reference mutable=false region=region:3 referent=11
-def 13 type=21 name="check" source=0:19
-def 14 type=23 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:53
-def 17 type=30 name="make" source=0:52
-def 18 type=12 name="Self" source=0:81
-def 19 type=33 name="make" source=0:80
-def 20 type=35 name="main" source=0:107
+def 13 type=21 name="check" source=0:13
+def 14 type=23 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:35
+def 17 type=30 name="make" source=0:34
+def 18 type=12 name="Self" source=0:53
+def 19 type=33 name="make" source=0:52
+def 20 type=35 name="main" source=0:71
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -71,32 +71,32 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 40 type=2 name="ok" source=0:2
-def 41 type=11 name="x" source=0:22
-def 50 type=24 name="x" source=0:65
-def 51 type=11 name="x" source=0:84
-associated-owner 0 kind=trait self-def=16 self=19 source=0:53 trait=15 unsafe=false name="Make"
-associated-owner 1 kind=trait-impl self-def=18 self=12 source=0:81 unsafe=false
+def 40 type=2 name="ok" source=0:0
+def 41 type=11 name="x" source=0:14
+def 50 type=24 name="x" source=0:42
+def 51 type=11 name="x" source=0:54
+associated-owner 0 kind=trait self-def=16 self=19 source=0:35 trait=15 unsafe=false name="Make"
+associated-owner 1 kind=trait-impl self-def=18 self=12 source=0:53 unsafe=false
 associated-member def=17 owner=0
 associated-member def=19 owner=1
 parameter owner=15 binding=38 argument=region:bound:0:0 default=-
 parameter owner=16 binding=16 argument=type:19 default=-
-predicate owner=15 source=0:53 subject=19 bound=trait:15 arguments=[region:bound:0:0]
-impl owner=18 source=0:81 subject=12 bound=trait:15 arguments=[region:bound:0:0]
+predicate owner=15 source=0:35 subject=19 bound=trait:15 arguments=[region:bound:0:0]
+impl owner=18 source=0:53 subject=12 bound=trait:15 arguments=[region:bound:0:0]
 impl-method owner=18 declaration=17 selected=19 default=false
-trait-path source=0:96 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:91
-implementation-use source=0:96 owner=18 arguments=[region:region:4]
-region-var region:1 body=0:106 source=0:96 origin=item-argument pending
-region-var region:2 body=0:106 source=0:96 origin=quantified-proof pending
-region-var region:3 body=0:106 source=0:99 origin=expression-borrow pending
-region-var region:4 body=0:106 source=0:96 origin=inference pending
-region-equal body=0:106 left=region:1 right=region:4
-region-coercion body=0:106 source=0:99 actual=47 expected=39 kind=same-shape pending
-opaque 0 owner=17 source=0:51 application=25 hidden=- role=trait-result storage-proof=pending
+trait-path source=0:61 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:58
+implementation-use source=0:61 owner=18 arguments=[region:region:4]
+region-var region:1 body=0:70 source=0:61 origin=item-argument pending
+region-var region:2 body=0:70 source=0:61 origin=quantified-proof pending
+region-var region:3 body=0:70 source=0:63 origin=expression-borrow pending
+region-var region:4 body=0:70 source=0:61 origin=inference pending
+region-equal body=0:70 left=region:1 right=region:4
+region-coercion body=0:70 source=0:63 actual=47 expected=39 kind=same-shape pending
+opaque 0 owner=17 source=0:33 application=25 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=0 index=0 subject=25 bound=copy
 opaque-bound id=0 index=1 subject=25 bound=outlives:bound:0:0
 opaque-implementation owner=18 id=0 type=24 parent-regions=1 regions=[bound:0:0]
-proof 0 body=0:106 source=0:96 pending
+proof 0 body=0:70 source=0:61 pending
 proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
 proof-owned proof=0 start=2 end=3
 proof-block proof=0 index=0 scope=0 aliases=false source=0 start=2 end=3

@@ -1,5 +1,5 @@
 ownership-crate 1
-body 0 source=0:37
+body 0 source=0:21
   path m0 type=19 root=l0 subtree=0..1
   path m1 type=11 root=l1 subtree=1..2
   path m2 type=19 root=l2 subtree=2..4
@@ -28,7 +28,7 @@ body 0 source=0:37
   block b11 reachable=false
   block b12 reachable=false
 end-body
-body 1 source=0:4
+body 1 source=0:2
   path m0 type=11 root=l0 subtree=0..1
   use v0 copy
   block b0 reachable=true

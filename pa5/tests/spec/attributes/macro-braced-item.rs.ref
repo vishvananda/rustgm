@@ -1,13 +1,12 @@
-active [0,1,2,3,4,5]
+active [0,1,2,3,4]
 node 0 0 34 item 0
 item 0 "make" private [] [] macro-rules 0
 node 1 35 39 name "make"
-node 2 35 39 path false [1]
-node 3 35 42 macro 2 1
-node 4 35 42 item 1
-item 1 - private [] [] macro-invocation 3
-node 5 0 42 crate [0,4]
+node 2 35 42 macro 1 1
+node 3 35 42 item 1
+item 1 - private [] [] macro-invocation 2
+node 4 0 42 crate [0,3]
 capture 0 18 34 8 "{()=>{fn f(){}}}"
 capture 1 40 42 1 "{}"
-root 5
+root 4
 eof 43

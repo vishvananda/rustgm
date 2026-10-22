@@ -28,8 +28,8 @@ type 25 function-item def=14 signature=20
 type 26 function-item def=15 signature=20
 type 27 function-item def=13 signature=20 arguments=[type:22]
 def 13 type=21 name="need" source=0:4
-def 14 type=25 name="f" source=0:26
-def 15 type=26 name="main" source=0:28
+def 14 type=25 name="f" source=0:22
+def 15 type=26 name="main" source=0:24
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -52,7 +52,7 @@ def 34 type=22 name="T" source=0:5
 parameter owner=13 binding=33 argument=type:19 default=-
 parameter owner=14 binding=34 argument=type:22 default=-
 predicate owner=13 source=0:1 subject=19 bound=outlives:static
-predicate owner=14 source=0:15 forall=0
-type-outlives body=0:25 source=0:22 type=22 shorter=static pending
+predicate owner=14 source=0:13 forall=0
+type-outlives body=0:21 source=0:18 type=22 shorter=static pending
 quantifier 0 regions=1 subject=24 bound=outlives:static
 eof owners=0 members=0 parameters=2 predicates=2 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=1 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

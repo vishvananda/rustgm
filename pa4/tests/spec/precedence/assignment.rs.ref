@@ -1,24 +1,16 @@
-node 0 10 11 name "a"
-node 1 10 11 path false [0]
-node 2 6 11 binding true false "a" -
-node 3 2 12 let 2 - - -
-node 4 21 22 name "b"
-node 5 21 22 path false [4]
-node 6 17 22 binding true false "b" -
-node 7 13 23 let 6 - - -
-node 8 24 25 name "a"
-node 9 24 25 path false [8]
-node 10 28 29 name "b"
-node 11 28 29 path false [10]
-node 12 32 34 tuple []
-node 13 28 34 binary = 11 12
-node 14 24 34 binary = 9 13
-node 15 24 35 statement 14
-node 16 37 38 name "a"
-node 17 37 38 path false [16]
-node 18 40 41 name "b"
-node 19 40 41 path false [18]
-node 20 36 42 tuple [17,19]
-node 21 0 44 block Plain [3,7,15] 20
-root 21
+node 0 6 11 binding true false "a" -
+node 1 2 12 let 0 - - -
+node 2 17 22 binding true false "b" -
+node 3 13 23 let 2 - - -
+node 4 24 25 name "a"
+node 5 28 29 name "b"
+node 6 32 34 tuple []
+node 7 28 34 binary = 5 6
+node 8 24 34 binary = 4 7
+node 9 24 35 statement 8
+node 10 37 38 name "a"
+node 11 40 41 name "b"
+node 12 36 42 tuple [10,11]
+node 13 0 44 block Plain [1,3,9] 12
+root 13
 eof 45

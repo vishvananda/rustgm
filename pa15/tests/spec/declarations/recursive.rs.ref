@@ -1,5 +1,5 @@
 regions-crate 1
-body 0 source=0:16
+body 0 source=0:13
   region g0 static
   region g1 local
 end-body

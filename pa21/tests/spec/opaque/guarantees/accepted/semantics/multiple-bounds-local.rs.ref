@@ -29,18 +29,17 @@ type 26 function-item def=14 signature=25
 type 27 function binders=0 parameters=[] result=1 unsafe=false
 type 28 function-item def=15 signature=27
 type 29 opaque id=0 arguments=[region:region:1,region:region:2]
-type 30 reference mutable=false region=region:3 referent=11
-type 31 reference mutable=false region=region:4 referent=11
-type 32 opaque id=0 arguments=[region:region:3,region:region:4]
-type 33 function binders=0 parameters=[30,31] result=32 unsafe=false
-type 34 opaque id=0 arguments=[region:region:7,region:region:8]
-type 35 function binders=0 parameters=[34] result=1 unsafe=false
-type 36 function-item def=14 signature=35 arguments=[type:34]
-type 37 reference mutable=false region=region:5 referent=11
-type 38 reference mutable=false region=region:6 referent=11
-def 13 type=23 name="f" source=0:26
-def 14 type=26 name="take" source=0:34
-def 15 type=28 name="main" source=0:59
+type 30 reference mutable=false region=region:1 referent=11
+type 31 reference mutable=false region=region:2 referent=11
+type 32 function binders=0 parameters=[30,31] result=29 unsafe=false
+type 33 opaque id=0 arguments=[region:region:5,region:region:6]
+type 34 function binders=0 parameters=[33] result=1 unsafe=false
+type 35 function-item def=14 signature=34 arguments=[type:33]
+type 36 reference mutable=false region=region:3 referent=11
+type 37 reference mutable=false region=region:4 referent=11
+def 13 type=23 name="f" source=0:21
+def 14 type=26 name="take" source=0:27
+def 15 type=28 name="main" source=0:44
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -58,26 +57,26 @@ def 29 type=15 name="u128"
 def 30 type=16 name="usize"
 def 31 type=17 name="f32"
 def 32 type=18 name="f64"
-def 35 type=24 name="T" source=0:27
-def 43 type=11 name="a" source=0:37
-def 44 type=11 name="b" source=0:42
+def 35 type=24 name="T" source=0:22
+def 43 type=11 name="a" source=0:28
+def 44 type=11 name="b" source=0:31
 parameter owner=14 binding=35 argument=type:24 default=-
-region-var region:1 body=0:25 source=0:25 origin=universal-alias pending
-region-var region:2 body=0:25 source=0:25 origin=universal-alias pending
-region-var region:3 body=0:58 source=0:55 origin=call-argument pending
-region-var region:4 body=0:58 source=0:55 origin=call-argument pending
-region-var region:5 body=0:58 source=0:51 origin=expression-borrow pending
-region-var region:6 body=0:58 source=0:54 origin=expression-borrow pending
-region-var region:7 body=0:58 source=0:55 origin=inference pending
-region-var region:8 body=0:58 source=0:55 origin=inference pending
-region-equal body=0:25 left=region:1 right=bound:0:0
-region-equal body=0:25 left=region:2 right=bound:0:1
-region-coercion body=0:58 source=0:51 actual=37 expected=30 kind=same-shape pending
-region-coercion body=0:58 source=0:54 actual=38 expected=31 kind=same-shape pending
-region-coercion body=0:58 source=0:55 actual=32 expected=34 kind=same-shape pending
-type-outlives body=0:25 source=0:23 type=11 shorter=bound:0:0 pending
-type-outlives body=0:25 source=0:23 type=11 shorter=bound:0:1 pending
-opaque 0 owner=13 source=0:23 application=21 hidden=11 role=defining-result storage-proof=pending
+region-var region:1 body=0:20 source=0:20 origin=universal-alias pending
+region-var region:2 body=0:20 source=0:20 origin=universal-alias pending
+region-var region:1 body=0:43 source=0:40 origin=call-argument pending
+region-var region:2 body=0:43 source=0:40 origin=call-argument pending
+region-var region:3 body=0:43 source=0:37 origin=expression-borrow pending
+region-var region:4 body=0:43 source=0:39 origin=expression-borrow pending
+region-var region:5 body=0:43 source=0:40 origin=inference pending
+region-var region:6 body=0:43 source=0:40 origin=inference pending
+region-equal body=0:20 left=region:1 right=bound:0:0
+region-equal body=0:20 left=region:2 right=bound:0:1
+region-coercion body=0:43 source=0:37 actual=36 expected=30 kind=same-shape pending
+region-coercion body=0:43 source=0:39 actual=37 expected=31 kind=same-shape pending
+region-coercion body=0:43 source=0:40 actual=29 expected=33 kind=same-shape pending
+type-outlives body=0:20 source=0:18 type=11 shorter=bound:0:0 pending
+type-outlives body=0:20 source=0:18 type=11 shorter=bound:0:1 pending
+opaque 0 owner=13 source=0:18 application=21 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=21 bound=copy
 opaque-bound id=0 index=1 subject=21 bound=outlives:bound:0:0
 opaque-bound id=0 index=2 subject=21 bound=outlives:bound:0:1

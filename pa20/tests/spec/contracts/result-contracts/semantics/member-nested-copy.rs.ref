@@ -39,18 +39,18 @@ type 36 projection def=20 self=35 trait=18 arguments=[] family arguments=[]
 type 37 tuple [13,13]
 type 38 function binders=0 parameters=[13] result=37 unsafe=false
 type 39 function-item def=25 signature=38 arguments=[type:11]
-def 13 type=24 name="check" source=0:19
-def 14 type=26 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:40
-def 17 type=21 name="Out" source=0:39
-def 19 type=20 name="Self" source=0:45
-def 20 type=22 name="Out" source=0:44
-def 21 type=11 name="Self" source=0:56
-def 22 type=12 name="Out" source=0:55
-def 23 type=12 name="Self" source=0:67
-def 24 type=13 name="Out" source=0:66
-def 25 type=32 name="use_it" source=0:128
-def 26 type=34 name="main" source=0:157
+def 13 type=24 name="check" source=0:13
+def 14 type=26 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:26
+def 17 type=21 name="Out" source=0:25
+def 19 type=20 name="Self" source=0:30
+def 20 type=22 name="Out" source=0:29
+def 21 type=11 name="Self" source=0:35
+def 22 type=12 name="Out" source=0:34
+def 23 type=12 name="Self" source=0:40
+def 24 type=13 name="Out" source=0:39
+def 25 type=32 name="use_it" source=0:72
+def 26 type=34 name="main" source=0:94
 def 27 type=2 name="bool"
 def 28 type=3 name="char"
 def 29 type=4 name="str"
@@ -68,15 +68,15 @@ def 40 type=15 name="u128"
 def 41 type=16 name="usize"
 def 42 type=17 name="f32"
 def 43 type=18 name="f64"
-def 44 type=27 name="T" source=0:71
-def 45 type=2 name="ok" source=0:2
-def 46 type=11 name="x" source=0:22
-def 54 type=29 name="x" source=0:74
-def 55 type=37 name="p" source=0:131
-associated-owner 0 kind=trait self-def=16 self=19 source=0:40 trait=15 unsafe=false name="A"
-associated-owner 1 kind=trait self-def=19 self=20 source=0:45 trait=18 unsafe=false name="B"
-associated-owner 2 kind=trait-impl self-def=21 self=11 source=0:56 unsafe=false
-associated-owner 3 kind=trait-impl self-def=23 self=12 source=0:67 unsafe=false
+def 44 type=27 name="T" source=0:43
+def 45 type=2 name="ok" source=0:0
+def 46 type=11 name="x" source=0:14
+def 54 type=29 name="x" source=0:44
+def 55 type=37 name="p" source=0:73
+associated-owner 0 kind=trait self-def=16 self=19 source=0:26 trait=15 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=19 self=20 source=0:30 trait=18 unsafe=false name="B"
+associated-owner 2 kind=trait-impl self-def=21 self=11 source=0:35 unsafe=false
+associated-owner 3 kind=trait-impl self-def=23 self=12 source=0:40 unsafe=false
 associated-member def=17 owner=0
 associated-member def=20 owner=1
 associated-member def=22 owner=2
@@ -84,15 +84,15 @@ associated-member def=24 owner=3
 parameter owner=16 binding=16 argument=type:19 default=-
 parameter owner=19 binding=19 argument=type:20 default=-
 parameter owner=25 binding=44 argument=type:27 default=-
-predicate owner=15 source=0:40 subject=19 bound=trait:15 arguments=[]
-predicate owner=17 source=0:38 subject=21 bound=trait:18 arguments=[]
-predicate owner=18 source=0:45 subject=20 bound=trait:18 arguments=[]
-predicate owner=25 source=0:70 subject=27 bound=trait:15 arguments=[]
-impl owner=21 source=0:56 subject=11 bound=trait:15 arguments=[]
+predicate owner=15 source=0:26 subject=19 bound=trait:15 arguments=[]
+predicate owner=17 source=0:24 subject=21 bound=trait:18 arguments=[]
+predicate owner=18 source=0:30 subject=20 bound=trait:18 arguments=[]
+predicate owner=25 source=0:42 subject=27 bound=trait:15 arguments=[]
+impl owner=21 source=0:35 subject=11 bound=trait:15 arguments=[]
 impl-type owner=21 declaration=17 definition=22
-impl owner=23 source=0:67 subject=12 bound=trait:18 arguments=[]
+impl owner=23 source=0:40 subject=12 bound=trait:18 arguments=[]
 impl-type owner=23 declaration=20 definition=24
-implementation-use source=0:137 owner=21 arguments=[]
+implementation-use source=0:77 owner=21 arguments=[]
 associated-type def=17 type=21
 result-contract def=17 projection=21
 result-bound def=17 index=0 subject=21 bound=sized
@@ -103,17 +103,11 @@ result-bound def=20 index=0 subject=22 bound=copy
 result-bound def=20 index=1 subject=22 bound=sized
 associated-type def=22 type=12
 associated-type def=24 type=13
-normalized-node source=0:82 original=28 result=28
-normalized-node source=0:83 original=28 result=28
-normalized-node source=0:88 original=29 result=29
-normalized-node source=0:89 original=29 result=29
-normalized-node source=0:98 original=28 result=28
-normalized-node source=0:99 original=28 result=28
-normalized-node source=0:104 original=29 result=29
-normalized-node source=0:105 original=29 result=29
-normalized-node source=0:113 original=28 result=28
-normalized-node source=0:114 original=28 result=28
-normalized-node source=0:119 original=29 result=29
-normalized-node source=0:120 original=29 result=29
-normalized-node source=0:121 original=30 result=30
-eof owners=4 members=4 parameters=3 predicates=4 impls=2 calls=0 paths=0 impl-uses=1 type-members=4 constant-members=0 result-contracts=2 result-bounds=4 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=13 normalized-definitions=0
+normalized-node source=0:48 original=28 result=28
+normalized-node source=0:51 original=29 result=29
+normalized-node source=0:56 original=28 result=28
+normalized-node source=0:59 original=29 result=29
+normalized-node source=0:63 original=28 result=28
+normalized-node source=0:66 original=29 result=29
+normalized-node source=0:67 original=30 result=30
+eof owners=4 members=4 parameters=3 predicates=4 impls=2 calls=0 paths=0 impl-uses=1 type-members=4 constant-members=0 result-contracts=2 result-bounds=4 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=7 normalized-definitions=0

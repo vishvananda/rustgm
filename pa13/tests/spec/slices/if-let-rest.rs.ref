@@ -28,24 +28,24 @@ type 25 reference mutable=false region=region:3 referent=2
 type 26 reference mutable=false region=region:4 referent=2
 type 27 reference mutable=false region=region:5 referent=2
 type 28 reference mutable=false region=region:6 referent=19
-root 0:19 pattern=0
-pattern 0 source=0:19 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:19 input=19 slice minimum=2 exact=false fields=0:3
-pattern 2 source=0:11 input=2 bind def=32 local=23 mutable=false capture=ref region=region:1 loan=pending subpattern=-
-pattern 3 source=0:15 input=19 bind def=33 local=24 mutable=false capture=ref region=region:2 loan=pending subpattern=5
-pattern 4 source=0:18 input=2 bind def=34 local=25 mutable=false capture=ref region=region:3 loan=pending subpattern=-
-pattern 5 source=0:14 input=19 wildcard
+root 0:9 pattern=0
+pattern 0 source=0:9 input=20 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:9 input=19 slice minimum=2 exact=false fields=0:3
+pattern 2 source=0:5 input=2 bind def=32 local=23 mutable=false capture=ref region=region:1 loan=pending subpattern=-
+pattern 3 source=0:7 input=19 bind def=33 local=24 mutable=false capture=ref region=region:2 loan=pending subpattern=5
+pattern 4 source=0:8 input=2 bind def=34 local=25 mutable=false capture=ref region=region:3 loan=pending subpattern=-
+pattern 5 source=0:6 input=19 wildcard
 field 0 index=0 pattern=2
 field 1 subslice=1:1 pattern=3
 field 2 from-end=1 pattern=4
-condition source=0:22 input=0:21 pattern=0 otherwise=-
-region-var region:1 body=0:37 source=0:11 origin=pattern-borrow pending
-region-var region:2 body=0:37 source=0:15 origin=pattern-borrow pending
-region-var region:3 body=0:37 source=0:18 origin=pattern-borrow pending
-region-var region:4 body=0:37 source=0:25 origin=inference pending
-region-var region:5 body=0:37 source=0:29 origin=inference pending
-region-var region:6 body=0:37 source=0:33 origin=inference pending
-region-coercion body=0:37 source=0:25 actual=23 expected=26 kind=same-shape pending
-region-coercion body=0:37 source=0:29 actual=25 expected=27 kind=same-shape pending
-region-coercion body=0:37 source=0:33 actual=24 expected=28 kind=same-shape pending
+condition source=0:11 input=0:10 pattern=0 otherwise=-
+region-var region:1 body=0:23 source=0:5 origin=pattern-borrow pending
+region-var region:2 body=0:23 source=0:7 origin=pattern-borrow pending
+region-var region:3 body=0:23 source=0:8 origin=pattern-borrow pending
+region-var region:4 body=0:23 source=0:13 origin=inference pending
+region-var region:5 body=0:23 source=0:16 origin=inference pending
+region-var region:6 body=0:23 source=0:19 origin=inference pending
+region-coercion body=0:23 source=0:13 actual=23 expected=26 kind=same-shape pending
+region-coercion body=0:23 source=0:16 actual=25 expected=27 kind=same-shape pending
+region-coercion body=0:23 source=0:19 actual=24 expected=28 kind=same-shape pending
 eof roots=1 patterns=6 fields=3 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=6 region-equalities=0 conditions=1 chains=1

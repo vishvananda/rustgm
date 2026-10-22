@@ -1,16 +1,15 @@
-configured 6 false
-attribute-effect 6 0 0 root cfg_attr=true
-attribute-effect 6 1 0 0 cfg=false
-active [7]
+configured 5 false
+attribute-effect 5 0 0 root cfg_attr=true
+attribute-effect 5 1 0 0 cfg=false
+active [6]
 node 0 36 43 name "missing"
-node 1 36 43 path false [0]
-node 2 36 45 call 1 []
-node 3 36 46 statement 2
-node 4 35 47 block Plain [3] -
-node 5 29 47 item 0
-item 0 "f" private [] [] function false false false false - [] - 4
-node 6 0 47 attributed 0 1 5
-node 7 0 47 crate [6]
+node 1 36 45 call 0 []
+node 2 36 46 statement 1
+node 3 35 47 block Plain [2] -
+node 4 29 47 item 0
+item 0 "f" private [] [] function false false false false - [] - 3
+node 5 0 47 attributed 0 1 4
+node 6 0 47 crate [5]
 attribute-capture 0 outer 0 28 "#[cfg_attr(unix,cfg(false))]"
-root 7
+root 6
 eof 48

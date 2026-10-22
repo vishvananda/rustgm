@@ -22,24 +22,24 @@ type 19 reference mutable=false region=bound:0:0 referent=4
 type 20 function binders=1 parameters=[19] result=1 unsafe=false
 type 21 function-item def=13 signature=20
 type 22 reference mutable=false region=static referent=4
-root 0:10 pattern=0
-root 0:13 pattern=1
-root 0:16 pattern=2
-root 0:19 pattern=3
-root 0:22 pattern=4
-pattern 0 source=0:10 input=19 deref mutable=false implicit=false pattern=5
-pattern 1 source=0:13 input=19 deref mutable=false implicit=false pattern=6
-pattern 2 source=0:16 input=19 deref mutable=false implicit=false pattern=7
-pattern 3 source=0:19 input=19 deref mutable=false implicit=false pattern=8
-pattern 4 source=0:22 input=19 wildcard
-pattern 5 source=0:10 input=4 text="\xc3\xa9"
-pattern 6 source=0:13 input=4 text="e\xcc\x81"
-pattern 7 source=0:16 input=4 text="\x00"
-pattern 8 source=0:19 input=4 text=""
-match 0 source=0:25 input=0:9 arms=0:5 exhaustive=true uninhabited=false work=172
-arm 0 source=0:12 pattern=0 guard=- useful=true value=0:11
-arm 1 source=0:15 pattern=1 guard=- useful=true value=0:14
-arm 2 source=0:18 pattern=2 guard=- useful=true value=0:17
-arm 3 source=0:21 pattern=3 guard=- useful=true value=0:20
-arm 4 source=0:24 pattern=4 guard=- useful=true value=0:23
-eof roots=5 patterns=9 fields=0 alternatives=0 ranges=0 matches=1 arms=5 coverage-work=172 region-vars=0 region-equalities=0 conditions=0 chains=0
+root 0:5 pattern=0
+root 0:8 pattern=1
+root 0:11 pattern=2
+root 0:14 pattern=3
+root 0:17 pattern=4
+pattern 0 source=0:5 input=19 deref mutable=false implicit=false pattern=5
+pattern 1 source=0:8 input=19 deref mutable=false implicit=false pattern=6
+pattern 2 source=0:11 input=19 deref mutable=false implicit=false pattern=7
+pattern 3 source=0:14 input=19 deref mutable=false implicit=false pattern=8
+pattern 4 source=0:17 input=19 wildcard
+pattern 5 source=0:5 input=4 text="\xc3\xa9"
+pattern 6 source=0:8 input=4 text="e\xcc\x81"
+pattern 7 source=0:11 input=4 text="\x00"
+pattern 8 source=0:14 input=4 text=""
+match 0 source=0:20 input=0:4 arms=0:5 exhaustive=true uninhabited=false work=176
+arm 0 source=0:7 pattern=0 guard=- useful=true value=0:6
+arm 1 source=0:10 pattern=1 guard=- useful=true value=0:9
+arm 2 source=0:13 pattern=2 guard=- useful=true value=0:12
+arm 3 source=0:16 pattern=3 guard=- useful=true value=0:15
+arm 4 source=0:19 pattern=4 guard=- useful=true value=0:18
+eof roots=5 patterns=9 fields=0 alternatives=0 ranges=0 matches=1 arms=5 coverage-work=176 region-vars=0 region-equalities=0 conditions=0 chains=0

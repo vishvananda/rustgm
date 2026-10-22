@@ -22,5 +22,5 @@ type 19 aggregate def=13
 type 20 tuple [19,2]
 type 21 function binders=0 parameters=[20] result=1 unsafe=false
 type 22 function-item def=14 signature=21
-match 0 source=0:14 input=0:13 arms=0:0 exhaustive=true uninhabited=true work=6
+match 0 source=0:7 input=0:6 arms=0:0 exhaustive=true uninhabited=true work=6
 eof roots=0 patterns=0 fields=0 alternatives=0 ranges=0 matches=1 arms=0 coverage-work=6 region-vars=0 region-equalities=0 conditions=0 chains=0

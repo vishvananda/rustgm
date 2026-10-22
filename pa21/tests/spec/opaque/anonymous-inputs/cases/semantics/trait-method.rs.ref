@@ -50,19 +50,19 @@ type 47 reference mutable=false region=region:1 referent=35
 type 48 function binders=0 parameters=[47] result=11 unsafe=false
 type 49 reference mutable=false region=region:2 referent=35
 type 50 function-item def=22 signature=24 arguments=[type:19,type:11]
-def 13 type=23 name="check" source=0:19
-def 14 type=25 name="fail" source=0:35
-def 16 type=20 name="Self" source=0:45
-def 17 type=28 name="value" source=0:44
-def 18 type=11 name="Self" source=0:65
-def 19 type=31 name="value" source=0:64
-def 21 type=21 name="Self" source=0:78
-def 22 type=34 name="f" source=0:77
-def 23 type=19 name="S" source=0:79
-def 24 type=19 name="S" source=0:79
-def 25 type=19 name="Self" source=0:102
-def 26 type=37 name="f" source=0:101
-def 27 type=39 name="main" source=0:115
+def 13 type=23 name="check" source=0:13
+def 14 type=25 name="fail" source=0:22
+def 16 type=20 name="Self" source=0:28
+def 17 type=28 name="value" source=0:27
+def 18 type=11 name="Self" source=0:39
+def 19 type=31 name="value" source=0:38
+def 21 type=21 name="Self" source=0:47
+def 22 type=34 name="f" source=0:46
+def 23 type=19 name="S" source=0:48
+def 24 type=19 name="S" source=0:48
+def 25 type=19 name="Self" source=0:61
+def 26 type=37 name="f" source=0:60
+def 27 type=39 name="main" source=0:73
 def 28 type=2 name="bool"
 def 29 type=3 name="char"
 def 30 type=4 name="str"
@@ -80,16 +80,16 @@ def 41 type=15 name="u128"
 def 42 type=16 name="usize"
 def 43 type=17 name="f32"
 def 44 type=18 name="f64"
-def 45 type=32 name="#impl-trait-0-72" source=0:72
-def 46 type=35 name="#impl-trait-0-92" source=0:92
-def 47 type=2 name="ok" source=0:2
-def 48 type=11 name="x" source=0:22
-def 50 type=29 name="self" source=0:54
-def 52 type=35 name="x" source=0:88
-associated-owner 0 kind=trait self-def=16 self=20 source=0:45 trait=15 unsafe=false name="Value"
-associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:65 unsafe=false
-associated-owner 2 kind=trait self-def=21 self=21 source=0:78 trait=20 unsafe=false name="A"
-associated-owner 3 kind=trait-impl self-def=25 self=19 source=0:102 unsafe=false
+def 45 type=32 name="#impl-trait-0-43" source=0:43
+def 46 type=35 name="#impl-trait-0-54" source=0:54
+def 47 type=2 name="ok" source=0:0
+def 48 type=11 name="x" source=0:14
+def 50 type=29 name="self" source=0:31
+def 52 type=35 name="x" source=0:51
+associated-owner 0 kind=trait self-def=16 self=20 source=0:28 trait=15 unsafe=false name="Value"
+associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:39 unsafe=false
+associated-owner 2 kind=trait self-def=21 self=21 source=0:47 trait=20 unsafe=false name="A"
+associated-owner 3 kind=trait-impl self-def=25 self=19 source=0:61 unsafe=false
 associated-member def=17 owner=0 receiver=26 references=1
 associated-member def=19 owner=1 receiver=29 references=1
 associated-member def=22 owner=2
@@ -98,19 +98,19 @@ parameter owner=16 binding=16 argument=type:20 default=-
 parameter owner=21 binding=21 argument=type:21 default=-
 parameter owner=22 binding=45 argument=type:32 default=-
 parameter owner=26 binding=46 argument=type:35 default=-
-predicate owner=15 source=0:45 subject=20 bound=trait:15 arguments=[]
-predicate owner=20 source=0:78 subject=21 bound=trait:20 arguments=[]
-predicate owner=22 source=0:71 subject=32 bound=trait:15 arguments=[]
-predicate owner=26 source=0:91 subject=35 bound=trait:15 arguments=[]
-impl owner=18 source=0:65 subject=11 bound=trait:15 arguments=[]
+predicate owner=15 source=0:28 subject=20 bound=trait:15 arguments=[]
+predicate owner=20 source=0:47 subject=21 bound=trait:20 arguments=[]
+predicate owner=22 source=0:42 subject=32 bound=trait:15 arguments=[]
+predicate owner=26 source=0:53 subject=35 bound=trait:15 arguments=[]
+impl owner=18 source=0:39 subject=11 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
-impl owner=25 source=0:102 subject=19 bound=trait:20 arguments=[]
+impl owner=25 source=0:61 subject=19 bound=trait:20 arguments=[]
 impl-method owner=25 declaration=22 selected=26 default=false
-method-call source=0:99 method=17 callable=46 dereferences=0 borrow=49 receiver=47 origin=bound
-trait-path source=0:107 method=22 trait=20 qualifier=implicit origin=ordinary subject-source=0:105
-implementation-use source=0:107 owner=18 arguments=[]
-implementation-use source=0:107 owner=25 arguments=[]
-region-var region:1 body=0:100 source=0:99 origin=call-argument pending
-region-var region:2 body=0:100 source=0:99 origin=expression-borrow pending
-region-coercion body=0:100 source=0:99 actual=49 expected=47 kind=same-shape pending
+method-call source=0:58 method=17 callable=46 dereferences=0 borrow=49 receiver=47 origin=bound
+trait-path source=0:65 method=22 trait=20 qualifier=implicit origin=ordinary subject-source=0:63
+implementation-use source=0:65 owner=18 arguments=[]
+implementation-use source=0:65 owner=25 arguments=[]
+region-var region:1 body=0:59 source=0:58 origin=call-argument pending
+region-var region:2 body=0:59 source=0:58 origin=expression-borrow pending
+region-coercion body=0:59 source=0:58 actual=49 expected=47 kind=same-shape pending
 eof owners=4 members=4 parameters=4 predicates=4 impls=2 calls=1 paths=1 impl-uses=2 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

@@ -23,12 +23,12 @@ type 20 function binders=0 parameters=[11] result=1 unsafe=false
 type 21 function-item def=17 signature=20
 type 22 function binders=0 parameters=[11] result=19 unsafe=false
 type 23 function-item def=14 signature=22
-root 0:31 pattern=0
-root 0:34 pattern=1
-pattern 0 source=0:31 input=11 range=0
-pattern 1 source=0:34 input=11 wildcard
+root 0:16 pattern=0
+root 0:19 pattern=1
+pattern 0 source=0:16 input=11 range=0
+pattern 1 source=0:19 input=11 wildcard
 range 0 ranks=7:7
-match 0 source=0:37 input=0:28 arms=0:2 exhaustive=true uninhabited=false work=7
-arm 0 source=0:33 pattern=0 guard=- useful=true value=0:32
-arm 1 source=0:36 pattern=1 guard=- useful=true value=0:35
+match 0 source=0:22 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=7
+arm 0 source=0:18 pattern=0 guard=- useful=true value=0:17
+arm 1 source=0:21 pattern=1 guard=- useful=true value=0:20
 eof roots=2 patterns=2 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=7 region-vars=0 region-equalities=0 conditions=0 chains=0

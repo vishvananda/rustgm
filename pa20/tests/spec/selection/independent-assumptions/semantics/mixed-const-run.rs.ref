@@ -41,20 +41,20 @@ type 38 function-item def=28 signature=37
 type 39 function-item def=22 signature=29 arguments=[type:34,type:11,const:16:0x00000000000000000000000000000003]
 type 40 projection def=17 self=11 trait=15 arguments=[] family arguments=[]
 type 41 function-item def=27 signature=29 arguments=[type:11,type:12]
-def 13 type=24 name="check" source=0:19
-def 14 type=26 name="fail" source=0:35
-def 16 type=19 name="Self" source=0:37
-def 17 type=22 name="Out" source=0:36
-def 18 type=11 name="Self" source=0:48
-def 19 type=13 name="Out" source=0:47
-def 21 type=20 name="Self" source=0:58
-def 22 type=28 name="m" source=0:57
-def 23 type=12 name="Self" source=0:76
-def 24 type=30 name="m" source=0:75
-def 25 type=12 name="Self" source=0:94
-def 26 type=32 name="m" source=0:93
-def 27 type=36 name="f" source=0:130
-def 28 type=38 name="main" source=0:148
+def 13 type=24 name="check" source=0:13
+def 14 type=26 name="fail" source=0:22
+def 16 type=19 name="Self" source=0:24
+def 17 type=22 name="Out" source=0:23
+def 18 type=11 name="Self" source=0:29
+def 19 type=13 name="Out" source=0:28
+def 21 type=20 name="Self" source=0:35
+def 22 type=28 name="m" source=0:34
+def 23 type=12 name="Self" source=0:46
+def 24 type=30 name="m" source=0:45
+def 25 type=12 name="Self" source=0:57
+def 26 type=32 name="m" source=0:56
+def 27 type=36 name="f" source=0:83
+def 28 type=38 name="main" source=0:96
 def 29 type=2 name="bool"
 def 30 type=3 name="char"
 def 31 type=4 name="str"
@@ -72,17 +72,17 @@ def 42 type=15 name="u128"
 def 43 type=16 name="usize"
 def 44 type=17 name="f32"
 def 45 type=18 name="f64"
-def 46 type=21 name="V" source=0:49
-def 47 type=16 name="N" source=0:53
-def 48 type=33 name="T" source=0:98
-def 49 type=34 name="U" source=0:121
-def 50 type=2 name="ok" source=0:2
-def 51 type=11 name="x" source=0:22
-associated-owner 0 kind=trait self-def=16 self=19 source=0:37 trait=15 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:48 unsafe=false
-associated-owner 2 kind=trait self-def=21 self=20 source=0:58 trait=20 unsafe=false name="B"
-associated-owner 3 kind=trait-impl self-def=23 self=12 source=0:76 unsafe=false
-associated-owner 4 kind=trait-impl self-def=25 self=12 source=0:94 unsafe=false
+def 46 type=21 name="V" source=0:30
+def 47 type=16 name="N" source=0:32
+def 48 type=33 name="T" source=0:60
+def 49 type=34 name="U" source=0:76
+def 50 type=2 name="ok" source=0:0
+def 51 type=11 name="x" source=0:14
+associated-owner 0 kind=trait self-def=16 self=19 source=0:24 trait=15 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=18 self=11 source=0:29 unsafe=false
+associated-owner 2 kind=trait self-def=21 self=20 source=0:35 trait=20 unsafe=false name="B"
+associated-owner 3 kind=trait-impl self-def=23 self=12 source=0:46 unsafe=false
+associated-owner 4 kind=trait-impl self-def=25 self=12 source=0:57 unsafe=false
 associated-member def=17 owner=0
 associated-member def=19 owner=1
 associated-member def=22 owner=2
@@ -94,25 +94,24 @@ parameter owner=20 binding=47 argument=const-parameter:20:1 default=-
 parameter owner=21 binding=21 argument=type:20 default=-
 parameter owner=27 binding=48 argument=type:33 default=-
 parameter owner=27 binding=49 argument=type:34 default=-
-predicate owner=15 source=0:37 subject=19 bound=trait:15 arguments=[]
-predicate owner=20 source=0:58 subject=20 bound=trait:20 arguments=[type:21,const-parameter:20:1]
-predicate owner=27 source=0:97 subject=33 bound=trait:15 arguments=[]
-predicate owner=27 source=0:112 subject=34 bound=trait:20 arguments=[type:35,const:16:0x00000000000000000000000000000002]
-predicate owner=27 source=0:120 subject=34 bound=trait:20 arguments=[type:11,const:16:0x00000000000000000000000000000003]
-impl owner=18 source=0:48 subject=11 bound=trait:15 arguments=[]
+predicate owner=15 source=0:24 subject=19 bound=trait:15 arguments=[]
+predicate owner=20 source=0:35 subject=20 bound=trait:20 arguments=[type:21,const-parameter:20:1]
+predicate owner=27 source=0:59 subject=33 bound=trait:15 arguments=[]
+predicate owner=27 source=0:69 subject=34 bound=trait:20 arguments=[type:35,const:16:0x00000000000000000000000000000002]
+predicate owner=27 source=0:75 subject=34 bound=trait:20 arguments=[type:11,const:16:0x00000000000000000000000000000003]
+impl owner=18 source=0:29 subject=11 bound=trait:15 arguments=[]
 impl-type owner=18 declaration=17 definition=19
-impl owner=23 source=0:76 subject=12 bound=trait:20 arguments=[type:11,const:16:0x00000000000000000000000000000003]
+impl owner=23 source=0:46 subject=12 bound=trait:20 arguments=[type:11,const:16:0x00000000000000000000000000000003]
 impl-method owner=23 declaration=22 selected=24 default=false
-impl owner=25 source=0:94 subject=12 bound=trait:20 arguments=[type:13,const:16:0x00000000000000000000000000000002]
+impl owner=25 source=0:57 subject=12 bound=trait:20 arguments=[type:13,const:16:0x00000000000000000000000000000002]
 impl-method owner=25 declaration=22 selected=26 default=false
-trait-path source=0:127 method=22 trait=20 qualifier=implicit origin=bound subject-source=0:125
-implementation-use source=0:141 owner=18 arguments=[]
-implementation-use source=0:141 owner=25 arguments=[]
-implementation-use source=0:141 owner=23 arguments=[]
+trait-path source=0:80 method=22 trait=20 qualifier=implicit origin=bound subject-source=0:78
+implementation-use source=0:89 owner=18 arguments=[]
+implementation-use source=0:89 owner=25 arguments=[]
+implementation-use source=0:89 owner=23 arguments=[]
 associated-type def=17 type=22
 result-contract def=17 projection=22
 result-bound def=17 index=0 subject=22 bound=sized
 associated-type def=19 type=13
-normalized-node source=0:107 original=35 result=35
-normalized-node source=0:108 original=35 result=35
-eof owners=5 members=5 parameters=6 predicates=5 impls=3 calls=0 paths=1 impl-uses=3 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0
+normalized-node source=0:65 original=35 result=35
+eof owners=5 members=5 parameters=6 predicates=5 impls=3 calls=0 paths=1 impl-uses=3 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0

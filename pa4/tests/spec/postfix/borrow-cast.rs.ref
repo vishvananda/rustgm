@@ -1,17 +1,12 @@
-node 0 6 7 name "x"
-node 1 6 7 path false [0]
-node 2 6 7 binding false false "x" -
-node 3 10 11 literal 0
+node 0 6 7 binding false false "x" -
+node 1 10 11 literal 0
 value 0 integer 10 11 infer 1
-node 4 2 12 let 2 - 3 -
-node 5 14 15 name "x"
-node 6 14 15 path false [5]
-node 7 13 15 unary borrow 6
-node 8 26 29 name "i32"
-node 9 26 29 path false [8]
-node 10 26 29 type Path [9]
-node 11 19 29 type PointerConst [10]
-node 12 13 29 cast 7 11
-node 13 0 31 block Plain [4] 12
-root 13
+node 2 2 12 let 0 - 1 -
+node 3 14 15 name "x"
+node 4 13 15 unary borrow 3
+node 5 26 29 name "i32"
+node 6 19 29 type PointerConst [5]
+node 7 13 29 cast 4 6
+node 8 0 31 block Plain [2] 7
+root 8
 eof 32

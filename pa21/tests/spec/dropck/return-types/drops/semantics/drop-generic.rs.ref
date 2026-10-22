@@ -37,17 +37,17 @@ type 34 function binders=0 parameters=[] result=1 unsafe=false
 type 35 function-item def=24 signature=34
 type 36 function binders=0 parameters=[28] result=1 unsafe=false
 type 37 function-item def=23 signature=36 arguments=[type:28]
-def 13 type=22 name="check" source=0:19
-def 14 type=24 name="fail" source=0:35
-def 16 type=20 name="Self" source=0:36
-def 17 type=19 name="S" source=0:37
-def 18 type=19 name="S" source=0:37
-def 19 type=19 name="Self" source=0:44
-def 20 type=19 name="Self" source=0:63
-def 21 type=27 name="drop" source=0:62
-def 22 type=30 name="make" source=0:71
-def 23 type=33 name="consume" source=0:79
-def 24 type=35 name="main" source=0:88
+def 13 type=22 name="check" source=0:13
+def 14 type=24 name="fail" source=0:22
+def 16 type=20 name="Self" source=0:23
+def 17 type=19 name="S" source=0:24
+def 18 type=19 name="S" source=0:24
+def 19 type=19 name="Self" source=0:27
+def 20 type=19 name="Self" source=0:39
+def 21 type=27 name="drop" source=0:38
+def 22 type=30 name="make" source=0:45
+def 23 type=33 name="consume" source=0:51
+def 24 type=35 name="main" source=0:58
 def 25 type=2 name="bool"
 def 26 type=3 name="char"
 def 27 type=4 name="str"
@@ -65,20 +65,20 @@ def 38 type=15 name="u128"
 def 39 type=16 name="usize"
 def 40 type=17 name="f32"
 def 41 type=18 name="f64"
-def 42 type=31 name="T" source=0:72
-def 43 type=2 name="ok" source=0:2
-def 44 type=11 name="x" source=0:22
-def 49 type=25 name="self" source=0:53
-associated-owner 0 kind=trait self-def=16 self=20 source=0:36 trait=15 unsafe=false name="V"
-associated-owner 1 kind=trait-impl self-def=19 self=19 source=0:44 unsafe=false
-associated-owner 2 kind=trait-impl self-def=20 self=19 source=0:63 unsafe=false
+def 42 type=31 name="T" source=0:46
+def 43 type=2 name="ok" source=0:0
+def 44 type=11 name="x" source=0:14
+def 49 type=25 name="self" source=0:30
+associated-owner 0 kind=trait self-def=16 self=20 source=0:23 trait=15 unsafe=false name="V"
+associated-owner 1 kind=trait-impl self-def=19 self=19 source=0:27 unsafe=false
+associated-owner 2 kind=trait-impl self-def=20 self=19 source=0:39 unsafe=false
 associated-member def=21 owner=2 receiver=25 references=1
 parameter owner=16 binding=16 argument=type:20 default=-
 parameter owner=23 binding=42 argument=type:31 default=-
-predicate owner=15 source=0:36 subject=20 bound=trait:15 arguments=[]
-impl owner=19 source=0:44 subject=19 bound=trait:15 arguments=[]
-implementation-use source=0:67 owner=19 arguments=[]
-opaque 0 owner=22 source=0:67 application=28 hidden=19 role=defining-result storage-proof=pending
+predicate owner=15 source=0:23 subject=20 bound=trait:15 arguments=[]
+impl owner=19 source=0:27 subject=19 bound=trait:15 arguments=[]
+implementation-use source=0:42 owner=19 arguments=[]
+opaque 0 owner=22 source=0:42 application=28 hidden=19 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=28 bound=trait:15 arguments=[]
 opaque-body-result def=22 type=19
 eof owners=3 members=1 parameters=2 predicates=1 impls=1 calls=0 paths=0 impl-uses=1 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

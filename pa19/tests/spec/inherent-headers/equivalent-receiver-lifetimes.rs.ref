@@ -35,11 +35,11 @@ type 32 aggregate def=13 regions=[bound:1:0]
 type 33 function binders=0 parameters=[31] result=32 unsafe=false
 type 34 function-item def=14 signature=30
 type 35 reference mutable=false region=bound:0:1 referent=11
-def 13 type=19 name="S" source=0:7
-def 14 type=34 name="S" source=0:7
-def 15 type=19 name="Self" source=0:42
-def 16 type=26 name="get" source=0:41
-def 17 type=28 name="main" source=0:44
+def 13 type=19 name="S" source=0:5
+def 14 type=34 name="S" source=0:5
+def 15 type=19 name="Self" source=0:33
+def 16 type=26 name="get" source=0:32
+def 17 type=28 name="main" source=0:35
 def 18 type=2 name="bool"
 def 19 type=3 name="char"
 def 20 type=4 name="str"
@@ -57,7 +57,7 @@ def 31 type=15 name="u128"
 def 32 type=16 name="usize"
 def 33 type=17 name="f32"
 def 34 type=18 name="f64"
-def 38 type=21 name="self" source=0:17
-associated-owner 0 kind=inherent self-def=15 self=19 source=0:42 unsafe=false
+def 38 type=21 name="self" source=0:12
+associated-owner 0 kind=inherent self-def=15 self=19 source=0:33 unsafe=false
 associated-member def=16 owner=0 receiver=21 references=1
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0

@@ -1,13 +1,12 @@
-active [0,1,2,3,4,5]
+active [0,1,2,3,4]
 node 0 0 26 item 0
 item 0 "ty" private [] [] macro-rules 0
 node 1 34 36 name "ty"
-node 2 34 36 path false [1]
-node 3 34 39 macro 2 1
-node 4 27 40 item 1
-item 1 "X" private [] [] type-alias [] 3
-node 5 0 40 crate [0,4]
+node 2 34 39 macro 1 1
+node 3 27 40 item 1
+item 1 "X" private [] [] type-alias [] 2
+node 4 0 40 crate [0,3]
 capture 0 16 26 5 "{()=>{u8}}"
 capture 1 37 39 1 "()"
-root 5
+root 4
 eof 41

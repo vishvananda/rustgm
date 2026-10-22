@@ -1,34 +1,23 @@
-active [0,1,2,3,4,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
 node 0 11 14 name "i32"
-node 1 11 14 path false [0]
-node 2 11 14 type Path [1]
-node 3 9 14 field-definition "x" private 2
-node 4 0 15 item 0
-item 0 "P" private [] [] struct Record [3]
-node 5 21 22 name "p"
-node 6 21 22 path false [5]
-node 7 21 22 binding false false "p" -
-node 8 23 24 name "P"
-node 9 23 24 path false [8]
-node 10 23 24 type Path [9]
-node 11 21 24 parameter 7 10
-node 12 27 30 name "i32"
-node 13 27 30 path false [12]
-node 14 27 30 type Path [13]
-node 15 35 36 name "P"
-node 16 35 36 path false [15]
-node 17 37 42 binding false true "x" -
-node 18 37 42 pattern-field "x" 17
-node 19 35 43 struct-pattern 16 [18] false
-node 20 44 45 name "p"
-node 21 44 45 path false [20]
-node 22 31 46 let 19 - 21 -
-node 23 47 48 name "x"
-node 24 47 48 path false [23]
-node 25 46 48 unary deref 24
-node 26 30 49 block Plain [22] 25
-node 27 16 49 item 1
-item 1 "f" private [] [] function false false false false - [11] 14 26
-node 28 0 49 crate [4,27]
-root 28
+node 1 9 14 field-definition "x" private 0
+node 2 0 15 item 0
+item 0 "P" private [] [] struct Record [1]
+node 3 21 22 binding false false "p" -
+node 4 23 24 name "P"
+node 5 21 24 parameter 3 4
+node 6 27 30 name "i32"
+node 7 35 36 name "P"
+node 8 37 42 binding false true "x" -
+node 9 37 42 pattern-field "x" 8
+node 10 35 43 struct-pattern 7 [9] false
+node 11 44 45 name "p"
+node 12 31 46 let 10 - 11 -
+node 13 47 48 name "x"
+node 14 46 48 unary deref 13
+node 15 30 49 block Plain [12] 14
+node 16 16 49 item 1
+item 1 "f" private [] [] function false false false false - [5] 6 15
+node 17 0 49 crate [2,16]
+root 17
 eof 50

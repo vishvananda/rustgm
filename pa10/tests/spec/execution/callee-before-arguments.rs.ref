@@ -23,43 +23,43 @@ type 20 function-item def=13 signature=19
 type 21 function-item def=14 signature=19
 type 22 function binders=0 parameters=[] result=14 unsafe=false
 type 23 function-item def=15 signature=22
-body 0 function def=13 signature=19 result=14 source=0:14
-  local l0 type=14 parameter=0 def=33 mutable=false storage-parent=- source=2
+body 0 function def=13 signature=19 result=14 source=0:7
+  local l0 type=14 parameter=0 def=33 mutable=false storage-parent=- source=0
   block b0:
-    live l0 source=2
-    v0 type=14 = read l0 source=11
-    v1 type=14 = integer bits=0x00000000000000000000000000000001 source=12
-    v2 type=14 = binary Plus v0 v1 source=13
-    dead l0 source=14
-    return v2 source=14
+    live l0 source=0
+    v0 type=14 = read l0 source=4
+    v1 type=14 = integer bits=0x00000000000000000000000000000001 source=5
+    v2 type=14 = binary Plus v0 v1 source=6
+    dead l0 source=7
+    return v2 source=7
 end-body
-body 1 function def=14 signature=19 result=14 source=0:30
-  local l0 type=14 parameter=0 def=34 mutable=false storage-parent=- source=18
+body 1 function def=14 signature=19 result=14 source=0:16
+  local l0 type=14 parameter=0 def=34 mutable=false storage-parent=- source=9
   block b0:
-    live l0 source=18
-    v0 type=14 = read l0 source=27
-    v1 type=14 = integer bits=0x00000000000000000000000000000014 source=28
-    v2 type=14 = binary Plus v0 v1 source=29
-    dead l0 source=30
-    return v2 source=30
+    live l0 source=9
+    v0 type=14 = read l0 source=13
+    v1 type=14 = integer bits=0x00000000000000000000000000000014 source=14
+    v2 type=14 = binary Plus v0 v1 source=15
+    dead l0 source=16
+    return v2 source=16
 end-body
-body 2 function def=15 signature=22 result=14 source=0:60
-  local l0 type=19 binding def=35 mutable=true storage-parent=- source=37
+body 2 function def=15 signature=22 result=14 source=0:34
+  local l0 type=19 binding def=35 mutable=true storage-parent=- source=19
   block b0:
-    v0 type=20 = function def=13 source=47
-    v1 type=19 = reify v0 source=47
-    live l0 source=37
-    store l0 v1 source=48
-    v2 type=1 = unit source=48
-    v3 type=19 = read l0 source=50
-    v4 type=21 = function def=14 source=54
-    v5 type=19 = reify v4 source=54
-    store l0 v5 source=55
-    v6 type=1 = unit source=55
-    v7 type=1 = unit source=56
-    v8 type=14 = integer bits=0x00000000000000000000000000000001 source=57
-    v9 type=14 = call signature=19 v3 [v8] source=59
-    dead l0 source=60
-    return v9 source=60
+    v0 type=20 = function def=13 source=24
+    v1 type=19 = reify v0 source=24
+    live l0 source=19
+    store l0 v1 source=25
+    v2 type=1 = unit source=25
+    v3 type=19 = read l0 source=26
+    v4 type=21 = function def=14 source=28
+    v5 type=19 = reify v4 source=28
+    store l0 v5 source=29
+    v6 type=1 = unit source=29
+    v7 type=1 = unit source=30
+    v8 type=14 = integer bits=0x00000000000000000000000000000001 source=31
+    v9 type=14 = call signature=19 v3 [v8] source=33
+    dead l0 source=34
+    return v9 source=34
 end-body
 eof bodies=3 locals=3 values=16 statements=24 blocks=3

@@ -21,8 +21,8 @@ type 18 primitive f64
 type 19 aggregate def=13
 type 20 function binders=0 parameters=[19] result=1 unsafe=false
 type 21 function-item def=16 signature=20
-root 0:15 pattern=0
-pattern 0 source=0:15 input=19 product variant=0 fields=0:0
-match 0 source=0:18 input=0:12 arms=0:1 exhaustive=true uninhabited=false work=11
-arm 0 source=0:17 pattern=0 guard=- useful=true value=0:16
+root 0:10 pattern=0
+pattern 0 source=0:10 input=19 product variant=0 fields=0:0
+match 0 source=0:13 input=0:7 arms=0:1 exhaustive=true uninhabited=false work=11
+arm 0 source=0:12 pattern=0 guard=- useful=true value=0:11
 eof roots=1 patterns=1 fields=0 alternatives=0 ranges=0 matches=1 arms=1 coverage-work=11 region-vars=0 region-equalities=0 conditions=0 chains=0

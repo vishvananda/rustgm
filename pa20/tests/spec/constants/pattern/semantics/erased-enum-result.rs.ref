@@ -31,17 +31,17 @@ type 28 function binders=0 parameters=[] result=1 unsafe=false
 type 29 function-item def=25 signature=28
 type 30 aggregate def=20 arguments=[const-parameter:24:0]
 type 31 function-item def=24 signature=26 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=23 name="check" source=0:19
-def 14 type=25 name="fail" source=0:35
-def 15 type=19 name="K" source=0:38
-def 17 type=19 name="A" source=0:36
-def 19 type=19 name="B" source=0:37
-def 20 type=20 name="S" source=0:44
-def 21 type=20 name="S" source=0:44
-def 22 type=21 name="Self" source=0:63
-def 23 type=19 name="C" source=0:62
-def 24 type=27 name="f" source=0:94
-def 25 type=29 name="main" source=0:120
+def 13 type=23 name="check" source=0:13
+def 14 type=25 name="fail" source=0:22
+def 15 type=19 name="K" source=0:25
+def 17 type=19 name="A" source=0:23
+def 19 type=19 name="B" source=0:24
+def 20 type=20 name="S" source=0:29
+def 21 type=20 name="S" source=0:29
+def 22 type=21 name="Self" source=0:41
+def 23 type=19 name="C" source=0:40
+def 24 type=27 name="f" source=0:61
+def 25 type=29 name="main" source=0:85
 def 26 type=2 name="bool"
 def 27 type=3 name="char"
 def 28 type=4 name="str"
@@ -59,18 +59,18 @@ def 39 type=15 name="u128"
 def 40 type=16 name="usize"
 def 41 type=17 name="f32"
 def 42 type=18 name="f64"
-def 43 type=16 name="N" source=0:43
-def 44 type=16 name="N" source=0:48
-def 45 type=16 name="N" source=0:67
-def 46 type=2 name="ok" source=0:2
-def 47 type=11 name="x" source=0:22
-def 48 type=19 name="x" source=0:70
-associated-owner 0 kind=inherent self-def=22 self=21 source=0:63 unsafe=false
+def 43 type=16 name="N" source=0:28
+def 44 type=16 name="N" source=0:31
+def 45 type=16 name="N" source=0:43
+def 46 type=2 name="ok" source=0:0
+def 47 type=11 name="x" source=0:14
+def 48 type=19 name="x" source=0:44
+associated-owner 0 kind=inherent self-def=22 self=21 source=0:41 unsafe=false
 associated-member def=23 owner=0
 parameter owner=20 binding=43 argument=const-parameter:20:0 default=-
 parameter owner=22 binding=44 argument=const-parameter:22:0 default=-
 parameter owner=24 binding=45 argument=const-parameter:24:0 default=-
-inherent-path source=0:86 method=23 implementation=22 prefix=0:84 annotation=false
+inherent-path source=0:53 method=23 implementation=22 prefix=0:51 annotation=false
 associated-constant def=23 type=19
-constant-use source=0:86 definition=23 arguments=[const-parameter:24:0]
+constant-use source=0:53 definition=23 arguments=[const-parameter:24:0]
 eof owners=1 members=1 parameters=3 predicates=0 impls=0 calls=0 paths=1 impl-uses=0 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=1 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

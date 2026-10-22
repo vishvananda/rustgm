@@ -22,23 +22,23 @@ type 19 function binders=0 parameters=[15] result=15 unsafe=false
 type 20 function-item def=13 signature=19
 type 21 function binders=0 parameters=[9] result=9 unsafe=false
 type 22 function-item def=14 signature=21
-body 0 function def=13 signature=19 result=15 source=0:14
-  local l0 type=15 parameter=0 def=32 mutable=false storage-parent=- source=2
+body 0 function def=13 signature=19 result=15 source=0:7
+  local l0 type=15 parameter=0 def=32 mutable=false storage-parent=- source=0
   block b0:
-    live l0 source=2
-    v0 type=15 = read l0 source=11
-    v1 type=15 = integer bits=0x00000000000000000000000000000001 source=12
-    v2 type=15 = binary Plus v0 v1 source=13
-    dead l0 source=14
-    return v2 source=14
+    live l0 source=0
+    v0 type=15 = read l0 source=4
+    v1 type=15 = integer bits=0x00000000000000000000000000000001 source=5
+    v2 type=15 = binary Plus v0 v1 source=6
+    dead l0 source=7
+    return v2 source=7
 end-body
-body 1 function def=14 signature=21 result=9 source=0:29
-  local l0 type=9 parameter=0 def=33 mutable=false storage-parent=- source=18
+body 1 function def=14 signature=21 result=9 source=0:15
+  local l0 type=9 parameter=0 def=33 mutable=false storage-parent=- source=9
   block b0:
-    live l0 source=18
-    v0 type=9 = read l0 source=27
-    v1 type=9 = unary negate v0 literal=false source=28
-    dead l0 source=29
-    return v1 source=29
+    live l0 source=9
+    v0 type=9 = read l0 source=13
+    v1 type=9 = unary negate v0 literal=false source=14
+    dead l0 source=15
+    return v1 source=15
 end-body
 eof bodies=2 locals=2 values=5 statements=9 blocks=2

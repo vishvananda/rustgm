@@ -1,33 +1,22 @@
-active [0,1,2,3,4,5,6,7,8,9,10,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 node 0 7 9 name "Fn"
 node 1 10 13 name "i32"
-node 2 10 13 path false [1]
-node 3 10 13 type Path [2]
-node 4 16 19 name "i32"
-node 5 16 19 path false [4]
-node 6 16 19 type Path [5]
-node 7 7 19 applied 0 [3] 6
-node 8 7 19 path false [7]
-node 9 7 19 bound false [] 8
-node 10 5 19 generic Type "F" - [9] -
-node 11 21 22 name "g"
-node 12 21 22 path false [11]
-node 13 21 22 binding false false "g" -
-node 14 23 24 name "F"
-node 15 23 24 path false [14]
-node 16 23 24 type Path [15]
-node 17 21 24 parameter 13 16
-node 18 27 30 name "i32"
-node 19 27 30 path false [18]
-node 20 27 30 type Path [19]
-node 21 31 32 name "g"
-node 22 31 32 path false [21]
-node 23 33 34 literal 0
+node 2 16 19 name "i32"
+node 3 7 19 applied 0 [1] 2
+node 4 7 19 path false [3]
+node 5 7 19 bound false [] 4
+node 6 5 19 generic Type "F" - [5] -
+node 7 21 22 binding false false "g" -
+node 8 23 24 name "F"
+node 9 21 24 parameter 7 8
+node 10 27 30 name "i32"
+node 11 31 32 name "g"
+node 12 33 34 literal 0
 value 0 integer 33 34 infer 2
-node 24 31 35 call 22 [23]
-node 25 30 36 block Plain [] 24
-node 26 0 36 item 0
-item 0 "f" private [10] [] function false false false false - [17] 20 25
-node 27 0 36 crate [26]
-root 27
+node 13 31 35 call 11 [12]
+node 14 30 36 block Plain [] 13
+node 15 0 36 item 0
+item 0 "f" private [6] [] function false false false false - [9] 10 14
+node 16 0 36 crate [15]
+root 16
 eof 37

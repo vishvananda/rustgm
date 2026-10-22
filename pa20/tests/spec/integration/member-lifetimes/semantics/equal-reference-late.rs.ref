@@ -30,7 +30,7 @@ type 27 reference mutable=false region=bound:0:0 referent=11
 type 28 reference mutable=false region=static referent=11
 type 29 aggregate def=17 regions=[region:1]
 type 30 aggregate def=17 regions=[region:2]
-type 31 reference mutable=false region=region:2 referent=11
+type 31 reference mutable=false region=region:1 referent=11
 type 32 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
 type 33 function binders=0 parameters=[] result=32 unsafe=false
 type 34 function-item def=24 signature=33
@@ -47,18 +47,18 @@ type 44 function-item def=18 signature=40
 type 45 array element=11 length=3
 type 46 function binders=0 parameters=[45] result=32 unsafe=false
 type 47 function-item def=16 signature=46 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=24 name="check" source=0:19
-def 14 type=26 name="fail" source=0:35
-def 15 type=19 name="X" source=0:47
-def 16 type=39 name="X" source=0:47
-def 17 type=20 name="S" source=0:55
-def 18 type=44 name="S" source=0:55
-def 20 type=21 name="Self" source=0:63
-def 21 type=27 name="C" source=0:62
-def 22 type=20 name="Self" source=0:83
-def 23 type=27 name="C" source=0:82
-def 24 type=34 name="f" source=0:113
-def 25 type=36 name="main" source=0:127
+def 13 type=24 name="check" source=0:13
+def 14 type=26 name="fail" source=0:22
+def 15 type=19 name="X" source=0:29
+def 16 type=39 name="X" source=0:29
+def 17 type=20 name="S" source=0:35
+def 18 type=44 name="S" source=0:35
+def 20 type=21 name="Self" source=0:41
+def 21 type=27 name="C" source=0:40
+def 22 type=20 name="Self" source=0:57
+def 23 type=27 name="C" source=0:56
+def 24 type=34 name="f" source=0:81
+def 25 type=36 name="main" source=0:93
 def 26 type=2 name="bool"
 def 27 type=3 name="char"
 def 28 type=4 name="str"
@@ -76,28 +76,28 @@ def 39 type=15 name="u128"
 def 40 type=16 name="usize"
 def 41 type=17 name="f32"
 def 42 type=18 name="f64"
-def 43 type=16 name="N" source=0:39
-def 47 type=2 name="ok" source=0:2
-def 48 type=11 name="x" source=0:22
-associated-owner 0 kind=trait self-def=20 self=21 source=0:63 trait=19 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=22 self=20 source=0:83 unsafe=false
+def 43 type=16 name="N" source=0:24
+def 47 type=2 name="ok" source=0:0
+def 48 type=11 name="x" source=0:14
+associated-owner 0 kind=trait self-def=20 self=21 source=0:41 trait=19 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=22 self=20 source=0:57 unsafe=false
 associated-member def=21 owner=0
 associated-member def=23 owner=1
 parameter owner=15 binding=43 argument=const-parameter:15:0 default=-
 parameter owner=19 binding=45 argument=region:bound:0:0 default=-
 parameter owner=20 binding=20 argument=type:21 default=-
-predicate owner=19 source=0:63 subject=21 bound=trait:19 arguments=[region:bound:0:0]
-impl owner=22 source=0:83 subject=20 bound=trait:19 arguments=[region:bound:0:0]
-trait-path source=0:96 method=21 trait=19 qualifier=explicit origin=ordinary subject-source=0:89
-implementation-use source=0:96 owner=22 arguments=[region:region:1]
-region-var region:1 body=0:102 source=0:96 origin=inference pending
-region-var region:2 body=0:81 source=0:81 origin=expression-borrow pending
-region-equal body=0:102 left=static right=region:1
-region-equal body=0:102 left=static right=region:1
-region-coercion body=0:81 source=0:81 actual=31 expected=27 kind=same-shape pending
+predicate owner=19 source=0:41 subject=21 bound=trait:19 arguments=[region:bound:0:0]
+impl owner=22 source=0:57 subject=20 bound=trait:19 arguments=[region:bound:0:0]
+trait-path source=0:68 method=21 trait=19 qualifier=explicit origin=ordinary subject-source=0:62
+implementation-use source=0:68 owner=22 arguments=[region:region:1]
+region-var region:1 body=0:72 source=0:68 origin=inference pending
+region-var region:1 body=0:55 source=0:55 origin=expression-borrow pending
+region-equal body=0:72 left=static right=region:1
+region-equal body=0:72 left=static right=region:1
+region-coercion body=0:55 source=0:55 actual=31 expected=27 kind=same-shape pending
 associated-constant def=21 type=27
 associated-constant def=23 type=27
 impl-constant owner=22 declaration=21 selected=23 default=false
-constant-use source=0:96 definition=21 arguments=[region:static,type:22]
+constant-use source=0:68 definition=21 arguments=[region:static,type:22]
 constant-dispatch declaration=21 arguments=[region:static,type:22] selected=23 arguments=[region:static]
 eof owners=2 members=2 parameters=3 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=2 result-contracts=0 result-bounds=0 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

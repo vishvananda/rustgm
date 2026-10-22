@@ -26,17 +26,17 @@ type 23 function binders=2 parameters=[22] result=1 unsafe=false
 type 24 function-item def=14 signature=23
 type 25 reference mutable=false region=region:1 referent=11
 type 26 reference mutable=false region=region:2 referent=25
-root 0:22 pattern=0
-root 0:25 pattern=1
-pattern 0 source=0:22 input=22 deref mutable=false implicit=false pattern=2
-pattern 1 source=0:25 input=22 wildcard
-pattern 2 source=0:22 input=21 deref mutable=false implicit=false pattern=3
-pattern 3 source=0:22 input=11 range=0
+root 0:13 pattern=0
+root 0:16 pattern=1
+pattern 0 source=0:13 input=22 deref mutable=false implicit=false pattern=2
+pattern 1 source=0:16 input=22 wildcard
+pattern 2 source=0:13 input=21 deref mutable=false implicit=false pattern=3
+pattern 3 source=0:13 input=11 range=0
 range 0 ranks=7:7
-match 0 source=0:28 input=0:19 arms=0:2 exhaustive=true uninhabited=false work=87
-arm 0 source=0:24 pattern=0 guard=- useful=true value=0:23
-arm 1 source=0:27 pattern=1 guard=- useful=true value=0:26
-region-var region:1 body=0:7 source=0:6 origin=expression-borrow pending
-region-var region:2 body=0:7 source=0:7 origin=expression-borrow pending
-region-coercion body=0:7 source=0:7 actual=26 expected=20 kind=same-shape pending
+match 0 source=0:19 input=0:12 arms=0:2 exhaustive=true uninhabited=false work=87
+arm 0 source=0:15 pattern=0 guard=- useful=true value=0:14
+arm 1 source=0:18 pattern=1 guard=- useful=true value=0:17
+region-var region:1 body=0:5 source=0:4 origin=expression-borrow pending
+region-var region:2 body=0:5 source=0:5 origin=expression-borrow pending
+region-coercion body=0:5 source=0:5 actual=26 expected=20 kind=same-shape pending
 eof roots=2 patterns=4 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=87 region-vars=2 region-equalities=0 conditions=0 chains=0

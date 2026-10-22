@@ -22,8 +22,8 @@ type 19 aggregate def=14
 type 20 aggregate def=15
 type 21 function binders=0 parameters=[20] result=1 unsafe=false
 type 22 function-item def=16 signature=21
-root 0:20 pattern=0
-pattern 0 source=0:20 input=20 product variant=0 fields=0:0
-match 0 source=0:23 input=0:16 arms=0:1 exhaustive=true uninhabited=false work=11
-arm 0 source=0:22 pattern=0 guard=- useful=true value=0:21
+root 0:14 pattern=0
+pattern 0 source=0:14 input=20 product variant=0 fields=0:0
+match 0 source=0:17 input=0:10 arms=0:1 exhaustive=true uninhabited=false work=11
+arm 0 source=0:16 pattern=0 guard=- useful=true value=0:15
 eof roots=1 patterns=1 fields=0 alternatives=0 ranges=0 matches=1 arms=1 coverage-work=11 region-vars=0 region-equalities=0 conditions=0 chains=0

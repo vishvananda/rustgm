@@ -18,8 +18,8 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-def 13 type=11 name="A" source=0:5
-def 14 type=11 name="B" source=0:10
+def 13 type=11 name="A" source=0:2
+def 14 type=11 name="B" source=0:5
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -37,15 +37,13 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-initializer const def=13 type=11 source=0:5 value=0:4
-initializer const def=14 type=11 source=0:10 value=0:9
-node 0:1 type=11 span=8:10
-node 0:2 type=11 span=8:10
-node 0:4 type=11 span=11:12
-node 0:5 type=11 span=0:13
-node 0:7 type=11 span=22:24
-node 0:8 type=11 span=22:24
-node 0:9 type=11 span=25:26
-scalar 0:9 integer bits=0x00000000000000000000000000000002
-node 0:10 type=11 span=14:27
-eof types=19 definitions=19 nodes=8 functions=0 initializers=2
+initializer const def=13 type=11 source=0:2 value=0:1
+initializer const def=14 type=11 source=0:5 value=0:4
+node 0:0 type=11 span=8:10
+node 0:1 type=11 span=11:12
+node 0:2 type=11 span=0:13
+node 0:3 type=11 span=22:24
+node 0:4 type=11 span=25:26
+scalar 0:4 integer bits=0x00000000000000000000000000000002
+node 0:5 type=11 span=14:27
+eof types=19 definitions=19 nodes=6 functions=0 initializers=2

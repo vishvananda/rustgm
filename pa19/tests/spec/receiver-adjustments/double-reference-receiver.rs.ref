@@ -40,11 +40,11 @@ type 37 reference mutable=false region=region:3 referent=11
 type 38 reference mutable=false region=region:2 referent=37
 type 39 function binders=0 parameters=[38] result=11 unsafe=false
 type 40 reference mutable=false region=region:4 referent=34
-def 14 type=19 name="Self" source=0:13
-def 15 type=23 name="f" source=0:12
-def 16 type=11 name="Self" source=0:38
-def 17 type=27 name="f" source=0:37
-def 18 type=29 name="main" source=0:54
+def 14 type=19 name="Self" source=0:7
+def 15 type=23 name="f" source=0:6
+def 16 type=11 name="Self" source=0:21
+def 17 type=27 name="f" source=0:20
+def 18 type=29 name="main" source=0:32
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -62,22 +62,22 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 37 type=25 name="self" source=0:22
-def 38 type=11 name="n" source=0:41
-def 39 type=11 name="x" source=0:46
-associated-owner 0 kind=trait self-def=14 self=19 source=0:13 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:38 unsafe=false
+def 37 type=25 name="self" source=0:10
+def 38 type=11 name="n" source=0:22
+def 39 type=11 name="x" source=0:25
+associated-owner 0 kind=trait self-def=14 self=19 source=0:7 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:21 unsafe=false
 associated-member def=15 owner=0 receiver=21 references=2
 associated-member def=17 owner=1 receiver=25 references=2
 parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:13 subject=19 bound=trait:13 arguments=[]
-impl owner=16 source=0:38 subject=11 bound=trait:13 arguments=[]
+predicate owner=13 source=0:7 subject=19 bound=trait:13 arguments=[]
+impl owner=16 source=0:21 subject=11 bound=trait:13 arguments=[]
 impl-method owner=16 declaration=15 selected=17 default=false
-method-call source=0:51 method=15 callable=36 dereferences=0 borrow=40 receiver=38 origin=lexical
-implementation-use source=0:51 owner=16 arguments=[]
-region-var region:1 body=0:53 source=0:49 origin=expression-borrow pending
-region-var region:2 body=0:53 source=0:51 origin=call-argument pending
-region-var region:3 body=0:53 source=0:51 origin=call-argument pending
-region-var region:4 body=0:53 source=0:51 origin=expression-borrow pending
-region-coercion body=0:53 source=0:51 actual=40 expected=38 kind=same-shape pending
+method-call source=0:29 method=15 callable=36 dereferences=0 borrow=40 receiver=38 origin=lexical
+implementation-use source=0:29 owner=16 arguments=[]
+region-var region:1 body=0:31 source=0:27 origin=expression-borrow pending
+region-var region:2 body=0:31 source=0:29 origin=call-argument pending
+region-var region:3 body=0:31 source=0:29 origin=call-argument pending
+region-var region:4 body=0:31 source=0:29 origin=expression-borrow pending
+region-coercion body=0:31 source=0:29 actual=40 expected=38 kind=same-shape pending
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=1 paths=0 impl-uses=1

@@ -25,18 +25,18 @@ type 22 function-item def=13 signature=21
 type 23 array element=11 length=2
 type 24 reference mutable=false region=static referent=23
 type 25 reference mutable=false region=static referent=19
-root 0:11 pattern=0
-root 0:14 pattern=1
-root 0:17 pattern=2
-pattern 0 source=0:11 input=20 deref mutable=false implicit=false pattern=3
-pattern 1 source=0:14 input=20 deref mutable=false implicit=false pattern=6
-pattern 2 source=0:17 input=20 wildcard
-pattern 3 source=0:11 input=19 slice minimum=2 exact=true fields=0:2
-pattern 4 source=0:11 input=11 range=0
-pattern 5 source=0:11 input=11 range=1
-pattern 6 source=0:14 input=19 slice minimum=2 exact=true fields=2:4
-pattern 7 source=0:14 input=11 range=2
-pattern 8 source=0:14 input=11 range=3
+root 0:6 pattern=0
+root 0:9 pattern=1
+root 0:12 pattern=2
+pattern 0 source=0:6 input=20 deref mutable=false implicit=false pattern=3
+pattern 1 source=0:9 input=20 deref mutable=false implicit=false pattern=6
+pattern 2 source=0:12 input=20 wildcard
+pattern 3 source=0:6 input=19 slice minimum=2 exact=true fields=0:2
+pattern 4 source=0:6 input=11 range=0
+pattern 5 source=0:6 input=11 range=1
+pattern 6 source=0:9 input=19 slice minimum=2 exact=true fields=2:4
+pattern 7 source=0:9 input=11 range=2
+pattern 8 source=0:9 input=11 range=3
 field 0 index=0 pattern=4
 field 1 index=1 pattern=5
 field 2 index=0 pattern=7
@@ -45,8 +45,8 @@ range 0 ranks=97:97
 range 1 ranks=98:98
 range 2 ranks=97:97
 range 3 ranks=98:98
-match 0 source=0:20 input=0:10 arms=0:3 exhaustive=true uninhabited=false work=1565
-arm 0 source=0:13 pattern=0 guard=- useful=true value=0:12
-arm 1 source=0:16 pattern=1 guard=- useful=false value=0:15
-arm 2 source=0:19 pattern=2 guard=- useful=true value=0:18
+match 0 source=0:15 input=0:5 arms=0:3 exhaustive=true uninhabited=false work=1565
+arm 0 source=0:8 pattern=0 guard=- useful=true value=0:7
+arm 1 source=0:11 pattern=1 guard=- useful=false value=0:10
+arm 2 source=0:14 pattern=2 guard=- useful=true value=0:13
 eof roots=3 patterns=9 fields=4 alternatives=0 ranges=4 matches=1 arms=3 coverage-work=1565 region-vars=0 region-equalities=0 conditions=0 chains=0

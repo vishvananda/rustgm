@@ -25,26 +25,26 @@ type 22 array element=11 length=1
 type 23 reference mutable=false region=static referent=22
 type 24 function binders=0 parameters=[23] result=19 unsafe=false
 type 25 function-item def=14 signature=24
-root 0:29 pattern=0
-root 0:35 pattern=1
-root 0:38 pattern=3
-pattern 0 source=0:29 input=19 product variant=0 fields=1:2
-pattern 1 source=0:35 input=19 product variant=0 fields=0:1
-pattern 2 source=0:34 input=23 deref mutable=false implicit=false pattern=7
-pattern 3 source=0:38 input=19 wildcard
-pattern 4 source=0:29 input=23 deref mutable=false implicit=false pattern=5
-pattern 5 source=0:29 input=22 product variant=- fields=2:3
-pattern 6 source=0:29 input=11 range=0
-pattern 7 source=0:34 input=22 product variant=- fields=3:4
-pattern 8 source=0:34 input=11 range=1
+root 0:17 pattern=0
+root 0:22 pattern=1
+root 0:25 pattern=3
+pattern 0 source=0:17 input=19 product variant=0 fields=1:2
+pattern 1 source=0:22 input=19 product variant=0 fields=0:1
+pattern 2 source=0:21 input=23 deref mutable=false implicit=false pattern=7
+pattern 3 source=0:25 input=19 wildcard
+pattern 4 source=0:17 input=23 deref mutable=false implicit=false pattern=5
+pattern 5 source=0:17 input=22 product variant=- fields=2:3
+pattern 6 source=0:17 input=11 range=0
+pattern 7 source=0:21 input=22 product variant=- fields=3:4
+pattern 8 source=0:21 input=11 range=1
 field 0 nominal=0 pattern=2
 field 1 nominal=0 pattern=4
 field 2 index=0 pattern=6
 field 3 index=0 pattern=8
 range 0 ranks=97:97
 range 1 ranks=98:98
-match 0 source=0:41 input=0:26 arms=0:3 exhaustive=true uninhabited=false work=212
-arm 0 source=0:31 pattern=0 guard=- useful=true value=0:30
-arm 1 source=0:37 pattern=1 guard=- useful=true value=0:36
-arm 2 source=0:40 pattern=3 guard=- useful=true value=0:39
+match 0 source=0:28 input=0:16 arms=0:3 exhaustive=true uninhabited=false work=212
+arm 0 source=0:19 pattern=0 guard=- useful=true value=0:18
+arm 1 source=0:24 pattern=1 guard=- useful=true value=0:23
+arm 2 source=0:27 pattern=3 guard=- useful=true value=0:26
 eof roots=3 patterns=9 fields=4 alternatives=0 ranges=2 matches=1 arms=3 coverage-work=212 region-vars=0 region-equalities=0 conditions=0 chains=0

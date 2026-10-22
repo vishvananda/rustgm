@@ -28,9 +28,9 @@ type 25 function-item def=19 signature=24
 type 26 reference mutable=false region=region:2 referent=11
 def 14 type=19 name="Self" source=0:1
 def 16 type=20 name="Self" source=0:8
-def 17 type=21 name="Self" source=0:21
-def 18 type=22 name="Self" source=0:36
-def 19 type=25 name="main" source=0:38
+def 17 type=21 name="Self" source=0:18
+def 18 type=22 name="Self" source=0:30
+def 19 type=25 name="main" source=0:32
 def 20 type=2 name="bool"
 def 21 type=3 name="char"
 def 22 type=4 name="str"
@@ -51,8 +51,8 @@ def 36 type=18 name="f64"
 def 40 type=21 name="T" source=0:12
 associated-owner 0 kind=trait self-def=14 self=19 source=0:1 trait=13 unsafe=false name="B"
 associated-owner 1 kind=trait self-def=16 self=20 source=0:8 trait=15 unsafe=false name="A"
-associated-owner 2 kind=trait-impl self-def=17 self=21 source=0:21 unsafe=false
-associated-owner 3 kind=trait-impl self-def=18 self=22 source=0:36 unsafe=false
+associated-owner 2 kind=trait-impl self-def=17 self=21 source=0:18 unsafe=false
+associated-owner 3 kind=trait-impl self-def=18 self=22 source=0:30 unsafe=false
 parameter owner=13 binding=37 argument=region:bound:0:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
 parameter owner=15 binding=38 argument=region:bound:0:0 default=-
@@ -63,6 +63,6 @@ predicate owner=13 source=0:1 subject=19 bound=trait:13 arguments=[region:bound:
 predicate owner=15 source=0:7 subject=20 bound=trait:13 arguments=[region:bound:0:0]
 predicate owner=15 source=0:8 subject=20 bound=trait:15 arguments=[region:bound:0:0]
 predicate owner=17 source=0:11 subject=21 bound=outlives:bound:0:0
-impl owner=17 source=0:21 subject=21 bound=trait:13 arguments=[region:bound:0:0]
-impl owner=18 source=0:36 subject=22 bound=trait:15 arguments=[region:bound:0:0]
+impl owner=17 source=0:18 subject=21 bound=trait:13 arguments=[region:bound:0:0]
+impl owner=18 source=0:30 subject=22 bound=trait:15 arguments=[region:bound:0:0]
 eof owners=4 members=0 parameters=6 predicates=4 impls=2 calls=0 paths=0 impl-uses=0

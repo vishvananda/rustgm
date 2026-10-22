@@ -1,5 +1,5 @@
 loans-crate 1
-body 0 source=0:29
+body 0 source=0:20
   place p0 root=l0 shared=false
   place p1 root=l0 parent=p0 index=0 shared=false
   place p2 root=l0 parent=p0 index=1 shared=false
@@ -55,6 +55,6 @@ body 0 source=0:29
   state t21 word=0 live=0000000000000002 activated=0000000000000000
   state t22 word=0 live=0000000000000002 activated=0000000000000000
 end-body
-body 1 source=0:31
+body 1 source=0:22
 end-body
 eof bodies=2 loans=2 places=7 points=28 region_words=3 state_words=14

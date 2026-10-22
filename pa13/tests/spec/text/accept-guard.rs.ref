@@ -22,21 +22,21 @@ type 19 reference mutable=false region=bound:0:0 referent=4
 type 20 function binders=1 parameters=[19,2] result=1 unsafe=false
 type 21 function-item def=13 signature=20
 type 22 reference mutable=false region=static referent=4
-root 0:19 pattern=0
-root 0:24 pattern=3
-root 0:27 pattern=4
-pattern 0 source=0:19 input=19 or alternatives=0:2
-pattern 1 source=0:17 input=19 deref mutable=false implicit=false pattern=5
-pattern 2 source=0:18 input=19 deref mutable=false implicit=false pattern=6
-pattern 3 source=0:24 input=19 deref mutable=false implicit=false pattern=7
-pattern 4 source=0:27 input=19 wildcard
-pattern 5 source=0:17 input=4 text="a"
-pattern 6 source=0:18 input=4 text="a"
-pattern 7 source=0:24 input=4 text="a"
+root 0:10 pattern=0
+root 0:14 pattern=3
+root 0:17 pattern=4
+pattern 0 source=0:10 input=19 or alternatives=0:2
+pattern 1 source=0:8 input=19 deref mutable=false implicit=false pattern=5
+pattern 2 source=0:9 input=19 deref mutable=false implicit=false pattern=6
+pattern 3 source=0:14 input=19 deref mutable=false implicit=false pattern=7
+pattern 4 source=0:17 input=19 wildcard
+pattern 5 source=0:8 input=4 text="a"
+pattern 6 source=0:9 input=4 text="a"
+pattern 7 source=0:14 input=4 text="a"
 alternative 0 pattern=1
 alternative 1 pattern=2
-match 0 source=0:30 input=0:16 arms=0:3 exhaustive=true uninhabited=false work=67
-arm 0 source=0:23 pattern=0 guard=0:21 useful=true value=0:22
-arm 1 source=0:26 pattern=3 guard=- useful=true value=0:25
-arm 2 source=0:29 pattern=4 guard=- useful=true value=0:28
+match 0 source=0:20 input=0:7 arms=0:3 exhaustive=true uninhabited=false work=67
+arm 0 source=0:13 pattern=0 guard=0:11 useful=true value=0:12
+arm 1 source=0:16 pattern=3 guard=- useful=true value=0:15
+arm 2 source=0:19 pattern=4 guard=- useful=true value=0:18
 eof roots=3 patterns=8 fields=0 alternatives=2 ranges=0 matches=1 arms=3 coverage-work=67 region-vars=0 region-equalities=0 conditions=0 chains=0

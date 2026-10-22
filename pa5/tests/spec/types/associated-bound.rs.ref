@@ -1,26 +1,19 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,14,15,16,17,18,19,20,21]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
 node 0 7 15 name "Iterator"
 node 1 16 20 name "Item"
-node 2 16 20 path false [1]
-node 3 16 20 type Path [2]
-node 4 21 25 name "Copy"
-node 5 21 25 path false [4]
-node 6 21 25 bound false [] 5
-node 7 16 25 constraint 3 - [6]
-node 8 7 26 applied 0 [7] -
-node 9 7 26 path false [8]
-node 10 7 26 bound false [] 9
-node 11 5 26 generic Type "T" - [10] -
-node 12 28 29 name "x"
-node 13 28 29 path false [12]
-node 14 28 29 binding false false "x" -
-node 15 30 31 name "T"
-node 16 30 31 path false [15]
-node 17 30 31 type Path [16]
-node 18 28 31 parameter 14 17
-node 19 32 34 block Plain [] -
-node 20 0 34 item 0
-item 0 "f" private [11] [] function false false false false - [18] - 19
-node 21 0 34 crate [20]
-root 21
+node 2 21 25 name "Copy"
+node 3 21 25 bound false [] 2
+node 4 16 25 constraint 1 - [3]
+node 5 7 26 applied 0 [4] -
+node 6 7 26 path false [5]
+node 7 7 26 bound false [] 6
+node 8 5 26 generic Type "T" - [7] -
+node 9 28 29 binding false false "x" -
+node 10 30 31 name "T"
+node 11 28 31 parameter 9 10
+node 12 32 34 block Plain [] -
+node 13 0 34 item 0
+item 0 "f" private [8] [] function false false false false - [11] - 12
+node 14 0 34 crate [13]
+root 14
 eof 35

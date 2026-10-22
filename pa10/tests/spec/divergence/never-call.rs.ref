@@ -31,10 +31,10 @@ body 0 function def=13 signature=19 result=0 source=0:3
   block b2:
     unreachable source=2
 end-body
-body 1 function def=14 signature=21 result=11 source=0:11
+body 1 function def=14 signature=21 result=11 source=0:8
   block b0:
-    v0 type=20 = function def=13 source=9
-    v1 type=0 = call signature=19 v0 [] source=10
-    unreachable source=10
+    v0 type=20 = function def=13 source=6
+    v1 type=0 = call signature=19 v0 [] source=7
+    unreachable source=7
 end-body
 eof bodies=2 locals=0 values=3 statements=3 blocks=4

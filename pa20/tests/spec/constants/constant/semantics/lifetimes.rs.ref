@@ -23,11 +23,11 @@ type 20 reference mutable=false region=bound:0:0 referent=11
 type 21 function binders=0 parameters=[] result=1 unsafe=false
 type 22 function-item def=18 signature=21
 type 23 reference mutable=false region=region:1 referent=11
-def 14 type=19 name="Self" source=0:7
-def 15 type=20 name="C" source=0:6
-def 16 type=11 name="Self" source=0:25
-def 17 type=20 name="C" source=0:24
-def 18 type=22 name="main" source=0:27
+def 14 type=19 name="Self" source=0:5
+def 15 type=20 name="C" source=0:4
+def 16 type=11 name="Self" source=0:18
+def 17 type=20 name="C" source=0:17
+def 18 type=22 name="main" source=0:20
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -45,16 +45,16 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-associated-owner 0 kind=trait self-def=14 self=19 source=0:7 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:25 unsafe=false
+associated-owner 0 kind=trait self-def=14 self=19 source=0:5 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=11 source=0:18 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
 parameter owner=13 binding=36 argument=region:bound:0:0 default=-
 parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:7 subject=19 bound=trait:13 arguments=[region:bound:0:0]
-impl owner=16 source=0:25 subject=11 bound=trait:13 arguments=[region:bound:0:0]
-region-var region:1 body=0:23 source=0:23 origin=expression-borrow pending
-region-coercion body=0:23 source=0:23 actual=23 expected=20 kind=same-shape pending
+predicate owner=13 source=0:5 subject=19 bound=trait:13 arguments=[region:bound:0:0]
+impl owner=16 source=0:18 subject=11 bound=trait:13 arguments=[region:bound:0:0]
+region-var region:1 body=0:16 source=0:16 origin=expression-borrow pending
+region-coercion body=0:16 source=0:16 actual=23 expected=20 kind=same-shape pending
 associated-constant def=15 type=20
 associated-constant def=17 type=20
 impl-constant owner=16 declaration=15 selected=17 default=false

@@ -1,17 +1,12 @@
-node 0 6 7 name "x"
-node 1 6 7 path false [0]
-node 2 6 7 binding false false "x" -
-node 3 10 13 name "i32"
-node 4 10 13 path false [3]
-node 5 10 13 type Path [4]
-node 6 9 13 type Ref [5]
-node 7 17 18 literal 0
+node 0 6 7 binding false false "x" -
+node 1 10 13 name "i32"
+node 2 9 13 type Ref [1]
+node 3 17 18 literal 0
 value 0 integer 17 18 infer 3
-node 8 16 18 unary borrow 7
-node 9 2 19 let 2 6 8 -
-node 10 21 22 name "x"
-node 11 21 22 path false [10]
-node 12 20 22 unary deref 11
-node 13 0 24 block Plain [9] 12
-root 13
+node 4 16 18 unary borrow 3
+node 5 2 19 let 0 2 4 -
+node 6 21 22 name "x"
+node 7 20 22 unary deref 6
+node 8 0 24 block Plain [5] 7
+root 8
 eof 25

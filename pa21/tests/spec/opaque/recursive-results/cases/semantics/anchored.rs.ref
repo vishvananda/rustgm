@@ -23,8 +23,8 @@ type 20 function binders=0 parameters=[11] result=19 unsafe=false
 type 21 function-item def=13 signature=20
 type 22 function binders=0 parameters=[] result=1 unsafe=false
 type 23 function-item def=14 signature=22
-def 13 type=21 name="f" source=0:27
-def 14 type=23 name="main" source=0:29
+def 13 type=21 name="f" source=0:19
+def 14 type=23 name="main" source=0:21
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -42,8 +42,8 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 32 type=11 name="n" source=0:2
-opaque 0 owner=13 source=0:10 application=19 hidden=11 role=defining-result storage-proof=pending
+def 32 type=11 name="n" source=0:0
+opaque 0 owner=13 source=0:5 application=19 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=19 bound=copy
 opaque-body-result def=13 type=11
 eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

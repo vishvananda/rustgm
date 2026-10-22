@@ -23,9 +23,9 @@ type 20 function binders=0 parameters=[19] result=19 unsafe=false
 type 21 function-item def=15 signature=20
 type 22 function binders=0 parameters=[] result=1 unsafe=false
 type 23 function-item def=16 signature=22
-def 14 type=19 name="Self" source=0:18
-def 15 type=21 name="take" source=0:17
-def 16 type=23 name="main" source=0:20
+def 14 type=19 name="Self" source=0:10
+def 15 type=21 name="take" source=0:9
+def 16 type=23 name="main" source=0:12
 def 17 type=2 name="bool"
 def 18 type=3 name="char"
 def 19 type=4 name="str"
@@ -43,10 +43,10 @@ def 30 type=15 name="u128"
 def 31 type=16 name="usize"
 def 32 type=17 name="f32"
 def 33 type=18 name="f64"
-def 41 type=19 name="self" source=0:9
-associated-owner 0 kind=trait self-def=14 self=19 source=0:18 trait=13 unsafe=false name="A"
+def 41 type=19 name="self" source=0:4
+associated-owner 0 kind=trait self-def=14 self=19 source=0:10 trait=13 unsafe=false name="A"
 associated-member def=15 owner=0 receiver=19 references=0
 parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:5 subject=19 bound=sized
-predicate owner=13 source=0:18 subject=19 bound=trait:13 arguments=[]
+predicate owner=13 source=0:2 subject=19 bound=sized
+predicate owner=13 source=0:10 subject=19 bound=trait:13 arguments=[]
 eof owners=1 members=1 parameters=1 predicates=2 impls=0 calls=0 paths=0 impl-uses=0

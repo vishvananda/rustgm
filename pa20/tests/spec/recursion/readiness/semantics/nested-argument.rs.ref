@@ -34,20 +34,20 @@ type 31 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
 type 32 array element=11 length=3
 type 33 function binders=0 parameters=[32] result=31 unsafe=false
 type 34 function-item def=16 signature=33 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=23 name="check" source=0:19
-def 14 type=25 name="fail" source=0:35
-def 15 type=19 name="X" source=0:47
-def 16 type=30 name="X" source=0:47
-def 17 type=27 name="main" source=0:83
-def 19 type=20 name="Self" source=0:88
-def 20 type=16 name="C" source=0:87
-def 22 type=21 name="Self" source=0:99
-def 23 type=16 name="D" source=0:98
-def 24 type=11 name="Self" source=0:114
-def 25 type=11 name="Self" source=0:143
-def 26 type=16 name="C" source=0:142
-def 27 type=12 name="Self" source=0:155
-def 28 type=16 name="C" source=0:154
+def 13 type=23 name="check" source=0:13
+def 14 type=25 name="fail" source=0:22
+def 15 type=19 name="X" source=0:29
+def 16 type=30 name="X" source=0:29
+def 17 type=27 name="main" source=0:55
+def 19 type=20 name="Self" source=0:58
+def 20 type=16 name="C" source=0:57
+def 22 type=21 name="Self" source=0:64
+def 23 type=16 name="D" source=0:63
+def 24 type=11 name="Self" source=0:72
+def 25 type=11 name="Self" source=0:88
+def 26 type=16 name="C" source=0:87
+def 27 type=12 name="Self" source=0:94
+def 28 type=16 name="C" source=0:93
 def 29 type=2 name="bool"
 def 30 type=3 name="char"
 def 31 type=4 name="str"
@@ -65,17 +65,17 @@ def 42 type=15 name="u128"
 def 43 type=16 name="usize"
 def 44 type=17 name="f32"
 def 45 type=18 name="f64"
-def 46 type=16 name="N" source=0:39
-def 47 type=16 name="N" source=0:92
-def 48 type=16 name="N" source=0:103
-def 49 type=2 name="ok" source=0:2
-def 50 type=11 name="x" source=0:22
-def 51 type=31 name="x" source=0:50
-associated-owner 0 kind=trait self-def=19 self=20 source=0:88 trait=18 unsafe=false name="A"
-associated-owner 1 kind=trait self-def=22 self=21 source=0:99 trait=21 unsafe=false name="B"
-associated-owner 2 kind=trait-impl self-def=24 self=11 source=0:114 unsafe=false
-associated-owner 3 kind=trait-impl self-def=25 self=11 source=0:143 unsafe=false
-associated-owner 4 kind=trait-impl self-def=27 self=12 source=0:155 unsafe=false
+def 46 type=16 name="N" source=0:24
+def 47 type=16 name="N" source=0:60
+def 48 type=16 name="N" source=0:66
+def 49 type=2 name="ok" source=0:0
+def 50 type=11 name="x" source=0:14
+def 51 type=31 name="x" source=0:30
+associated-owner 0 kind=trait self-def=19 self=20 source=0:58 trait=18 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=22 self=21 source=0:64 trait=21 unsafe=false name="B"
+associated-owner 2 kind=trait-impl self-def=24 self=11 source=0:72 unsafe=false
+associated-owner 3 kind=trait-impl self-def=25 self=11 source=0:88 unsafe=false
+associated-owner 4 kind=trait-impl self-def=27 self=12 source=0:94 unsafe=false
 associated-member def=20 owner=0
 associated-member def=23 owner=1
 associated-member def=26 owner=3
@@ -85,17 +85,17 @@ parameter owner=19 binding=19 argument=type:20 default=-
 parameter owner=21 binding=47 argument=const-parameter:21:0 default=-
 parameter owner=22 binding=22 argument=type:21 default=-
 parameter owner=24 binding=48 argument=const-parameter:24:0 default=-
-predicate owner=18 source=0:88 subject=20 bound=trait:18 arguments=[]
-predicate owner=21 source=0:99 subject=21 bound=trait:21 arguments=[const-parameter:21:0]
-impl owner=24 source=0:114 subject=11 bound=trait:21 arguments=[const-parameter:24:0]
-impl owner=25 source=0:143 subject=11 bound=trait:18 arguments=[]
-impl owner=27 source=0:155 subject=12 bound=trait:18 arguments=[]
-trait-path source=0:59 method=20 trait=18 qualifier=explicit origin=ordinary subject-source=0:54
-trait-path source=0:135 method=20 trait=18 qualifier=explicit origin=ordinary subject-source=0:130
-trait-path source=0:141 method=23 trait=21 qualifier=explicit origin=ordinary subject-source=0:126
-implementation-use source=0:59 owner=25 arguments=[]
-implementation-use source=0:135 owner=27 arguments=[]
-implementation-use source=0:141 owner=24 arguments=[const:16:0x00000000000000000000000000000003]
+predicate owner=18 source=0:58 subject=20 bound=trait:18 arguments=[]
+predicate owner=21 source=0:64 subject=21 bound=trait:21 arguments=[const-parameter:21:0]
+impl owner=24 source=0:72 subject=11 bound=trait:21 arguments=[const-parameter:24:0]
+impl owner=25 source=0:88 subject=11 bound=trait:18 arguments=[]
+impl owner=27 source=0:94 subject=12 bound=trait:18 arguments=[]
+trait-path source=0:35 method=20 trait=18 qualifier=explicit origin=ordinary subject-source=0:32
+trait-path source=0:81 method=20 trait=18 qualifier=explicit origin=ordinary subject-source=0:78
+trait-path source=0:86 method=23 trait=21 qualifier=explicit origin=ordinary subject-source=0:76
+implementation-use source=0:35 owner=25 arguments=[]
+implementation-use source=0:81 owner=27 arguments=[]
+implementation-use source=0:86 owner=24 arguments=[const:16:0x00000000000000000000000000000003]
 associated-constant def=20 type=16
 associated-constant def=23 type=16
 associated-constant def=26 type=16
@@ -103,9 +103,9 @@ associated-constant def=28 type=16
 impl-constant owner=24 declaration=23 selected=23 default=true
 impl-constant owner=25 declaration=20 selected=26 default=false
 impl-constant owner=27 declaration=20 selected=28 default=false
-constant-use source=0:59 definition=20 arguments=[type:11]
-constant-use source=0:135 definition=20 arguments=[type:12]
-constant-use source=0:141 definition=23 arguments=[type:11,const:16:0x00000000000000000000000000000003]
+constant-use source=0:35 definition=20 arguments=[type:11]
+constant-use source=0:81 definition=20 arguments=[type:12]
+constant-use source=0:86 definition=23 arguments=[type:11,const:16:0x00000000000000000000000000000003]
 constant-dispatch declaration=20 arguments=[type:11] selected=26 arguments=[]
 constant-dispatch declaration=20 arguments=[type:12] selected=28 arguments=[]
 constant-dispatch declaration=23 arguments=[type:11,const:16:0x00000000000000000000000000000003] selected=23 arguments=[type:11,const:16:0x00000000000000000000000000000003]

@@ -1,26 +1,22 @@
 node 0 6 9 literal 0
 value 0 integer 6 9 u8 0
 node 1 10 11 wildcard
-node 2 19 20 name "n"
-node 3 19 20 path false [2]
-node 4 19 20 binding false false "n" -
-node 5 22 25 literal 1
+node 2 19 20 binding false false "n" -
+node 3 22 25 literal 1
 value 1 integer 22 25 u8 7
-node 6 21 26 block Plain [] 5
-node 7 15 26 let-condition 4 6
-node 8 28 29 name "n"
-node 9 28 29 path false [8]
-node 10 31 32 literal 2
+node 4 21 26 block Plain [] 3
+node 5 15 26 let-condition 2 4
+node 6 28 29 name "n"
+node 7 31 32 literal 2
 value 2 integer 31 32 infer 7
-node 11 28 32 binary == 9 10
-node 12 15 32 binary && 7 11
-node 13 34 35 name "n"
-node 14 34 35 path false [13]
-node 15 10 35 arm 1 12 14
-node 16 36 37 wildcard
-node 17 39 41 literal 3
+node 8 28 32 binary == 6 7
+node 9 15 32 binary && 5 8
+node 10 34 35 name "n"
+node 11 10 35 arm 1 9 10
+node 12 36 37 wildcard
+node 13 39 41 literal 3
 value 3 integer 39 41 infer 99
-node 18 36 41 arm 16 - 17
-node 19 0 42 match 0 [15,18]
-root 19
+node 14 36 41 arm 12 - 13
+node 15 0 42 match 0 [11,14]
+root 15
 eof 43

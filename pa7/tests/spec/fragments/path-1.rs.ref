@@ -1,6 +1,6 @@
 macro-matching 1
 definition 0 0 34 "m" rules 1
 invocation 0 35 51 definition 0 rule 0
-capture 0 path 0:0 6:0 "Vec<Vec<u8>>" nodes 10
+capture 0 path 0:0 6:0 "Vec<Vec<u8>>" nodes 7
 end-invocation parser-calls 1
 end-macro-matching definitions 1 invocations 1

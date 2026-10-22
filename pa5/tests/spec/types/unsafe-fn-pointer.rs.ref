@@ -1,16 +1,12 @@
-active [0,1,2,3,4,5,6,7,8,9,10]
+active [0,1,2,3,4,5,6]
 node 0 21 24 literal 0
 value 0 string 21 24 1 "C"
 node 1 28 31 name "i32"
-node 2 28 31 path false [1]
-node 3 28 31 type Path [2]
-node 4 28 31 field-definition - private 3
-node 5 34 37 name "i32"
-node 6 34 37 path false [5]
-node 7 34 37 type Path [6]
-node 8 7 37 function-type true 0 [] [4] 7
-node 9 0 38 item 0
-item 0 "F" private [] [] type-alias [] 8
-node 10 0 38 crate [9]
-root 10
+node 2 28 31 field-definition - private 1
+node 3 34 37 name "i32"
+node 4 7 37 function-type true 0 [] [2] 3
+node 5 0 38 item 0
+item 0 "F" private [] [] type-alias [] 4
+node 6 0 38 crate [5]
+root 6
 eof 39

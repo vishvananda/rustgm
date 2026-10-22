@@ -1,29 +1,28 @@
 expanded-crate 1
 file 0
-configured 4 false
-attribute-effect 4 0 0 root cfg=false
-active [5]
+configured 3 false
+attribute-effect 3 0 0 root cfg=false
+active [4]
 node 0 14 27 name "compile_error"
-node 1 14 27 path false [0]
-node 2 14 40 macro 1 0
-node 3 14 41 item 0
-item 0 - private [] [] macro-invocation 2
-node 4 0 41 attributed 0 1 3
-node 5 0 41 crate [4]
+node 1 14 40 macro 0 0
+node 2 14 41 item 0
+item 0 - private [] [] macro-invocation 1
+node 3 0 41 attributed 0 1 2
+node 4 0 41 crate [3]
 attribute-capture 0 outer 0 13 "#[cfg(any())]"
 capture 0 28 40 2 "(\"disabled\")"
-root 5
+root 4
 eof 42
 end-file 0
 name 0 "crate"
-name 1 "cfg"
-name 2 "line"
-name 3 "column"
-name 4 "file"
-name 5 "module_path"
-name 6 "stringify"
-name 7 "concat"
-name 8 "compile_error"
+name 1 "compile_error"
+name 2 "cfg"
+name 3 "line"
+name 4 "column"
+name 5 "file"
+name 6 "module_path"
+name 7 "stringify"
+name 8 "concat"
 name 9 "env"
 name 10 "include_str"
 name 11 "include_bytes"
@@ -48,14 +47,14 @@ name 29 "f64"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 def 0 type module name=0 scope=0 access=public members=0
-def 1 macro builtin-macro name=1 scope=0 access=public
-def 2 macro builtin-macro name=2 scope=0 access=public
-def 3 macro builtin-macro name=3 scope=0 access=public
-def 4 macro builtin-macro name=4 scope=0 access=public
-def 5 macro builtin-macro name=5 scope=0 access=public
-def 6 macro builtin-macro name=6 scope=0 access=public
-def 7 macro builtin-macro name=7 scope=0 access=public
-def 8 macro builtin-macro name=8 scope=0 access=public
+def 1 macro builtin-macro name=2 scope=0 access=public
+def 2 macro builtin-macro name=3 scope=0 access=public
+def 3 macro builtin-macro name=4 scope=0 access=public
+def 4 macro builtin-macro name=5 scope=0 access=public
+def 5 macro builtin-macro name=6 scope=0 access=public
+def 6 macro builtin-macro name=7 scope=0 access=public
+def 7 macro builtin-macro name=8 scope=0 access=public
+def 8 macro builtin-macro name=1 scope=0 access=public
 def 9 macro builtin-macro name=9 scope=0 access=public
 def 10 macro builtin-macro name=10 scope=0 access=public
 def 11 macro builtin-macro name=11 scope=0 access=public

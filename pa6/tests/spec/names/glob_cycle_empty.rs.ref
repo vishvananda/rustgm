@@ -1,6 +1,6 @@
 name 0 "crate"
-name 1 "a"
-name 2 "b"
+name 1 "b"
+name 2 "a"
 name 3 "bool"
 name 4 "char"
 name 5 "str"
@@ -19,8 +19,8 @@ name 17 "usize"
 name 18 "f32"
 name 19 "f64"
 module 0 name=0 file=0 scope=0 parent=root
-module 1 name=1 file=0 scope=1 parent=0
-module 2 name=2 file=0 scope=2 parent=0
+module 1 name=2 file=0 scope=1 parent=0
+module 2 name=1 file=0 scope=2 parent=0
 scope 0 module=0 barrier=true parent=root
 scope 1 module=1 barrier=true parent=root
 scope 2 module=2 barrier=true parent=root
@@ -41,8 +41,8 @@ def 13 type primitive name=16 scope=0 access=public
 def 14 type primitive name=17 scope=0 access=public
 def 15 type primitive name=18 scope=0 access=public
 def 16 type primitive name=19 scope=0 access=public
-def 17 type module name=1 scope=0 access=module:0 source=0:5 members=1
-def 18 type module name=2 scope=0 access=module:0 source=0:11 members=2
-binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
-binding scope=0 type name=2 def=18 Direct ambiguous=false access=module:0
+def 17 type module name=2 scope=0 access=module:0 source=0:5 members=1
+def 18 type module name=1 scope=0 access=module:0 source=0:11 members=2
+binding scope=0 type name=2 def=17 Direct ambiguous=false access=module:0
+binding scope=0 type name=1 def=18 Direct ambiguous=false access=module:0
 eof files=1 modules=3 definitions=19 references=0

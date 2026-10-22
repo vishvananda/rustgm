@@ -1,21 +1,16 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+active [0,1,2,3,4,5,6,7,8,9,10,11]
 node 0 4 8 name "core"
-node 1 4 10 path false [0]
-node 2 11 14 name "fmt"
-node 3 11 16 path false [2]
-node 4 17 22 name "Debug"
-node 5 17 22 path false [4]
-node 6 17 22 use-tree 5 [] false -
-node 7 23 30 name "Display"
-node 8 23 30 path false [7]
-node 9 23 30 use-tree 8 [] false -
-node 10 11 31 use-tree 3 [6,9] false -
-node 11 32 38 name "marker"
-node 12 32 40 path false [11]
-node 13 32 41 use-tree 12 [] true -
-node 14 4 43 use-tree 1 [10,13] false -
-node 15 0 44 item 0
-item 0 - private [] [] use 14
-node 16 0 44 crate [15]
-root 16
+node 1 11 14 name "fmt"
+node 2 17 22 name "Debug"
+node 3 17 22 use-tree 2 [] false -
+node 4 23 30 name "Display"
+node 5 23 30 use-tree 4 [] false -
+node 6 11 31 use-tree 1 [3,5] false -
+node 7 32 38 name "marker"
+node 8 32 41 use-tree 7 [] true -
+node 9 4 43 use-tree 0 [6,8] false -
+node 10 0 44 item 0
+item 0 - private [] [] use 9
+node 11 0 44 crate [10]
+root 11
 eof 45

@@ -28,16 +28,16 @@ type 25 function-item def=14 signature=24
 type 26 reference mutable=false region=region:1 referent=20
 type 27 reference mutable=false region=region:2 referent=19
 type 28 reference mutable=false region=region:3 referent=11
-root 0:24 pattern=0
-pattern 0 source=0:24 input=26 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:24 input=20 product variant=- fields=0:1
-pattern 2 source=0:23 input=19 bind def=34 local=27 mutable=false capture=ref region=region:2 loan=pending subpattern=3
-pattern 3 source=0:22 input=19 product variant=0 fields=1:2
-pattern 4 source=0:21 input=11 bind def=35 local=28 mutable=false capture=ref region=region:3 loan=pending subpattern=-
+root 0:13 pattern=0
+pattern 0 source=0:13 input=26 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:13 input=20 product variant=- fields=0:1
+pattern 2 source=0:12 input=19 bind def=34 local=27 mutable=false capture=ref region=region:2 loan=pending subpattern=3
+pattern 3 source=0:11 input=19 product variant=0 fields=1:2
+pattern 4 source=0:10 input=11 bind def=35 local=28 mutable=false capture=ref region=region:3 loan=pending subpattern=-
 field 0 index=0 pattern=2
 field 1 nominal=0 pattern=4
-region-var region:1 body=0:28 source=0:26 origin=inference pending
-region-var region:2 body=0:28 source=0:23 origin=pattern-borrow pending
-region-var region:3 body=0:28 source=0:21 origin=pattern-borrow pending
-region-coercion body=0:28 source=0:26 actual=21 expected=26 kind=same-shape pending
+region-var region:1 body=0:16 source=0:14 origin=inference pending
+region-var region:2 body=0:16 source=0:12 origin=pattern-borrow pending
+region-var region:3 body=0:16 source=0:10 origin=pattern-borrow pending
+region-coercion body=0:16 source=0:14 actual=21 expected=26 kind=same-shape pending
 eof roots=1 patterns=5 fields=2 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=3 region-equalities=0 conditions=0 chains=0

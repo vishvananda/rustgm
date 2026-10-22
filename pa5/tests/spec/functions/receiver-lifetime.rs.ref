@@ -1,24 +1,19 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+active [0,1,2,3,4,5,6,7,8,9,10,11,12]
 node 0 0 9 item 0
 item 0 "S" private [] [] struct Unit []
 node 1 15 16 name "S"
-node 2 15 16 path false [1]
-node 3 15 16 type Path [2]
-node 4 24 26 generic Lifetime "'a" - [] -
-node 5 28 36 receiver false "'a"
-node 6 28 36 parameter 5 -
-node 7 40 42 name "'a"
-node 8 43 47 name "Self"
-node 9 43 47 path false [8]
-node 10 43 47 type Path [9]
-node 11 39 47 type Ref [7,10]
-node 12 49 53 name "self"
-node 13 49 53 path false [12]
-node 14 48 54 block Plain [] 13
-node 15 19 54 item 1
-item 1 "f" private [4] [] function false false false false - [6] 11 14
-node 16 10 56 item 2
-item 2 - private [] [] impl false false - 3 [15]
-node 17 0 56 crate [0,16]
-root 17
+node 2 24 26 generic Lifetime "'a" - [] -
+node 3 28 36 receiver false "'a"
+node 4 28 36 parameter 3 -
+node 5 40 42 name "'a"
+node 6 43 47 name "Self"
+node 7 39 47 type Ref [5,6]
+node 8 49 53 name "self"
+node 9 48 54 block Plain [] 8
+node 10 19 54 item 1
+item 1 "f" private [2] [] function false false false false - [4] 7 9
+node 11 10 56 item 2
+item 2 - private [] [] impl false false - 1 [10]
+node 12 0 56 crate [0,11]
+root 12
 eof 57

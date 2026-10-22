@@ -1,5 +1,5 @@
 regions-crate 1
-body 0 source=0:20
+body 0 source=0:13
   universal b0=g2
   universal b1=g3
   region g0 static
@@ -9,7 +9,7 @@ body 0 source=0:20
   assume g2:g3
   require g2:g3
 end-body
-body 1 source=0:22
+body 1 source=0:15
   region g0 static
   region g1 local
 end-body

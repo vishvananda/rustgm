@@ -1,49 +1,46 @@
 expanded-crate 1
 macro 0 name=2 module=0 context=0 introduction=0 source=0:0 rules=1 local-inner=false
-invocation 0 context=1 parent=0 macro=0 source=0:6 original=40:47 generated=50:53 rule=0 parser-calls=0
+invocation 0 context=1 parent=0 macro=0 source=0:3 original=40:47 generated=50:53 rule=0 parser-calls=0
 file 0
-active [0,1,2,3,6,7,8,9]
+active [0,1,3,4,5,6]
 node 0 0 27 item 0
 item 0 "line" private [] [] macro-rules 0
 node 1 36 39 name "i32"
-node 2 36 39 path false [1]
-node 3 36 39 type Path [2]
-node 4 40 44 name "line"
-node 5 40 44 path false [4]
-node 6 50 52 literal 0
+node 2 40 44 name "line"
+node 3 50 52 literal 0
 value 0 integer 50 52 infer 42
-node 7 39 48 block Plain [] 6
-node 8 28 48 item 1
-item 1 "f" private [] [] function false false false false - [] 3 7
-node 9 0 48 crate [0,8]
-node 10 50 52 literal 0
+node 4 39 48 block Plain [] 3
+node 5 28 48 item 1
+item 1 "f" private [] [] function false false false false - [] 1 4
+node 6 0 48 crate [0,5]
+node 7 50 52 literal 0
 value 0 integer 50 52 infer 42
 capture 0 17 27 5 "{()=>{42}}"
 capture 1 45 47 1 "()"
-root 9
+root 6
 eof 53
 origin 50:52 source=0:23:25 context=1
 end-file 0
 name 0 "crate"
-name 1 "cfg"
+name 1 "i32"
 name 2 "line"
-name 3 "column"
-name 4 "file"
-name 5 "module_path"
-name 6 "stringify"
-name 7 "concat"
-name 8 "compile_error"
-name 9 "env"
-name 10 "include_str"
-name 11 "include_bytes"
-name 12 "include"
-name 13 "f"
-name 14 "bool"
-name 15 "char"
-name 16 "str"
-name 17 "i8"
-name 18 "i16"
-name 19 "i32"
+name 3 "cfg"
+name 4 "column"
+name 5 "file"
+name 6 "module_path"
+name 7 "stringify"
+name 8 "concat"
+name 9 "compile_error"
+name 10 "env"
+name 11 "include_str"
+name 12 "include_bytes"
+name 13 "include"
+name 14 "f"
+name 15 "bool"
+name 16 "char"
+name 17 "str"
+name 18 "i8"
+name 19 "i16"
 name 20 "i64"
 name 21 "i128"
 name 22 "isize"
@@ -60,26 +57,26 @@ scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
 scope 2 module=0 barrier=false parent=1
 def 0 type module name=0 scope=0 access=public members=0
-def 1 macro builtin-macro name=1 scope=0 access=public
+def 1 macro builtin-macro name=3 scope=0 access=public
 def 2 macro builtin-macro name=2 scope=0 access=public
-def 3 macro builtin-macro name=3 scope=0 access=public
-def 4 macro builtin-macro name=4 scope=0 access=public
-def 5 macro builtin-macro name=5 scope=0 access=public
-def 6 macro builtin-macro name=6 scope=0 access=public
-def 7 macro builtin-macro name=7 scope=0 access=public
-def 8 macro builtin-macro name=8 scope=0 access=public
-def 9 macro builtin-macro name=9 scope=0 access=public
-def 10 macro builtin-macro name=10 scope=0 access=public
-def 11 macro builtin-macro name=11 scope=0 access=public
-def 12 macro builtin-macro name=12 scope=0 access=public
+def 3 macro builtin-macro name=4 scope=0 access=public
+def 4 macro builtin-macro name=5 scope=0 access=public
+def 5 macro builtin-macro name=6 scope=0 access=public
+def 6 macro builtin-macro name=7 scope=0 access=public
+def 7 macro builtin-macro name=8 scope=0 access=public
+def 8 macro builtin-macro name=9 scope=0 access=public
+def 9 macro builtin-macro name=10 scope=0 access=public
+def 10 macro builtin-macro name=11 scope=0 access=public
+def 11 macro builtin-macro name=12 scope=0 access=public
+def 12 macro builtin-macro name=13 scope=0 access=public
 def 13 macro macro name=2 scope=0 access=module:0 source=0:0
-def 14 value function name=13 scope=0 access=module:0 source=0:8
-def 15 type primitive name=14 scope=0 access=public
-def 16 type primitive name=15 scope=0 access=public
-def 17 type primitive name=16 scope=0 access=public
-def 18 type primitive name=17 scope=0 access=public
-def 19 type primitive name=18 scope=0 access=public
-def 20 type primitive name=19 scope=0 access=public
+def 14 value function name=14 scope=0 access=module:0 source=0:5
+def 15 type primitive name=15 scope=0 access=public
+def 16 type primitive name=16 scope=0 access=public
+def 17 type primitive name=17 scope=0 access=public
+def 18 type primitive name=18 scope=0 access=public
+def 19 type primitive name=19 scope=0 access=public
+def 20 type primitive name=1 scope=0 access=public
 def 21 type primitive name=20 scope=0 access=public
 def 22 type primitive name=21 scope=0 access=public
 def 23 type primitive name=22 scope=0 access=public
@@ -91,7 +88,7 @@ def 28 type primitive name=27 scope=0 access=public
 def 29 type primitive name=28 scope=0 access=public
 def 30 type primitive name=29 scope=0 access=public
 def 31 type primitive name=30 scope=0 access=public
-binding scope=0 value name=13 def=14 Direct ambiguous=false access=module:0
-ref 0:2 scope=1 type def=20
+binding scope=0 value name=14 def=14 Direct ambiguous=false access=module:0
+ref 0:1 scope=1 type def=20
 eof files=1 modules=1 definitions=32 references=1
 end-expanded-crate files 1 modules 1 macros 1 invocations 1 captures 0 definitions 32 references 1

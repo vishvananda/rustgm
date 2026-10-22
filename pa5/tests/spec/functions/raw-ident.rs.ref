@@ -1,19 +1,12 @@
-active [2,3,4,5,6,7,8,9,10,11,12,13,14]
-node 0 9 15 name "r#type"
-node 1 9 15 path false [0]
-node 2 9 15 binding false false "r#type" -
-node 3 16 19 name "i32"
-node 4 16 19 path false [3]
-node 5 16 19 type Path [4]
-node 6 9 19 parameter 2 5
-node 7 22 25 name "i32"
-node 8 22 25 path false [7]
-node 9 22 25 type Path [8]
-node 10 28 34 name "r#type"
-node 11 28 34 path false [10]
-node 12 26 36 block Plain [] 11
-node 13 0 36 item 0
-item 0 "r#gen" private [] [] function false false false false - [6] 9 12
-node 14 0 36 crate [13]
-root 14
+active [0,1,2,3,4,5,6,7]
+node 0 9 15 binding false false "r#type" -
+node 1 16 19 name "i32"
+node 2 9 19 parameter 0 1
+node 3 22 25 name "i32"
+node 4 28 34 name "r#type"
+node 5 26 36 block Plain [] 4
+node 6 0 36 item 0
+item 0 "r#gen" private [] [] function false false false false - [2] 3 5
+node 7 0 36 crate [6]
+root 7
 eof 37

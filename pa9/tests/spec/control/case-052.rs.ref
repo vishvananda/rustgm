@@ -24,10 +24,10 @@ type 21 function binders=0 parameters=[19] result=11 unsafe=false
 type 22 function-item def=14 signature=21
 type 23 function-item def=15 signature=19
 type 24 function-item def=16 signature=19
-def 13 type=20 name="f" source=0:21
-def 14 type=22 name="take" source=0:37
-def 15 type=23 name="a" source=0:43
-def 16 type=24 name="b" source=0:49
+def 13 type=20 name="f" source=0:16
+def 14 type=22 name="take" source=0:25
+def 15 type=23 name="a" source=0:29
+def 16 type=24 name="b" source=0:33
 def 17 type=2 name="bool"
 def 18 type=3 name="char"
 def 19 type=4 name="str"
@@ -45,57 +45,52 @@ def 30 type=15 name="u128"
 def 31 type=16 name="usize"
 def 32 type=17 name="f32"
 def 33 type=18 name="f64"
-def 34 type=19 name="f" source=0:24
-function def=13 source=0:21 signature=19 body=0:20
-function def=14 source=0:37 signature=21 body=0:36
-function def=15 source=0:43 signature=19 body=0:42
-function def=16 source=0:49 signature=19 body=0:48
-node 0:1 type=11 span=8:10
-node 0:2 type=11 span=8:10
-node 0:4 type=22 span=11:15
-node 0:5 type=2 span=24:28
-scalar 0:5 bool true
-node 0:7 type=23 span=35:36
-adjustment 0:7 function-pointer target=19
-node 0:8 type=0 span=29:36 control=0:18
-node 0:9 type=0 span=29:37
-node 0:10 type=0 span=28:38
-adjustment 0:10 never target=1
-node 0:11 type=1 span=21:38
-node 0:12 type=1 span=21:38
-node 0:14 type=24 span=44:45
-adjustment 0:14 function-pointer target=19
-node 0:15 type=0 span=38:45 control=0:18
-node 0:16 type=0 span=38:46
-node 0:17 type=0 span=20:47
-adjustment 0:17 never target=1
-node 0:18 type=19 span=16:47
-node 0:19 type=11 span=11:48
-operation 0:19 call signature=21
-node 0:20 type=11 span=10:49
-node 0:21 type=20 span=0:49
-node 0:24 type=19 span=58:59 binding=34
-node 0:26 type=11 span=66:68
-node 0:27 type=11 span=66:68
-node 0:28 type=19 span=60:68
-node 0:29 type=19 span=58:68
-node 0:31 type=11 span=71:73
-node 0:32 type=11 span=71:73
-node 0:34 type=19 span=74:75
-node 0:35 type=11 span=74:77
-operation 0:35 call signature=19
-node 0:36 type=11 span=73:78
-node 0:37 type=22 span=50:78
-node 0:39 type=11 span=87:89
-node 0:40 type=11 span=87:89
-node 0:41 type=11 span=90:91
-scalar 0:41 integer bits=0x00000000000000000000000000000001
-node 0:42 type=11 span=89:92
-node 0:43 type=23 span=79:92
-node 0:45 type=11 span=101:103
-node 0:46 type=11 span=101:103
-node 0:47 type=11 span=104:105
-scalar 0:47 integer bits=0x00000000000000000000000000000002
-node 0:48 type=11 span=103:106
-node 0:49 type=24 span=93:106
-eof types=25 definitions=22 nodes=39 functions=4 initializers=0
+def 34 type=19 name="f" source=0:17
+function def=13 source=0:16 signature=19 body=0:15
+function def=14 source=0:25 signature=21 body=0:24
+function def=15 source=0:29 signature=19 body=0:28
+function def=16 source=0:33 signature=19 body=0:32
+node 0:0 type=11 span=8:10
+node 0:1 type=22 span=11:15
+node 0:2 type=2 span=24:28
+scalar 0:2 bool true
+node 0:3 type=23 span=35:36
+adjustment 0:3 function-pointer target=19
+node 0:4 type=0 span=29:36 control=0:13
+node 0:5 type=0 span=29:37
+node 0:6 type=0 span=28:38
+adjustment 0:6 never target=1
+node 0:7 type=1 span=21:38
+node 0:8 type=1 span=21:38
+node 0:9 type=24 span=44:45
+adjustment 0:9 function-pointer target=19
+node 0:10 type=0 span=38:45 control=0:13
+node 0:11 type=0 span=38:46
+node 0:12 type=0 span=20:47
+adjustment 0:12 never target=1
+node 0:13 type=19 span=16:47
+node 0:14 type=11 span=11:48
+operation 0:14 call signature=21
+node 0:15 type=11 span=10:49
+node 0:16 type=20 span=0:49
+node 0:17 type=19 span=58:59 binding=34
+node 0:18 type=11 span=66:68
+node 0:19 type=19 span=60:68
+node 0:20 type=19 span=58:68
+node 0:21 type=11 span=71:73
+node 0:22 type=19 span=74:75
+node 0:23 type=11 span=74:77
+operation 0:23 call signature=19
+node 0:24 type=11 span=73:78
+node 0:25 type=22 span=50:78
+node 0:26 type=11 span=87:89
+node 0:27 type=11 span=90:91
+scalar 0:27 integer bits=0x00000000000000000000000000000001
+node 0:28 type=11 span=89:92
+node 0:29 type=23 span=79:92
+node 0:30 type=11 span=101:103
+node 0:31 type=11 span=104:105
+scalar 0:31 integer bits=0x00000000000000000000000000000002
+node 0:32 type=11 span=103:106
+node 0:33 type=24 span=93:106
+eof types=25 definitions=22 nodes=34 functions=4 initializers=0

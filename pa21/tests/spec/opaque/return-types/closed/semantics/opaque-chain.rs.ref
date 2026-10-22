@@ -27,9 +27,9 @@ type 24 function-item def=14 signature=23
 type 25 function binders=0 parameters=[] result=1 unsafe=false
 type 26 function-item def=15 signature=25
 type 27 tuple [22,22]
-def 13 type=21 name="first" source=0:6
-def 14 type=24 name="second" source=0:15
-def 15 type=26 name="main" source=0:31
+def 13 type=21 name="first" source=0:5
+def 14 type=24 name="second" source=0:12
+def 15 type=26 name="main" source=0:23
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -47,10 +47,10 @@ def 29 type=15 name="u128"
 def 30 type=16 name="usize"
 def 31 type=17 name="f32"
 def 32 type=18 name="f64"
-def 40 type=22 name="a" source=0:18
-opaque 0 owner=13 source=0:3 application=19 hidden=11 role=defining-result storage-proof=pending
+def 40 type=22 name="a" source=0:13
+opaque 0 owner=13 source=0:2 application=19 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=19 bound=copy
-opaque 1 owner=14 source=0:10 application=22 hidden=19 role=defining-result storage-proof=pending
+opaque 1 owner=14 source=0:8 application=22 hidden=19 role=defining-result storage-proof=pending
 opaque-bound id=1 index=0 subject=22 bound=copy
 opaque-body-result def=13 type=11
 opaque-body-result def=14 type=19

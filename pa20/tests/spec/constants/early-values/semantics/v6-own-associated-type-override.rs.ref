@@ -35,17 +35,17 @@ type 32 projection def=19 self=11 trait=17 arguments=[] family arguments=[]
 type 33 array element=11 length=3
 type 34 function binders=0 parameters=[33] result=26 unsafe=false
 type 35 function-item def=16 signature=34 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=23 name="check" source=0:19
-def 14 type=25 name="fail" source=0:35
-def 15 type=19 name="X" source=0:47
-def 16 type=31 name="X" source=0:47
-def 18 type=20 name="Self" source=0:53
-def 19 type=21 name="Out" source=0:48
-def 20 type=16 name="C" source=0:52
-def 21 type=11 name="Self" source=0:79
-def 22 type=26 name="Out" source=0:73
-def 23 type=16 name="C" source=0:78
-def 24 type=28 name="main" source=0:111
+def 13 type=23 name="check" source=0:13
+def 14 type=25 name="fail" source=0:22
+def 15 type=19 name="X" source=0:29
+def 16 type=31 name="X" source=0:29
+def 18 type=20 name="Self" source=0:33
+def 19 type=21 name="Out" source=0:30
+def 20 type=16 name="C" source=0:32
+def 21 type=11 name="Self" source=0:48
+def 22 type=26 name="Out" source=0:44
+def 23 type=16 name="C" source=0:47
+def 24 type=28 name="main" source=0:70
 def 25 type=2 name="bool"
 def 26 type=3 name="char"
 def 27 type=4 name="str"
@@ -63,23 +63,23 @@ def 38 type=15 name="u128"
 def 39 type=16 name="usize"
 def 40 type=17 name="f32"
 def 41 type=18 name="f64"
-def 42 type=16 name="N" source=0:39
-def 43 type=2 name="ok" source=0:2
-def 44 type=11 name="x" source=0:22
-def 45 type=26 name="x" source=0:82
-associated-owner 0 kind=trait self-def=18 self=20 source=0:53 trait=17 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=21 self=11 source=0:79 unsafe=false
+def 42 type=16 name="N" source=0:24
+def 43 type=2 name="ok" source=0:0
+def 44 type=11 name="x" source=0:14
+def 45 type=26 name="x" source=0:49
+associated-owner 0 kind=trait self-def=18 self=20 source=0:33 trait=17 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=21 self=11 source=0:48 unsafe=false
 associated-member def=19 owner=0
 associated-member def=20 owner=0
 associated-member def=22 owner=1
 associated-member def=23 owner=1
 parameter owner=15 binding=42 argument=const-parameter:15:0 default=-
 parameter owner=18 binding=18 argument=type:20 default=-
-predicate owner=17 source=0:53 subject=20 bound=trait:17 arguments=[]
-impl owner=21 source=0:79 subject=11 bound=trait:17 arguments=[]
+predicate owner=17 source=0:33 subject=20 bound=trait:17 arguments=[]
+impl owner=21 source=0:48 subject=11 bound=trait:17 arguments=[]
 impl-type owner=21 declaration=19 definition=22
-trait-path source=0:68 method=20 trait=17 qualifier=explicit origin=ordinary subject-source=0:63
-implementation-use source=0:68 owner=21 arguments=[]
+trait-path source=0:40 method=20 trait=17 qualifier=explicit origin=ordinary subject-source=0:37
+implementation-use source=0:40 owner=21 arguments=[]
 associated-type def=19 type=21
 result-contract def=19 projection=21
 result-bound def=19 index=0 subject=21 bound=sized
@@ -87,8 +87,7 @@ associated-constant def=20 type=16
 associated-type def=22 type=26
 associated-constant def=23 type=16
 impl-constant owner=21 declaration=20 selected=23 default=false
-constant-use source=0:68 definition=20 arguments=[type:11]
+constant-use source=0:40 definition=20 arguments=[type:11]
 constant-dispatch declaration=20 arguments=[type:11] selected=23 arguments=[]
-normalized-node source=0:90 original=32 result=26
-normalized-node source=0:91 original=32 result=26
-eof owners=2 members=4 parameters=2 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=2 normalized-definitions=0
+normalized-node source=0:53 original=32 result=26
+eof owners=2 members=4 parameters=2 predicates=1 impls=1 calls=0 paths=1 impl-uses=1 type-members=2 constant-members=2 result-contracts=1 result-bounds=1 impl-constants=1 constant-uses=1 constant-dispatches=1 normalized-nodes=1 normalized-definitions=0

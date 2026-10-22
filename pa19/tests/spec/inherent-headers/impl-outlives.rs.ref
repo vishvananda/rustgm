@@ -34,11 +34,11 @@ type 31 function binders=2 parameters=[30,21] result=19 unsafe=false
 type 32 reference mutable=false region=bound:1:0 referent=11
 type 33 function binders=0 parameters=[32,25] result=23 unsafe=false
 type 34 function-item def=14 signature=31
-def 13 type=19 name="S" source=0:14
-def 14 type=34 name="S" source=0:14
-def 15 type=19 name="Self" source=0:40
-def 16 type=27 name="first" source=0:39
-def 17 type=29 name="main" source=0:42
+def 13 type=19 name="S" source=0:10
+def 14 type=34 name="S" source=0:10
+def 15 type=19 name="Self" source=0:30
+def 16 type=27 name="first" source=0:29
+def 17 type=29 name="main" source=0:32
 def 18 type=2 name="bool"
 def 19 type=3 name="char"
 def 20 type=4 name="str"
@@ -56,8 +56,8 @@ def 31 type=15 name="u128"
 def 32 type=16 name="usize"
 def 33 type=17 name="f32"
 def 34 type=18 name="f64"
-def 39 type=20 name="self" source=0:27
-associated-owner 0 kind=inherent self-def=15 self=19 source=0:40 unsafe=false
+def 39 type=20 name="self" source=0:20
+associated-owner 0 kind=inherent self-def=15 self=19 source=0:30 unsafe=false
 associated-member def=16 owner=0 receiver=20 references=1
-region-coercion body=0:38 source=0:38 actual=30 expected=21 kind=same-shape pending
+region-coercion body=0:28 source=0:28 actual=30 expected=21 kind=same-shape pending
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0

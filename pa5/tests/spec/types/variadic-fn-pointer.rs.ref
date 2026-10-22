@@ -1,17 +1,13 @@
-active [0,1,2,3,4,5,6,7,8,9,10,11]
+active [0,1,2,3,4,5,6,7]
 node 0 21 24 literal 0
 value 0 string 21 24 1 "C"
 node 1 28 31 name "i32"
-node 2 28 31 path false [1]
-node 3 28 31 type Path [2]
-node 4 28 31 field-definition - private 3
-node 5 32 35 variadic
-node 6 38 41 name "i32"
-node 7 38 41 path false [6]
-node 8 38 41 type Path [7]
-node 9 7 41 function-type true 0 [] [4,5] 8
-node 10 0 42 item 0
-item 0 "F" private [] [] type-alias [] 9
-node 11 0 42 crate [10]
-root 11
+node 2 28 31 field-definition - private 1
+node 3 32 35 variadic
+node 4 38 41 name "i32"
+node 5 7 41 function-type true 0 [] [2,3] 4
+node 6 0 42 item 0
+item 0 "F" private [] [] type-alias [] 5
+node 7 0 42 crate [6]
+root 7
 eof 43

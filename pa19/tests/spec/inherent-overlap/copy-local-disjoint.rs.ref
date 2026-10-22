@@ -32,15 +32,15 @@ type 29 function binders=0 parameters=[19] result=20 unsafe=false
 type 30 function-item def=14 signature=29
 type 31 function binders=0 parameters=[11] result=21 unsafe=false
 type 32 function-item def=16 signature=31
-def 13 type=20 name="S" source=0:5
-def 14 type=30 name="S" source=0:5
-def 15 type=21 name="N" source=0:10
-def 16 type=32 name="N" source=0:10
-def 17 type=23 name="Self" source=0:24
-def 18 type=26 name="f" source=0:23
-def 19 type=24 name="Self" source=0:34
-def 20 type=27 name="f" source=0:33
-def 21 type=28 name="main" source=0:36
+def 13 type=20 name="S" source=0:3
+def 14 type=30 name="S" source=0:3
+def 15 type=21 name="N" source=0:6
+def 16 type=32 name="N" source=0:6
+def 17 type=23 name="Self" source=0:16
+def 18 type=26 name="f" source=0:15
+def 19 type=24 name="Self" source=0:23
+def 20 type=27 name="f" source=0:22
+def 21 type=28 name="main" source=0:25
 def 22 type=2 name="bool"
 def 23 type=3 name="char"
 def 24 type=4 name="str"
@@ -59,12 +59,12 @@ def 36 type=16 name="usize"
 def 37 type=17 name="f32"
 def 38 type=18 name="f64"
 def 39 type=19 name="T" source=0:0
-def 40 type=22 name="T" source=0:14
-associated-owner 0 kind=inherent self-def=17 self=23 source=0:24 unsafe=false
-associated-owner 1 kind=inherent self-def=19 self=24 source=0:34 unsafe=false
+def 40 type=22 name="T" source=0:9
+associated-owner 0 kind=inherent self-def=17 self=23 source=0:16 unsafe=false
+associated-owner 1 kind=inherent self-def=19 self=24 source=0:23 unsafe=false
 associated-member def=18 owner=0
 associated-member def=20 owner=1
 parameter owner=13 binding=39 argument=type:19 default=-
 parameter owner=17 binding=40 argument=type:22 default=-
-predicate owner=17 source=0:13 subject=22 bound=copy
+predicate owner=17 source=0:8 subject=22 bound=copy
 eof owners=2 members=2 parameters=2 predicates=1 impls=0 calls=0 paths=0 impl-uses=0

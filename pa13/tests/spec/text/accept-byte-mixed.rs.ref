@@ -25,15 +25,15 @@ type 22 function-item def=13 signature=21
 type 23 array element=11 length=0
 type 24 reference mutable=false region=static referent=23
 type 25 reference mutable=false region=static referent=19
-root 0:11 pattern=0
-root 0:16 pattern=1
-pattern 0 source=0:11 input=20 deref mutable=false implicit=false pattern=4
-pattern 1 source=0:16 input=20 deref mutable=false implicit=true pattern=2
-pattern 2 source=0:16 input=19 slice minimum=1 exact=false fields=0:1
-pattern 3 source=0:14 input=11 wildcard
-pattern 4 source=0:11 input=19 slice minimum=0 exact=true fields=1:1
+root 0:6 pattern=0
+root 0:11 pattern=1
+pattern 0 source=0:6 input=20 deref mutable=false implicit=false pattern=4
+pattern 1 source=0:11 input=20 deref mutable=false implicit=true pattern=2
+pattern 2 source=0:11 input=19 slice minimum=1 exact=false fields=0:1
+pattern 3 source=0:9 input=11 wildcard
+pattern 4 source=0:6 input=19 slice minimum=0 exact=true fields=1:1
 field 0 index=0 pattern=3
-match 0 source=0:19 input=0:10 arms=0:2 exhaustive=true uninhabited=false work=1058
-arm 0 source=0:13 pattern=0 guard=- useful=true value=0:12
-arm 1 source=0:18 pattern=1 guard=- useful=true value=0:17
+match 0 source=0:14 input=0:5 arms=0:2 exhaustive=true uninhabited=false work=1058
+arm 0 source=0:8 pattern=0 guard=- useful=true value=0:7
+arm 1 source=0:13 pattern=1 guard=- useful=true value=0:12
 eof roots=2 patterns=5 fields=1 alternatives=0 ranges=0 matches=1 arms=2 coverage-work=1058 region-vars=0 region-equalities=0 conditions=0 chains=0
