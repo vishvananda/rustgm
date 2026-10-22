@@ -172,7 +172,7 @@ pub(super) fn recursion_limit(package: &super::Package) -> Result<usize, Error> 
     })
 }
 
-pub(super) fn crate_name(
+pub(in crate::resolve) fn crate_name(
     package: &super::Package,
     requested: Option<&str>,
 ) -> Result<String, Error> {

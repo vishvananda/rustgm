@@ -9,6 +9,7 @@ pub struct Options {
     pub library: bool,
     pub metadata: Option<String>,
     pub externs: Vec<String>,
+    pub source_core: Option<String>,
 }
 impl Options {
     pub fn validate(&self, mode: &str, count: bool, output: Option<&str>) -> Result<(), String> {
@@ -16,8 +17,35 @@ impl Options {
             || self.disambiguator.is_some()
             || self.metadata.is_some()
             || !self.externs.is_empty();
-        if enabled && mode != "--emit-lowir" {
+        if enabled && mode != "--emit-lowir" && self.source_core.is_none() {
             return Err("crate artifact options require --emit-lowir".into());
+        }
+        if self.source_core.is_some() {
+            if !matches!(
+                mode,
+                "--emit-names"
+                    | "--emit-expanded"
+                    | "--emit-types"
+                    | "--emit-semantics"
+                    | "--emit-trait-semantics"
+                    | "--emit-generic-semantics"
+                    | "--emit-patterns"
+                    | "--emit-layouts"
+                    | "--emit-body-ir"
+                    | "--emit-ownership"
+                    | "--emit-regions"
+                    | "--emit-loans"
+                    | "--emit-constants"
+                    | "--emit-lowir"
+            ) {
+                return Err("source-core configuration requires a name or semantic view".into());
+            }
+            self.context()?;
+            if mode != "--emit-lowir"
+                && (self.library || self.metadata.is_some() || !self.externs.is_empty())
+            {
+                return Err("source-core artifact options require --emit-lowir".into());
+            }
         }
         if self.library && self.identity()?.is_none() {
             return Err("library output requires --crate-name and --crate-disambiguator".into());
@@ -49,6 +77,29 @@ impl Options {
                 CrateIdentity::new(name, disambiguator).map_err(str::to_owned)
             })
             .transpose()
+    }
+    pub fn context(&self) -> Result<rustgm::resolve::bindings::Context, String> {
+        let mode = if let Some(provider) = &self.source_core {
+            let (name, disambiguator) = provider
+                .split_once('@')
+                .ok_or("--source-core requires NAME@DISAMBIGUATOR")?;
+            let provider = CrateIdentity::new(name, disambiguator).map_err(str::to_owned)?;
+            let current = self
+                .identity()?
+                .ok_or("--source-core requires complete current crate identity")?;
+            if current != provider {
+                return Err("source-core provider differs from current crate identity".into());
+            }
+            rustgm::support::bindings::Mode::Source { provider }
+        } else {
+            rustgm::support::bindings::Mode::Bootstrap
+        };
+        Ok(rustgm::resolve::bindings::Context {
+            crate_name: self.name.clone(),
+            current: self.identity()?,
+            dependencies: self.dependencies()?,
+            mode,
+        })
     }
     pub fn dependencies(&self) -> Result<Option<Arc<Dependencies>>, String> {
         if self.externs.is_empty() {

@@ -30,7 +30,7 @@ use crate::{
     },
 };
 use std::collections::VecDeque;
-mod attributes;
+pub(super) mod attributes;
 mod bindings;
 mod diagnostics;
 mod eager;
@@ -182,12 +182,31 @@ pub fn analyze_with_crates(
     crate_name: Option<&str>,
     dependencies: Option<std::sync::Arc<crate::support::crates::Dependencies>>,
 ) -> Result<Report, Error> {
-    let mut loader = Loader::new(root, sources, config)?;
-    loader.package.crate_name = attributes::crate_name(&loader.package, crate_name)?;
+    let context = super::bindings::Context {
+        crate_name: crate_name.map(str::to_owned),
+        dependencies,
+        ..Default::default()
+    };
+    analyze_with_context(root, sources, config, &context)
+}
+/// Source ownership is fixed before expansion and survives ordinary resolution.
+/// # Errors
+/// Reports ordinary expansion errors and invalid source-provider admission.
+pub fn analyze_with_context(
+    root: InputFile,
+    sources: &mut impl Sources,
+    config: &Config,
+    context: &super::bindings::Context,
+) -> Result<Report, Error> {
+    let mut loader = Loader::with_context(root, sources, config, context)?;
+    if loader.package.source_core.is_none() {
+        loader.package.crate_name =
+            attributes::crate_name(&loader.package, context.crate_name.as_deref())?;
+    }
     loader.isolate_expansions();
     let root = loader.package.modules[0].root;
     let recursion_limit = attributes::recursion_limit(&loader.package)?;
-    let paths = paths::Paths::new(&mut loader.package, dependencies)?;
+    let paths = paths::Paths::new(&mut loader.package, context.dependencies.clone())?;
     let mut engine = Engine {
         loader,
         config,

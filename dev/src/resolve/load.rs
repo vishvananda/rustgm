@@ -80,7 +80,18 @@ pub fn load(
     sources: &mut impl Sources,
     config: &Config,
 ) -> Result<Package, Error> {
-    let mut loader = Loader::new(root, sources, config)?;
+    load_with_context(root, sources, config, &super::bindings::Context::default())
+}
+/// Load with explicit source-provider ownership before any names are indexed.
+/// # Errors
+/// Reports ordinary loading errors and malformed source-provider configuration.
+pub fn load_with_context(
+    root: InputFile,
+    sources: &mut impl Sources,
+    config: &Config,
+    context: &super::bindings::Context,
+) -> Result<Package, Error> {
+    let mut loader = Loader::with_context(root, sources, config, context)?;
     let root_node = loader.package.modules[0].root;
     let mut work = vec![Visit {
         module: ModuleId(0),
@@ -136,10 +147,11 @@ pub fn load(
     Ok(loader.package)
 }
 impl<'a, S: Sources> Loader<'a, S> {
-    pub(crate) fn new(
+    pub(crate) fn with_context(
         root: InputFile,
         sources: &'a mut S,
         config: &'a Config,
+        context: &super::bindings::Context,
     ) -> Result<Self, Error> {
         let unit = Unit::parse(root.source, config)
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
@@ -151,11 +163,14 @@ impl<'a, S: Sources> Loader<'a, S> {
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
+        let source_core = super::bindings::policy::prepare(&unit, context)?;
         let implicit_prelude = !unit
             .word_attribute(Some(root_node), "no_implicit_prelude")
-            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-        Ok(Self {
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?
+            && source_core.is_none();
+        let mut loader = Self {
             package: Package {
+                source_core,
                 no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {
@@ -192,7 +207,14 @@ impl<'a, S: Sources> Loader<'a, S> {
             include_requests: HashMap::new(),
             resources: HashMap::new(),
             environment: HashMap::new(),
-        })
+        };
+        if loader.package.source_core.is_some() {
+            loader.package.crate_name = super::expansion::attributes::crate_name(
+                &loader.package,
+                context.crate_name.as_deref(),
+            )?;
+        }
+        Ok(loader)
     }
     pub(crate) fn isolate_expansions(&mut self) {
         self.separate_instances = true;

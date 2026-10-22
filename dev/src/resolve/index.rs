@@ -398,6 +398,13 @@ impl Resolver<'_> {
         item: Item,
         access: Access,
     ) -> Result<Context, Error> {
+        if matches!(item.kind, ItemKind::Function { body: None, .. })
+            && c.foreign.is_none()
+            && self.facts.scopes[c.scope.0 as usize].trait_access.is_none()
+            && self.package.source_core.is_none()
+        {
+            return Err(self.error(c, node, "function requires a definition"));
+        }
         if matches!(item.kind, ItemKind::ExternBlock { .. }) {
             self.facts
                 .foreign_blocks

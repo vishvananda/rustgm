@@ -48,6 +48,7 @@ pub struct Parser<'source, 'inputs> {
     condition_work: Vec<(NodeId, bool)>,
     extended: bool,
     item_scope: items::Scope,
+    configured_items: bool,
     inputs: &'inputs dyn super::interpolation::Inputs,
     has_opaque: bool,
 }
@@ -80,6 +81,7 @@ impl<'source> Parser<'source, '_> {
             condition_work: Vec::new(),
             extended,
             item_scope: items::Scope::Module,
+            configured_items: false,
             inputs: &super::interpolation::EMPTY_INPUTS,
             has_opaque: false,
         }

@@ -21,6 +21,7 @@ pub struct Module {
     pub root: NodeId,
 }
 pub struct Package {
+    pub source_core: Option<Box<super::bindings::SourceCore>>,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,

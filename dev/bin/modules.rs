@@ -94,15 +94,10 @@ pub fn run(
             | Mode::Constants
             | Mode::Lowir
     ) {
-        let report = resolve::expansion::analyze_with_crates(
-            root,
-            &mut Files,
-            config,
-            crates.name.as_deref(),
-            crates.dependencies()?,
-        )
-        .and_then(resolve::analyze_expanded)
-        .map_err(|e| e.to_string())?;
+        let report =
+            resolve::expansion::analyze_with_context(root, &mut Files, config, &crates.context()?)
+                .and_then(resolve::analyze_expanded)
+                .map_err(|e| e.to_string())?;
         if matches!(
             mode,
             Mode::Types
@@ -127,7 +122,9 @@ pub fn run(
         }
         .map_err(|e| e.to_string());
     }
-    let mut package = resolve::load::load(root, &mut Files, config).map_err(|e| e.to_string())?;
+    let mut package =
+        resolve::load::load_with_context(root, &mut Files, config, &crates.context()?)
+            .map_err(|e| e.to_string())?;
     let facts = resolve::analyze(&mut package).map_err(|e| e.to_string())?;
     if count {
         writeln!(

@@ -11,6 +11,7 @@ pub(super) use crate::syntax::item::ItemContext as Scope;
 pub fn parse_crate(source: &str) -> Result<Ast<'_>, LexError> {
     let mut parser = Parser::new(source, true)?;
     let attrs = parser.attributes(true)?;
+    parser.item_attributes(attrs);
     let items = parser.item_list(false, Scope::Module)?;
     let root = parser.node(0, Kind::Crate(items))?;
     parser.ast.root = parser.attach(attrs, root)?;
@@ -121,7 +122,9 @@ impl Parser<'_, '_> {
             })?);
         }
         self.depth += 1;
+        let configured = self.configured_items;
         let result = self.item_inner();
+        self.configured_items = configured;
         self.depth -= 1;
         result
     }
@@ -132,16 +135,9 @@ impl Parser<'_, '_> {
     )]
     fn item_inner(&mut self) -> Result<NodeId, LexError> {
         let attrs = self.attributes(false)?;
+        let intrinsic = self.item_attributes(attrs);
         if let Some(node) = self.interpolated(&[F::Item])? {
-            let mut owner = node;
-            while let Kind::Attributed { value, .. } = self.ast.node(owner).kind {
-                owner = value;
-            }
-            let Kind::Item(index) = self.ast.node(owner).kind else {
-                return Err(self.error("opaque item has no item root")?);
-            };
-            let item = self.ast.items[index as usize];
-            self.validate_item(&item)?;
+            self.validate_spliced_item(node, intrinsic)?;
             return self.attach(attrs, node);
         }
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
@@ -193,6 +189,7 @@ impl Parser<'_, '_> {
             } else {
                 self.expect(P::OpenBrace)?;
                 inner = self.attributes(true)?;
+                self.item_attributes(inner);
                 Some(self.item_list(true, Scope::Module)?)
             };
             ItemKind::Module { items }
@@ -258,6 +255,7 @@ impl Parser<'_, '_> {
                 item.where_clause = self.where_clause()?;
                 self.expect(P::OpenBrace)?;
                 inner = self.attributes(true)?;
+                self.item_attributes(inner);
                 ItemKind::Trait {
                     unsafe_,
                     bounds,
@@ -278,6 +276,7 @@ impl Parser<'_, '_> {
                 item.where_clause = self.where_clause()?;
                 self.expect(P::OpenBrace)?;
                 inner = self.attributes(true)?;
+                self.item_attributes(inner);
                 ItemKind::Impl {
                     unsafe_,
                     negative,
@@ -308,6 +307,7 @@ impl Parser<'_, '_> {
                     let abi = if external { self.abi()? } else { None };
                     if external && self.eat(P::OpenBrace)? {
                         inner = self.attributes(true)?;
+                        self.item_attributes(inner);
                         ItemKind::ExternBlock {
                             unsafe_,
                             abi,
@@ -360,7 +360,7 @@ impl Parser<'_, '_> {
                 }
             }
         };
-        self.validate_item(&item)?;
+        self.validate_item(&item, intrinsic)?;
         let id = u32::try_from(self.ast.items.len()).map_err(|_| error(start, "too many items"))?;
         self.ast.items.push(item);
         let node = self.node(start, Kind::Item(id))?;
@@ -368,7 +368,22 @@ impl Parser<'_, '_> {
         self.attach(attrs, node)
     }
 
-    fn validate_item(&mut self, item: &Item) -> Result<(), LexError> {
+    fn validate_spliced_item(
+        &mut self,
+        mut owner: NodeId,
+        mut intrinsic: bool,
+    ) -> Result<(), LexError> {
+        while let Kind::Attributed { value, attributes } = self.ast.node(owner).kind {
+            intrinsic |= self.item_attributes(attributes);
+            owner = value;
+        }
+        let Kind::Item(index) = self.ast.node(owner).kind else {
+            return Err(self.error("opaque item has no item root")?);
+        };
+        let item = self.ast.items[index as usize];
+        self.validate_item(&item, intrinsic)
+    }
+    fn validate_item(&mut self, item: &Item, intrinsic: bool) -> Result<(), LexError> {
         if self.item_scope != Scope::External
             && matches!(item.kind, ItemKind::Static { safety, .. } if safety != Safety::Default)
         {
@@ -397,7 +412,12 @@ impl Parser<'_, '_> {
             ItemKind::TypeAlias { ty, .. } => ty.is_none(),
             _ => false,
         };
-        if missing && matches!(self.item_scope, Scope::Module | Scope::Impl) {
+        let provisional_function = matches!(item.kind, ItemKind::Function { .. })
+            && (self.configured_items || self.item_scope == Scope::Module && intrinsic);
+        if missing
+            && matches!(self.item_scope, Scope::Module | Scope::Impl)
+            && !provisional_function
+        {
             return Err(self.error("item requires a definition")?);
         }
         if self.item_scope == Scope::External

@@ -1,4 +1,5 @@
 mod anonymous_parameters;
+pub mod bindings;
 mod bodies;
 mod builtins;
 pub mod crates;
@@ -24,6 +25,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     resolver.collect()?;
     resolver.imports()?;
     resolver.bodies()?;
+    bindings::finish(package, &mut state.facts)?;
     Ok(state.facts)
 }
 pub mod render;
@@ -52,6 +54,7 @@ pub fn analyze_expanded(
         .and_then(|()| resolver.bodies());
     result.map_err(|error| report.diagnostic(error))?;
     report.resolution = state.facts;
+    bindings::finish(&report.package, &mut report.resolution)?;
     report.names_resolved = true;
     Ok(report)
 }

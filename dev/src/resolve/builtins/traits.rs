@@ -74,6 +74,19 @@ pub struct Traits {
     iteration: Option<Box<iteration::Registry>>,
 }
 impl Traits {
+    pub(in crate::resolve) fn bootstrap_absent(&self) -> bool {
+        self.library.is_none()
+            && self.marker.is_none()
+            && self.clone_.is_none()
+            && self.cloning.is_none()
+            && self.panic.is_none()
+            && self.ops.is_none()
+            && self.entries.iter().all(Option::is_none)
+            && self.callables.is_none()
+            && self.language.is_empty()
+            && self.comparisons.is_none()
+            && self.iteration.is_none()
+    }
     fn insert_fixed(
         &mut self,
         trait_: BuiltinTrait,

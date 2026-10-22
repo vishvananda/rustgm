@@ -47,9 +47,10 @@ impl Paths {
             members: Some(scope),
         });
         let mut macro_targets = HashMap::new();
+        let bootstrap = package.source_core.is_none();
         for builtin in Builtin::ALL
             .into_iter()
-            .filter(|builtin| *builtin != Builtin::OptionEnv)
+            .filter(|builtin| bootstrap && *builtin != Builtin::OptionEnv)
         {
             let name = package
                 .names

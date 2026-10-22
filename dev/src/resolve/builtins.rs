@@ -53,6 +53,15 @@ impl Resolver<'_> {
             return Ok(None);
         };
         let name = self.package.name(c.file, span)?;
+        if self.package.source_core.is_some() && self.package.names.get(name) == "self" {
+            return self
+                .facts
+                .module_scopes
+                .first()
+                .copied()
+                .map(Some)
+                .ok_or_else(|| self.error(c, node, "missing self-core root"));
+        }
         if self.facts.crates.is_some()
             && let Some(binding) = self.facts.extern_scope.and_then(|scope| {
                 self.facts.scopes[scope.0 as usize]
@@ -115,6 +124,9 @@ impl Resolver<'_> {
         namespace: Namespace,
         path: &[NameId],
     ) -> Result<(), Error> {
+        if self.package.source_core.is_some() {
+            return Ok(());
+        }
         if path
             .last()
             .is_some_and(|name| matches!(self.package.names.get(*name), "next" | "into_iter"))
@@ -190,6 +202,13 @@ impl Resolver<'_> {
         Ok(())
     }
     fn prepare_external_traits(&mut self, c: Context, node: NodeId) -> Result<(), Error> {
+        if self.package.source_core.is_some() {
+            return Err(self.error(
+                c,
+                node,
+                "source-core mode has no bootstrap library fallback",
+            ));
+        }
         let external = if let Some(external) = self.facts.extern_scope {
             external
         } else {
@@ -244,6 +263,13 @@ impl Resolver<'_> {
         kind: DefKind,
         members: Option<ScopeId>,
     ) -> Result<DefId, Error> {
+        if self.package.source_core.is_some() {
+            return Err(self.error(
+                c,
+                node,
+                "source-core mode cannot create a bootstrap definition",
+            ));
+        }
         let name = self
             .package
             .names

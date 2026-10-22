@@ -8,6 +8,19 @@ use crate::syntax::{
 };
 
 impl Parser<'_, '_> {
+    /// This is syntax admission only. Configuration and resolved source binding
+    /// ownership decide whether an enabled declaration may omit its body.
+    pub(super) fn item_attributes(&mut self, range: AttributeRange) -> bool {
+        let mut intrinsic = false;
+        for capture in &self.ast.attributes[range.start as usize..range.end as usize] {
+            match capture.attribute.name(&capture.forest, self.cursor.source) {
+                Some("cfg" | "cfg_attr") => self.configured_items = true,
+                Some("rustc_intrinsic") => intrinsic = true,
+                _ => {}
+            }
+        }
+        intrinsic
+    }
     pub(super) fn attributes(&mut self, inner: bool) -> Result<AttributeRange, LexError> {
         let start = u32::try_from(self.ast.attributes.len())
             .map_err(|_| error(self.cursor.end(), "too many attributes"))?;
