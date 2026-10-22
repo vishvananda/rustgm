@@ -193,7 +193,7 @@ impl Places {
     }
     fn build(&mut self, checker: &mut Checker<'_>, node: NodeId) -> Result<Option<Place>, Error> {
         match checker.kind(node) {
-            Kind::Name(_) | Kind::Path { .. } => {
+            Kind::Name(..) | Kind::Path { .. } => {
                 let Some(Target::Definition(definition)) = checker
                     .facts
                     .node(checker.key(node))

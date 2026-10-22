@@ -320,7 +320,7 @@ impl Collector<'_> {
             | Kind::Attributed { value, .. }
             | Kind::Label { value, .. }
             | Kind::Statement(value) => self.push(value, work.usage),
-            Kind::Name(_)
+            Kind::Name(..)
             | Kind::Path { .. }
             | Kind::Qualified { .. }
             | Kind::Literal(_)

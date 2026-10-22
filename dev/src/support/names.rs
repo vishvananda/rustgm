@@ -50,6 +50,14 @@ impl Names {
     pub fn intern(&mut self, spelling: &str) -> Result<NameId, &'static str> {
         let spelling = spelling.strip_prefix('\'').unwrap_or(spelling);
         let spelling = spelling.strip_prefix("r#").unwrap_or(spelling);
+        self.intern_plain(spelling)
+    }
+    /// Intern a spelling that has no raw prefix or lifetime quote.
+    ///
+    /// # Errors
+    /// Rejects a name arena that cannot be indexed with 32-bit identities.
+    #[inline]
+    pub fn intern_plain(&mut self, spelling: &str) -> Result<NameId, &'static str> {
         if spelling.is_ascii() {
             return self.canonical(spelling);
         }

@@ -97,7 +97,7 @@ impl Resolver<'_> {
                                 ));
                             }
                             Kind::Bound { value, .. } => {
-                                trait_bound |= !matches!(ast.node(value).kind, Kind::Name(span)
+                                trait_bound |= !matches!(ast.node(value).kind, Kind::Name(span, _)
                                     if self.package.unit(context.file).spelling(span)
                                         .is_ok_and(|name| name.starts_with('\'')));
                             }

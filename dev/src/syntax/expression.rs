@@ -15,7 +15,7 @@ use crate::{
 mod control;
 pub mod fragment;
 mod items;
-pub use items::parse_crate;
+pub use items::{parse_crate, parse_crate_with};
 mod attributes;
 mod interpolate;
 use fragment::FragmentKind as F;
@@ -50,6 +50,8 @@ pub struct Parser<'source, 'inputs> {
     item_scope: items::Scope,
     inputs: &'inputs dyn super::interpolation::Inputs,
     has_opaque: bool,
+    /// The crate's interner, when the caller shares it with resolution.
+    names: Option<&'inputs mut crate::support::names::Names>,
 }
 
 /// Parse one expression fragment, including a block of statements.
@@ -88,6 +90,7 @@ impl<'source> Parser<'source, '_> {
             item_scope: items::Scope::Module,
             inputs: &super::interpolation::EMPTY_INPUTS,
             has_opaque: false,
+            names: None,
         }
     }
     fn nesting_limit(&self) -> u16 {
@@ -181,6 +184,51 @@ impl<'source> Parser<'source, '_> {
         let id = self.node(token.start, Kind::DeferredLiteral(token))?;
         self.ast.pending.literals.push(id);
         Ok(id)
+    }
+    /// A name node for a consumed identifier or lifetime token.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-segment node constructor; callgrind shows calls dominate"
+        )
+    )]
+    fn name_node(&mut self, token: Token) -> Result<NodeId, LexError> {
+        let span = Span {
+            start: token.start,
+            end: token.end,
+        };
+        // A plain identifier has no raw prefix or lifetime quote to strip.
+        let name = match self.names.as_deref_mut() {
+            Some(names) if token.kind == TokenKind::Identifier => Some(
+                names
+                    .intern_plain(self.cursor.spelling(token))
+                    .map_err(|message| error(span.start, message))?,
+            ),
+            _ => self.intern(span)?,
+        };
+        self.node(span.start, Kind::Name(span, name))
+    }
+    /// A name node interned once here when the parser shares the crate's
+    /// names, with the same raw-prefix and NFC rules as later lookups.
+    fn name_span(&mut self, span: Span) -> Result<NodeId, LexError> {
+        let name = self.intern(span)?;
+        self.node(span.start, Kind::Name(span, name))
+    }
+    fn intern(&mut self, span: Span) -> Result<Option<crate::support::names::NameId>, LexError> {
+        let Some(names) = self.names.as_deref_mut() else {
+            return Ok(None);
+        };
+        let spelling = self
+            .cursor
+            .source
+            .get(span.start as usize..span.end as usize)
+            .ok_or_else(|| error(span.start, "invalid name span"))?;
+        names
+            .intern(spelling)
+            .map(Some)
+            .map_err(|message| error(span.start, message))
     }
     /// `list` for exactly one child, without staging it in scratch.
     #[cfg_attr(not(debug_assertions), inline(always))]
@@ -481,13 +529,7 @@ impl<'source> Parser<'source, '_> {
             if !self.path_segment(token, self.cursor.last_word()) {
                 return Err(error(token.start, "expected path segment"));
             }
-            let segment = self.node(
-                token.start,
-                Kind::Name(Span {
-                    start: token.start,
-                    end: token.end,
-                }),
-            )?;
+            let segment = self.name_node(token)?;
             if !self.eat(P::ColonColon)? {
                 if !absolute && self.scratch.len() == mark {
                     // A relative path of one plain name is that name alone.
@@ -654,13 +696,7 @@ impl<'source> Parser<'source, '_> {
             if name.kind == TokenKind::Integer {
                 return Err(error(name.start, "generic method requires an identifier"));
             }
-            let method = self.node(
-                name.start,
-                Kind::Name(Span {
-                    start: name.start,
-                    end: name.end,
-                }),
-            )?;
+            let method = self.name_node(name)?;
             let (arguments, output, parenthesized) = self.generic_arguments()?;
             let method = self.node(
                 name.start,
@@ -735,7 +771,7 @@ impl<'source> Parser<'source, '_> {
             let value = if self.eat(P::Colon)? {
                 self.expr(0, NORMAL)?
             } else if token.kind != TokenKind::Integer {
-                self.node(token.start, Kind::Name(name))?
+                self.name_span(name)?
             } else {
                 return Err(error(token.start, "numeric struct field requires a value"));
             };

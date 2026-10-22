@@ -199,7 +199,9 @@ pub enum Kind {
         inclusive: bool,
     },
     Literal(u32),
-    Name(Span),
+    /// An identifier or lifetime spelling. The parser interns it when it
+    /// shares the crate's names; otherwise resolution interns the span.
+    Name(Span, Option<crate::support::names::NameId>),
     CrateRoot(u32),
     Path {
         absolute: bool,
@@ -327,6 +329,8 @@ pub enum Kind {
     },
     Binding {
         name: Span,
+        /// The interned name, as for [`Kind::Name`].
+        symbol: Option<crate::support::names::NameId>,
         mutable: bool,
         by_ref: bool,
         subpattern: Option<NodeId>,
@@ -439,7 +443,7 @@ impl<L> Syntax<L> {
             Kind::Path { absolute, segments } => {
                 Some((absolute, Segments::List(self.list(segments))))
             }
-            Kind::Name(_) => Some((false, Segments::One([id]))),
+            Kind::Name(..) => Some((false, Segments::One([id]))),
             _ => None,
         }
     }

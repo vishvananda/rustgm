@@ -296,7 +296,7 @@ impl<'a> Heads<'a> {
         let ast = &self.report.package.unit(path.file).configured.ast;
         let supplied = list.map_or(&[][..], |list| ast.list(list));
         let explicit = supplied.first().is_some_and(|&node| {
-            matches!(ast.node(node).kind, Kind::Name(span)
+            matches!(ast.node(node).kind, Kind::Name(span, _)
                 if self.report.package.unit(path.file).spelling(span).is_ok_and(|s| s.starts_with('\'')))
         });
         let omitted = if explicit { 0 } else { alias.lifetimes };

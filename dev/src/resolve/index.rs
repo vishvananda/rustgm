@@ -22,7 +22,7 @@ pub(crate) const fn is_leaf(kind: &Kind) -> bool {
             | Kind::Receiver { .. }
             | Kind::DeferredLiteral(_)
             | Kind::Literal(_)
-            | Kind::Name(_)
+            | Kind::Name(..)
             | Kind::EmptyStatement
             | Kind::Continue(_)
             | Kind::Wildcard

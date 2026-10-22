@@ -437,7 +437,7 @@ impl Checker<'_> {
                 } if explicit_lifetimes => {
                     let children = ast.list(elements);
                     let valid = children.len() == 2
-                        && matches!(ast.node(children[0]).kind,Kind::Name(span) if self.report.package.unit(key.file).spelling(span).is_ok_and(|s|s!="'_"));
+                        && matches!(ast.node(children[0]).kind,Kind::Name(span, _) if self.report.package.unit(key.file).spelling(span).is_ok_and(|s|s!="'_"));
                     if !valid {
                         return Err(self.error(
                             NodeKey { node, ..key },
@@ -557,7 +557,7 @@ impl Checker<'_> {
                 return Ok((Bound::Trait(value), Bound::Trait(original)));
             }
             Written::Outlives(key) => {
-                let Kind::Name(span) = self.kind(key) else {
+                let Kind::Name(span, _) = self.kind(key) else {
                     return Err(self.error(key, "outlives bound requires a named lifetime"));
                 };
                 if self

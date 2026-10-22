@@ -33,7 +33,7 @@ impl Checker<'_> {
             self.facts.node(key).and_then(|facts| facts.reference)
         {
             Source::Parameter(id)
-        } else if matches!(self.kind(key), Kind::Name(span)
+        } else if matches!(self.kind(key), Kind::Name(span, _)
             if self.report.package.unit(key.file).spelling(span).is_ok_and(|s| s == "'static"))
         {
             Source::Static

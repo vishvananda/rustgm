@@ -603,7 +603,7 @@ impl Checker<'_> {
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             self.drain(steps, limit)?;
         }
-        if matches!(kind, Kind::Name(_) | Kind::Path { .. })
+        if matches!(kind, Kind::Name(..) | Kind::Path { .. })
             && let Some(owner) = self.generic_use_owner(key)
         {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
@@ -924,7 +924,7 @@ impl Checker<'_> {
                 file: key.file,
                 node,
             })?,
-            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(..) => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(key).and_then(|facts| facts.reference)
                 else {
@@ -1407,7 +1407,7 @@ impl Checker<'_> {
                 file: key.file,
                 node,
             };
-            let Kind::Name(span) = self.kind(lifetime) else {
+            let Kind::Name(span, _) = self.kind(lifetime) else {
                 return Err(self.error(lifetime, "invalid lifetime syntax"));
             };
             let name = self

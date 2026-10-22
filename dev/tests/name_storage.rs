@@ -84,7 +84,10 @@ fn moving_sources_preserves_plain_and_decoded_literals() -> Result<(), String> {
     let mut units = Vec::new();
     for _ in 0..100 {
         let source = SourceFile::new(b"fn f(){\"plain\";\"line\\n\";1_000.5;}".to_vec())?;
-        units.push(Unit::parse(source, &Config::default()).map_err(|e| format!("{e:?}"))?);
+        let mut names = rustgm::support::names::Names::default();
+        units.push(
+            Unit::parse(source, &Config::default(), &mut names).map_err(|e| format!("{e:?}"))?,
+        );
     }
     for unit in units {
         assert_eq!(
@@ -98,5 +101,37 @@ fn moving_sources_preserves_plain_and_decoded_literals() -> Result<(), String> {
         assert_eq!(unit.literals.decoded_bytes(), 11);
         assert!(matches!(unit.literal(2), Ok(Value::Float(_))));
     }
+    Ok(())
+}
+
+#[test]
+fn parsed_names_match_span_interning_for_raw_nfc_and_lifetimes() -> Result<(), String> {
+    use rustgm::syntax::ast::Kind;
+    // Composed and decomposed spellings, raw identifiers and lifetimes share
+    // one identity whether parsing or resolution interns them.
+    let source = "fn f<'a, 'r#b>(r#é: &'a u8, e\u{301}: &'r#b u8) -> u8 { let r#x = *r#é + *e\u{301}; S { x: r#x }.x }";
+    let mut names = Names::default();
+    let crate_name = names.intern("crate")?;
+    let unit = Unit::parse(
+        SourceFile::new(source.as_bytes().to_vec()).map_err(|e| format!("{e:?}"))?,
+        &Config::default(),
+        &mut names,
+    )
+    .map_err(|e| format!("{e:?}"))?;
+    let mut checked = 0;
+    for node in &unit.configured.ast.nodes {
+        let (span, parsed) = match node.kind {
+            Kind::Name(span, parsed) => (span, parsed),
+            Kind::Binding { name, symbol, .. } => (name, symbol),
+            _ => continue,
+        };
+        let parsed = parsed.ok_or("parsed name was not interned")?;
+        let spelling = unit.spelling(span).map_err(|e| format!("{e:?}"))?;
+        assert_eq!(parsed, names.intern(spelling)?, "{spelling}");
+        checked += 1;
+    }
+    assert!(checked >= 10);
+    assert_eq!(names.intern("é")?, names.intern("e\u{301}")?);
+    assert_eq!(names.get(crate_name), "crate");
     Ok(())
 }

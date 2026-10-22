@@ -379,10 +379,11 @@ pub fn parse_arguments<'s>(
 ///
 /// # Errors
 /// Rejects unsupported contexts, inner file attributes and unused trailing tokens.
-pub fn parse_include(
-    source: &str,
+pub fn parse_include<'s>(
+    source: &'s str,
     context: crate::syntax::ast::MacroContext,
-) -> Result<Ast<'_>, LexError> {
+    names: Option<&mut crate::support::names::Names>,
+) -> Result<Ast<'s>, LexError> {
     use crate::syntax::{
         ast::{List, MacroContext},
         item::ItemContext,
@@ -398,6 +399,7 @@ pub fn parse_include(
         }
     };
     let mut parser = Parser::with_cursor(Cursor::source(source, items)?, true);
+    parser.names = names;
     let root = if items {
         let children = parser.item_list(false, ItemContext::Module)?;
         parser.node(

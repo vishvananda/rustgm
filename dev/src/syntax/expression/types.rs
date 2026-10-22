@@ -62,7 +62,7 @@ impl Parser<'_, '_> {
         if type_position && let Some(node) = self.interpolated(&[F::Type])? {
             if matches!(
                 self.ast.node(node).kind,
-                Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. }
+                Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
             ) {
                 return Ok(node);
             }
@@ -106,13 +106,7 @@ impl Parser<'_, '_> {
                 if !self.path_segment(token, self.cursor.last_word()) {
                     return Err(error(token.start, "expected path segment"));
                 }
-                self.node(
-                    token.start,
-                    Kind::Name(Span {
-                        start: token.start,
-                        end: token.end,
-                    }),
-                )?
+                self.name_node(token)?
             };
             let mut next = self.cursor.peek(0)?.map(|t| t.kind);
             let separator = next == Some(TokenKind::Punctuation(P::ColonColon))
@@ -140,7 +134,7 @@ impl Parser<'_, '_> {
             if next != Some(TokenKind::Punctuation(P::ColonColon)) {
                 if self.scratch.len() == mark {
                     // A relative path of one plain name is that name alone.
-                    if !absolute && matches!(self.ast.node(segment).kind, Kind::Name(_)) {
+                    if !absolute && matches!(self.ast.node(segment).kind, Kind::Name(..)) {
                         return Ok(segment);
                     }
                     let segments = self.single(segment)?;
@@ -183,13 +177,7 @@ impl Parser<'_, '_> {
                 .ok_or_else(|| error(self.cursor.end(), "expected generic argument"))?;
             let argument = if matches!(token.kind, TokenKind::Lifetime | TokenKind::RawLifetime) {
                 self.required()?;
-                self.node(
-                    token.start,
-                    Kind::Name(Span {
-                        start: token.start,
-                        end: token.end,
-                    }),
-                )?
+                self.name_node(token)?
             } else if self.cursor.at(P::OpenBrace)?
                 || self.cursor.at(P::Minus)?
                 || crate::literal::is_token(self.cursor.source, token)
@@ -419,13 +407,7 @@ impl Parser<'_, '_> {
                 .is_some_and(|t| matches!(t.kind, TokenKind::Lifetime | TokenKind::RawLifetime))
             {
                 let t = self.required()?;
-                self.node(
-                    t.start,
-                    Kind::Name(Span {
-                        start: t.start,
-                        end: t.end,
-                    }),
-                )?
+                self.name_node(t)?
             } else {
                 self.rich_path(true)?
             };
@@ -461,13 +443,7 @@ impl Parser<'_, '_> {
             {
                 return Err(error(token.start, "expected captured generic parameter"));
             }
-            let parameter = self.node(
-                token.start,
-                Kind::Name(Span {
-                    start: token.start,
-                    end: token.end,
-                }),
-            )?;
+            let parameter = self.name_node(token)?;
             self.scratch.push(parameter);
             if self.at_angle_end()? {
                 break;
@@ -496,13 +472,7 @@ impl Parser<'_, '_> {
                 .ok_or_else(|| error(self.cursor.end(), "expected where predicate"))?;
             let ty = if matches!(token.kind, TokenKind::Lifetime | TokenKind::RawLifetime) {
                 self.required()?;
-                self.node(
-                    token.start,
-                    Kind::Name(Span {
-                        start: token.start,
-                        end: token.end,
-                    }),
-                )?
+                self.name_node(token)?
             } else {
                 self.ty()?
             };

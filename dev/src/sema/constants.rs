@@ -942,7 +942,7 @@ impl Queries<'_> {
         }
         if matches!(
             Declarations::kind(self.report, key),
-            Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. }
+            Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
         ) && let Some(ty) = facts.ty
             && let Some(Type::FunctionItem { item, .. }) = self.typing.facts.types.kind(ty)
             && facts.reference == Some(Target::Definition(DefId(item.0)))
@@ -993,7 +993,7 @@ impl Queries<'_> {
                     }
                     Expression::Forward(child(tail))
                 }
-                (Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. }, _) => {
+                (Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. }, _) => {
                     let Some(Target::Definition(id)) = facts.reference else {
                         return Err(self.error(query, "missing constant path identity"));
                     };

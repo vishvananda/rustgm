@@ -115,7 +115,7 @@ impl Splice<'_> {
         };
         let mut previous = root.span.start;
         for (index, node) in segments.iter().enumerate() {
-            let Kind::Name(name) = parsed.ast.node(*node).kind else {
+            let Kind::Name(name, _) = parsed.ast.node(*node).kind else {
                 return Err(error(
                     self.destination.start,
                     "attribute requires simple path segments",

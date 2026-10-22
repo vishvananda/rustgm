@@ -161,7 +161,7 @@ impl Checker<'_> {
                 | Kind::Attributed { value: base, .. }
                 | Kind::Field { value: base, .. }
                 | Kind::Index { value: base, .. } => place = base,
-                Kind::Path { .. } | Kind::Name(_) => {
+                Kind::Path { .. } | Kind::Name(..) => {
                     if self.facts.node(self.key(place)).and_then(|f| f.reference)
                         .is_some_and(|target| matches!(target,
                             crate::resolve::model::Target::Definition(id) if self.mutable_static(id)))

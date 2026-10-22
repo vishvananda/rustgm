@@ -92,7 +92,7 @@ impl Resolver<'_> {
                 self.optional(c, value, Namespace::Value)
             }
             Kind::Item(index) => self.item_body(c, node, index),
-            Kind::Path { .. } | Kind::Name(_) | Kind::CrateRoot(_) => self.reference(c, node, ns),
+            Kind::Path { .. } | Kind::Name(..) | Kind::CrateRoot(_) => self.reference(c, node, ns),
             Kind::Let {
                 pattern,
                 ty,
@@ -433,15 +433,10 @@ impl Resolver<'_> {
         mut ns: Namespace,
         const_argument: bool,
     ) -> Result<(), Error> {
-        if let Kind::Name(span) = self.kind(c, node)
-            && self
-                .package
-                .unit(c.file)
-                .spelling(span)
-                .map_err(|e| self.error(c, node, e.message))?
-                .starts_with('\'')
+        if let Kind::Name(span, name) = self.kind(c, node)
+            && self.package.unit(c.file).lifetime_spelling(span)
         {
-            return self.lifetime(c, node, span);
+            return self.lifetime(c, node, span, name);
         }
         let (absolute, path) = self.pooled_path(c, node)?;
         let mut builtin = false;
@@ -500,7 +495,7 @@ impl Resolver<'_> {
         if let Some((_, segments)) = ast.path_segments(node)
             && segments
                 .iter()
-                .all(|segment| matches!(ast.node(*segment).kind, Kind::Name(_)))
+                .all(|segment| matches!(ast.node(*segment).kind, Kind::Name(..)))
         {
             return Ok(());
         }
@@ -599,8 +594,9 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         span: crate::syntax::token_tree::Span,
+        parsed: Option<crate::support::names::NameId>,
     ) -> Result<(), Error> {
-        let name = self.package.name(c.file, span)?;
+        let name = self.package.parsed_name(c.file, span, parsed)?;
         if matches!(self.package.names.get(name), "static" | "_") {
             return Ok(());
         }
@@ -660,8 +656,8 @@ impl Resolver<'_> {
                     target = base;
                     continue;
                 }
-                Kind::Name(span) => {
-                    let name = self.package.name(c.file, span)?;
+                Kind::Name(span, name) => {
+                    let name = self.package.parsed_name(c.file, span, name)?;
                     self.facts.associated_bindings.insert(
                         NodeKey { file: c.file, node },
                         super::model::AssociatedBinding { name, arguments },
@@ -701,7 +697,7 @@ impl Resolver<'_> {
     fn generic_arguments(&mut self, c: Context, arguments: List) -> Result<(), Error> {
         for offset in arguments.start..arguments.end {
             let node = self.package.unit(c.file).configured.ast.edges[offset as usize];
-            if matches!(self.kind(c, node), Kind::Path { .. } | Kind::Name(_)) {
+            if matches!(self.kind(c, node), Kind::Path { .. } | Kind::Name(..)) {
                 self.argument_reference(c, node, Namespace::Type, true)?;
             } else {
                 let ns = if matches!(

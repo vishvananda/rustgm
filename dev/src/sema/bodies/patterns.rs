@@ -236,7 +236,7 @@ impl Checker<'_> {
             {
                 self.constant_pattern(node, term, id, constant)
             }
-            Kind::Binding { .. } | Kind::Name(_) | Kind::Path { .. } => {
+            Kind::Binding { .. } | Kind::Name(..) | Kind::Path { .. } => {
                 let variant = self.pattern_constructor(node, node, term)?;
                 if self.facts.members.variants[variant.0 as usize].shape != Shape::Unit {
                     return Err(
@@ -304,7 +304,7 @@ impl Checker<'_> {
                     ..
                 }
                 | Kind::StructPattern { .. }
-                | Kind::Name(_)
+                | Kind::Name(..)
                 | Kind::Path { .. }
         ) || matches!(self.kind(node), Kind::Binding { .. })
             && self

@@ -139,12 +139,12 @@ impl<'a, S: Sources> Loader<'a, S> {
         sources: &'a mut S,
         config: &'a Config,
     ) -> Result<Self, Error> {
-        let unit = Unit::parse(root.source, config)
-            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let mut names = Names::default();
         let name = names
             .intern("crate")
             .map_err(|e| Error::at(FileId(0), 0, e))?;
+        let unit = Unit::parse(root.source, config, &mut names)
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let root_node = unit.configured.ast.root;
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
@@ -354,7 +354,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                     u32::try_from(self.package.units.len())
                         .map_err(|_| Error::at(file, span.start, "too many source files"))?,
                 );
-                let unit = Unit::parse(selected.source, self.config)
+                let unit = Unit::parse(selected.source, self.config, &mut self.package.names)
                     .map_err(|e| Error::at(id, e.offset, e.message))?;
                 self.cache.insert(selected.identity.clone(), id);
                 self.identities.push(selected.identity);
@@ -502,7 +502,7 @@ impl<S: Sources> Loader<'_, S> {
             (self.package.unit(*file).fresh_instance(), false)
         } else {
             (
-                Unit::parse_include(input.source, self.config, grammar),
+                Unit::parse_include(input.source, self.config, grammar, &mut self.package.names),
                 true,
             )
         };

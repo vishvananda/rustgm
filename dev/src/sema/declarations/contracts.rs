@@ -73,7 +73,7 @@ impl Checker<'_> {
     }
 
     fn bound_region(&mut self, key: NodeKey, binder: BinderId) -> Result<RegionId, Error> {
-        let Kind::Name(span) = self.kind(key) else {
+        let Kind::Name(span, _) = self.kind(key) else {
             return Err(self.error(key, "type and trait where-bounds require generic semantics"));
         };
         let name = self

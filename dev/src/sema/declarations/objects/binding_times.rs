@@ -194,7 +194,7 @@ impl Checker<'_> {
     fn object_input_alias(&self, key: NodeKey) -> Option<DefId> {
         if !matches!(
             self.kind(key),
-            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_)
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(..)
         ) {
             return None;
         }

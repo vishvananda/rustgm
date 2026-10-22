@@ -81,7 +81,7 @@ impl Checker<'_> {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => {
                 self.node_work(key.file, node, context);
             }
-            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(..) => {
                 self.schedule_type_path(key, context)?;
             }
             Kind::Type { flavor, elements } => {

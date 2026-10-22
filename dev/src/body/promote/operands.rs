@@ -56,7 +56,7 @@ impl Engine<'_, '_> {
                     children,
                     tail: Some(child),
                 } if children.start == children.end => node = child,
-                Kind::Literal(_) | Kind::Name(_) | Kind::Path { .. } => return Ok(true),
+                Kind::Literal(_) | Kind::Name(..) | Kind::Path { .. } => return Ok(true),
                 Kind::Unary {
                     op: Unary::Negate, ..
                 } => {

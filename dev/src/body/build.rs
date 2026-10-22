@@ -1364,7 +1364,7 @@ impl<'a> Builder<'a> {
         if self.projected_syntax(value) {
             return Ok(true);
         }
-        if !matches!(self.kind(value), Kind::Path { .. } | Kind::Name(_)) {
+        if !matches!(self.kind(value), Kind::Path { .. } | Kind::Name(..)) {
             return Ok(false);
         }
         let Some(Target::Definition(definition)) = self.fact(value)?.reference else {
@@ -1573,7 +1573,7 @@ impl<'a> Builder<'a> {
                 self.value(value)?
             }
             Kind::Literal(_) => self.literal_value(node, ty)?,
-            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } => {
                 let value = self.path(node)?;
                 self.evaluate(node, ty, value)?
             }

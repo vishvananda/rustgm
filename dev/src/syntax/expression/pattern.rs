@@ -163,7 +163,7 @@ impl Parser<'_, '_> {
             }
             return Ok(path);
         }
-        let Kind::Name(name) = self.ast.node(path).kind else {
+        let Kind::Name(name, symbol) = self.ast.node(path).kind else {
             if by_ref || mutable {
                 return Err(error(start, "binding modifier requires an identifier"));
             }
@@ -183,6 +183,7 @@ impl Parser<'_, '_> {
             start,
             Kind::Binding {
                 name,
+                symbol,
                 mutable,
                 by_ref,
                 subpattern,
@@ -242,7 +243,7 @@ impl Parser<'_, '_> {
                     self.ast.node(bound).kind,
                     Kind::Literal(_)
                         | Kind::DeferredLiteral(_)
-                        | Kind::Name(_)
+                        | Kind::Name(..)
                         | Kind::Path { .. }
                         | Kind::Qualified { .. }
                         | Kind::Unary {
@@ -312,10 +313,12 @@ impl Parser<'_, '_> {
                         "numeric pattern field requires a pattern",
                     ));
                 }
+                let symbol = self.intern(name)?;
                 self.node(
                     start,
                     Kind::Binding {
                         name,
+                        symbol,
                         by_ref,
                         mutable,
                         subpattern: None,
@@ -444,13 +447,7 @@ impl Parser<'_, '_> {
                 .is_some_and(|t| matches!(t.kind, TokenKind::Lifetime | TokenKind::RawLifetime))
             {
                 let lifetime = self.required()?;
-                let node = self.node(
-                    lifetime.start,
-                    Kind::Name(Span {
-                        start: lifetime.start,
-                        end: lifetime.end,
-                    }),
-                )?;
+                let node = self.name_node(lifetime)?;
                 self.scratch.push(node);
             }
             let mutable = self.eat_word(Word::Mut)?;

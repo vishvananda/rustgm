@@ -146,7 +146,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         | Kind::PatternRange { .. } => item::node(source, ast, kind, output),
         Kind::Literal(id) => write!(output, "literal {id}"),
         Kind::CrateRoot(id) => write!(output, "crate-root {id}"),
-        Kind::Name(span) => {
+        Kind::Name(span, _) => {
             write!(output, "name ")?;
             spelling(source, span, output)
         }
@@ -312,6 +312,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             mutable,
             by_ref,
             subpattern,
+            ..
         } => {
             write!(output, "binding {mutable} {by_ref} ")?;
             spelling(source, name, output)?;

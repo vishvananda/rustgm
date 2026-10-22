@@ -30,7 +30,7 @@ pub(super) fn groups(
     };
     let ast = &report.package.unit(key.file).configured.ast;
     let lifetimes = ast.list(list).iter().take_while(|&&node| {
-        matches!(ast.node(node).kind, Kind::Name(span) if report.package.unit(key.file).spelling(span).is_ok_and(|s| s.starts_with('\'')))
+        matches!(ast.node(node).kind, Kind::Name(span, _) if report.package.unit(key.file).spelling(span).is_ok_and(|s| s.starts_with('\'')))
     }).count();
     let middle = list
         .start

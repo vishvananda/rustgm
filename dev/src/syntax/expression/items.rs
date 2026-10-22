@@ -9,7 +9,19 @@ pub(super) use crate::syntax::item::ItemContext as Scope;
 /// # Errors
 /// Rejects unsupported/malformed crate syntax and excessive recursive nesting.
 pub fn parse_crate(source: &str) -> Result<Ast<'_>, LexError> {
+    parse_crate_with(source, None)
+}
+
+/// Parse a crate, interning each name once into the crate's shared table.
+///
+/// # Errors
+/// Rejects malformed crate syntax, excessive nesting and name-table overflow.
+pub fn parse_crate_with<'s>(
+    source: &'s str,
+    names: Option<&mut crate::support::names::Names>,
+) -> Result<Ast<'s>, LexError> {
     let mut parser = Parser::new(source, true)?;
+    parser.names = names;
     let attrs = parser.attributes(true)?;
     let items = parser.item_list(false, Scope::Module)?;
     let root = parser.node(0, Kind::Crate(items))?;
@@ -727,18 +739,13 @@ impl Parser<'_, '_> {
         {
             return Err(error(token.start, "expected use path"));
         }
-        let kind = if let TokenKind::CrateRoot(id) = token.kind {
+        if let TokenKind::CrateRoot(id) = token.kind {
             if !first {
                 return Err(error(token.start, "crate marker must begin a use path"));
             }
-            Kind::CrateRoot(id.get())
-        } else {
-            Kind::Name(Span {
-                start: token.start,
-                end: token.end,
-            })
-        };
-        self.node(token.start, kind)
+            return self.node(token.start, Kind::CrateRoot(id.get()));
+        }
+        self.name_node(token)
     }
     fn opaque_use_path(&mut self) -> Result<(NodeId, bool), LexError> {
         let path = self.rich_path(true)?;
@@ -749,7 +756,7 @@ impl Parser<'_, '_> {
         if segments.iter().any(|node| {
             !matches!(
                 self.ast.node(*node).kind,
-                Kind::Name(_) | Kind::CrateRoot(_)
+                Kind::Name(..) | Kind::CrateRoot(_)
             )
         }) {
             return Err(error(node.span.start, "use requires simple path segments"));
@@ -785,7 +792,7 @@ impl Parser<'_, '_> {
             prefix = Some(
                 if !absolute
                     && self.scratch.len() == mark + 1
-                    && matches!(self.ast.node(self.scratch[mark]).kind, Kind::Name(_))
+                    && matches!(self.ast.node(self.scratch[mark]).kind, Kind::Name(..))
                 {
                     // A relative path of one plain name is that name alone.
                     let name = self.scratch[mark];
@@ -831,7 +838,7 @@ impl Parser<'_, '_> {
             }
             Some({
                 let name = self.alias_name()?;
-                self.node(name.start, Kind::Name(name))?
+                self.name_span(name)?
             })
         } else {
             None

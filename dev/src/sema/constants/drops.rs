@@ -136,7 +136,7 @@ impl Check {
                     root = None;
                     break;
                 }
-                Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. }
+                Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. }
                     if facts
                         .node(current)
                         .and_then(|f| f.reference)

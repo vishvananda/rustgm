@@ -59,7 +59,7 @@ impl Checker<'_> {
         Ok((list, omitted))
     }
     pub(in super::super) fn lifetime_argument(&self, key: NodeKey) -> bool {
-        matches!(self.kind(key), Kind::Name(span) if self.report.package.unit(key.file).spelling(span).is_ok_and(|name| name.starts_with('\'')))
+        matches!(self.kind(key), Kind::Name(span, _) if self.report.package.unit(key.file).spelling(span).is_ok_and(|name| name.starts_with('\'')))
     }
     pub(in super::super) fn path_arguments(
         &mut self,

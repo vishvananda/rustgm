@@ -173,7 +173,7 @@ impl Walker<'_> {
             }
             Syntax::Closure { .. }
             | Syntax::Literal(_)
-            | Syntax::Name(_)
+            | Syntax::Name(..)
             | Syntax::Path { .. }
             | Syntax::Qualified { .. }
             | Syntax::Continue(_)

@@ -46,7 +46,7 @@ impl Checker<'_> {
             crate::sema::traits::implementations::Availability::Declarations
         ) || !matches!(
             self.kind(node),
-            crate::syntax::ast::Kind::Name(_)
+            crate::syntax::ast::Kind::Name(..)
                 | crate::syntax::ast::Kind::Path { .. }
                 | crate::syntax::ast::Kind::Qualified { .. }
         ) {

@@ -165,8 +165,8 @@ impl Package {
                 self.unit(file).configured.ast.node(node).span.start,
                 "external defining crate requires metadata",
             )),
-            Kind::Name(span) => {
-                names.push(self.name(file, span)?);
+            Kind::Name(span, name) => {
+                names.push(self.parsed_name(file, span, name)?);
                 Ok(false)
             }
             Kind::Applied { base, .. } => self.path_names_into(file, base, names),
@@ -189,6 +189,20 @@ impl Package {
     #[must_use]
     pub fn unit(&self, file: FileId) -> &Unit {
         &self.units[file.0 as usize]
+    }
+    /// A name the parser interned, or the span's interned spelling.
+    /// # Errors
+    /// Rejects invalid source spans and name-arena overflow.
+    pub fn parsed_name(
+        &mut self,
+        file: FileId,
+        span: Span,
+        parsed: Option<NameId>,
+    ) -> Result<NameId, Error> {
+        match parsed {
+            Some(name) => Ok(name),
+            None => self.name(file, span),
+        }
     }
     /// # Errors
     /// Rejects invalid source spans and name-arena overflow.

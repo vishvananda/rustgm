@@ -119,6 +119,7 @@ fn generated_configuration_and_literal_ownership_survive_installation() -> Resul
     let mut unit = Unit::parse(
         SourceFile::new(source.as_bytes().to_vec())?,
         &Config::default(),
+        &mut rustgm::support::names::Names::default(),
     )
     .map_err(|e| format!("{e:?}"))?;
     install(&mut unit, source, false)?;
@@ -161,6 +162,7 @@ fn failed_installation_restores_syntax_literals_and_source() -> Result<(), Strin
     let mut unit = Unit::parse(
         SourceFile::new(source.as_bytes().to_vec())?,
         &Config::default(),
+        &mut rustgm::support::names::Names::default(),
     )
     .map_err(|e| format!("{e:?}"))?;
     let nodes = unit.configured.ast.nodes.len();

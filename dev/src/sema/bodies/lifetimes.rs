@@ -278,7 +278,7 @@ impl Checker<'_> {
     }
 
     pub(super) fn local_region(&mut self, node: NodeId) -> Result<RegionId, Error> {
-        let Kind::Name(span) = self.kind(node) else {
+        let Kind::Name(span, _) = self.kind(node) else {
             return Err(self.error(node, "expected lifetime argument"));
         };
         let name = self

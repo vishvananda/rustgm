@@ -1231,7 +1231,7 @@ impl Checker<'_> {
             Kind::Struct { path, fields, base } => {
                 return self.enter_struct(node, path, fields, base, expected);
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } | Kind::Item(_) => {}
+            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } | Kind::Item(_) => {}
             Kind::Let {
                 pattern,
                 ty,
@@ -1398,7 +1398,7 @@ impl Checker<'_> {
             Kind::Closure { .. } => self.term(node),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),
-            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(self.key(node)).and_then(|f| f.reference)
                 else {

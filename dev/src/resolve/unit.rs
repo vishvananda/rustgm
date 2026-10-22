@@ -9,7 +9,7 @@ use crate::{
         Value,
         storage::{Storage, StoredValue},
     },
-    support::source::SourceFile,
+    support::{names::Names, source::SourceFile},
     syntax::{
         ast::{MacroContext, NodeId},
         token_tree::{Span, error},
@@ -82,11 +82,12 @@ impl Unit {
         Ok(found)
     }
     /// Parse/configure once. Loading another file cannot invalidate these facts.
+    /// Names are interned once, during parsing, into the crate's table.
     ///
     /// # Errors
     /// Propagates syntax/configuration errors and storage-range overflows.
-    pub fn parse(source: SourceFile, config: &Config) -> Result<Self, LexError> {
-        Self::parsed(source, config, None)
+    pub fn parse(source: SourceFile, config: &Config, names: &mut Names) -> Result<Self, LexError> {
+        Self::parsed(source, config, None, names)
     }
 
     /// # Errors
@@ -95,24 +96,23 @@ impl Unit {
         source: SourceFile,
         config: &Config,
         context: MacroContext,
+        names: &mut Names,
     ) -> Result<Self, LexError> {
-        Self::parsed(source, config, Some(context))
+        Self::parsed(source, config, Some(context), names)
     }
 
     fn parsed(
         source: SourceFile,
         config: &Config,
         context: Option<MacroContext>,
+        names: &mut Names,
     ) -> Result<Self, LexError> {
-        let report = if let Some(context) = context {
-            crate_syntax::configure(
-                source.text(),
-                crate::syntax::expression::fragment::parse_include(source.text(), context)?,
-                config,
-            )?
+        let ast = if let Some(context) = context {
+            crate::syntax::expression::fragment::parse_include(source.text(), context, Some(names))?
         } else {
-            crate_syntax::analyze(source.text(), config)?
+            crate::syntax::expression::parse_crate_with(source.text(), Some(names))?
         };
+        let report = crate_syntax::configure(source.text(), ast, config)?;
         let mut literals = Storage::default();
         let ast = report.ast.map_literals(|value| {
             literals
@@ -146,6 +146,12 @@ impl Unit {
         })
     }
 
+    /// Whether a name's spelling is a lifetime: it begins with a quote.
+    #[must_use]
+    pub fn lifetime_spelling(&self, span: Span) -> bool {
+        span.end > span.start
+            && self.source.text().as_bytes().get(span.start as usize) == Some(&b'\'')
+    }
     /// # Errors
     /// Rejects invalid manually constructed spans.
     pub fn spelling(&self, span: Span) -> Result<&str, LexError> {

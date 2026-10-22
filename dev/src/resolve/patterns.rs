@@ -295,7 +295,7 @@ impl Resolver<'_> {
                 mutable,
             } => {
                 if lifetime.end > lifetime.start {
-                    self.lifetime(c, node, lifetime)?;
+                    self.lifetime(c, node, lifetime, None)?;
                 }
                 bindings.push(Local {
                     name: self.package.name(c.file, name)?,
@@ -306,11 +306,12 @@ impl Resolver<'_> {
             }
             Kind::Binding {
                 name,
+                symbol,
                 mutable,
                 by_ref,
                 subpattern,
             } => {
-                let name = self.package.name(c.file, name)?;
+                let name = self.package.parsed_name(c.file, name, symbol)?;
                 if let Lookup::Found(binding) = self.lexical(c.scope, name, Namespace::Value)
                     && matches!(
                         self.facts.definitions[binding.target.0 as usize].kind,
@@ -376,13 +377,16 @@ impl Resolver<'_> {
                 }
             }
             // A one-name path pattern only arises from an opaque path fragment.
-            Kind::Name(_) | Kind::Path { .. } | Kind::Qualified { .. } => {
+            Kind::Name(..) | Kind::Path { .. } | Kind::Qualified { .. } => {
                 self.visit(c, node, Namespace::Value)?;
             }
             Kind::PatternRange { start, end, .. } => {
                 for bound in [start, end].into_iter().flatten() {
-                    if let Kind::Binding { name: span, .. } = self.kind(c, bound) {
-                        let name = self.package.name(c.file, span)?;
+                    if let Kind::Binding {
+                        name: span, symbol, ..
+                    } = self.kind(c, bound)
+                    {
+                        let name = self.package.parsed_name(c.file, span, symbol)?;
                         let target =
                             self.hygienic_name(c, bound, span.start, name, Namespace::Value)?;
                         self.facts.references.push(Reference {

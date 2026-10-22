@@ -129,7 +129,7 @@ impl Scratch {
                     }
                 }
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Applied { .. } => {
                 if let Some(use_) = host.facts().generics.annotation_uses.get(&key) {
                     for argument in use_.arguments.iter().rev() {
                         if let super::generics::AnnotationArgument::Type(key) = argument {
@@ -171,7 +171,7 @@ impl Scratch {
             Kind::Group(node) | Kind::Attributed { value: node, .. } => {
                 return term(host, NodeKey { node, ..key });
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
+            Kind::Path { .. } | Kind::Name(..) | Kind::Applied { .. } => {
                 if host.facts().generics.annotation_uses.contains_key(&key) {
                     return applications::infer(host, key, scope);
                 }

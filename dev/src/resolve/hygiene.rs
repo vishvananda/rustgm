@@ -263,7 +263,7 @@ pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u3
     loop {
         let value = ast.node(node);
         match value.kind {
-            Kind::Name(name)
+            Kind::Name(name, _)
             | Kind::Binding { name, .. }
             | Kind::Label { name, .. }
             | Kind::Receiver { name, .. } => {

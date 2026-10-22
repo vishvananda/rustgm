@@ -100,7 +100,7 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
         }
         if let Kind::Macro { path, capture, .. } = data.kind {
             let span = match ast.node(path).kind {
-                Kind::Name(span) => span,
+                Kind::Name(span, _) => span,
                 Kind::Path {
                     absolute: false,
                     segments,

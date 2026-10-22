@@ -30,7 +30,7 @@ impl<L> Syntax<L> {
             | Kind::Receiver { .. }
             | Kind::DeferredLiteral(_)
             | Kind::Literal(_)
-            | Kind::Name(_)
+            | Kind::Name(..)
             | Kind::EmptyStatement
             | Kind::Continue(_)
             | Kind::Wildcard
