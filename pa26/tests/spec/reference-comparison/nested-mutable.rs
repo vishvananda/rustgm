@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn compare<T:core::cmp::Ord>(a:T,b:T)->bool{a<b}fn main(){let mut a=3u8;let mut b=7u8;let mut ra=&mut a;let mut rb=&mut b;check(compare(&mut ra,&mut rb));*ra=9;*rb=10;check(*ra<*rb);}

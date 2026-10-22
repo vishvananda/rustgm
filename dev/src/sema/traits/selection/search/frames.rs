@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub(super) struct Frame {
-    pub callable: Option<Box<super::callables::Pending>>,
+    pub language: Option<Box<super::mechanical::Pending>>,
     pub equality_hint: Option<Box<crate::sema::traits::callables::Matched>>,
     pub storage: Option<Box<super::sized_obligations::Pending>>,
     pub autos: Option<Box<super::auto_obligations::Pending>>,
@@ -73,7 +73,7 @@ impl Frame {
             .initialize_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
-            callable: None,
+            language: None,
             equality_hint: None,
             storage: None,
             autos: None,

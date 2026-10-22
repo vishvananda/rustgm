@@ -1,8 +1,9 @@
 //! Isolated numeric-domain evidence never admits rigid nominal or unconstrained inputs.
 use super::{
-    Candidate, Constructor, Context, Declarations, Descriptor, Form, Operation, Predicate,
-    Primitive, Rhs, TypeId, infer,
+    Candidate, Constructor, Context, Declarations, Descriptor, Form, Operands, Operation,
+    Predicate, Primitive, Rhs, Scalars, TypeId, infer,
 };
+use crate::types::{Kind, RegionId};
 pub(super) fn comparison_candidate(
     facts: &Declarations,
     context: &mut Context,
@@ -19,6 +20,10 @@ pub(super) fn comparison_candidate(
         (Comparison::Eq | Comparison::Ord, []) => goal.subject(),
         _ => return Err(infer::Error::InvalidIdentity),
     };
+    if let Some(candidate) = super::referential::candidate(facts, context, goal, right_term, kind)?
+    {
+        return Ok(candidate);
+    }
     let mut left = context.head(&facts.types, goal.subject())?;
     let mut right = context.head(&facts.types, right_term)?;
     if let Some(candidate) =
@@ -53,10 +58,11 @@ pub(super) fn comparison_candidate(
         {
             Candidate::Present(Descriptor {
                 operation: Operation::Comparison(kind),
-                form: Form::Comparison,
-                left,
-                right,
-                rhs: Rhs::Owned,
+                operands: Operands::Scalars(Scalars {
+                    left,
+                    right,
+                    rhs: Rhs::Owned,
+                }),
             })
         } else {
             Candidate::Unrelated
@@ -79,6 +85,49 @@ fn infer_numeric(
     if permitted {
         let known = context.known(&facts.types, TypeId::primitive(primitive))?;
         context.equate(&facts.types, term, known)?;
+    }
+    Ok(())
+}
+
+pub(super) fn validate_scalars(
+    facts: &Declarations,
+    descriptor: Descriptor,
+    [subject, right]: [TypeId; 2],
+    [receiver, physical_right]: [TypeId; 2],
+    signature: TypeId,
+) -> Result<(), &'static str> {
+    let Some(crate::types::Kind::Function {
+        result,
+        bound_regions,
+        ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("primitive method has no callable signature");
+    };
+    let subject_type = descriptor.validate_receiver(facts, receiver, result, bound_regions)?;
+    let scalar = descriptor.scalars()?;
+    let expected = descriptor.operand_type(facts, scalar.right)?;
+    if descriptor.form() == Form::Comparison
+        && !matches!(facts.types.kind(physical_right),Some(Kind::Reference{referent,mutable:false,region}) if referent==right && region==RegionId::bound(0,1)?)
+    {
+        return Err("comparison RHS differs from independent shared borrow contract");
+    }
+    let actual = match scalar.rhs {
+        Rhs::Owned => right,
+        Rhs::SharedReference => match facts.types.kind(right) {
+            Some(Kind::Reference {
+                referent,
+                mutable: false,
+                ..
+            }) => referent,
+            _ => return Err("primitive forwarding method requires a shared RHS"),
+        },
+    };
+    if actual != expected
+        || subject != subject_type
+        || !crate::sema::scalar::binary(descriptor.operator()?, scalar.left, scalar.right)
+    {
+        return Err("primitive method arguments differ from selected descriptor");
     }
     Ok(())
 }

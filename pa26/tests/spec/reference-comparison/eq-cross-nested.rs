@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn equal<A:core::cmp::PartialEq<B>,B>(a:A,b:B)->bool{a==b}fn main(){let a=3u8;let mut b=3u8;let ra=&a;let rb=&mut b;check(equal(&ra,&rb));*rb=4;check(*rb==4);}

@@ -383,7 +383,7 @@
     },
     {
       "path": "tests/spec/ordering-impls/reference-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.ordering-impls"
       ],
@@ -393,7 +393,7 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
+      "native": true,
       "traps": false
     },
     {

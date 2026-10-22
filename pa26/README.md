@@ -255,3 +255,24 @@ source controls and 20 selected native programs, including all nine variant
 pairs. Reference/array comparisons remain required Rust-valid implementation
 boundaries. See `docs/pa26-ordering-implementations.md`. This checkpoint does not
 activate PA26 or complete its remaining hook families.
+
+## Maintainer reference comparison checkpoint
+
+Canonical reference PartialEq supports all four shared/mutable Self/Rhs pairs;
+PartialOrd supports matching outer mutability. Eq and Ord retain exact pointee
+requirements. Every reference layer preserves ordinary source-impl competition
+and the selected child proof. Checked method factories project through references
+and form shared pointee reborrows, preserving overrides without moving an
+intermediate mutable reference. Borrowed Ord helpers use their checked provided
+originals and ordinary ownership/drop proof.
+
+The original generic reference-operator gap and earlier equality/Ordering
+reference-boundary fixtures are positive source/native controls. Sixty-one draft
+outcomes and 24 selected native programs are declared in
+`tests/reference-comparison-outcomes.json`; implementation and qualification are
+recorded in `docs/pa26-reference-comparisons.md`. Concrete str comparisons, elided
+reference-impl lifetime arguments and dot-call RHS autodereference inference
+remain explicit Rust-positive requirements. Supported opposing forms do not
+replace those original failing programs. Structural tuple/array/slice comparisons,
+ordinary array/slice len and the remaining hook families are still required.
+This checkpoint does not activate PA26.

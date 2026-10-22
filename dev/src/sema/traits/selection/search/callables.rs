@@ -6,10 +6,7 @@ use crate::{
     types::infer,
 };
 
-pub(super) enum Pending {
-    Direct(Matched),
-    Forward(super::forwarding::Pending),
-}
+use super::mechanical::Pending;
 
 impl Search<'_> {
     /// Input inference comes from the selected language signature, never from
@@ -126,7 +123,7 @@ impl Search<'_> {
             Ok(matched) => {
                 self.query.allocations.record(matched.regions.end);
                 self.query.reserve(frame.scope, matched.regions.clone())?;
-                frame.callable = Some(Box::new(Pending::Direct(matched)));
+                frame.language = Some(Box::new(Pending::Direct(matched)));
                 self.complete_callable(facts, frame).map(Some)
             }
             Err(infer::Error::Unresolved | infer::Error::Normalization) => {
@@ -144,10 +141,10 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
-        if matches!(frame.callable.as_deref(), Some(Pending::Forward(_))) {
+        if matches!(frame.language.as_deref(), Some(Pending::Forward(_))) {
             return self.complete_forwarding(facts, frame);
         }
-        let Some(Pending::Direct(matched)) = frame.callable.as_deref() else {
+        let Some(Pending::Direct(matched)) = frame.language.as_deref() else {
             return Err("missing callable equations".into());
         };
         match matched.permitted(&facts.types).map_err(inference)? {

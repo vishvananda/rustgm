@@ -56,9 +56,22 @@ pub(crate) fn specialize(
             predicates.push(predicate.value);
         }
     }
+    let predicates = predicates
+        .into_iter()
+        .map(|predicate| substitution.clause(&mut facts.types, predicate))
+        .collect::<Result<Vec<_>, _>>()?;
+    clauses(facts, &predicates, universals)
+}
+
+/// Only an independently validated declared implementation condition may use
+/// this witness route. Its callers own the exact source or canonical contract.
+fn clauses(
+    facts: &mut Declarations,
+    predicates: &[Clause],
+    universals: u32,
+) -> Result<Option<Assumptions>, &'static str> {
     let mut state = None;
-    for predicate in predicates {
-        let predicate = substitution.clause(&mut facts.types, predicate)?;
+    for &predicate in predicates {
         if !predicate.has_free_regions(&facts.types)? {
             continue;
         }
@@ -79,6 +92,23 @@ pub(crate) fn specialize(
     state
         .map(|state| witnesses(facts, state.finish(), universals))
         .transpose()
+}
+
+/// A canonical implementation condition is validated even without lifetime
+/// occurrences; absence cannot authorize a factory merely because it is closed.
+pub(in crate::sema) fn declared_condition(
+    facts: &mut Declarations,
+    predicate: Clause,
+    universals: u32,
+) -> Result<Assumptions, &'static str> {
+    if predicate.contains_parameters(&facts.types)? {
+        return Err("canonical implementation condition retains unresolved parameters");
+    }
+    let mut state = State::instance(facts, universals)?;
+    if !state.prove_clause(facts, predicate, true)? {
+        return Err("canonical implementation condition has no validated implementation");
+    }
+    witnesses(facts, state.finish(), universals)
 }
 
 fn witnesses(

@@ -66,3 +66,14 @@ impl Allocations {
         }
     }
 }
+
+#[cfg(test)]
+#[test]
+fn reference_comparison_layout_remains_compact() {
+    println!(
+        "trait language storage: Frame={} Pending={} Node={}",
+        std::mem::size_of::<super::Frame>(),
+        std::mem::size_of::<super::mechanical::Pending>(),
+        std::mem::size_of::<super::Node>(),
+    );
+}

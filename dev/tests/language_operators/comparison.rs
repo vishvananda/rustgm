@@ -37,7 +37,7 @@ const CASES: &[(&str, bool, bool, bool)] = &[
     ("orphan", false, false, false),
     ("lookalike-operator", false, false, false),
     ("pattern-structural", false, false, false),
-    ("reference-boundary", true, false, false),
+    ("reference-boundary", true, true, true),
     ("derive-boundary", true, false, false),
     ("no-prelude-operator", true, true, false),
     ("no-prelude-dot", false, false, false),

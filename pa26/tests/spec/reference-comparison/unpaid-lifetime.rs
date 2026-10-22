@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a>(fn(&'a u8)->&'a u8);struct T<'b>(fn(&'b u8)->&'b u8);impl<'a:'b,'b> core::cmp::PartialEq<T<'b>> for S<'a>{fn eq(&self,_:&T<'b>)->bool{true}}fn compare<'a,'b>(a:&S<'a>,b:&T<'b>)->bool{a==b}fn main(){}

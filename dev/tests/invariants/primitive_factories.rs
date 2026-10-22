@@ -186,7 +186,7 @@ fn value_factory_requires_its_exact_form_result_and_output_member() -> Result {
     )?;
     assert_eq!(selected.len(), 1);
     let selected = selected[0];
-    assert_eq!(selected.descriptor.form, Form::ValueBinary);
+    assert_eq!(selected.descriptor.form(), Form::ValueBinary);
     let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selected)?;
     assert_eq!(body.result, TypeId::primitive(Primitive::U8));
     assert_eq!(input.universals, 0);
@@ -202,7 +202,7 @@ fn value_factory_requires_its_exact_form_result_and_output_member() -> Result {
     );
     let forged = Selected {
         descriptor: Descriptor {
-            form: Form::Assignment,
+            operation: Operation::Arithmetic(Hook::AddAssign),
             ..selected.descriptor
         },
         ..selected
@@ -286,7 +286,7 @@ fn every_owned_binary_family_retains_nonempty_exact_primitive_selection() -> Res
         assert_eq!(selected.len(), 1, "{name}");
         let selected = selected[0];
         assert_eq!(selected.descriptor.operation, Operation::Arithmetic(hook));
-        assert_eq!(selected.descriptor.form, Form::ValueBinary);
+        assert_eq!(selected.descriptor.form(), Form::ValueBinary);
         let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selected)?;
         crate::body::primitive_methods::validate(&mut facts, selected, &body, &input)?;
         let forged = Selected {
@@ -361,7 +361,10 @@ fn primitive_comparison_factory_preserves_both_borrow_slots_and_exact_member() -
         assert!(marker.validate(&mut facts).is_err());
         let forwarding = Selected {
             descriptor: Descriptor {
-                rhs: Rhs::SharedReference,
+                operands: Operands::Scalars(Scalars {
+                    rhs: Rhs::SharedReference,
+                    ..selection.descriptor.scalars()?
+                }),
                 ..selection.descriptor
             },
             ..selection
@@ -486,7 +489,7 @@ fn primitive_ordering_factories_keep_exact_member_results_and_slots() -> Result 
 #[test]
 fn descriptor_representation_remains_compact() {
     assert_eq!(std::mem::size_of::<Operation>(), 2);
-    assert_eq!(std::mem::size_of::<Descriptor>(), 6);
+    assert_eq!(std::mem::size_of::<Descriptor>(), 5);
     assert_eq!(std::mem::size_of::<Selected>(), 12);
     assert_eq!(
         std::mem::size_of::<crate::sema::traits::selection::Source>(),
@@ -708,3 +711,6 @@ fn canonical_ordering_is_lazy_and_its_empty_argument_views_select() -> Result {
     }
     Ok(())
 }
+
+#[path = "referent_witnesses.rs"]
+mod references;

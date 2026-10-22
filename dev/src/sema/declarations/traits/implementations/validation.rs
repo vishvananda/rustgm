@@ -56,6 +56,7 @@ impl Checker<'_> {
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let constants = super::constants::Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
+            self.validate_reference_coherence(owner, source, predicate, &mut steps)?;
             self.validate_trait_impl_contract(owner, source, predicate)?;
             if matches!(predicate.bound, Bound::Auto(_)) {
                 self.facts
@@ -84,6 +85,28 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?;
         }
         self.finish_constant_contracts()
+    }
+
+    fn validate_reference_coherence(
+        &mut self,
+        owner: DefId,
+        source: NodeKey,
+        predicate: Predicate,
+        steps: &mut usize,
+    ) -> Result<(), Error> {
+        let (possible, work) = overlap::reference_comparison(&mut self.facts, (predicate, owner))
+            .map_err(|e| self.error(source, e))?;
+        *steps = steps.saturating_add(work);
+        if *steps > 1_000_000 {
+            return Err(self.error(source, "trait implementation overlap work budget exceeded"));
+        }
+        if possible {
+            return Err(self.error(
+                source,
+                "source implementation overlaps the canonical reference comparison implementation",
+            ));
+        }
+        Ok(())
     }
 
     fn validate_trait_impl_contract(

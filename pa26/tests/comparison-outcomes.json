@@ -533,7 +533,7 @@
     },
     {
       "path": "tests/spec/comparison/reference-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.comparison-hooks"
       ],
@@ -543,8 +543,8 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
-      "boundary": true
+      "native": true,
+      "boundary": false
     },
     {
       "path": "tests/spec/comparison/derive-boundary.rs",

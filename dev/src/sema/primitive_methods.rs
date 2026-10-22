@@ -1,4 +1,4 @@
-//! Primitive method descriptors are language evidence, never invented source impls.
+//! Canonical method descriptors are language evidence, never invented source impls.
 use super::model::Declarations;
 use crate::{
     lex::token::Punctuation,
@@ -14,6 +14,7 @@ use crate::{
 };
 mod domains;
 mod ordering;
+mod referential;
 use domains::comparison_candidate;
 pub(in crate::sema) use ordering::register_ordering;
 use std::collections::HashMap;
@@ -37,26 +38,55 @@ pub(crate) enum Operation {
     Arithmetic(Hook),
     Comparison(crate::support::comparisons::Comparison),
     Ordering(crate::support::comparisons::Comparison),
+    References(crate::support::comparisons::Comparison),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct Scalars {
+    pub left: Primitive,
+    pub right: Primitive,
+    pub rhs: Rhs,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Operands {
+    Scalars(Scalars),
+    References {
+        left_mutable: bool,
+        right_mutable: bool,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Descriptor {
     operation: Operation,
-    form: Form,
-    left: Primitive,
-    right: Primitive,
-    rhs: Rhs,
+    operands: Operands,
 }
 impl Descriptor {
+    fn arguments(self, arguments: &[Argument]) -> Result<[TypeId; 2], &'static str> {
+        match arguments {
+            [Argument::Type(subject), Argument::Type(right)] => Ok([*subject, *right]),
+            [Argument::Type(subject)]
+                if matches!(
+                    self.operation,
+                    Operation::Comparison(crate::support::comparisons::Comparison::Ord)
+                        | Operation::Ordering(crate::support::comparisons::Comparison::Ord)
+                        | Operation::References(crate::support::comparisons::Comparison::Ord)
+                ) =>
+            {
+                Ok([*subject, *subject])
+            }
+            _ => Err("primitive method has incorrect generic arguments"),
+        }
+    }
     pub(crate) fn operand_type(
         self,
         facts: &Declarations,
         primitive: Primitive,
     ) -> Result<TypeId, &'static str> {
+        let scalar = self.scalars()?;
         if matches!(self.operation, Operation::Ordering(_)) {
-            if self.form != Form::Comparison
-                || self.rhs != Rhs::Owned
-                || self.left != Primitive::I8
-                || self.right != Primitive::I8
+            if self.form() != Form::Comparison
+                || scalar.rhs != Rhs::Owned
+                || scalar.left != Primitive::I8
+                || scalar.right != Primitive::I8
             {
                 return Err("Ordering descriptor has invalid discriminant operation types");
             }
@@ -69,22 +99,26 @@ impl Descriptor {
         matches!(self.operation, Operation::Ordering(_))
     }
     pub(crate) const fn form(self) -> Form {
-        self.form
+        match self.operation {
+            Operation::Arithmetic(hook) if hook.assignment() => Form::Assignment,
+            Operation::Arithmetic(_) => Form::ValueBinary,
+            Operation::Comparison(_) | Operation::Ordering(_) | Operation::References(_) => {
+                Form::Comparison
+            }
+        }
     }
-
-    pub(crate) const fn left(self) -> Primitive {
-        self.left
-    }
-    pub(crate) const fn right(self) -> Primitive {
-        self.right
-    }
-    pub(crate) const fn rhs(self) -> Rhs {
-        self.rhs
+    pub(crate) fn scalars(self) -> Result<Scalars, &'static str> {
+        match self.operands {
+            Operands::Scalars(scalars) => Ok(scalars),
+            Operands::References { .. } => Err("reference operands are not scalar operation types"),
+        }
     }
     pub(crate) fn operator(self) -> Result<Punctuation, &'static str> {
         match self.operation {
             Operation::Arithmetic(hook) => operator(hook),
-            Operation::Comparison(_) | Operation::Ordering(_) => Ok(Punctuation::EqualEqual),
+            Operation::Comparison(_) | Operation::Ordering(_) | Operation::References(_) => {
+                Ok(Punctuation::EqualEqual)
+            }
         }
     }
     fn member(
@@ -102,7 +136,9 @@ impl Descriptor {
             {
                 operator(hook)?
             }
-            Operation::Comparison(kind) | Operation::Ordering(kind)
+            Operation::Comparison(kind)
+            | Operation::Ordering(kind)
+            | Operation::References(kind)
                 if facts.associated.comparison(owner) == Some(kind) =>
             {
                 use crate::support::comparisons::Method;
@@ -142,8 +178,9 @@ impl Descriptor {
         result: TypeId,
         bound_regions: u32,
     ) -> Result<TypeId, &'static str> {
-        let left = self.operand_type(facts, self.left)?;
-        let valid = match self.form {
+        let scalar = self.scalars()?;
+        let left = self.operand_type(facts, scalar.left)?;
+        let valid = match self.form() {
             Form::Assignment => {
                 matches!(self.operation,Operation::Arithmetic(hook) if hook.assignment())
                     && bound_regions == 1
@@ -163,13 +200,13 @@ impl Descriptor {
                             | crate::support::comparisons::Comparison::PartialOrd
                             | crate::support::comparisons::Comparison::Ord
                     )
-                ) && self.rhs == Rhs::Owned
+                ) && scalar.rhs == Rhs::Owned
                     && bound_regions == 2
                     && matches!(facts.types.kind(receiver),Some(Kind::Reference{referent,mutable:false,region}) if referent==left && region==RegionId::bound(0,0)?)
             }
             Form::ValueBinary => {
                 matches!(self.operation,Operation::Arithmetic(hook) if value_binary(hook))
-                    && self.rhs == Rhs::Owned
+                    && scalar.rhs == Rhs::Owned
                     && bound_regions == 0
                     && receiver == left
                     && result == left
@@ -186,32 +223,33 @@ impl Descriptor {
         item: crate::types::ItemId,
         family: crate::types::GenericArgs,
     ) -> Result<TypeId, &'static str> {
+        let scalar = self.scalars()?;
         let owner = facts
             .types
             .projection_schema(item)
             .ok_or("primitive result requires a declared projection")?
             .trait_item;
-        if self.form != Form::ValueBinary
+        if self.form() != Form::ValueBinary
             || !matches!(self.operation,Operation::Arithmetic(hook) if value_binary(hook))
-            || self.rhs != Rhs::Owned
+            || scalar.rhs != Rhs::Owned
             || family != crate::types::GenericArgs::EMPTY
             || facts.associated.member_owner(DefId(item.0)) != Some(DefId(owner.0))
             || !facts
                 .associated
                 .operation(DefId(owner.0))
                 .is_some_and(|(hook, _)| self.operation == Operation::Arithmetic(hook))
-            || !super::scalar::binary(self.operator()?, self.left, self.right)
+            || !super::scalar::binary(self.operator()?, scalar.left, scalar.right)
         {
             return Err("primitive evidence applies only to its canonical Output member");
         }
-        Ok(TypeId::primitive(self.left))
+        Ok(TypeId::primitive(scalar.left))
     }
     fn signature(
         self,
         facts: &mut Declarations,
         signature: TypeId,
     ) -> Result<TypeId, &'static str> {
-        if self.form != Form::ValueBinary {
+        if self.form() != Form::ValueBinary {
             return Ok(signature);
         }
         let Some(Kind::Function {
@@ -276,6 +314,10 @@ pub(in crate::sema) enum Candidate {
     Unrelated,
     Deferred,
     Present(Descriptor),
+    Referent {
+        descriptor: Descriptor,
+        prerequisite: Predicate,
+    },
 }
 pub(in crate::sema) fn candidate(
     facts: &Declarations,
@@ -333,10 +375,7 @@ pub(in crate::sema) fn candidate(
     Ok(if super::scalar::binary(op, left, right) {
         Candidate::Present(Descriptor {
             operation: Operation::Arithmetic(hook),
-            form,
-            left,
-            right,
-            rhs,
+            operands: Operands::Scalars(Scalars { left, right, rhs }),
         })
     } else {
         Candidate::Unrelated
@@ -357,6 +396,7 @@ pub(crate) struct Validated {
     pub result: TypeId,
     pub operator: Punctuation,
     pub comparison: Option<crate::support::comparisons::Method>,
+    pub references: Option<[TypeId; 2]>,
 }
 impl Selected {
     pub(crate) const fn instance(self) -> Instance {
@@ -394,54 +434,33 @@ impl Selected {
             return Err("primitive method has incorrect arity");
         };
         let (receiver, physical_right) = (*receiver, *physical_right);
-        let subject_type =
-            self.descriptor
-                .validate_receiver(facts, receiver, result, bound_regions)?;
+
         let arguments = facts
             .types
             .arguments(arguments)
             .ok_or("missing primitive method arguments")?
             .collect::<Vec<_>>();
-        let (subject, right) = match arguments.as_slice() {
-            [Argument::Type(subject), Argument::Type(right)] => (*subject, *right),
-            [Argument::Type(subject)]
-                if matches!(
-                    self.descriptor.operation,
-                    Operation::Comparison(crate::support::comparisons::Comparison::Ord)
-                        | Operation::Ordering(crate::support::comparisons::Comparison::Ord)
-                ) =>
-            {
-                (*subject, *subject)
-            }
-            _ => return Err("primitive method has incorrect generic arguments"),
+        let [subject, right] = self.descriptor.arguments(&arguments)?;
+        let references = if let Operation::References(kind) = self.descriptor.operation {
+            referential::validate(
+                facts,
+                self.descriptor,
+                kind,
+                [subject, right],
+                [receiver, physical_right],
+                bound_regions,
+            )?;
+            Some([subject, right])
+        } else {
+            domains::validate_scalars(
+                facts,
+                self.descriptor,
+                [subject, right],
+                [receiver, physical_right],
+                signature,
+            )?;
+            None
         };
-        let expected = self.descriptor.operand_type(facts, self.descriptor.right)?;
-        if self.descriptor.form == Form::Comparison
-            && !matches!(facts.types.kind(physical_right),Some(Kind::Reference{referent,mutable:false,region}) if referent==right && region==RegionId::bound(0,1)?)
-        {
-            return Err("comparison RHS differs from independent shared borrow contract");
-        }
-        let actual = match self.descriptor.rhs {
-            Rhs::Owned => right,
-            Rhs::SharedReference => match facts.types.kind(right) {
-                Some(Kind::Reference {
-                    referent,
-                    mutable: false,
-                    ..
-                }) => referent,
-                _ => return Err("primitive forwarding method requires a shared RHS"),
-            },
-        };
-        if actual != expected
-            || subject != subject_type
-            || !super::scalar::binary(
-                self.descriptor.operator()?,
-                self.descriptor.left,
-                self.descriptor.right,
-            )
-        {
-            return Err("primitive method arguments differ from selected descriptor");
-        }
         validate_substitution(facts, self.descriptor, item, signature, &arguments)?;
         let comparison = facts.associated.comparison_method(definition);
         if comparison.is_some_and(|method| {
@@ -463,6 +482,7 @@ impl Selected {
             result,
             operator,
             comparison,
+            references,
         })
     }
 }

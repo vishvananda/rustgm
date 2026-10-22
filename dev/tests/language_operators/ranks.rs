@@ -29,7 +29,7 @@ const CASES: &[(&str, bool, bool, bool)] = &[
     ("foreign-impl", false, false, false),
     ("wrong-reified", false, false, false),
     ("const-call", false, false, false),
-    ("reference-boundary", true, false, false),
+    ("reference-boundary", true, true, false),
     ("array-boundary", true, false, false),
     ("constant-pattern", true, true, false),
 ];

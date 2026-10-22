@@ -26,6 +26,7 @@ pub(in crate::sema) use known_premises::normalized as known_normalized;
 pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
+pub(in crate::sema) use search::may_overlap;
 pub(in crate::sema) use search::{
     Pending, Progress, Reuse, begin, begin_canonical, begin_normalized, begin_projection,
     begin_refining, begin_scoped_refining,
@@ -181,6 +182,14 @@ pub(in crate::sema) fn may_have_subject(
     {
         // Exclusion only: the RHS and exact primitive descriptor are still
         // validated by ordinary complete trait selection.
+        return Ok(true);
+    }
+    if facts.associated.comparison(DefId(item.0)).is_some()
+        && matches!(
+            subject,
+            super::heads::Subject::Rigid(super::heads::Head::Reference(_))
+        )
+    {
         return Ok(true);
     }
     if facts.associated.comparison(DefId(item.0)).is_some()

@@ -1,5 +1,5 @@
 //! Reference call implementations retain the referent's complete child proof.
-use super::callables::Pending as Callable;
+use super::mechanical::Pending as Callable;
 use super::{Action, Decision, Declarations, Frame, Goal, Node, Search, Source, inference};
 use crate::{
     sema::traits::heads::{Head, Subject},
@@ -15,6 +15,7 @@ use crate::{
 
 pub(super) struct Pending {
     goal: Goal,
+    operation: Option<crate::sema::primitive_methods::Descriptor>,
     selected: Option<usize>,
     stopped: Option<Decision>,
     suspended: Option<usize>,
@@ -23,7 +24,7 @@ pub(super) struct Pending {
 
 impl Frame {
     fn forwarding(&mut self) -> Result<&mut Pending, String> {
-        match self.callable.as_deref_mut() {
+        match self.language.as_deref_mut() {
             Some(Callable::Forward(pending)) => Ok(pending),
             _ => Err("missing reference callable proof".into()),
         }
@@ -92,8 +93,9 @@ impl Search<'_> {
             .account_work(arguments.len())
             .map_err(inference)?;
         let goal = Goal::trait_application(referent, ItemId(item.0), arguments.to_vec());
-        frame.callable = Some(Box::new(Callable::Forward(Pending {
+        frame.language = Some(Box::new(Callable::Forward(Pending {
             goal,
+            operation: None,
             selected: None,
             stopped: None,
             suspended: None,
@@ -102,13 +104,29 @@ impl Search<'_> {
         Ok(Some(Action::Descend))
     }
 
-    pub(super) fn callable_child(
+    pub(super) fn start_comparison(
+        frame: &mut Frame,
+        descriptor: crate::sema::primitive_methods::Descriptor,
+        prerequisite: Goal,
+    ) -> Action {
+        frame.language = Some(Box::new(Callable::Forward(Pending {
+            goal: prerequisite,
+            operation: Some(descriptor),
+            selected: None,
+            stopped: None,
+            suspended: None,
+            publish: false,
+        })));
+        Action::Descend
+    }
+
+    pub(super) fn language_child(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Frame>, String> {
         let first = frame.available_region().max(self.query.allocations.floor());
-        let Some(Callable::Forward(pending)) = frame.callable.as_deref_mut() else {
+        let Some(Callable::Forward(pending)) = frame.language.as_deref_mut() else {
             return Ok(None);
         };
         let mut child = if let Some(slot) = pending.suspended.take() {
@@ -138,7 +156,7 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
-        let Some(Callable::Forward(pending)) = frame.callable.as_deref_mut() else {
+        let Some(Callable::Forward(pending)) = frame.language.as_deref_mut() else {
             return Err("missing forwarded call parent".into());
         };
         if let Decision::Proven(node) = decision {
@@ -179,7 +197,17 @@ impl Search<'_> {
     ) -> Result<Action, String> {
         let pending = frame.forwarding()?;
         if let Some(decision) = pending.stopped {
-            return Ok(Action::Complete(decision));
+            return Ok(Action::Complete(
+                if pending.operation.is_some() && decision == Decision::Absent {
+                    if frame.deferred || frame.partial.is_some() {
+                        Decision::Deferred
+                    } else {
+                        frame.selected.map_or(Decision::Absent, Decision::Proven)
+                    }
+                } else {
+                    decision
+                },
+            ));
         }
         if std::mem::take(&mut pending.publish) {
             return Ok(Action::Yield);
@@ -187,6 +215,12 @@ impl Search<'_> {
         let Some(child) = pending.selected else {
             return Ok(Action::Descend);
         };
+        let operation = pending.operation;
+        if operation.is_some()
+            && (frame.selected.is_some() || frame.deferred || frame.partial.is_some())
+        {
+            return Ok(Action::Complete(Decision::Deferred));
+        }
         let goal = match frame
             .inputs
             .context
@@ -201,13 +235,19 @@ impl Search<'_> {
             Err(infer::Error::Unresolved) => return Ok(Action::Complete(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         };
-        let output = self.forwarded_output(facts, child)?;
+        let source = if let Some(descriptor) = operation {
+            Source::LanguageOperation { descriptor }
+        } else {
+            Source::Callable {
+                output: self.forwarded_output(facts, child)?,
+            }
+        };
         let node = self.query.push(
             Node {
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,
-                source: Some(Source::Callable { output }),
+                source: Some(source),
                 children: vec![child],
                 first: frame.first,
                 end: self.query.nodes[child].end,

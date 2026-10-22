@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn main(){let mut a=3u8;let mut b=3u8;let ra=&mut a;let rb=&mut b;check(<&mut u8 as core::cmp::PartialEq>::eq(&ra,&rb));*ra=4;*rb=5;check(*ra==4&&*rb==5);}

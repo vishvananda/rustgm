@@ -40,7 +40,7 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<(), String> {
-        if frame.callable.is_some() || frame.equality_hint.is_some() {
+        if frame.language.is_some() || frame.equality_hint.is_some() {
             // Callable equations already live in this frame's retained input graph.
             return Ok(());
         }
@@ -66,8 +66,8 @@ impl Search<'_> {
             return Err("partial normalization child requires retained input evidence".into());
         }
         if matches!(
-            parent.callable.as_deref(),
-            Some(super::callables::Pending::Forward(_))
+            parent.language.as_deref(),
+            Some(super::mechanical::Pending::Forward(_))
         ) {
             return self.accept_partial_forwarding(facts, parent, child);
         }

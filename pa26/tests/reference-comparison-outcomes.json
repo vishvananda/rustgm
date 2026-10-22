@@ -1,0 +1,928 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/reference-comparison/contract-partialeq-shared-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "43eba33fa130d27264fbf22e62b116594edb4bf2467dab3d3cd1bf7227b448dd",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialeq-shared-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "d6dd19fe117e7bdfd32422d1f2097b330c6ef3a60f53cd9d324b40546426e706",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialeq-mutable-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "d6453cfd7825e8784c25936c83c642aadf272fac4376fc96edcf812e8d01a452",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialeq-mutable-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "950e69703a13a1f40197aef896e0eecf1c2791b74034bc1ad3c32340b2579983",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialord-shared-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "91c6636aac28e99e31789baeb1793f573e4ed7df8fbf0343d1475aef1956af88",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialord-shared-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "119778ca786160171eb3d7810937ca1b3c3f60c4871e8117f5b4837357b0a834",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialord-mutable-shared.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "eb54b043e76210473e84f4e6fa4811b55964caa62f3f80cf57910b3981d9d9d8",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-partialord-mutable-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "897945cef53e5b88b7911b78e9dffee0544facc8ab4849345a3c1ad2ff0b680f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-eq-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "81e641c63ec71adf09c0b7ab69bf20c0c34352e075ba4ddd22c4cb7c67b17a70",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-eq-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "a440beded07e53a8e3189806fb001ef32783b27828c32a1d78fcdeb36e407a03",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-ord-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "055ad6732815c138c52b2d01cfa16570391e9845d25a5bfca2d54367d9a1bfc1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-ord-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "e4e4bb54910ee71ddb8709512fec64c4e189338b28e71aeb566c2eda61ed4c83",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-generic-reference-gap.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "3ce6817cf2da88829388243ecbc24aae9a80d34381731a8e988828f1bca4c3af",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-unsized-pointee.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "ec3e231403669bc50016ba67b92d0ff7cfc7d0850f008046e30228ddbc3679e5",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false,
+      "boundary": "Underlying str comparison implementations remain required; reference blankets add no Sized constraint."
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-nested-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "813a000a5d5387d1a09e0466b19d856bfec6b4c5a0da97acfc12c7cc905778de",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-nested-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "c177cb8f7d5026c27641da55ab5ec04c1250dd546f6d4b11751328b92449b9a7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-nested-mixed-same-shape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "99911181bee38b6fbae18efb2db287c21a6a74e5bf2df4daa6e7c70fa11445be",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-nested-cross-shape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "08d2a9ac14948175e28a71d67b9888be32ca481b28bca1b4d3e54984e7f1ceb7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-not-eq-pointee.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "2779b335408a50a67fae826dcc08ff7ffa931a18220ab0e9bfb03c9c49df9f9a",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-float-eq.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "1ed9d817f4bbe40baa04b95effdd2e2abc42b36fd695c79624e250b540f62f3e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/contract-float-ord.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "1f4ea6aa2731353e434370833713d115057f3135cc6c8e3d5c310595639e8a43",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/eq-shared-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "b94cdf7f60869883eda1f96a659ab187ba98c161f1ee657465cc5f50656233f3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/eq-shared-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "c44480099057a40490eec53b2b4d612188773fa3112a6b77e6ca5ed196aa24cc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/eq-mutable-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "2d44d318813321650b326dbbedfcffb0733f0db52a1b1bfa96ac11887f87cedb",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/eq-mutable-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "3a0708f5e8eb4b3f96055b12ed1683a3c21a4b10004c344d5acc17d70e332707",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/generic-reference-gap.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "a7ae7ffc6c783dd4198c31c73deaf2bd055a13f8d0113be49f1a52647b4887a6",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/mutable-usable-after.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "5629213183a7ea5361751e7d1954d4969f5650451e35129f04bba470e4cffec1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/heterogeneous-overrides.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "8eaad2f4bda6641e3c2509abf3bc930f39e1b13b2996577f309dae1eb9714a8f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/generic-heterogeneous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "8e1b1957db556f32d10994ee2c1a33eda1e263f12e9f5b1746e3582f3cb0a126",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/nested-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "0f56b0752905cc6b1a79ec9d81800eab0b5d5570f31fe15dabcc56e2584d47cf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/nested-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "20f42023e5e718d19cd77ee0685929e2ef30a57af060f7995ff9dda0ccf36fbf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/eq-cross-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "9a765d03618a5445505c444c1456e1129a700165a0c1ca4015ca1189647cc0db",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/user-reference-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "936f63285105b7fb8b9dac657e13f3cb847e1dfdbcb703e2777139d3d65e78c2",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/reference-impl-overlap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "9ce06a4209b87b70372d19e86e0f49b852ad25d2f964814b37273e05b7fe2d6d",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/intermediate-user-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "8326626fa4d64a55a08605d815af3944f7d58a301d4603c0781daec9febbff49",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/pointee-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "b37f3b4a8af11ae27d3c4b9e2d205cfcc19bc14d7b4d93f8e561d862abc61adf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/unpaid-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "407ace45d6a988204f085b6ebad6c6f8b0a7e932e82bfc35672f81ad0db0c50a",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/wrong-reified-outer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "1d101596eee8ee43ded23a4d1e1a358691a1f0d6032f82235bfe02df0a0b814f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/same-named-trait.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "0020883752913f0c023d9fc09aa8a237066a2c193145576825a472289d667e13",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false,
+      "boundary": "Required Rust-positive preexisting gap: elided reference-impl lifetime arguments"
+    },
+    {
+      "path": "tests/spec/reference-comparison/same-named-no-operator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "c8079cfb9304bc86165e2ff8e5572638d89ed90e8e24668ad57e01e3f8ae38ee",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-reified-fixed-inner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "bae4d6cfbc0901a6ecd6aff25abf15e526c5b3acebae27dcb928c20d8ac17ccd",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-source-before-pointee.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "eea3cb43ed781573dc1399cd8ab2040f119157204a8a317396dbafcd9f3b96b0",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-pointee-before-source.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "b7c37cb35b8d1daf9d2b43d50c8f439ae8e4b285ab39916d2066cf31ac297505",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-generic-possible-overlap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "f868b875d6003870f3e066cd1d232fc9b6bef6a56daeaabf610a12df7336766f",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-generic-disjoint-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "7345f3143a92475fd5ba25c15c1f22ac4a0ae3ee2981126babd76518ee453b7b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-conditional-foreign-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "f2f3080958721b9df00bddba33207b560302fb3bf998e3fd443bd44313d7a224",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-unsized-opposing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "715157093ccf64e801c4e74b615d2179e2c199629fe1c765f6b700d743b84cbc",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-sized-opposing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "03fa802e8bd900a5e8c73f92b68259514a8bf4119cbe763bcf31d2e7e2bbc6ae",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/coherence-generic-unresolved-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "754550b32b732bae9f825f43fe0b14477c6ee1df0a387ac2619d1b6367658ba1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/borrowed-helpers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "18ba2b9cbbb666147eaa156247f9ddd163b11658f6a5bf121ab7a4a34f82f5e7",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/reference-ties.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "c0bf61c0d4a8d7de64d5f0384f2d80bcc2b4da559150d8ed5c88dfdaadd6c418",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/owned-helper-overrides-not-forwarded.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "e8cbe566d67867b49f43c9c6a982756ddb8fbc876f21c633fb17a0517be76641",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/noncopy-mutable-pointee.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "0998900eef15f7581f598c6dd9a231db8bb617b7badf5a33716f5da2e9798d17",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/aliased-blanket.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "70c10db0318953b90705bd596ab5bbce5397512bc36cb6d54f2999a2c6894fea",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/shared-loan-protected.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "ad91cc211001a6dc685105ac85ee819f9f9c2f6dc54ac11a34650f49ff0b2be6",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/unrelated-recursive-disjoint.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "9e8aaf0fd051e9bc3a644bf59ae1eb8aac956af13aad38e4bfd0872a4ebe3eb0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/dot-reference-member.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "a7fcaa2246601707708e37a6261c54ca94ef09f2e3d1d8010d87ee5f58a2c101",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false,
+      "boundary": "Required Rust-positive preexisting gap: dot-call RHS autodereference inference"
+    },
+    {
+      "path": "tests/spec/reference-comparison/const-call-not-eligible.rs",
+      "exit_status": 1,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "617e17ecf2c3c6331424134490bf21eb9daf9f7944932f3a5fb838c347c2e8f6",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "native": false,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/nan-forwarding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "073f7a7e9d9764af6e8f2bd5779a78e1eb827bbf464d47c96d9c48f9ea94eba1",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/same-named-trait-owned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "1fe12835fb2ac7e51e5bc3aa35d763f2c146044396f9d714641188efad6d6233",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    },
+    {
+      "path": "tests/spec/reference-comparison/dot-generic-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa26.reference-comparison"
+      ],
+      "source_sha256": "4329fddd06a15efa2a6fb7c7d27c56d270a019a4d4cc1804e567db8a49d98d3b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": true,
+      "traps": false
+    }
+  ]
+}

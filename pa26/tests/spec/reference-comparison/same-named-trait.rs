@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait PartialEq<R>{fn eq(&self,r:R)->bool;}struct S;impl PartialEq<&S> for &S{fn eq(&self,_:&S)->bool{true}}fn main(){let s=S;check(PartialEq::eq(&&s,&s));}

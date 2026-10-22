@@ -1,7 +1,7 @@
 //! Only the validated comparison nominal uses signed discriminant operations.
 use super::{
-    Candidate, Constructor, Declarations, Descriptor, Form, Operation, Primitive, Rhs, TypeId,
-    infer,
+    Candidate, Constructor, Declarations, Descriptor, Operands, Operation, Primitive, Rhs, Scalars,
+    TypeId, infer,
 };
 use crate::{
     support::comparisons::Comparison,
@@ -114,9 +114,10 @@ pub(super) fn candidate(
     // I8 describes the validated discriminant operation, not either source operand.
     Ok(Some(Candidate::Present(Descriptor {
         operation: Operation::Ordering(kind),
-        form: Form::Comparison,
-        left: Primitive::I8,
-        right: Primitive::I8,
-        rhs: Rhs::Owned,
+        operands: Operands::Scalars(Scalars {
+            left: Primitive::I8,
+            right: Primitive::I8,
+            rhs: Rhs::Owned,
+        }),
     })))
 }

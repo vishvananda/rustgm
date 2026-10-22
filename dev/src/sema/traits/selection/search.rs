@@ -7,7 +7,9 @@ mod auto_obligations;
 mod builtins;
 mod callable_queries;
 mod callables;
+mod coherence;
 mod coinduction;
+pub(in crate::sema) use coherence::may_overlap;
 mod completed_proofs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/marker_evidence.rs"]
@@ -39,6 +41,7 @@ mod frames;
 mod header_tests;
 mod input_universe;
 mod inputs;
+mod mechanical;
 mod member_conditions;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/formation_clauses.rs"]
@@ -241,7 +244,7 @@ impl Search<'_> {
         if frame.normalizing() {
             return self.advance_normalization(facts, frame);
         }
-        if frame.callable.is_some() {
+        if frame.language.is_some() {
             return self.complete_callable(facts, frame);
         }
         if frame.equality_hint.is_some() {
@@ -470,8 +473,8 @@ impl Search<'_> {
             return self.accept_normalization(facts, frame, decision);
         }
         if matches!(
-            frame.callable.as_deref(),
-            Some(callables::Pending::Forward(_))
+            frame.language.as_deref(),
+            Some(mechanical::Pending::Forward(_))
         ) {
             return self.accept_forwarding(facts, frame, decision);
         }

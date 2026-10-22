@@ -1,4 +1,5 @@
 //! Validated primitive selections materialize ordinary typed and independently proved CFGs.
+mod forwarded;
 mod ordering;
 use super::{
     ir::{
@@ -42,8 +43,13 @@ pub(crate) fn build(
             .instantiate(&mut facts.types, source.result)
             .map_err(error)?;
     }
-    let (contract, right) =
-        contract(facts, &source, selected.descriptor().form()).map_err(error)?;
+    let (mut contract, parameters) = if source.references.is_some() {
+        forwarded::contract(facts, selected, &source).map_err(error)?
+    } else {
+        let (contract, right) =
+            contract(facts, &source, selected.descriptor().form()).map_err(error)?;
+        (contract, [source.receiver, right])
+    };
     let mut body = Body::new(
         Owner::Function {
             definition: source.definition,
@@ -56,7 +62,7 @@ pub(crate) fn build(
     body.storage = Some(super::storage::Facts::new(super::scopes::Facts::synthetic(
         source.source.node,
     )));
-    for (index, ty) in [source.receiver, right].into_iter().enumerate() {
+    for (index, ty) in parameters.into_iter().enumerate() {
         let ordinal = u32::try_from(index).map_err(|_| error("too many factory parameters"))?;
         body.locals.push(Local {
             scope: super::scopes::Id(0),
@@ -69,8 +75,17 @@ pub(crate) fn build(
         });
         statement(&mut body, Action::StorageLive(LocalId(ordinal)));
     }
-    if let Some(result) = operation(&mut body, facts, selected, &source, right).map_err(error)? {
+    let result = if source.references.is_some() {
+        Some(forwarded::operation(&mut body, facts, &source, parameters).map_err(error)?)
+    } else {
+        operation(&mut body, facts, selected, &source, parameters[1]).map_err(error)?
+    };
+    if let Some(result) = result {
         super::build::finish_factory(&mut body, result).map_err(error)?;
+    }
+    if source.references.is_some() {
+        super::dispatch::resolve(facts, &mut body, &mut contract)
+            .map_err(|e| Declarations::error(report, source.source, e))?;
     }
     validate(facts, selected, &body, &contract).map_err(error)?;
     Ok((body, contract))
@@ -84,6 +99,7 @@ fn operation(
 ) -> Result<Option<ValueId>, &'static str> {
     let types = &facts.types;
     let descriptor = selected.descriptor();
+    let scalar = descriptor.scalars()?;
     let left = if descriptor.form() == Form::ValueBinary {
         Place::Local(LocalId(0))
     } else {
@@ -91,18 +107,17 @@ fn operation(
     };
     let a = value(
         body,
-        descriptor.operand_type(facts, descriptor.left())?,
+        descriptor.operand_type(facts, scalar.left)?,
         Rvalue::Read(left),
     )?;
-    let right = if descriptor.rhs() == Rhs::SharedReference || descriptor.form() == Form::Comparison
-    {
+    let right = if scalar.rhs == Rhs::SharedReference || descriptor.form() == Form::Comparison {
         dereference(body, Place::Local(LocalId(1)), right, types)?
     } else {
         Place::Local(LocalId(1))
     };
     let b = value(
         body,
-        descriptor.operand_type(facts, descriptor.right())?,
+        descriptor.operand_type(facts, scalar.right)?,
         Rvalue::Read(right),
     )?;
     let (a, b) = if descriptor.nominal() {
@@ -142,7 +157,7 @@ fn operation(
         if descriptor.form() == Form::Comparison {
             source.result
         } else {
-            TypeId::primitive(descriptor.left())
+            TypeId::primitive(scalar.left)
         },
         Rvalue::Binary {
             operator: source.operator,
@@ -275,7 +290,8 @@ pub(crate) fn validate(
     let parameters = facts
         .types
         .list(parameters)
-        .ok_or("missing factory contract parameters")?;
+        .ok_or("missing factory contract parameters")?
+        .to_vec();
     if result != source.result
         || bound_regions != input.universals
         || body.locals.len() != 2
@@ -283,17 +299,24 @@ pub(crate) fn validate(
         || body
             .locals
             .iter()
-            .zip(parameters)
+            .zip(&parameters)
             .any(|(local, &ty)| local.ty != ty)
     {
         return Err("primitive factory parameters differ from lifetime contract");
+    }
+    if source.references.is_some() {
+        forwarded::validate(facts, selected, &source, input, &parameters)?;
+        return Ok(Permit {
+            instance: selected.instance(),
+        });
     }
     let base = match selected.descriptor().form() {
         Form::Assignment => 1,
         Form::ValueBinary => 0,
         Form::Comparison => 2,
     };
-    let (right, count) = match selected.descriptor().rhs() {
+    let scalar = selected.descriptor().scalars()?;
+    let (right, count) = match scalar.rhs {
         Rhs::Owned => (source.right, base),
         Rhs::SharedReference => {
             let Some(Kind::Reference { region, .. }) = facts.types.kind(source.right) else {
@@ -315,7 +338,7 @@ pub(crate) fn validate(
             else {
                 return Err("factory RHS lost shared reference identity");
             };
-            if region != expected || referent != TypeId::primitive(selected.descriptor().right()) {
+            if region != expected || referent != TypeId::primitive(scalar.right) {
                 return Err("factory RHS lifetime differs from selected argument abstraction");
             }
             (

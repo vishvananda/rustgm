@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn main(){let n=0.0f64/0.0;let a=&n;check(!<&f64 as PartialEq>::eq(&a,&a));check(<&f64 as PartialEq>::ne(&a,&a));check(match <&f64 as PartialOrd>::partial_cmp(&a,&a){None=>true,_=>false});check(!<&f64 as PartialOrd>::lt(&a,&a));check(!<&f64 as PartialOrd>::le(&a,&a));check(!<&f64 as PartialOrd>::gt(&a,&a));check(!<&f64 as PartialOrd>::ge(&a,&a));}

@@ -39,6 +39,12 @@ impl Search<'_> {
                 );
                 frame.selected = Some(node);
             }
+            Ok(Candidate::Referent {
+                descriptor,
+                prerequisite,
+            }) => {
+                return Ok(Self::start_comparison(frame, descriptor, prerequisite));
+            }
             Ok(Candidate::Unrelated) => {}
             Ok(Candidate::Deferred)
             | Err(

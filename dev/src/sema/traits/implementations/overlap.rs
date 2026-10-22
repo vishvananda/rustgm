@@ -26,3 +26,45 @@ pub(in crate::sema) fn possible(
     };
     Ok((possible, context.steps))
 }
+
+/// Source reference impls compete with the canonical blanket only if its exact
+/// existential referent condition remains possible. No evidence from this
+/// declaration-only query escapes into a caller or executable factory.
+pub(in crate::sema) fn reference_comparison(
+    facts: &mut Declarations,
+    header: (Predicate, DefId),
+) -> Result<(bool, usize), String> {
+    use crate::sema::{
+        primitive_methods::{self, Candidate},
+        traits::selection,
+    };
+    let crate::types::parameters::predicates::Bound::Trait(application) = header.0.bound else {
+        return Ok((false, 0));
+    };
+    let item = facts
+        .types
+        .trait_application(application)
+        .ok_or("missing coherence trait application")?
+        .item;
+    if facts.associated.comparison(DefId(item.0)).is_none()
+        || !matches!(
+            facts.types.kind(header.0.ty),
+            Some(crate::types::Kind::Reference { .. })
+        )
+    {
+        return Ok((false, 0));
+    }
+    let mut context = Context::default();
+    let mut inputs = inputs::Inputs::default();
+    let goal = inputs.instantiate(facts, &mut context, header)?;
+    let candidate =
+        primitive_methods::candidate(facts, &mut context, &goal).map_err(|e| e.to_string())?;
+    let Candidate::Referent { prerequisite, .. } = candidate else {
+        return Ok((false, context.steps));
+    };
+    if disjointness::has_unsized(facts, &mut context, &inputs)? {
+        return Ok((false, context.steps));
+    }
+    let possible = selection::may_overlap(facts, &mut context, &prerequisite)?;
+    Ok((possible, context.steps))
+}
