@@ -247,8 +247,9 @@ fn volatile_instances_share_canonical_identity_and_additive_body_work()
             )?;
         }
         let (report, facts) = semantic::analyze(&text)?;
-        // The pointer module has six canonical entries; caller count adds none.
-        assert_eq!(facts.intrinsics.iter().count(), 6);
+        // The eight canonical pointer entries include both counted copies;
+        // repeated callers must not register additional definitions.
+        assert_eq!(facts.intrinsics.iter().count(), 8);
         assert_ne!(
             facts
                 .intrinsics
