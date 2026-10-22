@@ -184,82 +184,84 @@ impl Reader<'_> {
                         .ok_or("constant storage offset overflow")?,
                 })
             }
-            Shape::Aggregate { .. } => {
-                let union = match self.facts.types.kind(ty) {
-                    Some(Kind::Adt(item, _)) => {
-                        match self.facts.aggregates.get(item).map(|d| d.kind) {
-                            Some(crate::types::aggregate::Kind::Struct) => None,
-                            Some(crate::types::aggregate::Kind::Union) => Some(item),
-                            _ => {
-                                return Err(
-                                    "raw constant enum or union field access is not implemented",
-                                );
-                            }
-                        }
-                    }
-                    _ => None,
-                };
-                let [variant] = self.facts.layouts.variants(layout) else {
-                    return Err("constant storage requires one product variant");
-                };
-                let index =
-                    usize::try_from(index).map_err(|_| "constant field index exceeds host size")?;
-                let owner = ty;
-                let ty = self
-                    .facts
-                    .types
-                    .list(variant.fields)
-                    .and_then(|fields| fields.get(index))
-                    .copied()
-                    .ok_or("constant field is out of bounds")?;
-                let offset = *self
-                    .facts
-                    .layouts
-                    .offsets(variant)
-                    .get(index)
-                    .ok_or("missing prepared field offset")?;
-                let storage = if let Some(item) = union {
-                    if offset != 0
-                        || !self
-                            .facts
-                            .constant_images
-                            .as_ref()
-                            .is_some_and(|arena| arena.families.contains_key(&owner))
-                    {
-                        return Err(
-                            "raw union field access requires a prepared scalar image family",
-                        );
-                    }
-                    let [member] = self.facts.members.variants(item) else {
-                        return Err("union projection requires one declaration field group");
-                    };
-                    let member = self
-                        .facts
-                        .members
-                        .variants
-                        .get(member.0 as usize)
-                        .ok_or("missing union projection field group")?;
-                    let field = u32::try_from(index)
-                        .ok()
-                        .and_then(|index| member.start.checked_add(index))
-                        .filter(|&field| member.owner == item && field < member.end)
-                        .ok_or("union projection field has a different owner")?;
-                    ProjectionStorage::UnionField {
-                        field: crate::sema::members::Selection::Nominal(
-                            crate::sema::members::FieldId(field),
-                        ),
-                    }
-                } else {
-                    ProjectionStorage::Product
-                };
-                Ok(ProjectionLayout {
-                    ty,
-                    offset,
-                    storage,
-                })
-            }
+            Shape::Aggregate { .. } => self.aggregate_projection(ty, index, layout),
             _ => Err("constant projection requires aggregate storage"),
         }
+    }
+    fn aggregate_projection(
+        self,
+        ty: TypeId,
+        index: u64,
+        layout: &crate::abi::layout::Layout,
+    ) -> Result<ProjectionLayout, &'static str> {
+        let union = match self.facts.types.kind(ty) {
+            Some(Kind::Adt(item, _)) => match self.facts.aggregates.get(item).map(|d| d.kind) {
+                Some(crate::types::aggregate::Kind::Struct) => None,
+                Some(crate::types::aggregate::Kind::Union) => Some(item),
+                Some(crate::types::aggregate::Kind::Enum) => {
+                    return self.tagless_projection(ty, index);
+                }
+                _ => {
+                    return Err("raw constant enum or union field access is not implemented");
+                }
+            },
+            _ => None,
+        };
+        let [variant] = self.facts.layouts.variants(layout) else {
+            return Err("constant storage requires one product variant");
+        };
+        let index = usize::try_from(index).map_err(|_| "constant field index exceeds host size")?;
+        let owner = ty;
+        let ty = self
+            .facts
+            .types
+            .list(variant.fields)
+            .and_then(|fields| fields.get(index))
+            .copied()
+            .ok_or("constant field is out of bounds")?;
+        let offset = *self
+            .facts
+            .layouts
+            .offsets(variant)
+            .get(index)
+            .ok_or("missing prepared field offset")?;
+        let storage = if let Some(item) = union {
+            if offset != 0
+                || !self
+                    .facts
+                    .constant_images
+                    .as_ref()
+                    .is_some_and(|arena| arena.families.contains_key(&owner))
+            {
+                return Err("raw union field access requires a prepared scalar image family");
+            }
+            let [member] = self.facts.members.variants(item) else {
+                return Err("union projection requires one declaration field group");
+            };
+            let member = self
+                .facts
+                .members
+                .variants
+                .get(member.0 as usize)
+                .ok_or("missing union projection field group")?;
+            let field = u32::try_from(index)
+                .ok()
+                .and_then(|index| member.start.checked_add(index))
+                .filter(|&field| member.owner == item && field < member.end)
+                .ok_or("union projection field has a different owner")?;
+            ProjectionStorage::UnionField {
+                field: crate::sema::members::Selection::Nominal(crate::sema::members::FieldId(
+                    field,
+                )),
+            }
+        } else {
+            ProjectionStorage::Product
+        };
+        Ok(ProjectionLayout {
+            ty,
+            offset,
+            storage,
+        })
     }
 }
 
@@ -335,6 +337,14 @@ impl<'a> Reader<'a> {
                     crate::types::aggregate::Kind::Struct => false,
                     crate::types::aggregate::Kind::Union => true,
                     crate::types::aggregate::Kind::Enum => {
+                        if definition.repr.tag.is_none()
+                            && definition.repr.representation
+                                == crate::types::aggregate::Representation::Rust
+                            && matches!(layout.shape, Shape::Aggregate { tag: None, .. })
+                            && let Some(shape) = self.tagless_enumeration(ty)?
+                        {
+                            return Ok(shape);
+                        }
                         return Self::enumeration_shape(definition, layout);
                     }
                 };
@@ -355,7 +365,7 @@ impl<'a> Reader<'a> {
             _ => Ok(StoredShape::Unsupported),
         }
     }
-    fn stored_product(
+    pub(super) fn stored_product(
         self,
         layout: &crate::abi::layout::Layout,
         variant: Option<crate::sema::members::VariantId>,

@@ -22,28 +22,8 @@ impl Machine<'_, '_> {
                 .ordinal(field)
                 .ok_or("missing constant field ordinal")?,
         };
-        if let Selection::Nominal(field) = field
-            && let Some(crate::types::Kind::Adt(owner, _)) =
-                self.evaluator.facts().types.kind(place.ty)
-            && self
-                .evaluator
-                .facts()
-                .aggregates
-                .get(owner)
-                .is_some_and(|definition| {
-                    definition.kind == crate::types::aggregate::Kind::Enum
-                        && (definition.repr.tag.is_some()
-                            || definition.repr.representation
-                                == crate::types::aggregate::Representation::C)
-                })
-        {
-            self.footprint(place.ty)?;
-            let selected =
-                Reader::new(self.evaluator.facts()).enum_field_layout(place.ty, field)?;
-            if selected.ty != target {
-                return Err("constant enum field differs from its checked type".into());
-            }
-            return self.byte_address(place, selected.offset, target);
+        if let Some(address) = self.enum_field_projection(place, field, target)? {
+            return Ok(address);
         }
         if self.byte_projecting(place)? {
             if !matches!(
@@ -108,5 +88,53 @@ impl Machine<'_, '_> {
             .evaluator
             .projection(place.address, u64::from(index), stored)?;
         metadata.map_or(Ok(value), |metadata| value.with_metadata(metadata))
+    }
+    fn enum_field_projection(
+        &mut self,
+        place: Resolved,
+        field: Selection,
+        target: TypeId,
+    ) -> Result<Option<Constant>, Failure> {
+        use crate::types::{
+            Kind,
+            aggregate::{Kind as AggregateKind, Representation},
+        };
+        let (Selection::Nominal(field), Some(Kind::Adt(owner, _))) =
+            (field, self.evaluator.facts().types.kind(place.ty))
+        else {
+            return Ok(None);
+        };
+        let Some(definition) = self
+            .evaluator
+            .facts()
+            .aggregates
+            .get(owner)
+            .filter(|definition| definition.kind == AggregateKind::Enum)
+        else {
+            return Ok(None);
+        };
+        let tagged =
+            definition.repr.tag.is_some() || definition.repr.representation == Representation::C;
+        let tagless = definition.repr.tag.is_none()
+            && definition.repr.representation == Representation::Rust
+            && self.evaluator.facts().members.variants(owner).len() == 1;
+        if !tagged && !tagless {
+            return Ok(None);
+        }
+        self.footprint(place.ty)?;
+        let selected = Reader::new(self.evaluator.facts()).enum_field_layout(place.ty, field)?;
+        if selected.ty != target {
+            return Err(if tagged {
+                "constant enum field differs from its checked type"
+            } else {
+                "constant tagless enum field differs from its checked type"
+            }
+            .into());
+        }
+        if tagged {
+            self.byte_address(place, selected.offset, target).map(Some)
+        } else {
+            Ok(None)
+        }
     }
 }

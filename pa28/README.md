@@ -300,5 +300,13 @@ Default-layout/niche enum and other required backing families remain open.
 The C enum byte-backing slice admits repr(C) without a written integer tag by
 using retained target ABI facts. Existing tag/payload validity, physical field
 addresses and raw transport rules remain separate. The draft
-`tests/c-enum-byte-outcomes.json` keeps default/tagless Rust-positive gaps
-explicit; see `docs/pa27-c-enum-bytes.md`.
+`tests/c-enum-byte-outcomes.json` records the original default/tagless
+Rust-positive gaps; the tagless followup below supersedes that one boundary.
+See `docs/pa27-c-enum-bytes.md`.
+
+The unique no-tag enum byte-backing slice reuses the exact retained sole variant
+and physical fields as a product. It preserves ordinary field projections,
+initialized-byte masks, symbolic fragments and reference validity; the original
+tagless positive is now supported. Multi-variant default/niche layouts remain
+required. See `tests/tagless-enum-byte-outcomes.json` and
+`docs/pa27-tagless-enum-bytes.md` for the independently declared scope.

@@ -201,3 +201,72 @@ fn c_enum_storage_facade_rejects_non_abi_tags_and_preserves_written_repr_checks(
     ));
     Ok(())
 }
+#[test]
+fn tagless_enum_storage_facade_rejects_wrong_owner_count_ordinal_and_bounds() -> Result<(), String>
+{
+    let report = test_source::resolve("enum E{Only(u32)}enum F{Other(bool)}", true)?;
+    let mut facts = crate::pipeline::analyze_source(&report)
+        .map_err(|e| e.to_string())?
+        .facts;
+    let owners: Vec<_> = facts.aggregates.iter().map(|d| d.item).collect();
+    let ty = facts
+        .types
+        .intern(Kind::Adt(owners[0], crate::types::GenericArgs::EMPTY))?;
+    Evaluator::new(&report, &mut facts)
+        .storage_layout(ty, 10000)
+        .map_err(|e| e.message().to_owned())?;
+    let id = facts.members.variants(owners[0])[0];
+    let foreign = facts.members.variants(owners[1])[0];
+    let original = facts.members.variants[id.0 as usize];
+    let reader = Reader::new(&facts);
+    assert!(
+        matches!(reader.storage_shape(ty)?,StoredShape::Product{variant:Some(actual),fields,..} if actual==id&&fields==[TypeId::primitive(Primitive::U32)])
+    );
+    assert!(reader.enum_variants(ty).is_err());
+    assert!(reader.enum_variant_fields(ty, foreign).is_err());
+    assert!(reader.projection_layout(ty, 1).is_err());
+    assert!(reader.projection_layout(ty, u64::MAX).is_err());
+    facts.members.variants[id.0 as usize].owner = owners[1];
+    assert!(Reader::new(&facts).storage_shape(ty).is_err());
+    facts.members.variants[id.0 as usize] = original;
+    facts.members.variants[id.0 as usize].ordinal = 1;
+    assert!(Reader::new(&facts).storage_shape(ty).is_err());
+    facts.members.variants[id.0 as usize] = original;
+    facts.members.variants[id.0 as usize].end += 1;
+    assert!(Reader::new(&facts).storage_shape(ty).is_err());
+    facts.members.variants[id.0 as usize] = original;
+    facts.members = crate::sema::members::Members::default();
+    assert!(Reader::new(&facts).storage_shape(ty).is_err());
+    Ok(())
+}
+#[test]
+fn tagless_enum_field_types_follow_complete_closed_generic_identity() -> Result<(), String> {
+    let report =
+        test_source::resolve("enum E<T>{Only(T)}fn use_types(_:E<u32>,_:E<bool>){}", true)?;
+    let mut facts = crate::pipeline::analyze_source(&report)
+        .map_err(|e| e.to_string())?
+        .facts;
+    let types: Vec<_> = (0..facts.types.len())
+        .filter_map(|n| u32::try_from(n).ok().map(TypeId))
+        .filter(|&ty| {
+            matches!(facts.types.kind(ty), Some(Kind::Adt(..)))
+                && facts.types.contains_parameters(ty) == Some(false)
+        })
+        .collect();
+    assert_eq!(types.len(), 2);
+    let mut fields = Vec::new();
+    for ty in types {
+        Evaluator::new(&report, &mut facts)
+            .storage_layout(ty, 10000)
+            .map_err(|e| e.message().to_owned())?;
+        fields.push(Reader::new(&facts).projection_layout(ty, 0)?.ty);
+    }
+    fields.sort_by_key(|ty| ty.0);
+    let mut expected = [
+        TypeId::primitive(Primitive::U32),
+        TypeId::primitive(Primitive::Bool),
+    ];
+    expected.sort_by_key(|ty| ty.0);
+    assert_eq!(fields, expected);
+    Ok(())
+}

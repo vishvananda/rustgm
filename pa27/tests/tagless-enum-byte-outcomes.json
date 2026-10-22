@@ -1,0 +1,110 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "3608eadd",
+  "cases": [
+    {
+      "name": "union-roundtrip",
+      "sha256": "349eb4743a597b541bd14dccd9157cff4760736fc444ded0ae9f7016b1f4221d",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/union-roundtrip.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "from-bytes",
+      "sha256": "bdb1090d840be31a2daafc08c11c35a483468579a6acd8b5a1e11d0f72014416",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/from-bytes.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "partial-initialization",
+      "sha256": "a4a1d1c9cc7c090abeff6df2052754a36c861c7e98ccd7b41d99e11fa92cec1d",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa27/tests/spec/tagless-enum-bytes/partial-initialization.rs",
+      "frontend_expected": 1,
+      "reason": "uninitialized bytes"
+    },
+    {
+      "name": "record-fields",
+      "sha256": "6a59e71df826d20d48b7d6e7793fe260f190ebdfaeff1b7ec7bcbea5f2fe5049",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/record-fields.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "nested-enums",
+      "sha256": "42f4e352ab78a0a5cc39fe9dcdcf65bdf061f610ba0670cacfb066549f832aab",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/nested-enums.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "reference-field",
+      "sha256": "c96486f4e16c8ae78fed682c2e2d6686504b661b6870cb32ffe36ca923123e36",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/reference-field.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "slice-field",
+      "sha256": "1b6d7c443a1ea49012cd7b78a619ef7686f9893daa3b6ded978e4ac396735fe2",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/slice-field.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "wrong-reference-referent",
+      "sha256": "e1a78981a0624979dcf3b96463d0bfa41758b2998b462f8fc5034f761bf70eea",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa27/tests/spec/tagless-enum-bytes/wrong-reference-referent.rs",
+      "frontend_expected": 1,
+      "reason": "outside allocation bounds"
+    },
+    {
+      "name": "zero-array-field",
+      "sha256": "2b176ea1d843c026f9fac4ceae745771561d29885f0a357d9d9d875601bc4427",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/tagless-enum-bytes/zero-array-field.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "default-multiple-still-required",
+      "sha256": "f2922eaa1095252fe92781b9fc71b52bf45c1769f564389a4267e995cfc431b9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa27/tests/spec/default-enum-bytes/default-layout-still-required.rs",
+      "frontend_expected": 1,
+      "reason": "requires a supported closed byte family",
+      "required_gap": "multi-variant/default/niche backing remains required"
+    }
+  ]
+}

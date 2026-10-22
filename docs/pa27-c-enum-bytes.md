@@ -78,3 +78,8 @@ cargo test --manifest-path dev/Cargo.toml --locked --test suite_memory c_enum_by
 cargo test --manifest-path dev/Cargo.toml --locked --lib enum_ -- --nocapture
 cargo test --manifest-path dev/Cargo.toml --locked --test suite_memory payload_enum_bytes::payload_enum_byte_source_contracts -- --exact --nocapture
 ```
+
+The subsequent unique no-tag checkpoint supersedes only the tagless positive
+boundary while preserving its source bytes. The C companion record and test
+expectation now accept that source; `docs/pa27-tagless-enum-bytes.md` records its
+independent contract. Multi-variant default/niche storage remains required.

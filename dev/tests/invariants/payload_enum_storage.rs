@@ -12,10 +12,10 @@ use crate::{
     },
     types::Primitive,
 };
-fn integer(value: u128) -> Constant {
+pub(super) fn integer(value: u128) -> Constant {
     Constant::scalar(Scalar::Integer(value))
 }
-fn place(address: Constant, ty: TypeId) -> Resolved {
+pub(super) fn place(address: Constant, ty: TypeId) -> Resolved {
     Resolved {
         address,
         ty,
@@ -23,7 +23,7 @@ fn place(address: Constant, ty: TypeId) -> Resolved {
         union: None,
     }
 }
-fn raw(address: Constant, ty: TypeId) -> Resolved {
+pub(super) fn raw(address: Constant, ty: TypeId) -> Resolved {
     Resolved {
         raw: Some(RawAccess {
             alignment: RawAlignment::Required,
@@ -33,7 +33,7 @@ fn raw(address: Constant, ty: TypeId) -> Resolved {
         ..place(address, ty)
     }
 }
-fn payload_root(
+pub(super) fn payload_root(
     machine: &mut Machine<'_, '_>,
     ty: TypeId,
     id: VariantId,

@@ -139,6 +139,7 @@ impl Machine<'_, '_> {
             .filter(|&n| n <= backing.bytes.len())
             .ok_or("byte encoding exceeds backing bounds")?;
         if start == end {
+            self.check_tagless_value(ty, value)?;
             return Ok(());
         }
         if matches!(
@@ -229,6 +230,7 @@ impl Machine<'_, '_> {
         variant: Option<VariantId>,
         pending: &mut Vec<Encode>,
     ) -> Result<(), Failure> {
+        self.check_tagless_value(ty, value)?;
         let (fields, _) = self.byte_fields(ty, variant)?;
         self.reserve_cells(pending.len().saturating_add(fields.len()).saturating_mul(4))?;
         for (index, field) in fields.into_iter().enumerate().rev() {
@@ -313,7 +315,12 @@ impl Machine<'_, '_> {
                     } else {
                         None
                     };
-                    let (fields, _) = self.byte_fields(ty, selected)?;
+                    let (fields, expected) = self.byte_fields(ty, selected)?;
+                    if matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Adt(owner,_)) if self.evaluator.facts().aggregates.get(owner).is_some_and(|definition| definition.kind == crate::types::aggregate::Kind::Enum))
+                        && variant != expected
+                    {
+                        return Err("stored enum cells differ from their canonical variant".into());
+                    }
                     let super::Cell::Fields { values, .. } = &self.memory.cells[cell] else {
                         return Err("byte conversion source changed".into());
                     };

@@ -62,9 +62,9 @@
       "native_valid": true,
       "rustc_actual": 0,
       "path": "pa28/tests/spec/default-enum-bytes/tagless-still-required.rs",
-      "frontend_expected": 1,
-      "reason": "byte backing with pointer or enum storage is not implemented",
-      "required_gap": "tagless single-variant backing remains required"
+      "frontend_expected": 0,
+      "reason": ""
     }
-  ]
+  ],
+  "superseded_tagless_boundary": "tagless-enum-byte-outcomes.json preserves the unchanged source and accepted three-view/native contract"
 }

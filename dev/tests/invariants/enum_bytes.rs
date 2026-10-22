@@ -11,6 +11,8 @@ use std::fmt::Write;
 mod c;
 #[path = "payload_enum_storage.rs"]
 mod payload;
+#[path = "tagless_enum_storage.rs"]
+mod tagless;
 #[path = "wide_enum_storage.rs"]
 mod wide;
 fn with_enums(

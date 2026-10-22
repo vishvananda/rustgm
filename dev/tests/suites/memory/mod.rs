@@ -128,3 +128,6 @@ mod payload_enum_bytes;
 
 #[path = "../../c_enum_bytes.rs"]
 mod c_enum_bytes;
+
+#[path = "../../tagless_enum_bytes.rs"]
+mod tagless_enum_bytes;

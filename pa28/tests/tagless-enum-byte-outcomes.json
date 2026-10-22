@@ -1,0 +1,99 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "3608eadd",
+  "cases": [
+    {
+      "name": "noncopy-fill",
+      "sha256": "3896f0343fab93c09f7de23d51c185a39302d5451820e4f018c08a567a41921c",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/tagless-enum-bytes/noncopy-fill.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "generic-instances",
+      "sha256": "0d5a7dacf5ba50733a3ef9866014457864073e08c2d695fd1ad231762989370e",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/tagless-enum-bytes/generic-instances.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "projection-before",
+      "sha256": "61bac148334e7d00aa62196f58d4074b9ef753c1f52fb65182ffbcdffbb5a368",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/tagless-enum-bytes/projection-before.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "projection-after",
+      "sha256": "a66272400056997d48b2a48f754229063f478fc2ff2aab790fd7ded66f42f93a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/tagless-enum-bytes/projection-after.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "zero-sized",
+      "sha256": "7e28ded0275c4ba4cf689f0131d2663b1f945564b9c6f2fc813dcb0023e78183",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/tagless-enum-bytes/zero-sized.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "padding-transport",
+      "sha256": "f31f9e348877414deffb7310d4e1f389bf594af7d556e57d71c6231584510639",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/tagless-enum-bytes/padding-transport.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "original-const-return",
+      "sha256": "edbbd8930bd89234e0360b639ce296f1a1d4badc89f3fdfc759adaac04585804",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/default-enum-bytes/tagless-still-required.rs",
+      "frontend_expected": 0,
+      "reason": ""
+    },
+    {
+      "name": "escaping-reference",
+      "sha256": "631e4d66f5057b9a511b11a50054303aceb28c59d3956f797aac13e789f16fff",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa28/tests/spec/tagless-enum-bytes/escaping-reference.rs",
+      "frontend_expected": 1,
+      "reason": "required lifetime does not outlive its target"
+    },
+    {
+      "name": "padding-read",
+      "sha256": "3fb29e6cbd4d4bfd912a2e6f148ad5fbf36692655ff06b3e0a1fca28fe806940",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "path": "pa28/tests/spec/tagless-enum-bytes/padding-read.rs",
+      "frontend_expected": 1,
+      "reason": "uninitialized bytes"
+    }
+  ]
+}
