@@ -119,20 +119,6 @@ impl Parameters {
                     }
                 }
             }
-            if !self.uses.parameters.is_subset(&self.allowed)
-                || !self.uses.constants.is_subset(&self.allowed)
-            {
-                return Err("original initializer operand has a foreign parameter");
-            }
-            if self.regions.free_regions().any(|r| self.region(r).is_err())
-                || self
-                    .regions
-                    .indices
-                    .iter()
-                    .any(|&index| u32::from(index) >= self.universals)
-            {
-                return Err("original initializer operand has a foreign lifetime");
-            }
             Ok(true)
         })();
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
@@ -142,6 +128,40 @@ impl Parameters {
                 .saturating_sub(before)
                 .saturating_add(direct),
         );
+        result.map_err(String::from)
+    }
+
+    pub(super) fn validate(&self, facts: &mut Declarations) -> Result<(), String> {
+        let mut work = 0_usize;
+        let result = (|| {
+            let mut visit = || {
+                work += 1;
+                if work > 1_000_000 {
+                    return Err("original initializer validation work budget exceeded");
+                }
+                Ok(())
+            };
+            for parameter in self.uses.parameters.iter().chain(&self.uses.constants) {
+                visit()?;
+                if !self.allowed.contains(parameter) {
+                    return Err("original initializer operand has a foreign parameter");
+                }
+            }
+            for region in self.regions.free_regions() {
+                visit()?;
+                if self.region(region).is_err() {
+                    return Err("original initializer operand has a foreign lifetime");
+                }
+            }
+            for &index in &self.regions.indices {
+                visit()?;
+                if u32::from(index) >= self.universals {
+                    return Err("original initializer operand has a foreign lifetime");
+                }
+            }
+            Ok(())
+        })();
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
         result.map_err(String::from)
     }
 

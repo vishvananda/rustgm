@@ -75,6 +75,9 @@ fn resolve_with_original(
             }
         }
     }
+    if let Some(parameters) = original {
+        parameters.validate(facts)?;
+    }
     if !replacements.is_empty() {
         let originals = replacements.keys().copied().collect::<Vec<_>>();
         let mut fold = Bound::selected_items(&facts.types, replacements)?;

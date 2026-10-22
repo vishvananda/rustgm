@@ -116,10 +116,22 @@ fn only_actual_own_parameters_defer_and_lifetime_only_operands_do_not() -> Resul
         .ok_or("missing unrelated parameter")?;
     let ty = facts.types.intern(Kind::Parameter(foreign))?;
     let arguments = facts.types.intern_arguments(&[Argument::Type(ty)])?;
+    assert!(parameters.deferred(&mut facts, Instance { arguments, ..input })?);
+    assert!(parameters.validate(&mut facts).is_err());
+    let mut foreign_body = body.clone();
+    for value in &mut foreign_body.values {
+        if let crate::body::ir::Rvalue::AssociatedConstant(instance) = &mut value.kind {
+            instance.arguments = arguments;
+        }
+    }
     assert!(
-        parameters
-            .deferred(&mut facts, Instance { arguments, ..input })
-            .is_err()
+        super::initializer(
+            &mut facts,
+            &mut foreign_body,
+            &mut contract.clone(),
+            &initializer
+        )
+        .is_err()
     );
     assert_ne!(arguments, GenericArgs::EMPTY);
     Ok(())
@@ -143,9 +155,112 @@ fn declared_source_aliases_do_not_admit_missing_or_foreign_ownership() -> Result
         .ok_or("missing source-local alias")?;
     assert!(parameters.owned.remove(&region));
     assert!(parameters.deferred(&mut facts, input).is_err());
+    let referent = facts
+        .types
+        .arguments(input.arguments)
+        .and_then(|mut args| {
+            args.find_map(|a| match a {
+                Argument::Type(ty) => Some(ty),
+                _ => None,
+            })
+        })
+        .ok_or("missing original type parameter")?;
+    let nested = facts.types.intern(Kind::Reference {
+        region,
+        mutable: false,
+        referent,
+    })?;
+    let arguments = facts.types.intern_arguments(&[
+        Argument::Lifetime(RegionId::bound(0, 0)?),
+        Argument::Type(nested),
+    ])?;
+    assert!(parameters.deferred(&mut facts, Instance { arguments, ..input })?);
+    let before = facts.body_work.canonical_steps;
+    assert!(parameters.validate(&mut facts).is_err());
+    assert!(facts.body_work.canonical_steps > before);
     let mut record = facts.body_regions[region.0 as usize - 1];
     record.body.node.0 += 1;
     facts.body_regions[region.0 as usize - 1] = record;
     assert!(owned_regions(&mut facts, &contract).is_err());
+    Ok(())
+}
+
+fn routing_work(width: usize, repeated: bool) -> Result<usize> {
+    let names = (0..width).map(|i| format!("P{i}")).collect::<Vec<_>>();
+    let parameters = names.join(",");
+    let bounds = names
+        .iter()
+        .map(|name| format!("{name}:Pick<'a>"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let source = format!(
+        "trait Pick<'a>{{type Out;const V:Self::Out;}}\
+         struct S<'a,T,{parameters}>(&'a u8,T,{parameters});\
+         impl<'a,T:Pick<'a>,{bounds}>S<'a,T,{parameters}>\
+         {{const C:T::Out={{let n=T::V;n}};}}fn main(){{}}"
+    );
+    let report = crate::test_source::resolve(&source, true)?;
+    let mut facts = crate::pipeline::analyze_source(&report)?.facts;
+    let initializer = *facts.initializers.last().ok_or("missing initializer")?;
+    let mut body = crate::body::templates::Prepared::default()
+        .initializer(&report, &facts, &initializer)?
+        .body;
+    let mut contract =
+        crate::body::regions::Collector::default().initializer(&facts, &initializer)?;
+    let input = operand(&body)?;
+    let value = body
+        .values
+        .iter()
+        .find(|value| matches!(value.kind, crate::body::ir::Rvalue::AssociatedConstant(_)))
+        .copied()
+        .ok_or("missing operand value")?;
+    let parameters = facts
+        .generics
+        .parameters_in_scope(initializer.definition)
+        .filter_map(|parameter| match parameter.argument {
+            Argument::Type(ty) => Some(ty),
+            _ => None,
+        })
+        .skip(1)
+        .collect::<Vec<_>>();
+    assert_eq!(parameters.len(), width);
+    for index in 0..width {
+        let ty = parameters[if repeated { 0 } else { index }];
+        let arguments = facts.types.intern_arguments(&[
+            Argument::Lifetime(RegionId::bound(0, 0)?),
+            Argument::Type(ty),
+        ])?;
+        let mut copy = value;
+        copy.kind = crate::body::ir::Rvalue::AssociatedConstant(Instance { arguments, ..input });
+        body.values.push(copy);
+    }
+    let before = facts.body_work.canonical_steps;
+    super::initializer(&mut facts, &mut body, &mut contract, &initializer)?;
+    Ok(facts.body_work.canonical_steps - before)
+}
+
+#[test]
+fn distinct_original_operands_validate_once_with_linear_counted_work() -> Result {
+    let mut measurements = Vec::new();
+    for width in [8, 32, 128] {
+        let work = routing_work(width, false)?;
+        println!("distinct original operands {width}: {work}");
+        assert_eq!(work, 7 * width + 12);
+        measurements.push(work);
+    }
+    assert!(measurements[2] <= 4 * measurements[1] + 32);
+    Ok(())
+}
+
+#[test]
+fn repeated_original_operands_reuse_the_same_occurrence_graph() -> Result {
+    let mut measurements = Vec::new();
+    for width in [8, 32, 128] {
+        let work = routing_work(width, true)?;
+        println!("repeated original operands {width}: {work}");
+        assert_eq!(work, 6 * width + 13);
+        measurements.push(work);
+    }
+    assert!(measurements[2] <= 4 * measurements[1] + 32);
     Ok(())
 }

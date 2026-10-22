@@ -219,3 +219,34 @@ bundle remain different from committed oracles (8,248 exact comparisons).
 The text guard therefore exits 1 pending that existing central review. Both
 ordinary512 and constcall64 outputs are byte-identical. No worker benchmark or
 full Cargo publication run was repeated.
+
+### Single-pass original operand validation
+
+Review identified that per-operand subset checks rescanned all previously
+collected parameter/lifetime uses. Original dispatch now retains its shared
+occurrence caches and validates the accumulated sets once, before rewriting,
+finishing the dispatcher or letting a template escape. Direct foreign lifetime
+arguments still reject immediately; nested foreign identities and foreign
+parameters reject at this mandatory boundary. Validation visits and failures are
+charged, and no new owner, walker, global graph or ordinary representation is
+introduced.
+
+`original-validation-closing/private.log` records six passing ownership/scaling
+checks through the actual original initializer entry. For 8/32/128 distinct
+roots the measured routing work is 68/236/908, exactly `7*N+12`; repeated roots
+cost 61/205/781, exactly `6*N+13`. These measure this dispatch/validation path,
+not whole-body cleanup or compile time. `original-validation-tail/` passes strict
+release Clippy, audit (1,612 files, zero findings), the 13-source matrix and all
+eight native programs. The first private attempt retained an incorrect assertion
+that a direct lifetime would wait for final validation; its existing immediate
+rejection is preserved, with an additional nested foreign-lifetime boundary test.
+Test-only lint corrections followed the passing six-test run.
+
+`original-validation-qualified/identity.json` pins the exact candidate. All 8,255
+active worker-base cases have the same outputs as the preceding checkpoint;
+the same seven inherited PA20 differences remain pending central oracle review.
+Both common output controls remain exact. Its separate `inline-hypotheses.json`
+independently qualifies four Rust-positive inline/nested/closure/paid-lifetime
+sources and one foreign-lifetime negative before the next implementation edit.
+The unmodified compiler still fails their earlier inline normalization frontier;
+that receipt does not claim their real lifetime checks have yet been reached.
