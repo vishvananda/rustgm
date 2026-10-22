@@ -1,0 +1,9 @@
+function @main() -> i64 [role=entry] {
+  slot $v : i32
+  slot $e : i32
+  block ^entry:
+    %p = addr $v
+    %e = addr $e
+    atomic_store i32 1, %p, 2
+    return i64 42
+}

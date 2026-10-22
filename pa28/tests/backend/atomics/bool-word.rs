@@ -1,0 +1,1 @@
+use std::sync::atomic::{AtomicBool,Ordering::*};fn main(){let a=AtomicBool::new(false);a.store(true,SeqCst);let ok=a.load(Acquire)&&a.swap(false,AcqRel)&&a.compare_exchange(false,true,SeqCst,SeqCst)==Ok(false)&&a.compare_exchange(false,false,Relaxed,Relaxed)==Err(true)&&a.load(Relaxed);std::process::exit(if ok{42}else{1})}

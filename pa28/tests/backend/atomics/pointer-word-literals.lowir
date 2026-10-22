@@ -1,0 +1,55 @@
+function @main() -> i64 [role=entry] {
+  slot $array : obj<32x8>
+  slot $value : ptr
+  slot $expected : ptr
+  block ^entry:
+    %base = addr $array
+    %one = index i64 %base, 1
+    %two = index i64 %base, 2
+    %target = addr $value
+    %expected = addr $expected
+    store i64 11, %base
+    store i64 22, %one
+    store i64 33, %two
+    atomic_store ptr nullptr, %target, 5
+    %null = atomic_load ptr %target, 2
+    %c0 = cmp eq ptr %null, nullptr
+    atomic_store ptr %base, %target, 3
+    %initial = atomic_load ptr %target, 0
+    %c1 = cmp eq ptr %initial, %base
+    %old = atomic_exchange ptr %target, %one, 5
+    %c2 = cmp eq ptr %old, %base
+    store ptr %one, $expected
+    %success = atomic_compare_exchange ptr %target, %expected, %two, 4, 2
+    %c3 = cmp eq i64 %success, 1
+    %kept = load ptr $expected
+    %c4 = cmp eq ptr %kept, %one
+    store ptr %base, $expected
+    %failure = atomic_compare_exchange ptr %target, %expected, %one, 0, 0
+    %c5 = cmp eq i64 %failure, 0
+    %updated = load ptr $expected
+    %c6 = cmp eq ptr %updated, %two
+    %delta = const i64 8
+    %new = atomic_add_fetch ptr %target, %delta, 5
+    %three = index i64 %base, 3
+    %c7 = cmp eq ptr %new, %three
+    %stored = atomic_load ptr %target, 5
+    %c8 = cmp eq ptr %stored, %three
+    store i64 44, %three
+    %read = load i64 %stored
+    %c9 = cmp eq i64 %read, 44
+    %a1 = binary and i64 %c0, %c1
+    %a2 = binary and i64 %a1, %c2
+    %a3 = binary and i64 %a2, %c3
+    %a4 = binary and i64 %a3, %c4
+    %a5 = binary and i64 %a4, %c5
+    %a6 = binary and i64 %a5, %c6
+    %a7 = binary and i64 %a6, %c7
+    %a8 = binary and i64 %a7, %c8
+    %a9 = binary and i64 %a8, %c9
+    branch %a9, ^pass, ^fail
+  block ^pass:
+    return i64 42
+  block ^fail:
+    return i64 1
+}
