@@ -151,7 +151,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     } else {
         HashMap::default()
     };
-    let mut components = LiveRegions::default();
+    let mut reused = Reused::default();
     for (ordinal, body) in program.bodies.iter().enumerate() {
         let contract = if let Some(templates) = templates {
             if body.instance.is_some() && templates.contract(body).is_none() {
@@ -174,7 +174,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
         })?;
         let (owned, proof) = prove_body::<RECORD, _>(
             environment,
-            &mut components,
+            &mut reused,
             body,
             contract,
             structure::Use::Own,
@@ -210,7 +210,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
     let mut drop_regions =
         crate::types::destruction::regions::Regions::new(pending.methods.iter().map(|m| m.item))
             .map_err(|e| error(Some(pending.source), e))?;
-    let mut components = LiveRegions::default();
+    let mut reused = Reused::default();
     let by_key: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.key, b)).collect();
     let mut plans = Vec::with_capacity(program.bodies.len());
     for body in &program.bodies {
@@ -226,7 +226,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
         plans.push(
             prove_cleanup(
                 environment,
-                &mut components,
+                &mut reused,
                 &mut drop_regions,
                 body,
                 contract,
@@ -276,7 +276,7 @@ fn require_body_promotions(body: &Body) -> Result<(), Error> {
 /// slot kept for later instances; ordinary bodies prove and drop them here.
 fn prove_body<const RECORD: bool, S: BuildHasher>(
     environment: &mut Environment<'_, S>,
-    components: &mut LiveRegions,
+    reused: &mut Reused,
     body: &Body,
     contract: &regions::Body,
     structure: structure::Use<'_, '_>,
@@ -308,7 +308,7 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
     })?;
     let proof = loans::analyze::<RECORD>(
         environment.types,
-        components,
+        &mut reused.components,
         body,
         contract,
         &owned,
@@ -321,9 +321,18 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
     Ok((owned, proof))
 }
 
+/// What one prover reuses across the bodies it proves: the live-region
+/// component memo, and buffers each analysis takes and returns emptied (they
+/// carry no facts between bodies).
+#[derive(Default)]
+pub(crate) struct Reused {
+    components: LiveRegions,
+    transitions: Vec<super::ownership::initialization::Transition>,
+}
+
 fn prove_cleanup<S: BuildHasher>(
     environment: &mut Environment<'_, S>,
-    components: &mut LiveRegions,
+    reused: &mut Reused,
     drop_regions: &mut crate::types::destruction::regions::Regions,
     body: &Body,
     contract: &regions::Body,
@@ -371,11 +380,12 @@ fn prove_cleanup<S: BuildHasher>(
         )
     }
     .map_err(|e| error(Some(e.node), e.message))?;
-    let plan = destruction::select(catalog, &init).map_err(|e| error(Some(e.node), e.message))?;
+    let plan = destruction::select_reusing(catalog, &init, &mut reused.transitions)
+        .map_err(|e| error(Some(e.node), e.message))?;
     loans::check_destruction(
         environment.types,
         environment.definitions,
-        components,
+        &mut reused.components,
         scoped_regions.as_mut().unwrap_or(drop_regions),
         &init,
         contract,

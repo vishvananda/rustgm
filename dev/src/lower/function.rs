@@ -96,6 +96,7 @@ pub(super) struct Scratch {
     values: Vec<Option<Selected>>,
     blocks: Vec<BlockId>,
     arguments: Vec<Value>,
+    order: BlockOrder,
 }
 struct Lower<'a, 'b, 'c> {
     body_index: usize,
@@ -119,6 +120,7 @@ struct Lower<'a, 'b, 'c> {
     panic: Option<BlockId>,
     source: NodeId,
     arguments: Vec<Value>,
+    order: BlockOrder,
 }
 pub(super) fn lower<'b>(
     context: &mut Context<'_>,
@@ -174,6 +176,7 @@ pub(super) fn lower<'b>(
         panic: None,
         source: body.source.node,
         arguments: scratch.arguments,
+        order: scratch.order,
     };
     lower.run().map_err(|message| Error {
         node: NodeKey {
@@ -195,6 +198,7 @@ pub(super) fn lower<'b>(
         values: lower.values,
         blocks: lower.blocks,
         arguments: lower.arguments,
+        order: lower.order,
     };
     lower.builder.finish().map_err(|message| Error {
         node: body.source,
@@ -203,15 +207,16 @@ pub(super) fn lower<'b>(
 }
 impl Lower<'_, '_, '_> {
     fn run(&mut self) -> Result<(), &'static str> {
-        let (order, seen, checked_edges) = order(self.body)?;
-        self.initialize_storage(&order, checked_edges)?;
+        let mut order = std::mem::take(&mut self.order);
+        let checked_edges = order.compute(self.body)?;
+        self.initialize_storage(&order.blocks, checked_edges)?;
         for _ in &self.body.blocks {
             self.blocks.push(self.builder.block()?);
         }
         if let Some(cleanup) = &mut self.cleanup {
-            cleanup.allocate(&mut self.builder, self.body, &seen)?;
+            cleanup.allocate(&mut self.builder, self.body, &order.seen)?;
         }
-        for (position, id) in order.into_iter().enumerate() {
+        for (position, &id) in order.blocks.iter().enumerate() {
             self.builder.enter(self.blocks[id])?;
             if position == 0 {
                 self.parameters()?;
@@ -254,12 +259,13 @@ impl Lower<'_, '_, '_> {
             };
             self.builder.terminate(terminator)?;
         }
-        for (index, visited) in seen.into_iter().enumerate() {
+        for (index, &visited) in order.seen.iter().enumerate() {
             if !visited {
                 self.builder.enter(self.blocks[index])?;
                 self.builder.terminate(Terminator::Unreachable)?;
             }
         }
+        self.order = order;
         self.cleanup_edges()?;
         if let Some(panic) = self.panic {
             self.builder.enter(panic)?;
@@ -889,41 +895,56 @@ impl Lower<'_, '_, '_> {
     }
 }
 
-/// Reverse postorder places dominating snapshots before uses without recursion.
-fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>, bool), &'static str> {
-    if body.blocks.is_empty() {
-        return Err("body has no entry block");
-    }
-    let mut seen = vec![false; body.blocks.len()];
-    let mut stack = Vec::with_capacity(body.blocks.len() * 2 + 1);
-    stack.push((0, false));
-    let mut order = Vec::with_capacity(body.blocks.len());
-    let mut checked_edges = false;
-    while let Some((index, exiting)) = stack.pop() {
-        if exiting {
-            order.push(index);
-            continue;
+/// A body's blocks in reverse postorder and their reachability. The buffers
+/// are reused across the bodies one context lowers.
+#[derive(Default)]
+struct BlockOrder {
+    blocks: Vec<usize>,
+    seen: Vec<bool>,
+    stack: Vec<(usize, bool)>,
+}
+impl BlockOrder {
+    /// Reverse postorder places dominating snapshots before uses without
+    /// recursion. Returns whether the body has checked (false) edges.
+    fn compute(&mut self, body: &ir::Body) -> Result<bool, &'static str> {
+        if body.blocks.is_empty() {
+            return Err("body has no entry block");
         }
-        if seen[index] {
-            continue;
-        }
-        seen[index] = true;
-        stack.push((index, true));
-        match body.blocks[index].terminator {
-            ir::Terminator::Jump(target) => stack.push((target.0 as usize, false)),
-            ir::Terminator::FalseEdge { real, .. } => {
-                checked_edges = true;
-                stack.push((real.0 as usize, false));
+        let (order, seen, stack) = (&mut self.blocks, &mut self.seen, &mut self.stack);
+        seen.clear();
+        seen.resize(body.blocks.len(), false);
+        stack.clear();
+        stack.reserve(body.blocks.len() * 2 + 1);
+        stack.push((0, false));
+        order.clear();
+        order.reserve(body.blocks.len());
+        let mut checked_edges = false;
+        while let Some((index, exiting)) = stack.pop() {
+            if exiting {
+                order.push(index);
+                continue;
             }
-            ir::Terminator::Branch { yes, no, .. } => {
-                stack.push((no.0 as usize, false));
-                stack.push((yes.0 as usize, false));
+            if seen[index] {
+                continue;
             }
-            _ => {}
+            seen[index] = true;
+            stack.push((index, true));
+            match body.blocks[index].terminator {
+                ir::Terminator::Jump(target) => stack.push((target.0 as usize, false)),
+                ir::Terminator::FalseEdge { real, .. } => {
+                    checked_edges = true;
+                    stack.push((real.0 as usize, false));
+                }
+                ir::Terminator::Branch { yes, no, .. } => {
+                    stack.push((no.0 as usize, false));
+                    stack.push((yes.0 as usize, false));
+                }
+                _ => {}
+            }
         }
+        order.reverse();
+        Ok(checked_edges)
     }
-    order.reverse();
-    Ok((order, seen, checked_edges))
 }
 
 #[cfg(test)]

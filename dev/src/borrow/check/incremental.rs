@@ -9,7 +9,7 @@ use crate::{
         destruction::{self, glue},
         regions, templates,
     },
-    types::{Kind, outlives::LiveRegions},
+    types::Kind,
 };
 use std::hash::BuildHasher;
 
@@ -39,7 +39,7 @@ impl Proved {
 }
 
 pub(crate) struct Verifier {
-    components: LiveRegions,
+    reused: super::Reused,
     drops: Option<crate::types::destruction::regions::Regions>,
     /// Substitution-invariant facts shared by instances of one template.
     structures: super::structure::Cache,
@@ -144,7 +144,7 @@ impl Original<'_> {
 impl Verifier {
     pub(crate) fn new(methods: Option<&[drops::Method]>) -> Result<Self, &'static str> {
         Ok(Self {
-            components: LiveRegions::default(),
+            reused: super::Reused::default(),
             structures: super::structure::Cache::default(),
             drops: methods
                 .map(|methods| {
@@ -227,7 +227,7 @@ impl Verifier {
         let plan = match (&mut self.drops, catalog) {
             (Some(drops), Some(catalog)) => super::prove_cleanup(
                 environment,
-                &mut self.components,
+                &mut self.reused,
                 drops,
                 &body,
                 contract,
@@ -237,7 +237,7 @@ impl Verifier {
             (None, None) => {
                 super::prove_body::<false, _>(
                     environment,
-                    &mut self.components,
+                    &mut self.reused,
                     &body,
                     contract,
                     structure,

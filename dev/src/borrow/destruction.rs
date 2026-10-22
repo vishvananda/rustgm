@@ -8,6 +8,7 @@ pub mod symbolic;
 pub(crate) mod timeline;
 use crate::{body::ir::Selection, borrow::ownership::initialization::Candidate, types::TypeId};
 pub use select::select;
+pub(crate) use select::select_reusing;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Flag(pub u32);

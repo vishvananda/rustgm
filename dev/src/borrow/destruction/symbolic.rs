@@ -97,7 +97,7 @@ pub fn select(
             }
         }
     }
-    let mut recording = super::flags::Recording::for_body(facts.body());
+    let mut recording = super::flags::Recording::for_body(facts.body(), Vec::new());
     facts
         .visit_transfers(|transition, point| {
             recording.push(transition);
@@ -134,7 +134,7 @@ pub fn select(
     }
     .record_from(
         facts,
-        recording,
+        &mut recording,
         builder.plan.cleanups.iter().map(|c| c.candidate),
     )
     .map_err(error)?;

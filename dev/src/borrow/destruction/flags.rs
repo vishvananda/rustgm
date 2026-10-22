@@ -8,7 +8,7 @@ use crate::{
 pub(super) fn elaborate(
     plan: &mut Plan,
     facts: &initialization::Facts<'_>,
-    recording: Recording,
+    recording: &mut Recording,
     retained: usize,
 ) -> Result<(), &'static str> {
     Recorder {
@@ -30,18 +30,26 @@ pub(super) struct Recording {
 impl Recording {
     const LIMIT: usize = 1 << 20;
     /// Reserve for a body's typical transition count: roughly a point, a
-    /// statement and an initialization write per statement.
-    pub(super) fn for_body(body: &crate::body::ir::Body) -> Self {
+    /// statement and an initialization write per statement. `buffer` is an
+    /// earlier body's emptied recording, reused for its capacity.
+    pub(super) fn for_body(body: &crate::body::ir::Body, mut buffer: Vec<Transition>) -> Self {
         let estimate = body
             .statements
             .len()
             .saturating_mul(3)
             .saturating_add(body.blocks.len())
             .min(Self::LIMIT);
+        buffer.clear();
+        buffer.reserve(estimate);
         Self {
-            transitions: Vec::with_capacity(estimate),
+            transitions: buffer,
             overflow: false,
         }
+    }
+    /// The emptied transition buffer, for the next body's recording.
+    pub(super) fn into_buffer(mut self) -> Vec<Transition> {
+        self.transitions.clear();
+        self.transitions
     }
     pub(super) fn push(&mut self, transition: Transition) {
         if self.overflow {
@@ -66,7 +74,7 @@ impl Recorder<'_> {
     pub(super) fn record_from(
         &mut self,
         facts: &initialization::Facts<'_>,
-        recording: Recording,
+        recording: &mut Recording,
         mut candidates: impl Iterator<Item = initialization::Candidate>,
     ) -> Result<(), &'static str> {
         if recording.overflow {
@@ -74,7 +82,7 @@ impl Recorder<'_> {
         }
         let mut cleanup = 0_usize;
         self.events.reserve(recording.transitions.len());
-        for transition in recording.transitions {
+        for transition in recording.transitions.drain(..) {
             self.transition(transition, &mut cleanup, &mut candidates)?;
         }
         if candidates.next().is_some() {

@@ -47,6 +47,17 @@ pub fn select(
     catalog: &mut glue::Catalog<'_>,
     facts: &initialization::Facts<'_>,
 ) -> Result<Plan, Error> {
+    select_reusing(catalog, facts, &mut Vec::new())
+}
+/// `select`, recording transitions in `transitions`: an earlier body's
+/// emptied buffer, returned emptied for the next body.
+/// # Errors
+/// As `select`.
+pub(crate) fn select_reusing(
+    catalog: &mut glue::Catalog<'_>,
+    facts: &initialization::Facts<'_>,
+    transitions: &mut Vec<initialization::Transition>,
+) -> Result<Plan, Error> {
     facts.destructor_moves(catalog.types(), |item| catalog.custom(item))?;
     let body = facts.body();
     let error = |message| Error {
@@ -72,7 +83,7 @@ pub fn select(
                 .insert((parent, field), PathId(compact(index).map_err(error)?));
         }
     }
-    let mut recording = super::flags::Recording::for_body(body);
+    let mut recording = super::flags::Recording::for_body(body, std::mem::take(transitions));
     facts
         .visit_transfers(|transition, point| {
             recording.push(transition);
@@ -86,8 +97,10 @@ pub fn select(
         })
         .map_err(error)?;
     builder.flags().map_err(error)?;
-    super::flags::elaborate(&mut builder.plan, facts, recording, builder.retained)
-        .map_err(error)?;
+    let elaborated =
+        super::flags::elaborate(&mut builder.plan, facts, &mut recording, builder.retained);
+    *transitions = recording.into_buffer();
+    elaborated.map_err(error)?;
     Ok(builder.plan)
 }
 impl Builder<'_, '_> {
