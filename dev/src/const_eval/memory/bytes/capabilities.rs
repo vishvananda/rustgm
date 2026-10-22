@@ -13,33 +13,15 @@ impl Machine<'_, '_> {
             let shape = Reader::new(self.evaluator.facts()).storage_shape(ty)?;
             let unsupported = matches!(shape, StoredShape::Unsupported);
             let enumeration = matches!(shape, StoredShape::Enumeration { .. });
-            let length = match shape {
-                StoredShape::Array { length: 0, .. }
-                | StoredShape::Scalar
-                | StoredShape::Word
-                | StoredShape::Enumeration { .. }
-                | StoredShape::Unsupported => 0,
-                StoredShape::Array { .. } => 1,
-                StoredShape::Product { fields, .. } => fields.len(),
-            };
             let unsupported = unsupported || (enumeration && !self.prepare_byte_enum(ty)?);
+            let children = self.byte_children(ty)?;
             self.reserve_cells(
                 pending
                     .len()
-                    .saturating_add(length)
+                    .saturating_add(children.len())
                     .saturating_add(1)
                     .saturating_mul(4),
             )?;
-            self.charge(length)?;
-            let children = match Reader::new(self.evaluator.facts()).storage_shape(ty)? {
-                StoredShape::Array { length: 0, .. }
-                | StoredShape::Scalar
-                | StoredShape::Word
-                | StoredShape::Enumeration { .. }
-                | StoredShape::Unsupported => Vec::new(),
-                StoredShape::Array { element, .. } => vec![element],
-                StoredShape::Product { fields, .. } => fields.to_vec(),
-            };
             if !finish && !children.is_empty() {
                 pending.push((ty, true));
                 pending.extend(children.into_iter().rev().map(|ty| (ty, false)));
@@ -58,5 +40,53 @@ impl Machine<'_, '_> {
             .get(&root)
             .copied()
             .ok_or("missing completed byte family".into())
+    }
+    fn byte_children(&mut self, ty: TypeId) -> Result<Vec<TypeId>, Failure> {
+        let shape = Reader::new(self.evaluator.facts()).storage_shape(ty)?;
+        if matches!(shape, StoredShape::Enumeration { .. }) {
+            let count = Reader::new(self.evaluator.facts())
+                .enum_variants(ty)?
+                .identities
+                .len();
+            self.charge(count.saturating_mul(2))?;
+        }
+        let length = match Reader::new(self.evaluator.facts()).storage_shape(ty)? {
+            StoredShape::Array { length: 0, .. }
+            | StoredShape::Scalar
+            | StoredShape::Word
+            | StoredShape::Unsupported => 0,
+            StoredShape::Array { .. } => 1,
+            StoredShape::Product { fields, .. } => fields.len(),
+            StoredShape::Enumeration { .. } => {
+                let reader = Reader::new(self.evaluator.facts());
+                let stored = reader.enum_variants(ty)?;
+                stored.identities.iter().try_fold(0usize, |count, &id| {
+                    count
+                        .checked_add(reader.enum_variant_fields(ty, id)?.0.len())
+                        .ok_or("enum family field count overflow")
+                })?
+            }
+        };
+        self.charge(length)?;
+        self.reserve_cells(length)?;
+        let mut children = Vec::new();
+        children
+            .try_reserve_exact(length)
+            .map_err(|_| "byte family children allocation failed")?;
+        let reader = Reader::new(self.evaluator.facts());
+        match reader.storage_shape(ty)? {
+            StoredShape::Array { length: 0, .. }
+            | StoredShape::Scalar
+            | StoredShape::Word
+            | StoredShape::Unsupported => {}
+            StoredShape::Array { element, .. } => children.push(element),
+            StoredShape::Product { fields, .. } => children.extend_from_slice(fields),
+            StoredShape::Enumeration { .. } => {
+                for &id in reader.enum_variants(ty)?.identities {
+                    children.extend_from_slice(reader.enum_variant_fields(ty, id)?.0);
+                }
+            }
+        }
+        Ok(children)
     }
 }

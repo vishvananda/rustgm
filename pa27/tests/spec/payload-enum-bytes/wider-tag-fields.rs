@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(u16)]enum E{A(u8,u32)=513,B{v:bool}=1027}union U{e:E,b:[u8;8]}const N:u32=match unsafe{U{b:[1,2,3,0,34,0,0,0]}.e}{E::A(x,y)=>x as u32+y,E::B{v:_}=>0};fn main(){check(N==37);}

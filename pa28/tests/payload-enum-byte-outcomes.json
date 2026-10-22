@@ -1,0 +1,63 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "3a6b7504",
+  "cases": [
+    {
+      "name": "fill-then-match",
+      "sha256": "11218429d3bdeb3a026ae02e984f2cf11fd4b94fb4ce7b1ad89d93867cb8e43b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/payload-enum-bytes/fill-then-match.rs",
+      "frontend_expected": 0
+    },
+    {
+      "name": "field-write-after-conversion",
+      "sha256": "72db423672677601da3bd25f4ba88cb3a046043d453404239b2d36fed35f0e2a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/payload-enum-bytes/field-write-after-conversion.rs",
+      "frontend_expected": 0
+    },
+    {
+      "name": "tag-change-and-repair",
+      "sha256": "8e27cd9cbfcae804d670504ef435f2c2acf226edfbe2813ba167b37a2fb28169",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/payload-enum-bytes/tag-change-and-repair.rs",
+      "frontend_expected": 0
+    },
+    {
+      "name": "inactive-padding-copy",
+      "sha256": "4fa81bf2f739fef13a4a1475b135415de7aed7d67804d49af9d8f4f0872c47a8",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/payload-enum-bytes/inactive-padding-copy.rs",
+      "frontend_expected": 0
+    },
+    {
+      "name": "noncopy-fill",
+      "sha256": "f7154b1c5b2221ecf97c327d8512b87255140aaeefe8df5a0a7fb4af4a012fd9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/payload-enum-bytes/noncopy-fill.rs",
+      "frontend_expected": 0
+    },
+    {
+      "name": "old-field-pointer",
+      "sha256": "07f6da23fc1293a4b5b625b3d9b6ed8f2527c740f18ced076942f8591e392475",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "path": "pa28/tests/spec/payload-enum-bytes/old-field-pointer.rs",
+      "frontend_expected": 0
+    }
+  ]
+}

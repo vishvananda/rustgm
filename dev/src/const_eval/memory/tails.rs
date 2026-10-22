@@ -22,6 +22,27 @@ impl Machine<'_, '_> {
                 .ordinal(field)
                 .ok_or("missing constant field ordinal")?,
         };
+        if let Selection::Nominal(field) = field
+            && let Some(crate::types::Kind::Adt(owner, _)) =
+                self.evaluator.facts().types.kind(place.ty)
+            && self
+                .evaluator
+                .facts()
+                .aggregates
+                .get(owner)
+                .is_some_and(|definition| {
+                    definition.kind == crate::types::aggregate::Kind::Enum
+                        && definition.repr.tag.is_some()
+                })
+        {
+            self.footprint(place.ty)?;
+            let selected =
+                Reader::new(self.evaluator.facts()).enum_field_layout(place.ty, field)?;
+            if selected.ty != target {
+                return Err("constant enum field differs from its checked type".into());
+            }
+            return self.byte_address(place, selected.offset, target);
+        }
         if self.byte_projecting(place)? {
             if !matches!(
                 (self.evaluator.facts().types.kind(place.ty), field),

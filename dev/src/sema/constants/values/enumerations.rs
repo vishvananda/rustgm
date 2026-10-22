@@ -1,8 +1,8 @@
 //! Enum byte tags retain declaration identities independently of physical bit patterns.
-use super::{Reader, StoredShape};
+use super::{ProjectionStorage, Reader, StoredShape, footprints::ProjectionLayout};
 use crate::{
     abi::layout::{Layout, Shape, Tag, Variant},
-    sema::members::VariantId,
+    sema::members::{FieldId, VariantId},
     types::{ItemId, Kind, TypeId, aggregate::Definition},
 };
 #[cfg(test)]
@@ -66,8 +66,11 @@ impl<'a> Reader<'a> {
             identities,
         })
     }
-    /// The family cache checks all variants once; encoding still checks its actual ID.
-    pub(crate) fn enum_variant_bits(self, ty: TypeId, id: VariantId) -> Result<u128, &'static str> {
+    fn stored_variant(
+        self,
+        ty: TypeId,
+        id: VariantId,
+    ) -> Result<(StoredEnumeration<'a>, &'a Variant), &'static str> {
         let stored = self.enum_variants(ty)?;
         let member = self
             .facts
@@ -83,17 +86,92 @@ impl<'a> Reader<'a> {
             .variants
             .get(ordinal)
             .ok_or("stored enum variant exceeds its layout")?;
-        if member.start != member.end
-            || !self
-                .facts
+        let fields = self
+            .facts
+            .types
+            .list(variant.fields)
+            .ok_or("missing stored enum fields")?;
+        if member.end.checked_sub(member.start).map(u64::from) != Some(fields.len() as u64)
+            || self.facts.layouts.offsets(variant).len() != fields.len()
+        {
+            return Err("stored enum fields differ from their declarations or layout");
+        }
+        Ok((stored, variant))
+    }
+    /// Borrow only the exact variant's retained physical children, without a value read.
+    pub(crate) fn enum_variant_fields(
+        self,
+        ty: TypeId,
+        id: VariantId,
+    ) -> Result<(&'a [TypeId], &'a [u64]), &'static str> {
+        let (_, variant) = self.stored_variant(ty, id)?;
+        Ok((
+            self.facts
                 .types
                 .list(variant.fields)
-                .ok_or("missing stored enum fields")?
-                .is_empty()
-            || !self.facts.layouts.offsets(variant).is_empty()
-        {
-            return Err("constant enum byte storage with payload fields is not implemented");
+                .ok_or("missing stored enum fields")?,
+            self.facts.layouts.offsets(variant),
+        ))
+    }
+    /// Canonical declaration selection retains the variant-specific physical offset.
+    pub(crate) fn enum_field_layout(
+        self,
+        ty: TypeId,
+        field: FieldId,
+    ) -> Result<ProjectionLayout, &'static str> {
+        let id = self
+            .facts
+            .members
+            .variant(field)
+            .ok_or("missing stored enum field owner")?;
+        let (fields, offsets) = self.enum_variant_fields(ty, id)?;
+        let index = self
+            .facts
+            .members
+            .ordinal(field)
+            .ok_or("missing stored enum field ordinal")?;
+        let member = self
+            .facts
+            .members
+            .variants
+            .get(id.0 as usize)
+            .ok_or("missing stored enum field group")?;
+        if member.start.checked_add(index) != Some(field.0) || field.0 >= member.end {
+            return Err("stored enum field has a different ordinal");
         }
+        let target = *fields
+            .get(index as usize)
+            .ok_or("stored enum field exceeds layout")?;
+        if self.stored_child(ty, Some(id), u64::from(index))? != target {
+            return Err("stored enum field differs from its checked type");
+        }
+        let offset = *offsets
+            .get(index as usize)
+            .ok_or("missing stored enum field offset")?;
+        let extent = self
+            .facts
+            .layouts
+            .get(target)
+            .ok_or("missing stored enum field layout")?
+            .size;
+        let size = self
+            .facts
+            .layouts
+            .get(ty)
+            .ok_or("missing stored enum layout")?
+            .size;
+        if offset.checked_add(extent).is_none_or(|end| end > size) {
+            return Err("stored enum field exceeds physical bounds");
+        }
+        Ok(ProjectionLayout {
+            ty: target,
+            offset,
+            storage: ProjectionStorage::Product,
+        })
+    }
+    /// The family cache checks all variants once; encoding still checks its actual ID.
+    pub(crate) fn enum_variant_bits(self, ty: TypeId, id: VariantId) -> Result<u128, &'static str> {
+        let (stored, variant) = self.stored_variant(ty, id)?;
         // Negative semantic discriminants retain target-width two's-complement bits.
         let (_, bits) = stored
             .tag

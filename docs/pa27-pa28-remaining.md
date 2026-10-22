@@ -28,7 +28,7 @@ Open implementation or profile contracts remain:
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every
   storage family. See `pa27-byte-access-review.md` for the qualified controls.
-- Payload/default-layout enum, opaque/closure and string backing, whole raw-slice values and
+- Default-layout/niche enum, opaque/closure and string backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
@@ -90,7 +90,7 @@ Open operation families remain:
   through exclusive byte backing. The `write_bytes` slice adds one checked
   destination span, one provenance interval edit and batched byte/mask fill.
   Typed reads still enforce validity and complete immutable publication rejects
-  partial words. Unsupported payload/default-layout enum, opaque/closure/string backing and the broader
+  partial words. Unsupported default-layout/niche enum, opaque/closure/string backing and the broader
   provenance families above remain required work. See
   `docs/pa28-byte-transport.md`, `docs/pa28-relocation-design.md` and
   `docs/pa28-byte-fill.md` for exact boundaries and oracle differences.
@@ -132,3 +132,11 @@ integer representation, including signed/unsigned 128-bit and target-sized tags.
 Full physical discriminant bits remain distinct from canonical VariantIds.
 Payload and default-layout enum storage remain required; see
 `pa27-wide-enum-bytes.md` for exact outcomes and measured index retention.
+
+
+Explicit integer-tag payload enums now reuse retained per-variant ABI fields and
+offsets, existing symbolic words and the bounded iterative byte codec. Canonical
+field addresses retain physical offsets across tag changes. Inactive payloads
+and padding remain outside selected validity; default-layout/niche and other
+unsupported backing families above remain required. See
+`pa27-payload-enum-bytes.md` and the PA27/PA28 payload outcome drafts.

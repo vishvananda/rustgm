@@ -122,3 +122,6 @@ mod volatile_intrinsics;
 
 #[path = "../../wide_enum_bytes.rs"]
 mod wide_enum_bytes;
+
+#[path = "../../payload_enum_bytes.rs"]
+mod payload_enum_bytes;

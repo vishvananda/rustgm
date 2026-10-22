@@ -52,8 +52,28 @@ impl Decoder {
     }
 }
 impl Machine<'_, '_> {
-    fn byte_fields(&mut self, ty: TypeId) -> Result<(Vec<Field>, Option<VariantId>), Failure> {
+    fn byte_fields(
+        &mut self,
+        ty: TypeId,
+        selected: Option<VariantId>,
+    ) -> Result<(Vec<Field>, Option<VariantId>), Failure> {
         self.footprint(ty)?;
+        if let Some(variant) = selected {
+            let count = Reader::new(self.evaluator.facts())
+                .enum_variant_fields(ty, variant)?
+                .0
+                .len();
+            self.charge(count)?;
+            self.reserve_cells(count.saturating_mul(4))?;
+            let (fields, offsets) =
+                Reader::new(self.evaluator.facts()).enum_variant_fields(ty, variant)?;
+            let selected = fields
+                .iter()
+                .zip(offsets)
+                .map(|(&ty, &offset)| Field { ty, offset })
+                .collect();
+            return Ok((selected, Some(variant)));
+        }
         let (length, variant) = match Reader::new(self.evaluator.facts()).storage_shape(ty)? {
             StoredShape::Array { length, .. } => (length, None),
             StoredShape::Product {
@@ -140,6 +160,14 @@ impl Machine<'_, '_> {
             StoredShape::Enumeration { .. }
         ) {
             self.encode_byte_enum(backing, offset, ty, value)?;
+            let crate::sema::values::View::Product {
+                variant: Some(variant),
+                ..
+            } = Reader::new(self.evaluator.facts()).view(value)?
+            else {
+                return Err("encoded enum lost its checked variant".into());
+            };
+            self.encode_byte_fields(ty, offset, value, Some(variant), pending)?;
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Word
@@ -189,18 +217,29 @@ impl Machine<'_, '_> {
                 value,
             });
         } else {
-            let (fields, _) = self.byte_fields(ty)?;
-            self.reserve_cells(pending.len().saturating_add(fields.len()).saturating_mul(4))?;
-            for (index, field) in fields.into_iter().enumerate().rev() {
-                let value = self.stored_field(value, index as u64)?;
-                pending.push(Encode::Value {
-                    ty: field.ty,
-                    offset: offset
-                        .checked_add(field.offset)
-                        .ok_or("byte field offset overflow")?,
-                    value,
-                });
-            }
+            self.encode_byte_fields(ty, offset, value, None, pending)?;
+        }
+        Ok(())
+    }
+    fn encode_byte_fields(
+        &mut self,
+        ty: TypeId,
+        offset: u64,
+        value: Constant,
+        variant: Option<VariantId>,
+        pending: &mut Vec<Encode>,
+    ) -> Result<(), Failure> {
+        let (fields, _) = self.byte_fields(ty, variant)?;
+        self.reserve_cells(pending.len().saturating_add(fields.len()).saturating_mul(4))?;
+        for (index, field) in fields.into_iter().enumerate().rev() {
+            let value = self.stored_field(value, index as u64)?;
+            pending.push(Encode::Value {
+                ty: field.ty,
+                offset: offset
+                    .checked_add(field.offset)
+                    .ok_or("byte field offset overflow")?,
+                value,
+            });
         }
         Ok(())
     }
@@ -259,22 +298,22 @@ impl Machine<'_, '_> {
                 super::Cell::Bytes(_) => {
                     return Err("nested byte backing escaped its allocation root".into());
                 }
-                super::Cell::Fields { values, variant }
-                    if matches!(
+                super::Cell::Fields { values, variant } => {
+                    let length = values.len();
+                    let variant = *variant;
+                    self.reserve_cells(pending.len().saturating_add(length).saturating_mul(6))?;
+                    let enumeration = matches!(
                         Reader::new(self.evaluator.facts()).storage_shape(ty)?,
                         StoredShape::Enumeration { .. }
-                    ) =>
-                {
-                    if !values.is_empty() {
-                        return Err("stored fieldless enum contains payload cells".into());
-                    }
-                    let value = self.evaluator.fields(&[], *variant)?;
-                    self.encode_byte_enum(backing, offset, ty, value)?;
-                }
-                super::Cell::Fields { values, .. } => {
-                    let length = values.len();
-                    self.reserve_cells(pending.len().saturating_add(length).saturating_mul(6))?;
-                    let (fields, _) = self.byte_fields(ty)?;
+                    );
+                    let selected = if enumeration {
+                        let id = variant.ok_or("stored enum cells lack their exact variant")?;
+                        self.encode_byte_enum_tag(backing, offset, ty, id)?;
+                        Some(id)
+                    } else {
+                        None
+                    };
+                    let (fields, _) = self.byte_fields(ty, selected)?;
                     let super::Cell::Fields { values, .. } = &self.memory.cells[cell] else {
                         return Err("byte conversion source changed".into());
                     };
@@ -573,9 +612,8 @@ impl Machine<'_, '_> {
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Enumeration { .. }
         ) {
-            state
-                .values
-                .push(self.decode_byte_enum(source, offset, ty)?);
+            let variant = self.decode_byte_variant(source, offset, ty)?;
+            self.decode_byte_fields(ty, offset, Some(variant), state)?;
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Word
@@ -610,26 +648,36 @@ impl Machine<'_, '_> {
                 });
             }
         } else {
-            let (fields, variant) = self.byte_fields(ty)?;
-            state.temporary = fields
-                .capacity()
-                .saturating_mul(size_of::<Field>())
-                .div_ceil(size_of::<Constant>());
-            self.reserve_decode(state, 0, fields.len().saturating_add(1), 0)?;
-            state.pending.push(Decode::Product {
-                start: state.values.len(),
-                variant,
-            });
-            for field in fields.into_iter().rev() {
-                state.pending.push(Decode::Value {
-                    ty: field.ty,
-                    offset: offset
-                        .checked_add(field.offset)
-                        .ok_or("byte read field offset overflow")?,
-                });
-            }
-            state.temporary = 0;
+            self.decode_byte_fields(ty, offset, None, state)?;
         }
+        Ok(())
+    }
+    fn decode_byte_fields(
+        &mut self,
+        ty: TypeId,
+        offset: u64,
+        selected: Option<VariantId>,
+        state: &mut Decoder,
+    ) -> Result<(), Failure> {
+        let (fields, variant) = self.byte_fields(ty, selected)?;
+        state.temporary = fields
+            .capacity()
+            .saturating_mul(size_of::<Field>())
+            .div_ceil(size_of::<Constant>());
+        self.reserve_decode(state, 0, fields.len().saturating_add(1), 0)?;
+        state.pending.push(Decode::Product {
+            start: state.values.len(),
+            variant,
+        });
+        for field in fields.into_iter().rev() {
+            state.pending.push(Decode::Value {
+                ty: field.ty,
+                offset: offset
+                    .checked_add(field.offset)
+                    .ok_or("byte read field offset overflow")?,
+            });
+        }
+        state.temporary = 0;
         Ok(())
     }
     fn decode_byte_image(

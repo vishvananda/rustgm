@@ -69,16 +69,6 @@ impl Machine<'_, '_> {
         for ordinal in 0..count {
             let reader = Reader::new(self.evaluator.facts());
             let stored = reader.enum_variants(ty)?;
-            let variant = &stored.variants[ordinal];
-            let fields = self
-                .evaluator
-                .facts()
-                .types
-                .list(variant.fields)
-                .ok_or("missing stored enum variant fields")?;
-            if !fields.is_empty() {
-                return Ok(false);
-            }
             let id = stored.identities[ordinal];
             let bits = reader.enum_variant_bits(ty, id)?;
             let member = self
@@ -90,6 +80,20 @@ impl Machine<'_, '_> {
                 .ok_or("missing stored enum declaration")?;
             if member.ordinal as usize != ordinal {
                 return Err("stored enum declaration ordering differs from layout".into());
+            }
+            let count = reader.enum_variant_fields(ty, id)?.0.len();
+            let start = member.start;
+            self.charge(count)?;
+            for index in 0..count {
+                let field = crate::sema::members::FieldId(
+                    start
+                        .checked_add(
+                            u32::try_from(index)
+                                .map_err(|_| "enum field index exceeds declaration")?,
+                        )
+                        .ok_or("enum field identity overflow")?,
+                );
+                Reader::new(self.evaluator.facts()).enum_field_layout(ty, field)?;
             }
             tags.push((bits, id));
         }
@@ -124,16 +128,32 @@ impl Machine<'_, '_> {
         ty: TypeId,
         value: Constant,
     ) -> Result<(), Failure> {
-        if !self.prepare_byte_enum(ty)? {
-            return Err("constant enum byte storage with payload fields is not implemented".into());
-        }
+        self.prepare_byte_enum(ty)?;
         let View::Product {
-            length: 0,
+            length,
             variant: Some(id),
         } = Reader::new(self.evaluator.facts()).view(value)?
         else {
-            return Err("constant enum encoding requires its zero-field variant".into());
+            return Err("constant enum encoding requires its exact variant".into());
         };
+        if Reader::new(self.evaluator.facts())
+            .enum_variant_fields(ty, id)?
+            .0
+            .len() as u64
+            != length
+        {
+            return Err("constant enum value differs from its variant fields".into());
+        }
+        self.encode_byte_enum_tag(backing, offset, ty, id)
+    }
+    pub(super) fn encode_byte_enum_tag(
+        &mut self,
+        backing: &mut Backing,
+        offset: u64,
+        ty: TypeId,
+        id: VariantId,
+    ) -> Result<(), Failure> {
+        self.prepare_byte_enum(ty)?;
         let reader = Reader::new(self.evaluator.facts());
         let tag = reader.enum_variants(ty)?.tag;
         let bits = reader.enum_variant_bits(ty, id)?;
@@ -160,15 +180,13 @@ impl Machine<'_, '_> {
         }
         Ok(())
     }
-    pub(super) fn decode_byte_enum(
+    pub(super) fn decode_byte_variant(
         &mut self,
         source: Source,
         offset: u64,
         ty: TypeId,
-    ) -> Result<Constant, Failure> {
-        if !self.prepare_byte_enum(ty)? {
-            return Err("constant enum byte storage with payload fields is not implemented".into());
-        }
+    ) -> Result<VariantId, Failure> {
+        self.prepare_byte_enum(ty)?;
         let tag = Reader::new(self.evaluator.facts()).enum_variants(ty)?.tag;
         let width = usize::from(
             tag.ty
@@ -210,7 +228,23 @@ impl Machine<'_, '_> {
             .tags
             .binary_search_by_key(&bits, |&(tag, _)| tag)
             .map_err(|_| "constant enum read has an invalid discriminant")?;
-        let variant = index.tags[found].1;
+        Ok(index.tags[found].1)
+    }
+    #[cfg(test)]
+    fn decode_byte_enum(
+        &mut self,
+        source: Source,
+        offset: u64,
+        ty: TypeId,
+    ) -> Result<Constant, Failure> {
+        let variant = self.decode_byte_variant(source, offset, ty)?;
+        if !Reader::new(self.evaluator.facts())
+            .enum_variant_fields(ty, variant)?
+            .0
+            .is_empty()
+        {
+            return Err("fieldless test helper received payload".into());
+        }
         self.evaluator.fields(&[], Some(variant))
     }
 }

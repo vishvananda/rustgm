@@ -77,3 +77,62 @@ fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Resu
     assert!(Reader::new(&facts).enum_variants(ty).is_err());
     Ok(())
 }
+#[test]
+fn payload_enum_facade_keeps_exact_fields_and_rejects_malformed_declaration_ranges()
+-> Result<(), String> {
+    let report = test_source::resolve(
+        "#[repr(u8)]enum E{A(u32),B(bool)}#[repr(C,u8)]enum F{A(u32),B(bool)}",
+        true,
+    )?;
+    let mut facts = crate::pipeline::analyze_source(&report)
+        .map_err(|e| e.to_string())?
+        .facts;
+    let owners: Vec<_> = facts.aggregates.iter().map(|d| d.item).collect();
+    let mut types = Vec::new();
+    for owner in owners {
+        let ty = facts
+            .types
+            .intern(Kind::Adt(owner, crate::types::GenericArgs::EMPTY))?;
+        Evaluator::new(&report, &mut facts)
+            .storage_layout(ty, 10000)
+            .map_err(|e| e.message().to_owned())?;
+        types.push((owner, ty));
+    }
+    let mut offsets = Vec::new();
+    for &(owner, ty) in &types {
+        let ids = facts.members.variants(owner);
+        let first = ids[0];
+        let second = ids[1];
+        let a = crate::sema::members::FieldId(facts.members.variants[first.0 as usize].start);
+        let b = crate::sema::members::FieldId(facts.members.variants[second.0 as usize].start);
+        assert_eq!(Reader::new(&facts).enum_field_layout(ty, a)?.offset, 4);
+        offsets.push(Reader::new(&facts).enum_field_layout(ty, b)?.offset);
+        assert!(
+            Reader::new(&facts)
+                .enum_field_layout(ty, crate::sema::members::FieldId(u32::MAX))
+                .is_err()
+        );
+    }
+    offsets.sort_unstable();
+    assert_eq!(offsets, [1, 4]);
+    let (owner, ty) = types[0];
+    let foreign = facts.members.variants(types[1].0)[0];
+    let foreign_field =
+        crate::sema::members::FieldId(facts.members.variants[foreign.0 as usize].start);
+    assert!(
+        Reader::new(&facts)
+            .enum_field_layout(ty, foreign_field)
+            .is_err()
+    );
+    let id = facts.members.variants(owner)[0];
+    let original = facts.members.variants[id.0 as usize];
+    facts.members.variants[id.0 as usize].end = original.end + 1;
+    assert!(Reader::new(&facts).enum_variant_fields(ty, id).is_err());
+    facts.members.variants[id.0 as usize] = original;
+    facts.members.variants[id.0 as usize].owner = types[1].0;
+    assert!(Reader::new(&facts).enum_variant_fields(ty, id).is_err());
+    facts.members.variants[id.0 as usize] = original;
+    facts.members.variants[id.0 as usize].ordinal = 1;
+    assert!(Reader::new(&facts).enum_variant_fields(ty, id).is_err());
+    Ok(())
+}

@@ -7,6 +7,8 @@ use crate::{
     types::{GenericArgs, Kind},
 };
 use std::fmt::Write;
+#[path = "payload_enum_storage.rs"]
+mod payload;
 #[path = "wide_enum_storage.rs"]
 mod wide;
 fn with_enums(
@@ -204,7 +206,8 @@ fn enum_index_keys_retain_complete_closed_const_arguments() -> Result<(), String
     Ok(())
 }
 #[test]
-fn enum_payload_and_default_tags_remain_distinct_unsupported_families() -> Result<(), String> {
+fn enum_default_tags_remain_unsupported_while_explicit_payloads_are_supported() -> Result<(), String>
+{
     let report =
         test_source::resolve("enum DefaultTag{A,B}#[repr(u8)]enum Payload{A(u8),B}", true)?;
     let mut facts = crate::pipeline::analyze_source(&report)
@@ -217,14 +220,14 @@ fn enum_payload_and_default_tags_remain_distinct_unsupported_families() -> Resul
     }
     let evaluator = Evaluator::new(&report, &mut facts);
     let mut machine = Machine::new(evaluator, std::iter::empty(), Limits::default())?;
-    for ty in types {
-        assert!(
-            !machine
-                .byte_family(ty)
-                .map_err(|e| e.message().to_owned())?
-        );
-    }
-    assert!(machine.memory.bytes.enumerations.is_none());
+    let supported: Vec<_> = types
+        .into_iter()
+        .map(|ty| machine.byte_family(ty))
+        .collect::<Result<_, _>>()
+        .map_err(|e| e.message().to_owned())?;
+    assert_eq!(supported.iter().filter(|&&yes| yes).count(), 1);
+    assert_eq!(supported.iter().filter(|&&yes| !yes).count(), 1);
+    assert!(machine.memory.bytes.enumerations.is_some());
     Ok(())
 }
 #[test]

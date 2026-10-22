@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct R{v:u32}#[repr(u8)]enum E{A(R),Empty}const N:u32={let mut e=E::A(R{v:37});unsafe{core::ptr::write_bytes(&raw mut e,0,1);}match e{E::A(r)=>r.v,E::Empty=>99}};fn main(){check(N==0);}

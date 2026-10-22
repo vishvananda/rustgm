@@ -225,3 +225,11 @@ bits. All tag bytes must be initialized and free of numeric-read provenance at
 typed demand. The draft `tests/wide-enum-byte-outcomes.json` and
 `docs/pa27-wide-enum-bytes.md` record the independently qualified profile.
 Payload and default-layout backing remain required.
+
+The explicit integer-tag payload enum development slice reuses retained variant
+field offsets and existing recursive byte storage. Typed reads validate only the
+selected active payload; inactive bytes/padding retain independent initialization
+facts. Canonical field pointers preserve their physical offsets across tag
+changes. `tests/payload-enum-byte-outcomes.json` and
+`docs/pa27-payload-enum-bytes.md` record the independently qualified profile.
+Default-layout/niche enum and other required backing families remain open.

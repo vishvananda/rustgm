@@ -288,3 +288,11 @@ expired zero-offset CTFE controls make no native-validity claim. Runtime shims
 use the existing byte index operation and no loads/stores. See
 `tests/pointer-add-outcomes.json` and `docs/pa28-pointer-add.md`; whole byte-array
 fragment snapshots and the remaining memory/provenance families stay open.
+
+The explicit integer-tag payload enum development slice reuses retained variant
+field offsets and existing recursive byte storage. Typed reads validate only the
+selected active payload; inactive bytes/padding retain independent initialization
+facts. Canonical field pointers preserve their physical offsets across tag
+changes. `tests/payload-enum-byte-outcomes.json` and
+`docs/pa27-payload-enum-bytes.md` record the independently qualified profile.
+Default-layout/niche enum and other required backing families remain open.
