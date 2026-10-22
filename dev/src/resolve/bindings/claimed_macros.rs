@@ -17,7 +17,7 @@ use crate::{
 
 pub(in crate::resolve) fn claim(package: &Package, key: NodeKey) -> Result<Option<Builtin>, Error> {
     let unit = package.unit(key.file);
-    let Some(index) = unit.owner_indices[key.node.0 as usize] else {
+    let Some(index) = unit.owner_indices[key.node.get() as usize] else {
         return Ok(None);
     };
     let owner = &unit.configured.owners[index.get() as usize - 1];

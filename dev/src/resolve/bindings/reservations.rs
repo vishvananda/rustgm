@@ -12,7 +12,7 @@ use crate::{
     },
     syntax::{ast::Kind, attribute::Input, item::ItemKind},
 };
-use std::collections::{HashMap, HashSet};
+use crate::support::hash::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Declaration {
@@ -98,12 +98,12 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
             .first()
             .ok_or_else(|| Error::at(FileId(0), 0, "missing source crate root"))?,
         languages: [None; 5],
-        intrinsics: HashMap::new(),
-        denied_implementations: HashSet::new(),
+        intrinsics: HashMap::default(),
+        denied_implementations: HashSet::default(),
         steps: 0,
     };
     let parents = parents(package, facts);
-    let mut claimed = HashSet::new();
+    let mut claimed = HashSet::default();
     for (index, definition) in facts.definitions.iter().enumerate() {
         reserved.steps += 1;
         let Some(key) = definition.node else {
@@ -301,7 +301,7 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
 }
 
 fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
-    let mut result: HashMap<NodeKey, Vec<Claim>> = HashMap::new();
+    let mut result: HashMap<NodeKey, Vec<Claim>> = HashMap::default();
     for (file, unit) in package.units.iter().enumerate() {
         let file = FileId(
             u32::try_from(file)
