@@ -92,26 +92,10 @@ fn closure_input_completion_filters_exact_owners_and_preserves_memoized_inputs()
     assert_eq!(original.len(), 1);
     let mut steps = 0;
     let mut scan = Vec::new();
-    checker
-        .closure_annotation(
-            key,
-            super::super::regions::Context::ALIAS,
-            Some(0),
-            &mut steps,
-            1000,
-            &mut scan,
-        )
-        .map_err(|e| e.to_string())?;
-    assert_eq!(checker.facts.closures.inputs[&key], original);
-    let first = checker.facts.body_regions.len();
-    checker
-        .facts
-        .body_regions
-        .push(crate::sema::model::BodyRegion {
-            body: closures[1],
-            source: closures[1],
-            origin: crate::sema::model::BodyRegionOrigin::Annotation,
-        });
+    let first = checker.annotation_inputs.begin(key)?;
+    for region in &original {
+        checker.annotation_inputs.record(key, *region);
+    }
     checker
         .closure_annotation(
             key,
@@ -123,6 +107,21 @@ fn closure_input_completion_filters_exact_owners_and_preserves_memoized_inputs()
         )
         .map_err(|e| e.to_string())?;
     assert_eq!(checker.facts.closures.inputs[&key], original);
+    let first = checker.annotation_inputs.begin(key)?;
+    // Unrelated production cannot enter this closure's pending input scope.
+    checker.annotation_inputs.record(closures[1], original[0]);
+    checker
+        .closure_annotation(
+            key,
+            super::super::regions::Context::ALIAS,
+            Some(first),
+            &mut steps,
+            1000,
+            &mut scan,
+        )
+        .map_err(|e| e.to_string())?;
+    assert_eq!(checker.facts.closures.inputs[&key], original);
+    checker.annotation_inputs.begin(key)?;
     assert!(
         checker
             .closure_annotation(
@@ -135,5 +134,62 @@ fn closure_input_completion_filters_exact_owners_and_preserves_memoized_inputs()
             )
             .is_err()
     );
+    Ok(())
+}
+
+#[test]
+fn input_completion_rejects_forged_regions_before_changing_completed_inputs() -> Result<(), String>
+{
+    let report = crate::test_source::resolve(
+        "fn f(){let _=|x:&u8|{let _=x;};let _=|y:&u8|{let _=y;};}",
+        true,
+    )?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker.run().map_err(|e| e.to_string())?;
+    let mut keys = checker
+        .facts
+        .closures
+        .inputs
+        .keys()
+        .copied()
+        .collect::<Vec<_>>();
+    keys.sort_by_key(|key| key.node.0);
+    let own = keys[0];
+    let previous = checker.facts.closures.inputs[&own].clone();
+    for region in [
+        crate::types::RegionId(0),
+        checker.facts.closures.inputs[&keys[1]][0],
+    ] {
+        let first = checker.annotation_inputs.begin(own)?;
+        checker.annotation_inputs.record(own, region);
+        assert!(
+            checker
+                .closure_annotation(
+                    own,
+                    super::super::regions::Context::ALIAS,
+                    Some(first),
+                    &mut 0,
+                    1000,
+                    &mut Vec::new(),
+                )
+                .is_err()
+        );
+        assert_eq!(checker.facts.closures.inputs[&own], previous);
+    }
+    let first = checker.annotation_inputs.begin(own)?;
+    checker.annotation_inputs.record(own, previous[0]);
+    assert!(
+        checker
+            .closure_annotation(
+                own,
+                super::super::regions::Context::ALIAS,
+                Some(first),
+                &mut 0,
+                0,
+                &mut Vec::new(),
+            )
+            .is_err()
+    );
+    assert_eq!(checker.facts.closures.inputs[&own], previous);
     Ok(())
 }

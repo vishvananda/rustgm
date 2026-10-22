@@ -160,6 +160,7 @@ struct Signature {
     convention: crate::types::callable::Convention,
 }
 struct Checker<'a> {
+    annotation_inputs: annotations::Inputs,
     call_paths: std::collections::HashSet<NodeKey>,
     linkage_sources: std::collections::HashMap<NodeKey, foreign::Attributes>,
     target_feature_sources: std::collections::HashSet<NodeKey>,
@@ -235,6 +236,7 @@ impl<'a> Checker<'a> {
         let mut facts = Declarations::new(report)?;
         let linkage_sources = foreign::collect(report, &mut facts.foreign)?;
         let mut checker = Self {
+            annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
             call_paths: std::collections::HashSet::new(),
             target_feature_sources: call_traits::target_feature_sources(report)?,
@@ -1452,6 +1454,15 @@ impl Checker<'_> {
                 source: key,
                 origin: super::model::BodyRegionOrigin::Annotation,
             });
+            // The annotation node's ordinary work charge also covers this
+            // constant-time producer index; completion charges each retained ID.
+            self.annotation_inputs.record(
+                NodeKey {
+                    file: key.file,
+                    node: body,
+                },
+                RegionId(ordinal),
+            );
             return Ok(RegionId(ordinal));
         }
         self.regions.elided(context).map_err(|e| self.error(key, e))

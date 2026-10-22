@@ -1,7 +1,14 @@
 //! Partial local annotations reuse the declaration binder and elision machinery.
+#[path = "annotations/input_regions.rs"]
+mod inputs;
 use super::{
     Checker, Error, Kind, List, NodeId, NodeKey, SignaturePhase, TypeFlavor, Work, regions,
 };
+pub(super) use inputs::Inputs;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/annotation_work.rs"]
+mod tests;
 
 impl Checker<'_> {
     pub(super) fn closure_annotation(
@@ -20,24 +27,29 @@ impl Checker<'_> {
             return Err(self.error(key, "closure annotation continuation has no closure owner"));
         };
         if let Some(first) = first {
-            let added = self
-                .facts
-                .body_regions
-                .get(first..)
-                .ok_or_else(|| self.error(key, "closure annotation region range changed"))?;
-            let mut regions = Vec::new();
-            for (offset, region) in added.iter().enumerate() {
-                if region.body == key
-                    && matches!(
-                        region.origin,
+            let regions = self
+                .annotation_inputs
+                .finish(key, first)
+                .map_err(|e| self.error(key, e))?;
+            for region in &regions {
+                *steps += 1;
+                if *steps > limit {
+                    return Err(self.error(key, "closure input annotation work budget exceeded"));
+                }
+                #[cfg(test)]
+                tests::visit(true);
+                let fact = region
+                    .0
+                    .checked_sub(1)
+                    .and_then(|index| self.facts.body_regions.get(index as usize))
+                    .ok_or_else(|| self.error(key, "closure input region is not retained"))?;
+                if fact.body != key
+                    || !matches!(
+                        fact.origin,
                         crate::sema::model::BodyRegionOrigin::Annotation
                     )
                 {
-                    regions.push(crate::types::RegionId(
-                        u32::try_from(first + offset + 1).map_err(|_| {
-                            self.error(key, "closure input lifetime limit exceeded")
-                        })?,
-                    ));
+                    return Err(self.error(key, "closure input region belongs to another owner"));
                 }
             }
             // A repeated global traversal may find already prepared inputs.
@@ -50,11 +62,12 @@ impl Checker<'_> {
             }
             return Ok(());
         }
-        self.work.push(Work::ClosureAnnotation(
-            key,
-            context,
-            Some(self.facts.body_regions.len()),
-        ));
+        let first = self
+            .annotation_inputs
+            .begin(key)
+            .map_err(|e| self.error(key, e))?;
+        self.work
+            .push(Work::ClosureAnnotation(key, context, Some(first)));
         for index in (parameters.start..parameters.end).rev() {
             let unit = self.report.package.unit(key.file);
             let mut node = unit.configured.ast.edges[index as usize];

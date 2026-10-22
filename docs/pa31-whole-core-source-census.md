@@ -50,7 +50,7 @@ It terminates 1 with exactly:
 ERROR: file 0: 4062: unsupported active source-core feature
 ```
 
-This is the first root request, `asm_experimental_arch`, at line 94. The
+This is the first root request, `asm_experimental_arch`, at line 88. The
 source-provider feature policy currently recognizes only `no_core`, `lang_items`,
 `intrinsics` and `rustc_attrs`, each with the limited implemented contracts in
 [source layout provider](pa31-source-layout-provider.md). No gate was added to
