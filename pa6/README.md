@@ -137,6 +137,12 @@ User declarations with the same spelling remain distinct. These name facts
 do not prove a bound or implement a trait; later semantic assignments own that
 behavior. Other external paths still report unavailable metadata.
 
+Iteration demand also loads canonical `Iterator`, `IntoIterator` and shared
+slice/array iterator headers. Their names, scopes and definitions appear in
+this view in deterministic creation order; loading these headers preserves
+existing source reference identities. The name view does not prove iterator
+applicability or execute a loop. PA26 owns those library contracts.
+
 The manifest declares every primary input and auxiliary module file. File cases
 run with their source path; stdin cases retain earlier harness behavior. Receipts
 hash auxiliary bytes as well as primary bytes and arguments. Independent rustc
