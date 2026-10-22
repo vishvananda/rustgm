@@ -1,7 +1,7 @@
 # RustGM Programming Assignment 24: Closures
 
-Status: **planned**. The contract below is being qualified for release; the
-assignment is not active until its manifest and reviewed byte oracles ship.
+Status: **implemented-draft**. The maintainer reference, manifest and reviewed
+byte oracles implement the contract below.
 Prerequisite: PA23. The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. Later edition support is explicit at PA36.
 
@@ -64,7 +64,7 @@ modes and their proof boundaries. Successful complete lowering exits 0 with
 deterministic LowIR and empty stderr. Diagnosed rejection exits 1 with empty
 stdout. A panic, signal, timeout or exit 86 is a failed implementation, not a
 language rejection. The published `.ref`, `.ref.stderr` and `.ref.exit_status`
-sidecars will define the byte contract; `reference.json` records their provenance.
+sidecars define the byte contract; `reference.json` records their provenance.
 
 Use the course's aggregate/out-pointer ABI and PA23 object layout. A closure
 environment carries its selected capture fields. Fn and FnMut adapters borrow
@@ -103,15 +103,15 @@ mechanically to evade limits, or read the environment from `dev/src/`.
 
 ## Completion and review
 
-The current fixture inventory has 467 independently declared source outcomes:
+The manifest contains 467 independently declared source outcomes:
 323 accept and 144 reject. The reviewed native classifications contain 311
 runtime comparisons, two unused-body code-generation controls and ten entry-free
 object controls. Draft outcome files retain the history of the source hypotheses;
 they are not substitutes for the released manifest. See
 [the release review](../docs/pa24-release-review.md) for current evidence and
-remaining gates. No planned assignment is counted as passing.
+release qualification. No planned assignment is counted as passing.
 
-Before activation, qualify every source with pinned rustc, compare declared
+When updating this assignment, qualify every source with pinned rustc, compare declared
 executions through RustGM/CPPGM, generate and review the complete byte oracles,
 and publish the manifest and provenance together. A negative must exercise its
 intended semantic rule rather than an unrelated unsupported-feature guard.
@@ -121,7 +121,7 @@ do not add a synthetic main or claim their unused bodies executed.
 Run all active earlier text and independent source/native suites, full release
 Cargo and native maintainer tests, formatting, strict Clippy, architecture/file
 and layout audits, harness and upstream checks, and the performance matrix.
-Update `assignments.json`, the roadmap and root suite selection together, then
-verify the owning `test-pa24` and `test-native-pa24` targets. Follow
+Run the owning `test-pa24` and `test-native-pa24` targets and preserve root
+text, independent-source and native-suite coverage. Follow
 `TESTING_AND_REFERENCES.md` and use the storage/resource guards. Student export
 is a later operation; this repository owns the full reference implementation.

@@ -1,0 +1,116 @@
+global @rg.vtable.0 : obj<48x8> [storage=readonly] = {
+  zero 8
+  i64 8
+  i64 8
+  ptr addr @rg.closure.0
+  ptr addr @rg.closure.adapter.FnMut.i5
+  zero 8
+}
+function @rg.16() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : ptr
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s2
+    %t1 = addr $s2
+    %t2 = addr $s1
+    copyobj 8x8 %t1, %t2
+    %t3 = addr $s1
+    %t4 = addr @rg.vtable.0
+    store ptr %t3, $s3
+    %t5 = addr $s3
+    %t6 = index u8 %t5, 8
+    store ptr %t4, %t6
+    %t7 = addr $s3
+    %t8 = call ptr @rg.15(%t7)
+    store ptr %t8, $s4
+    %t9 = load ptr $s4
+    %t10 = load u8 %t9
+    %t11 = cmp eq u8 %t10, 7
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
+    return void
+}
+function @rg.15(%p0 : ptr) -> ptr {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = load ptr $s0
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    %t4 = load ptr %t3
+    store ptr %t1, $s1
+    %t5 = addr $s1
+    %t6 = index u8 %t5, 8
+    store ptr %t4, %t6
+    %t7 = addr $s1
+    %t8 = call ptr @rg.callable.virtual.0(%t7)
+    return ptr %t8
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.callable.virtual.0(%p0 : ptr) -> ptr {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = index u8 %p0, 8
+    %t2 = load ptr %t1
+    %t3 = index u8 %t2, 24
+    %t4 = load ptr %t3
+    %t5 = call ptr %t4(%t0) as (%p0 : ptr) -> ptr
+    return ptr %t5
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.closure.0(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    return ptr %t1
+}
+function @rg.closure.adapter.FnMut.i5(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call ptr @rg.closure.0(%t0)
+    return ptr %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

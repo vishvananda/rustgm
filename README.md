@@ -59,8 +59,11 @@ repository with pinned reference tools. It has not been built yet.
 - PA22 adds unsized storage tails, proved coercions and raw pointer metadata,
   with 328 text-oracle cases, 102 native executions and 134 compile-only controls.
 - PA23 adds trait objects, vtables, upcasting and marker obligations, with
-  399 text-oracle cases, 85 native executions and 177 compile-only controls.
-- PA24–PA38 have buildout briefs and Makefiles. Their suites and implementation
+  400 text-oracle cases, 86 native executions and 177 compile-only controls.
+- PA24 adds precise closure captures, call-trait adapters and callable objects,
+  with 467 text-oracle cases, 311 native executions, two code-generation controls
+  and ten entry-free library object controls.
+- PA25–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),

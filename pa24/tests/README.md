@@ -1,8 +1,8 @@
 # PA24 fixture ownership
 
-PA24 remains planned. The complete reviewed inventory contains 467 source files:
-323 accepted and 144 rejected. Its generated manifest and text oracles are staged
-for release qualification; they are not installed as an active grading suite.
+The manifest and generated text oracles cover 467 source files: 323 accepted
+and 144 rejected. Every source outcome was independently checked with pinned
+rustc before reference generation.
 
 The accepted native classifications comprise 311 runtime comparisons, two
 code-generation-only controls for intentionally unused bodies, and ten entry-free
@@ -26,7 +26,7 @@ The inventory covers these families:
 The owning [handout](../README.md) defines the required behavior and ABI.
 The [release review](../../docs/pa24-release-review.md) maps those requirements to
 fixture families and records independent qualification, the reviewed diagnostic
-correction and remaining gates. It is the consolidated inventory; an early
+correction and release qualification. It is the consolidated inventory; an early
 32-case capture plan is not the assignment's complete scope.
 
 Existing `*-hypotheses.json`, `*-outcomes.json` and other draft outcome files
@@ -37,7 +37,7 @@ now accepts `formation-truncation/reference-result.rs`, while
 `output-interfaces/escape-outer.rs` must fail its ordinary lifetime proof.
 
 Required regressions belong here when PA24 is the earliest assignment owning all
-their features. Preserve upstream bytes and attribution. At release, every input
+their features. Preserve upstream bytes and attribution. Every input
 must appear in `manifest.json` with its explicit source/native classification;
 generated `.ref`, `.ref.stderr`, `.ref.exit_status` and `reference.json` files ship
 together. Never hand-edit the generated answers or add a synthetic main to an

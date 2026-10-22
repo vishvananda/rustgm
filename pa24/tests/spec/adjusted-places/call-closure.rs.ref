@@ -1,0 +1,35 @@
+function @rg.13() -> void {
+  slot $s0 : obj<1x1>
+  slot $s1 : ptr
+  slot $s2 : obj<8x8>
+  slot $s3 : obj<8x8>
+  block ^b0:
+    %t0 = addr $s0
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    store ptr %t1, $s3
+    %t2 = addr $s3
+    %t3 = addr $s2
+    copyobj 8x8 %t2, %t3
+    %t4 = addr $s2
+    %t5 = call u8 @rg.closure.1(%t4)
+    return void
+}
+function @rg.closure.1(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = call u8 @rg.closure.0()
+    return u8 %t2
+}
+function @rg.closure.0() -> u8 {
+  block ^b0:
+    return u8 7
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}

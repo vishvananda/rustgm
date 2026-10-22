@@ -1,0 +1,16 @@
+function @rg.16() -> void {
+  slot $s0 : i32
+  block ^b0:
+    store i32 0, $s0
+    call void @rg.15.i4()
+    return void
+}
+function @rg.15.i4() -> void {
+  block ^b0:
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

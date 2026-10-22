@@ -1,0 +1,17 @@
+function @rg.13() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s1
+    call void @rg.closure.0()
+    return void
+}
+function @rg.closure.0() -> void {
+  block ^b0:
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}

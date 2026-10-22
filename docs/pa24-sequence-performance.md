@@ -56,6 +56,20 @@ The nested receiver family still grows superlinearly. Its existing quadratic
 region/constraint producer is documented in `pa24-receiver-depth.md`; this
 checkpoint neither repairs it nor claims linear whole-frontend complexity.
 
+Call-edge analysis of these retained profiles narrows that follow-up without a
+new benchmark. At depths 8/32/128, body proof remains six calls and runtime point
+inference remains three. Propagation transfers along component edges grow from
+86 to 1,848 to 77,972 word visits; its inclusive instructions grow from 75,646
+to 1,812,031 to 77,280,473. Expanding equivalent-region results costs only 190,264
+instructions at depth 128 (0.058% of the total), ruling it out as the main target.
+Structural requirement queries also become more expensive despite linearly
+growing call counts. The next investigation needs graph-edge, seed and retained
+word counts to distinguish necessary output size from redundant propagation and
+repeated shared-tail materialization. These findings do not justify weakening
+lifetime constraints. Profile hashes and parsed counts, whose self-cost totals
+match each complete profile, are retained in
+`obj/parallel/receiver-depth-investigation-v1/call-counts.json`.
+
 The frozen checkpoint also passed the full release Cargo suite (2,316 tests),
 native maintainer suite (219 tests), affected independent source/native suites,
 all 7,787 active text cases and required lint/audit/harness/backend checks. It was

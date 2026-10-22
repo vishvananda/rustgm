@@ -1,7 +1,7 @@
 # PA24 release review
 
-PA24 remains planned. This review consolidates the current closure contract and
-release evidence; historical checkpoint documents describe their own snapshots.
+This review consolidates the PA24 closure contract and release evidence;
+historical checkpoint documents describe their own snapshots.
 The required feature set has not been reduced to the passing inventory.
 
 ## Contract and coverage
@@ -56,8 +56,8 @@ default lints enabled; no synthetic main was added.
 Evidence is in `obj/parallel/pa24/release-inventory-v1/` and
 `obj/parallel/pa24/release-oracles-v1/`. The latter contains generated candidate
 sidecars and their compiler/fixture/case-contract provenance, followed by a second
-467-case byte comparison. Those oracles are staged for review, not installed in
-the course. Successful LowIR cases have empty diagnostics; the 144 rejections
+467-case byte comparison. At that checkpoint the oracles were staged for review;
+the final installation is recorded below. Successful LowIR cases have empty diagnostics; the 144 rejections
 have empty output and exit 1.
 
 Review found one invalid semantic inference in this otherwise passing inventory:
@@ -75,7 +75,7 @@ found exactly one changed sidecar, this case's diagnostic: the metadata-profile
 error at byte zero becomes `required lifetime does not outlive its target` at
 byte 47. Source bytes, declared outcomes and the other sidecars are unchanged.
 Generation and a subsequent byte comparison both passed. These reviewed
-sidecars remain staged; they have not activated PA24.
+sidecars were retained for the final installation recorded below.
 
 The correction's default-feature binary SHA-256 is
 `ece395550188b349a3d9dae9b98b03616d7b362334c5179d8bbd7d6c5872e80a`.
@@ -113,27 +113,48 @@ combined compiler.
 
 The PA24 release candidate is separately frozen at `c7fe46c0`, whose compiler and
 tests are unchanged from the qualified `0b89bf31` integration above. The changes
-since then are documentation and verified diagnostic archival. Its full release,
-native maintainer, all earlier independent and complete staged PA24 source/native
-checks run in the validation worktree under `obj/parallel/pa24-release-final-v1/`.
-Later PA25 development proceeds independently of that frozen candidate.
+since then are documentation and verified diagnostic archival. Its final functional
+qualification completed under `obj/parallel/pa24-release-final-v1/` in the validation
+worktree. All 43 commands passed: 2,329 full release Cargo tests, 222 native
+maintainer tests, imported rustc/literal/layout checks, every earlier independent
+source and native suite, and the complete staged PA24 source/native/text suites.
+PA24 retains all 467 source outcomes, 311 executable comparisons, two code-generation
+controls and ten library object controls. Its default-feature binary SHA-256 is
+`c408b1205c7815a004309b471ee115db532c7dd3c3a070c0ca2e2904d858cd10`.
 
-## Remaining release gates
+`retained.json` binds the exact unchanged compiler/tests to the prior formatting,
+strict all-target/all-feature release Clippy, architecture/file/layout audits,
+90 focused tests and all 7,787 earlier and 467 PA24 text comparisons. It also
+binds the diagnostic-cleanup change to its independently passing 81-test harness
+batch. Resource receipt `dc40d84695104c9784a9649a442f5eaf` closed with status zero.
+Post-run cleanup removed 12,098 generated files (12.54 GiB of unshared blocks)
+and losslessly archived one large type diagnostic, preserving source inputs,
+observations and immutable pins. Later PA25 development remains outside this
+frozen candidate and does not inherit its qualification.
 
-- Complete the frozen combined release Cargo and native maintainer suites and
-  all earlier independent suites. Retain the exact-source formatting, strict
-  Clippy, architecture/layout and text evidence described above; validate the
-  cleanup changes with their independently passing 81-test harness batch.
-- Carry the corrected library proof and reviewed v2 oracle source identity into
-  the next full combined publication checkpoint before installing the oracles.
-- Retain the completed broad frozen-binary performance comparison and measure
-  the later combined compiler's changed paths, including library proof ordering.
-  The receiver-depth superlinear observation remains an open performance issue,
-  not a linearity claim.
-- Publish the reviewed handout, complete manifest, generated sidecars and
-  provenance together. Update `assignments.json`, the roadmap and root text,
-  independent-source and native-suite selection together; rerun their layout
-  and harness checks. A planned assignment must not report an empty-suite pass.
+The final 18-input changed-path comparison also completed under an exclusive
+lease. All 1,404 timed executions preserve their qualified outputs; shared
+instruction changes range from -0.174% to +0.951%. Timing noise prevents a small
+speedup claim. See [the final measurement review](pa24-final-performance.md) for
+the full method, independent library/program classifications and observations.
+The earlier 45-input comparison and its open receiver-depth issue remain part
+of the performance review.
+
+## Publication checks
+
+The reviewed v2 handout, manifest, 1,401 generated sidecars and provenance are
+installed together with assignment status and root text/source/native selection.
+The release-install receipt binds every payload file to its reviewed staged hash.
+Post-install validation at `75944f83` passed all 81 harness tests, the 38-stage
+layout check, all 467 PA24 text comparisons and the owning native target's
+467 source outcomes, 311 executable comparisons, two code-generation controls
+and ten object controls. The compiler remains byte-identical to the qualified
+candidate above. Resource receipt `8e618879fedd45df874e3e6cc780beb3` finished with
+status zero; `obj/parallel/pa24-release-installed-v1/checks.json` records the
+command and log SHA-256
+`1c34830e64235be234910e9acbf7d67a646879b006865f84791c71fa6f21588e`.
+These checks qualify the PA24 release for the public main fast-forward.
+Planned assignments after PA24 continue to reject empty-suite success.
 
 PA25–PA30 keep their full independent responsibilities and queued work. This
-review is neither PA24 activation nor evidence that those later stages are done.
+review supplies no evidence that those later stages are complete.

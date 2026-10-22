@@ -1,0 +1,177 @@
+global @rg.vtable.0 : obj<48x8> [storage=readonly] = {
+  ptr addr @rg.drop.2
+  i64 8
+  i64 8
+  ptr addr @rg.closure.0
+  ptr addr @rg.closure.adapter.FnMut.i5
+  zero 8
+}
+function @rg.18() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : ptr
+  slot $s5 : obj<8x8>
+  slot $s6 : obj<8x8>
+  slot $s7 : obj<8x8>
+  slot $s8 : obj<16x8>
+  slot $s9 : obj<16x8>
+  slot $s10 : obj<16x8>
+  block ^b0:
+    store u8 0, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s4
+    %t1 = load ptr $s4
+    store ptr %t1, $s5
+    %t2 = addr $s5
+    %t3 = addr $s1
+    copyobj 8x8 %t2, %t3
+    %t4 = addr $s1
+    %t5 = addr $s6
+    copyobj 8x8 %t4, %t5
+    %t6 = addr $s6
+    %t7 = addr $s7
+    copyobj 8x8 %t6, %t7
+    %t8 = addr $s7
+    %t9 = addr $s2
+    copyobj 8x8 %t8, %t9
+    %t10 = addr $s2
+    %t11 = addr @rg.vtable.0
+    store ptr %t10, $s8
+    %t12 = addr $s8
+    %t13 = index u8 %t12, 8
+    store ptr %t11, %t13
+    %t14 = addr $s8
+    %t15 = addr $s3
+    copyobj 16x8 %t14, %t15
+    %t16 = load ptr $s3
+    %t17 = addr $s3
+    %t18 = index u8 %t17, 8
+    %t19 = load ptr %t18
+    store ptr %t16, $s9
+    %t20 = addr $s9
+    %t21 = index u8 %t20, 8
+    store ptr %t19, %t21
+    %t22 = addr $s9
+    %t23 = call u8 @rg.callable.virtual.0(%t22)
+    %t24 = cmp eq u8 %t23, 7
+    %t25 = convert trunc i1 i64 %t24
+    call void @rg.13(%t25)
+    %t26 = load ptr $s3
+    %t27 = addr $s3
+    %t28 = index u8 %t27, 8
+    %t29 = load ptr %t28
+    store ptr %t26, $s10
+    %t30 = addr $s10
+    %t31 = index u8 %t30, 8
+    store ptr %t29, %t31
+    %t32 = addr $s10
+    %t33 = call u8 @rg.callable.virtual.0(%t32)
+    %t34 = cmp eq u8 %t33, 7
+    %t35 = convert trunc i1 i64 %t34
+    call void @rg.13(%t35)
+    %t36 = addr $s2
+    call void @rg.drop.1(%t36)
+    %t37 = load u8 $s0
+    %t38 = cmp eq u8 %t37, 1
+    %t39 = convert trunc i1 i64 %t38
+    call void @rg.13(%t39)
+    return void
+}
+function @rg.callable.virtual.0(%p0 : ptr) -> u8 {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = index u8 %p0, 8
+    %t2 = load ptr %t1
+    %t3 = index u8 %t2, 24
+    %t4 = load ptr %t3
+    %t5 = call u8 %t4(%t0) as (%p0 : ptr) -> u8
+    return u8 %t5
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.drop.1(%p0 : ptr) -> void {
+  block ^b0:
+    call void @rg.drop.0(%p0)
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.drop.0(%p0 : ptr) -> void {
+  block ^b0:
+    call void @rg.17(%p0)
+    return void
+}
+function @rg.17(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load u8 %t1
+    %t3 = convert zext i16 u8 %t2
+    %t4 = convert zext i16 u8 1
+    %t5 = binary add i16 %t3, %t4
+    %t6 = convert trunc u8 i16 %t5
+    %t7 = convert zext i16 u8 %t6
+    %t8 = cmp ne i16 %t5, %t7
+    branch %t8, ^b1, ^b2
+  block ^b2:
+    store u8 %t6, %t1
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.drop.2(%p0 : ptr) -> void {
+  block ^b0:
+    call void @rg.drop.0(%p0)
+    return void
+}
+function @rg.closure.0(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    return u8 7
+}
+function @rg.closure.adapter.FnMut.i5(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call u8 @rg.closure.0(%t0)
+    return u8 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

@@ -1,0 +1,34 @@
+function @rgc$15_636c6f737572655f66697874757265$4_70613234$f$3_72756e$() -> u8 {
+  slot $s0 : u8
+  slot $s1 : ptr
+  slot $s2 : obj<8x8>
+  slot $s3 : obj<8x8>
+  slot $s4 : obj<8x8>
+  slot $s5 : ptr
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    store ptr %t1, $s3
+    %t2 = addr $s3
+    %t3 = addr $s2
+    copyobj 8x8 %t2, %t3
+    %t4 = addr $s2
+    %t5 = addr $s4
+    copyobj 8x8 %t4, %t5
+    %t6 = addr $s4
+    %t7 = call ptr @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.closure.0(%t6)
+    store ptr %t7, $s5
+    %t8 = load ptr $s5
+    %t9 = load u8 %t8
+    return u8 %t9
+}
+function @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.closure.0(%p0 : ptr) -> ptr {
+  slot $s0 : obj<8x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 8x8 %p0, %t0
+    %t1 = load ptr $s0
+    return ptr %t1
+}

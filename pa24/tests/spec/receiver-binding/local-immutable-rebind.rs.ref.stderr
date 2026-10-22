@@ -1,0 +1,1 @@
+ERROR: file 0: 48: cannot assign through an immutable captured binding
