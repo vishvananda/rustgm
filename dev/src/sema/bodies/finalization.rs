@@ -155,6 +155,7 @@ impl Checker<'_> {
         self.publish_invocations(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;
+        let main_start = self.facts.region_equalities.len();
         self.facts
             .region_equalities
             .extend(
@@ -167,6 +168,7 @@ impl Checker<'_> {
                         right: *right,
                     }),
             );
+        let main_equalities = main_start..self.facts.region_equalities.len();
         self.publish_body_types(body, &solved)?;
         self.publish_constant_callables()?;
         self.publish_index_bounds(&solved)?;
@@ -195,6 +197,7 @@ impl Checker<'_> {
         self.finish_patterns()?;
         // Canonical nominal checks may allocate universal aliases after the main
         // inference graph has finished. Publish them under this body's identity.
+        let late_start = self.facts.region_equalities.len();
         self.facts.region_equalities.extend(
             std::mem::take(&mut self.state.infer.region_equalities)
                 .into_iter()
@@ -204,6 +207,10 @@ impl Checker<'_> {
                     right,
                 }),
         );
+        self.seal_pattern_equalities(
+            main_equalities,
+            late_start..self.facts.region_equalities.len(),
+        )?;
         self.retain_inline_root()?;
         Ok(hidden)
     }

@@ -1,10 +1,13 @@
 //! Shared typed constant queries solve discriminants and pattern values iteratively.
 mod arithmetic;
+mod canonical_values;
+mod computation;
 mod constructors;
 mod contents;
 mod discriminants;
 mod drops;
 mod execution;
+mod parked_values;
 pub(super) use discriminants::{
     Discriminant, Pending as Discriminants, Progress as DiscriminantProgress,
     advance as advance_discriminants,

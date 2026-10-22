@@ -4,7 +4,7 @@ use super::{Error, NodeKey, Queries, Query};
 
 impl Queries<'_> {
     fn execution_target(
-        &self,
+        &mut self,
         source: NodeKey,
         result: crate::types::TypeId,
     ) -> Result<Target, Error> {
@@ -17,6 +17,24 @@ impl Queries<'_> {
                 .and_then(|index| self.typing.facts.initializers.get(index))
                 .is_some_and(|initializer| initializer.value == source)
         {
+            if !self
+                .typing
+                .facts
+                .types
+                .arguments_are_concrete(instance.arguments)
+                .map_err(|e| self.error(Query::Node(source), e))?
+            {
+                let original = self
+                    .typing
+                    .facts
+                    .initializer_index(instance.definition)
+                    .and_then(|index| self.typing.facts.initializers.get(index))
+                    .map(crate::sema::model::Initializer::semantic_source)
+                    .ok_or_else(|| self.error(Query::Node(source), "missing source initializer"))?;
+                return self
+                    .source_computation(instance, original, result)
+                    .map(|source| Target::SourceAssociated { source, result });
+            }
             return Ok(Target::Associated { instance, result });
         }
         if let Some(initializer) = context

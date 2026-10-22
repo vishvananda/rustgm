@@ -36,3 +36,21 @@ pub(crate) fn with_contract(
         contract,
     })
 }
+
+/// Source computation retains the full instance but publishes no materialized value.
+pub(crate) fn source(
+    facts: &mut Declarations,
+    template: &Template,
+    witness: crate::sema::values::execution::SourceComputation,
+    result: crate::types::TypeId,
+    original: &Contract,
+) -> Result<Materialized, &'static str> {
+    witness.validate(facts, result)?;
+    if original.key != BodyKey::Declaration(witness.selected().definition)
+        || original.source != witness.original()
+        || template.body.source != witness.original()
+    {
+        return Err("source computation selects another original initializer contract");
+    }
+    with_contract(facts, template, witness.selected(), original)
+}

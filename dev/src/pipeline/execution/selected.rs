@@ -32,6 +32,44 @@ impl Engine {
         instance: Instance,
         result: TypeId,
     ) -> Result<usize, Error> {
+        let canonical = instance
+            .result_type(facts)
+            .map_err(|e| Error::at(super::FileId(0), 0, e))?;
+        if canonical != result {
+            return Err(Error::at(
+                super::FileId(0),
+                0,
+                "selected initializer request result differs from canonical result",
+            ));
+        }
+        if let Some(&index) = self.roots.get(&Target::Associated { instance, result }) {
+            return Ok(index);
+        }
+        self.selected_root(report, facts, instance, result, None)
+    }
+    pub(super) fn source_associated_root(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        source: crate::sema::values::execution::SourceComputation,
+        result: TypeId,
+    ) -> Result<usize, Error> {
+        source
+            .validate(facts, result)
+            .map_err(|e| Declarations::error(report, source.original(), e))?;
+        if let Some(&index) = self.roots.get(&Target::SourceAssociated { source, result }) {
+            return Ok(index);
+        }
+        self.selected_root(report, facts, source.selected(), result, Some(source))
+    }
+    fn selected_root(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: Instance,
+        result: TypeId,
+        source_value: Option<crate::sema::values::execution::SourceComputation>,
+    ) -> Result<usize, Error> {
         let initializer = facts
             .initializer_index(instance.definition)
             .and_then(|i| facts.initializers.get(i))
@@ -62,8 +100,12 @@ impl Engine {
         } else {
             self.associated_template(report, facts, &initializer)?
         };
-        let built = body::instantiate::selected_initializer(facts, &template, instance, &contract)
-            .map_err(|e| Declarations::error(report, source, e));
+        let built = if let Some(witness) = source_value {
+            body::instantiate::source_initializer(facts, &template, witness, result, &contract)
+        } else {
+            body::instantiate::selected_initializer(facts, &template, instance, &contract)
+        }
+        .map_err(|e| Declarations::error(report, source, e));
         self.associated
             .get_or_insert_with(Default::default)
             .insert(instance.definition, (template, contract));
@@ -104,13 +146,17 @@ impl Engine {
             &environment,
             &concrete.contract,
         )?;
-        let index = self
-            .catalog
-            .insert(&concrete.body)
-            .map_err(|e| Declarations::error(report, source, e))?;
+        let index = if let Some(witness) = source_value {
+            self.catalog.source_initializer(&concrete.body, witness)
+        } else {
+            self.catalog.insert(&concrete.body)
+        }
+        .map_err(|e| Declarations::error(report, source, e))?;
         facts.constant_work.associated_instances += 1;
-        self.roots
-            .insert(Target::Associated { instance, result }, index);
+        let target = source_value.map_or(Target::Associated { instance, result }, |source| {
+            Target::SourceAssociated { source, result }
+        });
+        self.roots.insert(target, index);
         Ok(index)
     }
     fn associated_template(

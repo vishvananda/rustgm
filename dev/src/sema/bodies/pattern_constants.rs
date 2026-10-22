@@ -1,4 +1,5 @@
 //! Constant-backed patterns defer only value/coverage work until typed queries finish.
+mod anchored_ranges;
 mod ordering;
 use super::{Checker, Error, NodeId, matches::RangeWork};
 use crate::{
@@ -43,6 +44,7 @@ struct Scope {
     ranges: usize,
     roots: usize,
     matches: usize,
+    proof: Option<anchored_ranges::Ranges>,
 }
 impl Checker<'_> {
     pub(super) fn equate_pattern(
@@ -144,6 +146,7 @@ impl Checker<'_> {
                 binders: self.state.body_binders,
                 end: pending.requests.len(),
             },
+            proof: None,
             module: self.state.module,
             ranges: self.state.range_work.len(),
             roots: self.state.pattern_requirements.len(),
@@ -204,7 +207,9 @@ impl Checker<'_> {
             return Ok(None);
         };
         let body = self.state.body;
-        let mut scopes = pending.into_scopes();
+        let mut scopes = pending
+            .into_scopes()
+            .map_err(|e| self.error(body.node, e))?;
         let order = ordering::schedule(self.facts, &scopes)
             .map_err(|message| self.error(body.node, message))?;
         let mut prepared = Vec::with_capacity(order.len());
@@ -288,7 +293,7 @@ impl PreparedScope {
 }
 
 impl Pending {
-    fn into_scopes(self) -> Vec<Option<PreparedScope>> {
+    fn into_scopes(self) -> Result<Vec<Option<PreparedScope>>, &'static str> {
         let mut requests = self.requests.into_iter();
         let mut ranges = self.ranges.into_iter();
         let mut roots = self.roots.into_iter();
@@ -300,13 +305,16 @@ impl Pending {
                 let end = scope.values.end;
                 scope.values.end -= start;
                 start = end;
-                Some(PreparedScope {
+                if scope.proof.is_none() {
+                    return Err("pattern caller proof publication is incomplete");
+                }
+                Ok(Some(PreparedScope {
                     requests: requests.by_ref().take(scope.values.end).collect(),
                     ranges: ranges.by_ref().take(scope.ranges).collect(),
                     roots: roots.by_ref().take(scope.roots).collect(),
                     matches: matches.by_ref().take(scope.matches).collect(),
                     scope,
-                })
+                }))
             })
             .collect()
     }

@@ -25,6 +25,7 @@ const ACCEPTED: &[&str] = &[
     "array-bound-pattern",
     "source-independent-instances",
     "source-self-pattern",
+    "interleaved-lifetime",
 ];
 const REJECTED: &[&str] = &[
     "discriminant-cycle",
@@ -34,10 +35,6 @@ const REJECTED: &[&str] = &[
     "interleaved-lifetime-bound",
     "source-opaque-pattern",
 ];
-const BOUNDARIES: &[(&str, &str)] = &[(
-    "interleaved-lifetime",
-    "selected constant arguments are not concrete",
-)];
 fn source(name: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -76,7 +73,10 @@ fn object(folder: &Path, name: &str, source: &str, accepted: bool) -> TestResult
     Ok(())
 }
 fn views(folder: &Path, name: &str, accepted: bool, diagnostic: &str) -> TestResult {
-    for stage in ["types", "lowir", "constants"] {
+    views_modes(folder, name, [accepted; 3], diagnostic)
+}
+fn views_modes(folder: &Path, name: &str, modes: [bool; 3], diagnostic: &str) -> TestResult {
+    for (stage, accepted) in ["types", "lowir", "constants"].into_iter().zip(modes) {
         let result = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .arg(format!("--emit-{stage}"))
             .arg(folder.join(format!("{name}.rs")))
@@ -126,16 +126,11 @@ fn completed_patterns_and_cycles_match_independent_objects() -> TestResult {
         } else {
             "selected constant arguments are not concrete"
         };
-        views(&folder, name, accepted, diagnostic)?;
-    }
-    Ok(())
-}
-#[test]
-fn remaining_readiness_boundaries_keep_rust_acceptance() -> TestResult {
-    let folder = output()?;
-    for &(name, diagnostic) in BOUNDARIES {
-        object(&folder, name, &source(name)?, true)?;
-        views(&folder, name, false, diagnostic)?;
+        if name == "interleaved-lifetime-bound" {
+            views_modes(&folder, name, [true, false, false], "lifetime")?;
+        } else {
+            views(&folder, name, accepted, diagnostic)?;
+        }
     }
     Ok(())
 }
@@ -189,7 +184,11 @@ fn default_values_keep_caller_parameters_and_declaration_rules() -> TestResult {
         ),
     ] {
         object(&folder, name, &source(name)?, false)?;
-        views(&folder, name, false, diagnostic)?;
+        if name == "interleaved-lifetime-bound" {
+            views_modes(&folder, name, [true, false, false], "lifetime")?;
+        } else {
+            views(&folder, name, false, diagnostic)?;
+        }
     }
     Ok(())
 }

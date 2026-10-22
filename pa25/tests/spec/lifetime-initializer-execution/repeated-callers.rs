@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+const M:u8=7;struct S<'a>(&'a u8);impl<'a>S<'a>{const N:u8=match 7{M=>1,_=>2};}fn f<'a>(_:&'a u8,x:u8)->bool{match x{S::<'a>::N=>true,_=>false}}fn g<'b>(_:&'b u8,x:u8)->bool{match x{S::<'b>::N=>true,_=>false}}fn main(){let a=7;let b=9;check(f(&a,1));check(g(&b,1));}

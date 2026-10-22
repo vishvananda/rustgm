@@ -30,6 +30,7 @@ pub(crate) struct Code {
     pub result: crate::types::TypeId,
     pub owner: Owner,
     pub const_context: bool,
+    pub source_only: bool,
     pub locals: Vec<Local>,
     pub values: Vec<Value>,
     pub scalars: Vec<Scalar>,
@@ -79,6 +80,7 @@ impl Code {
             result: body.result,
             owner: body.owner,
             const_context: body.const_context,
+            source_only: false,
             locals: body.locals.clone(),
             values: body.values.clone(),
             scalars: body.scalars.clone(),
@@ -189,6 +191,21 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn insert(&mut self, body: &Body) -> Result<usize, &'static str> {
+        self.insert_body(body, false)
+    }
+    pub(crate) fn source_initializer(
+        &mut self,
+        body: &Body,
+        source: crate::sema::values::execution::SourceComputation,
+    ) -> Result<usize, &'static str> {
+        if !matches!(body.owner, Owner::InitializerInstance { instance, .. } if instance == source.selected())
+            || body.source != source.original()
+        {
+            return Err("source computation selects another checked initializer body");
+        }
+        self.insert_body(body, true)
+    }
+    fn insert_body(&mut self, body: &Body, source_only: bool) -> Result<usize, &'static str> {
         let bytes = self
             .bytes
             .checked_add(Code::storage_bytes(body)?)
@@ -208,7 +225,7 @@ impl Catalog {
                     } else {
                         0
                     })
-                } else if matches!(body.owner, Owner::InitializerInstance { .. }) {
+                } else if !source_only && matches!(body.owner, Owner::InitializerInstance { .. }) {
                     crate::support::retained::new_map::<
                         (crate::sema::values::Instance, crate::types::TypeId),
                         usize,
@@ -256,6 +273,7 @@ impl Catalog {
             return Err("duplicate anonymous constant instance body");
         }
         if let Owner::InitializerInstance { instance, .. } = body.owner
+            && !source_only
             && self
                 .associated
                 .get_or_insert_with(Default::default)
@@ -264,7 +282,9 @@ impl Catalog {
         {
             return Err("duplicate selected initializer execution body");
         }
-        self.bodies.push(std::rc::Rc::new(Code::snapshot(body)?));
+        let mut code = Code::snapshot(body)?;
+        code.source_only = source_only;
+        self.bodies.push(std::rc::Rc::new(code));
         self.bytes = bytes;
         Ok(index)
     }

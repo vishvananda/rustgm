@@ -1,4 +1,8 @@
 //! Selected initializer bodies retain exact arguments and independent checked execution.
+#[path = "harness/checked_sources.rs"]
+mod checked_sources;
+#[path = "selected_initializers/computed.rs"]
+mod computed;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "helpers/objects.rs"]

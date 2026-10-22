@@ -135,6 +135,11 @@ impl Engine {
         facts: &mut Declarations,
         request: &Request,
     ) -> Result<Progress, Error> {
+        if let Target::SourceAssociated { source, result } = request.target {
+            source
+                .validate(facts, result)
+                .map_err(|e| Declarations::error(report, source.original(), e))?;
+        }
         if let Some(&value) = self.completed.get(request) {
             return Ok(Progress::Complete(value));
         }

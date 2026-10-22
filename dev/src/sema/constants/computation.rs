@@ -1,0 +1,125 @@
+//! A source value keeps its actual caller proof owner without a materialized permit.
+use super::{Declarations, Error, InitializerKind, NodeKey, Queries, Query, TypeId};
+use crate::{
+    sema::values::Instance,
+    types::{
+        Kind, RegionId,
+        arguments::{Argument, ConstKind},
+    },
+};
+
+/// An opaque source-computation request, minted from a retained caller dispatcher.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct SourceComputation {
+    selected: Instance,
+    original: NodeKey,
+    caller: NodeKey,
+}
+impl SourceComputation {
+    pub(crate) const fn selected(self) -> Instance {
+        self.selected
+    }
+    pub(crate) const fn original(self) -> NodeKey {
+        self.original
+    }
+    pub(crate) fn validate(self, facts: &Declarations, result: TypeId) -> Result<(), &'static str> {
+        Self::schema(facts, self.selected, self.original, result)?;
+        let mut nonstatic = false;
+        for argument in facts
+            .types
+            .arguments(self.selected.arguments)
+            .ok_or("missing source arguments")?
+        {
+            if let Argument::Lifetime(region) = argument {
+                if region == RegionId::STATIC {
+                    continue;
+                }
+                nonstatic = true;
+                if region.bound_parts().is_some()
+                    || !facts
+                        .body_regions
+                        .get(region.0 as usize - 1)
+                        .is_some_and(|owner| {
+                            owner.body == self.caller && owner.source == self.caller
+                        })
+                {
+                    return Err("source computation has a foreign caller lifetime");
+                }
+            }
+        }
+        if !nonstatic {
+            return Err("source computation requires an owned open lifetime");
+        }
+        Ok(())
+    }
+    fn schema(
+        facts: &Declarations,
+        selected: Instance,
+        original: NodeKey,
+        result: TypeId,
+    ) -> Result<(), &'static str> {
+        let initializer = facts
+            .initializer_index(selected.definition)
+            .and_then(|index| facts.initializers.get(index))
+            .ok_or("source computation has no initializer")?;
+        if !initializer.type_checked()
+            || !matches!(initializer.kind, InitializerKind::Const)
+            || initializer.semantic_source() != original
+            || initializer.ty != result
+            || !matches!(facts.types.kind(result), Some(Kind::Primitive(_)))
+        {
+            return Err("source computation requires its original closed primitive initializer");
+        }
+        // Validate exact parameter arity/kinds without resolving or interning a result.
+        selected.selected_arguments(facts)?;
+        for argument in facts
+            .types
+            .arguments(selected.arguments)
+            .ok_or("missing source arguments")?
+        {
+            let closed = match argument {
+                Argument::Lifetime(_) => true,
+                Argument::Type(ty) => {
+                    facts.types.contains_parameters(ty) == Some(false)
+                        && facts.types.contains_projections(ty) == Some(false)
+                        && facts.types.needs_region_context(ty) == Some(false)
+                }
+                Argument::Const(id) => {
+                    matches!(facts.types.const_kind(id), Some(ConstKind::Value(_)))
+                }
+            };
+            if !closed {
+                return Err("source computation retains a non-lifetime parameter");
+            }
+        }
+        Ok(())
+    }
+}
+impl Queries<'_> {
+    pub(super) fn source_computation(
+        &mut self,
+        selected: Instance,
+        original: NodeKey,
+        result: TypeId,
+    ) -> Result<SourceComputation, Error> {
+        SourceComputation::schema(self.typing.facts, selected, original, result)
+            .map_err(|e| self.error(Query::Node(original), e))?;
+        self.with_parked_caller(|dispatcher, facts, scope, reservation, regions| {
+            let selected = selected.substitute(&mut facts.types, regions)?;
+            let selected = dispatcher.source_instance(facts, selected)?;
+            dispatcher.reserve_pattern(facts, scope.body, reservation)?;
+            let witness = SourceComputation {
+                selected,
+                original,
+                caller: scope.body,
+            };
+            witness.validate(facts, result)?;
+            Ok(witness)
+        })
+        .map_err(|e| self.error(Query::Node(original), e))
+    }
+}
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/computed_witnesses.rs"]
+mod tests;

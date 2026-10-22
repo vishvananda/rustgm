@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "caller-lifetime",
+      "path": "tests/spec/lifetime-initializer-execution/caller-lifetime.rs",
+      "source_sha256": "58ad0c52750ef132e7e4cd7162af3a4ab2643b05178dfa1e180cca945ac84586",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "caller-static-bound",
+      "path": "tests/spec/lifetime-initializer-execution/caller-static-bound.rs",
+      "source_sha256": "e601d5f901185aa216b4531d2bf9b25f1cedd1a000f2a0885fe7e42b4c9b862d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "caller-cross-bound",
+      "path": "tests/spec/lifetime-initializer-execution/caller-cross-bound.rs",
+      "source_sha256": "df5f495d39b26fbdd9f359f64582fbfdb728c44c6b264b5c87904df293eefe92",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "repeated-callers",
+      "path": "tests/spec/lifetime-initializer-execution/repeated-callers.rs",
+      "source_sha256": "b7e6fd8d2af0fe81091c51d4dc1a0f03176950af790ed9a21803d3024677f030",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "fresh-dispatcher",
+      "path": "tests/spec/lifetime-initializer-execution/fresh-dispatcher.rs",
+      "source_sha256": "394e834c5ecde90f4d9b891f5e36d37bc4ad0c1429f4c6d1224edfbc729367b0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "native": true,
+      "diagnostic": "",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "cached-unpaid-caller",
+      "path": "tests/spec/lifetime-initializer-execution/cached-unpaid-caller.rs",
+      "source_sha256": "93bb2431ab39666f74d48b9d376ec9237392d441894334feac432bbc737314a2",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native": false,
+      "diagnostic": "lifetime",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    },
+    {
+      "name": "missing-cross-bound",
+      "path": "tests/spec/lifetime-initializer-execution/missing-cross-bound.rs",
+      "source_sha256": "5d99e2ea006a7844043dc29e41f4827a25440525dec4864569eb84617fd0ac68",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "native": false,
+      "diagnostic": "lifetime",
+      "features": [
+        "pa25.constant-evaluation"
+      ]
+    }
+  ]
+}

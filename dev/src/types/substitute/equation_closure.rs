@@ -129,6 +129,20 @@ impl Closing {
 }
 
 impl Bound {
+    /// Conservative owner charge before building a closed source equality fold.
+    pub(crate) fn projection_closure_preflight(equations: usize, slots: usize) -> usize {
+        let vertices = equations.saturating_mul(2).saturating_add(slots);
+        crate::support::retained::sum([
+            size_of::<Self>(),
+            size_of::<Mapping>(),
+            size_of::<Closing>(),
+            crate::support::retained::new_map::<RegionId, usize>(vertices),
+            vertices
+                .saturating_mul(4)
+                .saturating_mul(size_of::<Vertex>()),
+            crate::support::retained::new_map::<RegionId, RegionId>(vertices),
+        ])
+    }
     /// Restore one immutable callable context using equations from its selected
     /// proof graph. Equations remain obligations; this fold does not prove them.
     /// # Errors

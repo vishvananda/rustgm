@@ -4,7 +4,9 @@ mod initializers;
 #[cfg(test)]
 #[path = "../../tests/invariants/seals.rs"]
 mod seals;
-pub(crate) use initializers::with_contract as selected_initializer;
+pub(crate) use initializers::{
+    source as source_initializer, with_contract as selected_initializer,
+};
 mod closures;
 mod contracts;
 pub(crate) use closures::{

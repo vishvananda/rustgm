@@ -395,12 +395,12 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
+        "--emit-types": 0,
         "--emit-lowir": 1,
         "--emit-constants": 1
       },
       "boundary": false,
-      "diagnostic": "selected constant arguments are not concrete"
+      "diagnostic": "lifetime"
     },
     {
       "name": "interleaved-lifetime",
@@ -409,7 +409,7 @@
         "pa25.constant-evaluation"
       ],
       "source_sha256": "50a434cbad50b6b565ce7066711b728f3f841c3bf21b2c66811f71577fcc9d72",
-      "exit_status": 1,
+      "exit_status": 0,
       "rustc": {
         "kind": "program",
         "status": 0,
@@ -417,13 +417,13 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-lowir": 1,
-        "--emit-constants": 1
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
       },
-      "boundary": true,
-      "diagnostic": "selected constant arguments are not concrete",
-      "limitation": "Valid Rust; required PA25 continuation work remains."
+      "boundary": false,
+      "diagnostic": "",
+      "native": true
     },
     {
       "name": "source-independent-instances",

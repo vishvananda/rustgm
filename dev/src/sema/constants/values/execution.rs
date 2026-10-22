@@ -1,4 +1,5 @@
 //! Phase-neutral execution requests retain semantic identity across body readiness.
+pub use super::super::computation::SourceComputation;
 use super::{Constant, Instance};
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
@@ -20,6 +21,10 @@ pub enum Target {
     },
     Function(instance::Instance),
     Initializer(DefId),
+    SourceAssociated {
+        source: SourceComputation,
+        result: TypeId,
+    },
     Associated {
         instance: Instance,
         result: TypeId,
