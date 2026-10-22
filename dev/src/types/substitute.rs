@@ -1,5 +1,6 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
 mod allocation;
+mod bounded;
 mod equation_closure;
 pub(crate) use equation_closure::RegionEquations;
 mod export;
@@ -136,7 +137,7 @@ impl Bound {
         }
         self.work.push((key, false));
         let result = self
-            .drain(store)
+            .drain::<false>(store, &bounded::Budget::ordinary())
             .and_then(|()| self.result(store, key)?.ok_or("missing substituted root"));
         self.work.clear();
         result
@@ -222,9 +223,16 @@ impl Bound {
             .ok_or("missing substituted dependency")
     }
 
-    fn drain(&mut self, store: &mut Store) -> Result<(), &'static str> {
+    fn drain<const BOUNDED: bool>(
+        &mut self,
+        store: &mut Store,
+        budget: &bounded::Budget,
+    ) -> Result<(), &'static str> {
         while let Some((key, finish)) = self.work.pop() {
             self.steps += 1;
+            if BOUNDED {
+                budget.check_steps(self.steps)?;
+            }
             if self.steps > WORK_LIMIT {
                 return Err("lifetime substitution work budget exceeded");
             }
@@ -232,6 +240,9 @@ impl Bound {
                 continue;
             }
             let kind = store.kind(key.0).ok_or("invalid substitution type")?;
+            if BOUNDED {
+                budget.prepare(self, store, kind, finish)?;
+            }
             if matches!(self.action, Action::Items(_)) && self.replace_item(store, key, finish)? {
                 continue;
             }
