@@ -515,7 +515,7 @@ impl<S: Sources> Engine<'_, S> {
         let module = &self.loader.package.modules[visit.module.0 as usize];
         let file = module.file;
         let unit = self.loader.package.unit(file);
-        if !unit.configured.active[visit.node.0 as usize] {
+        if !unit.configured.active[visit.node.get() as usize] {
             return Ok(());
         }
         let kind = unit.configured.ast.node(visit.node).kind;

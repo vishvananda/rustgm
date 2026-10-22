@@ -69,7 +69,7 @@ impl Coverage<'_> {
             return Ok(());
         };
         let unit = self.report.package.unit(source.file);
-        if let Kind::Variant(index) = unit.configured.ast.nodes[source.node.0 as usize].kind {
+        if let Kind::Variant(index) = unit.configured.ast.nodes[source.node.get() as usize].kind {
             let span = unit.configured.ast.variants[index as usize].name;
             out.push_str("::");
             out.push_str(

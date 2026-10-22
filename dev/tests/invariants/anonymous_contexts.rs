@@ -339,7 +339,9 @@ fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
         })
         .ok_or("missing caller lifetime")?;
     let old = facts.body_regions[region.0 as usize - 1];
-    facts.body_regions[region.0 as usize - 1].body.node.0 += 1;
+    facts.body_regions[region.0 as usize - 1].body.node = crate::syntax::ast::NodeId::new(
+        facts.body_regions[region.0 as usize - 1].body.node.get() + 1,
+    );
     assert!(executor.check(&report, &mut facts, request.target).is_err());
     assert!(executor.advance(&report, &mut facts, &request).is_err());
     facts.body_regions[region.0 as usize - 1] = old;

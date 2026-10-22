@@ -67,7 +67,7 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
             }
             Work::Visit(node) => node,
         };
-        if !configured.active[node.0 as usize] {
+        if !configured.active[node.get() as usize] {
             continue;
         }
         let data = ast.node(node);

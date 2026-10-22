@@ -16,7 +16,7 @@ impl Checker<'_> {
             .iter()
             .copied()
             .collect();
-        blocks.sort_unstable_by_key(|key| (key.file.0, key.node.0));
+        blocks.sort_unstable_by_key(|key| (key.file.0, key.node.get()));
         for key in blocks {
             let ItemKind::ExternBlock { unsafe_, abi, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "foreign owner is not an external block"));
@@ -57,7 +57,7 @@ impl Checker<'_> {
         }
         let ast = &self.report.package.unit(key.file).configured.ast;
         for &node in ast.list(item.generics) {
-            if !self.report.package.unit(key.file).configured.active[node.0 as usize] {
+            if !self.report.package.unit(key.file).configured.active[node.get() as usize] {
                 continue;
             }
             if let Kind::Generic(index) = ast.node(node).kind

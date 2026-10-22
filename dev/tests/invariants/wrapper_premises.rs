@@ -76,7 +76,7 @@ fn wrapper_contract_cannot_inject_or_replace_declared_premises() -> Result {
     let (types, execution, adapter) = fixture()?;
     let source = crate::resolve::unit::NodeKey {
         file: crate::support::source::FileId(0),
-        node: crate::syntax::ast::NodeId(0),
+        node: crate::syntax::ast::NodeId::new(0),
     };
     let pair = (RegionId::bound(0, 1)?, RegionId::STATIC);
     let required = Requirements(vec![pair]);

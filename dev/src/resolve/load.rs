@@ -92,7 +92,7 @@ pub fn load(
         let module = &loader.package.modules[visit.module.0 as usize];
         let file = module.file;
         let unit = loader.package.unit(file);
-        if !unit.configured.active[visit.node.0 as usize] {
+        if !unit.configured.active[visit.node.get() as usize] {
             continue;
         }
         let kind = unit.configured.ast.node(visit.node).kind;
@@ -406,7 +406,7 @@ impl<'a, S: Sources> Loader<'a, S> {
     fn path(&self, file: FileId, owner: Option<NodeId>) -> Result<Option<String>, Error> {
         let unit = self.package.unit(file);
         let Some(owner) = owner
-            .and_then(|id| unit.owner_indices[id.0 as usize])
+            .and_then(|id| unit.owner_indices[id.get() as usize])
             .map(|index| &unit.configured.owners[(index.get() - 1) as usize])
         else {
             return Ok(None);

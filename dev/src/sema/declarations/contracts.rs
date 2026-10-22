@@ -21,7 +21,7 @@ impl Checker<'_> {
         let mut bounds = Vec::new();
         let ast = &self.report.package.unit(key.file).configured.ast;
         for mut node in ast.list(item.generics).iter().copied() {
-            if !self.report.package.unit(key.file).configured.active[node.0 as usize] {
+            if !self.report.package.unit(key.file).configured.active[node.get() as usize] {
                 continue;
             }
             while let Kind::Attributed { value, .. } = ast.node(node).kind {

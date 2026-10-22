@@ -9,13 +9,17 @@ pub(super) fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()
         writeln!(
             out,
             "proof {id} body={}:{} source={}:{} pending",
-            value.body.file.0, value.body.node.0, evidence.source.file.0, evidence.source.node.0
+            value.body.file.0,
+            value.body.node.get(),
+            evidence.source.file.0,
+            evidence.source.node.get()
         )?;
         for (index, source) in evidence.sources.iter().enumerate() {
             writeln!(
                 out,
                 "proof-source proof={id} index={index} source={}:{}",
-                source.file.0, source.node.0
+                source.file.0,
+                source.node.get()
             )?;
         }
         let proof = &evidence.proof;

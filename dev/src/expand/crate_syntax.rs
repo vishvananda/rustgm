@@ -56,7 +56,7 @@ pub fn configure<'s>(
     let mut attributes = Attributes::default();
     let mut effects = Vec::new();
     while let Some(node) = work.pop() {
-        let index = node.0 as usize;
+        let index = node.get() as usize;
         if active[index] {
             continue;
         }
@@ -160,14 +160,15 @@ pub fn write_configuration<L>(
     output: &mut impl Write,
 ) -> io::Result<()> {
     for owner in &report.owners {
-        writeln!(output, "configured {} {}", owner.node.0, owner.enabled)?;
+        writeln!(output, "configured {} {}", owner.node.get(), owner.enabled)?;
         for index in owner.attributes.clone() {
             let effect = &report.effects[index];
             let entry = effect.attribute;
             write!(
                 output,
                 "attribute-effect {} {index} {} ",
-                owner.node.0, effect.capture
+                owner.node.get(),
+                effect.capture
             )?;
             if let Some(parent) = entry.parent {
                 write!(output, "{parent}")?;

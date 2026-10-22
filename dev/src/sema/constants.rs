@@ -347,7 +347,7 @@ impl Queries<'_> {
                 .and_then(|definition| definition.node)
                 .unwrap_or(NodeKey {
                     file: FileId(0),
-                    node: crate::syntax::ast::NodeId(0),
+                    node: crate::syntax::ast::NodeId::new(0),
                 }),
         };
         Declarations::error(self.report, key, message)
@@ -981,7 +981,9 @@ impl Queries<'_> {
                         .ast
                         .list(statements)
                         .iter()
-                        .any(|n| self.report.package.unit(key.file).configured.active[n.0 as usize])
+                        .any(|n| {
+                            self.report.package.unit(key.file).configured.active[n.get() as usize]
+                        })
                     {
                         return if self.typing.facts.constant_executor.is_some() {
                             Ok(Expression::Execute)

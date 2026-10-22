@@ -29,7 +29,7 @@ fn lifetime_only_receiver_checks_owner_arity_and_substitution()
         .state
         .infer
         .nominal(d, &[Argument::Lifetime(RegionId::STATIC)])?;
-    let mut fields = checker.receiver_fields(NodeId(0), receiver, d)?;
+    let mut fields = checker.receiver_fields(NodeId::new(0), receiver, d)?;
     let template = checker.facts.types.intern(Kind::Reference {
         region: RegionId::bound(0, 0)?,
         mutable: false,
@@ -43,14 +43,22 @@ fn lifetime_only_receiver_checks_owner_arity_and_substitution()
             ..
         })
     ));
-    assert!(checker.receiver_fields(NodeId(0), receiver, e).is_err());
+    assert!(
+        checker
+            .receiver_fields(NodeId::new(0), receiver, e)
+            .is_err()
+    );
     for arguments in [
         Vec::new(),
         vec![Argument::Lifetime(RegionId::STATIC); 2],
         vec![Argument::Type(receiver)],
     ] {
         let malformed = checker.state.infer.nominal(d, &arguments)?;
-        assert!(checker.receiver_fields(NodeId(0), malformed, d).is_err());
+        assert!(
+            checker
+                .receiver_fields(NodeId::new(0), malformed, d)
+                .is_err()
+        );
     }
     Ok(())
 }

@@ -268,7 +268,7 @@ impl Checker<'_> {
         }
         let unit = self.report.package.unit(function.node.file);
         for node in unit.configured.ast.list(function.parameters) {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let key = self.unattributed(NodeKey {

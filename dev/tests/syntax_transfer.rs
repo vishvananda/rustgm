@@ -48,12 +48,12 @@ fn body(mut x:i32)->i32 {
         |v| Ok(v.clone()),
     )
     .map_err(|e| format!("{e:?}"))?;
-    assert_eq!(root, NodeId(ast.root.0 + base));
+    assert_eq!(root, NodeId::new(ast.root.get() + base));
     let mut original_children = Vec::new();
     let mut copied_children = Vec::new();
     for (index, node) in ast.nodes.iter().enumerate() {
-        let old = NodeId(u32::try_from(index).map_err(|e| e.to_string())?);
-        let new = NodeId(old.0 + base);
+        let old = NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?);
+        let new = NodeId::new(old.get() + base);
         assert_eq!(
             target.node(new).span,
             Span {
@@ -69,7 +69,7 @@ fn body(mut x:i32)->i32 {
             copied_children,
             original_children
                 .iter()
-                .map(|n| NodeId(n.0 + base))
+                .map(|n| NodeId::new(n.get() + base))
                 .collect::<Vec<_>>(),
             "{index}: {:?}",
             node.kind

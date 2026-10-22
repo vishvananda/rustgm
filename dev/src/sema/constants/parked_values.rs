@@ -192,7 +192,7 @@ mod tests {
         let original = PatternScope {
             body: crate::resolve::unit::NodeKey {
                 file: crate::support::source::FileId(0),
-                node: crate::syntax::ast::NodeId(1),
+                node: crate::syntax::ast::NodeId::new(1),
             },
             owner: Some(crate::resolve::model::DefId(2)),
             binders: 1,

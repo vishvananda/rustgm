@@ -57,7 +57,7 @@ impl Checker<'_> {
             .list(item.generics)
             .iter()
             .copied()
-            .filter(|node| unit.configured.active[node.0 as usize])
+            .filter(|node| unit.configured.active[node.get() as usize])
             .map(|node| self.unattributed(NodeKey { node, ..key }))
             .collect();
         if let Some(anonymous) = self.report.resolution.anonymous_parameters.get(&key) {

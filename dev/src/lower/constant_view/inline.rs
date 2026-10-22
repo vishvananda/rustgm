@@ -10,7 +10,7 @@ pub(super) fn declarations<'a>(graph: &mut Graph<'a>) -> Result<Vec<&'a Body>, &
     graph.charge(count)?;
     graph.storage(count.saturating_mul(256 + size_of::<&Body>()))?;
     let mut bodies: Vec<_> = registry.bodies().collect();
-    bodies.sort_unstable_by_key(|body| (body.source.file.0, body.source.node.0));
+    bodies.sort_unstable_by_key(|body| (body.source.file.0, body.source.node.get()));
     for body in &bodies {
         let result = body
             .result
@@ -28,10 +28,10 @@ pub(super) fn declarations<'a>(graph: &mut Graph<'a>) -> Result<Vec<&'a Body>, &
         graph.declaration(format!(
             "declaration source={}:{} kind=inline type={} const=true status={status} parent={}:{}",
             body.source.file.0,
-            body.source.node.0,
+            body.source.node.get(),
             result.0,
             body.parent_body.file.0,
-            body.parent_body.node.0,
+            body.parent_body.node.get(),
         ))?;
     }
     Ok(bodies)
@@ -50,7 +50,9 @@ pub(super) fn roots(graph: &mut Graph<'_>, bodies: Vec<&Body>) -> Result<(), &'s
         let value = graph.value(result, value)?;
         graph.root(format!(
             "root inline source={}:{} type={} value=v{value}",
-            body.source.file.0, body.source.node.0, result.0,
+            body.source.file.0,
+            body.source.node.get(),
+            result.0,
         ))?;
     }
     Ok(())

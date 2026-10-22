@@ -72,7 +72,7 @@ fn source_image_ranges_preserve_fragments_and_reject_mismatched_storage() -> Res
     } = fixture()?;
     let key = NodeKey {
         file: FileId(0),
-        node: NodeId(0),
+        node: NodeId::new(0),
     };
     let mut queries = Queries::new(&report, &mut facts);
     // The empty-source fixture supplies its explicit positive budget; exhaustion is tested below.

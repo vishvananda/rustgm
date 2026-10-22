@@ -28,7 +28,7 @@ pub(in crate::sema) fn fixed_parameters(
     }
     (
         parameters,
-        variadic && unit.configured.active[last.0 as usize],
+        variadic && unit.configured.active[last.get() as usize],
     )
 }
 

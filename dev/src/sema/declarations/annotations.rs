@@ -17,7 +17,7 @@ impl Checker<'_> {
         for index in parameters.start..parameters.end {
             let unit = self.report.package.unit(key.file);
             let mut node = unit.configured.ast.edges[index as usize];
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             while let Kind::Attributed { value, .. } = self.kind(NodeKey { node, ..key }) {
@@ -156,7 +156,7 @@ impl Checker<'_> {
         }
         let unit = self.report.package.unit(key.file);
         for parameter in unit.configured.ast.list(parameters) {
-            if !unit.configured.active[parameter.0 as usize] {
+            if !unit.configured.active[parameter.get() as usize] {
                 continue;
             }
             let node = super::parameter_type(

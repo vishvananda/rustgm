@@ -141,7 +141,7 @@ impl Checker<'_> {
         let mut opaque = false;
         while let Some(node) = work.pop() {
             if !seen.insert(node)
-                || !self.report.package.unit(key.file).configured.active[node.0 as usize]
+                || !self.report.package.unit(key.file).configured.active[node.get() as usize]
             {
                 continue;
             }

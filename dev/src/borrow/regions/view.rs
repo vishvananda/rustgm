@@ -14,7 +14,8 @@ pub fn write(analysis: &Analysis, out: &mut impl Write) -> io::Result<()> {
         writeln!(
             out,
             "body {index} source={}:{}",
-            body.source.file.0, body.source.node.0
+            body.source.file.0,
+            body.source.node.get()
         )?;
         for (id, region) in body.identities.universals().enumerate() {
             writeln!(out, "  universal b{id}=g{}", region.0)?;

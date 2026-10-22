@@ -274,7 +274,7 @@ impl NodeScopes {
     pub fn get(&self, key: &(ModuleId, NodeId)) -> Option<&ScopeId> {
         let (module, node) = *key;
         if let Some(Some(file)) = self.files.get(module.0 as usize)
-            && let Some(slot) = self.slots[file.0 as usize].get(node.0 as usize)
+            && let Some(slot) = self.slots[file.0 as usize].get(node.get() as usize)
             && slot.module == module
         {
             return Some(&slot.scope);
@@ -296,10 +296,10 @@ impl NodeScopes {
         }
         let slots = &mut self.slots[file.0 as usize];
         if owner == file {
-            if node.0 as usize >= slots.len() {
-                slots.resize(node.0 as usize + 1, VACANT);
+            if node.get() as usize >= slots.len() {
+                slots.resize(node.get() as usize + 1, VACANT);
             }
-            let slot = &mut slots[node.0 as usize];
+            let slot = &mut slots[node.get() as usize];
             if slot.module == module {
                 slot.scope = scope;
                 return;

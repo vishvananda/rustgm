@@ -63,7 +63,7 @@ impl Unit {
         node: Option<NodeId>,
         name: &str,
     ) -> Result<bool, LexError> {
-        let Some(index) = node.and_then(|node| self.owner_indices[node.0 as usize]) else {
+        let Some(index) = node.and_then(|node| self.owner_indices[node.get() as usize]) else {
             return Ok(false);
         };
         let owner = &self.configured.owners[index.get() as usize - 1];
@@ -132,7 +132,7 @@ impl Unit {
                 .and_then(|n| n.checked_add(1))
                 .and_then(std::num::NonZeroU32::new)
                 .ok_or_else(|| error(0, "too many attribute owners"))?;
-            owner_indices[owner.node.0 as usize] = Some(index);
+            owner_indices[owner.node.get() as usize] = Some(index);
         }
         let original = original::Original::new(&configured, &literals);
         Ok(Self {

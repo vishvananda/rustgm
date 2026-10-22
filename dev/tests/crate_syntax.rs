@@ -31,8 +31,8 @@ fn closure_parameters_own_attributes_and_configuration() -> Result<(), String> {
             report.ast.node(value).kind,
             Kind::Parameter { .. }
         ));
-        assert_eq!(report.active[node.0 as usize], index == 1);
-        assert_eq!(report.active[value.0 as usize], index == 1);
+        assert_eq!(report.active[node.get() as usize], index == 1);
+        assert_eq!(report.active[value.get() as usize], index == 1);
     }
     assert_eq!(report.owners.len(), 2);
     assert_eq!(report.owners[0].node, parameters[0]);
@@ -169,10 +169,10 @@ fn every_child_precedes_its_owner_in_typed_arenas() -> Result<(), String> {
         let ast = parse_crate(source).map_err(|e| format!("{e:?}"))?;
         assert!(ast.lookahead_high_water <= 3);
         for index in 0..ast.nodes.len() {
-            let id = NodeId(u32::try_from(index).map_err(|e| e.to_string())?);
+            let id = NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?);
             children.clear();
             ast.push_children(id, &mut children);
-            assert!(children.iter().all(|child| child.0 < id.0));
+            assert!(children.iter().all(|child| child.get() < id.get()));
         }
     }
     Ok(())

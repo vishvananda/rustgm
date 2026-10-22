@@ -114,7 +114,7 @@ mod tests {
     fn source(node: u32) -> NodeKey {
         NodeKey {
             file: FileId(0),
-            node: NodeId(node),
+            node: NodeId::new(node),
         }
     }
     fn link() -> Link {

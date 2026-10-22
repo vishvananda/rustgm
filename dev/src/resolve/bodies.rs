@@ -296,7 +296,9 @@ impl Resolver<'_> {
                         let definition = &self.facts.definitions[target.0 as usize];
                         if definition.kind == DefKind::Generic
                             && definition.scope == c.scope
-                            && definition.node.is_some_and(|key| key.node.0 >= node.0)
+                            && definition
+                                .node
+                                .is_some_and(|key| key.node.get() >= node.get())
                         {
                             return Err(self.error(
                                 c,

@@ -12,7 +12,7 @@ use crate::{
 fn source_and_library_locations_keep_distinct_lookup_authority() -> Result<(), String> {
     let source = NodeKey {
         file: FileId(1),
-        node: NodeId(7),
+        node: NodeId::new(7),
     };
     let library = Origin::Library(source);
     assert_eq!(library.diagnostic(), Some(source));
@@ -115,7 +115,7 @@ fn external_publication_rejects_foreign_owners_and_duplicate_rows() -> Result<()
     assert_eq!(members.variants.len(), 1);
     let source = NodeKey {
         file: FileId(0),
-        node: NodeId(0),
+        node: NodeId::new(0),
     };
     assert!(
         members

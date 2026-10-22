@@ -68,7 +68,9 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
         writeln!(
             out,
             " result={} source={}:{}",
-            body.result.0, body.source.file.0, body.source.node.0
+            body.result.0,
+            body.source.file.0,
+            body.source.node.get()
         )?;
         contents(body, out)?;
         writeln!(out, "end-body")?;
@@ -123,7 +125,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         } else {
             write!(out, "-")?;
         }
-        writeln!(out, " source={}", local.source.0)?;
+        writeln!(out, " source={}", local.source.get())?;
     }
     for (id, projection) in body.projections.iter().enumerate() {
         write!(out, "  projection p{id} type={} base=", projection.ty.0)?;
@@ -219,7 +221,7 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
                     rvalue(body, value.kind, out)?;
                 }
             }
-            writeln!(out, " source={}", statement.source.0)?;
+            writeln!(out, " source={}", statement.source.get())?;
         }
         write!(out, "    ")?;
         match block.terminator {
@@ -236,7 +238,7 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
             Terminator::Unreachable => write!(out, "unreachable")?,
             Terminator::Panic => write!(out, "panic")?,
         }
-        writeln!(out, " source={}", block.source.0)?;
+        writeln!(out, " source={}", block.source.get())?;
     }
     Ok(())
 }
@@ -308,7 +310,8 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::InlineConstant(source) => write!(
             out,
             "inline-constant source={}:{}",
-            source.file.0, source.node.0
+            source.file.0,
+            source.node.get()
         ),
         Rvalue::SourceAssociated(_) => write!(out, "source-associated"),
         Rvalue::AssociatedConstant(instance) => write!(

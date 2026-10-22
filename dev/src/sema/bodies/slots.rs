@@ -46,19 +46,19 @@ impl Terms {
     }
     pub fn get(&self, key: NodeKey) -> Option<TermId> {
         match self {
-            Self::Dense(files) => files[key.file.0 as usize][key.node.0 as usize],
+            Self::Dense(files) => files[key.file.0 as usize][key.node.get() as usize],
             Self::Sparse(values) => values.get(&key).copied(),
         }
     }
     pub fn insert(&mut self, key: NodeKey, term: TermId) -> Option<TermId> {
         match self {
-            Self::Dense(files) => files[key.file.0 as usize][key.node.0 as usize].replace(term),
+            Self::Dense(files) => files[key.file.0 as usize][key.node.get() as usize].replace(term),
             Self::Sparse(values) => values.insert(key, term),
         }
     }
     pub fn remove(&mut self, key: NodeKey) {
         match self {
-            Self::Dense(files) => files[key.file.0 as usize][key.node.0 as usize] = None,
+            Self::Dense(files) => files[key.file.0 as usize][key.node.get() as usize] = None,
             Self::Sparse(values) => {
                 values.remove(&key);
             }
@@ -146,7 +146,7 @@ mod tests {
                 let file = FileId(100_000 + index);
                 let key = NodeKey {
                     file,
-                    node: NodeId(10_000_000 + index),
+                    node: NodeId::new(10_000_000 + index),
                 };
                 let mut terms = Terms::sparse();
                 terms.files(1_000_000);

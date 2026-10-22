@@ -133,10 +133,10 @@ impl Unit {
             .configured
             .ast
             .nodes
-            .get(target.0 as usize)
+            .get(target.get() as usize)
             .ok_or_else(|| error(0, "missing expansion target"))?;
         if !matches!(target_node.kind, Kind::Macro { .. })
-            || !self.configured.active[target.0 as usize]
+            || !self.configured.active[target.get() as usize]
         {
             return Err(error(
                 target_node.span.start,
@@ -178,17 +178,18 @@ impl Unit {
             self.original.save(
                 node,
                 self.configured.ast.node(node),
-                self.configured.active[node.0 as usize],
-                self.owner_indices[node.0 as usize],
+                self.configured.active[node.get() as usize],
+                self.owner_indices[node.get() as usize],
             );
-            self.configured.active[node.0 as usize] = false;
+            self.configured.active[node.get() as usize] = false;
             self.configured.ast.push_children(node, &mut obsolete);
         }
         self.retain_configuration(configuration, indices);
-        self.configured.active[target.0 as usize] = self.configured.active[new_root.0 as usize];
-        self.configured.active[new_root.0 as usize] = false;
-        self.configured.ast.nodes[target.0 as usize] =
-            self.configured.ast.nodes[new_root.0 as usize];
+        self.configured.active[target.get() as usize] =
+            self.configured.active[new_root.get() as usize];
+        self.configured.active[new_root.get() as usize] = false;
+        self.configured.ast.nodes[target.get() as usize] =
+            self.configured.ast.nodes[new_root.get() as usize];
         self.origins
             .extend(origins.iter().copied().map(|mut origin| {
                 origin.generated.start += base;
@@ -214,7 +215,7 @@ impl Unit {
         let attribute_base = add(self.configured.ast.attributes.len(), ast.attributes.len())?;
         let effect_base = add(self.configured.effects.len(), generated.effects.len())?;
         let owner_base = add(self.configured.owners.len(), generated.owners.len())?;
-        if generated.active.len() != ast.nodes.len() || ast.root.0 as usize >= ast.nodes.len() {
+        if generated.active.len() != ast.nodes.len() || ast.root.get() as usize >= ast.nodes.len() {
             return Err(error(0, "invalid configured expansion arena"));
         }
         let root = ast.root;
@@ -222,11 +223,11 @@ impl Unit {
             if node == root {
                 target
             } else {
-                NodeId(node.0 + node_base)
+                NodeId::new(node.get() + node_base)
             }
         };
         for owner in &mut generated.owners {
-            if owner.node.0 as usize >= ast.nodes.len()
+            if owner.node.get() as usize >= ast.nodes.len()
                 || owner.attributes.start > owner.attributes.end
                 || owner.attributes.end > generated.effects.len()
             {
@@ -316,7 +317,8 @@ impl Unit {
         let ast = crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?;
         let (ast, mut configuration) =
             Configuration::take(crate::expand::crate_syntax::configure(source, ast, config)?);
-        let root = NodeId(add(self.configured.ast.nodes.len(), ast.nodes.len())? + ast.root.0);
+        let root =
+            NodeId::new(add(self.configured.ast.nodes.len(), ast.nodes.len())? + ast.root.get());
         let indices = self.expansion_metadata(root, &ast, &mut configuration, 0, source.len())?;
         let root = append_syntax(source, 0, ast, &mut self.configured.ast, &mut self.literals)?;
         self.retain_configuration(configuration, indices);
@@ -328,7 +330,7 @@ impl Unit {
         self.owner_indices
             .resize(self.configured.ast.nodes.len(), None);
         for (owner, index) in configuration.owners.iter().zip(indices) {
-            self.owner_indices[owner.node.0 as usize] = Some(index);
+            self.owner_indices[owner.node.get() as usize] = Some(index);
         }
         self.configured.owners.extend(configuration.owners);
         self.configured.effects.extend(configuration.effects);
@@ -337,7 +339,7 @@ impl Unit {
     pub(crate) fn retire_arguments(&mut self, root: NodeId) {
         let mut work = vec![root];
         while let Some(node) = work.pop() {
-            self.configured.active[node.0 as usize] = false;
+            self.configured.active[node.get() as usize] = false;
             self.configured.ast.push_children(node, &mut work);
         }
     }

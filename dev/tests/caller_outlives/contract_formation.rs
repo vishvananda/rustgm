@@ -9,7 +9,7 @@ use rustgm::{
 fn source(index: u32) -> NodeKey {
     NodeKey {
         file: FileId(0),
-        node: NodeId(index),
+        node: NodeId::new(index),
     }
 }
 fn contract(f: &Fixture, ty: TypeId) -> Contract {

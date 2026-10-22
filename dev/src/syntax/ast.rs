@@ -6,8 +6,39 @@ use super::{
 };
 use crate::{lex::token::Punctuation, literal::Value};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct NodeId(pub u32);
+/// A syntax node's arena index, stored off by one so `Option<NodeId>` is as
+/// small as `NodeId`. Every observable use goes through [`NodeId::get`].
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct NodeId(std::num::NonZeroU32);
+
+impl NodeId {
+    /// The node at `index`; allocators use [`NodeId::checked`] instead.
+    #[must_use]
+    pub const fn new(index: u32) -> Self {
+        match std::num::NonZeroU32::new(index.wrapping_add(1)) {
+            Some(value) => Self(value),
+            None => Self(std::num::NonZeroU32::MAX),
+        }
+    }
+    /// The node at `index`, or `None` for the one unrepresentable index.
+    #[must_use]
+    pub const fn checked(index: u32) -> Option<Self> {
+        match std::num::NonZeroU32::new(index.wrapping_add(1)) {
+            Some(value) => Some(Self(value)),
+            None => None,
+        }
+    }
+    #[must_use]
+    pub const fn get(self) -> u32 {
+        self.0.get() - 1
+    }
+}
+
+impl std::fmt::Debug for NodeId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("NodeId").field(&self.get()).finish()
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct List {
@@ -356,7 +387,7 @@ impl<L> Default for Syntax<L> {
             edges: Vec::new(),
             literals: Vec::new(),
             captures: Vec::new(),
-            root: NodeId(0),
+            root: NodeId::new(0),
             lookahead_high_water: 0,
         }
     }
@@ -369,7 +400,7 @@ impl<L> Syntax<L> {
     }
     #[must_use]
     pub fn node(&self, id: NodeId) -> Node {
-        self.nodes[id.0 as usize]
+        self.nodes[id.get() as usize]
     }
 
     /// Change literal ownership while moving every syntax arena intact.

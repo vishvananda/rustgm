@@ -174,7 +174,7 @@ impl<'a> Context<'a> {
         let source = bodies.as_slice().first().map_or(
             NodeKey {
                 file: FileId(0),
-                node: NodeId(0),
+                node: NodeId::new(0),
             },
             |b| b.source,
         );

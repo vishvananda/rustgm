@@ -15,7 +15,7 @@ impl<S: Sources> Engine<'_, S> {
         let unit = self.loader.package.unit(file);
         let mut result = Flags::default();
         let Some(owner) = owner
-            .and_then(|node| unit.owner_indices[node.0 as usize])
+            .and_then(|node| unit.owner_indices[node.get() as usize])
             .map(|index| &unit.configured.owners[index.get() as usize - 1])
         else {
             return Ok(result);
@@ -108,7 +108,7 @@ fn strings<'a>(
 ) -> impl Iterator<Item = Result<StringAttribute, Error>> + 'a {
     let unit = package.unit(FileId(0));
     let root = package.modules[0].root;
-    let range = unit.owner_indices[root.0 as usize].map(|index| {
+    let range = unit.owner_indices[root.get() as usize].map(|index| {
         unit.configured.owners[index.get() as usize - 1]
             .attributes
             .clone()

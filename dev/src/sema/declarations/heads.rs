@@ -254,7 +254,7 @@ impl<'a> Heads<'a> {
         let mut lifetimes = 0;
         let mut slot = 0;
         for &node in unit.configured.ast.list(item.generics) {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let mut key = NodeKey { node, ..source };

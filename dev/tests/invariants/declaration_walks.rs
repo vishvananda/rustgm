@@ -62,7 +62,7 @@ fn skipped_subtrees_have_no_declaration_walk_effect() -> TestResult {
     let ast = &report.ast;
     let (mut leaves, mut inert) = (0, 0);
     for index in 0..ast.nodes.len() {
-        let node = NodeId(u32::try_from(index)?);
+        let node = NodeId::new(u32::try_from(index)?);
         let mut children = Vec::new();
         ast.push_children(node, &mut children);
         if is_leaf(&ast.node(node).kind) {
@@ -75,7 +75,7 @@ fn skipped_subtrees_have_no_declaration_walk_effect() -> TestResult {
                 assert!(
                     !effective(ast.node(descendant).kind),
                     "inert node {index} contains an effective node {}",
-                    descendant.0
+                    descendant.get()
                 );
             }
         }

@@ -103,7 +103,7 @@ impl Bases {
         })
     }
     fn node(&self, node: &mut NodeId) {
-        node.0 += self.nodes;
+        *node = NodeId::new(node.get() + self.nodes);
     }
     fn optional(&self, node: &mut Option<NodeId>) {
         if let Some(node) = node {
@@ -147,7 +147,7 @@ pub fn append<L, M>(
     mut span: impl FnMut(Span) -> Result<Span, LexError>,
     mut literal: impl FnMut(&L) -> Result<M, LexError>,
 ) -> Result<NodeId, LexError> {
-    if source.root.0 as usize >= source.nodes.len() {
+    if source.root.get() as usize >= source.nodes.len() {
         return Err(error(0, "syntax fragment has no root"));
     }
     let bases = Bases::new(source, destination)?;
@@ -159,7 +159,7 @@ pub fn append<L, M>(
             .lookahead_high_water
             .max(source.lookahead_high_water);
     }
-    result.map(|()| NodeId(source.root.0 + bases.nodes))
+    result.map(|()| NodeId::new(source.root.get() + bases.nodes))
 }
 fn optional_span(
     span: &mut Option<Span>,
@@ -184,9 +184,12 @@ impl Bases {
             self.kind(&mut node.kind, span)?;
             destination.nodes.push(node);
         }
-        destination
-            .edges
-            .extend(source.edges.iter().map(|n| NodeId(n.0 + self.nodes)));
+        destination.edges.extend(
+            source
+                .edges
+                .iter()
+                .map(|n| NodeId::new(n.get() + self.nodes)),
+        );
         for value in &source.literals {
             destination.literals.push(literal(value)?);
         }

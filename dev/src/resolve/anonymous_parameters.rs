@@ -35,7 +35,11 @@ impl Resolver<'_> {
             let name = self
                 .package
                 .names
-                .intern(&format!("#impl-trait-{}-{}", source.file.0, source.node.0))
+                .intern(&format!(
+                    "#impl-trait-{}-{}",
+                    source.file.0,
+                    source.node.get()
+                ))
                 .map_err(|e| self.error(context, source.node, e))?;
             u32::try_from(self.facts.definitions.len())
                 .map_err(|_| self.error(context, source.node, "too many definitions"))?;

@@ -336,7 +336,7 @@ impl<'a> Checker<'a> {
                 file: FileId(0),
                 body: NodeKey {
                     file: FileId(0),
-                    node: NodeId(0),
+                    node: NodeId::new(0),
                 },
                 module: ModuleId(0),
                 field_seen: Vec::new(),
@@ -604,7 +604,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
     fn active(&self, node: NodeId) -> bool {
-        self.report.package.unit(self.state.file).configured.active[node.0 as usize]
+        self.report.package.unit(self.state.file).configured.active[node.get() as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
         if function.body.is_none()
@@ -1478,7 +1478,7 @@ impl Checker<'_> {
                 let mut diverges = false;
                 for statement in unit.configured.ast.list(statements) {
                     if self.active(*statement) {
-                        diverges |= self.state.diverges[statement.0 as usize];
+                        diverges |= self.state.diverges[statement.get() as usize];
                     }
                 }
                 self.known(
@@ -1514,7 +1514,7 @@ impl Checker<'_> {
                 }
                 let mut diverges = false;
                 if let Some(value) = value {
-                    diverges = self.state.diverges[value.0 as usize];
+                    diverges = self.state.diverges[value.get() as usize];
                     // Compound patterns were constrained after their initializer
                     // by BindPattern; a literal's node type may now be adjusted.
                     if otherwise.is_none() && self.simple_pattern(pattern) {
@@ -2043,8 +2043,8 @@ impl Checker<'_> {
         if let Some(condition) = condition {
             let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
             self.coerce(condition, boolean)?;
-            self.state.diverges[node.0 as usize] =
-                frame.breaks.is_none() && self.state.diverges[condition.0 as usize];
+            self.state.diverges[node.get() as usize] =
+                frame.breaks.is_none() && self.state.diverges[condition.get() as usize];
         }
         self.finish_frame(
             frame,

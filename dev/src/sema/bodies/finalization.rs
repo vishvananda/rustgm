@@ -246,7 +246,7 @@ impl Checker<'_> {
                 file: self.state.file,
                 node,
             });
-            self.state.diverges.remove(node.0 as usize);
+            self.state.diverges.remove(node.get() as usize);
         }
         self.state.bindings.clear();
         self.state.checks.clear();

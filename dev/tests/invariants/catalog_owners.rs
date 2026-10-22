@@ -10,7 +10,7 @@ fn key() -> CallerKey {
     CallerKey {
         source: NodeKey {
             file: FileId(0),
-            node: NodeId(3),
+            node: NodeId::new(3),
         },
         declaration: Some(DefId(2)),
         universals: 1,
@@ -28,7 +28,7 @@ fn value(caller: CallerId) -> Use {
         selected: instance,
         original: NodeKey {
             file: FileId(0),
-            node: NodeId(7),
+            node: NodeId::new(7),
         },
         actual_result: TypeId::primitive(Primitive::U8),
         requested: TypeId::primitive(Primitive::U8),
@@ -112,7 +112,8 @@ fn catalog_growth_is_preflighted_for_both_independent_axes() -> Result<(), &'sta
             for n in 0..count {
                 let mut identity = key();
                 if many_callers {
-                    identity.source.node = NodeId(u32::try_from(n).map_err(|_| "node overflow")?);
+                    identity.source.node =
+                        NodeId::new(u32::try_from(n).map_err(|_| "node overflow")?);
                 }
                 let caller = catalog.caller(identity, publication)?;
                 let mut entry = value(caller);
@@ -126,7 +127,7 @@ fn catalog_growth_is_preflighted_for_both_independent_axes() -> Result<(), &'sta
             catalog.bytes = LIMIT;
             let before = (catalog.callers.len(), catalog.uses.len());
             let mut entry = value(CallerId(NonZeroU32::MIN));
-            entry.original.node = NodeId(900);
+            entry.original.node = NodeId::new(900);
             assert!(catalog.retain_use(entry).is_err());
             assert!(
                 catalog

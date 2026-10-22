@@ -52,7 +52,7 @@ fn contents_validate_image_identity_masks_and_scalar_values() -> Result<(), Stri
     } = fixture()?;
     let key = NodeKey {
         file: FileId(0),
-        node: NodeId(0),
+        node: NodeId::new(0),
     };
     let samples = {
         let mut evaluator = Evaluator::new(&report, &mut facts);

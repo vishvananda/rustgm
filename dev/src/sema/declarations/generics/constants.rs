@@ -241,7 +241,7 @@ impl Checker<'_> {
         let mut work = vec![(root, context)];
         let mut children = Vec::new();
         while let Some((key, context)) = work.pop() {
-            if !self.report.package.unit(key.file).configured.active[key.node.0 as usize]
+            if !self.report.package.unit(key.file).configured.active[key.node.get() as usize]
                 || !self.constant_dependencies.insert(key)
             {
                 continue;

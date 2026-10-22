@@ -543,8 +543,8 @@ impl Checker<'_> {
                 } else {
                     inherited
                 };
-                if !unit.configured.active[node.0 as usize]
-                    || std::mem::replace(&mut seen[node.0 as usize], true)
+                if !unit.configured.active[node.get() as usize]
+                    || std::mem::replace(&mut seen[node.get() as usize], true)
                 {
                     continue;
                 }
@@ -1075,7 +1075,7 @@ impl Checker<'_> {
         let unit = self.report.package.unit(key.file);
         let mut declared = Vec::new();
         for mut node in unit.configured.ast.list(list).iter().copied() {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
@@ -1141,7 +1141,7 @@ impl Checker<'_> {
         self.children.clear();
         let unit = self.report.package.unit(key.file);
         for node in unit.configured.ast.list(list).iter().copied() {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let key = self.unattributed(NodeKey {
@@ -1201,7 +1201,7 @@ impl Checker<'_> {
                     .list(signature.parameters)
                     .iter()
                     .copied()
-                    .find(|node| unit.configured.active[node.0 as usize]);
+                    .find(|node| unit.configured.active[node.get() as usize]);
                 for node in unit
                     .configured
                     .ast
@@ -1210,7 +1210,7 @@ impl Checker<'_> {
                     .rev()
                     .copied()
                 {
-                    if unit.configured.active[node.0 as usize] {
+                    if unit.configured.active[node.get() as usize] {
                         self.schedule_parameter(
                             NodeKey { node, ..key },
                             owner,

@@ -48,7 +48,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
             false,
         )?;
         if let Some(key) = definition.node {
-            write!(out, " source={}:{}", key.file.0, key.node.0)?;
+            write!(out, " source={}:{}", key.file.0, key.node.get())?;
         }
         writeln!(out)?;
     }

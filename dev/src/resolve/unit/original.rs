@@ -35,7 +35,7 @@ impl Original {
         }
     }
     pub(super) fn save(&mut self, id: NodeId, node: Node, active: bool, owner: Option<NonZeroU32>) {
-        if (id.0 as usize) < self.syntax.nodes {
+        if (id.get() as usize) < self.syntax.nodes {
             self.overwritten.entry(id).or_insert(Saved {
                 node,
                 active,
@@ -66,9 +66,9 @@ impl Unit {
             .ok_or_else(|| error(0, "invalid original owner-index prefix"))?
             .to_vec();
         for (id, saved) in &original.overwritten {
-            ast.nodes[id.0 as usize] = saved.node;
-            active[id.0 as usize] = saved.active;
-            owner_indices[id.0 as usize] = saved.owner;
+            ast.nodes[id.get() as usize] = saved.node;
+            active[id.get() as usize] = saved.active;
+            owner_indices[id.get() as usize] = saved.owner;
         }
         let configured = ConfiguredSyntax {
             ast,

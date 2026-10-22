@@ -134,7 +134,7 @@ impl Checker<'_> {
         let mut inputs = Vec::new();
         let mut changed = false;
         for &node in unit.configured.ast.list(syntax.parameters) {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             let parameter = self.unattributed(NodeKey { node, ..key });

@@ -489,14 +489,14 @@ impl<'a> Builder<'a> {
         self.syntax.ast.node(node).kind
     }
     fn active(&self, node: NodeId) -> bool {
-        self.syntax.active[node.0 as usize]
+        self.syntax.active[node.get() as usize]
     }
     fn fact(&self, node: NodeId) -> Result<&NodeFacts, Error> {
         if let Some(root) = self.inline_root(node) {
             return Ok(&root.node);
         }
         self.node_facts
-            .get(node.0 as usize)
+            .get(node.get() as usize)
             .ok_or_else(|| self.error(node, "missing node facts"))
     }
     fn ty(&self, node: NodeId) -> Result<TypeId, Error> {
@@ -505,7 +505,7 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing solved type"))
     }
     fn value(&self, node: NodeId) -> Result<ValueId, Error> {
-        let value = self.scratch.values[self.body.source.file.0 as usize][node.0 as usize];
+        let value = self.scratch.values[self.body.source.file.0 as usize][node.get() as usize];
         if value == NO_VALUE {
             return Err(self.error(node, "missing evaluated value"));
         }
@@ -550,7 +550,7 @@ impl<'a> Builder<'a> {
                 AdjustmentKind::Never => {}
             }
         }
-        let slot = &mut self.scratch.values[self.body.source.file.0 as usize][node.0 as usize];
+        let slot = &mut self.scratch.values[self.body.source.file.0 as usize][node.get() as usize];
         if *slot == NO_VALUE {
             self.scratch.touched.push(node);
         }
@@ -799,7 +799,7 @@ impl<'a> Builder<'a> {
             self.return_value(root, value, self.boundary(root, scopes::Kind::Body)?)?;
         }
         for node in self.scratch.touched.drain(..) {
-            self.scratch.values[self.body.source.file.0 as usize][node.0 as usize] = NO_VALUE;
+            self.scratch.values[self.body.source.file.0 as usize][node.get() as usize] = NO_VALUE;
         }
         for definition in self.scratch.bindings.drain(..) {
             self.scratch.definitions[definition.0 as usize] = None;

@@ -89,8 +89,8 @@ fn owned_prefix_events_do_not_consume_projection_or_foreign_goal_events() -> Tes
     let mut store = Store::default();
     let mut context = Context::default();
     let mut events = Notifications::default();
-    let owner = NodeId(10);
-    let foreign = NodeId(20);
+    let owner = NodeId::new(10);
+    let foreign = NodeId::new(20);
     events.own(owner, &[0])?;
     events.own(foreign, &[1])?;
     assert_eq!(events.next_owned(&mut context, owner)?, Some(0));
@@ -124,11 +124,11 @@ fn completed_prefix_seed_without_watch_cannot_leave_an_active_owner() -> TestRes
     use crate::syntax::ast::NodeId;
     let mut events = Notifications::default();
     let mut context = Context::default();
-    events.own(NodeId(1), &[0])?;
-    assert!(events.own(NodeId(2), &[0]).is_err());
+    events.own(NodeId::new(1), &[0])?;
+    assert!(events.own(NodeId::new(2), &[0]).is_err());
     events.complete(&mut context, 0)?;
-    assert_eq!(events.next_owned(&mut context, NodeId(1))?, None);
-    events.own(NodeId(2), &[0])?;
-    assert_eq!(events.next_owned(&mut context, NodeId(2))?, Some(0));
+    assert_eq!(events.next_owned(&mut context, NodeId::new(1))?, None);
+    events.own(NodeId::new(2), &[0])?;
+    assert_eq!(events.next_owned(&mut context, NodeId::new(2))?, Some(0));
     Ok(())
 }

@@ -85,7 +85,7 @@ impl SourceComputation {
             entry.selected.definition.0,
             entry.selected.arguments.0,
             caller.source.file.0,
-            caller.source.node.0,
+            caller.source.node.get(),
             entry.input.definition.0,
             entry.input.arguments.0,
             entry.actual_result.0,

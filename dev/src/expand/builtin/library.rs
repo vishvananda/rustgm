@@ -30,9 +30,9 @@ pub fn option_environment(
             span,
             kind: Kind::Literal(0),
         });
-        NodeId(0)
+        NodeId::new(0)
     });
-    ast.root = NodeId(u32::from(value.is_some()));
+    ast.root = NodeId::new(u32::from(value.is_some()));
     ast.nodes.push(Node {
         span,
         kind: Kind::LibraryValue {
@@ -42,7 +42,7 @@ pub fn option_environment(
     });
     if grammar == MacroContext::Statements {
         let tail = ast.root;
-        ast.root = NodeId(ast.root.0 + 1);
+        ast.root = NodeId::new(ast.root.get() + 1);
         ast.nodes.push(Node {
             span,
             kind: Kind::Expansion {

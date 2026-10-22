@@ -17,7 +17,7 @@ impl<L> Syntax<L> {
         reason = "exhaustive typed child dispatch is kept together and audited as a dispatch function"
     )]
     pub fn push_children(&self, id: NodeId, output: &mut Vec<NodeId>) {
-        match self.nodes[id.0 as usize].kind {
+        match self.nodes[id.get() as usize].kind {
             Kind::GenericMethodCall {
                 receiver,
                 method,

@@ -72,7 +72,7 @@ fn install(unit: &mut Unit, original: &str, corrupt: bool) -> Result<(), String>
         configured.ast.nodes[0].span.end = u32::MAX;
     }
     unit.install_expansion(
-        NodeId(u32::try_from(index).map_err(|e| e.to_string())?),
+        NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?),
         &stream.source,
         configured,
         &stream.origins,
@@ -124,9 +124,9 @@ fn generated_configuration_and_literal_ownership_survive_installation() -> Resul
     install(&mut unit, source, false)?;
     let owner = &unit.configured.owners[0];
     assert!(!owner.enabled);
-    assert!(!unit.configured.active[owner.node.0 as usize]);
+    assert!(!unit.configured.active[owner.node.get() as usize]);
     assert_eq!(
-        unit.owner_indices[owner.node.0 as usize].map(std::num::NonZeroU32::get),
+        unit.owner_indices[owner.node.get() as usize].map(std::num::NonZeroU32::get),
         Some(1)
     );
     let hidden = unit

@@ -78,12 +78,12 @@ struct NodeIndex {
 }
 impl NodeIndex {
     fn reset(&mut self, root: NodeId) {
-        self.root = root.0;
+        self.root = root.get();
         self.window.clear();
         recycle(&mut self.sparse);
     }
     fn get(&self, node: NodeId) -> [u32; 2] {
-        match self.root.checked_sub(node.0) {
+        match self.root.checked_sub(node.get()) {
             Some(offset) if offset < DENSE_SPAN => self
                 .window
                 .get(offset as usize)
@@ -93,7 +93,7 @@ impl NodeIndex {
         }
     }
     fn slot(&mut self, node: NodeId) -> &mut [u32; 2] {
-        match self.root.checked_sub(node.0) {
+        match self.root.checked_sub(node.get()) {
             Some(offset) if offset < DENSE_SPAN => {
                 let offset = offset as usize;
                 if offset >= self.window.len() {
@@ -129,7 +129,7 @@ impl Facts {
         }
     }
     pub(crate) fn finish(mut self) -> (Vec<Scope>, Scratch) {
-        self.scratch.index.reset(NodeId(0));
+        self.scratch.index.reset(NodeId::new(0));
         self.scratch.nodes.clear();
         self.scratch.same_source.clear();
         recycle(&mut self.scratch.bindings);
@@ -368,7 +368,7 @@ impl Walker<'_> {
         Ok(())
     }
     fn active(&self, node: NodeId) -> bool {
-        self.syntax.active[node.0 as usize]
+        self.syntax.active[node.get() as usize]
     }
     fn record(&mut self, node: NodeId, context: Context) -> Result<(), Error> {
         let info = Node {

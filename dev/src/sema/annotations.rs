@@ -118,7 +118,7 @@ impl Scratch {
                     push(result);
                 }
                 for &parameter in unit.configured.ast.list(parameters).iter().rev() {
-                    if unit.configured.active[parameter.0 as usize] {
+                    if unit.configured.active[parameter.get() as usize] {
                         push(declarations::parameter_type(
                             host.report(),
                             NodeKey {
@@ -254,7 +254,7 @@ impl Scratch {
         let (fixed, variadic) =
             declarations::fixed_parameters(host.report(), key, function.parameters);
         for &parameter in unit.configured.ast.list(fixed) {
-            if unit.configured.active[parameter.0 as usize] {
+            if unit.configured.active[parameter.get() as usize] {
                 let node = declarations::parameter_type(
                     host.report(),
                     NodeKey {

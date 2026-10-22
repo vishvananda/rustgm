@@ -214,7 +214,7 @@ fn concrete_proofs_require_the_matching_instance_owner_and_original() -> TestRes
         .ok_or("swapped proof accepted")?;
     assert!(error.message.contains("another body"));
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
-    contract.source.node.0 += 1;
+    contract.source.node = crate::syntax::ast::NodeId::new(contract.source.node.get() + 1);
     assert!(prove(&mut f.facts, &checked, body, &contract).is_err());
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
     contract.key = crate::body::ir::BodyKey::Anonymous(body.source);

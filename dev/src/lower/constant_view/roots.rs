@@ -142,7 +142,11 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
             ),
             Owner::AnonymousInstance(instance) => format!("anonymous-instance:{instance}"),
             Owner::AnonymousConstant => {
-                format!("anonymous:{}:{}", body.source.file.0, body.source.node.0)
+                format!(
+                    "anonymous:{}:{}",
+                    body.source.file.0,
+                    body.source.node.get()
+                )
             }
         };
         for (id, value) in entries {
@@ -206,7 +210,7 @@ fn owner_key(
         }
         BodyKey::Declaration(id) => (0, id.0, 0, 0, 0, 0),
         BodyKey::Closure(id) => (1, id.0, 0, 0, 0, 0),
-        BodyKey::Anonymous(node) => (2, node.file.0, node.node.0, 0, 0, 0),
+        BodyKey::Anonymous(node) => (2, node.file.0, node.node.get(), 0, 0, 0),
         BodyKey::AnonymousInstance(instance) => {
             result[0] = 4;
             result[1..].copy_from_slice(&instance.order(facts)?);

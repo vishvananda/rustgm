@@ -490,7 +490,7 @@ impl Declarations {
             .iter()
             .map(|(&key, &ty)| (key, ty))
             .collect();
-        bodies.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.0));
+        bodies.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.get()));
         bodies
     }
     pub(super) fn lifetime_fact_count(&self) -> usize {
@@ -679,7 +679,7 @@ impl Declarations {
     pub fn node(&self, key: NodeKey) -> Option<&NodeFacts> {
         self.nodes
             .get(key.file.0 as usize)?
-            .get(key.node.0 as usize)
+            .get(key.node.get() as usize)
     }
     /// Selected constructor formation keeps block values distinct from transparent wrappers.
     pub(crate) fn direct_variant(
@@ -700,7 +700,7 @@ impl Declarations {
     pub(super) fn node_mut(&mut self, key: NodeKey) -> Option<&mut NodeFacts> {
         self.nodes
             .get_mut(key.file.0 as usize)?
-            .get_mut(key.node.0 as usize)
+            .get_mut(key.node.get() as usize)
     }
     pub(crate) fn error(report: &Report, key: NodeKey, message: impl Into<String>) -> Error {
         Error::at(

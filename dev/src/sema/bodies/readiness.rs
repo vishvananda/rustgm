@@ -79,7 +79,12 @@ impl Checker<'_> {
             .function_indices
             .get(&definition)
             .copied()
-            .ok_or_else(|| self.error(NodeId(0), "missing demanded const function declaration"))?;
+            .ok_or_else(|| {
+                self.error(
+                    NodeId::new(0),
+                    "missing demanded const function declaration",
+                )
+            })?;
         self.start_function(self.facts.functions[index])
     }
     pub(in crate::sema) fn pending_body(&self) -> bool {
@@ -213,7 +218,7 @@ impl State {
                 node,
             }));
         self.diverges
-            .retain_sparse(self.touched.iter().map(|node| node.0 as usize));
+            .retain_sparse(self.touched.iter().map(|node| node.get() as usize));
         self.locals
             .retain_sparse(self.bindings.iter().map(|binding| binding.0 as usize));
     }

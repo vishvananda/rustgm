@@ -172,7 +172,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             .ok_or(Error {
                 source: NodeKey {
                     file: crate::resolve::unit::FileId(0),
-                    node: crate::syntax::ast::NodeId(0),
+                    node: crate::syntax::ast::NodeId::new(0),
                 },
                 message: "missing constant execution body",
             })?;

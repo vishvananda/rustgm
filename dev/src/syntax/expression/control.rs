@@ -104,7 +104,7 @@ impl Parser<'_, '_> {
         while let Kind::Attributed { value, .. } = self.ast.node(node).kind {
             node = value;
         }
-        if let Kind::Macro { context, .. } = &mut self.ast.nodes[node.0 as usize].kind {
+        if let Kind::Macro { context, .. } = &mut self.ast.nodes[node.get() as usize].kind {
             *context = crate::syntax::ast::MacroContext::Statements;
         }
     }
@@ -479,7 +479,7 @@ impl Parser<'_, '_> {
             } else {
                 BlockFlavor::Async
             })?;
-            self.ast.nodes[block.0 as usize].span.start = start;
+            self.ast.nodes[block.get() as usize].span.start = start;
             Ok(block)
         } else {
             self.closure(moving, true, start)

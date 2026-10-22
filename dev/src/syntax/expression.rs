@@ -164,7 +164,9 @@ impl<'source> Parser<'source, '_> {
     )]
     fn node(&mut self, start: u32, kind: Kind) -> Result<NodeId, LexError> {
         let id = u32::try_from(self.ast.nodes.len())
-            .map_err(|_| error(start, "too many syntax nodes"))?;
+            .ok()
+            .and_then(NodeId::checked)
+            .ok_or_else(|| error(start, "too many syntax nodes"))?;
         self.ast.nodes.push(Node {
             span: Span {
                 start,
@@ -172,7 +174,7 @@ impl<'source> Parser<'source, '_> {
             },
             kind,
         });
-        Ok(NodeId(id))
+        Ok(id)
     }
     /// `list` for exactly one child, without staging it in scratch.
     #[cfg_attr(not(debug_assertions), inline(always))]
@@ -401,7 +403,7 @@ impl<'source> Parser<'source, '_> {
                         BlockFlavor::Const
                     };
                     let block = self.block(flavor)?;
-                    self.ast.nodes[block.0 as usize].span.start = token.start;
+                    self.ast.nodes[block.get() as usize].span.start = token.start;
                     Ok(block)
                 }
                 Word::Underscore => {

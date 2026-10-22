@@ -63,7 +63,7 @@ fn original_dispatch_keeps_full_operands_and_concrete_dispatch_stays_strict() ->
 fn template_entry_rejects_foreign_source_key_and_changed_declared_result() -> Result {
     let (mut facts, initializer, body, contract) = fixture()?;
     let mut wrong_body = body.clone();
-    wrong_body.source.node.0 += 1;
+    wrong_body.source.node = crate::syntax::ast::NodeId::new(wrong_body.source.node.get() + 1);
     assert!(
         super::initializer(
             &mut facts,
@@ -179,7 +179,7 @@ fn declared_source_aliases_do_not_admit_missing_or_foreign_ownership() -> Result
     assert!(parameters.validate(&mut facts).is_err());
     assert!(facts.body_work.canonical_steps > before);
     let mut record = facts.body_regions[region.0 as usize - 1];
-    record.body.node.0 += 1;
+    record.body.node = crate::syntax::ast::NodeId::new(record.body.node.get() + 1);
     facts.body_regions[region.0 as usize - 1] = record;
     assert!(owned_regions(&mut facts, &contract).is_err());
     Ok(())
@@ -295,7 +295,7 @@ fn original_anonymous_dispatch_keeps_the_exact_deferred_operand() -> Result {
 fn original_anonymous_entry_rejects_foreign_contract_and_result() -> Result {
     let (mut facts, body, contract) = anonymous_fixture()?;
     let mut wrong = contract.clone();
-    wrong.source.node.0 += 1;
+    wrong.source.node = crate::syntax::ast::NodeId::new(wrong.source.node.get() + 1);
     assert!(super::anonymous(&mut facts, &mut body.clone(), &mut wrong).is_err());
     let mut wrong = contract.clone();
     wrong.universals += 1;
@@ -304,7 +304,7 @@ fn original_anonymous_entry_rejects_foreign_contract_and_result() -> Result {
     wrong.result = TypeId::primitive(Primitive::U16);
     assert!(super::anonymous(&mut facts, &mut wrong, &mut contract.clone()).is_err());
     let mut wrong = body;
-    wrong.source.node.0 += 1;
+    wrong.source.node = crate::syntax::ast::NodeId::new(wrong.source.node.get() + 1);
     assert!(super::anonymous(&mut facts, &mut wrong, &mut contract.clone()).is_err());
     Ok(())
 }

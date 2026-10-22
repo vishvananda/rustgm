@@ -105,7 +105,7 @@ fn opaques(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             id.0,
             declaration.owner.0,
             declaration.source.file.0,
-            declaration.source.node.0,
+            declaration.source.node.get(),
             declaration.application.0
         )?;
         if let Some(hidden) = declaration.hidden {

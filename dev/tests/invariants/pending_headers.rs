@@ -35,7 +35,7 @@ fn implementation(
         owner: DefId(owner),
         source: NodeKey {
             file: FileId(0),
-            node: NodeId(owner),
+            node: NodeId::new(owner),
         },
         predicate: Predicate {
             ty,

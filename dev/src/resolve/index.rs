@@ -34,7 +34,7 @@ pub(crate) const fn is_leaf(kind: &Kind) -> bool {
 }
 /// Borrow a node's kind without copying the node record.
 fn kind_of<L>(ast: &crate::syntax::ast::Syntax<L>, node: NodeId) -> &Kind {
-    &ast.nodes[node.0 as usize].kind
+    &ast.nodes[node.get() as usize].kind
 }
 /// Small expression, pattern and type subtrees built only from leaves, such as
 /// `a::b`, `x + f(y)`, `x: u64` or `u64`, contain no declaration, scope or
@@ -341,7 +341,7 @@ impl Resolver<'_> {
         self.package.unit(c.file).configured.ast.node(node).kind
     }
     pub fn active(&self, c: Context, node: NodeId) -> bool {
-        self.package.unit(c.file).configured.active[node.0 as usize]
+        self.package.unit(c.file).configured.active[node.get() as usize]
     }
     fn list(&mut self, c: Context, list: List) {
         for offset in (list.start..list.end).rev() {

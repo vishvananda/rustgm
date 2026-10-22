@@ -50,7 +50,7 @@ pub fn build_roots(
         node: bodies.program().bodies.first().map_or(
             NodeKey {
                 file: crate::resolve::unit::FileId(0),
-                node: crate::syntax::ast::NodeId(0),
+                node: crate::syntax::ast::NodeId::new(0),
             },
             |body| body.source,
         ),

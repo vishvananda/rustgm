@@ -39,7 +39,7 @@ impl Fixture {
                 },
                 source: NodeKey {
                     file: FileId(0),
-                    node: NodeId(0),
+                    node: NodeId::new(0),
                 },
                 result: TypeId::UNIT,
                 locals: Vec::new(),
@@ -50,7 +50,7 @@ impl Fixture {
                 scalars: vec![Scalar::Boolean(true)],
                 arguments: Vec::new(),
                 statements: vec![Statement {
-                    source: NodeId(0),
+                    source: NodeId::new(0),
                     action: Action::Evaluate(ValueId(0)),
                 }],
                 blocks: Vec::new(),
@@ -59,7 +59,7 @@ impl Fixture {
     }
     fn action(&mut self, action: Action) {
         self.body.statements.push(Statement {
-            source: NodeId(0),
+            source: NodeId::new(0),
             action,
         });
     }
@@ -71,7 +71,7 @@ impl Fixture {
             kind,
             definition: None,
             mutable: true,
-            source: NodeId(0),
+            source: NodeId::new(0),
             storage_parent: id.0.checked_sub(1).map(LocalId),
         });
         self.action(Action::StorageLive(id));
@@ -164,7 +164,7 @@ impl Fixture {
         self.body.blocks.push(Block {
             start,
             end,
-            source: NodeId(0),
+            source: NodeId::new(0),
             terminator,
         });
         Ok(())

@@ -17,7 +17,7 @@ pub(crate) fn write(program: &Program, pending: &Pending, out: &mut impl Write) 
             method.signature.0,
             method.captures,
             method.source.file.0,
-            method.source.node.0
+            method.source.node.get()
         )?;
     }
     for (index, facts) in pending.bodies.iter().enumerate() {
@@ -78,7 +78,10 @@ fn write_owned(index: usize, facts: &super::values::Facts, out: &mut impl Write)
         writeln!(
             out,
             " birth=b{}:{} exits-before={} source={}",
-            value.block.0, value.before, value.exits_before, value.source.0
+            value.block.0,
+            value.before,
+            value.exits_before,
+            value.source.get()
         )?;
     }
     for release in &facts.returned {

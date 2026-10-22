@@ -158,7 +158,7 @@ impl Queries<'_> {
         let unit = self.report.package.unit(key.file);
         let mut ordinal = 0;
         for &node in unit.configured.ast.list(fields) {
-            if !unit.configured.active[node.0 as usize] {
+            if !unit.configured.active[node.get() as usize] {
                 continue;
             }
             self.budget()?;

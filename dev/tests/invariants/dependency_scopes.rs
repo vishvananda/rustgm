@@ -168,7 +168,9 @@ fn foreign_and_stale_equation_publication_cannot_change_dependency_rows() -> Res
     let before = fixture.facts.body_work.canonical_steps;
     let mut foreign = fixture.equations.clone();
     let position = foreign[0].start;
-    fixture.facts.region_equalities[position].body.node.0 += 1;
+    fixture.facts.region_equalities[position].body.node = crate::syntax::ast::NodeId::new(
+        fixture.facts.region_equalities[position].body.node.get() + 1,
+    );
     assert!(
         canonicalize(
             &mut fixture.facts,
@@ -180,7 +182,9 @@ fn foreign_and_stale_equation_publication_cannot_change_dependency_rows() -> Res
         )
         .is_err()
     );
-    fixture.facts.region_equalities[position].body.node.0 -= 1;
+    fixture.facts.region_equalities[position].body.node = crate::syntax::ast::NodeId::new(
+        fixture.facts.region_equalities[position].body.node.get() - 1,
+    );
     foreign[1] = position..position + 1;
     assert!(
         canonicalize(
@@ -207,8 +211,13 @@ fn foreign_and_stale_equation_publication_cannot_change_dependency_rows() -> Res
     );
     fixture.facts.body_regions[fixture.region.0 as usize - 1]
         .body
-        .node
-        .0 += 1;
+        .node = crate::syntax::ast::NodeId::new(
+        fixture.facts.body_regions[fixture.region.0 as usize - 1]
+            .body
+            .node
+            .get()
+            + 1,
+    );
     assert!(
         canonicalize(
             &mut fixture.facts,

@@ -35,7 +35,8 @@ pub fn write(analysis: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
         writeln!(
             out,
             "body {index} source={}:{}",
-            body.source.file.0, body.source.node.0
+            body.source.file.0,
+            body.source.node.get()
         )?;
         if let Some(detail) = &inspection.detail {
             write_body(body, detail, out)?;

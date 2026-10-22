@@ -6,7 +6,7 @@ fn inspect(f: &Fixture) -> Result<(), &'static str> {
     body.blocks = vec![Block {
         start: 0,
         end: u32::try_from(body.statements.len()).map_err(|_| "statements")?,
-        source: NodeId(0),
+        source: NodeId::new(0),
         terminator: Terminator::Unreachable,
     }];
     ownership::analyze_body(

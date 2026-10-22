@@ -827,7 +827,7 @@ fn repeated_values_share_only_their_complete_instance() -> Result<(), Box<dyn st
         .iter()
         .map(|(key, instance)| (*key, *instance))
         .collect::<Vec<_>>();
-    uses.sort_by_key(|(key, _)| (key.file.0, key.node.0));
+    uses.sort_by_key(|(key, _)| (key.file.0, key.node.get()));
     assert_eq!(uses.len(), 3);
     assert_eq!(uses[0].1, uses[2].1);
     assert_ne!(uses[0].1.arguments, uses[1].1.arguments);

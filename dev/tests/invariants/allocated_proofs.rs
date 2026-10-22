@@ -125,7 +125,7 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
     let evidence = proof(body.source, first..first + 2);
     assert!(owner.record(0, &evidence, first + 1..first + 2).is_err());
     let mut foreign = evidence.clone();
-    foreign.source.node.0 += 1;
+    foreign.source.node = crate::syntax::ast::NodeId::new(foreign.source.node.get() + 1);
     assert!(owner.record(0, &foreign, first..first + 2).is_err());
     let mut gapped = evidence.clone();
     gapped.proof = Obligations::new(first);
@@ -145,7 +145,8 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
             .is_err()
     );
     contract.proofs.push(evidence);
-    contract.proofs[0].source.node.0 += 1;
+    contract.proofs[0].source.node =
+        crate::syntax::ast::NodeId::new(contract.proofs[0].source.node.get() + 1);
     assert!(
         owner
             .finish(&mut facts, &body, &contract, first + 2)
