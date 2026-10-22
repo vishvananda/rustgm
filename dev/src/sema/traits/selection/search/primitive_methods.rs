@@ -8,7 +8,12 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
-        match primitive_methods::candidate(facts, &mut frame.inputs.context, &frame.goal) {
+        match primitive_methods::candidate(
+            facts,
+            &mut frame.inputs.context,
+            &frame.goal,
+            frame.inference != super::frames::Inference::Disabled,
+        ) {
             Ok(Candidate::Present(descriptor)) => {
                 // An automatic method never suppresses a second matching impl.
                 if frame.selected.is_some() {

@@ -345,12 +345,13 @@ pub(in crate::sema) fn candidate(
     facts: &Declarations,
     context: &mut Context,
     goal: &Predicate,
+    selecting: bool,
 ) -> Result<Candidate, infer::Error> {
     let Some((item, arguments)) = goal.trait_arguments() else {
         return Ok(Candidate::Unrelated);
     };
     if let Some(kind) = facts.associated.comparison(DefId(item.0)) {
-        return comparison_candidate(facts, context, goal, kind, arguments);
+        return comparison_candidate(facts, context, goal, kind, arguments, selecting);
     }
     let Some((hook, _)) = facts
         .associated

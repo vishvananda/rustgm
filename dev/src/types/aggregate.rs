@@ -7,6 +7,7 @@ mod packing;
 mod preparation;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
+pub use metadata::MetadataPreparation;
 
 /// Completed fields may still await concrete substitution or storage normalization.
 pub enum ShapeReadiness<'a> {
@@ -76,7 +77,7 @@ pub struct Definitions {
     variants: Vec<Variant>,
     instances: Option<Box<instances::Instances>>,
     storage: Option<Box<field_forms::Fields>>,
-    metadata_ready: std::collections::HashSet<TypeId>,
+    metadata_ready: HashMap<TypeId, metadata::Readiness>,
     suppressed_fields: std::collections::HashSet<ItemId>,
     interior_storage: std::collections::HashSet<ItemId>,
 }

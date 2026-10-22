@@ -261,3 +261,9 @@ fn associated_method_callables_execute_against_rustc() -> Result<(), Box<dyn std
         ],
     )
 }
+
+#[path = "method_contracts/pointee_inputs.rs"]
+mod pointee_inputs;
+
+#[path = "method_contracts/borrow_values.rs"]
+mod borrow_values;

@@ -58,7 +58,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("aliased-blanket", true, true),
     ("shared-loan-protected", false, false),
     ("unrelated-recursive-disjoint", true, false),
-    ("dot-reference-member", true, false),
+    ("dot-reference-member", true, true),
     ("const-call-not-eligible", false, false),
     ("nan-forwarding", true, true),
     ("same-named-trait-owned", true, true),
@@ -79,8 +79,7 @@ fn reference_comparison_outcomes() -> Result<(), Box<dyn std::error::Error>> {
             accepted,
         )?;
         let checked = frontend::checked(&source);
-        let implemented =
-            accepted && !matches!(name, "contract-unsized-pointee" | "dot-reference-member");
+        let implemented = accepted && name != "contract-unsized-pointee";
         if checked.is_ok() != implemented {
             failures.push(format!("{name}: {:?}", checked.err()));
         }

@@ -1,4 +1,4 @@
-//! Isolated numeric-domain evidence never admits rigid nominal or unconstrained inputs.
+//! Isolated primitive evidence respects selecting mode and ordinary source competition.
 use super::{
     Candidate, Constructor, Context, Declarations, Descriptor, Form, Operands, Operation,
     Predicate, Primitive, Rhs, Scalars, TypeId, infer,
@@ -10,6 +10,7 @@ pub(super) fn comparison_candidate(
     goal: &Predicate,
     kind: crate::support::comparisons::Comparison,
     arguments: &[crate::types::infer::arguments::Argument],
+    selecting: bool,
 ) -> Result<Candidate, infer::Error> {
     use crate::support::comparisons::Comparison;
     let right_term = match (kind, arguments) {
@@ -35,10 +36,13 @@ pub(super) fn comparison_candidate(
         return Ok(candidate);
     }
     if let (Some(Constructor::Primitive(primitive)), None) = (left, right) {
-        infer_numeric(facts, context, right_term, primitive)?;
+        let unconstrained = selecting
+            && primitive != Primitive::Str
+            && (!matches!(kind, Comparison::Eq | Comparison::Ord) || !primitive.is_float());
+        infer_numeric(facts, context, right_term, primitive, unconstrained)?;
         right = context.head(&facts.types, right_term)?;
     } else if let (None, Some(Constructor::Primitive(primitive))) = (left, right) {
-        infer_numeric(facts, context, goal.subject(), primitive)?;
+        infer_numeric(facts, context, goal.subject(), primitive, false)?;
         left = context.head(&facts.types, goal.subject())?;
     }
     if left.is_some_and(|head| !matches!(head, Constructor::Primitive(_)))
@@ -72,15 +76,18 @@ pub(super) fn comparison_candidate(
         },
     )
 }
-// A numeric domain cannot denote a local nominal RHS. These equations belong
-// to this isolated candidate, and ordinary competing evidence still causes ambiguity.
+// Only a selecting query may infer the primitive impl's RHS from known Self.
+// These equations stay in this isolated candidate; competing source evidence
+// still causes ambiguity, while rigid nominal/parameter RHS remains unrelated.
 fn infer_numeric(
     facts: &Declarations,
     context: &mut Context,
     term: crate::types::infer::TermId,
     primitive: Primitive,
+    unconstrained: bool,
 ) -> Result<(), infer::Error> {
     let permitted = match context.unresolved_domain(term)? {
+        Some(infer::Domain::Any) => unconstrained,
         Some(infer::Domain::Integer) => primitive.integer().is_some(),
         Some(infer::Domain::Float) => primitive.is_float(),
         _ => false,

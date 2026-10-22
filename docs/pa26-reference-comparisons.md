@@ -109,3 +109,8 @@ programs pass. Concrete str and dot-call RHS inference remain required. See
 [the sealing checkpoint](pa19-impl-lifetime-sealing.md) for its independent slots,
 ordinary proof path and separately retained FunctionItem inference boundary.
 Slice len was subsequently completed by its own checkpoint.
+
+The reference-input context prerequisite subsequently closes the unchanged
+`dot-reference-member.rs` original, including its overridden ne native value
+control. Its old boundary outcome and digest remain retained. Concrete str
+comparison remains required; see [the input-context checkpoint](pa26-reference-input-contexts.md).

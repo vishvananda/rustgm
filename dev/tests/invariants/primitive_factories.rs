@@ -402,24 +402,26 @@ fn primitive_comparison_infers_only_exact_numeric_domains_among_nominal_candidat
         .trait_owner(member)
         .ok_or("comparison owner")?;
     for domain in [infer::Domain::Integer, infer::Domain::Any] {
-        let mut context = Context::default();
-        let left = context.known(&facts.types, TypeId::primitive(Primitive::U8))?;
-        let right = context.variable(domain)?;
-        let goal = Predicate::trait_application(
-            left,
-            crate::types::ItemId(owner.0),
-            vec![crate::types::infer::arguments::Argument::Type(right)],
-        );
-        let candidate = candidate(&facts, &mut context, &goal)?;
-        if domain == infer::Domain::Integer {
-            assert!(matches!(candidate, Candidate::Present(_)));
-            assert!(matches!(
-                context.head(&facts.types, right)?,
-                Some(Constructor::Primitive(Primitive::U8))
-            ));
-        } else {
-            assert!(matches!(candidate, Candidate::Deferred));
-            assert!(context.head(&facts.types, right)?.is_none());
+        for selecting in [false, true] {
+            let mut context = Context::default();
+            let left = context.known(&facts.types, TypeId::primitive(Primitive::U8))?;
+            let right = context.variable(domain)?;
+            let goal = Predicate::trait_application(
+                left,
+                crate::types::ItemId(owner.0),
+                vec![crate::types::infer::arguments::Argument::Type(right)],
+            );
+            let candidate = candidate(&facts, &mut context, &goal, selecting)?;
+            if domain == infer::Domain::Integer || selecting {
+                assert!(matches!(candidate, Candidate::Present(_)));
+                assert!(matches!(
+                    context.head(&facts.types, right)?,
+                    Some(Constructor::Primitive(Primitive::U8))
+                ));
+            } else {
+                assert!(matches!(candidate, Candidate::Deferred));
+                assert!(context.head(&facts.types, right)?.is_none());
+            }
         }
     }
     let mut context = Context::default();
@@ -431,7 +433,7 @@ fn primitive_comparison_infers_only_exact_numeric_domains_among_nominal_candidat
         vec![crate::types::infer::arguments::Argument::Type(right)],
     );
     assert!(matches!(
-        candidate(&facts, &mut context, &goal)?,
+        candidate(&facts, &mut context, &goal, false)?,
         Candidate::Deferred
     ));
     assert!(context.head(&facts.types, left)?.is_none());
@@ -681,7 +683,7 @@ fn canonical_ordering_is_lazy_and_its_empty_argument_views_select() -> Result {
         );
         assert!(
             matches!(
-                candidate(&facts, &mut context, &goal)?,
+                candidate(&facts, &mut context, &goal, false)?,
                 Candidate::Present(_)
             ),
             "canonical trait candidate"

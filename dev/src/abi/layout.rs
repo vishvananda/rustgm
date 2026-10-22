@@ -107,6 +107,17 @@ impl Layouts {
         ) {
             return Ok(Metadata::Length);
         }
+        self.prepared_pointer_metadata(types, definitions, ty)
+    }
+    /// Classify completed physical tails without a provisional Sized shortcut.
+    /// # Errors
+    /// Requires prepared immutable fields and preserves metadata query failures.
+    pub fn prepared_pointer_metadata(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<super::metadata::Metadata, &'static str> {
         self.metadata
             .get_or_insert_with(Default::default)
             .demand(types, definitions, ty)

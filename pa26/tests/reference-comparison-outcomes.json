@@ -849,7 +849,7 @@
     },
     {
       "path": "tests/spec/reference-comparison/dot-reference-member.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.reference-comparison"
       ],
@@ -859,9 +859,14 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
       "traps": false,
-      "boundary": "Required Rust-positive preexisting gap: dot-call RHS autodereference inference"
+      "supersedes_boundary": "Required Rust-positive preexisting gap: dot-call RHS autodereference inference",
+      "mode": "--emit-lowir",
+      "status": "Implemented by bounded reference-input preparation; original source bytes unchanged"
     },
     {
       "path": "tests/spec/reference-comparison/const-call-not-eligible.rs",

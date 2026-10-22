@@ -2,7 +2,7 @@
 #[cfg(test)]
 #[path = "../../../tests/invariants/prefix_arguments.rs"]
 mod tests;
-use super::{Checker, Constructor, Dependency, Error, NodeId, TermId};
+use super::{Checker, Constructor, Dependency, Error, NodeId, TermId, Work};
 use crate::syntax::ast::{Kind, Unary};
 use crate::types::Store;
 use crate::types::infer::{Context, Error as InferError};
@@ -166,13 +166,30 @@ impl Data {
     }
 }
 
+// Only reference prefixes may supply this early contextual expectation.
+// Projections keep their owning normalizer and the final coercion remains required.
+fn reference_frontier(
+    context: &mut Context,
+    store: &Store,
+    mut term: TermId,
+) -> Result<Option<TermId>, InferError> {
+    let mut borrowed = false;
+    loop {
+        context.account_work(1)?;
+        match context.head(store, term) {
+            Ok(Some(Constructor::Reference { .. })) => {
+                borrowed = true;
+                term = context.child(store, term, 0)?;
+            }
+            Ok(None) if borrowed => return Ok(Some(term)),
+            Ok(_) | Err(InferError::Normalization | InferError::Unresolved) => return Ok(None),
+            Err(error) => return Err(error),
+        }
+    }
+}
+
 impl Checker<'_> {
-    pub(super) fn coerce_call_argument(
-        &mut self,
-        call: NodeId,
-        argument: NodeId,
-        parameter: u32,
-    ) -> Result<Option<Dependency>, Error> {
+    fn call_parameter(&mut self, call: NodeId, parameter: u32) -> Result<TermId, Error> {
         let signature = *self
             .state
             .call_types
@@ -185,7 +202,32 @@ impl Checker<'_> {
         if parameter >= parameters {
             return Err(self.error(call, "invalid call argument position"));
         }
-        let expected = self.child(call, signature, parameter as usize)?;
+        self.child(call, signature, parameter as usize)
+    }
+    pub(super) fn prepare_call_argument(
+        &mut self,
+        call: NodeId,
+        argument: NodeId,
+        parameter: u32,
+    ) -> Result<Option<Dependency>, Error> {
+        let expected = self.call_parameter(call, parameter)?;
+        if let Some(frontier) =
+            reference_frontier(&mut self.state.infer, &self.facts.types, expected)
+                .map_err(|e| self.error(call, e))?
+            && let Some(dependency) = self.refine_call_inputs(call, frontier)?
+        {
+            return Ok(Some(dependency));
+        }
+        self.state.work.push(Work::Enter(argument, Some(expected)));
+        Ok(None)
+    }
+    pub(super) fn coerce_call_argument(
+        &mut self,
+        call: NodeId,
+        argument: NodeId,
+        parameter: u32,
+    ) -> Result<Option<Dependency>, Error> {
+        let expected = self.call_parameter(call, parameter)?;
         let actual = self.term(argument)?;
         if matches!(
             self.contextual_head(argument, actual)?,

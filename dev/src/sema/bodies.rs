@@ -171,7 +171,17 @@ enum Work {
     CompleteExpression(NodeId, TermId),
     Field(NodeId, aggregates::Field),
     CoerceElement(NodeId, TermId),
+    PrepareBorrowOperand {
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    },
     CallArguments(NodeId, Option<TermId>),
+    PrepareCallArgument {
+        call: NodeId,
+        argument: NodeId,
+        parameter: u32,
+    },
     CoerceCallArgument {
         call: NodeId,
         argument: NodeId,
@@ -780,23 +790,14 @@ impl Checker<'_> {
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
                 Work::CoerceElement(node, expected) => self.coerce(node, expected)?,
-                Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
-                Work::CoerceCallArgument {
-                    call,
-                    argument,
-                    parameter,
-                } => {
-                    if let Some(dependency) =
-                        self.coerce_call_argument(call, argument, parameter)?
-                    {
-                        self.state.work.push(Work::CoerceCallArgument {
-                            call,
-                            argument,
-                            parameter,
-                        });
+                work @ (Work::PrepareBorrowOperand { .. }
+                | Work::PrepareCallArgument { .. }
+                | Work::CoerceCallArgument { .. }) => {
+                    if let Some(dependency) = self.resume_operand_work(work)? {
                         return Ok(Some(dependency));
                     }
                 }
+                Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
                 Work::MethodArguments(node) => self.method_arguments(node)?,
                 Work::AssignmentValue(node) => {
                     let Kind::Binary { left, right, .. } = self.kind(node) else {
@@ -818,6 +819,31 @@ impl Checker<'_> {
             }
         }
         self.finish(self.state.body.node)
+    }
+    /// Declaration waits retain the exact operand continuation, before evaluation.
+    fn resume_operand_work(&mut self, work: Work) -> Result<Option<Dependency>, Error> {
+        let dependency = match &work {
+            Work::PrepareBorrowOperand {
+                node,
+                operand,
+                expected,
+            } => self.prepare_borrow_operand(*node, *operand, *expected)?,
+            Work::PrepareCallArgument {
+                call,
+                argument,
+                parameter,
+            } => self.prepare_call_argument(*call, *argument, *parameter)?,
+            Work::CoerceCallArgument {
+                call,
+                argument,
+                parameter,
+            } => self.coerce_call_argument(*call, *argument, *parameter)?,
+            _ => return Err(self.error(self.state.body.node, "invalid operand continuation")),
+        };
+        if dependency.is_some() {
+            self.state.work.push(work);
+        }
+        Ok(dependency)
     }
     fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
         if let Some(requirement) = self
@@ -2145,7 +2171,15 @@ impl Checker<'_> {
                     argument: *argument,
                     parameter,
                 });
-                self.state.work.push(Work::Enter(*argument, Some(expected)));
+                if self.state.call_types.obligations.is_empty() {
+                    self.state.work.push(Work::Enter(*argument, Some(expected)));
+                } else {
+                    self.state.work.push(Work::PrepareCallArgument {
+                        call: node,
+                        argument: *argument,
+                        parameter,
+                    });
+                }
             }
         }
         Ok(())

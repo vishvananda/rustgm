@@ -57,8 +57,8 @@ pub(in crate::sema) fn reference_comparison(
     let mut context = Context::default();
     let mut inputs = inputs::Inputs::default();
     let goal = inputs.instantiate(facts, &mut context, header)?;
-    let candidate =
-        primitive_methods::candidate(facts, &mut context, &goal).map_err(|e| e.to_string())?;
+    let candidate = primitive_methods::candidate(facts, &mut context, &goal, false)
+        .map_err(|e| e.to_string())?;
     let Candidate::Conditional { prerequisite, .. } = candidate else {
         return Ok((false, context.steps));
     };

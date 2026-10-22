@@ -157,6 +157,8 @@ fn prefix_storage_preserves_compact_public_records() {
         size_of::<crate::body::ir::Value>(),
         size_of::<crate::sema::model::NodeFacts>()
     );
+    assert_eq!(size_of::<super::super::Work>(), 40);
+    assert_eq!(size_of::<super::super::calls::CallTypes>(), 720);
     assert_eq!(size_of::<Inputs>(), 8);
     assert_eq!(size_of::<TypeId>(), 4);
     assert_eq!(size_of::<Kind>(), 24);
@@ -188,5 +190,45 @@ fn restored_application_seeds_only_later_appended_requirements() -> Result {
         index.owner(&mut context, &store, &calls, &[], Some(term), NodeId(7))?,
         Some((NodeId(1), vec![]))
     );
+    Ok(())
+}
+
+#[test]
+fn reference_frontiers_are_bounded_and_known_inputs_need_no_index() -> Result {
+    for depth in [8, 32, 128] {
+        let mut store = Store::default();
+        let mut context = Context::default();
+        let unknown = context.variable(Domain::Any)?;
+        let mut expected = unknown;
+        for _ in 0..depth {
+            expected = context.construct(
+                Constructor::Reference {
+                    mutable: false,
+                    region: crate::types::RegionId::STATIC,
+                },
+                &[expected],
+            )?;
+        }
+        let before = context.steps;
+        assert_eq!(
+            reference_frontier(&mut context, &store, expected)?,
+            Some(unknown)
+        );
+        assert!(context.steps - before <= 20 * depth);
+        let primitive = context.known(&store, TypeId::primitive(crate::types::Primitive::U8))?;
+        context.equate(&store, unknown, primitive)?;
+        assert_eq!(reference_frontier(&mut context, &store, expected)?, None);
+        let calls = super::super::calls::CallTypes::default();
+        let mut index = Inputs::default();
+        assert!(
+            index
+                .owner(&mut context, &store, &calls, &[], None, NodeId(0))?
+                .is_none()
+        );
+        assert!(index.data.is_none());
+        let function = signature(&mut store)?;
+        let function = context.known(&store, function)?;
+        assert_eq!(reference_frontier(&mut context, &store, function)?, None);
+    }
     Ok(())
 }

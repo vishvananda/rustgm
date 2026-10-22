@@ -1,5 +1,6 @@
 //! Borrow and referent type facts remain distinct from later region/loan proofs.
 use super::{Checker, Constructor, Error, Kind, NodeId, Operation, TermId, Work};
+mod operands;
 use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, ReferenceConversion};
 
 pub(super) enum CoercionWork {
@@ -374,7 +375,17 @@ impl Checker<'_> {
         } else {
             None
         };
-        self.state.work.push(Work::Enter(operand, referent));
+        if let Some(expected) = referent
+            && self.value_borrow_operand(operand)?
+        {
+            self.state.work.push(Work::PrepareBorrowOperand {
+                node,
+                operand,
+                expected,
+            });
+        } else {
+            self.state.work.push(Work::Enter(operand, referent));
+        }
         Ok(())
     }
     pub(super) fn borrow(
