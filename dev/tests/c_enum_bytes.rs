@@ -1,4 +1,4 @@
-//! C tags use retained ABI facts; default multi-variant positives remain required gaps.
+//! C tags use retained ABI facts; the original default-layout control is supported.
 use crate::{checked_sources as checked, native_references as native};
 use std::path::Path;
 const CASES: &[(&str, &str, i32, i32, bool, &str)] = &[
@@ -174,9 +174,9 @@ const CASES: &[(&str, &str, i32, i32, bool, &str)] = &[
         "default-layout-still-required",
         "pa27/tests/spec/default-enum-bytes/default-layout-still-required.rs",
         0,
-        1,
-        false,
-        "requires a supported closed byte family",
+        0,
+        true,
+        "",
     ),
     (
         "tagless-still-required",
