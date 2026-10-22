@@ -380,7 +380,7 @@
       "path": "pa24",
       "title": "Closures",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "Capture analysis, environment layout, move capture and call-trait shims",
       "test_families": [
         "capture precision",

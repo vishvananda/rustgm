@@ -1,0 +1,112 @@
+global @rg.data.0 : obj<16x8> [storage=readonly] = {
+  ptr addr @rg.closure.0
+  ptr addr @rg.closure.1
+}
+function @rg.16() -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr $s0
+    copyobj 16x8 %t0, %t1
+    %t2 = cmp uge i64 0, 2
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = binary mul i64 0, 8
+    %t4 = addr $s0
+    %t5 = index u8 %t4, %t3
+    %t6 = load ptr %t5
+    %t7 = call u8 %t6(7) as (%p0 : u8) -> u8
+    %t8 = cmp eq u8 %t7, 8
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
+    %t10 = addr @rg.data.0
+    %t11 = addr $s1
+    copyobj 16x8 %t10, %t11
+    %t12 = cmp uge i64 1, 2
+    branch %t12, ^b1, ^b3
+  block ^b3:
+    %t13 = binary mul i64 1, 8
+    %t14 = addr $s1
+    %t15 = index u8 %t14, %t13
+    %t16 = load ptr %t15
+    %t17 = call u8 %t16(7) as (%p0 : u8) -> u8
+    %t18 = cmp eq u8 %t17, 9
+    %t19 = convert trunc i1 i64 %t18
+    call void @rg.13(%t19)
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.closure.0(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = convert zext i16 u8 %t0
+    %t2 = convert zext i16 u8 1
+    %t3 = binary add i16 %t1, %t2
+    %t4 = convert trunc u8 i16 %t3
+    %t5 = convert zext i16 u8 %t4
+    %t6 = cmp ne i16 %t3, %t5
+    branch %t6, ^b1, ^b2
+  block ^b2:
+    return u8 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.closure.1(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = convert zext i16 u8 %t0
+    %t2 = convert zext i16 u8 2
+    %t3 = binary add i16 %t1, %t2
+    %t4 = convert trunc u8 i16 %t3
+    %t5 = convert zext i16 u8 %t4
+    %t6 = cmp ne i16 %t3, %t5
+    branch %t6, ^b1, ^b2
+  block ^b2:
+    return u8 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

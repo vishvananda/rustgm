@@ -1,0 +1,109 @@
+global @rg.vtable.0 : obj<48x8> [storage=readonly] = {
+  zero 8
+  i64 8
+  i64 8
+  ptr addr @rg.callable.target.0
+  ptr addr @rg.callable.target.0
+  ptr addr @rg.callable.target.0
+}
+function @rg.16() -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.15
+    store ptr %t0, $s0
+    %t1 = addr $s0
+    %t2 = addr @rg.vtable.0
+    store ptr %t1, $s2
+    %t3 = addr $s2
+    %t4 = index u8 %t3, 8
+    store ptr %t2, %t4
+    %t5 = addr $s2
+    %t6 = addr $s1
+    copyobj 16x8 %t5, %t6
+    %t7 = load ptr $s1
+    %t8 = addr $s1
+    %t9 = index u8 %t8, 8
+    %t10 = load ptr %t9
+    store ptr %t7, $s3
+    %t11 = addr $s3
+    %t12 = index u8 %t11, 8
+    store ptr %t10, %t12
+    %t13 = addr $s3
+    %t14 = call u8 @rg.callable.virtual.0(%t13, 7)
+    %t15 = cmp eq u8 %t14, 9
+    %t16 = convert trunc i1 i64 %t15
+    call void @rg.13(%t16)
+    return void
+}
+function @rg.15(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = convert zext i16 u8 %t0
+    %t2 = convert zext i16 u8 2
+    %t3 = binary add i16 %t1, %t2
+    %t4 = convert trunc u8 i16 %t3
+    %t5 = convert zext i16 u8 %t4
+    %t6 = cmp ne i16 %t3, %t5
+    branch %t6, ^b1, ^b2
+  block ^b2:
+    return u8 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.callable.virtual.0(%p0 : ptr, %p1 : u8) -> u8 {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = index u8 %p0, 8
+    %t2 = load ptr %t1
+    %t3 = index u8 %t2, 24
+    %t4 = load ptr %t3
+    %t5 = call u8 %t4(%t0, %p1) as (%p0 : ptr, %p1 : u8) -> u8
+    return u8 %t5
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.callable.target.0(%p0 : ptr, %p1 : u8) -> u8 {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = call u8 %t0(%p1) as (%p0 : u8) -> u8
+    return u8 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

@@ -1,0 +1,1 @@
+ERROR: file 0: 92: closure wildcard input may be uninitialized or moved

@@ -1,0 +1,53 @@
+function @rg.13() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s2
+    %t1 = addr $s2
+    %t2 = addr $s1
+    copyobj 8x8 %t1, %t2
+    %t3 = addr $s1
+    %t4 = call u8 @rg.closure.0(%t3)
+    return void
+}
+function @rg.closure.0(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : obj<12x4>
+  slot $s2 : obj<8x4>
+  slot $s3 : obj<8x4>
+  slot $s4 : obj<12x4>
+  slot $s5 : obj<8x4>
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    store i32 1, $s3
+    %t2 = addr $s3
+    %t3 = index u8 %t2, 4
+    store i32 2, %t3
+    %t4 = addr $s3
+    %t5 = addr $s4
+    copyobj 8x4 %t4, %t5
+    %t6 = addr $s4
+    %t7 = index u8 %t6, 8
+    store i32 3, %t7
+    %t8 = addr $s4
+    %t9 = addr $s1
+    copyobj 12x4 %t8, %t9
+    %t10 = addr $s1
+    %t11 = addr $s5
+    copyobj 8x4 %t10, %t11
+    %t12 = addr $s5
+    %t13 = addr $s2
+    copyobj 8x4 %t12, %t13
+    %t14 = load u8 %t1
+    return u8 %t14
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}

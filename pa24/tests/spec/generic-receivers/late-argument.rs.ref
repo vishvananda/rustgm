@@ -1,0 +1,110 @@
+global @rg.data.0 : obj<4x4> [storage=readonly] = {
+  u32 7
+}
+function @rg.18() -> void {
+  slot $s0 : u8
+  block ^b0:
+    store u8 9, $s0
+    %t0 = addr @rg.data.0
+    %t1 = addr $s0
+    %t2 = call u8 @rg.17.i3(%t0, %t1)
+    %t3 = cmp eq u8 %t2, 9
+    %t4 = convert trunc i1 i64 %t3
+    call void @rg.13(%t4)
+    return void
+}
+function @rg.17.i3(%p0 : ptr, %p1 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<16x8>
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr $s1
+    store ptr %t0, $s3
+    %t2 = addr $s3
+    %t3 = index u8 %t2, 8
+    store ptr %t1, %t3
+    %t4 = addr $s3
+    %t5 = addr $s2
+    copyobj 16x8 %t4, %t5
+    %t6 = addr $s2
+    %t7 = addr $s4
+    copyobj 16x8 %t6, %t7
+    %t8 = addr $s4
+    %t9 = call u8 @rg.15.i4(%t8)
+    return u8 %t9
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.15.i4(%p0 : ptr) -> u8 {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 16x8 %t1, %t2
+    %t3 = addr $s1
+    %t4 = call u8 @rg.closure.adapter.FnOnce.i6(%t3)
+    return u8 %t4
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.closure.adapter.FnOnce.i6(%p0 : ptr) -> u8 {
+  slot $s0 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = addr $s0
+    %t2 = call u8 @rg.closure.0.i7(%t1)
+    return u8 %t2
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.closure.0.i7(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = index u8 %t0, 8
+    %t2 = load ptr %t0
+    store ptr %t2, $s1
+    %t3 = load ptr %t1
+    %t4 = load u8 %t3
+    return u8 %t4
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

@@ -1,0 +1,56 @@
+function @rgc$15_636c6f737572655f66697874757265$4_70613234$f$3_72756e$() -> u8 {
+  slot $s0 : u8
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  slot $s3 : ptr
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s2
+    %t1 = addr $s2
+    %t2 = addr $s1
+    copyobj 8x8 %t1, %t2
+    %t3 = addr $s1
+    %t4 = call ptr @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.closure.0(%t3)
+    store ptr %t4, $s3
+    %t5 = load ptr $s3
+    %t6 = load u8 %t5
+    %t7 = call u8 @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.13.i2(%t6)
+    %t8 = call u16 @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.13.i3(2)
+    %t9 = convert trunc u8 u16 %t8
+    %t10 = convert zext i16 u8 %t7
+    %t11 = convert zext i16 u8 %t9
+    %t12 = binary add i16 %t10, %t11
+    %t13 = convert trunc u8 i16 %t12
+    %t14 = convert zext i16 u8 %t13
+    %t15 = cmp ne i16 %t12, %t14
+    branch %t15, ^b1, ^b2
+  block ^b2:
+    return u8 %t13
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.closure.0(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    return ptr %t1
+}
+function @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.13.i2(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}
+function @rgc$15_636c6f737572655f66697874757265$4_70613234$internal$rg.13.i3(%p0 : u16) -> u16 {
+  slot $s0 : u16
+  block ^b0:
+    store u16 %p0, $s0
+    %t0 = load u16 $s0
+    return u16 %t0
+}
+declare function @abort() -> void [return=noreturn]

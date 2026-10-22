@@ -1,7 +1,7 @@
 # PA24 release review
 
-PA24 remains planned. This review consolidates the current closure contract and
-release evidence; historical checkpoint documents describe their own snapshots.
+This review consolidates the PA24 closure contract and release evidence;
+historical checkpoint documents describe their own snapshots.
 The required feature set has not been reduced to the passing inventory.
 
 ## Contract and coverage
@@ -132,16 +132,22 @@ and losslessly archived one large type diagnostic, preserving source inputs,
 observations and immutable pins. Later PA25 development remains outside this
 frozen candidate and does not inherit its qualification.
 
-## Remaining release gates
+The final 18-input changed-path comparison also completed under an exclusive
+lease. All 1,404 timed executions preserve their qualified outputs; shared
+instruction changes range from -0.174% to +0.951%. Timing noise prevents a small
+speedup claim. See [the final measurement review](pa24-final-performance.md) for
+the full method, independent library/program classifications and observations.
+The earlier 45-input comparison and its open receiver-depth issue remain part
+of the performance review.
 
-- Retain the completed broad frozen-binary performance comparison and measure
-  the later combined compiler's changed paths, including library proof ordering.
-  The receiver-depth superlinear observation remains an open performance issue,
-  not a linearity claim.
-- Publish the reviewed handout, complete manifest, generated sidecars and
-  provenance together. Update `assignments.json`, the roadmap and root text,
-  independent-source and native-suite selection together; rerun their layout
-  and harness checks. A planned assignment must not report an empty-suite pass.
+## Publication checks
+
+The reviewed v2 handout, manifest, 1,401 generated sidecars and provenance are
+installed together with assignment status and root text/source/native selection.
+The release-install receipt binds every payload file to its reviewed staged hash.
+Post-install layout, harness and owning-target validation must complete before
+the public main fast-forward. A planned assignment must not report an empty-suite
+pass.
 
 PA25–PA30 keep their full independent responsibilities and queued work. This
-review is neither PA24 activation nor evidence that those later stages are done.
+review supplies no evidence that those later stages are complete.

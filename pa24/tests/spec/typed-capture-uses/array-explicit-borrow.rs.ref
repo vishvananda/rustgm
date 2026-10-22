@@ -1,0 +1,48 @@
+function @rg.13() -> void {
+  slot $s0 : obj<2x1>
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<2x1>
+  slot $s3 : obj<8x8>
+  block ^b0:
+    store u8 7, $s2
+    %t0 = addr $s2
+    %t1 = index u8 %t0, 1
+    store u8 9, %t1
+    %t2 = addr $s2
+    %t3 = addr $s0
+    copyobj 2x1 %t2, %t3
+    %t4 = addr $s0
+    store ptr %t4, $s3
+    %t5 = addr $s3
+    %t6 = addr $s1
+    copyobj 8x8 %t5, %t6
+    %t7 = addr $s1
+    %t8 = call u8 @rg.closure.0(%t7)
+    return void
+}
+function @rg.closure.0(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = cmp uge i64 0, 2
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = binary mul i64 0, 1
+    %t4 = index u8 %t1, %t3
+    store ptr %t4, $s1
+    %t5 = load ptr $s1
+    %t6 = load u8 %t5
+    return u8 %t6
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}
